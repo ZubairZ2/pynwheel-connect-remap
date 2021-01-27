@@ -14,4 +14,24 @@ class BaseService
     end
     return floor 
   end
+
+  def sign_token_for_latch_request(request_hash, clientId, secretKey)
+    request = OpenStruct.new(request_hash)
+    header = { alg: "HS256", typ: "JWT", kid: clientId }
+
+    payload = {
+      method: request.type,
+      host: request.host,
+      aud: request.endpoint,
+      nbf: DateTime.now.to_i,
+      exp: (DateTime.now + 1.second).to_i,
+      jti: SecureRandom.uuid
+    }
+
+    if request.body.present?
+        payload[:body] = request.body
+    end
+
+    JWT.encode(payload, Base64.decode64(secretKey), 'HS256', header)
+  end
 end

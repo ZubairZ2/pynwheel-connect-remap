@@ -1,4 +1,4 @@
-description_limit = 90
+description_limit = 60
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
 styling_end = '</p></div>'
 json.name @tour_user.name
@@ -49,6 +49,7 @@ json.tours tours do |tour|
         unit = Unit.find @tour.stop_id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
         json.name unit.marketing_name
+        json.unit_id unit.id
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
         json.video_link_button_label unit.virtual_tour_button_label
         json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
@@ -58,7 +59,7 @@ json.tours tours do |tour|
           str_split.each do |ss|
             str = ss.split(':')
 
-            pricing_str = str[0]+" Month - $"+str[1]
+            pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
             # h = {"pricing_option" => pricing_str}
             lease_pricing << pricing_str
 
@@ -70,7 +71,7 @@ json.tours tours do |tour|
           end
           lease_pricing = lease_pricing2
         else
-          h = {"pricing_option" => "$"+ unit.effective_rent.to_s}
+          h = {"pricing_option" => "$"+ unit.effective_rent.to_i.to_s}
           lease_pricing << h
         end
         stop_dat = {"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}

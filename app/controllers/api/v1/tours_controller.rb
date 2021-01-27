@@ -146,9 +146,7 @@ class Api::V1::ToursController < ActionController::Base
         start_tour_auto_msg = "Thank you for choosing to tour our property!
 click here to start your tour.
 iPhone Users:
-#{app_link}
-Android Users:
-#{android_link}"
+#{app_link}"
 
         prod_from = '+12017012957'
         account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
@@ -171,11 +169,13 @@ Android Users:
     end
   end
   def tour_user_login
+    ph_nm = params[:phone_number]
+    phone_number = ph_nm[0] == "1" ? "+" + ph_nm : ((ph_nm[0] != "+" and ph_nm[0] != "1") ? ("+1" + ph_nm) :  ph_nm)
     tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
     if tu.blank?
-      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name], phone_number: params[:phone_number], id_selfie_mismatch: false)
+      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false)
     else
-      tu.update_attributes(name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name], phone_number: params[:phone_number], id_selfie_mismatch: false)
+      tu.update_attributes(name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false)
     end
 
     begin
@@ -225,7 +225,6 @@ Android Users:
         shared_tour_stops = {}
         stops = []
         visited_stops.compact.each_with_index do |x,i|
-          puts "Visited Stop #{x.stop_type} >>>>>>>>>>>>>>>>>>>>>>>>>"
           if x.stop_type != "elevator" && (x.id != params[:tour_id])
             descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(description: nil)
 

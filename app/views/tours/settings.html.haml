@@ -9,8 +9,19 @@
       font-size: 25px;
       cursor: pointer
   }
-
   .day-list {
+      padding: 2px 6px;
+      border: none;
+      border-bottom: 1px solid #bdb7b7;
+      border-radius: none;
+      box-sizing: border-box;
+      color: #000000;
+      background-color: transparent;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-align: center !important
+  }
+  .day-list-guided {
       padding: 2px 6px;
       border: none;
       border-bottom: 1px solid #bdb7b7;
@@ -80,6 +91,9 @@
   .bg-grey-v{
     background: #e3e3e3;
   }
+  .bg-grey-v-guided{
+    background: #e3e3e3;
+  }
 
   .pt-5-v{
     padding-top: 5px !important;
@@ -120,20 +134,17 @@
         .box.box-widget.panel-box.add-plan.pt-30.pb-40
           = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form'} do
             = hidden_field_tag "community_id", @community.id
-
             - if @community.self_tour
               .form-group#chat_control_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Chat Control
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "1Popover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      When this is switched to "yes" visitors will be able to chat with staff who have this feature activated in their user account. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
                     = check_box_tag :chat_control, true,  @community.chat_control
                     %label.label-primary{:for => "chat_control"}
                     %span.pl-15 Yes
+            
             - if @community.touchscreen_app   
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -191,58 +202,62 @@
             /       %label.label-primary{:for => "show_checklist"}
             /       %span.pl-15 Yes 
             
-            .form-group
+            .form-group{:class => "#{(@community.credential.crm_provider.present? and @community.credential.crm_provider == "salesforce") ? 'hidden' : ''}"}
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Scheduler Widget
+                Scheduler Tool
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
                   %span#propertyDetailNameText
-                    If you plan on using the Pynwheel Scheduler widget to allow users to schedule Self Tours on your website, switch this to "Yes". You can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.
+                    If you plan on using the Pynwheel Scheduler tool to allow users to schedule Self Tours on your website, switch this to "Yes". You can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
                   = check_box_tag :scheduler_widget, true, @community.scheduler_widget.nil? ? true : @community.scheduler_widget  , class: "scheduler_widget"
                   %label.label-primary{:for => "scheduler_widget"}
                   %span.pl-15 Yes
-            .div_checklist.hidden{:style => "margin-left: 60px;"}
-              %label Select Fields for Schedule Widget:
-              .form-group{:style => "height: 190px; margin-top: ;"}
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+
+                Set Max Tours at One Time
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Limit the number of tours that can be taken at one time. 
+                
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :do_limit_max_tour, true, @community.tour.tour_setting.do_limit_max_tour  , class: "do_limit_max_tour"
+                  %label.label-primary{:for => "do_limit_max_tour"}
+                  %span.pl-15 Yes  
+            
+            .form-group.limit_max_tour_class.hidden
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Max Tours at One Time
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Enter the maximum number of in-person tours you would like at the property at one time. Leave blank if there is no limit.
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                %input.day-list.max-users-v.form-control{type: "number", id: "limit_max_tour", name: "limit_max_tour", min: "1", max: "60", step: "1", onkeydown: "return false", value: @community.tour.tour_setting.limit_max_tour}         
+            - if @tour_setting.allow_self_tour.nil? || @tour_setting.allow_self_tour
+              .form-group.limit_max_tour_class.hidden
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Max Self-Guided Tours at One Time
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_first_name, true, @tour_setting.show_first_name.nil? ? true :  @tour_setting.show_first_name
-                        %label Name
+                  %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.tour.max_self_tour_users}
+            - if @tour_setting.allow_guided_tour.nil? || @tour_setting.allow_guided_tour
+              .form-group.limit_max_tour_class.hidden
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Max Guided Tours at One Time
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enter the maximum number of Guided Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_phone, true, @tour_setting.show_phone.nil? ? true : @tour_setting.show_phone
-                        %label Phone
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom.nil? ? true : @tour_setting.show_desired_bedroom
-                        %label Desired bedrooms
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date.nil? ? true : @tour_setting.show_desired_move_in_date
-                        %label Desired move-in date
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .row
-                    .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                      .checkbox
-                        = check_box_tag :credit_card_required, true, @community.tour.credit_card_required
-                        %label Credit card required
-                - if @community.data_provider == "realpagesvc"
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .row
-                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
-                        .checkbox
-                          = check_box_tag :marketing_source_required, true, @community.tour.marketing_source_required
-                          %label Lead source
+                  %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.tour.max_guided_tour_users}    
+            
+            
+            
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               /     Display name
@@ -299,101 +314,37 @@
               /       %span.pl-15 Yes
 
               /       %span.pl-15 Yes
-            .div_checklist.hidden
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Only allow scheduled tours
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "5Popover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Only give on-site access via the Self Tour app to users who have scheduled a tour in advance and start their tour at the scheduled time.
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :only_scheduled_tour, true, @community.tour.only_scheduled_tour , class: "only_scheduled_tour"
-                    %label.label-primary{:for => "only_scheduled_tour"}
-                    %span.pl-15 Yes
-              .dev{:style => "margin-left: 60px;margin-top: -10px;margin-bottom: -10px;"}
-                .form-group.hidden#grace_time_period
-                  .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15{style:"margin-right: -35px;"}
-                    Grace period
+              - if current_user.is_super_admin?
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    Add Unit Stops Based on Availability
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "6Popover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        Selecting this option will automate which vacant units will appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    %input.day-list.max-users-v{type: "number", id: "grace_time", name: "grace_time", min: "5", max: "60", step: "5", onkeydown: "return false", value: @community.tour.grace_period}
-            - if current_user.is_super_admin?
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Add Unit Stops Based on Availability
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "6Popover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Selecting this option will automate which vacant units will appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  .TriSea-technologies-Switch
-                    %span.pr-15 No
-                    = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
-                    %label.label-primary{:for => "automate_unit_stop"}
-                    %span.pl-15 Yes
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Dotted line color
-              .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
-            
-            - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
-              .form-group
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Max Tour At One Time
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  %input.day-list.max-users-v{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}
+                    .TriSea-technologies-Switch
+                      %span.pr-15 No
+                      = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
+                      %label.label-primary{:for => "automate_unit_stop"}
+                      %span.pl-15 Yes 
+          
+
+              / .form-group
+              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+              /     Max Virtual Tour At One Time
+              /     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
+              /       %span#propertyDetailNameText
+              /         Enter the maximum number of Virtual Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
+              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              /     %input.day-list.max-users-v.form-control{type: "number", id: "max_virtual_tour_users", name: "max_virtual_tour_users", min: "1", max:"10", value: @community.tour.max_virtual_tour_users}
 
               .form-group
-                %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
-                  Allow visitors to schedule tours
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "8Popover","data-content" => " "}
-                    %span#propertyDetailNameText
-                      Choose the time increments for scheduled tours. 
-              .row 
-                .form-group
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_15, true, @tour_setting.time_intervel == "15 min" ? true : false, :id => "time_intervel_id15"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      In 15 minute increments (ie, 10:00, 10:15, 10:30)
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_1, true, @tour_setting.time_intervel == "1 hr" ? true : false, :id => "time_intervel_id1"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      In hourly increments (ie, 10:00, 11:00, 12:00)        
-              .row 
-                .form-group
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_30, true, @tour_setting.time_intervel == "30 min" ? true : false, :id => "time_intervel_id30"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      In 30 minute increments (ie, 10:00, 10:30, 11:00)        
-                  .form-group.col-lg-6.col-md-6
-                    
-                    .col-sm-1.col-lg-1.col-md-1.col-xs-1
-                      .row
-                        .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
-                          .radiobutton.check_t
-                            = radio_button_tag :time_intervel_2, true, @tour_setting.time_intervel == "2 hrs" ? true : false, :id => "time_intervel_id2"
-                    %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      Every 2 hours (ie, 10:00, 12:00, 2:00)        
-               
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Dotted line color
+                .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                  = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
+                           
+              
               / .form-group
               /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
               /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -415,118 +366,398 @@
             
             .box-footer  
               = submit_tag 'Save', class: "btn btn-success pull-right mr-10", style: "margin-bottom: -36px;"
-    .box.box-info.add-plan.mt-20#logo_header
-      .box-header
-        %h3.box-title
-          VISITING HOURS
-          %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "9Popover","data-content" => " "}
-            %span#propertyDetailNameText
-              You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.
-          %span
-      %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: green; display: none;"}
-      %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: white"}
-      %h4.error-msg-v#same-days{style: "margin-top: 0px; margin-bottom: 0px;"} same time exists or invalid time
+    ///////////////////// Scheduler Widget setting /////////////////////////
+    - if @community.scheduler_widget || @community.scheduler_widget.nil?
+      .box.box-info.add-plan.mt-20#logo_header
+        .box-header
+          %h3.box-title
+            SCHEDULER WIDGET
+            %span
+        .box-body{style: "padding: 0px 20px !important;"}
+          .row
+            .col-lg-12 
+              = form_tag community_save_tour_settings_path(@community) ,{:class => 'tour-settings-form', :style => "margin-top: 40px;"} do
+                = hidden_field_tag "community_id", @community.id
+                = hidden_field_tag :widget_settings, value: "widget_settings"
+                .div_checklist.hidden{:style => "margin-left: 15px;"}
+                  %label Tour Types Offered
+                    
+                  %br
+                  %br  
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                    .row
+                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                        .checkbox
+                          = check_box_tag :allow_self_tour, true, @tour_setting.allow_self_tour.nil? ? true :  @tour_setting.allow_self_tour
+                          %label Self Tour
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                    .row
+                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                        .checkbox
+                          = check_box_tag :allow_guided_tour, true, @tour_setting.allow_guided_tour.nil? ? true : @tour_setting.allow_guided_tour
+                          %label Guided Tour
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12
+                    .row
+                      .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                        .checkbox
+                          = check_box_tag :allow_virtual_tour, true, @tour_setting.allow_virtual_tour.nil? ? true : @tour_setting.allow_virtual_tour
+                          %label Virtual Tour
+                .div_checklist.hidden{:style => "margin-left: 15px; margin-top: 40px;"}
+                  %label Select Fields
+                  .form-group{:style => "height: 190px; margin-top: ;"}
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                          .checkbox
+                            = check_box_tag :show_first_name, true, @tour_setting.show_first_name.nil? ? true :  @tour_setting.show_first_name
+                            %label Name
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                          .checkbox
+                            = check_box_tag :show_phone, true, @tour_setting.show_phone.nil? ? true : @tour_setting.show_phone
+                            %label Phone
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                          .checkbox
+                            = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom.nil? ? true : @tour_setting.show_desired_bedroom
+                            %label Desired bedrooms
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                          .checkbox
+                            = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date.nil? ? true : @tour_setting.show_desired_move_in_date
+                            %label Desired move-in date
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .row
+                        .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                          .checkbox
+                            = check_box_tag :credit_card_required, true, @community.tour.credit_card_required
+                            %label Credit card required
+                    - if @community.data_provider == "realpagesvc"
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .row
+                          .col-sm-6.col-lg-6.col-md-4.col-xs-12
+                            .checkbox
+                              = check_box_tag :marketing_source_required, true, @community.tour.marketing_source_required
+                              %label Lead source
+                .div_checklist{:class => "#{(@community.credential.crm_provider.present? and @community.credential.crm_provider == "salesforce") ? '' : ( (@community.scheduler_widget.present? and @community.scheduler_widget == true) ? '' : 'hidden')}"}
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Only allow scheduled tours
+                      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "5Popover","data-content" => " "}
+                        %span#propertyDetailNameText
+                          Only give on-site access via the Self Tour app to users who have scheduled a tour in advance and start their tour at the scheduled time.
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = check_box_tag :only_scheduled_tour, true, @community.tour.only_scheduled_tour , class: "only_scheduled_tour"
+                        %label.label-primary{:for => "only_scheduled_tour"}
+                        %span.pl-15 Yes
+                  .dev{:style => "margin-left: 60px;margin-top: -10px;margin-bottom: -10px;"}
+                    .form-group.hidden#grace_time_period
+                      .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15{style:"margin-right: -35px;"}
+                        Grace period
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        %input.day-list.max-users-v.form-control{type: "number", id: "grace_time", name: "grace_time", min: "5", max: "60", step: "5", onkeydown: "return false", value: @community.tour.grace_period}              
+                / - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
+                /   .form-group
+                /     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                /       Max Tours per Day
+                /       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
+                /         %span#propertyDetailNameText
+                /           Limit the number of tours that can be taken in a given day.  
+                /     .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                /       %input.day-list.max-users-v.form-control{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}       
+                .form-group
 
-      .box-body{style: "padding: 0px 20px !important;"}
-        .row
-          .col-lg-12 
-            = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
-              - index = 0
-              - monday_count = 1
-              - days_count = { "Monday" => 1, "Tuesday" => 1, "Wednesday" => 1, "Thursday" => 1, "Friday" => 1, "Saturday" => 1, "Sunday" => 1 }
-              .col-sm-12.list.tour_time_sortable
-                - @community_opening_hours.each_with_sortable_id do |current_day,sortable_id|
-                  .row.p-8-v{id: sortable_id, class: "#{current_day.day}_" + "#{days_count[current_day.day]}"  }
-                    - days_count[current_day.day] = days_count[current_day.day] +1
-                    %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}", onchange: "myFunction()"}
+                  %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
+                    Allow Visitors to Schedule Tours in the following time increments:
+                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "8Popover","data-content" => " "}
+                      %span#propertyDetailNameText
+                        Choose the time increments for scheduled tours. 
+                .row 
+                  .form-group
+                    .form-group.col-lg-6.col-md-6
+                      
+                      .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                        .row
+                          .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                            .radiobutton.check_t
+                              = radio_button_tag :time_intervel_15, true, @tour_setting.time_intervel == "15 min" ? true : false, :id => "time_intervel_id15"
+                      %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        In 15 minute increments (ie, 10:00, 10:15, 10:30)
+                    .form-group.col-lg-6.col-md-6
+                      
+                      .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                        .row
+                          .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                            .radiobutton.check_t
+                              = radio_button_tag :time_intervel_1, true, @tour_setting.time_intervel == "1 hr" ? true : false, :id => "time_intervel_id1"
+                      %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        In hourly increments (ie, 10:00, 11:00, 12:00)        
+                .row 
+                  .form-group
+                    .form-group.col-lg-6.col-md-6
+                      
+                      .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                        .row
+                          .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                            .radiobutton.check_t
+                              = radio_button_tag :time_intervel_30, true, @tour_setting.time_intervel == "30 min" ? true : false, :id => "time_intervel_id30"
+                      %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        In 30 minute increments (ie, 10:00, 10:30, 11:00)        
+                    .form-group.col-lg-6.col-md-6
+                      
+                      .col-sm-1.col-lg-1.col-md-1.col-xs-1
+                        .row
+                          .col-sm-6.col-lg-6.col-md-4.col-xs-12.time_intervel_class
+                            .radiobutton.check_t
+                              = radio_button_tag :time_intervel_2, true, @tour_setting.time_intervel == "2 hrs" ? true : false, :id => "time_intervel_id2"
+                      %label.col-sm-12.col-lg-6.col-md-6.col-xs-12
+                        Every 2 hours (ie, 10:00, 12:00, 2:00)   
+                .form-group
+                  .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    = link_to "Customize Schedule Widget " , scheduler_widget_community_tours_path(current_community) , :class=>"btn btn-primary ", :id => "" 
+                
+                
+                .form-group
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
+                    %button.btn.btn-primary#genrate_btn{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget","data-url" => "",:href => "##", :onclick => "return false"}
+                      %span Copy code for Scheduler Widget
+                  .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    %button.btn.btn-primary#genrate_link{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget-link","data-url" => "",:href => "##", style: "margin-top: 5px;" , :onclick => "return false"}
+                      %span Copy link for Scheduler Page  
+                .box-footer  
+                  = submit_tag 'Save', class: "btn btn-success pull-right mr-10", style: "  "              
+
+    //////////////////////////////////////////////// Visiting hours ////////////////////////////////////              
+    - if @tour_setting.allow_self_tour
+      .box.box-info.add-plan.mt-20#logo_header
+        .box-header
+          %h3.box-title
+            SELF TOUR VISITING HOURS
+            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "9Popover","data-content" => " "}
+              %span#propertyDetailNameText
+                You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.
+            %span
+        %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: green; display: none;"}
+        %i.fa.fa-v.fa-check-circle#save_hours{ style: "color: white"}
+        %h4.error-msg-v#same-days{style: "margin-top: 0px; margin-bottom: 0px;"} same time exists or invalid time
+
+        .box-body{style: "padding: 0px 20px !important;"}
+          .row
+            .col-lg-12 
+              = form_tag save_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
+                - index = 0
+                - monday_count = 1
+                - days_count = { "Monday" => 1, "Tuesday" => 1, "Wednesday" => 1, "Thursday" => 1, "Friday" => 1, "Saturday" => 1, "Sunday" => 1 }
+                .col-sm-12.list.tour_time_sortable
+                  - @community_opening_hours.each_with_sortable_id do |current_day,sortable_id|
+                    .row.p-8-v{id: sortable_id, class: "#{current_day.day}_" + "#{days_count[current_day.day]}"  }
+                      - days_count[current_day.day] = days_count[current_day.day] +1
+                      %select.day-list.font-17-v.pull-left.mr-20-v{id: "day_#{index+1}",name: "day_#{index+1}", onchange: "myFunction()"}
+                        - if current_day.day == "Monday"
+                          %option{selected: "", value: "Monday", class: "#{current_day.day}" + "_#{days_count["mon"]}"} Monday
+                          -# - days_count["mon"] = days_count["mon"] +1
+                        - else
+                          %option{value: "Monday"} Monday
+                        - if current_day.day == "Tuesday"
+                          %option{selected: "", value: "Tuesday" , class: "#{current_day.day}" + "_#{days_count["tue"]}"} Tuesday
+                          -# - days_count["tue"] = days_count["tue"] + 1
+                        - else
+                          %option{value: "Tuesday"} Tuesday
+                        - if current_day.day == "Wednesday"
+                          %option{selected: "", value: "Wednesday" , class: "#{current_day.day}" + "_#{days_count["wed"]}"} Wednesday
+                          -# - days_count["wed"] = days_count["wed"] + 1
+                        - else
+                          %option{value: "Wednesday"} Wednesday
+                        - if current_day.day == "Thursday"
+                          %option{selected: "", value: "Thursday" , class: "#{current_day.day}" + "_#{days_count["thur"]}"} Thursday
+                          -# - days_count["thur"]= days_count["thur"] +1
+                        - else
+                          %option{value: "Thursday"} Thursday
+                        - if current_day.day == "Friday"
+                          %option{selected: "", value: "Friday" , class: "#{current_day.day}" + "_#{days_count["fri"]}"} Friday
+                          -# -days_count["fri"] = days_count["fri"] +1
+                        - else
+                          %option{value: "Friday"} Friday
+                        - if current_day.day == "Saturday"
+                          %option{selected: "", value: "Saturday", class: "#{current_day.day}" + "_#{days_count["sat"]}"} Saturday
+                          -# - days_count["sat"] = days_count["sat"]
+                        - else
+                          %option{value: "Saturday"} Saturday
+                        - if current_day.day == "Sunday"
+                          %option{selected: "", value: "Sunday", class: "#{current_day.day}" + "_#{days_count["sun"]}"} Sunday
+                          -# - days_count["sun"] = days_count["sun"] +1
+                        - else
+                          %option{value: "Sunday"} Sunday
                       - if current_day.day == "Monday"
-                        %option{selected: "", value: "Monday", class: "#{current_day.day}" + "_#{days_count["mon"]}"} Monday
-                        -# - days_count["mon"] = days_count["mon"] +1
-                      - else
-                        %option{value: "Monday"} Monday
-                      - if current_day.day == "Tuesday"
-                        %option{selected: "", value: "Tuesday" , class: "#{current_day.day}" + "_#{days_count["tue"]}"} Tuesday
-                        -# - days_count["tue"] = days_count["tue"] + 1
-                      - else
+                        .font-17-v.pull-left.mr-20-v
+                          .p-4-v.pull-left.mr-10-v
+                            %label.text-grey-v From
+                          %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "monday_mor_" + "#{monday_count}",onkeyup: "myFunction()"}
+                        .font-17-v.pull-left.mr-20-v
+                          .p-4-v.pull-left.mr-10-v
+                            %label.text-grey-v To
+                          %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "monday_eve_" + "#{monday_count}", onkeyup: "myFunction()"}
+                        .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
+                      - if current_day.day != "Monday"
+                        .font-17-v.pull-left.mr-20-v
+                          .p-4-v.pull-left.mr-10-v
+                            %label.text-grey-v From
+                          %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", onkeyup: "myFunction()"}
+                        .font-17-v.pull-left.mr-20-v
+                          .p-4-v.pull-left.mr-10-v
+                            %label.text-grey-v To
+                          %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", onkeyup: "myFunction()"}
+                        .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
+                        -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                      - if current_day.day == "Monday"
+                        .pt-5.btn.btn-primary.apply-monday-btn{:onclick => "apply_time_to_all('#{monday_count}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;", :class => ""}
+                          .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply to All Weekdays
+                        - monday_count +=1
+                      - index +=1
+                  - if @community.opening_hours.blank?
+                    .row.p-8-v
+                      %select.day-list.font-17-v.pull-left.mr-20-v#day_1{name: "day_1", onchange: "myFunction()"}
+                        %option{selected: "", value: "Monday"} Monday
                         %option{value: "Tuesday"} Tuesday
-                      - if current_day.day == "Wednesday"
-                        %option{selected: "", value: "Wednesday" , class: "#{current_day.day}" + "_#{days_count["wed"]}"} Wednesday
-                        -# - days_count["wed"] = days_count["wed"] + 1
-                      - else
                         %option{value: "Wednesday"} Wednesday
-                      - if current_day.day == "Thursday"
-                        %option{selected: "", value: "Thursday" , class: "#{current_day.day}" + "_#{days_count["thur"]}"} Thursday
-                        -# - days_count["thur"]= days_count["thur"] +1
-                      - else
                         %option{value: "Thursday"} Thursday
-                      - if current_day.day == "Friday"
-                        %option{selected: "", value: "Friday" , class: "#{current_day.day}" + "_#{days_count["fri"]}"} Friday
-                        -# -days_count["fri"] = days_count["fri"] +1
-                      - else
                         %option{value: "Friday"} Friday
-                      - if current_day.day == "Saturday"
-                        %option{selected: "", value: "Saturday", class: "#{current_day.day}" + "_#{days_count["sat"]}"} Saturday
-                        -# - days_count["sat"] = days_count["sat"]
-                      - else
                         %option{value: "Saturday"} Saturday
-                      - if current_day.day == "Sunday"
-                        %option{selected: "", value: "Sunday", class: "#{current_day.day}" + "_#{days_count["sun"]}"} Sunday
-                        -# - days_count["sun"] = days_count["sun"] +1
-                      - else
                         %option{value: "Sunday"} Sunday
-                    - if current_day.day == "Monday"
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v From
-                        %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "monday_mor_" + "#{monday_count}",onkeyup: "myFunction()"}
+                        %input.day-list.bg-grey-v{name: "from_1", type: "time", value: "09:00", onchange: "myFunction()"}
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v To
-                        %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "monday_eve_" + "#{monday_count}", onkeyup: "myFunction()"}
-                      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
-                    - if current_day.day != "Monday"
+                        %input.day-list.bg-grey-v{name: "to_1", type: "time", value: "05:00", onchange: "myFunction()"}
+                      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                .asd{style: "padding-bottom: 20px;"}
+                  %button.btn.btn-primary#add-btn{style: "margin-left: 10;"}
+                    %span.fa.fa-v.fa-plus.font-17-v
+                      Add
+                  %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "Save", class: "hide-save-btn"}
+                  .pt-5.btn.btn-success#save-sorted-time{onclick: "ok();", class: "hide-sort-btn", style: "padding-top: 7px; padding-bottom:7px; padding-left:9px; padding-right: 8px;"}
+                    Save Time Order
+      
+    //////////////////////////------------------------------------ Guided  hours
+    - if @tour_setting.allow_guided_tour
+      .box.box-info.add-plan.mt-20#logo_header
+        .box-header
+          %h3.box-title
+            GUIDED TOUR VISITING HOURS
+            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "9Popover","data-content" => " "}
+              %span#propertyDetailNameText
+                You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.
+            %span
+        %i.fa.fa-v.fa-check-circle#save_hours_guided{ style: "color: green; display: none;"}
+        %i.fa.fa-v.fa-check-circle#save_hours_guided{ style: "color: white"}
+        %h4.error-msg-v#same-days-guided{style: "margin-top: 0px; margin-bottom: 0px;"} same time exists or invalid time
+        .box-body{style: "padding: 0px 20px !important;"}
+          .row
+            .col-lg-12 
+              = form_tag save_guided_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
+                - index = 0
+                - monday_count = 1
+                - days_count = { "Monday" => 1, "Tuesday" => 1, "Wednesday" => 1, "Thursday" => 1, "Friday" => 1, "Saturday" => 1, "Sunday" => 1 }
+                .col-sm-12.list_guided.tour_time_sortable_guided
+                  - @community_guided_opening_hours.each_with_sortable_id do |current_day,sortable_id|
+                    .row.p-8-v{id: sortable_id, class: "#{current_day.day}_" + "#{days_count[current_day.day]}"  }
+                      - days_count[current_day.day] = days_count[current_day.day] +1
+                      %select.day-list-guided.font-17-v.pull-left.mr-20-v{id: "guided_day_#{index+1}",name: "guided_day_#{index+1}", onchange: "myFunctionGuided()"}
+                        - if current_day.day == "Monday"
+                          %option{selected: "", value: "Monday", class: "#{current_day.day}" + "_#{days_count["mon"]}"} Monday
+                          -# - days_count["mon"] = days_count["mon"] +1
+                        - else
+                          %option{value: "Monday"} Monday
+                        - if current_day.day == "Tuesday"
+                          %option{selected: "", value: "Tuesday" , class: "#{current_day.day}" + "_#{days_count["tue"]}"} Tuesday
+                          -# - days_count["tue"] = days_count["tue"] + 1
+                        - else
+                          %option{value: "Tuesday"} Tuesday
+                        - if current_day.day == "Wednesday"
+                          %option{selected: "", value: "Wednesday" , class: "#{current_day.day}" + "_#{days_count["wed"]}"} Wednesday
+                          -# - days_count["wed"] = days_count["wed"] + 1
+                        - else
+                          %option{value: "Wednesday"} Wednesday
+                        - if current_day.day == "Thursday"
+                          %option{selected: "", value: "Thursday" , class: "#{current_day.day}" + "_#{days_count["thur"]}"} Thursday
+                          -# - days_count["thur"]= days_count["thur"] +1
+                        - else
+                          %option{value: "Thursday"} Thursday
+                        - if current_day.day == "Friday"
+                          %option{selected: "", value: "Friday" , class: "#{current_day.day}" + "_#{days_count["fri"]}"} Friday
+                          -# -days_count["fri"] = days_count["fri"] +1
+                        - else
+                          %option{value: "Friday"} Friday
+                        - if current_day.day == "Saturday"
+                          %option{selected: "", value: "Saturday", class: "#{current_day.day}" + "_#{days_count["sat"]}"} Saturday
+                          -# - days_count["sat"] = days_count["sat"]
+                        - else
+                          %option{value: "Saturday"} Saturday
+                        - if current_day.day == "Sunday"
+                          %option{selected: "", value: "Sunday", class: "#{current_day.day}" + "_#{days_count["sun"]}"} Sunday
+                          -# - days_count["sun"] = days_count["sun"] +1
+                        - else
+                          %option{value: "Sunday"} Sunday
+                      - if current_day.day == "Monday"
+                        .font-17-v.pull-left.mr-20-v
+                          .p-4-v.pull-left.mr-10-v
+                            %label.text-grey-v From
+                          %input.day-list-guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "guided_monday_mor_" + "#{monday_count}",onkeyup: "myFunctionGuided()"}
+                        .font-17-v.pull-left.mr-20-v
+                          .p-4-v.pull-left.mr-10-v
+                            %label.text-grey-v To
+                          %input.day-list-guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "guided_monday_eve_" + "#{monday_count}", onkeyup: "myFunctionGuided()"}
+                        .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
+                      - if current_day.day != "Monday"
+                        .font-17-v.pull-left.mr-20-v
+                          .p-4-v.pull-left.mr-10-v
+                            %label.text-grey-v From
+                          %input.day-list-guided.morning_time_guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", onkeyup: "myFunctionGuided()"}
+                        .font-17-v.pull-left.mr-20-v
+                          .p-4-v.pull-left.mr-10-v
+                            %label.text-grey-v To
+                          %input.day-list-guided.evening_time_guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", onkeyup: "myFunctionGuided()"}
+                        .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
+                        -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                      - if current_day.day == "Monday"
+                        .pt-5.btn.btn-primary.apply-monday-btn-guided{:onclick => "apply_time_to_all_guided('#{monday_count}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;", :class => ""}
+                          .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply to All Weekdays
+                        - monday_count +=1
+                      - index +=1
+                  - if @community.guided_opening_hours.blank?
+                    .row.p-8-v
+                      %select.day-list-guided.font-17-v.pull-left.mr-20-v#guided_day_1{name: "guided_day_1", onchange: "myFunctionGuided()"}
+                        %option{selected: "", value: "Monday"} Monday
+                        %option{value: "Tuesday"} Tuesday
+                        %option{value: "Wednesday"} Wednesday
+                        %option{value: "Thursday"} Thursday
+                        %option{value: "Friday"} Friday
+                        %option{value: "Saturday"} Saturday
+                        %option{value: "Sunday"} Sunday
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v From
-                        %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", onkeyup: "myFunction()"}
+                        %input.day-list-guided.bg-grey-v-guided{name: "guided_from_1", type: "time", value: "09:00", onchange: "myFunctionGuided()"}
                       .font-17-v.pull-left.mr-20-v
                         .p-4-v.pull-left.mr-10-v
                           %label.text-grey-v To
-                        %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", onkeyup: "myFunction()"}
-                      .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
-                      -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
-                    - if current_day.day == "Monday"
-                      .pt-5.btn.btn-primary.apply-monday-btn{:onclick => "apply_time_to_all('#{monday_count}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;", :class => ""}
-                        .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply to All Weekdays
-                      - monday_count +=1
-
-                    - index +=1
-                - if @community.opening_hours.blank?
-                  .row.p-8-v
-                    %select.day-list.font-17-v.pull-left.mr-20-v#day_1{name: "day_1"}
-                      %option{selected: "", value: "Monday"} Monday
-                      %option{value: "Tuesday"} Tuesday
-                      %option{value: "Wednesday"} Wednesday
-                      %option{value: "Thursday"} Thursday
-                      %option{value: "Friday"} Friday
-                      %option{value: "Saturday"} Saturday
-                      %option{value: "Sunday"} Sunday
-                    .font-17-v.pull-left.mr-20-v
-                      .p-4-v.pull-left.mr-10-v
-                        %label.text-grey-v From
-                      %input.day-list.bg-grey-v{name: "from_1", type: "time", value: "09:00"}
-                    .font-17-v.pull-left.mr-20-v
-                      .p-4-v.pull-left.mr-10-v
-                        %label.text-grey-v To
-                      %input.day-list.bg-grey-v{name: "to_1", type: "time", value: "05:00"}
-                    .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
-              .asd{style: "padding-bottom: 20px;"}
-                %button.btn.btn-primary#add-btn{style: "margin-left: 10;"}
-                  %span.fa.fa-v.fa-plus.font-17-v
-                    Add
-                %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit{type: "submit", value: "Save", class: "hide-save-btn"}
-                .pt-5.btn.btn-success#save-sorted-time{onclick: "ok();", class: "hide-sort-btn", style: "padding-top: 7px; padding-bottom:7px; padding-left:9px; padding-right: 8px;"}
-                  Save Time Order
+                        %input.day-list-guided.bg-grey-v-guided{name: "guided_to_1", type: "time", value: "05:00", onchange: "myFunctionGuided()"}
+                      .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger
+                .asd{style: "padding-bottom: 20px;"}
+                  %button.btn.btn-primary#add-btn-guided{style: "margin-left: 10;"}
+                    %span.fa.fa-v.fa-plus.font-17-v
+                      Add
+                  %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit-guided{type: "submit", value: "Save", class: "hide-save-btn-guided"}
+                  .pt-5.btn.btn-success#save-sorted-time-guided{onclick: "ok();", class: "hide-sort-btn-guided", style: "padding-top: 7px; padding-bottom:7px; padding-left:9px; padding-right: 8px;"}
+                    Save Time Order             
     
     .box.box-info.add-plan.mt-40#logo_header
       .box-header
@@ -555,7 +786,6 @@
                       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "10Popover","data-content" => " "}
                         %span#propertyDetailNameText
                           Select how you would like your prospects to receive their notifications. We recommend selecting 'both'
-
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = collection_radio_buttons(:community, :alert_contact, Community.alert_contacts, :first, :first, {}, {class: "btn"})
                 - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
@@ -577,7 +807,6 @@
                           %span#propertyDetailNameText
                             This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
                             We look forward to having you visit our property at <time> tomorrow for your self-guided tour. Download Pynwheel Self Tour (links to app stores). (Link to reschedule appointment).
-
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :one_day_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                   .col-lg-9.col-lg-offset-1
@@ -588,7 +817,6 @@
                           %span#propertyDetailNameText
                             This is the alert that your guest will receive 1 hour prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
                             Your self-guided tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Self Tour to start your tour.
-
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :one_hour_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                 .col-lg-9.col-lg-offset-1
@@ -598,7 +826,6 @@
                       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "13Popover","data-content" => " "}
                         %span#propertyDetailNameText
                           This message will be sent to guest after tour will end.
-
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                 - if current_community.tour.only_scheduled_tour and (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
@@ -651,6 +878,29 @@
             .box-footer
               = f.submit "Save", :class=>"btn btn-success pull-right mr-10"
     
+  #share-scheduler-widget-removed.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+    .modal-dialog
+      .modal-content
+        .modal-header
+          Copy and paste the code below and share it with your web developer to add the scheduler widget to your website.
+        .modal-body
+          %input.form-control#schedule-url1{:value => '<iframe style="height: 70px; width: 260px;"src="'+root_url+'/scheduler_widget/scheduler_widget_button?community_id='+current_community.id.to_s+'&community_code=eyJhbGciOiJIUzI1NiJ9.eyJjb21tdW5pdHlfaWQiOjR9.R9eFa3gZqU1lZDB2HP5x7w-NsWltyf3CjW0tPXPCnTw&id='+current_community.tour.scheduler_widget_setting.id.to_s+'"width="fit-content%" height="fit-content" />'}
+
+        .modal-footer
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+          %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-url1"} Copy to clipboard 
+
+  #share-scheduler-widget-link.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+    .modal-dialog
+      .modal-content
+        .modal-header
+          Copy and paste the link below and share it with your web developer to add the scheduler widget link to your website.
+        .modal-body
+          %input.form-control#schedule-link-url1{:value =>''}
+
+        .modal-footer
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+          %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#schedule-link-url1"} Copy to clipboard      
   #select_status.modal.fade.select_status                    
 .row
   .col-md-12
@@ -665,6 +915,43 @@
               / End Panel left Side
         / /.content
 :javascript
+  
+  $('#set_text').keyup(function(){
+    $('#sample_btn').text(this.value)
+  });
+  $('#set_color').change(function(){
+    $("#sample_btn").css("background-color", this.value);
+  });
+  $('#set_font').change(function(){
+    $("#sample_btn").css("font-family", $("#set_font option:selected").text());
+  });
+  $('#set_font_size').change(function(){
+    $("#sample_btn").css("font-size", $("#set_font_size option:selected").text());
+  });
+  $('#btn_width').change(function(){
+    $("#sample_btn").css("width", this.value);
+  });
+  $('#btn_height').change(function(){
+    $("#sample_btn").css("height", this.value);
+  });
+  $('.widget_setting_field').change(function(){
+  });
+  var tr = 1;
+  $('#set_color').change(function(){
+    
+  });
+
+  $("#sample_btn").css("font-family", $("#set_font option:selected").text());
+
+
+
+  $('#genrate_link').click(function(){
+
+    btn_link = "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{@community_code}&direct=true"
+
+    $('#schedule-link-url1').val(btn_link )
+  });
+
   function apply_time_to_all(monday_count, closing_time)
   {
     $(".tour_time_sortable").sortable( "disable" );
@@ -685,6 +972,53 @@
     //tues_morning_val = jQuery(".Sunday_" + monday_count).find($(".morning_time")).val(monday_morning);
     //tues_evening_val = jQuery(".Sunday_" + monday_count).find($(".evening_time")).val(monday_evening);
   }
+  var do_limit_max_tour = "#{current_community.tour.tour_setting.do_limit_max_tour}"  
+  if(do_limit_max_tour == "true")
+    $('.limit_max_tour_class').removeClass('hidden');
+  $('#do_limit_max_tour').change(function() {
+    if ($("#do_limit_max_tour").is(":checked")){
+      $(".limit_max_tour_class").removeClass("hidden")
+    }
+    else
+    {
+      $(".limit_max_tour_class").addClass("hidden")
+    }
+    })
+
+  function apply_time_to_all_guided(monday_count, closing_time)
+  {
+    $(".tour_time_sortable_guided").sortable( "disable" );
+    $("#schedule-btn-submit-guided").removeClass("hide-save-btn-guided");
+    $("#schedule-btn-submit-guided").addClass("blink");
+    monday_morning  = $(".guided_monday_mor_" + monday_count).val();
+    monday_evening = $(".guided_monday_eve_" + monday_count).val();
+    tues_morning_val = jQuery(".Tuesday_" + monday_count).find($(".morning_time_guided")).val(monday_morning);
+    tues_evening_val = jQuery(".Tuesday_" + monday_count).find($(".evening_time_guided")).val(monday_evening);
+    wed_morning_val = jQuery(".Wednesday_" + monday_count).find($(".morning_time_guided")).val(monday_morning);
+    wed_evening_val = jQuery(".Wednesday_" + monday_count).find($(".evening_time_guided")).val(monday_evening);
+    tues_morning_val = jQuery(".Thursday_" + monday_count).find($(".morning_time_guided")).val(monday_morning);
+    tues_evening_val = jQuery(".Thursday_" + monday_count).find($(".evening_time_guided")).val(monday_evening);
+    tues_morning_val = jQuery(".Friday_" + monday_count).find($(".morning_time_guided")).val(monday_morning);
+    tues_evening_val = jQuery(".Friday_" + monday_count).find($(".evening_time_guided")).val(monday_evening);
+    //tues_morning_val = jQuery(".Saturday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    //tues_evening_val = jQuery(".Saturday_" + monday_count).find($(".evening_time")).val(monday_evening);
+    //tues_morning_val = jQuery(".Sunday_" + monday_count).find($(".morning_time")).val(monday_morning);
+    //tues_evening_val = jQuery(".Sunday_" + monday_count).find($(".evening_time")).val(monday_evening);
+  }
+
+  var do_limit_max_tour = "#{current_community.tour.tour_setting.do_limit_max_tour}"  
+  if(do_limit_max_tour == "true")
+    $('.limit_max_tour_class').removeClass('hidden');
+  $('#do_limit_max_tour').change(function() {
+    if ($("#do_limit_max_tour").is(":checked")){
+      $(".limit_max_tour_class").removeClass("hidden")
+    }
+    else
+    {
+      $(".limit_max_tour_class").addClass("hidden")
+    }
+    })
+
   var floor = 1
   function tour_setup_goBack()
   {
@@ -739,7 +1073,10 @@
 
 
   $('.tour_time_sortable').railsSortable();
+  $('.tour_time_sortable_guided').railsSortable();
   $('.tour_sortable').railsSortable();
+  $('.tour_sortable_guided').railsSortable();
+
   $(".tour_time_sortable").on( "sortchange", function( event, ui ) {
     $(".apply-monday-btn").addClass("hide-apply-btn");
     $("#add-btn").addClass("hide-add-btn");
@@ -748,6 +1085,16 @@
     $("#save-sorted-time").addClass("blink");
 
   });
+
+  $(".tour_time_sortable_guided").on( "sortchange", function( event, ui ) {
+    $(".apply-monday-btn-guided").addClass("hide-guided-apply-btn");
+    $("#add-btn-guided").addClass("hide-add-btn-guided");
+    $(".day-list-guided").attr('disabled','disabled');
+    $("#save-sorted-time-guided").removeClass("hide-sort-btn-guided");
+    $("#save-sorted-time-guided").addClass("blink");
+
+  });
+
   function ok (){
    location.reload();
   }
@@ -874,11 +1221,49 @@
         </div>`);
     }
     var current_day = $(".list").children().length
+    var current_day_guided = $(".list_guided").children().length
+    function append_new_day_guided(){
+      var last_dropdown_id = "guided_day_" + (current_day_guided - 1)
+      var last_dropdown = document.getElementById(last_dropdown_id);
+      var last_day = last_dropdown.options[last_dropdown.selectedIndex].text;
+      var new_day_with_selected_options = get_next_day_with_selected_option(last_day)
+
+      $(".list_guided").append(`
+        <div class="row p-8-v">
+          <select class="day-list-guided font-17-v pull-left mr-20-v" id="gudided_day_${current_day_guided}" name="guided_day_${current_day_guided}">
+            ${new_day_with_selected_options}
+          </select>
+
+          <div class="font-17-v pull-left mr-20-v">
+            <div class="p-4-v pull-left mr-10-v">
+              <label class="text-grey-v">From</label>
+            </div>
+            <input class="day-list-guided bg-grey-v-guided morning_time_guided" name="guided_from_${current_day_guided}" type="time" value="09:00">
+          </div>
+
+          <div class="font-17-v pull-left mr-20-v">
+            <div class="p-4-v pull-left mr-10-v">
+              <label class="text-grey-v">To</label>
+            </div>
+            <input class="day-list-guided bg-grey-v-guided evening_time_guided" name="guided_to_${current_day_guided}" type="time" value="17:00">
+          </div>
+
+          <div class="font-17-v pt-5 cancel_guided fa fa-v fa-times text-danger"></div>
+
+        </div>`);
+    }
     
   $('#add-btn').click(function(event){
     current_day = current_day + 1
     append_new_day()
     $("#schedule-btn-submit").removeClass("hide-save-btn");
+    event.preventDefault();
+  });
+
+  $('#add-btn-guided').click(function(event){
+    current_day_guided = current_day_guided + 1
+    append_new_day_guided()
+    $("#schedule-btn-submit-guided").removeClass("hide-save-btn-guided");
     event.preventDefault();
   });
 
@@ -910,6 +1295,34 @@
     }
   })
 
+  $('#schedule-btn-submit-guided').click(function( event ){
+    var days = []
+    var times_list = $(".bg-grey-v-guided")
+    var times_hash = {}
+    var i = 0;
+    $(".list_guided").children().children('select').each(function(){
+      var selected = '#' + $(this).attr('id') + ' :selected'
+      var day_ = $(selected).text()
+      if(times_hash[day_] == undefined)
+      {
+        times_hash[day_] = []
+      }
+      times_hash[day_].push(times_list[i].value +'-'+ times_list[i+1].value);
+      days.push(day_);
+      i += 2;
+    })
+    if(hasDuplicates(days,times_hash)){
+      event.preventDefault();
+      $("#same-days-guided").css('color', 'red');
+      timer = setTimeout(function() {
+        $("#same-days-guided").css('color', 'white');
+      }, 2000);
+    }
+    else{
+      $("#save_hours_guided").show().delay(2000).fadeOut();
+    }
+  })
+
   $(".list").on('click', '.cancel', function(){
     if ($(".list").children().length > 1){
     $(this).parent().remove();
@@ -934,15 +1347,60 @@
       }
     })
   }
+
+  $("#schedule-btn-submit").removeClass("hide-save-btn");
+  $(".tour_time_sortable").sortable( "disable" );
+  $("#schedule-btn-submit").addClass("blink");
+
   if ($(".list").children().length < 7)
-      $('#add-btn').show()
+    $('#add-btn').show()
   });
+
+  $(".list_guided").on('click', '.cancel_guided', function(){
+    if ($(".list_guided").children().length > 1){
+    $(this).parent().remove();
+
+    current_day = 0
+    $(".list_guided").children().children('select').each(function(){
+      current_day = current_day + 1
+      $(this).attr("id", 'guided_day_'+current_day);
+      $(this).attr("name", 'guided_day_'+current_day);
+    })
+
+    current_day = 0
+    $(".list_guided").children().children().children('input').each(function(i){
+      if (Math.floor(i%2 == 0)){
+        current_day = current_day + 1
+        $(this).attr("id", 'guided_from_'+current_day);
+        $(this).attr("name", 'guided_from_'+current_day);
+      }
+      else{
+        $(this).attr("id", 'guided_to_'+current_day);
+        $(this).attr("name", 'guided_to_'+current_day);
+      }
+    })
+  }
+
+  $("#schedule-btn-submit-guided").removeClass("hide-save-btn-guided");
+  $(".tour_time_sortable-guided").sortable( "disable" );
+  $("#schedule-btn-submit-guided").addClass("blink");
+
+  if ($(".list_guided").children().length < 7)
+    $('#add-btn').show()
+ 
   
+  });
   });
   function myFunction(){
     $("#schedule-btn-submit").removeClass("hide-save-btn");
     $(".tour_time_sortable").sortable( "disable" );
     $("#schedule-btn-submit").addClass("blink");
+
+  }
+  function myFunctionGuided(){
+    $("#schedule-btn-submit-guided").removeClass("hide-save-btn-guided");
+    $(".tour_time_sortable-guided").sortable( "disable" );
+    $("#schedule-btn-submit-guided").addClass("blink");
 
   }
 
@@ -974,6 +1432,7 @@
         template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">When this is switched to "yes" the app will include a camera button that the prospect can press to take photos on tour. </div><div class="popover-footer"><a id="3PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
+
 
     $(document).on("click", "#3PopoverId" , function(){
         $('html, body').animate({ scrollTop: 300 });
@@ -1044,7 +1503,6 @@
         template: '<div class="popover" style="width: fit-content;"><div class="arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>Thank you for scheduling your self-guided tour! We look forward to having you at the property on (date) at (time). When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive. (Links to app stores).</div><div class="popover-footer"><a id="10PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
-
 
     $(document).on("click", "#10PopoverId" , function(){
         $('html, body').animate({ scrollTop: 19000 });

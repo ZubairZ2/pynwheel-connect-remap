@@ -44,7 +44,7 @@ Rails.application.configure do
 
   # Use the lowest log level to ensure availability of diagnostic information
   # when problems arise.
-  config.log_level = :debug
+  config.log_level = :error
 
   # Prepend all log lines with the following tags.
   config.log_tags = [ :request_id ]
@@ -102,10 +102,10 @@ Rails.application.configure do
        :domain => 'heroku.com'
   }
 end
-# Rails.application.config.middleware.use ExceptionNotification::Rack,
-#   :email => {
-#     #:deliver_with => :deliver, # Rails >= 4.2.1 do not need this option since it defaults to :deliver_now
-#     :email_prefix => "Pynwheel",
-#     :sender_address => %{"notifier" <notifier@pynwheel.com>},
-#     :exception_recipients => %w{muhammad.umer@intagleo.com}
-#   }
+Rails.application.config.middleware.use ExceptionNotification::Rack,
+  :email => {
+    #:deliver_with => :deliver, # Rails >= 4.2.1 do not need this option since it defaults to :deliver_now
+    :email_prefix => "Pynwheel",
+    :sender_address => %{"notifier" <notifier@pynwheel.com>},
+    :exception_recipients => %w{muhammad.umer@intagleo.com}
+  }

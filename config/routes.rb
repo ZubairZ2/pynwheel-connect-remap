@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  get 'tutorial/index'
+
   mount ActionCable.server => '/cable'
   get 'tour_users/index'
 
@@ -9,6 +11,7 @@ Rails.application.routes.draw do
 
   post '/schedual_tours/:id', to: 'schedual_tours#update', format: :json
   post '/destroy_schedual_tours/:id', to: 'schedual_tours#destroy', format: :json
+  # post '/update_tour_type', to: 'schedual_tours#update_tour_type', format: :json
   resources :schedual_tours do
     # post :create_tour_user_from
     # member do
@@ -24,6 +27,8 @@ Rails.application.routes.draw do
   namespace :scheduler_widget do
     get 'widget', to: 'widgets#widget'
     get 'test_widget', to: 'widgets#test_widget'
+    get 'scheduler_widget_button', to: 'widgets#scheduler_widget_button'
+
     # get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
     
   end 
@@ -92,14 +97,29 @@ Rails.application.routes.draw do
         get :test_edgestate_connection
         post :import_edgestate_locks
         post :map_edgestate_locks
+        delete :remove_edgestate_locks
       end
     end
 
-    resources :latch_accounts
+    resources :latch_accounts do
+      collection do
+        delete :remove_latch_locks
+      end
+    end
 
     resources :dwelos do
       collection do
         get :test_dwelo_connection
+        delete :remove_dwelo_locks
+      end
+    end
+
+    resources :zerv_accounts do
+      collection do
+        get :test_zerv_connection
+        post :import_zerv_locks
+        post :map_zerv_locks
+        delete :remove_zerv_locks
       end
     end
 
@@ -126,6 +146,7 @@ Rails.application.routes.draw do
     post :save_temporary_image
     delete :delete_temporary_image
     resources :schedual_tours do
+      post :update_tour_type
       # post :create_tour_user_from
       # member do
       # end
@@ -253,6 +274,11 @@ Rails.application.routes.draw do
         post :set_image
       end
     end
+    resources :tutorials do
+      collection do
+        get :upload_video_direct
+      end
+    end
     resources :sitemaps do
       resources :amenities, controller: "sitemap_amenities" do
         post :plot_amenity
@@ -304,6 +330,7 @@ Rails.application.routes.draw do
     resources :tours, only: :index do
       collection do
         post :save_opening_hours
+        post :save_guided_opening_hours
       end
       resources :tour_stops do
         member do
@@ -326,6 +353,8 @@ Rails.application.routes.draw do
         post :save_check_point_response
         get :starting_point
         get :select_stops
+        get :scheduler_widget
+        post :save_schedule_widget_btn_setting
         get :edit_amenity
         get :test_automate
       end

@@ -2,7 +2,7 @@ module DweloDevicesHelper
   def dwelo_client_credentials(community_dwelo_account)
     @dwelo_user = Dwelo.find_by(community_id: community_dwelo_account.community_id)
     if @dwelo_user.present?
-      auth_url = "https://api.qa.dwelo.com/v3/oauth/access_token"
+      auth_url = "https://api.dwelo.com/v3/oauth/access_token"
       get_token_response = HTTParty.post(auth_url,
                                          body: {
                                              client_id: community_dwelo_account.client_id,
@@ -37,6 +37,7 @@ module DweloDevicesHelper
   end
   def update_deivces_in_db(response, dwelo_user)
     devices = response["data"]
+    available_ids = []
     if devices.present?
       devices.each do |device|
         type = device["type"]
@@ -51,7 +52,9 @@ module DweloDevicesHelper
         elsif remote_lock.remote_lock_type != type or remote_lock.name != name
           remote_lock.update_attributes(remote_lock_type: type, name: name)
         end
+        available_ids << remote_lock.id
       end
+      RemoteLock.where(dwelo_id: dwelo_user.id).where.not(id: available_ids).delete_all
     # else
     #   flash[:notice] = "Something went wrong, please check your credentials."
     #   # render :js => "window.location = '/communities/#{dwelo_user.community_id}/dwelos/new'"
@@ -68,10 +71,15 @@ module DweloDevicesHelper
       tour_user.update!(random_number: id)
       url = base_url + "/v4/integrations/pynwheel/access_persons/"
 
-      start_time = Time.now.strftime('%Y-%m-%dT%H:%M:%SZ')
-      ends_time = (Time.now + 90.minutes).strftime('%Y-%m-%dT%H:%M:%SZ')
+      start_time = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+      ends_time = (Time.now.utc + 90.minutes).strftime('%Y-%m-%dT%H:%M:%SZ')
       puts start_time
       puts ends_time
+
+      request_body = { type: "access_guest", id: tour_user.random_number, starts_at: start_time, ends_at: ends_time }
+      puts "--------------------------- create access_persons request ----------------------------"
+      puts request_body
+
 
       response = HTTParty.post(url,
                                body: {
@@ -83,6 +91,9 @@ module DweloDevicesHelper
                                :headers => {'Authorization' => auth_header,
                                             'Accept' => 'application/vnd.lockstate+json; version=1',
                                             'Content-Type' => 'application/json'})
+
+      puts "--------------------------- create access_persons response ----------------------------"
+      puts response
       return response
   end
 
@@ -120,16 +131,16 @@ module DweloDevicesHelper
                                             'Accept' => 'application/vnd.lockstate+json; version=1',
                                             'Content-Type' => 'application/json'})
 
-      puts "111" * 50
+      puts "------------------- create grant_access_person_accesses response -----------------------"
       puts response
-      puts "111" * 50
+      puts "----------------------------------------------------------------------------------------"
 
       return response
 
   end
 
   def base_url
-    "https://api.qa.dwelo.com"
+    "https://api.dwelo.com"
   end
 
 end

@@ -60,6 +60,10 @@ class Api::V1::DweloDevicesController < ActionController::Base
 
       guest_id = tour_user.as_guests.where(community_id: params[:community_id]).last.guest_id if tour_user.present? and tour_user.as_guests.where(community_id: params[:community_id]).present?
 
+      request_body = { "access_person_id": guest_id, "lock_id": params[:lock_id], "command": params[:command] }
+      puts "--------------------------- commands request ----------------------------"
+      puts request_body
+
       url = base_url + "/v4/integrations/pynwheel/devices/commands/"
       response = HTTParty.post(url,
                                body: {
@@ -70,6 +74,10 @@ class Api::V1::DweloDevicesController < ActionController::Base
                                :headers => {'Authorization' => auth_header,
                                             'Accept' => 'application/vnd.lockstate+json; version=1',
                                             'Content-Type' => 'application/json'})
+
+      puts "--------------------------- commands response ----------------------------"
+      puts response
+
       if response.nil?
         render :json => {:success => true, :message => "Success"}
       else
@@ -82,7 +90,7 @@ class Api::V1::DweloDevicesController < ActionController::Base
   end
 
   def base_url
-    "https://api.qa.dwelo.com"
+    "https://api.dwelo.com"
   end
 
   private

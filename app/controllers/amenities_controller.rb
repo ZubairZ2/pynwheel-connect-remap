@@ -1,8 +1,8 @@
 class AmenitiesController < ApplicationController
+  include AssignLocksHelper
   before_action :authenticate_user!
   before_action :check_community
   add_breadcrumb "Home", :root_path
-  skip_before_action :load_tour_users_chats, only: [:load_remotelock_data, :clear_locks]
   def index
     @amenities = current_community.amenities.order(id: :desc)
     add_breadcrumb "Amenity Images", community_amenities_path(current_community)
@@ -58,40 +58,13 @@ class AmenitiesController < ApplicationController
 
   end
 
-  def load_remotelock_data
-    # access_token = generate_remotelock_token
-    # responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
-    # RemoteLockService.new(current_community).update_deivces_in_db(responce)
-    # es = EdgeState.find_by(community_id: current_community.id)
-    # if es.nil?
-    #   render json: {locks: []}
-    # else
-    #   render json: {locks: RemoteLock.where(edge_state_id: es.id)}
-    # end
-
-    if current_community.edge_state.nil?
-      render json: {locks: []}
-    else
-      render json: {locks: current_community.edge_state.remote_locks}
-    end
-  end
-  
-  def clear_locks
-    amenity = Amenity.find params[:id]
-    amenity.remote_locks.delete_all
-    render json: {locks: amenity.remote_locks}
-  end
-
   def update
     @amenity = Amenity.find(params[:id]) 
-    if params[:remote_lock].present?
-      remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
-      remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: params[:amenity][:name])
+    if @community.enable_locks
+      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ( (params[:zerv_lock].present? or params[:zerv_lock] == "") ?  params[:zerv_lock] : nil ) ) )
+      assign_lock(@community, @amenity, lock_id) unless lock_id.nil?
     end
-    if params[:assigning_lock].present?
-      remote_lock = RemoteLock.find_by(device_id: params[:lock_id], dwelo_id: @community.dwelo.id)
-      remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: @amenity.name)
-    end
+    
     if @amenity.update_attributes(amenity_params)
       begin
         ts = TourStop.find_by(stop_id: @amenity.id)

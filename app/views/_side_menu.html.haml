@@ -41,13 +41,7 @@
             %i.fa.fa-gears
             %span Data
             %span.pull-right-container
-      - if ( current_user.is_community_admin? and current_community.self_tour)
-        %li.loader_class{:class=>"#{controller_name =='dwelos' ? 'active' : ''}"}
-          %a{:href => "#{new_community_dwelo_path(current_community)}"}
-            %i.fa.fa-lock
-            %span Locks
-            %span.pull-right-container
-      - if (current_user.is_super_admin? and current_community.self_tour) && current_community.mdu
+      - if (current_user.is_super_admin? || current_user.is_community_admin?) and current_community.self_tour and current_community.enable_locks
         %li.loader_class{:class=>"#{controller_name =='dwelos' ? 'active' : ''}"}
           %a{:href => "#{new_community_dwelo_path(current_community)}"}
             %i.fa.fa-lock
@@ -162,6 +156,23 @@
           %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
             %i.fa.fa-share
             %span Tour Scheduler Widget
+      / - if (current_community.self_tour && (current_user.is_super_admin? || current_user.is_community_admin?) && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget ))
+      /   %li
+      /     %a{:href => "#{scheduler_widget_community_tours_path(current_community)}"}
+      /       %i.fa.fa-share
+      /       %span Tour Scheduler Widget
+      /     / %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
+      /     /   %i.fa.fa-share
+      /     /   %span Tour Scheduler Widget
+      / - if (current_community.self_tour && (current_user.is_super_admin? || current_user.is_community_admin?) && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget ))
+      /   %li
+      /     %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget-link",:href => "##"}
+      /       %i.fa.fa-share
+      /       %span Tour Scheduler Widget Link      
+      /     %a{:href => "#{scheduler_widget_community_tours_path(current_community)}"}
+      /     %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
+      /       %i.fa.fa-share
+      /       %span Tour Scheduler Widget
       -# - if (current_community.chat_control)
       -#   %li
       -#     %a{"data-toggle"=>"modal","data-target"=>"#share-chat-widget",:href => "##"}
@@ -237,7 +248,7 @@
           %a{:href => "#{community_tour_users_path(current_community)}"}
             %i.fa.fa-sticky-note-o
             %span Visitor Details
-      - if (current_community.self_tour && current_user.is_super_admin?) || current_user.is_view_visitor_details_page?
+      - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_community.self_tour && current_community.scheduler_widget == true
         %li.loader_class{:class=>"#{controller_name =='schedual_tours' ? 'active' : ''}"}
           %a{:href => "#{community_schedual_tours_path(current_community)}"}
             %i.fa.fa-sticky-note-o
@@ -247,6 +258,11 @@
           %a{:href => "#{community_logs_path(current_community)}"}
             %i.fa.fa-history
             %span CMS Logs
+      - unless (current_user.is_view_visitor_details_page?) 
+        %li.loader_class{:class=>"#{controller_name =='tutorials' ? 'active' : ''}"}
+          %a{:href => "#{community_tutorials_path(current_community)}"}
+            %i.fa.fa-video-camera
+            %span Tutorials
   / /.sidebar
 / End menu nav left Section 
 

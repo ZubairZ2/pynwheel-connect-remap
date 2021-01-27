@@ -1,3 +1,5 @@
+json.token @token
+
 json.communities @communities do |community|
   if !(community.locked == true) && community.company.inactivate == false
     json.id community.id
@@ -7,7 +9,7 @@ json.communities @communities do |community|
     json.latitude community.latitude
     json.longitude community.longitude
     json.address community.address
-    json.logo community.self_tour_logo.present? ? community.self_tour_logo : (community.logo.present? ? community.logo.url : "No Image")
+    json.logo community.self_tour_logo.present? ? community.self_tour_logo.url : (community.logo.present? ? community.logo.url : "No Image")
 
   end
 end

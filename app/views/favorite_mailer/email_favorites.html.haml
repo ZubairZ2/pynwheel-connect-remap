@@ -382,33 +382,20 @@
               -#  - @community.favorite_setting.favorite_images.each do |img|
               -#    = render :partial => 'favorite_image', :locals => {:img => img}
               - (0..(@favorites.count-1)).each_with_index do |f,index |
-                - puts "@favorites cout loop"*50
-                - puts @favorites[index].class
-                - puts "unit", @favorites[index].is_a?(Unit)
-                - puts "fp", @favorites[index].is_a?(Floorplan)
-                - puts 'gm', @favorites[index].is_a?(GalleryImage)
-                - puts 'am', @favorites[index].is_a?(Amenity)
 
                 - if @favorites[index].is_a?(Unit)
-                  - puts 'Its UNIT' *50
                   = render :partial => 'unit', :locals => {:unit => @favorites[index]}
                 - elsif @favorites[index].is_a?(Floorplan)
-                  - puts 'Its FLORR PLAN' *50
-                  - puts '==============', @units[@favorites[index].id.to_s]
-                  - puts '====classsss==', @units[@favorites[index].id.to_s].class
+
                   - @unit = @units[@favorites[index].id.to_s]
                   - @unit.each_with_index do |uni,index2|
-                    - puts "email area @unit[index]===========", @unit[index2],'=>',@unit[index2].class
                     = render :partial => 'floorplan', :locals => {:floorplan => @favorites[index], :units => @unit[index2]}
 
                 - elsif @favorites[index].is_a?(GalleryImage)
-                  - puts 'Its GI' *50
                   = render :partial => 'gallery_image', :locals => {:img => @favorites[index]}
                 - elsif @favorites[index].is_a?(Amenity)
-                  - puts 'Its AMENITY' *50
                   = render :partial => 'amenity_image', :locals => {:img => @favorites[index]}
                 - elsif @favorites[index].is_a?(AdditionalImage)
-                  - puts 'Its Imagepage' *50
                   = render :partial => 'additional_image', :locals => {:img => @favorites[index]}
                   
             %table#emailFooter{:bgcolor => "#253339", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "650"}

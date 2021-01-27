@@ -32,7 +32,7 @@ class TourHistory < ApplicationRecord
 
   def send_update_notifications
     if self.history != true
-      if time_difference >= 60 && self.lengthy_stay_email_sent == false
+      if time_difference >= 90 && self.lengthy_stay_email_sent == false
         @mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "#{self.tour_user.name.capitalize} has been on a Self Tour at #{@community.name.gsub("(", "( ").split.map(&:capitalize).join(' ')} for more than"] #get_alert_message('lengthy_stay')
         @mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
         self.update_attributes(lengthy_stay_email_sent: true)
@@ -71,7 +71,17 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both @complete_tour_content
         send_email_sms_or_both_to_touruser @thank_you_content
         # community.deleted_ids = []
-        save_prospect(self.left)
+
+        if community.credential.crm_provider == "salesforce"
+          current_tour = VisitedStop.where(tour_user_id: tour_user.id, tour_id: self.tour_id).last
+          if current_tour.present?
+            # current_tour.tour_key = "450e96530bb8ae7af1b3f3d019a6a055" # testing line
+            Prospect.where(community_id: community.id, tour_user_id: tour_user.id, crm_provider: "salesforce", sf_status: "active").update_all(tour_key: current_tour.tour_key)
+            community.send_feedback_to_salesforce(tour_user, self)
+          end
+        else
+          save_prospect(self.left)
+        end
         community.save
       end
 
@@ -195,11 +205,11 @@ class TourHistory < ApplicationRecord
 
   def send_email_sms_or_both_to_touruser thank_you_msg
   	if community.alert_contact == "email"
-  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe
+  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe, community.email
   	elsif community.alert_contact == "phone"
   		send_sms_tour_user thank_you_ms
   	else
-  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe
+  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe, community.email
   		send_sms_tour_user thank_you_msg
   	end
   end
@@ -213,7 +223,11 @@ class TourHistory < ApplicationRecord
 
   def send_email subj, body
     begin
-      NotificationMailer.tour_history_mail(subj.humanize, body, community.email).deliver
+      emails = community.email.gsub(" ","").split(',')
+      emails.each do |email|
+        NotificationMailer.tour_history_mail(subj.humanize, body, email).deliver
+      end
+      # NotificationMailer.tour_history_mail(subj.humanize, body, community.email).deliver
     rescue
 
     end
@@ -221,7 +235,10 @@ class TourHistory < ApplicationRecord
 
   def send_email_without_humanize subj, body
     begin
-      NotificationMailer.tour_history_mail(subj.humanize, body, community.email).deliver
+      emails = community.email.gsub(" ","").split(',')
+      emails.each do |email|
+        NotificationMailer.tour_history_mail(subj.humanize, body, email).deliver
+      end
     rescue
 
     end
@@ -229,7 +246,8 @@ class TourHistory < ApplicationRecord
 
   def send_email_to_user_without_humanize subj, body , community_email=nil
     begin
-      NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, community_email).deliver
+      emails = community_email.gsub(" ","").split(',')
+      NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, email[0]).deliver
     rescue
 
     end
@@ -244,7 +262,8 @@ class TourHistory < ApplicationRecord
 
   def send_email_tour_user subj, body, community_email
     begin
-      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, community_email).deliver
+      emails = community_email.gsub(" ","").split(',')
+      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0]).deliver
     rescue
     end
   end

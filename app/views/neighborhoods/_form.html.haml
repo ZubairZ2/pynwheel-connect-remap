@@ -47,19 +47,19 @@
     Latitude
     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodLatitudePopover","data-content" => " "}
       %span#propertyDetailNameText
-        The latitude and longitudinal position of the property is pre-populated by the property's address. If the property marker appears in the incorrect position on the neighborhood map, manually adjust the latitude and/or longitude to reposition it.
+        The lat / long is automatically populated from Google by the property address. If the property is appearing in the incorrect location, the lat / long can be manually changed on the Property Details page. 
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :latitude, :class=>"form-control validate[custom[onlyLatitude]] neighborhood-form-field", :placeholder=>"Latitude" ,:maxlength=>"15", :id=>"latitude", :value=> @neighborhood.latitude.present? ? @neighborhood.latitude : @community.latitude
+    = f.text_field :latitude, :class=>"form-control neighborhood-form-field",:readonly => true, :style => "background: #ececec;" ,:placeholder=>"Latitude" ,:maxlength=>"15", :id=>"latitude", :value=> @community.latitude
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Longitude
     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "neighbourhoodLongitudePopover","data-content" => " "}
       %span#propertyDetailNameText
-        The latitude and longitudinal position of the property is pre-populated by the property's address. If the property marker appears in the incorrect position on the neighborhood map, manually adjust the latitude and/or longitude to reposition it.
+        The lat / long is automatically populated from Google by the property address. If the property is appearing in the incorrect location, the lat / long can be manually changed on the Property Details page. 
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :longitude, :class=>"form-control validate[custom[onlyLongitude]] neighborhood-form-field", :placeholder=>"Longitude" ,:maxlength=>"15", :id=>"longitude", :value=> @neighborhood.longitude.present? ? @neighborhood.longitude : @community.longitude
+    = f.text_field :longitude, :class=>"form-control neighborhood-form-field",:readonly => true, :style => "background: #ececec;", :placeholder=>"Longitude" ,:maxlength=>"15", :id=>"longitude", :value=> @community.longitude
 - if current_user.is_super_admin?    
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

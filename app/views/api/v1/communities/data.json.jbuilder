@@ -1314,6 +1314,15 @@ json.apartments do
       json.y_plot amenity.y_plot
       json.sitemap_id @community.id
       json.id amenity.id
+
+      json.gallery amenity.amenity_galleries do |ag|
+        json.id ag.id
+        json.name ag.name
+        json.type "unit_stop"
+        json.image ag.image.url
+        json.description = ag.description.present? ? ag.description : ""    
+      end
+
     end
   else
     json.sitemap nil
@@ -1391,6 +1400,27 @@ json.apartments do
       json.square_feet unit.square_feet.present? && unit.square_feet > 1 ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
       if @community.display_rent
         json.lease_pricing unit.lease_pricing.present? ? unit.lease_pricing.gsub('=>', ':') : nil
+        lease_pricing = []
+        if unit.lease_pricing.present?
+          str_split = unit.lease_pricing.split(';')
+          str_split.each do |ss|
+            str = ss.split(':')
+            pricing_str = []
+            pricing_str[0] = str[0]+" Month"
+            pricing_str[1] = "$"+str[1].to_i.to_s
+            # h = {"pricing_option" => pricing_str}
+            lease_pricing << pricing_str
+
+          end
+          
+          lease_pricing = lease_pricing.sort_by {|x| x[0][0..1].to_i}
+          lease_pricing2 = []
+          lease_pricing.each do |lp|
+            lease_pricing2 << {"pricing_month" => lp[0],"pricing_rent" => lp[1]}
+          end
+          lease_pricing = lease_pricing2
+        end
+        json.lease_pricing_pynwheel_touch lease_pricing
       else
         json.lease_pricing nil
       end
@@ -1424,6 +1454,14 @@ json.apartments do
             random_numbers << random_number
             json.id random_number
           end
+
+          json.gallery amenity.amenity_galleries do |ag|
+            json.id ag.id
+            json.name ag.name
+            json.type "unit_stop"
+            json.image ag.image.url
+            json.description = ag.description.present? ? ag.description : ""    
+          end
         end
       elsif !unit.standard_image_url.present?
         #If unit amenities are not present then send floorplan amenities
@@ -1442,13 +1480,20 @@ json.apartments do
             random_numbers << random_number
             json.id random_number
           end
+          json.gallery amenity.amenity_galleries do |ag|
+            json.id ag.id
+            json.name ag.name
+            json.type "unit_stop"
+            json.image ag.image.url
+            json.description = ag.description.present? ? ag.description : ""    
+          end
         end
       else
         json.unit_amenities []
       end
     end
   end
-  json.floorplans units_floorplans.map {|i| i.name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
+  json.floorplans units_floorplans.map {|i| (i.name.present? ? i.name : "").gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(units_floorplans).sort.map{|x,y| y}.uniq do |floorplan|
     json.id floorplan.id
     json.provider_floorplan_id floorplan.provider_floorplan_id
     json.name floorplan.name
@@ -1524,6 +1569,13 @@ json.apartments do
           json.floor amenity.floor
           json.floorplate_id floor
           json.id amenity.id
+          json.gallery amenity.amenity_galleries do |ag|
+            json.id ag.id
+            json.name ag.name
+            json.type "unit_stop"
+            json.image ag.image.url
+            json.description = ag.description.present? ? ag.description : ""    
+          end
         end
       end
     end
@@ -1667,6 +1719,5 @@ json.additional_pages do
     end
   end
 end
-puts '--------------------------' , random_numbers
 json.message "success"
 json.operation "data"

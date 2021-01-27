@@ -16,7 +16,13 @@ class SchedulerWidget::WidgetsController < ApplicationController
       end
     end
   end
-
+  def scheduler_widget_button
+    
+    @schedule_widget_setting= SchedulerWidgetSetting.find params[:id]
+    @community_code = params[:community_code]
+    @community = Community.find params[:community_id]
+    render :scheduler_widget_button, layout: false
+  end
 
   def test_widget
     @community_id = params[:community_id]
@@ -24,6 +30,16 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @credit_card_required =  @community.tour.credit_card_required
     @bedroom_list = @community.floorplans.map{|x| x.bedrooms.to_i}.uniq
     @marketing_source_required = @community.tour.marketing_source_required
+    if params[:direct].present?
+      @direct =  true
+      params[:message].present? ? @show_first = false : @show_first = true
+      decoded = JWT.decode params[:community_code], ENV['SECRET_KEY_BASE_v2'], true, { algorithm: 'HS256' } rescue nil
+      unless decoded[0]["community_id"].to_i == params[:community_id].to_i
+        raise ActionController::RoutingError.new('Not Found')
+      end
+    else
+      @direct =  false
+    end
     if @community.opening_hours.present?
       @disable_day_of_week = [0,1,2,3,4,5,6]
       @community.opening_hours.each do |rcd|
@@ -51,6 +67,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
     # @visiting_times = @community.opening_hours.map{|day_obj| [day_obj.day, day_obj.opening_time , day_obj.closing_time] }
     @visiting_times = @community.opening_hours.map{|day_obj| [day_obj.day, day_obj.opening_time , (Time.parse(day_obj.closing_time) - (@stepping.minutes)).strftime("%H:%M")] }
+    @guided_visiting_times = @community.guided_opening_hours.map{|day_obj| [day_obj.day, day_obj.opening_time , (Time.parse(day_obj.closing_time) - (@stepping.minutes)).strftime("%H:%M")] }
     @error_message = []
     day_hash = {}
     @community.opening_hours.each do |day_obj|
@@ -59,6 +76,14 @@ class SchedulerWidget::WidgetsController < ApplicationController
       message = []
       message[0] = day_obj.day
       message[1] = '(visiting hours for ' +  day_obj.day + ' are from ' + day_hash[day_obj.day] +'). The last tour must be scheduled ' + cutt_of +' before visiting hours end.'
+      @error_message << message
+    end
+    @community.guided_opening_hours.each do |day_obj|
+      day_hash[day_obj.day] = day_hash[day_obj.day].present? ? day_hash[day_obj.day] + ', ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p") : Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p")
+      # day_hash[day_obj.day] = day_hash[day_obj.day].present? ? day_hash[day_obj.day] + ', ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p") : Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p")
+      message = []
+      message[0] = day_obj.day
+      message[1] = '(guided visiting hours for ' +  day_obj.day + ' are from ' + day_hash[day_obj.day] +'). The last tour must be scheduled ' + cutt_of +' before visiting hours end.'
       @error_message << message
     end
     flash[:success] = params[:message] if params[:message].present?

@@ -69,21 +69,16 @@ class Community < ApplicationRecord
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   mount_base64_uploader :self_tour_logo, AvatarUploader
+
   belongs_to :company
   belongs_to :community_group
+
   has_many :community_users, dependent: :destroy
   has_many :users ,through: :community_users, dependent: :destroy
   has_many :units, dependent: :destroy
   has_many :floorplans, dependent: :destroy
   has_many :floorplates, -> { order("number DESC") }, dependent: :destroy
   has_many :allowed_emails, dependent: :destroy
-  has_one :credential, dependent: :destroy
-  has_one :design, dependent: :destroy
-  has_one :favorite_stop, dependent: :destroy
-  has_one :sitemap, dependent: :destroy
-  has_one :favorite_setting, dependent: :destroy
-  has_one :dwelo, dependent: :destroy
-  has_one :neighborhood, dependent: :destroy
   has_many :galleries, dependent: :destroy
   has_many :gallery_images, -> { order(:sort) }, dependent: :destroy
   has_many :temporary_images, dependent: :destroy
@@ -94,32 +89,49 @@ class Community < ApplicationRecord
   has_many :as_guests, dependent: :destroy
   has_many :igloo_guests, dependent: :destroy
   has_many :latch_guests, dependent: :destroy
+  has_many :zerv_guests, dependent: :destroy
   has_many :opening_hours, dependent: :destroy
+  has_many :guided_opening_hours, dependent: :destroy
   has_many :schedual_tours, dependent: :destroy
   has_many :building_starting_point, dependent: :destroy
   has_many :logged_in_users, dependent: :destroy
+  has_many :tutorials, dependent: :destroy
+  has_many :elevators, dependent: :destroy
+  
+  has_one :credential, dependent: :destroy
+  has_one :design, dependent: :destroy
+  has_one :favorite_stop, dependent: :destroy
+  has_one :sitemap, dependent: :destroy
+  has_one :favorite_setting, dependent: :destroy
+  has_one :dwelo, dependent: :destroy
+  has_one :neighborhood, dependent: :destroy
   has_one :tour, dependent: :destroy
   has_one :edge_state, dependent: :destroy
   has_one :dwelo, dependent: :destroy
   has_one :latch, dependent: :destroy
+  has_one :zerv, dependent: :destroy
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
+
   validates_uniqueness_of :name, scope: :company_id
   validate :apartment_page_name_length_validate
   validate :gallery_page_name_length_validate
+  validate :validate_page_position
+  validates_with CodeValidatorOnUpdate , on: [:update]
+  validates_with CodeValidatorOnCreate , on: [:create]
+  
   # validate :unique_community_code_on_create, on: [:create]
   # validate :unique_community_code_on_update, on: [:update]
+
   after_create :set_default_theme
   after_create :create_default_gallery
   after_create :create_sms_email_content
-  validate :validate_page_position
+
   attr_accessor :default_community_id
   # before_validation :gen_uuid, on: :create
   # validates :uuid, presence: true, uniqueness: true
-
-  validates_with CodeValidatorOnUpdate , on: [:update]
-  validates_with CodeValidatorOnCreate , on: [:create]
+  
   after_update :crop_image
   after_update :crop_secondary_image
   after_create :create_tour_also
@@ -129,9 +141,6 @@ class Community < ApplicationRecord
   # phony_normalize :phone
   # # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
   # validates :phone, phony_plausible: true
-
-  has_many :elevators, dependent: :destroy
-
 
 
   # phony_normalize :phone
@@ -442,6 +451,10 @@ class Community < ApplicationRecord
     ImportExperimentalYardi4DataJob.perform_async credential.attributes.to_json
   end
 
+  def send_feedback_to_salesforce(tour_user, tour_history)
+    SalesforceSendFeedbackJob.perform_async self, tour_user, tour_history
+  end
+
   def credentials_are_present?
     credential.present?
   end
@@ -602,18 +615,8 @@ class Community < ApplicationRecord
     result = populate_favorites(params[:favorites][:items],email_to)
     favorites = result[0]
     units = result[1] 
-    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-    puts params
-    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS FAVOURITES%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-    puts params[:favorites]
-    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS ITEMS 1%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-    params[:favorites][:items]
-    puts '%%%%%%%%%%%%%%%%%%%%%%%%PARAMS ITEMS 2%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-    puts params[:favorites]['items']
-    puts "--"*50
 
     params[:favorites][:items].each do |item|
-      puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", item['unit_id']
       # if item['unit_id'].present?
       #   u = Unit.find item['unit_id']
       #   if u.present?
@@ -668,10 +671,6 @@ class Community < ApplicationRecord
     favorites = []
     units = Hash.new
     items_objs.each do |item|
-      puts "populate_favorites 11"*50
-      puts item[:type]
-      puts "populate_favorites 22"*50
-      puts item['type']
       favorite = item[:type].classify.constantize.where(id: item[:id])
       favorites << favorite.first if favorite.present?
       if item[:type] == 'floorplan'

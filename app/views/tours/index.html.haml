@@ -370,7 +370,10 @@
                       = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
                     - elsif @sitemap.present? && (@floor.to_i == (@tours.starting_floor.present? ? @tours.starting_floor : @community.floorplates.map{|f| f.floors}.flatten.min.to_i)) && (@tours.building.present? ? (@tours.building rescue nil) == (@building rescue nil) : @building_list[0] == @building )
                       = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
-                    = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg", :style => "margin-left: -15px;"
+                    - if @sitemap.present? && @sitemap.image.present? && @sitemap.image.content_type == "image/svg+xml"
+                      = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg", :style => "margin-left: -15px; width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
+                    - else 
+                      = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg", :style => "margin-left: -15px;"
                   - community_units = @community_units
                   - coordinates_array = []
                   - path_point_coords = {}

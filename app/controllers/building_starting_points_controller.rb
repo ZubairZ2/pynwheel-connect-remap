@@ -1,12 +1,19 @@
 class BuildingStartingPointsController < ApplicationController
+  include AssignLocksHelper
+  before_action :check_community
   after_filter "previous_url", only: [:edit]
 	def edit
 		@community = Community.find params[:community_id]
     @floors = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
     @building_starting_point = BuildingStartingPoint.find_by_id(params[:id])
 	end
-	def update
-		@building_starting_point = BuildingStartingPoint.find params[:id]
+  def update
+    @building_starting_point = BuildingStartingPoint.find params[:id]
+    if @community.enable_locks
+      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ( (params[:zerv_lock].present? or params[:zerv_lock] == "") ?  params[:zerv_lock] : nil ) ) )
+      assign_lock(@community, @building_starting_point, lock_id) unless lock_id.nil?
+    end
+
     respond_to do |format|
       if @building_starting_point.update(building_starting_point_params)
         ts = TourStop.find_by(stop_type: "building_starting_point", stop_id: @building_starting_point.id)

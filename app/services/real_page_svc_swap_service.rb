@@ -398,7 +398,6 @@ class RealPageSvcSwapService < BaseService
                         </soapenv:Envelope>')
         sleep 1
         result = Ox.load(response.body, mode: :hash)
-        puts "0000"
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units.each do |u|
@@ -633,7 +632,6 @@ class RealPageSvcSwapService < BaseService
 
                 # unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
             rescue => ex
-              puts ex
 
               unitHash = nil
             end
@@ -652,14 +650,12 @@ class RealPageSvcSwapService < BaseService
                 unit.lease_pricing = rentStr
                 unit.save(:validate => false)
                 # @doc = @doc + response.body
-                puts " **** price updated *** ",unit.marketing_name
               end
 
             end
           end
         end
       rescue => e
-        puts "Pricing Error ********************", e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
@@ -703,12 +699,10 @@ class RealPageSvcSwapService < BaseService
         return result["Envelope"]["Body"]["getpicklistResponse"]["getpicklistResult"]["GetPickList"]["Contents"]["PicklistItem"]
       else
         #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]
-        puts '-----------------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"]
         ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})
       end
     rescue => e
       #Thread.current[:errors] << e.message
-      puts '-------------------------------------', e.message
       #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
   end

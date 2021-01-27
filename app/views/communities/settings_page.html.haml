@@ -140,7 +140,7 @@
                     %span.pr-15 No
                     = f.check_box :show_map
                     %label.label-primary{:for => "community_show_map"}
-                    %span.pl-15 Yes
+                    %span.pl-15 Yes   
               .form-group#mdu_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   MDU
@@ -150,6 +150,15 @@
                     = f.check_box :mdu
                     %label.label-primary{:for => "community_mdu"}
                     %span.pl-15 Yes
+              .form-group#show_enable_locks
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Enable Locks
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = f.check_box :enable_locks
+                    %label.label-primary{:for => "community_enable_locks"}
+                    %span.pl-15 Yes    
               - if current_user.is_super_admin?
                 .form-group.apply_now_pynwheel_touch_field#apply_phnwheel_touch
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -462,6 +471,7 @@
         $(".access_restrictions_row").removeClass("hidden")
         $("#show_map_row").removeClass("hidden")
         $("#mdu_row").removeClass("hidden")
+        $("#show_enable_locks").removeClass("hidden")
 
         $("#chat_control_row").removeClass("hidden")
         if ($("#access_restrictions_row").is(":checked") == true){
@@ -539,6 +549,7 @@
         $("#apply_now_self_row").removeClass("hidden")
         $(".access_restrictions_row").addClass("hidden")
         $("#show_map_row").addClass("hidden")
+        $("#show_enable_locks").addClass("hidden")
         $("#apply_now_self_row").addClass("hidden")
         $(".allowed_emails_row").addClass("hidden")
         $(".verification_type_field").addClass("hidden")
@@ -688,6 +699,7 @@
           $("#apply_now_self_row").addClass("hidden")
           $(".access_restrictions_row").addClass("hidden")
           $("#show_map_row").addClass("hidden")
+          $("#show_enable_locks").addClass("hidden")
           $("#apply_now_self_row").addClass("hidden")
           $(".allowed_emails_row").addClass("hidden")
           $("#chat_control_row").removeClass("hidden")
@@ -851,6 +863,7 @@
         }
         $("#show_map_row").removeClass("hidden")
         $("#mdu_row").removeClass("hidden")
+        $("#show_enable_locks").removeClass("hidden")
         $("#chat_control_row").removeClass("hidden")
       }
       if ($("#community_self_tour").is(":checked") == false){
@@ -863,6 +876,7 @@
         $(".allowed_emails_row").addClass("hidden")
         $("#show_map_row").addClass("hidden")
         $("#mdu_row").addClass("hidden")
+        $("#show_enable_locks").addClass("hidden")
         $("#chat_control_row").addClass("hidden")
         if (#{@community.company.name.downcase == "lincoln"}){
             $("#billing_rate_maps").addClass("hidden")
@@ -981,6 +995,7 @@
             $(".allowed_emails_row").addClass("hidden")
           }
           $("#show_map_row").removeClass("hidden")
+          $("#show_enable_locks").removeClass("hidden")
           $("#mdu_row").removeClass("hidden")
           $("#chat_control_row").removeClass("hidden")
         }
@@ -990,6 +1005,7 @@
           $(".access_restrictions_row").addClass("hidden")
           $(".allowed_emails_row").addClass("hidden")
           $("#show_map_row").addClass("hidden")
+          $("#show_enable_locks").addClass("hidden")
           $("#mdu_row").addClass("hidden")
           $("#chat_control_row").addClass("hidden")
           $(".verification_type_field").addClass("hidden")
@@ -1051,6 +1067,7 @@
           $(".billing_rate_slef_lincoln").addClass("hidden")
           }
         $("#show_map_row").removeClass("hidden")
+        $("#show_enable_locks").removeClass("hidden")
         $("#mdu_row").removeClass("hidden")
         $("#chat_control_row").removeClass("hidden")
         $(".access_restrictions_row").removeClass("hidden")

@@ -91,7 +91,6 @@ class CommunitiesController < ApplicationController
     # end
   end
   def update
-    puts
     if params[:community][:billing_rate_touch].present? or params[:community][:lincoln_billing_rate].present? or params[:community][:dwelo_billing_rate].present? or params[:community][:billing_rate_selftour].present? or params[:community][:billing_rate_maps].present? or params[:community][:billing_rate_for_both].present?
       @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour], billing_rate_for_both: params[:community][:billing_rate_for_both])
     end
@@ -106,6 +105,9 @@ class CommunitiesController < ApplicationController
     end
     if params[:community][:image]
       @community.crop_x = nil
+    end
+    if params["community"]["latitude"].present?
+      @community.neighborhood.update_attributes(latitude: params["community"]["latitude"], longitude: params["community"]["longitude"]) rescue ""
     end
     if params["verification_type"].present?
       begin
@@ -212,6 +214,7 @@ class CommunitiesController < ApplicationController
     redirect_to community_design_index_path(current_community),notice: 'Community will clone within few seconds.'
   end
 
+
   def alert_message
     if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
       '<div class="alert alert-success">Credentials added successfully.</div>'
@@ -253,11 +256,11 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Landing page button uploaded successfully.</div>'
     end
   end
-  def make_cordinate
-    
-    address = Geocoder.coordinates(params[:address])
-    @community.update_attributes(latitude: address[0], longitude: address[1]) rescue ""
-    render :json=>{"cord"=> address }
+  def make_cordinate    
+    # address = Geocoder.coordinates(params[:address])
+    @community.update_attributes(latitude: params[:lat], longitude: params[:long]) rescue ""
+    @community.neighborhood.update_attributes(latitude: address[0], longitude: address[1]) rescue ""
+    render :json=>{"cord"=> "ok" }
   end
   def change_expressionist_default
     # d = Community.find(params[:community_id]).design
@@ -599,37 +602,53 @@ class CommunitiesController < ApplicationController
     @community = Community.find params[:community_id]
     @tour = @community.tour
     @tour_setting = @tour.tour_setting
-    @community.chat_control = params[:chat_control].present? ? params[:chat_control] : false
-    unless params[:community].present? && params[:community][:optional_mails].present? 
-      @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
-      @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
-      @community.show_camera_button = params[:show_camera_button].present? ? true : false
-      @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
-      @community.tour.update_attributes(max_tour_users: params[:max_tour_users])
-      # @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
-      # @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
+    unless params[:community].present? && params[:community][:optional_mails].present?    
+      if params[:widget_settings]
+        @tour_setting.show_first_name = params[:show_first_name].present? ? params[:show_first_name] : false
 
-      # @tour.marker_icon_size = params[:marker_icon_size]
-      @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
-      @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
-      @tour.credit_card_required = params[:credit_card_required].present? ? true : false
-      @tour.only_scheduled_tour = @community.scheduler_widget ? params[:only_scheduled_tour].present? ? true : false : false
-      @tour.grace_period = params[:grace_time] if params[:grace_time].present?
-      @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
+        @tour_setting.allow_self_tour = params[:allow_self_tour].present? ? params[:allow_self_tour] : false
+        @tour_setting.allow_guided_tour = params[:allow_guided_tour].present? ? params[:allow_guided_tour] : false
+        @tour_setting.allow_virtual_tour = params[:allow_virtual_tour].present? ? params[:allow_virtual_tour] : false
+        @tour_setting.show_phone = params[:show_phone].present? ? params[:show_phone] : false
+        @tour_setting.show_desired_bedroom = params[:show_desired_bedroom].present? ? params[:show_desired_bedroom] : false
+        @tour_setting.show_desired_move_in_date = params[:show_desired_move_in_date].present? ? params[:show_desired_move_in_date] : false
+        @tour_setting.time_intervel = "15 min" if params[:time_intervel_15] == "true"
+        @tour_setting.time_intervel = "30 min" if params[:time_intervel_30] == "true"
+        @tour_setting.time_intervel = "1 hr" if params[:time_intervel_1] == "true"
+        @tour_setting.time_intervel = "2 hrs" if params[:time_intervel_2] == "true"
+        @tour.credit_card_required = params[:credit_card_required].present? ? true : false
+        # @tour.max_tour_users = params[:max_tour_users]
+        @tour.only_scheduled_tour = @community.scheduler_widget ? params[:only_scheduled_tour].present? ? true : false : false
+        @tour.grace_period = params[:grace_time] if params[:grace_time].present?
+        @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
+
+      else
+        @community.chat_control = params[:chat_control].present? ? params[:chat_control] : false
+        @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
+        @community.show_camera_button = params[:show_camera_button].present? ? true : false
+        @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
+        # @community.tour.update_attributes(max_tour_users: params[:max_tour_users], max_virtual_tour_users: params[:max_virtual_tour_users],max_self_tour_users: params[:max_self_tour_users],max_guided_tour_users: params[:max_guided_tour_users])
+        
+        @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
+        @tour.max_virtual_tour_users = params[:max_virtual_tour_users]
+        @tour.max_self_tour_users = params[:max_self_tour_users]
+        @tour.max_guided_tour_users = params[:max_guided_tour_users]   
+        @tour_setting.do_limit_max_tour = params[:do_limit_max_tour]   
+        @tour_setting.limit_max_tour_type = params[:limit_max_tour_type]   
+        @tour_setting.limit_max_tour = params[:limit_max_tour]       
+        # @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
+        # @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
+
+        # @tour.marker_icon_size = params[:marker_icon_size]
+        @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
+        @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
+      end
       @tour.save
-
       # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
       # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
       # @tour_setting.show_last_name = params[:show_last_name].present? ? params[:show_last_name] : false
       # @tour_setting.show_email = params[:show_email].present? ? params[:show_email] : false
-      @tour_setting.show_first_name = params[:show_first_name].present? ? params[:show_first_name] : false
-      @tour_setting.show_phone = params[:show_phone].present? ? params[:show_phone] : false
-      @tour_setting.show_desired_bedroom = params[:show_desired_bedroom].present? ? params[:show_desired_bedroom] : false
-      @tour_setting.show_desired_move_in_date = params[:show_desired_move_in_date].present? ? params[:show_desired_move_in_date] : false
-      @tour_setting.time_intervel = "15 min" if params[:time_intervel_15] == "true"
-      @tour_setting.time_intervel = "30 min" if params[:time_intervel_30] == "true"
-      @tour_setting.time_intervel = "1 hr" if params[:time_intervel_1] == "true"
-      @tour_setting.time_intervel = "2 hrs" if params[:time_intervel_2] == "true"
+      
       @tour_setting.save
 
     else
@@ -703,11 +722,12 @@ class CommunitiesController < ApplicationController
 
   def set_community
     cookies[:community_id] = @community.id if cookies[:community_id].nil?
-    @community.update_attributes(is_chat_login: true)
+    # @community.update_attributes(is_chat_login: true)
   end
-
+ 
   def community_params
-    params.require(:community).permit(:name,:creator_id,:default_community_id ,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
+
+    params.require(:community).permit(:name,:creator_id,:default_community_id ,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
       :api_token,:p_code,:apply_now,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
