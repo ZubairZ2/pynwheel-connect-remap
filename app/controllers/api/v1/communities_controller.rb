@@ -735,34 +735,34 @@ class Api::V1::CommunitiesController < ActionController::Base
     locks_thread = Thread.new do
       execution_context = Rails.application.executor.run!
 
-      # timezone = get_community_time_zone(community) rescue "UTC"
-      # current_time = (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone)) 
-      # in_visiting_hours = is_tour_in_visiting_hours(current_time, community) if community.present?
-      # tour = community.tour
-      # if in_visiting_hours == true
-      #   if tour.only_scheduled_tour
-      #     scheduled_tours = get_scheduled_tours(current_time, community.id, tour_user.id)
-      #     if scheduled_tours.present?
-      #       is_tour_ontime = is_tour_on_time(current_time, scheduled_tours, tour.grace_period)
-      #       is_tour_virtual = is_tour_ontime.nil? ? true : false
-      #     else
-      #       is_tour_virtual = true
-      #     end
-      #   else
-      #     is_tour_virtual = false
-      #   end
-      # else
-      #   is_tour_virtual = true
-      # end
+      timezone = get_community_time_zone(community) rescue "UTC"
+      current_time = (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone)) 
+      in_visiting_hours = is_tour_in_visiting_hours(current_time, community) if community.present?
+      tour = community.tour
+      if in_visiting_hours == true
+        if tour.only_scheduled_tour
+          scheduled_tours = get_scheduled_tours(current_time, community.id, tour_user.id)
+          if scheduled_tours.present?
+            is_tour_ontime = is_tour_on_time(current_time, scheduled_tours, tour.grace_period)
+            is_tour_virtual = is_tour_ontime.nil? ? true : false
+          else
+            is_tour_virtual = true
+          end
+        else
+          is_tour_virtual = false
+        end
+      else
+        is_tour_virtual = true
+      end
 
-      # providers_account = community.locks_provider.classify.constantize.find_by(community_id: params[:id]) rescue nil
+      providers_account = community.locks_provider.classify.constantize.find_by(community_id: params[:id]) rescue nil
       
-      # if community.enable_locks and providers_account.present? and providers_account.class.name == "Zerv" and in_visiting_hours and !is_tour_virtual
-      #   available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
-      #   available_stops << ["tour", @community.tour.id]
-      #   allowed_stops = available_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
-      #   ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops)
-      # end
+      if community.enable_locks and providers_account.present? and providers_account.class.name == "Zerv" and in_visiting_hours and !is_tour_virtual
+        available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+        available_stops << ["tour", @community.tour.id]
+        allowed_stops = available_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
+        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops)
+      end
     ensure
       execution_context.complete! if execution_context
     end
