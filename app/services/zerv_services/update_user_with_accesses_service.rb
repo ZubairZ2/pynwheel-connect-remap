@@ -1,12 +1,14 @@
 module ZervServices
-    class AddUserWithAccessesService < ZervServices::BaseService
+    class UpdateUserWithAccessesService < ZervServices::BaseService
 
         def execute(args)
-            community = args[:community]
-            tour_user = args[:tour_user]
-            stop_list = args[:stop_list]
-            
-            url = base_url + "/user/adduserwithtimezone"
+            community    = args[:community]
+            tour_user    = args[:tour_user]
+            stop_list    = args[:stop_list]
+            zerv_user    = args[:zerv_user]
+            user_accesses = zerv_user["listGetUserAccess"]
+
+            url = base_url + "/user/updateuserandtimezone/" + zerv_user["id"].to_s
             id_token = get_id_token
 
             list_add_user_access = []
@@ -17,7 +19,16 @@ module ZervServices
                     access_code = attached_lock.universal_access_code.present? ? attached_lock.universal_access_code : "" rescue ""
                     access_point = attached_lock.mac_id rescue nil
                     if access_point.present?
-                        list_add_user_access << time_access_object(community, tour_time)
+                        if user_accesses.blank?
+                            list_add_user_access << time_access_object(community, tour_time, nil)
+                        else
+                            previous_access = user_accesses.find_all{ |access| access["accessPoint"] == access_point }
+                            if previous_access.blank?
+                                list_add_user_access << time_access_object(community, tour_time, nil)
+                            else
+                                list_add_user_access << time_access_object(community, tour_time, previous_access)
+                            end
+                        end
                         list_add_user_access.last.merge!({"accessCode": access_code,"accessPoint": access_point})
                     end
                 end
@@ -29,11 +40,14 @@ module ZervServices
                 "lastName": tour_user.last_name,
                 "phoneNumber":  tour_user.phone_number,
                 "email": tour_user.email,
+                "id": zerv_user["id"],
                 "image": nil,
+                "removeExistingAccessDuration": [],
+                "removedExistingAccess": [],
                 "listAddUserAccess": list_add_user_access
             }
             
-            puts '--------------------------    Zerv Adding user with accesses called    ------------------------'
+            puts '--------------------------  Zerv Updating user with accesses called    ------------------------'
             puts body.to_json
             puts "-----------------------------------------------------------------------------------------------"
 
@@ -52,9 +66,9 @@ module ZervServices
         end
 
 
-        def time_access_object(community, tour_time)
+        def time_access_object(community, tour_time, prev_access)
             # ------------------------------------ set values for zerv access parameters ----------------------------- #
-            
+            prev_access = prev_access[0] if prev_access.present?
             start_time = tour_time.strftime("%H:%M")
             end_time = (tour_time + 90.minutes).strftime("%H:%M")
             
@@ -102,10 +116,17 @@ module ZervServices
                 }
             end
 
-            # ask about "id" and "userAccessDurationId" values from zerv
+            if prev_access.nil?
+                id = "0"
+                userAccessDurationId = "0"
+            else
+                id = prev_access["id"].to_s
+                userAccessDurationId = prev_access["userAccessDurationId"].to_s
+            end
+
             req_keys = {
-                "id": 0,
-                "userAccessDurationId": 0,
+                "id": id,
+                "userAccessDurationId": userAccessDurationId,
                 "accessEndDate": tour_time.strftime("%Y-%m-%d"),
                 "accessStartDate": tour_time.strftime("%Y-%m-%d"),
                 "credentialIdentifier": "1234",

@@ -1,11 +1,12 @@
 module ZervServices
     class GrantAccessesService < ZervServices::BaseService
-        def self.call(*args, &block)
-            request_data = args[0]
-            new(request_data[:community]).perform(request_data[:community], request_data[:tour_user], request_data[:stop_list])
-        end
   
-        def perform(community, tour_user, stop_list)
+        def execute(args)
+            community    = args[:community]
+            tour_user    = args[:tour_user]
+            stop_list    = args[:stop_list]
+
+            is_user_exists = false
             response = ZervServices::GetUsersService.call(community: community)
             if response.success?
                 if response.payload["listUsers"].length == 0
@@ -13,22 +14,27 @@ module ZervServices
                     response = ZervServices::AddUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: stop_list)
                     check_response(community, tour_user, stop_list, response, {manual_error: "AddUserWithAccessesService responsed false", error_position: "at creating first user ever in zerv portal"})
                 else
-                    delele_user_response = nil
                     response.payload["listUsers"].each do |zerv_user|
                         tour_user.phone_number[0] = '' unless is_number?(tour_user.phone_number[0])
                         if zerv_user["phoneNumber"] == tour_user.phone_number
-                            ################################### delete and create again zerv user ###################################
-                            # for updating user we have to get a lot of data, the way zerv api's works
-                            response = ZervServices::DeleteUserService.call(community: community, tour_user: tour_user)
-                            delele_user_response = response.error.merge({deletion_error: "DeleteUserService responsed false"}) unless response.success?
+                            ################################## if user exists get previous data also #####################################
+                            response = ZervServices::GetUserWithAccessesService.call(community: community, tour_user: tour_user)
+                            if response.success? 
+                                response = ZervServices::UpdateUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: stop_list, zerv_user: response.payload)
+                                check_response(community, tour_user, stop_list, response, {manual_error: "UpdateUserWithAccessesService responsed false", error_position: "at updating zerv user"})
+                            else
+                                create_zerv_guest__failure(community, tour_user, response.error.merge(manual_error: "GetUserWithAccessesService responsed false", error_position: "user exists but at gettingUserAccesses thorwing error"))
+                            end
+                            is_user_exists = true
                         end
                     end
-                    ################################## creating zerv user #####################################
-                    # don't check deletion reponse here, let's give it a try
-                    response = ZervServices::AddUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: stop_list)
-                    manual_errors = {manual_error: "AddUserWithAccessesService responsed false", error_position: "at creating zerv user"}
-                    manual_errors = manual_errors.merge(delele_user_response) if delele_user_response.present?
-                    check_response(community, tour_user, stop_list, response, manual_errors)
+
+                    unless is_user_exists
+                        ################################## creating zerv user #####################################
+                        response = ZervServices::AddUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: stop_list)
+                        check_response(community, tour_user, stop_list, response, {manual_error: "AddUserWithAccessesService responsed false", error_position: "at creating zerv user"})
+                    end
+
                 end
             else
                 create_zerv_guest__failure(community, tour_user, response.error.merge(manual_error: "GetUsersService responsed false", error_position: "at geting all users list from zerv"))
@@ -44,6 +50,7 @@ module ZervServices
         end
         
         def create_zerv_guest__success(community, tour_user, stop_list)
+            puts '--------------------------    Zerv guest created successfully    ------------------------'
             ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
             if stop_list.present?
                 stop_list.each do |stop|
@@ -52,11 +59,14 @@ module ZervServices
             else
                 ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active")
             end
+            Rails.cache.delete(:id_token)
         end
 
         def create_zerv_guest__failure(community, tour_user, errors)
+            puts '--------------------------    Failure in creating Zerv User      ------------------------'
             ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
             ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active", res_errors: errors)
+            Rails.cache.delete(:id_token)
         end
 
         def is_number? string

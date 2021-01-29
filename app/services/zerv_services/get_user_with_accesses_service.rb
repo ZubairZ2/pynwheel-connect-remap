@@ -1,11 +1,14 @@
 module ZervServices
-    class GetUsersService < ZervServices::BaseService
+    class GetUserWithAccessesService < ZervServices::BaseService
 
         def execute(args)
-            url = base_url + "/getusers"
+            tour_user = args[:tour_user]
+            tour_user.phone_number[0] = '' unless is_number?(tour_user.phone_number[0])
+
+            url =  base_url + "/user/getuserwithtimezone/" + tour_user.phone_number + "?customerId=PynWheel-jKOOe"
             id_token = get_id_token
 
-            puts '--------------------------    Zerv get all user called    ------------------------'
+            puts '--------------------------    Zerv get user with accesses called    ------------------------'
             response = HTTParty.get(url,
                 headers: { 'Authorization' => id_token, 'Content-Type' => 'application/json'})
 
@@ -19,5 +22,8 @@ module ZervServices
             end
         end
 
+        def is_number? string
+            true if Float(string) rescue false
+        end
     end
 end

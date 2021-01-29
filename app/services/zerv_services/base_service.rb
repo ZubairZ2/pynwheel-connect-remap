@@ -1,8 +1,7 @@
 module ZervServices
     class BaseService
         def self.call(*args, &block)
-            request_data = args[0]
-            new(request_data[:community]).execute(request_data[:test_connection])
+            new(args[0][:community]).execute(args[0])
         end
 
         def initialize(community)
@@ -10,16 +9,16 @@ module ZervServices
         end
         
         def get_id_token
-            # token  = Rails.cache.fetch(:id_token, expires_in: 1.day.from_now) do
-            #     result = generate_id_token
-            #     result[:error].nil? ? result[:id_token] : nil
-            # end
+            token  = Rails.cache.fetch(:id_token, expires_in: 20.minutes.from_now) do
+                result = generate_id_token
+                result[:error].nil? ? result[:id_token] : nil
+            end
 
-            # if token.nil? or token.blank?
+            if token.nil? or token.blank? or !Rails.cache.exist?(:id_token)
                 result = generate_id_token
                 token = result[:error].nil? ? result[:id_token] : nil
-            # end
-            
+            end
+
             return token 
         end
 
@@ -48,6 +47,10 @@ module ZervServices
               locks["listGetDevices"] = "No locks are presnet"
             end
             return locks
+        end
+
+        def base_url
+            "https://api.zervinc.net/v1/portal"
         end
     end
 end
