@@ -11,7 +11,8 @@ module ZervServices
 
             list_add_user_access = []
             if stop_list.present?
-                tour_time = Time.now
+                timezone = get_community_time_zone(community)
+                tour_time = Time.now.in_time_zone(timezone)
                 stop_list.each do |stop|
                     attached_lock = stop.zerv_locks.last
                     access_code = attached_lock.universal_access_code.present? ? attached_lock.universal_access_code : "" rescue ""
@@ -61,51 +62,50 @@ module ZervServices
             if tour_time.monday?
                 main = {
                     "monAccess": true,
-                    "mon_access_end_time": start_time,
-                    "mon_access_start_time": end_time,
+                    "mon_access_start_time": start_time,
+                    "mon_access_end_time": end_time,
                 }
             elsif tour_time.tuesday?
                 main = {
                     "tueAccess": true,
-                    "tue_access_end_time": start_time,
-                    "tue_access_start_time": end_time,
+                    "tue_access_start_time": start_time,
+                    "tue_access_end_time": end_time,
                 }
             elsif tour_time.wednesday?
                 main = {
                     "wedAccess": true,
-                    "wed_access_end_time": start_time,
-                    "wed_access_start_time": end_time,
+                    "wed_access_start_time": start_time,
+                    "wed_access_end_time": end_time,
                 }
             elsif tour_time.thursday?
                 main = {
                     "thuAccess": true,
-                    "thu_access_end_time": start_time,
-                    "thu_access_start_time": end_time,
+                    "thu_access_start_time": start_time,
+                    "thu_access_end_time": end_time,
                 }
             elsif tour_time.friday?
                 main = {
                     "friAccess": true,
-                    "fri_access_end_time": start_time,
-                    "fri_access_start_time": end_time,
+                    "fri_access_start_time": start_time,
+                    "fri_access_end_time": end_time,
                 }
             elsif tour_time.saturday?
                 main = {
                     "satAccess": true,
-                    "sat_access_end_time": start_time,
-                    "sat_access_start_time": end_time,
+                    "sat_access_start_time": start_time,
+                    "sat_access_end_time": end_time,
                 }
             elsif tour_time.sunday?
                 main = {
                     "sunAccess": true,
-                    "sun_access_end_time": start_time,
-                    "sun_access_start_time": end_time,
+                    "sun_access_start_time": start_time,
+                    "sun_access_end_time": end_time,
                 }
             end
 
-            # ask about "id" and "userAccessDurationId" values from zerv
             req_keys = {
-                "id": 0,
-                "userAccessDurationId": 0,
+                "id": "0",
+                "userAccessDurationId": "0",
                 "accessEndDate": tour_time.strftime("%Y-%m-%d"),
                 "accessStartDate": tour_time.strftime("%Y-%m-%d"),
                 "credentialIdentifier": "1234",
@@ -118,20 +118,20 @@ module ZervServices
                 "friAccess": false,
                 "satAccess": false,
                 "sunAccess": false,
-                "mon_access_end_time": "00:00",
                 "mon_access_start_time": "00:00",
-                "tue_access_end_time": "00:00",
+                "mon_access_end_time": "00:00",
                 "tue_access_start_time": "00:00",
-                "wed_access_end_time": "00:00",
+                "tue_access_end_time": "00:00",
                 "wed_access_start_time": "00:00",
-                "thu_access_end_time": "00:00",
+                "wed_access_end_time": "00:00",
                 "thu_access_start_time": "00:00",
-                "fri_access_end_time": "00:00",
+                "thu_access_end_time": "00:00",
                 "fri_access_start_time": "00:00",
-                "sat_access_end_time": "00:00",
+                "fri_access_end_time": "00:00",
                 "sat_access_start_time": "00:00",
-                "sun_access_end_time": "00:00",
+                "sat_access_end_time": "00:00",
                 "sun_access_start_time": "00:00",
+                "sun_access_end_time": "00:00",
             }
     
             # below line will replace the main_keys within the required_keys

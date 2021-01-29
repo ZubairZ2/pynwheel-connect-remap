@@ -51,8 +51,8 @@ module ZervServices
             puts body.to_json
             puts "-----------------------------------------------------------------------------------------------"
 
-            response = HTTParty.post(url,
-                 body: body.to_json,
+            response = HTTParty.put(url,
+                body: body.to_json,
                 headers: { 'Authorization' => id_token, 'Content-Type' => 'application/json'})
 
         rescue HTTParty::Error => e
@@ -75,44 +75,44 @@ module ZervServices
             if tour_time.monday?
                 main = {
                     "monAccess": true,
-                    "mon_access_end_time": start_time,
-                    "mon_access_start_time": end_time,
+                    "mon_access_start_time": start_time,
+                    "mon_access_end_time": end_time,
                 }
             elsif tour_time.tuesday?
                 main = {
                     "tueAccess": true,
-                    "tue_access_end_time": start_time,
-                    "tue_access_start_time": end_time,
+                    "tue_access_start_time": start_time,
+                    "tue_access_end_time": end_time,
                 }
             elsif tour_time.wednesday?
                 main = {
                     "wedAccess": true,
-                    "wed_access_end_time": start_time,
-                    "wed_access_start_time": end_time,
+                    "wed_access_start_time": start_time,
+                    "wed_access_end_time": end_time,
                 }
             elsif tour_time.thursday?
                 main = {
                     "thuAccess": true,
-                    "thu_access_end_time": start_time,
-                    "thu_access_start_time": end_time,
+                    "thu_access_start_time": start_time,
+                    "thu_access_end_time": end_time,
                 }
             elsif tour_time.friday?
                 main = {
                     "friAccess": true,
-                    "fri_access_end_time": start_time,
-                    "fri_access_start_time": end_time,
+                    "fri_access_start_time": start_time,
+                    "fri_access_end_time": end_time,
                 }
             elsif tour_time.saturday?
                 main = {
                     "satAccess": true,
-                    "sat_access_end_time": start_time,
-                    "sat_access_start_time": end_time,
+                    "sat_access_start_time": start_time,
+                    "sat_access_end_time": end_time,
                 }
             elsif tour_time.sunday?
                 main = {
                     "sunAccess": true,
-                    "sun_access_end_time": start_time,
-                    "sun_access_start_time": end_time,
+                    "sun_access_start_time": start_time,
+                    "sun_access_end_time": end_time,
                 }
             end
 
