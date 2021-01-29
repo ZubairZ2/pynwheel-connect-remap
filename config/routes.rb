@@ -482,6 +482,7 @@ Rails.application.routes.draw do
       post :save_shared_tour, to: 'tours#save_shared_tour'
       post :checkpoint_verification_response, to: 'tours#checkpoint_verification_response'
       get '/get_floorplan_units', to: 'tours#floorplan_units'
+      post '/mis_match_verification', to: 'tours#mis_match_verification'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
 
       # 

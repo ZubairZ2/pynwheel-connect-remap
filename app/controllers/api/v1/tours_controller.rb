@@ -294,6 +294,21 @@ iPhone Users:
       end
     end
   end
+  def mis_match_verification
+    puts params
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      @tour_user = TourUser.find params[:tour_user_id]
+      name = @tour_user.name
+      @community = Community.find params[:community_id]
+      reason = params[:reason].present? ? "<br><br>#{params[:reason]}" : ""
+      email_content = "#{name} visiting #{@community.name} was unable to begin the tour because of an issue with ID verification.#{reason}"
+      emails = @community.email.gsub(" ","").split(',')
+      emails.each do |email|
+        DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, email)
+      end
+    end
+  end
 
   private
 
