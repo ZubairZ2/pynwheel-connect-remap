@@ -302,7 +302,7 @@ iPhone Users:
         @tour_user = TourUser.find params[:tour_user_id]
         name = @tour_user.name
         @community = Community.find params[:community_id]
-        reason = params[:reason].present? ? "<br><br>#{(get_reason params[:verificaion_provider], params[:verification_code], params[:anti_spoofing], params[:confidence])}" : ""
+        reason = params[:reason].present? ? "" : "<br><br>#{(get_reason params[:verificaion_provider], params[:verification_code], params[:anti_spoofing], params[:confidence])}"
         email_content = "#{name} visiting #{@community.name} was unable to begin the tour because of an issue with ID verification.#{reason}"
         emails = @community.email.gsub(" ","").split(',')
         emails.each do |email|
@@ -319,7 +319,7 @@ iPhone Users:
 
   def get_reason verificaion_provider, verification_code, anti_spoofing, confidence
     if verificaion_provider == "check_point_id"
-      if verification_code == "MultipleErrors" || verification_code == "ValidationError" || anti_spoofing.to_i < 80 || confidence.to_i < 55
+      if verification_code == "MultipleErrors" || verification_code == "ValidationError" || (anti_spoofing.present? && anti_spoofing.to_i < 80) || (confidence.present? && confidence.to_i < 55)
         "The Face has not been matched"
       elsif verification_code == "MRZOCRError" || verification_code == "MRZInNotPresentError"
         "Unable to capture mrz from the image of the document."
