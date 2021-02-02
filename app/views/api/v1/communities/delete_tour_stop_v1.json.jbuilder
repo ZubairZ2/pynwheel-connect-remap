@@ -25,7 +25,7 @@ json.tours @tours do |tour|
     json.dotted_line_color @community.tour.dotted_line_color rescue "green"
     json.visual_id_verification tour.visual_id_verification
     json.apply_now_self_tour @community.apply_now_self_tour.present? ? @community.apply_now_self_tour : false
-    json.chat_control (@community.chat_control and @community.is_chat_login) ? @community.chat_control : false
+    json.chat_control (@community.chat_control and @community.is_chat_availble) ? @community.chat_control : false
     json.show_map @community.show_map
     json.mdu @community.mdu
   end

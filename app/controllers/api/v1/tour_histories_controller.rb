@@ -72,7 +72,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
           rescue => ex
           end
         end
-        chat_control = (tour.community.chat_control and tour.community.is_chat_login) ? tour.community.chat_control : false
+        chat_control = (tour.community.chat_control and tour.community.is_chat_availble) ? tour.community.chat_control : false
         chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
         if chatroom.present?
           if params[:last_msg_id].present?

@@ -51,7 +51,7 @@ class ApplicationController < ActionController::Base
 
   def after_sign_in_path_for(resource_or_scope)
     # LoggedInUser.where(user_id: current_user).destroy_all
-    cookies[:browser_id] = { value: SecureRandom.hex(8), expiry: 5.years.from_now, same_site: :none } if cookies[:browser_id].nil?
+    # cookies.permanent[:browser_id] = SecureRandom.hex(8) if cookies[:browser_id].nil?
     root_url
   end
 
@@ -101,18 +101,15 @@ class ApplicationController < ActionController::Base
   end
  
   def load_tour_users_chats
-    if current_user.present? and @community.present? and @community.chat_control
-      if @community.tour.present?
-          all_communities = current_user.communities.map{|community| community.id}
-          if all_communities.include?(@community.id) || current_user.role == "Super admin"
-              @chatrooms = Chatroom.where(tour_id: @community.tour.id).includes(:chats, :tour, :tour_user)
-              @listening_channels = [(@community.name.gsub(/[^0-9a-z ]/i, '') + "_with_id_" + @community.id.to_s).gsub(' ', '_')]
+    if current_user.present? and @community.present? and @community.chat_control and @community.tour.present?
+        @chat_enabled_communities = current_user.communities.where(community_users: {chat_enable: true}).includes(:tour)
+        @chatrooms = Chatroom.where(tour_id: @chat_enabled_communities.map{|c| c.tour.id}).includes(:chats, :tour, :tour_user)
 
-              @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(@community, chatroom) }
-              @chatroom_list = @chatrooms.map{|c| c.id}
-              @default_user_image =  "/assets/chat-tour-user.jpg"
-          end
-      end
+        @listening_channels = @chat_enabled_communities.map{|c| (c.name + "_with_id_" + c.id.to_s).parameterize.gsub("-", "").gsub("_", "")}
+        @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(@community, chatroom) }
+
+        @chatroom_list = @chatrooms.map{|c| c.id}
+        @default_user_image =  "/assets/chat-tour-user.jpg"
     end
   end
   

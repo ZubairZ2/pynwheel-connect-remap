@@ -2,36 +2,6 @@ class ChatroomsController < ApplicationController
     protect_from_forgery with: :null_session
     skip_before_action :verify_authenticity_token
     skip_before_action :authenticate_user!
-    after_action :allow_iframe
-
-    def index
-        current_user = User.find_by_uuid params[:id] rescue ''
-        community = Community.find_by_uuid params[:token] rescue ''
-        
-        # if current_user.role == "Super admin"
-        #     @chatrooms = Chatroom.all.includes(:chats, :tour, :tour_user)
-        #     @listening_channels = Community.all.map{|community| community.name.tr(" ", "_") + "_with_id_" + community.id.to_s}
-        # else
-            if current_user.present? and community.present?
-                if community.tour.present?
-                    all_communities = current_user.communities.map{|community| community.id}
-                    if all_communities.include?(community.id) || current_user.role == "Super admin"
-                        @chatrooms = Chatroom.where(tour_id: community.tour.id).includes(:chats, :tour, :tour_user)
-                        @listening_channels = [community.name.tr(" ", "_") + "_with_id_" + community.id.to_s]
-
-                        @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(community, chatroom) }
-                        @chatroom_list = @chatrooms.map{|c| c.id}
-                        @default_user_image =  "/assets/chat-tour-user.jpg"
-                        render :index, layout: false and return
-                    end
-                else
-                    render plain: "No tour exists" and return
-                end
-            end
-        # end
-             
-        render plain: "Unauthorized"
-    end
 
     def new
         @chatroom = Chatroom.new
@@ -132,9 +102,4 @@ class ChatroomsController < ApplicationController
         [chatroom.id , min_count]
     end
 
-    private
-  
-    def allow_iframe
-      response.headers.except! 'X-Frame-Options'
-    end
 end

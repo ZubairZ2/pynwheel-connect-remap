@@ -91,6 +91,17 @@ class UsersController < ApplicationController
     @user = User.find params[:employee_id]
   end
 
+  def chat_service_available
+      CommunityUser.where(user_id: params[:id], chat_enable: true).update_all(is_logged_in: true)
+      Community.joins(:users).where(users: {id: params[:id]}, community_users: {chat_enable: true}).update_all(is_chat_availble: true)
+  end
+
+  def chat_service_not_available
+      CommunityUser.where(user_id: params[:id], chat_enable: true).update_all(is_logged_in: false)
+      online_communities = CommunityUser.where(chat_enable: true, is_logged_in: true).pluck(:community_id)
+      Community.where.not(id: online_communities).update_all(is_chat_availble: false)
+  end
+
   private
 
   def set_user
