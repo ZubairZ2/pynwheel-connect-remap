@@ -112,7 +112,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
     
     if stay_time > community.tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == false
       stop = TourStop.find stop_id
-      contact_user = (tu.phone_number.present? ? tu.phone_number : ("<a href='" + base_url+"companies/#{community.company.id}/communities/#{community.id}/edit?tour_user_id=#{tu.id}") + "'>Open Chat</a>" )
+      contact_user = (tu.phone_number.present? ? ("Want to check in with them? " + tu.phone_number) : (community.chat_control ? ("Want to check in with them?  <a href='" + base_url+"companies/#{community.company.id}/communities/#{community.id}/edit?tour_user_id=#{tu.id}") + "'>Open Chat</a>" ) : "")
       @mail_content = ["lengthy_stay", "#{tu.name.titleize} has been on Self Tour at #{community.name} for #{stay_time} minutes. They are currently at #{stop.name}<br><br><b>Want to check in with them? #{contact_user}</b>"] #get_alert_message('lengthy_stay')
       tour_history.update_column 'lengthy_stay_email_sent',true
 
