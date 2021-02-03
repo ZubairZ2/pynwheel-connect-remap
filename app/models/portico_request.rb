@@ -1,0 +1,2 @@
+class PorticoRequest < ApplicationRecord
+end

@@ -1,5 +1,5 @@
 json.token @token
-
+json.allow_usage true
 json.communities @communities do |community|
   if !(community.locked == true) && community.company.inactivate == false
     json.id community.id
