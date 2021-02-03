@@ -2,9 +2,9 @@ module ToursHelper
 	def is_version_supported params
 		if params[:version].present?
 			app_version = AppVersion.first
-			PorticoRequest.create(app_name: params[:appName], user_id: params[:tour_user_id], os_type: params[:appPlatform], app_version: params[:version])
-			app_version.update_attributes(portico_version: params[:version]) if (params[:version] > app_version.portico_version)
-			if params[:version] < ENV["MINIMUM_SUPPORTED_VERSION"].to_i
+			PorticoRequest.create(app_name: params[:appName], user_id: params[:tour_user_id], os_type: params[:appPlatform], app_version: params[:version].to_i)
+			app_version.update_attributes(portico_version: params[:version].to_i) if (params[:version].to_i > app_version.portico_version)
+			if params[:version].to_i < ENV["MINIMUM_SUPPORTED_VERSION"].to_i
 				false
 			else
 				true
