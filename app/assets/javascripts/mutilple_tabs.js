@@ -8,6 +8,7 @@ window.addEventListener('load', function () {           // after page is fully l
     current_user_id = $( "body" ).data( "user-id" )
     current_user_role = $( "body" ).data( "user-role" )
     allowed_roles = ["Community admin", "Dwelo admin", "Community manager"]
+    already_called = false
 
     if(allowed_roles.includes(current_user_role) && current_user_id != "undefined" && $("#widget-button").length == 1){
         if(window.localStorage.getItem('tabs_count') == null || window.localStorage.getItem('tabs_count') == 0){
@@ -17,6 +18,12 @@ window.addEventListener('load', function () {           // after page is fully l
         else if(window.localStorage.getItem('tabs_count') >= 1){
             window.localStorage.setItem('tabs_count', (parseInt(window.localStorage.getItem('tabs_count')) + 1))
         }
+        already_called = true
+    }
+
+    // if user is just logged in but there were already centain tabs (inactive) present
+    if(already_called == false && window.localStorage.getItem('tabs_count') >= 1){
+        chat_service_available()
     }
 })
 
