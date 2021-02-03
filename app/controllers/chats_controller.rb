@@ -52,7 +52,7 @@ class ChatsController < ApplicationController
     def listening_message
         begin
             community = Community.find params[:community_id]
-            chat_control = (community.chat_control and community.is_chat_availble) ? community.chat_control : false
+            chat_control = (community.chat_control and community.is_chat_available) ? community.chat_control : false
             phone = community.phone.present? ? community.phone.scan(/\d/).join('') : ''
             phone = phone.present? ? ("Please check back later or call the property at: #{phone[-10..-8]}-#{phone[-7..-5]}-#{phone[-4..-1]}") : ''
             agent_status = chat_control ? "User is live" : "The agent has logged out. #{phone}"
