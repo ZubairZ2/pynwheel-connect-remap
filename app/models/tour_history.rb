@@ -72,6 +72,7 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both_to_touruser @thank_you_content
         # community.deleted_ids = []
 
+
         if community.credential.present? and community.credential.crm_provider == "salesforce"
           current_tour = VisitedStop.where(tour_user_id: tour_user.id, tour_id: self.tour_id).last
           if current_tour.present?
