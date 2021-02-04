@@ -103,6 +103,8 @@ class UnitsController < ApplicationController
     @amenities = @unit.amenities.order(id: :desc)
     @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
     @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
+    @all_locks = all_locks(@community)
+    @locks_provider = @community.locks_provider
   end
 
   def update

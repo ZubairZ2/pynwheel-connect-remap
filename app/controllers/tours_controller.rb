@@ -248,6 +248,7 @@ class ToursController < ApplicationController
     @community = Community.find params[:community_id]
     @tours = @community.tour
   end
+
   def starting_point
     @community = Community.find params[:community_id]
     @tours = @community.tour
@@ -258,13 +259,17 @@ class ToursController < ApplicationController
     @building = @building.compact.reject { |c| c.empty? }.uniq.sort
     @tours.x_plot = @tours.x_plot - 3 unless @tours.x_plot == 0
     @tours.y_plot = @tours.y_plot - 3 unless @tours.y_plot == 0
+    @all_locks = all_locks(@community)
+    @locks_provider = @community.locks_provider
   end
+
   def sort_buildings
     if params[:sitemap] == "false"
       @community.tour.building_order = params["array"]
       @community.tour.save
     end
   end
+
   def sort_stops
 
     if params[:sitemap] == "false"

@@ -49,7 +49,7 @@ class DwelosController < ApplicationController
         token_type = "Bearer"
         auth_header = token_type + " " + @token
 
-        url = base_url + "/v4/integrations/pynwheel/devices/?community_id=" + @community.dwelo.default_community_id
+        url = base_url + "/v4/integrations/pynwheel/devices/?community_id=" + @community.dwelo.default_community_id + "&per_page=1000"
         xml = HTTParty.get(url,
                             :headers => {'Authorization' => auth_header,
                                         'Accept' => 'application/vnd.lockstate+json; version=1'})
