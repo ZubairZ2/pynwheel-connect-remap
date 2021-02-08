@@ -29,6 +29,7 @@ class TourUser < ApplicationRecord
   has_many :zerv_guests, dependent: :destroy
   has_many :lock_histories, dependent: :destroy
   has_many :prospects, dependent: :destroy
+  has_many :user_stripes, dependent: :destroy
   
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
 
