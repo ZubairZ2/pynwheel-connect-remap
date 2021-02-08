@@ -586,7 +586,7 @@ class ToursController < ApplicationController
     stop = path_stop_point(path)
     start = path_start_point(path)
 
-    PaperTrail::Version.create(item_type: "PathPoint",item_id: path.id,event: "create",whodunnit: current_user.id,community_id: path.community_id, company_id: current_company.id,object: "name: '#{path.is_a?(Unit) ? path.marketing_name : path.name}' community_id: '#{path.community_id}'")
+    # PaperTrail::Version.create(item_type: "PathPoint",item_id: path.id,event: "create",whodunnit: current_user.id,community_id: path.community_id, company_id: current_company.id,object: "name: '#{path.is_a?(Unit) ? path.marketing_name : path.name}' community_id: '#{path.community_id}'")
 
     NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
     render json: {point: path_point, line_start_point: start, line_stop_point: stop,exist: path.path_points.count > 1, last_point: path.path_points.sort[path.path_points.count - 2]}, status: 200
