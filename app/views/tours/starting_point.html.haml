@@ -48,7 +48,7 @@
                     = select_tag :starting_floor, options_for_select(@floors, @community.tour.starting_floor) , :class=>"form-control save-starting-point-field" , :include_blank => true
                 
                 - if @community.enable_locks
-                  - if @community.locks_provider == "EdgeState" and @community.edge_state.present?
+                  - if @community.locks_provider == "EdgeState" and @community.edge_state.present? and @all_locks.present?
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                         Remote lock
@@ -61,7 +61,7 @@
                           - @all_locks[:edgestate_locks].each do |lock|
                             %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
-                  - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present?
+                  - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present? and @all_locks.present?
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                         Dwelo lock
@@ -74,7 +74,7 @@
                           - @all_locks[:dwelo_locks].each do |lock|
                             %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
-                  - elsif @community.locks_provider == "Latch" and @community.latch.present?
+                  - elsif @community.locks_provider == "Latch" and @community.latch.present? and @all_locks.present?
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                         Latch lock
@@ -87,7 +87,7 @@
                           - @all_locks[:latch_locks].each do |lock|
                             %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
-                  - elsif @community.locks_provider == "Zerv" and @community.zerv.present?
+                  - elsif @community.locks_provider == "Zerv" and @community.zerv.present? and @all_locks.present?
                     .form-group.hide_on_new
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                         Pynwheel Access (zerv)
@@ -100,12 +100,12 @@
                           - @all_locks[:zerv_locks].each do |lock|
                             %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
-                  - elsif @community.locks_provider == nil or @community.locks_provider == ""
-                    .form-group
-                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                        Access Code
-                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                        = f.text_field :access_code, :class=>"form-control save-starting-point-field", :placeholder=>"Access Code",:maxlength=>"30"
+                  -# - elsif @community.locks_provider == nil or @community.locks_provider == ""
+                  -#   .form-group
+                  -#     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  -#       Access Code
+                  -#     .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  -#       = f.text_field :access_code, :class=>"form-control save-starting-point-field", :placeholder=>"Access Code",:maxlength=>"30"
 
                 -#.form-group
                 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15

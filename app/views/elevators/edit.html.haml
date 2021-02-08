@@ -54,7 +54,7 @@
                 = f.text_field :building ,  class: "form-control elevator_edit_field", placeholder: "building"
 
             - if @community.enable_locks
-              - if @community.locks_provider == "EdgeState" and @community.edge_state.present?
+              - if @community.locks_provider == "EdgeState" and @community.edge_state.present? and @all_locks.present?
                 .form-group.hide_on_new
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Remote Lock
@@ -65,7 +65,7 @@
                       - @all_locks[:edgestate_locks].each do |lock|
                         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
-              - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present?
+              - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present? and @all_locks.present?
                 .form-group.hide_on_new
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Dwelo lock
@@ -76,7 +76,7 @@
                       - @all_locks[:dwelo_locks].each do |lock|
                         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
-              - elsif @community.locks_provider == "Latch" and @community.latch.present?
+              - elsif @community.locks_provider == "Latch" and @community.latch.present? and @all_locks.present?
                 .form-group.hide_on_new
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Latch lock
@@ -87,7 +87,7 @@
                       - @all_locks[:latch_locks].each do |lock|
                         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
-              - elsif @community.locks_provider == "Zerv" and @community.zerv.present?
+              - elsif @community.locks_provider == "Zerv" and @community.zerv.present? and @all_locks.present?
                 .form-group.hide_on_new
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Pynwheel Access (zerv)
@@ -98,12 +98,12 @@
                       - @all_locks[:zerv_locks].each do |lock|
                         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
-              - elsif @community.locks_provider == nil or @community.locks_provider == ""
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Access Code
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control elevator_edit_field", :placeholder=>"Access Code"
+              -# - elsif @community.locks_provider == nil or @community.locks_provider == ""
+              -#   .form-group
+              -#     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              -#       Access Code
+              -#     .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              -#       = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control elevator_edit_field", :placeholder=>"Access Code"
 
             = submit_tag 'Save', class: "hidden"
 
