@@ -1,7 +1,8 @@
 class ToursController < ApplicationController
   include AssignLocksHelper
+  include ToursHelper
+  
   def index
-
     @community = Community.find params[:community_id]
     @tours = @community.tour || @community.create_tour
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
@@ -580,36 +581,13 @@ class ToursController < ApplicationController
 
   def point_save
     path_point = PathPoint.create x_plot: params[:x_plot], y_plot: params[:y_plot], path_id: params[:path_id]
-    begin
-    path = (Path.find params[:path_id])
-    if path.map_path_to_type == "Unit"
-      stop =  Unit.find(path.map_path_id).id
-    elsif path.map_path_to_type == "Amenity"
-      stop =  Amenity.find(path.map_path_id).id
-    elsif path.map_path_to_type == "Elevator"
-      stop =  Elevator.find(path.map_path_id).id
-    elsif path.map_path_to_type == "BuildingStartingPoint"
-      stop =  BuildingStartingPoint.find(path.map_path_id).id
-    else
-      stop = path.map_path_to_id.present? ? TourStop.find_by_stop_id(path.map_path_to_id).tour.id : TourStop.find_by_stop_id(path.map_path_from_id).tour.id
-    end
+    path = Path.find(params[:path_id])
 
-    if path.map_path_from_type == "Unit"
-      start =  Unit.find(path.map_path_from_id).id
-    elsif path.map_path_from_type == "Amenity"
-      start =  Amenity.find(path.map_path_from_id).id
-    elsif path.map_path_from_type == "Elevator"
-      start =  Elevator.find(path.map_path_from_id).id
-    elsif path.map_path_from_type == "BuildingStartingPoint"
-      start =  BuildingStartingPoint.find(path.map_path_from_id).id
-    else
-      start = path.map_path_to_id.present? ? TourStop.find_by_stop_id(path.map_path_to_id).tour.id : TourStop.find_by_stop_id(path.map_path_from_id).tour.id
-    end
+    stop = path_stop_point(path)
+    start = path_start_point(path)
 
-    PaperTrail::Version.create(item_type: "PathPoint",item_id: path.id,event: "create",whodunnit: current_user.id,community_id: path.community_id, company_id: current_company.id,object: "name: '#{path.is_a?(Unit) ? path.marketing_name : path.name}' community_id: '#{path.community_id}'")
-    rescue => e
-      puts "exception *************"
-    end
+    # PaperTrail::Version.create(item_type: "PathPoint",item_id: path.id,event: "create",whodunnit: current_user.id,community_id: path.community_id, company_id: current_company.id,object: "name: '#{path.is_a?(Unit) ? path.marketing_name : path.name}' community_id: '#{path.community_id}'")
+
     NeighbourUnit.create path_point: path_point, unit_id: params[:unit_ids].join(',') if params[:unit_ids].present?
     render json: {point: path_point, line_start_point: start, line_stop_point: stop,exist: path.path_points.count > 1, last_point: path.path_points.sort[path.path_points.count - 2]}, status: 200
   end

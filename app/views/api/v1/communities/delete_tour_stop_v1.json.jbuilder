@@ -8,7 +8,7 @@ def check_unit_occupied add_stop
   end
 end
 i = 0
-description_limit = 90
+description_limit = 70
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
 styling_end = '</p></div>'
 json.tours @tours do |tour|
@@ -27,29 +27,18 @@ json.tours @tours do |tour|
   json.longitude tour.longitude
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
-  @community.enable_locks = false if (@tour_user.tour_type == "guided" || @tour_user.tour_type == "virtual" || @tour_user.is_virtual_tour)
   json.tour_setting do
-    json.locks_provider (@community.enable_locks and @community.locks_provider.present?) ? @community.locks_provider : ''
-    if @in_visiting_hours and !@is_tour_virtual
-    if @community.enable_locks and @community.locks_provider == "EdgeState"
-      json.starting_point_locked tour.remote_locks.where(dwelo_id: nil).present? ? true : false
-    elsif @community.enable_locks and @community.locks_provider == "Dwelo"
-      json.starting_point_locked tour.remote_locks.where.not(dwelo_id: nil).present? ? true : false
-    elsif @community.enable_locks and @community.locks_provider == "Latch"
-      json.starting_point_locked tour.latch_locks.present? ? (@tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: tour.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active").present?) : false
-    else
-      json.starting_point_locked false
-    end
-    else
-      json.starting_point_locked false
-    end
+
+    json.authenticate_zerv @community.multiple_locks_provider.include?("Zerv")
+    json.tour_start_point_lock_type @tours.first.lock_provider
+
     json.current_position_marker_icon tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "19x25" : (tour.marker_icon_size == "1" ? "17x23" : (tour.marker_icon_size == "2" ? "15x21" : (tour.marker_icon_size == "3" ? "13x19" : (tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
     json.next_position_marker_icon  tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "35x35" : (tour.marker_icon_size == "1" ? "33x33" : (tour.marker_icon_size == "2" ? "31x31" : (tour.marker_icon_size == "3" ? "29x29" : (tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
-    json.show_camera_button (@in_visiting_hours == true and @is_tour_virtual == false) ? @community.show_camera_button : false
+    json.show_camera_button (@tour_user.tour_type != "virtual_tour") ? @community.show_camera_button : false
     json.dotted_line_color @community.tour.dotted_line_color rescue "green"
-    json.visual_id_verification tour.visual_id_verification
+    json.visual_id_verification (@tour_user.tour_type != "virtual_tour") ? tour.visual_id_verification : false
     json.apply_now_self_tour @community.apply_now_self_tour.present? ? @community.apply_now_self_tour : false
-    json.chat_control (@community.chat_control and @community.is_chat_login) ? @community.chat_control : false
+    json.chat_control (@community.chat_control and @community.is_chat_available) ? @community.chat_control : false
     json.enable_auto_zoom (@community.tour.present?) ? @community.tour.enable_auto_zoom : false
     json.show_map @community.show_map
     json.mdu @community.mdu
@@ -153,7 +142,6 @@ json.tours @tours do |tour|
               #     stops_arr << first_floor_elev 
               #   end
               # end
-
               begin
                 if tour.starting_floor.present? and tour.starting_floor != min_floor #and !bsp.present?
 
@@ -167,6 +155,7 @@ json.tours @tours do |tour|
                 end
               rescue => ex
               end
+
             end
             
             if add_bsp_entry
@@ -254,7 +243,7 @@ json.tours @tours do |tour|
           end
         rescue => ex
         end
-        first_bsp = true if (first_bsp or have_stop_in_building)
+        # first_bsp = true if (first_bsp or have_stop_in_building)
         have_stop_in_building = false
         
           # begin
@@ -516,6 +505,7 @@ json.tours @tours do |tour|
     if stop.is_a? Tour 
       json.guest_pin  ""
       json.latch_link ''
+      json.stop_lock_provider ''
       json.unit_dwelo_lock_id ''
       json.navigation_title navigation_title
       json.id stop.id
@@ -567,8 +557,11 @@ json.tours @tours do |tour|
 
 
       begin
-      if @in_visiting_hours and !@is_tour_virtual
-        if counter == 1 and @community.enable_locks and @community.locks_provider == "Latch" and @community.latch.present? and stop.latch_locks.present?
+      if counter == 1 and @community.enable_locks and @tour_user.tour_type != "virtual_tour"
+        stop_lock_provider = stop.lock_provider
+        json.stop_lock_provider stop_lock_provider
+        
+        if counter == 1 and @community.enable_locks and stop_lock_provider == "Latch" and @community.latch.present? and stop.latch_locks.present?
           lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.latch_locks.first.stop_id)
           if lch.present?
   
@@ -583,7 +576,8 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
             end
           end
-        elsif counter == 1 and @community.enable_locks and @community.locks_provider == "EdgeState" and @community.edge_state.present? and stop.remote_locks.present?
+
+        elsif counter == 1 and @community.enable_locks and stop_lock_provider == "EdgeState" and @community.edge_state.present? and stop.remote_locks.present?
           rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.remote_locks.last.stop_id) if @community.edge_state.present?
           if rml.present?
             if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
@@ -608,18 +602,19 @@ json.tours @tours do |tour|
             json.latch_link ''
             json.unit_dwelo_lock_id ''
           end
-        elsif counter == 1 and @community.enable_locks and @community.locks_provider == "Zerv" and @community.zerv.present? and stop.zerv_locks.present?
+
+        elsif counter == 1 and @community.enable_locks and stop_lock_provider == "Zerv" and @community.zerv.present? and stop.zerv_locks.present?
           zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: "Tour", stop_id: stop.id)
           if zrv.present?
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: "Tour", guest_of_stop_id: stop.id, status: "active")
             if zrv_guest.present?
-              json.guest_pin 'Take your mobile near the lock to unlock the next door'
+              json.guest_pin 'Your tour has started. Make sure your phone is in close proximity to the door. Enjoy your tour!'
               json.latch_link ''
               json.unit_dwelo_lock_id ''
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
-                json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["message"][0..52]
+                json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["error_position"]
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
               else
@@ -633,7 +628,8 @@ json.tours @tours do |tour|
             json.latch_link ''
             json.unit_dwelo_lock_id ''
           end
-        elsif counter == 1 and @community.enable_locks and @community.locks_provider == "Dwelo"
+
+        elsif counter == 1 and @community.enable_locks and stop_lock_provider == "Dwelo"
           dwelo_lock = stop.remote_locks.where.not(dwelo_id: nil).last rescue nil
           if dwelo_lock.present?
             json.guest_pin ''
@@ -644,11 +640,13 @@ json.tours @tours do |tour|
             json.latch_link ''
             json.unit_dwelo_lock_id ''
           end
+
         else
           json.guest_pin ''
           json.latch_link ''
           json.unit_dwelo_lock_id ''
         end
+
       else
         json.guest_pin ''
         json.latch_link ''
@@ -663,8 +661,11 @@ json.tours @tours do |tour|
       next
     end
     begin
-      if @in_visiting_hours and !@is_tour_virtual
-        if @community.enable_locks and @community.locks_provider == "EdgeState"
+
+      if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
+        stop_lock_provider = (stop.stop_type.classify.constantize.find_by stop.stop_id).lock_provider
+        json.stop_lock_provider stop_lock_provider
+        if stop_lock_provider == "EdgeState"
           rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
           if rml.present?
             if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
@@ -684,23 +685,13 @@ json.tours @tours do |tour|
               json.latch_link ''
               json.unit_dwelo_lock_id ''
             end
-          # else
-          #   _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
-          #   if _stop_.present? and _stop_.access_code.present?
-          #     json.guest_pin "Use code " + _stop_.access_code + " to enter."
-          #     json.latch_link ''
-          #     json.unit_dwelo_lock_id ''
-          #   else
-          #     json.guest_pin ''
-          #     json.latch_link ''
-          #     json.unit_dwelo_lock_id ''
-          #   end
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
           end
-        elsif @community.enable_locks and @community.locks_provider == "Latch"
+
+        elsif stop_lock_provider == "Latch"
           lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.stop_id) if @community.latch.present?
           if lch.present?
 
@@ -714,23 +705,13 @@ json.tours @tours do |tour|
               json.latch_link ''
               json.unit_dwelo_lock_id ''
             end
-          # else
-          #   _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
-          #   if _stop_.present? and _stop_.access_code.present?
-          #     json.guest_pin "Use code " + _stop_.access_code + " to enter."
-          #     json.latch_link ''
-          #     json.unit_dwelo_lock_id ''
-          #   else
-          #     json.guest_pin ''
-          #     json.latch_link ''
-          #     json.unit_dwelo_lock_id ''
-          #   end
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
           end
-        elsif @community.enable_locks and @community.locks_provider == "Dwelo"
+
+        elsif stop_lock_provider"Dwelo"
           _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
           dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).last rescue nil
           if dwelo_lock.present?
@@ -742,7 +723,8 @@ json.tours @tours do |tour|
             json.latch_link ''
             json.unit_dwelo_lock_id ''
           end
-        elsif @community.enable_locks and @community.locks_provider == "Zerv"
+
+        elsif stop_lock_provider == "Zerv"
           zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: stop.stop_type.camelcase, stop_id: stop.stop_id) if @community.latch.present?
           if zrv.present?
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: stop.stop_type.camelcase, guest_of_stop_id: stop.stop_id, status: "active")
@@ -753,7 +735,7 @@ json.tours @tours do |tour|
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
-                json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["message"][0..52]
+                json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["error_position"]
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
               else
@@ -767,7 +749,8 @@ json.tours @tours do |tour|
             json.latch_link ''
             json.unit_dwelo_lock_id ''
           end
-        elsif @community.enable_locks and @community.locks_provider.nil?
+
+        elsif stop_lock_provider == "Manual"
           _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
           dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).first rescue nil
           if _stop_.present? and _stop_.access_code.present? and dwelo_lock.nil?
@@ -779,6 +762,7 @@ json.tours @tours do |tour|
             json.latch_link ''
             json.unit_dwelo_lock_id ''
           end
+
         else
           json.guest_pin ''
           json.latch_link ''
@@ -794,7 +778,9 @@ json.tours @tours do |tour|
       json.latch_link ''
       json.unit_dwelo_lock_id ''
     end
+    
     json.navigation_title navigation_title
+
     json.id stop.id rescue next
     json.x_plot stop.latitude rescue next
     json.y_plot stop.longitude
@@ -881,8 +867,12 @@ json.tours @tours do |tour|
       else
         show_long_description = true
       end
-
-      stop_dat = {"floorplan" => (Floorplan.find_by(id: unit.floorplan.id).name rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> unit.availability_url.present? ? unit.availability_url :  (Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url rescue "")}
+      if @community.credential.apply_now == "separate_link"
+        availability_url = @community.credential.separate_link
+      else
+        availability_url = @community.credential.apply_now.to_s == "separate_link" ? @community.credential.separate_link : (unit.availability_url.present? ? unit.availability_url :  (Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url rescue ""))
+      end
+      stop_dat = {"floorplan" => (Floorplan.find_by(id: unit.floorplan.id).name rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       unit_amenities_hit = true
@@ -971,6 +961,7 @@ json.tours @tours do |tour|
             end
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
 
+
             json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => show_long_description ? stop_description[0..description_limit - 1] : stop_description,"show_long_description" => show_long_description ,"long_description" => (styling_start + unit.description.gsub('red','') + styling_end  rescue ""), "directional_text" => show_directional_text ? directional_text[0..description_limit - 1] : directional_text,"show_long_directional_text" => show_directional_text,"long_directional_text" => (styling_start + unit_amenity.directional_text.gsub('red','') + styling_end  rescue "")]
           else
 
@@ -1033,7 +1024,6 @@ json.tours @tours do |tour|
       json.type "starting_point"
       json.name bsp.name
       json.directional_text bsp.directional_text
-      
       floorplate_image = @community.floorplates.map{|x| x if (x.floors.include? bsp.floor)}.compact.first rescue nil
       json.floorplate_image floorplate_image.image.url  rescue ""
       json.image_width floorplate_image.width  rescue 0
@@ -1084,11 +1074,10 @@ json.tours @tours do |tour|
       end
       if current_floor.present?
         floor_image = @community.floorplates.map{|x| x if x.floors.include?(current_floor)}.compact.last.image rescue nil
-        floor_image = (elevator.floorplate.image.present? ? elevator.floorplate.image.url : nil) if elevator.floorplate.present? if floor_image.nil?
+        floor_image = (elevator.floorplate.image.present? ? elevator.floorplate : nil) if elevator.floorplate.present? if floor_image.nil?
         json.floorplate_image floor_image.image.url  rescue ""
         json.image_width floor_image.width  rescue 0
         json.image_height floor_image.height rescue 0
-        json.floorplate_image floor_image
         if new_stops_arr[counter - 1].is_a? Tour 
           floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.tour.starting_floor.present? ? @community.tour.starting_floor : min_floor)}.compact.last rescue nil
           json.floorplate_image floorplate_image.image.url rescue ""
@@ -1186,7 +1175,6 @@ json.tours @tours do |tour|
         else
           show_directional_text = true
         end
-
         json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image","show_long_description" => show_long_description,"long_description" => (styling_start + amenity.description.gsub('red', '') + styling_end  rescue ""), "description" => show_long_description ? stop_description[0..description_limit - 1] : stop_description,"stop_description" => (styling_start + amenity.description.gsub('red','') + styling_end  rescue ""),"show_long_directional_text" => show_directional_text, "directional_text" => show_directional_text ? directional_text[0..description_limit - 1] : directional_text,"long_directional_text" => (styling_start + amenity.directional_text.gsub('red','') + styling_end  rescue "")]
       else
         # json.gallery ["name" => amenity.name,"type" => "unit_stop", "image" => amenity.image.present? ? amenity.image.url : "no image", "description" => amenity.description]
