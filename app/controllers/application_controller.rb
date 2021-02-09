@@ -102,12 +102,18 @@ class ApplicationController < ActionController::Base
  
   def load_tour_users_chats
     if current_user.present? and @community.present? and @community.chat_control and @community.tour.present?
-        @chat_enabled_communities = current_user.communities.where(community_users: {chat_enable: true}).includes(:tour)
-        @chatrooms = Chatroom.where(tour_id: @chat_enabled_communities.map{|c| c.tour.id}).includes(:chats, :tour, :tour_user)
 
-        @listening_channels = @chat_enabled_communities.map{|c| (c.name + "_with_id_" + c.id.to_s).parameterize.gsub("-", "").gsub("_", "")}
+        if current_user.is_super_admin?
+          chat_communities = Community.joins(:community_users).where(community_users: {chat_enable: true}).includes(:tour)
+          @chatrooms = Chatroom.where(tour_id: chat_communities.map{|c| c.tour.id}).includes(:chats, :tour, :tour_user)
+          @listening_channels = Community.joins(:community_users).where(community_users: {chat_enable: true}).map{|c| (c.name + "_with_id_" + c.id.to_s).parameterize.gsub("-", "").gsub("_", "")}
+        else
+          chat_enabled_communities = current_user.communities.where(community_users: {chat_enable: true}).includes(:tour)
+          @chatrooms = Chatroom.where(tour_id: chat_enabled_communities.map{|c| c.tour.id}).includes(:chats, :tour, :tour_user)
+          @listening_channels = chat_enabled_communities.map{|c| (c.name + "_with_id_" + c.id.to_s).parameterize.gsub("-", "").gsub("_", "")}
+        end
+
         @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(@community, chatroom) }
-
         @chatroom_list = @chatrooms.map{|c| c.id}
         @default_user_image =  "/assets/chat-tour-user.jpg"
     end

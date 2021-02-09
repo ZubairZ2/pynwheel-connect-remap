@@ -2,6 +2,8 @@ class UsersController < ApplicationController
   #load_and_authorize_resource
   before_action :check_community
   before_action :set_user, only: [:edit,:update]
+  protect_from_forgery :except => [:chat_service_not_available]
+
   def index
     if current_user.is_super_admin?
       @users = User.where(role: ["Community admin","Community manager","Super admin","visitor_detail_page","Dwelo admin"])

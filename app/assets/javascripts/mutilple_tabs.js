@@ -7,7 +7,7 @@ window.addEventListener('load', function () {           // after page is fully l
 
     current_user_id = $( "body" ).data( "user-id" )
     current_user_role = $( "body" ).data( "user-role" )
-    allowed_roles = ["Community admin", "Dwelo admin", "Community manager"]
+    allowed_roles = ["Super admin", "Community admin", "Dwelo admin", "Community manager"]
     already_called = false
 
     if(allowed_roles.includes(current_user_role) && current_user_id != "undefined" && $("#widget-button").length == 1){
