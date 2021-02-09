@@ -105,7 +105,7 @@ class ApplicationController < ActionController::Base
 
         if current_user.is_super_admin?
           chat_communities = Community.joins(:community_users).where(community_users: {chat_enable: true}).includes(:tour)
-          @chatrooms = Chatroom.where(tour_id: chat_communities.map{|c| c.tour.id}).includes(:chats, :tour, :tour_user)
+          @chatrooms = Chatroom.where(tour_id: chat_communities.map{|c| c.tour.id if c.tour.present?}).includes(:chats, :tour, :tour_user)
           @listening_channels = Community.joins(:community_users).where(community_users: {chat_enable: true}).map{|c| (c.name + "_with_id_" + c.id.to_s).parameterize.gsub("-", "").gsub("_", "")}
         else
           chat_enabled_communities = current_user.communities.where(community_users: {chat_enable: true}).includes(:tour)
