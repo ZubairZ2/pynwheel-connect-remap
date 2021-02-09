@@ -106,14 +106,14 @@ class ApplicationController < ActionController::Base
         if current_user.is_super_admin?
           chat_communities = Community.joins(:community_users).where(community_users: {chat_enable: true}).includes(:tour)
           @chatrooms = Chatroom.where(tour_id: chat_communities.map{|c| c.tour.id if c.tour.present?}).includes(:chats, :tour, :tour_user)
-          @listening_channels = Community.joins(:community_users).where(community_users: {chat_enable: true}).map{|c| (c.name + "_with_id_" + c.id.to_s).parameterize.gsub("-", "").gsub("_", "")}
+          @listening_channels = Community.joins(:community_users).where(community_users: {chat_enable: true}).uniq.map{|c| (c.name + "_with_id_" + c.id.to_s).parameterize.gsub("-", "").gsub("_", "")}
+          @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom_super_admin(chatroom) }
         else
           chat_enabled_communities = current_user.communities.where(community_users: {chat_enable: true}).includes(:tour)
           @chatrooms = Chatroom.where(tour_id: chat_enabled_communities.map{|c| c.tour.id}).includes(:chats, :tour, :tour_user)
           @listening_channels = chat_enabled_communities.map{|c| (c.name + "_with_id_" + c.id.to_s).parameterize.gsub("-", "").gsub("_", "")}
+          @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(@community, chatroom) }
         end
-
-        @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(@community, chatroom) }
         @chatroom_list = @chatrooms.map{|c| c.id}
         @default_user_image =  "/assets/chat-tour-user.jpg"
     end
@@ -134,6 +134,10 @@ class ApplicationController < ActionController::Base
     [chatroom.id , min_count]
   end
   
+  def notifications_by_chatroom_super_admin(chatroom)
+    count = Chat.where("chatroom_id = ? AND  name != ? ", chatroom.id, "Support Team").unread_by(current_user).count rescue 0
+    [chatroom.id , count]
+  end
 
   def alphabetical_sort(company_or_community_or_community_groups)
     company_or_community_or_community_groups.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? c.name.split(" ", 2)[1] : c.name).downcase }
