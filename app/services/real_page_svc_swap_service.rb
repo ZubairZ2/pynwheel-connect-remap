@@ -176,11 +176,12 @@ class RealPageSvcSwapService < BaseService
               u = u[:UnitObject]
               hit = false
 
-              unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber]).first
-              unless unit.present?
-                unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber]).first
+              unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber])
+              unless unit.count == 1
+                unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber], building: u[:BuildingNumber])
               end
               if unit.present?
+                unit = unit.first
                 unit.provider = "realpagesvc_new"
                 unit.provider_unit_id = u[:UnitID]
                 unit.property_id = u[:SiteID]
@@ -401,18 +402,13 @@ class RealPageSvcSwapService < BaseService
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units.each do |u|
+            
             @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
             unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber])
-            unless unit.present?
-              unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:BuildingNumber] + "-" + u[:Address][:UnitNumber])
+            unless unit.count == 1
+              unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber], building: u[:Address][:BuildingNumber])
             end
 
-            if unit.count > 1
-              unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber],building:  u[:Address][:BuildingNumber])unless u[:Address][:BuildingNumber] == "N/A"
-              unless unit.present?
-                unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:BuildingNumber] + "-" + u[:Address][:UnitNumber],building: u[:Address][:BuildingNumber]) unless u[:Address][:BuildingNumber]== "N/A"
-              end
-            end
             if unit.present?
               unit = unit.first
               unit.provider = "realpagesvc_new"
@@ -471,6 +467,7 @@ class RealPageSvcSwapService < BaseService
               unit = Unit.new
               unit.community_id = community_id
               unit.provider = "realpagesvc_new"
+              unit.provider_unit_id u[:Address][:UnitID]
               unit.property_id = u[:SiteID]
               unit.unit_type = u[:Address][:UnitNumber]
               if u[:Address][:BuildingNumber].present?

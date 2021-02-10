@@ -83,6 +83,7 @@ class Unit < ApplicationRecord
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_unit_image
   after_update :crop_unit_secondary_image
+  before_destroy :delete_data
 
 
   def crop_unit_secondary_image
@@ -92,6 +93,13 @@ class Unit < ApplicationRecord
   def crop_unit_image
     image.recreate_versions! if (crop_x.present? && image_bit && do_crop)
     self.update_columns(do_crop: false)
+  end
+  def delete_data
+    begin
+      res = TourStop.where(stop_id: self.id, stop_type: "unit").destroy_all
+      VisitedStop.where(tour_stop_id: res.pluck(:id)).destroy_all
+    rescue => ex
+    end
   end
 
 

@@ -531,6 +531,11 @@ class CommunitiesController < ApplicationController
   def delete_imported_data
     current_community.units.destroy_all
     current_community.floorplans.destroy_all
+
+    stop_id = current_community.tour.tour_stops.where(stop_type: "unit").destroy_all
+    VisitedStop.where(tour_stop_id: stop_id.pluck(:id)).destroy_all
+
+    # VisitedStop.where(tour_id: current_community.tour.id, )
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
@@ -541,11 +546,11 @@ class CommunitiesController < ApplicationController
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
-        redirect_to community_import_page_path(current_community)
+        redirect_to community_settings_path(current_community)
       end
     else
       flash[:error] = "Please enter credentials in settings before importing data."
-      redirect_to community_import_page_path(current_community)
+      redirect_to community_settings_path(current_community)
     end
   end
   def import_page
