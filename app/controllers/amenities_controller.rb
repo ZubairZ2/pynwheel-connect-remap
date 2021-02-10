@@ -27,7 +27,9 @@ class AmenitiesController < ApplicationController
       @unit = Unit.find (params[:unit])
     end
     @from_unit =  (params[:from] == "unit" and @amenity.amenityable_type == "Unit") ?  @amenity.amenityable_id : "0"
-    @assigned_lock = @amenity.remote_locks.first
+    @floors = @amenity.building.present? ? @community.floorplates.where(building: @amenity.building).map{|x| x.floors}.flatten.sort : (@community.floorplates.map{|x| x.floors}.flatten.uniq).sort
+    @all_locks = all_locks(@community)
+    @locks_provider = @community.locks_provider
   end
 
   def show_amenity_image_in_modal

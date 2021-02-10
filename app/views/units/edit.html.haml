@@ -20,7 +20,7 @@
               = render :partial=>'form',:locals=>{:f=>f}
         / /.box-body
         .box-footer
-          = f.submit "Save Changes", :class=>"btn btn-success pull-right loader_class"
+          = f.submit "Save Changes", :class=>"btn btn-success pull-right submit_button"
 #crop-unit-secondary-image.modal.fade.edit-image
 #crop-unit-image.modal.fade.edit-image
 - if @community.self_tour    
@@ -79,6 +79,30 @@
 
 :javascript
 
+  var locks_provider = "#{@locks_provider}"
+  var locks_input, locks_list, param_name;
+
+  if(locks_provider == "EdgeState"){
+    locks_input = "#edgestate_locks_input"
+    locks_list = "#edgestate_locks_list"
+    param_name = "remote_lock"
+  }
+  else if(locks_provider == "Dwelo"){
+    locks_input = "#dwelo_locks_input"
+    locks_list = "#dwelo_locks_list"
+    param_name = "dwelo_remote_lock"
+  }
+  else if(locks_provider == "Latch"){
+    locks_input = "#latch_locks_input"
+    locks_list = "#latch_locks_list"
+    param_name = "latch_lock"
+  }
+  else if(locks_provider == "Zerv"){
+    locks_input = "#zerv_locks_input"
+    locks_list = "#zerv_locks_list"
+    param_name = "zerv_lock"
+  }
+
   $("#unit_secondary_image").change(function(){
       readSecondaryURL(this);   
   });
@@ -118,3 +142,37 @@
 
       lastChecked = this;
   });
+
+  $(".submit_button").click(function() {
+    var lock = $(locks_input)[0];
+    if(lock.value == "")
+          lock.setCustomValidity('')
+
+    if(lock.checkValidity() == true){
+      lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+      input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+      $("#" + lock.id).closest('form').append(input)
+      $('.edit_elevator').submit(); 
+    }
+    else{ lock.reportValidity(); }
+  })
+
+  var inputs = document.querySelectorAll('input[list]');
+  for (var i = 0; i < inputs.length; i++) {
+    inputs[i].addEventListener('change', function() {
+      var optionFound = false,
+      datalist = this.list;
+      for (var j = 0; j < datalist.options.length; j++) {
+          if (this.value == datalist.options[j].value) {
+              optionFound = true;
+              break;
+          }
+      }
+      if (optionFound) {
+        this.setCustomValidity('');
+      } else {
+        if ( $(locks_input).val() != "" )
+            this.setCustomValidity('Lock does not exist');
+      }
+    });
+  }

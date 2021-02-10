@@ -2,11 +2,15 @@ class BuildingStartingPointsController < ApplicationController
   include AssignLocksHelper
   before_action :check_community
   after_filter "previous_url", only: [:edit]
+
 	def edit
 		@community = Community.find params[:community_id]
     @floors = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
     @building_starting_point = BuildingStartingPoint.find_by_id(params[:id])
-	end
+    @all_locks = all_locks(@community)
+    @locks_provider = @community.locks_provider
+  end
+
   def update
     @building_starting_point = BuildingStartingPoint.find params[:id]
     if @community.enable_locks

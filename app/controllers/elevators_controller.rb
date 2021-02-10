@@ -27,12 +27,16 @@ class ElevatorsController < ApplicationController
   def edit
     @community = Community.find params[:community_id]
     @elevator = Elevator.find_by_id(params[:id])
+    @all_locks = all_locks(@community)
+    @locks_provider = @community.locks_provider
   end
+
   def save_elevator_gallery
     @community = Community.find_by_id params[:community_id]
     @elevator = Elevator.find_by_id params[:elevator_id]
     ElevatorGallery.create(name: params[:name],image: params[:src], elevator_id: @elevator.id)
   end
+
   # POST /elevators
   # POST /elevators.json
   def create
