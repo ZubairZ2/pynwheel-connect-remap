@@ -53,7 +53,7 @@
                     Remote Lock
                     %span Assign the lock to this building starting point
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = text_field_tag :edgestate_locks_input, @building_starting_point.remote_locks.present? ? @building_starting_point.remote_locks.last.name + " (" + @building_starting_point.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control building_starting_point_edit_field"
+                    = text_field_tag :edgestate_locks_input, @building_starting_point.remote_locks.edgestate_locks.present? ? @building_starting_point.remote_locks.edgestate_locks.last.name + " (" + @building_starting_point.remote_locks.edgestate_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control building_starting_point_edit_field"
                     %datalist#edgestate_locks_list
                       - @all_locks[:edgestate_locks].each do |lock|
                         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
@@ -63,7 +63,7 @@
                     Dwelo lock
                     %span Assign the lock to this building starting point
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = text_field_tag :dwelo_locks_input, @building_starting_point.remote_locks.present? ? @building_starting_point.remote_locks.last.name + " (" + @building_starting_point.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control building_starting_point_edit_field"
+                    = text_field_tag :dwelo_locks_input, @building_starting_point.remote_locks.dwelo_locks.present? ? @building_starting_point.remote_locks.dwelo_locks.last.name + " (" + @building_starting_point.remote_locks.dwelo_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control building_starting_point_edit_field"
                     %datalist#dwelo_locks_list
                       - @all_locks[:dwelo_locks].each do |lock|
                         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
