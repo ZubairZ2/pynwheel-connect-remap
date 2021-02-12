@@ -660,11 +660,15 @@ class Api::V1::CommunitiesController < ActionController::Base
           thread_ref = thread_ref.gsub("run", "sleep")
           locks_thread = Thread.list.select {|thread| thread if thread.to_s == thread_ref}.compact
 
-          puts "-----------------------------------------  locks thread joined  ---------------------------------------------------"
-          locks_thread[0].join(18) if locks_thread.present? and locks_thread[0].present? and locks_thread[0].alive?
+          if locks_thread.present? and locks_thread[0].present? and locks_thread[0].alive?
+            puts "-----------------------------------------  locks thread joined  ---------------------------------------------------"
+            locks_thread[0].join(18)
+          end
 
-          zrv_guest = tour_user.zerv_guests.where(community_id: community.id, status: "active").last
-          response = ZervServices::GetUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true) if zrv_guest.present? and zrv_guest.res_errors.present? and zrv_guest.res_errors["message"] == "Endpoint request timed out"
+          if tour_user.zerv_guests.where(community_id: community.id, status: "active", res_errors: nil).exists?
+            ZervServices::GetUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true)
+          end
+
         end
       rescue => exception
         puts exception
