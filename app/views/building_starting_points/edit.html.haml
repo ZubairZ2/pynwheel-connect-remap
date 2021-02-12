@@ -53,7 +53,7 @@
                     Remote Lock
                     %span Assign the lock to this building starting point
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = text_field_tag :edgestate_locks_input, @building_starting_point.remote_locks.present? ? @building_starting_point.remote_locks.last.name + " (" + @building_starting_point.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control building_starting_point_edit_field"
+                    = text_field_tag :edgestate_locks_input, @building_starting_point.remote_locks.edgestate_locks.present? ? @building_starting_point.remote_locks.edgestate_locks.last.name + " (" + @building_starting_point.remote_locks.edgestate_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control building_starting_point_edit_field"
                     %datalist#edgestate_locks_list
                       - @all_locks[:edgestate_locks].each do |lock|
                         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
@@ -63,7 +63,7 @@
                     Dwelo lock
                     %span Assign the lock to this building starting point
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = text_field_tag :dwelo_locks_input, @building_starting_point.remote_locks.present? ? @building_starting_point.remote_locks.last.name + " (" + @building_starting_point.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control building_starting_point_edit_field"
+                    = text_field_tag :dwelo_locks_input, @building_starting_point.remote_locks.dwelo_locks.present? ? @building_starting_point.remote_locks.dwelo_locks.last.name + " (" + @building_starting_point.remote_locks.dwelo_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control building_starting_point_edit_field"
                     %datalist#dwelo_locks_list
                       - @all_locks[:dwelo_locks].each do |lock|
                         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
@@ -138,15 +138,20 @@
       one_time_run = true
       setTimeout(function(){
         var lock = $(locks_input)[0];
-        if(lock.checkValidity() == true){
-          lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-          input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-          $("#" + lock.id).closest('form').append(input)
-          $('.save-building-starting-point-form').submit(function() {
-            $(this).append('<input type="hidden" name="done_action" value="true">');
-          });
+        if(typeof lock !== 'undefined'){
+          if(lock.checkValidity() == true){
+            lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+            input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+            $("#" + lock.id).closest('form').append(input)
+            $('.save-building-starting-point-form').submit(function() {
+              $(this).append('<input type="hidden" name="done_action" value="true">');
+            });
+          }
+          else{ lock.reportValidity(); }
         }
-        else{ lock.reportValidity(); }
+        else{
+          $('.save-building-starting-point-form').submit()
+        }
       }, 300);
     })
 
@@ -154,17 +159,21 @@
       setTimeout(function(){
 
           var lock = $(locks_input)[0];
-          if(lock.value == "")
-            lock.setCustomValidity('')
+          if(typeof lock !== 'undefined'){
+            if(lock.value == "")
+              lock.setCustomValidity('')
 
-          if(lock.checkValidity() == true){
-            lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-            input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-            $("#" + lock.id).closest('form').append(input)
-            $('.save-building-starting-point-form').submit();
+            if(lock.checkValidity() == true){
+              lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+              input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+              $("#" + lock.id).closest('form').append(input)
+              $('.save-building-starting-point-form').submit();
+            }
+            else{ lock.reportValidity(); }
           }
-          else{ lock.reportValidity(); }
-
+          else{
+            $('.save-building-starting-point-form').submit()
+          }
       }, 300);
     }
   });
@@ -188,7 +197,7 @@
       if (optionFound) {
         this.setCustomValidity('');
       } else {
-        if ( $(locks_input).val() != "" )
+        if (typeof locks_input !== 'undefined' && $(locks_input).val() != "" )
             this.setCustomValidity('Lock does not exist');
       }
     });

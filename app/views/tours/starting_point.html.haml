@@ -56,7 +56,7 @@
                           %span#unit_manualoverride_text
                             Assign the lock to the starting point
                       .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                        = text_field_tag :edgestate_locks_input, @tours.remote_locks.present? ? @tours.remote_locks.last.name + " (" + @tours.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control save-starting-point-field"
+                        = text_field_tag :edgestate_locks_input, @tours.remote_locks.edgestate_locks.present? ? @tours.remote_locks.edgestate_locks.last.name + " (" + @tours.remote_locks.edgestate_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control save-starting-point-field"
                         %datalist#edgestate_locks_list
                           - @all_locks[:edgestate_locks].each do |lock|
                             %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
@@ -69,7 +69,7 @@
                           %span#unit_manualoverride_text
                             Assign the lock to the starting point
                       .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                        = text_field_tag :dwelo_locks_input, @tours.remote_locks.present? ? @tours.remote_locks.last.name + " (" + @tours.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control save-starting-point-field"
+                        = text_field_tag :dwelo_locks_input, @tours.remote_locks.dwelo_locks.present? ? @tours.remote_locks.dwelo_locks.last.name + " (" + @tours.remote_locks.dwelo_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control save-starting-point-field"
                         %datalist#dwelo_locks_list
                           - @all_locks[:dwelo_locks].each do |lock|
                             %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
@@ -261,17 +261,21 @@
     setTimeout(function(){ 
 
         var lock = $(locks_input)[0];
-        if(lock.value == "")
-            lock.setCustomValidity('')
+        if(typeof lock !== 'undefined'){
+          if(lock.value == "")
+              lock.setCustomValidity('')
 
-        if(lock.checkValidity() == true){
-          lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-          input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-          $("#" + lock.id).closest('form').append(input)
-          $('.save-starting-point-form').submit(); 
+          if(lock.checkValidity() == true){
+            lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+            input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+            $("#" + lock.id).closest('form').append(input)
+            $('.save-starting-point-form').submit(); 
+          }
+          else{ lock.reportValidity(); }
         }
-        else{ lock.reportValidity(); }
-
+        else{
+            $('.save-starting-point-form').submit(); 
+        }
     }, 300);
 
   });
@@ -354,7 +358,7 @@
       if (optionFound) {
         this.setCustomValidity('');
       } else {
-        if ( $(locks_input).val() != "" )
+        if (typeof locks_input !== 'undefined' && $(locks_input).val() != "" )
             this.setCustomValidity('Lock does not exist');
       }
     });

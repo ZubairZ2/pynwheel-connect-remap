@@ -95,7 +95,7 @@
         Remote Lock
         %span Assign the lock to this unit
       .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = text_field_tag :edgestate_locks_input, @unit.remote_locks.present? ? @unit.remote_locks.last.name + " (" + @unit.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
+        = text_field_tag :edgestate_locks_input, @unit.remote_locks.edgestate_locks.present? ? @unit.remote_locks.edgestate_locks.last.name + " (" + @unit.remote_locks.edgestate_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
         %datalist#edgestate_locks_list
           - @all_locks[:edgestate_locks].each do |lock|
             %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
@@ -106,7 +106,7 @@
         Dwelo lock
         %span Assign the lock to this unit
       .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = text_field_tag :dwelo_locks_input, @unit.remote_locks.present? ? @unit.remote_locks.last.name + " (" + @unit.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
+        = text_field_tag :dwelo_locks_input, @unit.remote_locks.dwelo_locks.present? ? @unit.remote_locks.dwelo_locks.last.name + " (" + @unit.remote_locks.dwelo_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
         %datalist#dwelo_locks_list
           - @all_locks[:dwelo_locks].each do |lock|
             %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}

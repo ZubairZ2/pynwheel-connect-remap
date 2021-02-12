@@ -57,7 +57,7 @@
                     Remote Lock
                     %span Assign the lock to this amenity
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = text_field_tag :edgestate_locks_input, @amenity.remote_locks.present? ? @amenity.remote_locks.last.name + " (" + @amenity.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control amenity_edit_field"
+                    = text_field_tag :edgestate_locks_input, @amenity.remote_locks.edgestate_locks.present? ? @amenity.remote_locks.edgestate_locks.last.name + " (" + @amenity.remote_locks.edgestate_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control amenity_edit_field"
                     %datalist#edgestate_locks_list
                       - @all_locks[:edgestate_locks].each do |lock|
                         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
@@ -68,7 +68,7 @@
                     Dwelo lock
                     %span Assign the lock to this amenity
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = text_field_tag :dwelo_locks_input, @amenity.remote_locks.present? ? @amenity.remote_locks.last.name + " (" + @amenity.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control amenity_edit_field"
+                    = text_field_tag :dwelo_locks_input, @amenity.remote_locks.dwelo_locks.present? ? @amenity.remote_locks.dwelo_locks.last.name + " (" + @amenity.remote_locks.dwelo_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control amenity_edit_field"
                     %datalist#dwelo_locks_list
                       - @all_locks[:dwelo_locks].each do |lock|
                         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
@@ -239,16 +239,21 @@
 
     setTimeout(function(){ 
       var lock = $(locks_input)[0];
-      if(lock.value == "")
-          lock.setCustomValidity('')
+      if(typeof lock !== 'undefined'){
+        if(lock.value == "")
+            lock.setCustomValidity('')
 
-      if(lock.checkValidity() == true){
-        lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-        input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-        $("#" + lock.id).closest('form').append(input)
-        $('.edit_amenity').submit();
+        if(lock.checkValidity() == true){
+          lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+          input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+          $("#" + lock.id).closest('form').append(input)
+          $('.edit_amenity').submit();
+        }
+        else{ lock.reportValidity(); }
       }
-      else{ lock.reportValidity(); }
+      else{
+          $('.edit_amenity').submit();
+      }
     }, 300);
     
   });
@@ -264,24 +269,36 @@
 
         setTimeout(function(){ 
           var lock = $(locks_input)[0];
-          if(lock.value == "")
-            lock.setCustomValidity('')
 
-          if(lock.checkValidity() == true){
-            lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-            input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-            $("#" + lock.id).closest('form').append(input)
+          if(typeof lock !== 'undefined'){
+            if(lock.value == "")
+              lock.setCustomValidity('')
 
-            $('.edit_amenity').submit(function() {
-              $(this).append('<input type="hidden" name="done_action" value="true">');
-              $(this).append('<input type="hidden" name="from_id" value="' + from + '">');
-              if (unit != 111111000000000) {
-                $(this).append('<input type="hidden" name="unit_render" value="' + unit + '">');
-              }
-            });
+            if(lock.checkValidity() == true){
+              lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+              input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+              $("#" + lock.id).closest('form').append(input)
 
+              $('.edit_amenity').submit(function() {
+                $(this).append('<input type="hidden" name="done_action" value="true">');
+                $(this).append('<input type="hidden" name="from_id" value="' + from + '">');
+                if (unit != 111111000000000) {
+                  $(this).append('<input type="hidden" name="unit_render" value="' + unit + '">');
+                }
+              });
+
+            }
+            else{ lock.reportValidity(); }
           }
-          else{ lock.reportValidity(); }
+          else{
+              $('.edit_amenity').submit(function() {
+                $(this).append('<input type="hidden" name="done_action" value="true">');
+                $(this).append('<input type="hidden" name="from_id" value="' + from + '">');
+                if (unit != 111111000000000) {
+                  $(this).append('<input type="hidden" name="unit_render" value="' + unit + '">');
+                }
+              });
+          }
         }, 300);
       })
   });
@@ -289,16 +306,21 @@
   $('#on_done').click(function(e){
     setTimeout(function(){ 
       var lock = $(locks_input)[0];
-      if(lock.value == "")
-            lock.setCustomValidity('')
+      if(typeof lock !== 'undefined'){
+        if(lock.value == "")
+              lock.setCustomValidity('')
 
-      if(lock.checkValidity() == true){
-        lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-        input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-        $("#" + lock.id).closest('form').append(input)
+        if(lock.checkValidity() == true){
+          lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+          input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+          $("#" + lock.id).closest('form').append(input)
+          $('.edit_amenity').submit();
+        }
+        else{ lock.reportValidity(); }
+      }
+      else{
         $('.edit_amenity').submit();
       }
-      else{ lock.reportValidity(); }
     }, 300);
   })
 
@@ -316,7 +338,7 @@
       if (optionFound) {
         this.setCustomValidity('');
       } else {
-        if ( $(locks_input).val() != "" )
+        if (typeof locks_input !== 'undefined' &&  $(locks_input).val() != "" )
             this.setCustomValidity('Lock does not exist');
       }
     });
