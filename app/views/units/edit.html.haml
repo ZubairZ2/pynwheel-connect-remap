@@ -145,16 +145,18 @@
 
   $(".submit_button").click(function() {
     var lock = $(locks_input)[0];
-    if(lock.value == "")
-          lock.setCustomValidity('')
+    if(typeof lock !== 'undefined'){
+      if(lock.value == "")
+            lock.setCustomValidity('')
 
-    if(lock.checkValidity() == true){
-      lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-      input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-      $("#" + lock.id).closest('form').append(input)
-      $('.edit_elevator').submit(); 
+      if(lock.checkValidity() == true){
+        lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+        input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+        $("#" + lock.id).closest('form').append(input)
+        $("#" + lock.id).closest('form').submit(); 
+      }
+      else{ lock.reportValidity(); }
     }
-    else{ lock.reportValidity(); }
   })
 
   var inputs = document.querySelectorAll('input[list]');
@@ -171,7 +173,7 @@
       if (optionFound) {
         this.setCustomValidity('');
       } else {
-        if ( $(locks_input).val() != "" )
+        if (typeof locks_input !== 'undefined' &&  $(locks_input).val() != "" )
             this.setCustomValidity('Lock does not exist');
       }
     });
