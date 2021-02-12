@@ -38,7 +38,8 @@ class TourUser < ApplicationRecord
   mount_base64_uploader :id_card, AvatarUploader
   def crop_user_image
     begin
-      image.recreate_versions! if image.present?
+      image.recreate_versions! if (image.present? and crop_image_bit and !crop_image_bit.nil)
+      id_card.recreate_versions! if (id_card.present? and !crop_image_bit and !crop_image_bit.nil)
     rescue => exception
       
     end
