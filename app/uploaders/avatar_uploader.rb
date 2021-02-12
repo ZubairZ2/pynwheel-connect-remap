@@ -95,7 +95,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
 
           img
         end
-      elsif !model.crop_image_bit.nil? && !model.crop_image_bit
+      else
         manipulate! do |img|
           img = img.auto_orient
           crop_w = (img.columns.to_f / 100.0) * 95.0
