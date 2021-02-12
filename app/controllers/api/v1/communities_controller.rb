@@ -665,7 +665,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             locks_thread[0].join(18)
           end
 
-          if tour_user.zerv_guests.where(community_id: community.id, status: "active", res_errors: nil).exists?
+          if tour_user.zerv_guests.where(community_id: community.id, status: "active", res_errors: nil).blank?
             ZervServices::GetUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true)
           end
 
