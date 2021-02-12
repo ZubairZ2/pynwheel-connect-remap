@@ -72,5 +72,33 @@ module ZervServices
         def base_url
             "https://api.zervinc.net/v1/portal"
         end
+
+        def check_response(community, tour_user, stop_list, response, errors)
+            if response.success?
+                create_zerv_guest__success(community, tour_user, stop_list)
+            else
+                create_zerv_guest__failure(community, tour_user, response.error.merge(errors))
+            end
+        end
+
+        def create_zerv_guest__success(community, tour_user, stop_list)
+            puts '--------------------------    Zerv guest created successfully    ------------------------'
+            ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
+            if stop_list.present?
+                stop_list.each do |stop|
+                    stop.zerv_guests.create(community_id: community.id, tour_user_id: tour_user.id, status: "active") if stop.zerv_locks.last.present?
+                end
+            else
+                ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active")
+            end
+            Rails.cache.delete(:id_token)
+        end
+
+        def create_zerv_guest__failure(community, tour_user, errors)
+            puts '--------------------------    Failure in creating Zerv User      ------------------------'
+            ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
+            ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active", res_errors: errors)
+            Rails.cache.delete(:id_token)
+        end
     end
 end
