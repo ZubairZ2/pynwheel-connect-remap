@@ -8,9 +8,12 @@ class EdgestateAccountsController < ApplicationController
     def create
         unless @is_already_exists
             @edge_state = EdgeState.new(edge_state_params)
+            locks_provider = current_community.multiple_locks_provider
+            locks_provider << "EdgeState" unless locks_provider.include?("EdgeState")
+
             if @edge_state.save
-                current_community.update_columns(locks_provider: "EdgeState")
-                Community.find(params[:community_id]).update!(locks_provider: params[:edgestate][:default_community_id])
+                current_community.update_columns(multiple_locks_provider: locks_provider)
+                Community.find(params[:community_id]).update!(:multiple_locks_provider => locks_provider)
                 flash[:notice] = "EdgeState credentails saved successfully"
                 redirect_to new_community_dwelo_path
             else
@@ -20,7 +23,7 @@ class EdgestateAccountsController < ApplicationController
         else
             @edge_state = EdgeState.find_by(community_id: current_community.id)
             if @edge_state.update_attributes(edge_state_params)
-                current_community.update_columns(locks_provider: "EdgeState")
+                current_community.update_columns(:multiple_locks_provider => locks_provider)
                 flash[:notice] = "EdgeState credentails updated successfully"
                 redirect_to new_community_dwelo_path(current_community)
             else

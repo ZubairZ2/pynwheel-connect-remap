@@ -29,7 +29,6 @@ class AmenitiesController < ApplicationController
     @from_unit =  (params[:from] == "unit" and @amenity.amenityable_type == "Unit") ?  @amenity.amenityable_id : "0"
     @floors = @amenity.building.present? ? @community.floorplates.where(building: @amenity.building).map{|x| x.floors}.flatten.sort : (@community.floorplates.map{|x| x.floors}.flatten.uniq).sort
     @all_locks = all_locks(@community)
-    @locks_provider = @community.locks_provider
   end
 
   def show_amenity_image_in_modal
@@ -63,10 +62,10 @@ class AmenitiesController < ApplicationController
   def update
     @amenity = Amenity.find(params[:id]) 
     if @community.enable_locks
-      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ( (params[:zerv_lock].present? or params[:zerv_lock] == "") ?  params[:zerv_lock] : nil ) ) )
+      lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
       assign_lock(@community, @amenity, lock_id) unless lock_id.nil?
     end
-    
+
     if @amenity.update_attributes(amenity_params)
       begin
         ts = TourStop.find_by(stop_id: @amenity.id)

@@ -663,6 +663,21 @@ class Community < ApplicationRecord
   def creator
     User.find_by(id: self.creator_id)
   end
+
+  def include_locks_provider(lock)
+    multiple_locks_provider.include?(lock) 
+  end
+
+  def lock_options(locks_present_hash)
+    options = [["Manual", ""]]
+    locks_present_hash.each do |key,value|
+      if value
+        options << (key == "Zerv" ? ["Pynwheel Access (zerv)", key] : [key, key])
+      end
+    end
+    options
+  end
+
   private
 
   def populate_favorites(items_objs,email_to)

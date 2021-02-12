@@ -7,12 +7,13 @@ class ZervAccountsController < ApplicationController
     
     def create
       @zerv = Zerv.find_or_create_by(community_id: current_community.id)
-      
+      locks_provider = current_community.multiple_locks_provider
+      locks_provider << "Zerv" unless locks_provider.include?("Zerv")
       if @zerv.errors.present?
         flash[:error] = @zerv.errors.full_messages.join(',')
       else
         @zerv.update_attributes(zerv_params)
-        current_community.update_attributes(locks_provider: "Zerv")
+        current_community.update_attributes(:multiple_locks_provider => locks_provider)
         flash[:notice] = ZervConstants::SAVED
       end
       redirect_to new_community_dwelo_path(current_community)

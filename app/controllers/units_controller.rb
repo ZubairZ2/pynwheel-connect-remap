@@ -4,6 +4,7 @@ class UnitsController < ApplicationController
   before_action :set_community
   before_action :check_community
   before_action :set_unit, only: [:edit,:update,:destroy,:remove_pri_scnd_image]
+  before_action :load_all_locks, only: [:new, :create, :edit, :update]
   def index
     #@units = @community.units.page(params[:page]).per(10)
     @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
@@ -83,6 +84,10 @@ class UnitsController < ApplicationController
       @unit.available = false
     end
     if @unit.save
+      if @community.enable_locks
+        lock_id = (params.has_key?("lock_input") or params[:lock_id] == "") ? params[:lock_id] : nil
+        assign_lock(@community, @unit, lock_id) unless lock_id.nil?
+      end
       if @unit.floorplan.present? and @unit.floorplan.amenities.present? 
         floorplan_amenities = @unit.floorplan.amenities
         add_floorplan_amenities = "true"
@@ -198,6 +203,10 @@ class UnitsController < ApplicationController
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
         if @unit.update(unit_params)
+          if @community.enable_locks
+            lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+            assign_lock(@community, @unit, lock_id) unless lock_id.nil?
+          end
           if params[:unit].present? and @unit.floorplan.present? and params[:unit][:floorplan_id] != @unit.floorplan.id
             delete_previous_floorplan_images = "delete previous"
             if unit_previous_floorplan_amenities.present?
@@ -228,6 +237,10 @@ class UnitsController < ApplicationController
       else
         if params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
           @unit.update(unit_params)
+          if @community.enable_locks
+            lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+            assign_lock(@community, @unit, lock_id) unless lock_id.nil?
+          end
           if params[:unit][:floorplan_id] != @unit.floorplan.id
             delete_previous_floorplan_images = "delete previous"
             AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
@@ -257,6 +270,10 @@ class UnitsController < ApplicationController
             format.json { respond_with_bip(@unit) }
           else
             @unit.update(unit_params)
+            if @community.enable_locks
+              lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+              assign_lock(@community, @unit, lock_id) unless lock_id.nil?
+            end
             if params[:unit][:floorplan_id] != @unit.floorplan.id
               delete_previous_floorplan_images = "delete previous"
               AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
@@ -537,6 +554,10 @@ class UnitsController < ApplicationController
   end
   def set_unit
     @unit = Unit.find params[:id]
+  end
+
+  def load_all_locks
+    @all_locks = all_locks(@community)
   end
 
 end

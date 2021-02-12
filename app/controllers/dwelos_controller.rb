@@ -1,5 +1,6 @@
 class DwelosController < ApplicationController
   before_action :set_community
+  before_action :set_locks_provider, only: [:create, :update]
   include DweloDevicesHelper
   def index
     if @community.dwelo.present?
@@ -16,11 +17,11 @@ class DwelosController < ApplicationController
   def create
     unless @community.dwelo.present?
       @dwelo = Dwelo.create!(client_id: params[:dwelo][:client_id], client_secret: params[:dwelo][:client_secret], default_community_id: params[:dwelo][:default_community_id], community_id: @community.id)
-      @community.update_columns(locks_provider: "Dwelo")
+      @community.update_columns(:multiple_locks_provider => @locks_provider)
       redirect_to new_community_dwelo_path(@community), notice: 'Dwelo Account Created Successfully'
     else
       if @dwelo.present?
-        @community.update_columns(locks_provider: "Dwelo")
+        @community.update_columns(multiple_locks_provider: @locks_provider)
         flash[:notice] = "Dwelo Account Updated Successfully."
       end
     end
@@ -33,7 +34,7 @@ class DwelosController < ApplicationController
 
   def update
     @dwelo_user_account = Dwelo.find params[:id]
-    @community.update_columns(locks_provider: "Dwelo")
+    @community.update_columns(multiple_locks_provider: @locks_provider)
     if @dwelo_user_account.update!(dwelo_params)
       respond_to do |format|
         format.html { redirect_to new_community_dwelo_path, notice: 'Dwelo account successfully updated.' }
@@ -43,7 +44,7 @@ class DwelosController < ApplicationController
 
   def test_dwelo_connection
     @community = Community.find params[:community_id]
-    if @community.enable_locks and @community.locks_provider == "Dwelo" and @community.dwelo.present?
+    if @community.enable_locks and @community.multiple_locks_provider.include?("Dwelo") and @community.dwelo.present?
       dwelo_client_credentials(@community.dwelo)
       if @token.present?
         token_type = "Bearer"
@@ -169,6 +170,11 @@ class DwelosController < ApplicationController
 
   def set_dwelo_user
     @dwelo_user = Dwelo.find params[:community_id]
+  end
+
+  def set_locks_provider
+    @locks_provider = current_community.multiple_locks_provider
+    @locks_provider << "Dwelo" unless @locks_provider.include?("Dwelo")
   end
 
   def dwelo_params

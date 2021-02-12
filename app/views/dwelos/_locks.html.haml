@@ -1,0 +1,58 @@
+.col-md-12.theme-setting
+  .dropdown.mt-5.lock-dropdown
+    %button.dropbtn.btn.btn-primary
+      %i.fa.fa-plus-circle 
+      Add another lock account
+    .dropdown-content.add-new-lock
+      %a{:href => "#s-dwelo","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.dwelo.present? ? "disabled half_opacity" : "show" } Dwelo
+      %a{:href => "#s-edge-state","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.edge_state.present? ? "disabled half_opacity" : "show"} Edge State
+      %a{:href => "#s-latch","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.latch.present? ? "disabled half_opacity" : "show"} Latch
+      %a{:href => "#s-zerv","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.zerv.present? ? "disabled half_opacity" : "show"} Zerv
+
+  %ul#lock_tabs.nav.nav-tabs.add-new-lock{:role => "tablist"}
+    %li{:role => "presentation",:class => @community.dwelo.nil? ? "hidden" : "show"}
+      %a#dwelo-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-dwelo", :role => "tab"} Dwelo  
+    %li{:role => "presentation",:class => @community.edge_state.nil? ? "hidden" : "show"}
+      %a#edge-state-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-edge-state", :role => "tab"} Edge State
+    %li{:role => "presentation",:class => @community.latch.nil? ? "hidden" : "show"}
+      %a#latch-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-latch", :role => "tab"} Latch
+    %li{:role => "presentation",:class => @community.zerv.nil? ? "hidden" : "show"}
+      %a#zerv-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-zerv", :role => "tab"} Zerv
+
+
+
+  #s-dwelo.tab-pane.fade{:role => "tabpanel",:class => @community.dwelo.nil? ? "hidden" : "show"}
+    = render :partial => 'dwelo_page'
+  #s-edge-state.tab-pane.fade{:role => "tabpanel",:class => @community.edge_state.nil? ? "hidden" : "show"}
+    = render :partial => 'edge_state_page'
+  #s-latch.tab-pane.fade{:role => "tabpanel",:class => @community.latch.nil? ? "hidden" : "show"}
+    = render :partial => 'latch_page'
+  #s-zerv.tab-pane.fade{:role => "tabpanel",:class => @community.zerv.nil? ? "hidden" : "show"}
+    = render :partial => 'zerv_page'
+
+
+
+:javascript
+  $(document).ready(function() {
+    if ($(".add-new-lock li.show").length > 0){
+      $(".add-new-lock li.show").first().addClass('active')
+      $('.tab-pane.show').first().addClass('active in')
+    }
+    else
+    {
+      $(".add-new-lock li").first().removeClass('hidden').addClass('active')
+      $('.tab-pane.hidden').first().removeClass('hidden').addClass('active in')
+      $('.add-new-lock a.show').first().addClass('disabled half_opacity')
+    }
+  });
+
+  $(document).on("click",".add-new-lock a",function() {
+    $('.tab-pane').addClass('hidden')
+    tab_id = $(this).attr('href')
+    $(tab_id).removeClass('hidden')
+    $('.dropdown-content').find(`a[href="${tab_id}"]`).addClass('half_opacity disabled')
+    $('#lock_tabs li').removeClass('active')
+    if ($(this).parent().hasClass('add-new-lock'))
+      $("#" +tab_id.slice(3) + "-tab").parent().insertAfter($('.add-new-lock li').last());
+    $("#" +tab_id.slice(3) + "-tab").parent().removeClass('hidden').addClass('active')
+  });
