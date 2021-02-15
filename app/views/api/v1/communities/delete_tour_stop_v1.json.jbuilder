@@ -28,7 +28,24 @@ json.tours @tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.tour_setting do
+    
+    json.last_message_id @chat_count
 
+    json.locks_provider (@community.enable_locks and @community.locks_provider.present?) ? @community.locks_provider : ''
+    if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
+      if @community.locks_provider == "EdgeState"
+        json.starting_point_locked tour.remote_locks.where(dwelo_id: nil).present? ? true : false
+      elsif @community.locks_provider == "Dwelo"
+        json.starting_point_locked tour.remote_locks.where.not(dwelo_id: nil).present? ? true : false
+      elsif  @community.locks_provider == "Latch"
+        json.starting_point_locked tour.latch_locks.present? ? (@tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: tour.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active").present?) : false
+      else
+        json.starting_point_locked false
+      end
+    else
+      json.starting_point_locked false
+    end
+ 
     json.authenticate_zerv @community.multiple_locks_provider.include?("Zerv")
     json.tour_start_point_lock_type @tours.first.lock_provider
 
@@ -432,7 +449,8 @@ json.tours @tours do |tour|
   skip_1_path = false
   # ///////////////////////////////////////////////////////////////////// Stop data //////////////////////////////////////////////////////
   json.tour_stop new_stops_arr.compact do |stop|
-    
+    json.stop_lock_provider ''
+
     begin
       if skip_1
         i += 1
@@ -505,7 +523,6 @@ json.tours @tours do |tour|
     if stop.is_a? Tour 
       json.guest_pin  ""
       json.latch_link ''
-      json.stop_lock_provider ''
       json.unit_dwelo_lock_id ''
       json.navigation_title navigation_title
       json.id stop.id
@@ -661,10 +678,11 @@ json.tours @tours do |tour|
       next
     end
     begin
-
+      
       if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
-        stop_lock_provider = (stop.stop_type.classify.constantize.find_by stop.stop_id).lock_provider
+        stop_lock_provider = (stop.stop_type.classify.constantize.find_by_id stop.stop_id).lock_provider
         json.stop_lock_provider stop_lock_provider
+
         if stop_lock_provider == "EdgeState"
           rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
           if rml.present?
