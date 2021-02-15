@@ -1,3 +1,3 @@
 class UserStripe < ApplicationRecord
-  belongs_to :user
+  belongs_to :tour_user
 end

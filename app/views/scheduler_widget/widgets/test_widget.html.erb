@@ -960,6 +960,7 @@
             // $("[data-stripe=exp-year]").remove();
             // $("[data-stripe=exp-month]").remove();
             $form.append($("<input type=\"hidden\" name=\"sched_tour_id\" />").val(tour_id));
+            $form.append($("<input type=\"hidden\" name=\"last_digits\" />").val(  $('#tour_user_credit_card_number').val().substr($('#tour_user_credit_card_number').val().length - 4) ));
             $form.get(0).submit();
             
 

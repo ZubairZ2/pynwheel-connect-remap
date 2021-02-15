@@ -3,6 +3,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   include DweloDevicesHelper
   before_action :set_community, only: :email_favorites
   include ApplicationHelper
+  include StripeServices
   require 'securerandom'
   @@counter = 0
   # $deleted_ids = []
@@ -155,6 +156,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community = Community.find params[:id]
       @community.deleted_ids = []
       @community.save
+      charge_for_id_verfication(@tour_user, 200)
       @tour_user.save
       unless @tour_user.email == "Removed at Consumer Request"
       #####
@@ -649,7 +651,9 @@ class Api::V1::CommunitiesController < ActionController::Base
       return ["after time" , scheduled_tours.find{|s| s["Id"] == nearest_after_time[1]}] # if the difference b/w after and before is same, we will pick the upcoming scheduled tour i.e after time tour
     end
   end
-
+  def charge_for_id_verfication(tour_user, amount)
+    charge_customer(tour_user, ammount, "Charging for Id verfication", 'usd')
+  end
   def get_current_tour(time_param)
     current_datetime = time_param.to_datetime.strftime('%d/%m/%Y %l:%M %p')
     current_time = current_datetime.to_datetime.strftime('%l:%M %p')

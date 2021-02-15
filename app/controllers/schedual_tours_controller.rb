@@ -1,6 +1,7 @@
 class SchedualToursController < ApplicationController
   before_action :set_schedual_tour, only: [:show, :edit, :update, :destroy]
   skip_before_action :authenticate_user!
+  include StripeServices
 
   # GET /schedual_tours
   # GET /schedual_tours.json
@@ -38,27 +39,35 @@ class SchedualToursController < ApplicationController
     tu.last_name = l_name
     tu.phone_number = phone_number if phone_number.present?
     tu.desired_bedroom = params[:desired_bedroom]
+    byebug
+    tu.card_last_digits = params[:last_digits] if params[:last_digits].present?
 
     # binding.pry
     schedual_tour = SchedualTour.find(params[:sched_tour_id])
     if tu.save
-
       begin
-        customer = Stripe::Customer.create email: params[:tour_user][:email].downcase,
-                                           card: params[:tour_user][:card_token]
-        res = Stripe::Charge.create customer: customer.id,
-                              amount: 50,
-                              description: "Escrow Payment",
-                              currency: 'usd'
-        sleep 3                      
-        pay_back = Stripe::Refund.create({
-          charge: res[:id],
-        })                     
+        if(tu.strip_customer_id.present?)
+          res = charge_customer(tu, 50, "Escrow Payment", 'usd', params[:last_digits])
+        else
+          tu.update_column 'strip_customer_id', create_customer(tu.email, params[:tour_user][:card_token]).id
+          res = charge_customer(tu, 50, "Escrow Payment", 'usd')
+        end
+        # customer = Stripe::Customer.create email: params[:tour_user][:email].downcase,
+        #                                    card: params[:tour_user][:card_token]
+        # res = Stripe::Charge.create customer: customer.id,
+        #                       amount: 50,
+        #                       description: "Escrow Payment",
+        #                       currency: 'usd'
+        sleep 2
+        pay_back = refund_customer(tu, res[:id])
+        # pay_back = Stripe::Refund.create({
+        #   charge: res[:id],
+        # })                     
       rescue Exception => e
         flash[:error] = e.message
 
       end
-      schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back[:id] : nil,desired_move_in_date: params[:desired_move_in_date],desired_bedroom: params[:desired_bedroom])
+      schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back.refund_id : nil,desired_move_in_date: params[:desired_move_in_date],desired_bedroom: params[:desired_bedroom])
 
       begin
         sent_notifications = send_email_and_other_notifications schedual_tour
