@@ -41,7 +41,7 @@ module ZervServices
                 "phoneNumber":  tour_user.phone_number,
                 "email": tour_user.email,
                 "id": zerv_user["id"],
-                "image": nil,
+                "image": "",
                 "removeExistingAccessDuration": [],
                 "removedExistingAccess": [],
                 "listAddUserAccess": list_add_user_access
@@ -127,10 +127,10 @@ module ZervServices
             req_keys = {
                 "id": id,
                 "userAccessDurationId": userAccessDurationId,
-                "accessEndDate": tour_time.strftime("%Y-%m-%d"),
                 "accessStartDate": tour_time.strftime("%Y-%m-%d"),
+                "accessEndDate": (tour_time + 1.day).strftime("%Y-%m-%d"),
                 "credentialIdentifier": "1234",
-                "facilityId": nil,
+                "facilityId": "",
                 "active": true,
                 "monAccess": false,
                 "tueAccess": false,

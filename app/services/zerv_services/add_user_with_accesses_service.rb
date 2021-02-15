@@ -30,7 +30,7 @@ module ZervServices
                 "lastName": tour_user.last_name,
                 "phoneNumber":  tour_user.phone_number,
                 "email": tour_user.email,
-                "image": nil,
+                "image": "",
                 "listAddUserAccess": list_add_user_access
             }
             
@@ -106,10 +106,10 @@ module ZervServices
             req_keys = {
                 "id": "0",
                 "userAccessDurationId": "0",
-                "accessEndDate": tour_time.strftime("%Y-%m-%d"),
                 "accessStartDate": tour_time.strftime("%Y-%m-%d"),
+                "accessEndDate": (tour_time + 1.day).strftime("%Y-%m-%d"),
                 "credentialIdentifier": "1234",
-                "facilityId": nil,
+                "facilityId": "",
                 "active": true,
                 "monAccess": false,
                 "tueAccess": false,
