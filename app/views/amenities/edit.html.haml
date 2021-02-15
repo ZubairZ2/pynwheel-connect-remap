@@ -52,19 +52,19 @@
 
             - if @community.enable_locks
               - locks_present_hash = {}
-              - locks_present_hash["Dwelo"] = @community.dwelo.present? && @all_locks[:dwelo_locks].any?
-              - locks_present_hash["EdgeState"] = @community.edge_state.present? && @all_locks[:edgestate_locks].any?
-              - locks_present_hash["Latch"] = @community.latch.present? && @all_locks[:latch_locks].any?
-              - locks_present_hash["Zerv"] = @community.zerv.present? && @all_locks[:zerv_locks].any?
+              - locks_present_hash["Dwelo"] = @community.multiple_locks_provider.include?("Dwelo") && @community.dwelo.present? && @all_locks[:dwelo_locks].any?
+              - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?
+              - locks_present_hash["Latch"] = @community.multiple_locks_provider.include?("Latch") &&  @community.latch.present? && @all_locks[:latch_locks].any?
+              - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
 
               // load options and input values start
               - if locks_present_hash["Dwelo"]
-                = hidden_field_tag "dwelo_lock_input_value", @amenity.remote_locks.for_dwelo.present? ? @amenity.remote_locks.for_dwelo.last.name + " (" + @amenity.remote_locks.for_dwelo.last.remote_lock_type + ")" : ''
+                = hidden_field_tag "dwelo_lock_input_value", @amenity.remote_locks.dwelo_locks.present? ? @amenity.remote_locks.dwelo_locks.last.name + " (" + @amenity.remote_locks.dwelo_locks.last.remote_lock_type + ")" : ''
                 .dwelo_options.hide_it
                   - @all_locks[:dwelo_locks].each do |lock|
                     %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
               - if locks_present_hash["EdgeState"]
-                = hidden_field_tag "edgestate_lock_input_value", @amenity.remote_locks.for_edge_state.present? ? @amenity.remote_locks.for_edge_state.last.name + " (" + @amenity.remote_locks.for_edge_state.last.remote_lock_type + ")" : ''
+                = hidden_field_tag "edgestate_lock_input_value", @amenity.remote_locks.edgestate_locks.present? ? @amenity.remote_locks.edgestate_locks.last.name + " (" + @amenity.remote_locks.edgestate_locks.last.remote_lock_type + ")" : ''
                 .edgestate_options.hide_it
                   - @all_locks[:edgestate_locks].each do |lock|
                     %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
@@ -86,7 +86,7 @@
                   Select Lock Type
                   %span Select the access provider for this stop
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), f.object.lock_provider),{},{:class=>"form-control amenity_edit_field"}
+                  = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), f.object.lock_provider),{},{:class=>"form-control"}
 
               .form-group.hide_it#manual_access_code
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -190,25 +190,35 @@
 
   var locks_input, locks_list, param_name, load_btn = "";
   $(document).ready(function(){
-    // if any lock selected selected
-    if ($('#amenity_lock_provider').val().length > 0)
-    {
-      // initialize elements 
-      lock_provider_type = $('#amenity_lock_provider').val().toLowerCase()
-      lock_input_value = "#" + lock_provider_type + "_lock_input_value"
-      options = '.' + lock_provider_type + "_options"
-      locks_input = "#lock_input"
-      locks_list = "#locks_list"
-      param_name = "lock_id"
-      // assign values
-      $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this amenity</span>")
-      $('#lock_input').val( $(lock_input_value).val() )
-      $('datalist#locks_list').html($(options).html())
-      $('#lock_access_code').removeClass('hide_it') 
-    }
-    else
-    {
-      $('#manual_access_code').removeClass('hide_it')
+    update_locks_select_and_lock_code_field()
+    // provide locks on change 
+    $('#amenity_lock_provider').change(function(){
+      update_locks_select_and_lock_code_field();
+    });
+    function update_locks_select_and_lock_code_field(){
+      // if any lock selected selected
+      if ($('#amenity_lock_provider').val().length > 0)
+      {
+        $('#manual_access_code').addClass('hide_it')
+        // initialize elements 
+        lock_provider_type = $('#amenity_lock_provider').val().toLowerCase()
+        lock_input_value = "#" + lock_provider_type + "_lock_input_value"
+        options = '.' + lock_provider_type + "_options"
+        locks_input = "#lock_input"
+        locks_list = "#locks_list"
+        param_name = "lock_id"
+        // assign values
+        $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this amenity</span>")
+        $('#lock_input').val( $(lock_input_value).val() )
+        $('datalist#locks_list').html($(options).html())
+        $('#lock_access_code').removeClass('hide_it') 
+      }
+      else
+      {
+        $('#lock_access_code').addClass('hide_it')
+        $('#manual_access_code').removeClass('hide_it')
+        locks_input = undefined
+      }
     }
   });
 
@@ -282,9 +292,7 @@
       })
     }
     else
-    {
-      call_submit()
-    }
+      $('.edit_amenity').submit();
   });
 
   $('#on_done').click(function(e){

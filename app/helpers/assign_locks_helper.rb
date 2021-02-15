@@ -15,18 +15,31 @@ module AssignLocksHelper
                 stop.latch_locks.update_all(stop_id: nil, stop_type: nil)
             end
 
-        elsif stop.lock_provider == "EdgeState" or stop.lock_provider == "Dwelo"
+        elsif stop.lock_provider == "Dwelo"
 
             if lock_id.present?
-                remote_lock = stop.lock_provider.constantize.find_by(community_id: community.id).remote_locks.find_by(device_id: lock_id) rescue nil
-                if remote_lock.present? and stop.remote_locks.present? and stop.remote_locks.last.device_id != remote_lock.device_id
-                  stop.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+                remote_lock = stop.lock_provider.constantize.find_by(community_id: community.id).remote_locks.dwelo_locks.find_by(device_id: lock_id) rescue nil
+                if remote_lock.present? and stop.remote_locks.dwelo_locks.present? and stop.remote_locks.dwelo_locks.last.device_id != remote_lock.device_id
+                  stop.remote_locks.dwelo_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
                   remote_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name.snakecase, stop_name: stop.name) rescue nil
-                elsif remote_lock.present? and stop.remote_locks.blank?
+                elsif remote_lock.present? and stop.remote_locks.dwelo_locks.blank?
                   remote_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name.snakecase, stop_name: stop.name) rescue nil
                 end
             elsif lock_id == ""
-                stop.remote_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+                stop.remote_locks.dwelo_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+            end
+        elsif stop.lock_provider == "EdgeState"
+
+            if lock_id.present?
+                remote_lock = stop.lock_provider.constantize.find_by(community_id: community.id).remote_locks.edgestate_locks.find_by(device_id: lock_id) rescue nil
+                if remote_lock.present? and stop.remote_locks.edgestate_locks.present? and stop.remote_locks.edgestate_locks.last.device_id != remote_lock.device_id
+                  stop.remote_locks.edgestate_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+                  remote_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name.snakecase, stop_name: stop.name) rescue nil
+                elsif remote_lock.present? and stop.remote_locks.edgestate_locks.blank?
+                  remote_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name.snakecase, stop_name: stop.name) rescue nil
+                end
+            elsif lock_id == ""
+                stop.remote_locks.edgestate_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
             end
         elsif stop.lock_provider == "Zerv"
 

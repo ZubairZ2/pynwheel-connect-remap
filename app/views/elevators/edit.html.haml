@@ -54,56 +54,56 @@
                 = f.text_field :building ,  class: "form-control elevator_edit_field", placeholder: "building"
 
             - if @community.enable_locks
-              - if @community.locks_provider == "EdgeState" and @community.edge_state.present?
-                .form-group.hide_on_new
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Remote Lock
-                    %span Assign the lock to this elevator
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = text_field_tag :edgestate_locks_input, @elevator.remote_locks.present? ? @elevator.remote_locks.last.name + " (" + @elevator.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control elevator_edit_field"
-                    %datalist#edgestate_locks_list
-                      - @all_locks[:edgestate_locks].each do |lock|
-                        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+              - locks_present_hash = {}
+              - locks_present_hash["Dwelo"] = @community.multiple_locks_provider.include?("Dwelo") && @community.dwelo.present? && @all_locks[:dwelo_locks].any?
+              - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?
+              - locks_present_hash["Latch"] = @community.multiple_locks_provider.include?("Latch") &&  @community.latch.present? && @all_locks[:latch_locks].any?
+              - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
 
-              - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present?
-                .form-group.hide_on_new
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Dwelo lock
-                    %span Assign the lock to this elevator
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = text_field_tag :dwelo_locks_input, @elevator.remote_locks.present? ? @elevator.remote_locks.last.name + " (" + @elevator.remote_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control elevator_edit_field"
-                    %datalist#dwelo_locks_list
-                      - @all_locks[:dwelo_locks].each do |lock|
-                        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+              // load options and input values start
+              - if locks_present_hash["Dwelo"]
+                = hidden_field_tag "dwelo_lock_input_value", @elevator.remote_locks.dwelo_locks.present? ? @elevator.remote_locks.dwelo_locks.last.name + " (" + @elevator.remote_locks.dwelo_locks.last.remote_lock_type + ")" : ''
+                .dwelo_options.hide_it
+                  - @all_locks[:dwelo_locks].each do |lock|
+                    %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+              - if locks_present_hash["EdgeState"]
+                = hidden_field_tag "edgestate_lock_input_value", @elevator.remote_locks.edgestate_locks.present? ? @elevator.remote_locks.edgestate_locks.last.name + " (" + @elevator.remote_locks.edgestate_locks.last.remote_lock_type + ")" : ''
+                .edgestate_options.hide_it
+                  - @all_locks[:edgestate_locks].each do |lock|
+                    %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
+              - if locks_present_hash["Latch"]
+                = hidden_field_tag "latch_lock_input_value", @elevator.latch_locks.present? ?  @elevator.latch_locks.last.lock_name : ''
+                .latch_options.hide_it
+                  - @all_locks[:latch_locks].each do |lock|
+                    %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+              - if locks_present_hash["Zerv"]
+                = hidden_field_tag "zerv_lock_input_value", @elevator.zerv_locks.present? ?  @elevator.zerv_locks.last.sub_location_name + " (" + @elevator.zerv_locks.last.sub_location_friendly_name + ")" : ''
+                .zerv_options.hide_it
+                  - @all_locks[:zerv_locks].each do |lock|
+                    %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+              // load options and input values send
 
-              - elsif @community.locks_provider == "Latch" and @community.latch.present?
-                .form-group.hide_on_new
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Latch lock
-                    %span Assign the lock to this elevator
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = text_field_tag :latch_locks_input, @elevator.latch_locks.present? ?  @elevator.latch_locks.last.lock_name : '', :placeholder => "Search by lock name", :list => "latch_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control elevator_edit_field"
-                    %datalist#latch_locks_list
-                      - @all_locks[:latch_locks].each do |lock|
-                        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
-              - elsif @community.locks_provider == "Zerv" and @community.zerv.present?
-                .form-group.hide_on_new
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Pynwheel Access (zerv)
-                    %span Assign the lock to this elevator
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = text_field_tag :zerv_locks_input, @elevator.zerv_locks.present? ?  @elevator.zerv_locks.last.sub_location_name + " (" + @elevator.zerv_locks.last.sub_location_friendly_name + ")" : '', :placeholder => "Search by lock name", :list => "zerv_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control elevator_edit_field"
-                    %datalist#zerv_locks_list
-                      - @all_locks[:zerv_locks].each do |lock|
-                        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Select Lock Type
+                  %span Select the access provider for this stop
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), f.object.lock_provider),{},{:class=>"form-control"}
 
-              - elsif @community.locks_provider == nil or @community.locks_provider == ""
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Access Code
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control elevator_edit_field", :placeholder=>"Access Code"
+              .form-group.hide_it#manual_access_code
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Access Code
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control elevator_edit_field", :placeholder=>"Access Code"
+
+              .form-group#lock_access_code.hide_it
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control elevator_edit_field"
+                  %datalist#locks_list
+
 
             = submit_tag 'Save', class: "hidden"
 
@@ -153,33 +153,43 @@
                 DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
 :javascript
-  var locks_provider = "#{@locks_provider}"
   var locks_input, locks_list, param_name;
-
-  if(locks_provider == "EdgeState"){
-    locks_input = "#edgestate_locks_input"
-    locks_list = "#edgestate_locks_list"
-    param_name = "remote_lock"
-  }
-  else if(locks_provider == "Dwelo"){
-    locks_input = "#dwelo_locks_input"
-    locks_list = "#dwelo_locks_list"
-    param_name = "dwelo_remote_lock"
-  }
-  else if(locks_provider == "Latch"){
-    locks_input = "#latch_locks_input"
-    locks_list = "#latch_locks_list"
-    param_name = "latch_lock"
-  }
-  else if(locks_provider == "Zerv"){
-    locks_input = "#zerv_locks_input"
-    locks_list = "#zerv_locks_list"
-    param_name = "zerv_lock"
-  }
-
+  $(document).ready(function(){
+    // run it on ready 
+    update_locks_select_and_lock_code_field()
+    // provide locks on change 
+    $('#elevator_lock_provider').change(function(){
+      update_locks_select_and_lock_code_field();
+    });
+    function update_locks_select_and_lock_code_field(){
+      // if any lock selected selected
+      if ($('#elevator_lock_provider').val().length > 0)
+      {
+        $('#manual_access_code').addClass('hide_it')
+        // initialize elements 
+        lock_provider_type = $('#elevator_lock_provider').val().toLowerCase()
+        lock_input_value = "#" + lock_provider_type + "_lock_input_value"
+        options = '.' + lock_provider_type + "_options"
+        locks_input = "#lock_input"
+        locks_list = "#locks_list"
+        param_name = "lock_id"
+        // assign values
+        $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this amenity</span>")
+        $('#lock_input').val( $(lock_input_value).val() )
+        $('datalist#locks_list').html($(options).html())
+        $('#lock_access_code').removeClass('hide_it') 
+      }
+      else
+      {
+        $('#lock_access_code').addClass('hide_it')
+        $('#manual_access_code').removeClass('hide_it')
+        locks_input = undefined
+      }
+    }
+  });
   $('.elevator_edit_field').change(function(){
     setTimeout(function(){ 
-
+      if (locks_input){
         var lock = $(locks_input)[0];
         if(lock.value == "")
           lock.setCustomValidity('')
@@ -191,28 +201,31 @@
           $('.edit_elevator').submit(); 
         }
         else{ lock.reportValidity(); }
-
+      }
+      else
+        $('.edit_elevator').submit();
     }, 300);
 
   });
-
-  var inputs = document.querySelectorAll('input[list]');
-  for (var i = 0; i < inputs.length; i++) {
-    inputs[i].addEventListener('change', function() {
-      var optionFound = false,
-      datalist = this.list;
-      for (var j = 0; j < datalist.options.length; j++) {
-          if (this.value == datalist.options[j].value) {
-              optionFound = true;
-              break;
-          }
-      }
-      if (optionFound) {
-        this.setCustomValidity('');
-      } else {
-        if ( $(locks_input).val() != "" )
-            this.setCustomValidity('Lock does not exist');
-      }
-    });
+  if (locks_input){
+    var inputs = document.querySelectorAll('input[list]');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].addEventListener('change', function() {
+        var optionFound = false,
+        datalist = this.list;
+        for (var j = 0; j < datalist.options.length; j++) {
+            if (this.value == datalist.options[j].value) {
+                optionFound = true;
+                break;
+            }
+        }
+        if (optionFound) {
+          this.setCustomValidity('');
+        } else {
+          if ( $(locks_input).val() != "" )
+              this.setCustomValidity('Lock does not exist');
+        }
+      });
+    }
   }
 

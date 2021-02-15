@@ -260,7 +260,6 @@ class ToursController < ApplicationController
     @tours.x_plot = @tours.x_plot - 3 unless @tours.x_plot == 0
     @tours.y_plot = @tours.y_plot - 3 unless @tours.y_plot == 0
     @all_locks = all_locks(@community)
-    @locks_provider = @community.locks_provider
   end
 
   def sort_buildings
@@ -332,19 +331,19 @@ class ToursController < ApplicationController
     @tours.latitude = params[:latitude].present? ? params[:latitude] : ""
     @tours.longitude = params[:longitude].present? ? params[:longitude] : ""
     @tours.starting_floor = params[:starting_floor].present? ? params[:starting_floor] : nil
-    
+    @tours.access_code = params[:access_code].present? ? params[:access_code] : nil
+    @tours.lock_provider = params[:lock_provider].present? ? params[:lock_provider] : ""
     @tours.building = params[:building].present? ? params[:building] : nil
-
-    if @community.enable_locks
-      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ( (params[:zerv_lock].present? or params[:zerv_lock] == "") ?  params[:zerv_lock] : nil ) ) )
-      assign_lock(@community, @tours, lock_id) unless lock_id.nil?
-    end
 
     if @tours.building.nil? && params[:building].present?
       flash[:error] = "Building can not be empty"
       redirect_to starting_point_community_tours_path(@community)
     else
       if @tours.save
+        if @community.enable_locks
+          lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+          assign_lock(@community, @tours, lock_id) unless lock_id.nil?
+        end
         flash[:notice] = "Tour settings updated successfully."
         redirect_to starting_point_community_tours_path(@community)
       else

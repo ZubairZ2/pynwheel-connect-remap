@@ -1,6 +1,7 @@
 %section{style: "margin-top: -45px"}
   .content
     .title-heading.mb-25
+      = hidden_field_tag "is_dwelo", "#{@community.creator_id.present? and @community.creator.present? and @community.creator.role == 'Dwelo admin'}"
       %h4
         %i.fa.fa-laptop
         = @community.name.capitalize
@@ -12,135 +13,6 @@
         = render :partial=>'locks'
 
 :javascript
-
-    if("#{@community.enable_locks}" && "#{@community.locks_provider}" == "EdgeState"){
-      $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
-      $(".edgestate").removeClass("hide_edgestate");
-      $(".latch").addClass("hide_latch");
-      $(".dwelo").addClass("hide_dwelo");
-      $(".zerv").addClass("hide_zerv");
-    }
-    else if ("#{@community.enable_locks}" && "#{@community.locks_provider}" == "Dwelo"){
-      $(".lock_provider").val($(".lock_provider option:first").val());
-      $(".edgestate").addClass("hide_edgestate");
-      $(".latch").addClass("hide_latch");
-      $(".zerv").addClass("hide_zerv");
-      $(".dwelo").removeClass("hide_dwelo");
-    }
-    else if ("#{@community.enable_locks}" && "#{@community.locks_provider}" == "Latch"){
-      $(".lock_provider_latch").val($(".lock_provider_latch option:first").val());
-      $(".edgestate").addClass("hide_edgestate");
-      $(".dwelo").addClass("hide_dwelo");
-      $(".zerv").addClass("hide_zerv");
-      $(".latch").removeClass("hide_latch");
-    }
-    else if ("#{@community.enable_locks}" && "#{@community.locks_provider}" == "Zerv"){
-      $(".lock_provider_zerv").val($(".lock_provider_zerv option:first").val());
-      $(".edgestate").addClass("hide_edgestate");
-      $(".dwelo").addClass("hide_dwelo");
-      $(".latch").addClass("hide_latch");
-      $(".zerv").removeClass("hide_zerv");
-    }
-
-    $(".lock_provider").change(function (){
-      lock_providerr = $(".lock_provider").val();
-      if (lock_providerr == "EdgeState") {
-        $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
-        $(".edgestate").removeClass("hide_edgestate");
-        $(".dwelo").addClass("hide_dwelo");
-        $(".latch").addClass("hide_latch");
-        $(".zerv").addClass("hide_zerv");
-      }
-      else if(lock_providerr == "Latch"){
-        $(".lock_provider_latch").val($(".lock_provider_latch option:first").val());
-        $(".latch").removeClass("hide_latch");
-        $(".edgestate").addClass("hide_edgestate");
-        $(".dwelo").addClass("hide_dwelo");
-        $(".zerv").addClass("hide_zerv");
-      }
-      else if(lock_providerr == "Zerv"){
-        $(".lock_provider_zerv").val($(".lock_provider_zerv option:first").val());
-        $(".zerv").removeClass("hide_zerv");
-        $(".edgestate").addClass("hide_edgestate");
-        $(".dwelo").addClass("hide_dwelo");
-        $(".latch").addClass("hide_latch");
-      }
-    })
-
-    $(".lock_provider_edge").change(function (){
-      lock_providerr = $(".lock_provider_edge").val();
-      if (lock_providerr == "Dwelo") {
-        $(".lock_provider").val($(".lock_provider option:first").val());
-        $(".dwelo").removeClass("hide_dwelo");
-        $(".edgestate").addClass("hide_edgestate");
-        $(".latch").addClass("hide_latch");
-        $(".zerv").addClass("hide_zerv");
-      }
-      else if(lock_providerr == "Latch"){
-        $(".lock_provider_latch").val($(".lock_provider_latch option:first").val());
-        $(".latch").removeClass("hide_latch");
-        $(".edgestate").addClass("hide_edgestate");
-        $(".dwelo").addClass("hide_dwelo");
-        $(".zerv").addClass("hide_zerv");
-      }
-      else if(lock_providerr == "Zerv"){
-        $(".lock_provider_zerv").val($(".lock_provider_zerv option:first").val());
-        $(".zerv").removeClass("hide_zerv");
-        $(".edgestate").addClass("hide_edgestate");
-        $(".dwelo").addClass("hide_dwelo");
-        $(".latch").addClass("hide_latch");
-      }
-    })
-
-    $(".lock_provider_latch").change(function (){
-      lock_providerr = $(".lock_provider_latch").val();
-      if (lock_providerr == "EdgeState") {
-        $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
-        $(".edgestate").removeClass("hide_edgestate");
-        $(".dwelo").addClass("hide_dwelo");
-        $(".latch").addClass("hide_latch");
-        $(".zerv").addClass("hide_zerv");
-      }
-      else if (lock_providerr == "Dwelo") {
-        $(".lock_provider").val($(".lock_provider option:first").val());
-        $(".dwelo").removeClass("hide_dwelo");
-        $(".edgestate").addClass("hide_edgestate");
-        $(".latch").addClass("hide_latch");
-        $(".zerv").addClass("hide_zerv");
-      }
-      else if(lock_providerr == "Zerv"){
-        $(".lock_provider_zerv").val($(".lock_provider_zerv option:first").val());
-        $(".zerv").removeClass("hide_zerv");
-        $(".edgestate").addClass("hide_edgestate");
-        $(".dwelo").addClass("hide_dwelo");
-        $(".latch").addClass("hide_latch");
-      }
-    })
-
-    $(".lock_provider_zerv").change(function (){
-      lock_providerr = $(".lock_provider_zerv").val();
-      if (lock_providerr == "EdgeState") {
-        $(".lock_provider_edge").val($(".lock_provider_edge option:first").val());
-        $(".edgestate").removeClass("hide_edgestate");
-        $(".dwelo").addClass("hide_dwelo");
-        $(".latch").addClass("hide_latch");
-        $(".zerv").addClass("hide_zerv");
-      }
-      else if (lock_providerr == "Dwelo") {
-        $(".lock_provider").val($(".lock_provider option:first").val());
-        $(".dwelo").removeClass("hide_dwelo");
-        $(".edgestate").addClass("hide_edgestate");
-        $(".latch").addClass("hide_latch");
-        $(".zerv").addClass("hide_zerv");
-      }
-      else if(lock_providerr == "Latch"){
-        $(".lock_provider_latch").val($(".lock_provider_latch option:first").val());
-        $(".latch").removeClass("hide_latch");
-        $(".edgestate").addClass("hide_edgestate");
-        $(".dwelo").addClass("hide_dwelo");
-        $(".zerv").addClass("hide_zerv");
-      }
-    })
 
     $("#map_locks").click(function (){
       $.ajax({

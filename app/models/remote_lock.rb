@@ -13,6 +13,7 @@ class RemoteLock < ApplicationRecord
   scope :for_elevators, -> { where stop_type: "elevator"}
   scope :for_building_starting_points, -> { where stop_type: "building_starting_point"}
   scope :for_starting_points, -> { where stop_type: "tour"}
-  scope :for_dwelo, -> { where("dwelo_id IS NOT NULL") }
-  scope :for_edge_state, -> { where("edge_state_id IS NOT NULL") }
+  
+  scope :dwelo_locks, -> {where edge_state_id: nil}
+  scope :edgestate_locks, -> {where dwelo_id: nil}
 end

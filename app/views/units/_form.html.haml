@@ -90,19 +90,19 @@
 
 - if @community.enable_locks
   - locks_present_hash = {}
-  - locks_present_hash["Dwelo"] = @community.dwelo.present? && @all_locks[:dwelo_locks].any?
-  - locks_present_hash["EdgeState"] = @community.edge_state.present? && @all_locks[:edgestate_locks].any?
-  - locks_present_hash["Latch"] = @community.latch.present? && @all_locks[:latch_locks].any?
-  - locks_present_hash["Zerv"] = @community.zerv.present? && @all_locks[:zerv_locks].any?
+  - locks_present_hash["Dwelo"] = @community.multiple_locks_provider.include?("Dwelo") && @community.dwelo.present? && @all_locks[:dwelo_locks].any?
+  - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?
+  - locks_present_hash["Latch"] = @community.multiple_locks_provider.include?("Latch") &&  @community.latch.present? && @all_locks[:latch_locks].any?
+  - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
 
   // load options and input values start
   - if locks_present_hash["Dwelo"]
-    = hidden_field_tag "dwelo_lock_input_value", @unit.remote_locks.for_dwelo.present? ? @unit.remote_locks.for_dwelo.last.name + " (" + @unit.remote_locks.for_dwelo.last.remote_lock_type + ")" : ''
+    = hidden_field_tag "dwelo_lock_input_value", @unit.remote_locks.dwelo_locks.present? ? @unit.remote_locks.dwelo_locks.last.name + " (" + @unit.remote_locks.dwelo_locks.last.remote_lock_type + ")" : ''
     .dwelo_options.hide_it
       - @all_locks[:dwelo_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
   - if locks_present_hash["EdgeState"]
-    = hidden_field_tag "edgestate_lock_input_value", @unit.remote_locks.for_edge_state.present? ? @unit.remote_locks.for_edge_state.last.name + " (" + @unit.remote_locks.for_edge_state.last.remote_lock_type + ")" : ''
+    = hidden_field_tag "edgestate_lock_input_value", @unit.remote_locks.edgestate_locks.present? ? @unit.remote_locks.edgestate_locks.last.name + " (" + @unit.remote_locks.edgestate_locks.last.remote_lock_type + ")" : ''
     .edgestate_options.hide_it
       - @all_locks[:edgestate_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
@@ -273,7 +273,7 @@
     });
 
     function update_locks_select_and_lock_code_field(){
-      // if any lock selected selected  
+      // if any lock selected 
       if ($('#unit_lock_provider').val().length > 0){
         $('#manual_access_code').addClass('hide_it')
         // initialize elements 

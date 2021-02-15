@@ -40,9 +40,15 @@
     }
     else
     {
-      $(".add-new-lock li").first().removeClass('hidden').addClass('active')
-      $('.tab-pane.hidden').first().removeClass('hidden').addClass('active in')
-      $('.add-new-lock a.show').first().addClass('disabled half_opacity')
+      if ($('#is_dwelo').val() == "true"){
+        $(".add-new-lock li").first().removeClass('hidden').addClass('active')
+        $('.tab-pane.hidden').first().removeClass('hidden').addClass('active in')
+        $('.add-new-lock a.show').first().addClass('disabled half_opacity')
+      }else{
+        $(".add-new-lock li").last().removeClass('hidden').addClass('active')
+        $('.tab-pane.hidden').last().removeClass('hidden').addClass('active in')
+        $('.add-new-lock a.show').last().addClass('disabled half_opacity')
+      }
     }
   });
 

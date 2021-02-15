@@ -28,7 +28,6 @@ class ElevatorsController < ApplicationController
     @community = Community.find params[:community_id]
     @elevator = Elevator.find_by_id(params[:id])
     @all_locks = all_locks(@community)
-    @locks_provider = @community.locks_provider
   end
 
   def save_elevator_gallery
@@ -62,12 +61,12 @@ class ElevatorsController < ApplicationController
   # PATCH/PUT /elevators/1
   # PATCH/PUT /elevators/1.json
   def update
-    if @community.enable_locks
-      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ( (params[:zerv_lock].present? or params[:zerv_lock] == "") ?  params[:zerv_lock] : nil ) ) )
-      assign_lock(@community, @elevator, lock_id) unless lock_id.nil?
-    end
     respond_to do |format|
       if @elevator.update(elevator_params)
+        if @community.enable_locks
+          lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+          assign_lock(@community, @elevator, lock_id) unless lock_id.nil?
+        end
         ts = TourStop.find_by(stop_type: "elevator", stop_id: @elevator.id)
         if ts.present?
           ts.update_attributes(name: @elevator.name)
@@ -126,6 +125,6 @@ class ElevatorsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def elevator_params
-      params.require(:elevator).permit(:name, :description, :x_plot, :y_plot, :directional_text, :floorplate_id, :community_id, :image, :floorplate_covering_range,:building)
+      params.require(:elevator).permit(:name, :description, :x_plot, :y_plot, :directional_text, :floorplate_id, :community_id, :image, :floorplate_covering_range,:building,:access_code, :lock_provider)
     end
 end
