@@ -25,7 +25,7 @@ module ApplicationHelper
     end
   end
   def api_access
-    return false
+    return true
   end
 
   def gables_theme_options
