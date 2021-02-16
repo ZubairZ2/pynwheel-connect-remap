@@ -236,11 +236,13 @@ class UnitsController < ApplicationController
       else
         if params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
           @unit.update(unit_params)
+
           if @community.enable_locks
             lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
             assign_lock(@community, @unit, lock_id) unless lock_id.nil?
           end
-          if params[:unit][:floorplan_id] != @unit.floorplan.id
+
+          if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != @unit.floorplan.id
             delete_previous_floorplan_images = "delete previous"
             AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
             floorplan_amenities = @unit.floorplan.amenities rescue nil
@@ -269,11 +271,13 @@ class UnitsController < ApplicationController
             format.json { respond_with_bip(@unit) }
           else
             @unit.update(unit_params)
+
             if @community.enable_locks
               lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
               assign_lock(@community, @unit, lock_id) unless lock_id.nil?
             end
-            if params[:unit][:floorplan_id] != @unit.floorplan.id
+
+            if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != @unit.floorplan.id
               delete_previous_floorplan_images = "delete previous"
               AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
               floorplan_amenities = @unit.floorplan.amenities rescue nil

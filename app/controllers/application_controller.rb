@@ -59,7 +59,7 @@ class ApplicationController < ActionController::Base
       LoggedInUser.where(session_id: cookies[:session_id]).destroy_all
       all_users_count = LoggedInUser.where(community_id: cookies[:community_id].to_i).map{|u| u.logged_in_count}.sum
       if all_users_count == 0
-        Community.find_by(id: cookies[:community_id].to_i).update_columns(is_chat_login: false)
+        Community.find_by(id: cookies[:community_id].to_i).update_columns(is_chat_available: false)
         cookies.delete :community_id
         cookies.delete :session_id
       end

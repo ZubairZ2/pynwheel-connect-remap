@@ -13,7 +13,7 @@ Rails.application.config.after_initialize do
         ]
         unless all_tasks_list.include?(ARGV[0])
             LoggedInUser.destroy_all
-            Community.update_all(is_chat_login: false)
+            Community.update_all(is_chat_available: false)
         else
             puts "No need to change the loggedInUsers values"
         end

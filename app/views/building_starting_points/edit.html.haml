@@ -47,6 +47,7 @@
                 = f.select :floor, (@floors),{} , class: "form-control building_starting_point_edit_field"
 
             - if @community.enable_locks
+
               - locks_present_hash = {}
               - locks_present_hash["Dwelo"] = @community.multiple_locks_provider.include?("Dwelo") && @community.dwelo.present? && @all_locks[:dwelo_locks].any?
               - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?

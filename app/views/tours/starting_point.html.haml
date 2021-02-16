@@ -48,6 +48,7 @@
                     = select_tag :starting_floor, options_for_select(@floors, @community.tour.starting_floor) , :class=>"form-control save-starting-point-field" , :include_blank => true
                 
                 - if @community.enable_locks
+                
                   - locks_present_hash = {}
                   - locks_present_hash["Dwelo"] = @community.multiple_locks_provider.include?("Dwelo") && @community.dwelo.present? && @all_locks[:dwelo_locks].any?
                   - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?
@@ -98,7 +99,6 @@
                     .col-sm-12.col-lg-6.col-md-6.col-xs-12
                       = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control save-starting-point-field"
                       %datalist#locks_list
-
 
                 -#.form-group
                 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
