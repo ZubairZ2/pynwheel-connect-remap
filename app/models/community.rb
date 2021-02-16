@@ -664,10 +664,6 @@ class Community < ApplicationRecord
     User.find_by(id: self.creator_id)
   end
 
-  def include_locks_provider(lock)
-    multiple_locks_provider.include?(lock) 
-  end
-
   def lock_options(locks_present_hash)
     options = [["Manual", ""]]
     locks_present_hash.each do |key,value|

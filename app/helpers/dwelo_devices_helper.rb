@@ -181,13 +181,13 @@ module DweloDevicesHelper
     is_tour_virtual
   end
 
-  def lock_access_by_type(params, community, tour_user)
+  def lock_access_by_type(params, community, tour_user, current_time)
     if community.multiple_locks_provider.include?("Dwelo")
-      dwelo_lock_access(params, community)
+      dwelo_lock_access(params, community, current_time)
     end
 
     if community.multiple_locks_provider.include?("EdgeState")
-      edgestate_lock_Access(params, community)
+      edgestate_lock_Access(params, community, current_time)
     end
     
     if community.multiple_locks_provider.include?("Latch")
@@ -195,9 +195,11 @@ module DweloDevicesHelper
     end
   end
 
-  def dwelo_lock_access(params, community)
+  def dwelo_lock_access(params, community, current_time)
     Thread.new do
       tour_user = TourUser.find params[:tour_user_id]
+      providers_account = Dwelo.find_by(community_id: params[:id]) rescue nil
+
       access_token = dwelo_client_credentials(providers_account)
       prev_data = tour_user.as_guests.find_by(community_id: params[:id])
 
@@ -226,7 +228,7 @@ module DweloDevicesHelper
     end
   end
 
-  def edgestate_lock_Access(params, community)
+  def edgestate_lock_Access(params, community, current_time)
     Thread.new do
       tour_user = TourUser.find params[:tour_user_id]
       access_token = RemoteLockService.new(community).client_credentials
@@ -319,8 +321,7 @@ module DweloDevicesHelper
   end
 
   def locks_with_same_type(type, community, allowed_stops = [])
-    visible_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id).
-
+    visible_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
     visible_stops.each do |stop|
       if (stop[0].classify.constantize.find_by_id stop[1]).lock_provider == type
         allowed_stops << stop[1]
@@ -328,6 +329,7 @@ module DweloDevicesHelper
     end
 
     allowed_stops << community.tour.id if community.tour.lock_provider == type
+    allowed_stops
   end
 
   def zerv_multiple_stops_access community
@@ -342,6 +344,13 @@ module DweloDevicesHelper
     allowed_stops << ["tour", community.tour.id] if community.tour.lock_provider == "Zerv"
     
     allowed_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
+  end
+
+  def current_community_time(community, params)
+    timezone = get_community_time_zone(community)
+    (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
+    rescue
+    Time.now.utc
   end
 
   def is_tour_in_visiting_hours(time_param, community)
@@ -368,10 +377,10 @@ module DweloDevicesHelper
     if response.success? and response.payload.present?
       today_scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
       if tours_exist = today_scheduled_tours.present?
-        on_time_tour = is_sf_tour_on_time(today_scheduled_tours, current_time, community.tour.grace_period, timezone)
+        on_time_tour = is_sf_tour_on_time(current_time, today_scheduled_tours, community.tour.grace_period, timezone)
         current_tour = on_time_tour
         unless on_time_tour.present?
-          time_status , nearest_tour = sf_tour_time_status(today_scheduled_tours, current_time, timezone)
+          time_status , nearest_tour = sf_tour_time_status(current_time, today_scheduled_tours, timezone)
           current_tour = nearest_tour
         end
         
@@ -388,7 +397,7 @@ module DweloDevicesHelper
 
     today_scheduled_tours = get_scheduled_tours(community.id, tour_user.id, current_time)
     if tours_exist = today_scheduled_tours.present?
-      on_time_tour = is_tour_on_time(today_scheduled_tours, current_time, community.tour.grace_period)
+      on_time_tour = is_tour_on_time(current_time, today_scheduled_tours, community.tour.grace_period)
       unless on_time_tour.present?
 
         time_status , nearest_tour = tour_time_status(today_scheduled_tours, current_time)
@@ -396,13 +405,6 @@ module DweloDevicesHelper
     end
 
     OpenStruct.new({tours_exist: tours_exist, on_time_tour: on_time_tour, nearest_tour: nearest_tour, time_status: time_status})
-  end
-
-  def current_community_time(community)
-    timezone = get_community_time_zone(community)
-    (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
-  rescue
-    Time.now.utc
   end
 
   def check_guest_limit(community, property_time, limit, tour_user)
@@ -426,15 +428,16 @@ module DweloDevicesHelper
   end
 
   def app_usage(community, property_time, limit ,tour_user)
-    unless geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude, 1)
+    # return (limit <= TourHistory.where('arrived = ? AND left = ? AND abandoned_tour_at_stop AND active_app = ? AND arrived > ? AND is_virtual_tour', property_time.to_date,  nil, nil, false, property_time - 180.minutes, false).count) ? false : true
+    unless geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude, 1.5)
       return 0
     else
-      return TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, is_virtual_tour: false,tour_id: community.tour.id).where('arrived > ?', (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude, 1)) }.compact.count
+      return TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, tour_id: community.tour.id).where('tour_status != ? and arrived > ?', "virtual_tour", (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude, 1.5)) }.compact.count
     end    
   end
 
-  def geo_distance(lat1, long1, lat2, long2, kilometer)
-    return ((Geocoder::Calculations.distance_between([lat1,long1],[lat2,long2],options = {:units => :km}) < kilometer) rescue true)
+  def geo_distance(lat1,long1,lat2,long2,limit)
+    return ((Geocoder::Calculations.distance_between([lat1,long1],[lat2,long2],options = {:units => :km}) < limit) rescue true)
   end
 
   def get_community_time(community)
@@ -452,23 +455,22 @@ module DweloDevicesHelper
     community_time.present? ? community_time : nil
   end
 
-  def get_community_time_zone(community)
+ def get_community_time_zone(community)
     tz = Ziptz.new
     timezone = nil
 
-    if community.zip.present?
+    if community.latitude.present? and community.longitude.present?
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and community.zip.present?
         timezone = tz.time_zone_name(community.zip)
     end
 
-    if timezone.nil? and community.latitude.present? and community.longitude.present?
-        time_zone = Timezone.lookup(community.latitude, community.longitude)
-        timezone = time_zone.name
-    end
-
     return timezone.present? ? timezone : "UTC"
-    
-    rescue
-      return "UTC"
+  rescue
+    return "UTC"
   end
 
   def is_sf_tour_on_time(current_time, scheduled_tours, grace_time, timezone)
@@ -477,27 +479,31 @@ module DweloDevicesHelper
     scheduled_tours.find_all{ |t| t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) >= before_margin and  t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) <= after_margin}.last
   end
   
-  def tour_time_status(time_param, grace_time, scheduled_tours)
-    current_tour = get_current_tour(time_param)
+  def tour_time_status(scheduled_tours, current_time)
+    # no need of grace, as grace time has already been used in confirming "is_tour_on_time" 
+    # now it is confirmed that either the tour is before or after time
+    current_tour = get_current_tour(current_time)
     nearest_before_time = scheduled_tours.where("tour_time > ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest before time , remember min function will be applied at the first index of array, which is deliberately set to time
     nearest_after_time  = scheduled_tours.where("tour_time < ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest after time  , remember min function will be applied at the first index of array, which is deliberately set to time
 
     if nearest_before_time.present? and nearest_after_time.nil?
-      return ["before time" , nearest_before_time[1]]
+      return ["before time" , scheduled_tours.find{|s| s.id == nearest_before_time[1]}]
     elsif nearest_before_time.nil? and nearest_after_time.present?
-      return ["after time" , nearest_after_time[1]]
+      return ["after time" , scheduled_tours.find{|s| s.id == nearest_after_time[1]}]
     end
 
     if nearest_before_time[0] < nearest_after_time[0]
-      return ["before time" , nearest_before_time[1]]
+      return ["before time" ,scheduled_tours.find{|s| s.id == nearest_before_time[1]}]
     elsif nearest_after_time[0] < nearest_before_time[0]
-      return ["after time" , nearest_after_time[1]]
+      return ["after time" , scheduled_tours.find{|s| s.id == nearest_after_time[1]}]
     else
-      return ["after time" , nearest_after_time[1]] # if the difference b/w after and before is same, we will pick the upcoming scheduled tour i.e after time tour
+      return ["after time" , scheduled_tours.find{|s| s.id == nearest_after_time[1]}] # if the difference b/w after and before is same, we will pick the upcoming scheduled tour i.e after time tour
     end
   end
 
-  def sf_tour_time_status(current_time, scheduled_tours, grace_time, timezone)
+  def sf_tour_time_status(scheduled_tours, current_time, timezone)
+    # no need of grace, as grace time has already been used in confirming "is_tour_on_time" 
+    # now it is confirmed that either the tour is before or after time
     nearest_before_time = scheduled_tours.map{ |t| [(t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) - current_time).abs , t["Id"]] if t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) < current_time }.compact.min
     nearest_after_time = scheduled_tours.map{ |t| [(t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) - current_time).abs , t["Id"]] if t["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone) > current_time }.compact.min
 
@@ -515,4 +521,5 @@ module DweloDevicesHelper
       return ["after time" , scheduled_tours.find{|s| s["Id"] == nearest_after_time[1]}] # if the difference b/w after and before is same, we will pick the upcoming scheduled tour i.e after time tour
     end
   end
+
 end
