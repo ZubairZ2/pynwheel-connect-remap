@@ -6,11 +6,10 @@ class EdgestateAccountsController < ApplicationController
     end
     
     def create
+        locks_provider = current_community.multiple_locks_provider
+        locks_provider << "EdgeState" unless locks_provider.include?("EdgeState")
         unless @is_already_exists
             @edge_state = EdgeState.new(edge_state_params)
-            locks_provider = current_community.multiple_locks_provider
-            locks_provider << "EdgeState" unless locks_provider.include?("EdgeState")
-
             if @edge_state.save
                 current_community.update_columns(multiple_locks_provider: locks_provider)
                 Community.find(params[:community_id]).update!(:multiple_locks_provider => locks_provider)

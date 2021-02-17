@@ -6,11 +6,11 @@ class LatchAccountsController < ApplicationController
     end
     
     def create
+        locks_provider = current_community.multiple_locks_provider
+        locks_provider << "Latch" unless locks_provider.include?("Latch")
         unless @is_already_exists
             @latch = Latch.new(latch_params)
             result = parse_csv(params[:file]) if params[:file].present?
-            locks_provider = current_community.multiple_locks_provider
-            locks_provider << "Latch" unless locks_provider.include?("Latch")
             if @latch.save
                 current_community.update_columns(:multiple_locks_provider => locks_provider)
                 flash[:notice] = "Latch credentails saved successfully"
