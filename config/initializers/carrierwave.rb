@@ -41,8 +41,6 @@ CarrierWave.configure do |config|
     region:                'us-west-2'                 # optional, defaults to 'us-east-1'
   }
   config.fog_directory  = ENV['S3_BUCKET_NAME'] 
-  # config.fog_public = false                                # required
-  # config.fog_authenticated_url_expiration = 60
   config.cache_dir = "#{Rails.root}/public/uploads/tmp"
 end
 module CarrierWave

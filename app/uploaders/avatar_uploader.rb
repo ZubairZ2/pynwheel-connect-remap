@@ -7,24 +7,11 @@ class AvatarUploader < CarrierWave::Uploader::Base
   # Choose what kind of storage to use for this uploader:
   #storage :file
 
-  storage Rails.env.development? ? :fog : :fog
+  storage Rails.env.development? ? :file : :fog
 
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
-   def fog_public 
-    if (model.is_a? TourUser)
-      false
-      
-    else
-      true
-    end
-  end
-
-  def fog_authenticated_url_expiration
-    if (model.is_a? TourUser)
-      2.minutes
-    end
-  end
+  
 
    def filename
      if (model.is_a? Community) || (model.is_a? Floorplan) || (model.is_a? AdditionalImage) || (model.is_a? Amenity) || (model.is_a? Unit)
