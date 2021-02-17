@@ -584,6 +584,7 @@ ActiveRecord::Schema.define(version: 20210209120418) do
     t.integer  "duplicate_of"
     t.string   "building"
     t.string   "lock_provider",             default: ""
+    t.string   "access_code"
     t.index ["community_id"], name: "index_elevators_on_community_id", using: :btree
     t.index ["floorplate_id"], name: "index_elevators_on_floorplate_id", using: :btree
     t.index ["sitemap_id"], name: "index_elevators_on_sitemap_id", using: :btree
@@ -1480,6 +1481,7 @@ ActiveRecord::Schema.define(version: 20210209120418) do
     t.integer  "max_guided_tour_users"
     t.boolean  "enable_auto_zoom",          default: true
     t.string   "lock_provider",             default: ""
+    t.string   "access_code"
     t.index ["community_id"], name: "index_tours_on_community_id", using: :btree
   end
 
