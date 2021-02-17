@@ -144,7 +144,13 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
-
+  def do_verfication verfied_by_provider, community
+    if (verfied_by_provider == "check_point_id" || verfied_by_provider == "authenteq") && community.tour.tour_setting.present? && community.tour.tour_setting.charge_user_for_id_verfication
+      true
+    else
+      false
+    end
+  end
   def community_tours
     puts params
     access = grant_access (decoded(params[:token])) rescue false
@@ -156,7 +162,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community = Community.find params[:id]
       @community.deleted_ids = []
       @community.save
-      charge_for_id_verfication(@tour_user, 200) if params[:verfied_by_provider].present? && params[:verfied_by_provider] == "true" && @community.tour.tour_setting.present? && @community.tour.tour_setting.charge_user_for_id_verfication
+      charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
       @tour_user.save
       unless @tour_user.email == "Removed at Consumer Request"
       #####
@@ -652,7 +658,9 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
   def charge_for_id_verfication(tour_user, amount)
-    charge_customer(tour_user, ammount, "Charging for Id verfication", 'usd')
+    if tour_user.strip_customer_id.present?
+      charge_customer(tour_user, ammount, "Charging for Id verfication", 'usd')
+    end
   end
   def get_current_tour(time_param)
     current_datetime = time_param.to_datetime.strftime('%d/%m/%Y %l:%M %p')

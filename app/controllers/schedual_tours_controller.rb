@@ -39,7 +39,6 @@ class SchedualToursController < ApplicationController
     tu.last_name = l_name
     tu.phone_number = phone_number if phone_number.present?
     tu.desired_bedroom = params[:desired_bedroom]
-    byebug
     tu.card_last_digits = params[:last_digits] if params[:last_digits].present?
 
     # binding.pry
