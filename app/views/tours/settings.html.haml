@@ -228,6 +228,17 @@
                   = check_box_tag :do_limit_max_tour, true, @community.tour.tour_setting.do_limit_max_tour  , class: "do_limit_max_tour"
                   %label.label-primary{:for => "do_limit_max_tour"}
                   %span.pl-15 Yes  
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+
+                Charge User for ID Verfication
+                
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :charge_user_for_id_verfication, true, @community.tour.tour_setting.charge_user_for_id_verfication  , class: "charge_user_for_id_verfication"
+                  %label.label-primary{:for => "charge_user_for_id_verfication"}
+                  %span.pl-15 Yes        
             
             .form-group.limit_max_tour_class.hidden
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
