@@ -119,10 +119,10 @@ class TourHistory < ApplicationRecord
 
     available_stops = avail_stops_name_of_community
     visited_stops = stop_marketing_names_visited_by_user
-
-    if @community.data_provider == "realpagesvc"
-      RealPageGuestCardIntegrationJob.perform_async(@community.credential.attributes.to_json, self.tour_user, tour_time, end_time, tour_status, available_stops, visited_stops)
-    elsif @community.data_provider == "psi"
+    data_provider = @community.use_crm_credentials? ? @community.crm_credential.crm_provider : @community.data_provider
+    if data_provider == "realpagesvc"
+      RealPageGuestCardIntegrationJob.perform_async(@community.credential.attributes.to_json, self.tour_user, tour_time, end_time, tour_status, available_stops, visited_stops,@community)
+    elsif data_provider == "psi"
       @community.entrata_send_mits_leads(self.tour_user, tour_time, end_time, visited_stops)
     end
   end

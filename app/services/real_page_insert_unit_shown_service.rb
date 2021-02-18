@@ -1,10 +1,11 @@
 class RealPageInsertUnitShownService < BaseService
-    def perform(tour_user, tour_time, visited_stop, leasing_agent, activity_id)
-        insert_unit_shown(tour_user, tour_time, visited_stop, leasing_agent, activity_id)
+    def perform(tour_user, tour_time, visited_stop, leasing_agent, activity_id, community)
+        insert_unit_shown(tour_user, tour_time, visited_stop, leasing_agent, activity_id, community)
     end
 
-    def insert_unit_shown(guest, activity_date, unit_shown, leasing_agent, activity_id)
-        site_ids = credentials.site_id.split(',') rescue []
+    def insert_unit_shown(guest, activity_date, unit_shown, leasing_agent, activity_id, community)
+        use_crm_credentials = community.use_crm_credentials?
+        site_ids = (use_crm_credentials ? community.crm_credential.realpage_site_id.split(',') : credentials.site_id.split(',')) rescue []
         site_ids.each do |site_id|
             begin
                 url = REALPAGE_URL
@@ -12,7 +13,7 @@ class RealPageInsertUnitShownService < BaseService
                 username = REALPAGESVC_USERNAME
                 password = REALPAGESVC_PASSWORD
                 license_key = REALPAGESVC_LICENSE_KEY
-                pmc_id = credentials.pmc_id
+                pmc_id = use_crm_credentials ? community.crm_credential.realpage_pmc_id : credentials.pmc_id
 
                 community_id = credentials.community_id
                 activity_date = activity_date.strftime("%Y-%m-%d")

@@ -1,15 +1,16 @@
 class RealPageGetLeasingAgentsService < BaseService
-    def perform
-        get_leasing_agents
+    def perform(community)
+        get_leasing_agents(community)
     end
 
-    def get_leasing_agents
-        site_ids = credentials.site_id.split(',') rescue []
+    def get_leasing_agents(community)
+        use_crm_credentials = community.use_crm_credentials?
+        site_ids = (use_crm_credentials ? community.crm_credential.realpage_site_id.split(',') : credentials.site_id.split(',')) rescue []
         site_ids.each do |site_id|
           begin
             url = REALPAGE_URL
             soap_action = REALPAGE_LEASING_AGENT_ACTION
-            pmc_id = credentials.pmc_id
+            pmc_id = use_crm_credentials ? community.crm_credential.realpage_pmc_id : credentials.pmc_id
             username = REALPAGESVC_USERNAME
             password = REALPAGESVC_PASSWORD
             license_key = REALPAGESVC_LICENSE_KEY

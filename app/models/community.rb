@@ -99,6 +99,7 @@ class Community < ApplicationRecord
   has_many :elevators, dependent: :destroy
   
   has_one :credential, dependent: :destroy
+  has_one :crm_credential, dependent: :destroy
   has_one :design, dependent: :destroy
   has_one :favorite_stop, dependent: :destroy
   has_one :sitemap, dependent: :destroy
@@ -275,6 +276,13 @@ class Community < ApplicationRecord
     end
 
   end
+  def use_crm_credentials?
+    if self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
+      (true)
+    else
+      (false)
+    end
+  end
 
   def select_yardi_provider
     credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? import_yardi2_data : import_yardi4_data
@@ -411,19 +419,19 @@ class Community < ApplicationRecord
   end
 
   def realpage_insert_activity(tour_user)
-    RealPageInsertActivityJob.perform_async credential.attributes.to_json, tour_user
+    RealPageInsertActivityJob.perform_async credential.attributes.to_json, tour_user, self
   end
 
   def realpage_insert_unit_shown(tour_user)
-    RealPageInsertUnitShownJob.perform_async credential.attributes.to_json, tour_user
+    RealPageInsertUnitShownJob.perform_async credential.attributes.to_json, tour_user, self
   end
 
   def realpage_insert_follow_up(tour_user)
-    RealPageInsertFollowUpJob.perform_async credential.attributes.to_json, tour_user
+    RealPageInsertFollowUpJob.perform_async credential.attributes.to_json, tour_user, self
   end
 
   def realpage_get_leasing_agents
-    RealPageGetLeasingAgentsJob.perform_async credential.attributes.to_json
+    RealPageGetLeasingAgentsJob.perform_async credential.attributes.to_json, self
   end
 
   def real_page_get_activity_types
@@ -431,11 +439,11 @@ class Community < ApplicationRecord
   end
 
   def real_page_get_marketing_sources
-    RealPageGetMarketingSoucesJob.perform_async credential.attributes.to_json
+    RealPageGetMarketingSoucesJob.perform_async credential.attributes.to_json, self
   end
   
   def entrata_send_mits_leads(tour_user, tour_time, end_time, visited_stops)
-    PsiSendMitsLeadsJob.perform_async credential.attributes.to_json, tour_user, tour_time, end_time, visited_stops
+    PsiSendMitsLeadsJob.perform_async credential.attributes.to_json, tour_user, tour_time, end_time, visited_stops, self
   end
 
   def select_resman_provider

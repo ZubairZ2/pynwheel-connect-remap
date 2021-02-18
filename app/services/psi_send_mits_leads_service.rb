@@ -1,16 +1,17 @@
 class PsiSendMitsLeadsService < BaseService
-  def perform(tour_user, tour_time, end_time, visited_stops)
-      property_ids = credentials.property_id.split(',') rescue []
+  def perform(tour_user, tour_time, end_time, visited_stops, community)
+      use_crm_credentials = community.use_crm_credentials?
+      property_ids = (use_crm_credentials ? community.crm_credential.entrata_property_id.split(',') : credentials.property_id.split(',')) rescue []
       property_ids.each do |property_id|
-
-        if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+        entrata_domain = (use_crm_credentials ? community.crm_credential.entrata_domain : credentials.entrata_url)
+        if entrata_domain.include?('https://') || entrata_domain.include?('http://')
             url = credentials.entrata_url
         else
-            url = "https://"+credentials.entrata_url+".entrata.com/api/leads"
+            url = "https://"+entrata_domain+".entrata.com/api/leads"
         end
 
-        password = credentials.password
-        username = credentials.username
+        password = use_crm_credentials ? community.crm_credential.entrata_password : credentials.password
+        username = use_crm_credentials ? community.crm_credential.entrata_username : credentials.username
 
         first_name = tour_user.first_name.present? ? tour_user.first_name : tour_user.name
         last_name = tour_user.last_name.present? ? tour_user.last_name : 'missing'
