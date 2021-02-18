@@ -467,7 +467,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           # @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
 
           if @community.credential.present? and @community.credential.use_different_crm_provider and @community.credential.crm_provider == "salesforce"
-            if @community.id == 1240 # only enabled for "Metropolitan" for testing from Prometheus-salesforce
+            # if @community.id == 1240 # only enabled for "Metropolitan" for testing from Prometheus-salesforce
             response = SalesforceServices::GetBookingByNeighbor.call(community: @community, tour_user: @tour_user)
             puts "###### ------------------------- #############"
             puts response
@@ -487,7 +487,7 @@ class Api::V1::CommunitiesController < ActionController::Base
                 Prospect.create(community_id: @community.id,  tour_user_id: @tour_user.id, data_provider: @community.data_provider, crm_provider: "salesforce", sf_booking_id: nearest_time_tour["Id"], sf_booking_name: nearest_time_tour["Name"], sf_guest_id: nearest_time_tour["Contact__r"]["Id"], sf_status: "active") if nearest_time_tour.present?
               end
             end
-            end
+            # end
           else
             @scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)
             @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours ? false : true ) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
