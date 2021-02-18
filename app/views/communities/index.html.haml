@@ -25,6 +25,10 @@
                 = link_to new_company_community_group_path(current_company),:class=>"btn btn-success pull-right mb-20 mr-10" do
                   %i.fa.fa-plus-circle
                   ADD COMMUNITY GROUP
+              - if current_user.is_super_admin?
+                = link_to new_company_region_path(current_company),:class=>"btn btn-success pull-right mb-20 mr-10" do
+                  %i.fa.fa-plus-circle
+                  ADD REGION
             .divLoading.hidden
         .box.box-widget.panel-box
           .box-header
