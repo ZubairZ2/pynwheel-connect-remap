@@ -235,7 +235,7 @@
   });
 
   function update_locks_select_and_lock_code_field(){
-    if ($('#lock_provider').val().length > 0)
+    if ($('#lock_provider').val().length > 0 && $('#lock_provider').val() != "Manual")
     {
       $('#manual_access_code').addClass('hide_it')
       // initialize elements 

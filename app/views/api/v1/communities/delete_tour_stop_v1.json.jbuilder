@@ -578,7 +578,7 @@ json.tours @tours do |tour|
         stop_lock_provider = stop.lock_provider
         json.stop_lock_provider stop_lock_provider
         
-        if counter == 1 and @community.enable_locks and stop_lock_provider == "Latch" and @community.latch.present? and stop.latch_locks.present?
+        if stop_lock_provider == "Latch" and @community.latch.present? and stop.latch_locks.present?
           lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.latch_locks.first.stop_id)
           if lch.present?
   
@@ -594,7 +594,7 @@ json.tours @tours do |tour|
             end
           end
 
-        elsif counter == 1 and @community.enable_locks and stop_lock_provider == "EdgeState" and @community.edge_state.present? and stop.remote_locks.present?
+        elsif stop_lock_provider == "EdgeState" and @community.edge_state.present? and stop.remote_locks.present?
           rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.remote_locks.last.stop_id) if @community.edge_state.present?
           if rml.present?
             if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
@@ -620,7 +620,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
           end
 
-        elsif counter == 1 and @community.enable_locks and stop_lock_provider == "Zerv" and @community.zerv.present? and stop.zerv_locks.present?
+        elsif stop_lock_provider == "Zerv" and @community.zerv.present? and stop.zerv_locks.present?
           zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: "Tour", stop_id: stop.id)
           if zrv.present?
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: "Tour", guest_of_stop_id: stop.id, status: "active")
@@ -646,7 +646,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
           end
 
-        elsif counter == 1 and @community.enable_locks and stop_lock_provider == "Dwelo"
+        elsif stop_lock_provider == "Dwelo"
           dwelo_lock = stop.remote_locks.where.not(dwelo_id: nil).last rescue nil
           if dwelo_lock.present?
             json.guest_pin ''
@@ -658,11 +658,22 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
           end
 
+        elsif stop_lock_provider == "Manual"
+          if stop.present? and stop.access_code.present?
+            json.guest_pin "Use code " + stop.access_code + " to enter."
+            json.latch_link ''
+            json.unit_dwelo_lock_id ''
+          else
+            json.guest_pin ''
+            json.latch_link ''
+            json.unit_dwelo_lock_id ''
+          end
         else
           json.guest_pin ''
           json.latch_link ''
           json.unit_dwelo_lock_id ''
         end
+
 
       else
         json.guest_pin ''
@@ -729,9 +740,10 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
           end
 
-        elsif stop_lock_provider"Dwelo"
+        elsif stop_lock_provider == "Dwelo"
           _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
           dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).last rescue nil
+          
           if dwelo_lock.present?
             json.guest_pin ''
             json.latch_link ''
@@ -770,8 +782,7 @@ json.tours @tours do |tour|
 
         elsif stop_lock_provider == "Manual"
           _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
-          dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).first rescue nil
-          if _stop_.present? and _stop_.access_code.present? and dwelo_lock.nil?
+          if _stop_.present? and _stop_.access_code.present?
             json.guest_pin "Use code " + _stop_.access_code + " to enter."
             json.latch_link ''
             json.unit_dwelo_lock_id ''
@@ -780,7 +791,6 @@ json.tours @tours do |tour|
             json.latch_link ''
             json.unit_dwelo_lock_id ''
           end
-
         else
           json.guest_pin ''
           json.latch_link ''

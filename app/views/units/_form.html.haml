@@ -273,7 +273,7 @@
 
     function update_locks_select_and_lock_code_field(){
       // if any lock selected 
-      if ($('#unit_lock_provider').val().length > 0){
+      if ($('#unit_lock_provider').val().length > 0 && $('#unit_lock_provider').val() != "Manual" ){
         $('#manual_access_code').addClass('hide_it')
         // initialize elements 
         lock_provider_type = $('#unit_lock_provider').val().toLowerCase()
