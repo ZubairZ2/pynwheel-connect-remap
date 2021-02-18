@@ -332,7 +332,7 @@ module DweloDevicesHelper
     allowed_stops
   end
 
-  def zerv_multiple_stops_access community
+  def zerv_multiple_stops_access(community, allowed_stops = [])
     available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
 
     available_stops.each do |stop|

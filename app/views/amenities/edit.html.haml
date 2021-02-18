@@ -197,10 +197,10 @@
     });
     function update_locks_select_and_lock_code_field(){
       // if any lock selected selected
-      if ($('#amenity_lock_provider').val().length > 0)
+      if ($('#amenity_lock_provider').val().length > 0 && $('#amenity_lock_provider').val() != "Manual")
       {
         $('#manual_access_code').addClass('hide_it')
-        // initialize elements 
+        // initialize elements    
         lock_provider_type = $('#amenity_lock_provider').val().toLowerCase()
         lock_input_value = "#" + lock_provider_type + "_lock_input_value"
         options = '.' + lock_provider_type + "_options"
