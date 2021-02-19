@@ -239,23 +239,31 @@ class RemoteLockService < BaseService
             token_type = "Bearer"
             auth_header = token_type + " " + access_token rescue ''
 
+            body = {
+                type: "igloo_guest",
+                attributes: {
+                    igloo_lock_id: igloo_lock_id,
+                    name: tour_user.name,
+                    email: tour_user.email,
+                    starts_at: current_time.strftime("%Y-%m-%dT%H:%M:%S"),
+                    ends_at: (current_time + 1.5.hours).strftime("%Y-%m-%dT%H:%M:%S"),
+                }
+            }.to_json
+
+            puts "--------------------------  create igloo guests request body ------------------------------"
+            puts body
+            puts "-------------------------------------------------------------------------------------------"
+
             url = base_url + "/igloo_guests"
             response = HTTParty.post(url,
-                body: {
-                    type: "igloo_guest",
-                    attributes: {
-                        igloo_lock_id: igloo_lock_id,
-                        name: tour_user.name,
-                        email: tour_user.email,
-                        starts_at: current_time.strftime("%Y-%m-%dT%H:%M:%S"),
-                        ends_at: (current_time + 1.5.hours).strftime("%Y-%m-%dT%H:%M:%S"),
-                    }
-                }.to_json,
+                body: body,
                 :headers => { 'Authorization' => auth_header,
                                 'Accept' => 'application/vnd.lockstate+json; version=1',
                                 'Content-Type' => 'application/json' } )
 
+            puts "-----------------------------  create igloo guests response -------------------------------"
             puts response
+            puts "-------------------------------------------------------------------------------------------"
 
             return response
         end
