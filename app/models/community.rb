@@ -121,7 +121,7 @@ class Community < ApplicationRecord
   after_update :crop_secondary_image
   after_create :create_tour_also
   after_create :change_touchscreen_app_for_dwelo
-
+  before_save :turn_off_chat, if: Proc.new { chat_control == false }
   #
   # phony_normalize :phone
   # # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
@@ -703,5 +703,13 @@ class Community < ApplicationRecord
     if positions.include?(2) && attributes['display_gallery_on_homepage']  
       errors[:base] << "Position 2 has already been taken."
     end
+  end
+
+  def turn_off_chat
+     # doesn't matter whether chat was enabled or not, 
+     # just turn the chat OFF for every CMS user and 
+     # mobile user of this community
+    CommunityUser.where(community_id: self.id).update_all(is_logged_in: false)
+    self.update_column(:is_chat_available, false)
   end
 end

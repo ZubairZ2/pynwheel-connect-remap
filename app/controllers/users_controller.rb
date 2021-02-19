@@ -94,14 +94,14 @@ class UsersController < ApplicationController
   end
 
   def chat_service_available
-      CommunityUser.where(user_id: params[:id], chat_enable: true).update_all(is_logged_in: true)
-      Community.joins(:users).where(users: {id: params[:id]}, community_users: {chat_enable: true}).update_all(is_chat_available: true)
+      CommunityUser.joins(:community).where(communities: {chat_control: true}, community_users: {user_id: params[:id], chat_enable: true}).update_all(is_logged_in: true)
+      Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {user_id: params[:id], chat_enable: true}).update_all(is_chat_available: true)
       puts " ---------------------- chat is turning ON --------------------------------"
   end
 
   def chat_service_not_available
-      CommunityUser.where(user_id: params[:id], chat_enable: true).update_all(is_logged_in: false)
-      online_communities = CommunityUser.where(chat_enable: true, is_logged_in: true).pluck(:community_id)
+      CommunityUser.joins(:community).where(communities: {chat_control: true}, community_users: {user_id: params[:id], chat_enable: true}).update_all(is_logged_in: false)
+      online_communities = Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {chat_enable: true, is_logged_in: true}).ids
       Community.where.not(id: online_communities).update_all(is_chat_available: false)
       puts " ---------------------- chat is turning OFF --------------------------------"
   end

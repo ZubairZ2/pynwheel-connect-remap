@@ -8,6 +8,7 @@ class ApplicationController < ActionController::Base
   helper_method :current_community
   helper_method :current_company
   helper_method :alphabetical_sort
+  helper_method :show_chat_support
   before_action :load_tour_users_chats
   def current_community
   	if params[:community_id].present?
@@ -135,6 +136,9 @@ class ApplicationController < ActionController::Base
     company_or_community_or_community_groups.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? c.name.split(" ", 2)[1] : c.name).downcase }
   end
 
+  def show_chat_support
+    Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {community_id: current_community.id, user_id: current_user.id, chat_enable: true}).exists? rescue false
+  end
   protected
 
   def layout_by_resource

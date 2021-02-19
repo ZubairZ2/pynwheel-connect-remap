@@ -15,8 +15,8 @@ class Users::SessionsController < Devise::SessionsController
 
     def destroy
         begin
-            CommunityUser.where(user_id: current_user.id, chat_enable: true).update_all(is_logged_in: false)
-            online_communities = CommunityUser.where(chat_enable: true, is_logged_in: true).pluck(:community_id)
+            CommunityUser.where(user_id: current_user.id).update_all(is_logged_in: false) # just considered it as a logout user for all assigned communities, doesn't matter whether chat was enabled or not
+            online_communities = Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {chat_enable: true, is_logged_in: true}).ids
             Community.where.not(id: online_communities).update_all(is_chat_available: false)
         rescue
         end
