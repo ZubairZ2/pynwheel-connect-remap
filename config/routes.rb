@@ -138,6 +138,7 @@ Rails.application.routes.draw do
     get :clone_community
     get :change_expressionist_default
     get :test_connection
+    get :authenteq_report
     get :account_report
     get :psi_pricing_test_connection
     get :psi_space_configuration_test_connection

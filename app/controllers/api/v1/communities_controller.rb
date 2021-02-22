@@ -155,6 +155,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community = Community.find params[:id]
       @community.deleted_ids = []
       @community.save
+      @tour_user.verified_by = params[:verified_by_provider]
       @tour_user.save
       unless @tour_user.email == "Removed at Consumer Request"
       #####
