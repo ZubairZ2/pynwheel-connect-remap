@@ -72,6 +72,8 @@ GEM
     breadcrumbs_on_rails (4.0.0)
       rails (>= 5.0)
     browser (4.2.0)
+    bugsnag (6.19.0)
+      concurrent-ruby (~> 1.0)
     builder (3.2.4)
     bullet (6.1.0)
       activesupport (>= 3.0.0)
@@ -435,6 +437,7 @@ DEPENDENCIES
   bootstrap3-datetimepicker-rails (~> 4.17.47)
   breadcrumbs_on_rails
   browser
+  bugsnag (~> 6.19)
   bullet
   byebug
   cancancan (~> 2.0)
@@ -516,4 +519,4 @@ RUBY VERSION
    ruby 2.5.0p0
 
 BUNDLED WITH
-   2.2.5
+   2.2.7

@@ -126,3 +126,5 @@ gem 'unread'
 gem 'timezone', '~> 1.0'
 gem 'ziptz'
 gem 'csv'
+
+gem "bugsnag", "~> 6.19"
