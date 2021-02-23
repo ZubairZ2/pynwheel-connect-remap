@@ -4,6 +4,14 @@ module ApplicationHelper
     ["index","new","create","update"]
   end
 
+  def sidemenu_communities_controllers
+    ["home", "companies", "community_groups", "regions", "group_design"]
+  end
+
+  def accounts_dropdown_menu
+    ["companies", "community_groups", "regions", "communities"]
+  end
+
   def flash_class(level)
     case level
     when 'notice' then "alert alert-success"

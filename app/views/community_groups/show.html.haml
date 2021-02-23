@@ -55,7 +55,7 @@
                         %td
                           -#= link_to edit_company_community_path(current_company,f),:class=>"text-success" do
                           -#  %i.fa.fa-edit.icon_size
-                          %a.text-danger{"data-name"=>"Company","data-href" => "/community_groups/#{@community_group.id}/remove_community?community=#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                          %a.text-danger{"data-name"=>"Community","data-href" => "/community_groups/#{@community_group.id}/remove_community?community=#{f.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                             %i.fa.fa-trash.icon_size
                           -#%a.btn-info.btn-xs.mr-5
                           -#  Update now

@@ -1,0 +1,38 @@
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Name
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Name"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Contact
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :contact, :class=>"form-control", :placeholder=>"Contact"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Phone
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :phone, :class=>"form-control", :placeholder=>"Phone"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Email
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :email, :class=>"form-control", :placeholder=>"Email"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Communities
+    %span Select communities
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.select :communities, options_for_select(@not_assigned_communities,f.object.communities.map(&:id)),{},{class: "form-control group_list",:multiple=>true}
+
+
+= f.hidden_field :creator_id, :value=> current_user.id
+= hidden_field_tag :company_id, :class=>"form-control", :value=>"#{@region.company_id.present? ? @region.company_id : current_company.id}"
+
+
+:javascript
+  $('#region_communities').multiSelect();

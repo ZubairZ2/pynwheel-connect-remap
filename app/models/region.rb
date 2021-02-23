@@ -4,5 +4,6 @@ class Region < ApplicationRecord
   belongs_to :company
 
   validates_uniqueness_of :name
-
+  validates_presence_of :name
+  
 end

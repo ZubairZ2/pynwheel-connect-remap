@@ -44,7 +44,9 @@ Rails.application.routes.draw do
   resources :companies do
     resources :communities
     resources :community_groups
-    resources :regions, only: [:new, :create, :edit, :update, :destroy]
+    resources :regions do
+      delete :remove_community, on: :member
+    end
     resources :employees, :controller => 'users' do
       get :profile
     end
