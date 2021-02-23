@@ -709,7 +709,9 @@ class Community < ApplicationRecord
      # doesn't matter whether chat was enabled or not, 
      # just turn the chat OFF for every CMS user and 
      # mobile user of this community
-    CommunityUser.where(community_id: self.id).update_all(is_logged_in: false)
-    self.update_column(:is_chat_available, false)
+    if self.id.present?
+      CommunityUser.where(community_id: self.id).update_all(is_logged_in: false)
+      self.update_column(:is_chat_available, false)
+    end
   end
 end
