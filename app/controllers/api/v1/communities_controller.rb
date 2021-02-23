@@ -652,7 +652,9 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
   def charge_for_id_verfication(tour_user, amount)
-    charge_customer(tour_user, ammount, "Charging for Id verfication", 'usd')
+    if tour_user.strip_customer_id.present?
+      charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
+    end
   end
   def get_current_tour(time_param)
     current_datetime = time_param.to_datetime.strftime('%d/%m/%Y %l:%M %p')

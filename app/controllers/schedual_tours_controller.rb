@@ -39,7 +39,6 @@ class SchedualToursController < ApplicationController
     tu.last_name = l_name
     tu.phone_number = phone_number if phone_number.present?
     tu.desired_bedroom = params[:desired_bedroom]
-    byebug
     tu.card_last_digits = params[:last_digits] if params[:last_digits].present?
 
     # binding.pry
@@ -47,7 +46,7 @@ class SchedualToursController < ApplicationController
     if tu.save
       begin
         if(tu.strip_customer_id.present?)
-          res = charge_customer(tu, 50, "Escrow Payment", 'usd', params[:last_digits])
+          res = charge_customer(tu, 50, "Escrow Payment", 'usd')
         else
           tu.update_column 'strip_customer_id', create_customer(tu.email, params[:tour_user][:card_token]).id
           res = charge_customer(tu, 50, "Escrow Payment", 'usd')

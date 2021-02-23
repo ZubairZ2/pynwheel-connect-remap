@@ -4,7 +4,7 @@ module StripeServices
 	end
 	def charge_customer(tour_user, amount, description, currency)
 		res = Stripe::Charge.create customer: tour_user.strip_customer_id, amount: amount, description: description, currency: currency
-		tour_user.user_stripes.create(charge_amount_in_cent: amount, charge_id: res.id, last_digits: tu.card_last_digits)
+		tour_user.user_stripes.create(charge_amount_in_cent: amount, charge_id: res.id, last_digits: tour_user.card_last_digits)
 		res
 	end
 	def refund_customer(tu, transaction_id)
