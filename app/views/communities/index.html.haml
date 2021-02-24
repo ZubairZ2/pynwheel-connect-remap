@@ -35,7 +35,7 @@
             
             .row
               .col-md-12
-                %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+                %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.community-index
                   %thead
                     %tr
                       %th{:width => "79"} Sr #
@@ -43,7 +43,6 @@
                       %th Community Name
                       %th 
                         Region Name
-                        %i.fa.fa-sort.sort-size
                       %th{:width => "250"} Actions
                   %tbody
                     - if current_user.is_super_admin? or can? :crud, Company
@@ -88,5 +87,3 @@
       .col-lg-4.col-md-12
         .row
           .col-md-12
-
-        
