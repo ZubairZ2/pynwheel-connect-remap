@@ -17,7 +17,7 @@
             %h4.title Communities
           .col-md-6
             .mt-35
-              - if current_user.is_super_admin?
+              - if current_user.is_super_admin? or can? :crud, Company
                 = link_to new_company_community_path(current_company),:class=>"btn btn-success pull-right mb-20" do
                   %i.fa.fa-plus-circle
                   ADD COMMUNITY
@@ -39,7 +39,7 @@
                       %th Community Name
                       %th{:width => "250"} Actions
                   %tbody
-                    - if current_user.is_super_admin?
+                    - if current_user.is_super_admin? or can? :crud, Company
                       - @communities.each_with_index  do |f,index|
                         %tr
                           %td

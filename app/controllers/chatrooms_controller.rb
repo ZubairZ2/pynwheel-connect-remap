@@ -3,6 +3,7 @@ class ChatroomsController < ApplicationController
     skip_before_action :verify_authenticity_token
     skip_before_action :authenticate_user!
     after_action :allow_iframe
+    before_action :set_tour_user, only: [:create]
 
     def index
         current_user = User.find_by_uuid params[:id] rescue ''
@@ -29,7 +30,7 @@ class ChatroomsController < ApplicationController
                 end
             end
         # end
-     
+    
         render plain: "Unauthorized"
     end
 
@@ -45,13 +46,13 @@ class ChatroomsController < ApplicationController
                 message_history = serailize_messages(messages)
                 render json: {messages: message_history,chatroom_id: chatroom.id,  stats: :OK, code: 200 }
             else
-                chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" , client_date: DateTime.now.strftime("%a %b %d %Y %k:%M:%S") )
+                chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" , client_date: DateTime.now.strftime("%a %b %d %Y %k:%M:%S"), tour_key: @tour_user.tour_key )
                 message = serailize_message(chat)
                 render json: {messages: message, chatroom_id: chatroom.id,  stats: :OK, code: 200 }
             end
         else
             chatroom = Chatroom.create(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
-            chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" , client_date: DateTime.now.strftime("%a %b %d %Y %k:%M:%S") )
+            chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" , client_date: DateTime.now.strftime("%a %b %d %Y %k:%M:%S"), tour_key: @tour_user.tour_key )
             message = serailize_message(chat)
             render json: {messages: message, chatroom_id: chatroom.id,  stats: :OK, code: 200 }
         end
@@ -136,5 +137,9 @@ class ChatroomsController < ApplicationController
   
     def allow_iframe
       response.headers.except! 'X-Frame-Options'
+    end
+
+    def set_tour_user
+        @tour_user = TourUser.find_by_id params[:tour_user_id]
     end
 end

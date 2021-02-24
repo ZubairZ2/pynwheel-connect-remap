@@ -52,36 +52,22 @@ class FloorplateAmenitiesController < ApplicationController
   # end
 
   def plot_amenity
-    puts params
     @amenity = Amenity.find (params[:amenity_id])
     @amenity.amenityable_type = "Floorplate"
     @amenity.amenityable_id = params[:floorplate_id]
     @amenity.x_plot = params[:x_plot]
     @amenity.y_plot = params[:y_plot]
+    ts = TourStop.find_by(stop_id: @amenity.id)
+    if ts.present?
+      ts.latitude  = @amenity.x_plot
+      ts.longitude = @amenity.y_plot
+      ts.save
+    end
     @amenity.floor = params[:floor]
     if @amenity.save(validate: false)
       render json: {amenity: @amenity}, status: 200
     else
       render json: {}, status: 404
-    end
-  end
-
-  def check_community
-    unless current_user.is_super_admin?
-      if params[:community_id].present?
-        all_ids = []
-        current_user.communities.each do |c|
-          # all_ids.insert(c.id)
-          all_ids << c.id
-        end
-        # byebug
-        # puts '+++++++++++++++', all_ids[0]
-        if all_ids.include? params[:community_id].to_i
-
-        else
-          redirect_to root_path
-        end
-      end
     end
   end
 

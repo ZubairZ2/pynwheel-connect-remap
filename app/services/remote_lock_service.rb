@@ -15,9 +15,7 @@ class RemoteLockService < BaseService
                 },
                 headers: { 'Content-Type' => 'application/x-www-form-urlencoded' } )
 
-            puts '==='*50
             puts response["access_token"]
-            puts '==='*50
 
             return response["access_token"]
         end
@@ -26,7 +24,7 @@ class RemoteLockService < BaseService
     def get_all_deivces(access_token)
         if @edge_state_user.present?
             token_type = "Bearer"
-            auth_header = token_type + " " + access_token
+            auth_header = token_type + " " + access_token rescue ''
 
             url = base_url + "/devices"
             
@@ -34,9 +32,7 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1' } )
             
-            # puts "---"*50
-            # puts response
-            # puts "---"*50
+            puts response
 
             return response
         end
@@ -45,7 +41,7 @@ class RemoteLockService < BaseService
     def get_device(access_token,device_id)
         if @edge_state_user.present?
             token_type = "Bearer"
-            auth_header = token_type + " " + access_token
+            auth_header = token_type + " " + access_token rescue ''
 
             url = base_url + "/devices/" + device_id 
             
@@ -53,9 +49,7 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1' } )
            
-            # puts "---"*50
-            # puts response
-            # puts "---"*50
+            puts response
             
             return response
         end
@@ -64,7 +58,7 @@ class RemoteLockService < BaseService
     def update_device(access_token,device_id,updated_device_data)
         if @edge_state_user.present?
             token_type = "Bearer"
-            auth_header = token_type + " " + access_token
+            auth_header = token_type + " " + access_token rescue ''
 
             url = base_url + "/devices/" + device_id 
             
@@ -77,9 +71,7 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1',
                               'Content-Type' => 'application/json'} )
-            # puts "---"*50
-            # puts response
-            # puts "---"*50
+            puts response
  
             return response
         end
@@ -88,7 +80,7 @@ class RemoteLockService < BaseService
     def create_access_guest(access_token,tour_user,current_time)
         if @edge_state_user.present?
             token_type = "Bearer"
-            auth_header = token_type + " " + access_token
+            auth_header = token_type + " " + access_token rescue ''
 
             url = base_url + "/access_persons"
 
@@ -109,7 +101,7 @@ class RemoteLockService < BaseService
                     attributes: {
                         name: tour_user.name,
                         email: tour_user.email,
-                        phone: tour_user.phone_number,
+                        phone: '+' + SecureRandom.rand(99999999999).to_s,   # phone number need to be unique and edgestatea is giving us no information on phone that's why random number is given
                         starts_at: start_time,
                         ends_at: ends_time,
                         generate_pin: true
@@ -119,9 +111,7 @@ class RemoteLockService < BaseService
                                 'Accept' => 'application/vnd.lockstate+json; version=1',
                                 'Content-Type' => 'application/json' } )
 
-            # puts "---"*50
-            # puts response
-            # puts "---"*50
+            puts response
 
             return response
         end
@@ -130,7 +120,7 @@ class RemoteLockService < BaseService
     def get_access_guest(access_token,guest_id)
         if @edge_state_user.present?
             token_type = "Bearer"
-            auth_header = token_type + " " + access_token
+            auth_header = token_type + " " + access_token rescue ''
 
             url = base_url + "/access_persons/" + guest_id 
             
@@ -138,9 +128,7 @@ class RemoteLockService < BaseService
                 :headers => { 'Authorization' => auth_header,
                               'Accept' => 'application/vnd.lockstate+json; version=1' } )
            
-            # puts "---"*50
-            # puts response
-            # puts "---"*50
+            puts response
             
             return response
         end
@@ -149,7 +137,7 @@ class RemoteLockService < BaseService
     def delete_access_guest(access_token,guest_id)
         if @edge_state_user.present?
             token_type = "Bearer"
-            auth_header = token_type + " " + access_token
+            auth_header = token_type + " " + access_token rescue ''
 
             url = base_url + "/access_persons/" + guest_id 
             
@@ -158,9 +146,7 @@ class RemoteLockService < BaseService
                               'Accept' => 'application/vnd.lockstate+json; version=1',
                               'Content-Type' => 'application/json' } )
            
-            # puts "---"*50
-            # puts response
-            # puts "---"*50
+            puts response
             
             return response
         end
@@ -168,9 +154,9 @@ class RemoteLockService < BaseService
     def update_access_guest(access_token,guest_id,tour_user)
         if @edge_state_user.present?
             token_type = "Bearer"
-            auth_header = token_type + " " + access_token
+            auth_header = token_type + " " + access_token rescue ''
 
-            url = base_url + 
+            url = base_url + "/access_persons/" + guest_id 
             
             response = HTTParty.put(url,
                 body: {
@@ -187,9 +173,7 @@ class RemoteLockService < BaseService
                               'Accept' => 'application/vnd.lockstate+json; version=1' ,
                               'Content-Type' => 'application/json'} )
            
-            # puts "---"*50
-            # puts response
-            # puts "---"*50
+            puts response
             
             return response
         end
@@ -198,7 +182,7 @@ class RemoteLockService < BaseService
     def grant_access(access_token, access_person_id, accessible_id,accessible_type)
         if @edge_state_user.present?
             token_type = "Bearer"
-            auth_header = token_type + " " + access_token
+            auth_header = token_type + " " + access_token rescue ''
 
             url = base_url + "/access_persons/#{access_person_id}/accesses"
 
@@ -213,9 +197,7 @@ class RemoteLockService < BaseService
                                 'Accept' => 'application/vnd.lockstate+json; version=1',
                                 'Content-Type' => 'application/json' } )
             
-            puts "---"*50
             puts response
-            puts "---"*50
 
             return response
         end
@@ -224,43 +206,64 @@ class RemoteLockService < BaseService
     def get_all_events(access_token,page)
         if @edge_state_user.present?
             token_type = "Bearer"
-            auth_header = token_type + " " + access_token
+            auth_header = token_type + " " + access_token rescue ''
             url = page > 1 ? base_url + "/events/?page="+ page.to_s : base_url + "/events" 
             response = HTTParty.get(url,
                 :headers => { 'Authorization' => auth_header} )
             
-            puts "---"*50
             puts response
-            puts "---"*50
 
             return response
         end
     end
-    
+
+    def get_dwelo_events(access_token,guest_id)
+        @dwelo_user = Dwelo.first
+        if @dwelo_user.present?
+            token_type = "Bearer"
+            auth_header = token_type + " " + access_token rescue ''
+            url = "https://api.dwelo.com/v4/integrations/pynwheel/events/?access_person_id=" + guest_id
+            response = HTTParty.get(url,
+                                    :headers => { 'Authorization' => auth_header} )
+
+            puts response
+
+            return response
+        end
+    end
+
+
+
     def create_igloo_guests(access_token,tour_user,igloo_lock_id,current_time)
         if @edge_state_user.present?
             token_type = "Bearer"
-            auth_header = token_type + " " + access_token
+            auth_header = token_type + " " + access_token rescue ''
+
+            body = {
+                type: "igloo_guest",
+                attributes: {
+                    igloo_lock_id: igloo_lock_id,
+                    name: tour_user.name,
+                    email: tour_user.email,
+                    starts_at: current_time.strftime("%Y-%m-%dT%H:%M:%S"),
+                    ends_at: (current_time + 1.5.hours).strftime("%Y-%m-%dT%H:%M:%S"),
+                }
+            }.to_json
+
+            puts "--------------------------  create igloo guests request body ------------------------------"
+            puts body
+            puts "-------------------------------------------------------------------------------------------"
 
             url = base_url + "/igloo_guests"
             response = HTTParty.post(url,
-                body: {
-                    type: "igloo_guest",
-                    attributes: {
-                        igloo_lock_id: igloo_lock_id,
-                        name: tour_user.name,
-                        email: tour_user.email,
-                        starts_at: current_time.strftime("%Y-%m-%dT%H:%M:%S"),
-                        ends_at: (current_time + 2.hours).strftime("%Y-%m-%dT%H:%M:%S"),
-                    }
-                }.to_json,
+                body: body,
                 :headers => { 'Authorization' => auth_header,
                                 'Accept' => 'application/vnd.lockstate+json; version=1',
                                 'Content-Type' => 'application/json' } )
 
-            puts "---"*50
+            puts "-----------------------------  create igloo guests response -------------------------------"
             puts response
-            puts "---"*50
+            puts "-------------------------------------------------------------------------------------------"
 
             return response
         end
@@ -269,7 +272,7 @@ class RemoteLockService < BaseService
     def delete_igloo_guests(access_token,igloo_guest_id)
         if @edge_state_user.present?
             token_type = "Bearer"
-            auth_header = token_type + " " + access_token
+            auth_header = token_type + " " + access_token rescue ''
 
             url = base_url + "/igloo_guests/" + igloo_guest_id           
             response = HTTParty.delete(url,
@@ -277,9 +280,7 @@ class RemoteLockService < BaseService
                               'Accept' => 'application/vnd.lockstate+json; version=1',
                               'Content-Type' => 'application/json' } )
 
-            puts "---"*50
             puts response
-            puts "---"*50
 
             return response
         end

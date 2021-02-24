@@ -71,7 +71,6 @@ class Yardi4SwapService < BaseService
           update_yardi4_units(ils_units,external_property_id)
           #else
           #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
-          puts "Invalid credentials.Please enter correct one and try again."
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
         end
       rescue => e
@@ -137,7 +136,6 @@ class Yardi4SwapService < BaseService
         unit.available = is_available ? true : false
         unit.available_date = vacate_date
         unit.save(validate: false)
-        puts '++++++++++++++++++1', unit.errors.full_messages.join(',')
       else
         # unit = Unit.where(community_id: credentials.community_id).first
         dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue]))
@@ -189,7 +187,6 @@ class Yardi4SwapService < BaseService
         unit.availability = is_available ? "Unoccupied" : "Occupied"
         unit.available_date = vacate_date
         unit.save(validate: false)
-        puts '++++++++++++++++++2', unit.errors.full_messages.join(',')
 
       end
     end

@@ -1,9 +1,14 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Name
-    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailNamePopover","data-content" => " "}
-      %span#propertyDetailNameText
-        Changing the Name will change the name of the property on the "Favorites" page.
+    - if current_user.is_dwelo_admin?
+      %i.unit_manualoverride.fa.fa-question-circle
+        %span#unit_manualoverride_text
+          (Dwelo) will be added as default at the start of name. Changing the Name will change the name of the property on the "Favorites" page.
+    - else
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailNamePopover","data-content" => " "}
+        %span#propertyDetailNameText
+          Changing the Name will change the name of the property on the "Favorites" page.
 
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
@@ -54,6 +59,19 @@
         %small Longitude
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Override Latitude/Longitude
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+      %span#propertyDetailNameText
+        When set to "False" then the lat/long will default to the lat/long provided by Google for this address. When set to "True" then the lat/long provided by Google will be overridden with the lat/long entered in the fields above.
+
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :manual_lat_long, true
+    = f.label :manual_lat_long, "True", :value => "true"
+  .col-sm-12.col-lg-3.col-md-3.col-xs-12
+    = f.radio_button :manual_lat_long, false
+    = f.label :manual_lat_long, "False", :value => "false"
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Phone
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :phone, :class=>"form-control", :placeholder=>"Phone",:maxlength=>"15"
@@ -66,7 +84,7 @@
         Changing the email address will change the "from" email address for the eBrochure.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.email_field :email, :class=>"form-control", :placeholder=>"Email",:maxlength=>"50"
+    = f.text_field :email, :class=>"form-control", :placeholder=>"Email",:maxlength=>"200", :style => "background: #f6f6f6; color: black;"
 
 
 .form-group
@@ -101,6 +119,7 @@
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :description, :class=>"form-control", rows:5, :placeholder=>"Notes"
+= f.hidden_field :creator_id, :value=> current_user.id
 
 
 -#.form-group
@@ -157,25 +176,77 @@
 -#      %span.pl-15 Yes
 
 :javascript
+  function non_readable()
+  {
+  if(!$('#community_manual_lat_long_true').prop('checked'))
+  {
+    document.getElementById("latitude").readOnly = true
+    document.getElementById("latitude").style.background = "#ececec";
+    document.getElementById("longitude").readOnly = true
+    document.getElementById("longitude").style.background = "#ececec";
+  }
+  else
+  {
+    document.getElementById("latitude").readOnly = false
+    document.getElementById("latitude").style.background = "";
+    document.getElementById("longitude").readOnly = false
+    document.getElementById("longitude").style.background = "";
+  }
+  }
   
+  non_readable();
+  $('#community_manual_lat_long_true').change(function() {
+    non_readable();   
+  });
+  $('#community_manual_lat_long_false').change(function() {
+    non_readable();   
+  });
   $(document).on('change', '.address_fields1', function() {
 
-   $.ajax({
-    url: "/communities/#{Community.last.id}/make_cordinate",
-    type: "post",
-    data: {address : $('#address').val() +" "+ $('#city').val() + " "+ $('#states').val()},
-    success: function(data) {
-      if (data.cord != null)
-      {
-        document.getElementById('latitude').value = data.cord[0];
-        document.getElementById('longitude').value = data.cord[1];
-      }
 
-    },
-    error: function(data) {}
-  })
   });
+  com = #{@com_id};
+  if(com == 0)
+  {com = null;}
+  
+  function make_coord()
+  {
+    var geocoder = new google.maps.Geocoder();
 
+    geocoder.geocode( { 'address': $('#address').val() +" "+ $('#city').val() + " "+ $('#states').val()}, function(results, status) {
+
+        if (status == google.maps.GeocoderStatus.OK) {
+            var latitude = results[0].geometry.location.lat().toFixed(8);
+            var longitude = results[0].geometry.location.lng().toFixed(8);
+            if (latitude != null){
+                // console.log(longitude)
+                document.getElementById('latitude').value = latitude;
+                document.getElementById('longitude').value = longitude;
+                $.ajax({
+                  url: "/communities/make_cordinate",
+                  type: "post",
+                  data: {lat: latitude, long: longitude, community_id : com},
+                  success: function(data) {
+
+                  },
+                  error: function(data) {}
+                })
+            }
+        }
+    });
+
+  }
+  $( ".address_fields1" ).keyup(function() {
+    if(!$('#community_manual_lat_long_true').prop('checked'))
+      make_coord()
+  });
+  $(document).ready(function() {
+   // executes when HTML-Document is loaded and DOM is ready
+   setTimeout(function(){
+    if(!$('#community_manual_lat_long_true').prop('checked'))
+      make_coord();
+  }, 2000);
+  });
   if (!#{current_user.welcome_property_details_page})
   {
     $('[data-toggle="propertyDetailNamePopover"]').popover({

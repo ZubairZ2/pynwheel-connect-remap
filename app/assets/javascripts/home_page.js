@@ -1,7 +1,6 @@
 $(document).ready(function(){
     $('[data-toggle="popover"]').popover();
   $('.sortable').railsSortable(); 
-  
   $('#animation').on('change',function(){
     saveAnimation($(this).val());
   });
@@ -141,6 +140,43 @@ $(document).ready(function(){
             }
         }
         $(this).val('');
+    });
+    $("#amenities-for-multiple-units").submit(function(event) {
+      units = $('#unit_ids_').closest('form').find('input:checkbox:checked')
+      files = $("#units-amenities-images").prop("files")
+    
+      if(units.length > 0){
+        var image_ids = []
+        for(var i=0; i<files.length; i++)
+          image_ids.push(create_UUID())
+
+        // current unit amenties will added through ajax
+        if(is_current_unit_marked()){
+          for (var i = 0; i < files.length; i++) {
+              if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){
+                  readAmenityImageSrc(files[i],'unit',image_ids[i]);
+              }
+          }
+          if(files.length == 1){
+              if(files[0].type !== "image/png" && files[0].type !== "image/jpeg" && files[0].type !== "image/jpg"){
+                  $('#image-upload-warning').modal('show');
+              }
+          }
+        }
+
+        // remaining units amenties will added through backgroung job
+        var units_arr = []
+        for (var i = 0; i < units.length; i++) {
+          if(units[i].value != unit_id)
+            units_arr.push(units[i].value)
+        }
+        var images = readAmenitiesImages(files,units_arr,'unit',image_ids)
+
+        $("#units-amenities-images").val('');
+        $("#modal-to-set-image").modal('hide');
+        $('.image-checkbox').prop("checked", false);
+      }
+      return false;
     });
 
     $("#sitemap-amenity-images").change(function(){
@@ -396,11 +432,50 @@ function saveAnimation(value){
     reader.readAsDataURL(file);
   }
 
-  function readAmenityImageSrc(file,type){
+  function create_UUID(){
+    var dt = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (dt + Math.random()*16)%16 | 0;
+        dt = Math.floor(dt/16);
+        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+  }
+  
+  function is_current_unit_marked()
+  {
+    var marked_units = $('#unit_ids_').closest('form').find('input:checkbox:checked')
+    var current_unit = unit_id.toString()
+    for (var i = 0; i < marked_units.length; i++ ) {
+      if (marked_units[i].value == current_unit){
+        return true
+      }
+    }
+    return false;
+  }
+
+  function readImageOneByOne(file,type_ids,type,image_id){
+    var reader = new FileReader();  
+    reader.onload = function(e) { 
+        var src = e.target.result;
+        AmenitiesImage(e.target.result, file.name, type_ids, type, image_id);
+    }
+    reader.readAsDataURL(file);
+  }
+  
+  function readAmenitiesImages(files,type_ids,type,image_ids)
+  {
+    for(var i=0; i < files.length; i++) {
+      if (!files[i].type.match('image')) continue;  //only pics allowed
+      readImageOneByOne(files[i],type_ids,type,image_ids[i])
+    }
+  }
+
+  function readAmenityImageSrc(file,type,image_id=0){
     $(".divLoading").removeClass("hidden");
     var reader = new FileReader();
     reader.onload = function (e) {
-      AmenityImage(e.target.result,file.name,type);
+      AmenityImage(e.target.result,file.name,type,image_id);
     }
     reader.readAsDataURL(file);
   }
@@ -422,7 +497,40 @@ function saveAnimation(value){
     reader.readAsDataURL(file);
   }
 
-  function AmenityImage(src,name,type){
+  function AmenitiesImage(src,name,type_ids,type,image_id){
+    var amenityId = 0;
+    if (type == "unit")
+      var url = "/communities/"+community_id+"/units/"+unit_id+"/set_amenities_for_units"
+    else if (type == "floorplan")
+      var url = "/communities/"+community_id+"/floorplans/"+floorplan_id+"/set_amenities_for_floorplans"
+    else if (type == "floorplate")
+      var url = "/communities/"+community_id+"/floorplates/"+floorplate_id+"/set_amenities_for_floorplates"
+    else if (type == "community")
+      { amenityId = amenity_id;  var url = "/communities/"+community_id+"/set_amenities_for_communities"}
+    else if (type == "elevator")
+      { amenityId = elevator_id; var url = "/communities/"+community_id+"/set_elevaset_amenities_for_unitstors"}
+    else
+      var url = "/communities/"+community_id+"/sitemaps/"+sitemap_id+"/set_amenities"
+
+    $.ajax({
+        url: url,
+        type: "POST",
+        dataType: "script",
+        data: {
+            name: name,
+            image: src,
+            type_ids: type_ids,
+            amenityId: amenityId,
+            image_id: image_id
+        }
+    }).done(function(){
+        $(".divLoading").addClass("hidden");
+        console.log("success");
+        if (type == "community"){location.reload();}
+    });
+  }
+
+  function AmenityImage(src,name,type,image_id=0){
     var amenityId = 0;
     if (type == "floorplate")
       var url = "/communities/"+community_id+"/floorplates/"+floorplate_id+"/amenities"
@@ -446,7 +554,8 @@ function saveAnimation(value){
         data: {
             name: name,
             src: src,
-            amenityId: amenityId
+            amenityId: amenityId,
+            image_id: image_id
         }
     }).done(function(){
         $(".divLoading").addClass("hidden");

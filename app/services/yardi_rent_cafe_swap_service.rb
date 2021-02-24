@@ -41,6 +41,7 @@ class YardiRentCafeSwapService < BaseService
                 unit.floorplan_id = r["FloorplanId"]
                 unit.market_rent = r["MinimumRent"]
                 unit.effective_rent = r["MinimumRent"]
+                unit.square_feet = r["SQFT"] if r["SQFT"].present?
                 unit.availability = "Unoccupied"
                 if r["AvailableDate"] != ""
                   unit.available = true
@@ -54,6 +55,16 @@ class YardiRentCafeSwapService < BaseService
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
                 end
+
+                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
+                leasing = ""
+                if rentStrs.present?
+                  rentStrs.each do |rentStr|
+                    leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                  end
+                end
+                unit.lease_pricing = leasing
+
                 unit.save
               else
                 dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])
@@ -70,6 +81,7 @@ class YardiRentCafeSwapService < BaseService
                 unit.marketing_name = r["ApartmentName"]
                 unit.floor = evaluate_floor(unit.marketing_name) rescue nil
                 unit.floorplan_id = r["FloorplanId"]
+                unit.square_feet = r["SQFT"] if r["SQFT"].present?
                 unit.market_rent = r["MinimumRent"]
                 unit.effective_rent = r["MinimumRent"]
                 if r["AvailableDate"] != ""
@@ -84,6 +96,16 @@ class YardiRentCafeSwapService < BaseService
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
                 end
+
+                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
+                leasing = ""
+                if rentStrs.present?
+                  rentStrs.each do |rentStr|
+                    leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                  end
+                end
+                unit.lease_pricing = leasing
+
                 unit.save
               end
 
@@ -96,7 +118,6 @@ class YardiRentCafeSwapService < BaseService
 
 
         else
-          puts  "Invalid credentials.Please enter correct one and try again."
         end
       rescue => e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
@@ -176,7 +197,6 @@ class YardiRentCafeSwapService < BaseService
 
 
         else
-          puts '"Invalid credentials.Please enter correct one and try again."'
         end
       rescue => e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
@@ -219,4 +239,21 @@ class YardiRentCafeSwapService < BaseService
     end
   end
 
+  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name)
+    request_type = "pricingmatrix"
+    url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
+    begin
+      response = HTTParty.get(url)
+      rent_matrix = JSON.parse(response.body)
+      unless rent_matrix[0]["Error"].present?
+        uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
+        distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
+        return distinct_data.map{|data| data.map{|r| [r["Rent"].to_i, r["Term"], r["Start_Date"], r["End_Date"]]}.min}
+      else
+        return nil
+      end
+    rescue => ex
+      return nil
+    end
+  end
 end

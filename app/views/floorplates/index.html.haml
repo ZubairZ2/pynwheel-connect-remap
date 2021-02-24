@@ -182,7 +182,7 @@
 
                         %th Name
                         / %th Number
-                        %th Building
+                        / %th Building
                         %th Range
                         %th Image
                         - if @community.mdu
@@ -202,13 +202,13 @@
                             = f.name
                           / %td
                           /   = f.number 
-                          %td{:style => "color: #{f.building_is_updated ? "#dd4a39": ""}"}
-                            = f.building
+                          / %td{:style => "color: #{f.building_is_updated ? "#dd4a39": ""}"}
+                          /   = f.building
                           %td
                             = f.range 
                           %td
                             - if f.image.present?
-                              .drop-img.drop-img-left
+                              .drop-img
                                 = image_tag f.image.url
                             - else  
                               .drop-img.drop-img-left
@@ -324,7 +324,7 @@
         $('[data-toggle="floorplateGridActionPopover"]').popover({
          placement: 'left',
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click the edit icon to view or change the details associated with each floorplate such as name, image, building number, and floors.</div><div class="popover-footer"><a id="floorplateGridActionPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: ;">Click the edit icon to view or change the details associated with each floorplate such as name, image, building number, and floors.</div><div class="popover-footer"><a id="floorplateGridActionPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
      $(document).on("click", "#floorplateGridActionPopoverClose" , function(){

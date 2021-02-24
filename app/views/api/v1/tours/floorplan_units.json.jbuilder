@@ -21,7 +21,7 @@ json.data @units do |u|
         json.property_id u.property_id
         json.provider_unit_id u.provider_unit_id
         json.unit_type u.unit_type
-        json.marketing_name u.marketing_name
+        json.marketing_name u.building.present? ? u.building + '-'+ u.marketing_name : u.marketing_name rescue u.marketing_name
         json.floorplan_id u.floorplan_id
         json.market_rent u.market_rent
         json.effective_rent u.effective_rent
@@ -49,5 +49,29 @@ json.data @units do |u|
         json.square_feet u.square_feet
         json.description u.description
         json.update_apply (u.provider == "resman" || u.provider == "psi") ? true : false
-    
+        
+        lease_pricing = []
+        begin
+            if u.lease_pricing.present?
+              str_split = u.lease_pricing.split(';')
+              str_split.each do |ss|
+                str = ss.split(':')
+                pricing_str = []
+                pricing_str[0] = str[0]+" Month"
+                pricing_str[1] = "$"+str[1].to_i.to_s
+                # h = {"pricing_option" => pricing_str}
+                lease_pricing << pricing_str
+
+              end
+              
+              lease_pricing = lease_pricing.sort_by {|x| x[0][0..1].to_i}
+              lease_pricing2 = []
+              lease_pricing.each do |lp|
+                lease_pricing2 << {"pricing_month" => lp[0],"pricing_rent" => lp[1]}
+              end
+              lease_pricing = lease_pricing2
+            end
+        rescue => ex
+        end
+        json.lease_pricing_pynwheel_touch lease_pricing
 end

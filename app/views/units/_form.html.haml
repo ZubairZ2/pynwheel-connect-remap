@@ -49,9 +49,14 @@
         = f.text_field :building, :class=>"form-control", :placeholder=>"Building",:maxlength=>"20"
         %small Building (Manual Override Required)
       - unless @community.is_sitemap
-        .col-sm-6.col-lg-4.col-md-4.col-xs-12
-          = f.text_field :floor, :class=>"form-control validate[custom[floor]]", :placeholder=>"Floor"
-          %small Floor (Manual Override Required)
+        - if f.object.floorplate.present?
+          .col-sm-6.col-lg-4.col-md-4.col-xs-12
+            = f.select :floor, f.object.floorplate.floors,{}, :class=>"form-control validate[custom[floor]]"
+            %small Floor (Manual Override Required)
+        - else
+          .col-sm-6.col-lg-4.col-md-4.col-xs-12
+            = f.text_field :floor, :class=>"form-control validate[custom[floor]]", :placeholder=>"Floor"
+            %small Floor (Manual Override Required)
       .col-sm-6.col-lg-4.col-md-4.col-xs-12
         = f.text_field :square_feet, :class=>"form-control ", :placeholder=>"Unit space", :value => f.object.square_feet.to_i
         %small Square footage (Manual Override Required)
@@ -67,11 +72,6 @@
 -#      = f.check_box :display_virtual_tour_button_label,:class=>"form-control"
 -#      %label.label-primary{:for => "unit_display_virtual_tour_button_label"}
 -#      %span.pl-15 Yes
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Access Code
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code"
 
 .form-group#unit_virtual_tour_button_label_field
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -80,26 +80,63 @@
     %span Specify virtual tour button label here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_button_label, :class=>"form-control", :placeholder=>"Virtual Tour Button Label",:maxlength=>"10"
-
+  
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Virtual Tour URL
     %span Specify URL here
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :virtual_tour_url, :class=>"form-control", :placeholder=>"Virtual Tour URL"
-- if EdgeState.find_by(community_id: @community.id).present?
-  .form-group
-    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-      Remote Lock
-      %i.unit_manualoverride.fa.fa-question-circle
-        %span#unit_manualoverride_text
-          if building name is present then name of Remote lock must be formatted like BuildingName-MarketingName otherwise name must be same as unit marketing name
-      %span Assign the lock to this unit
-    .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      %select.form-control#remote_lock{name: "remote_lock"}
-      %button#update-btn.btn.btn-primary.update-lock.hidden{type: "button"}
-        %a#a-lock.btn-text-color{href: "#"} Update selected lock
-  
+
+- if @community.enable_locks
+  - if @community.locks_provider == "EdgeState" and @community.edge_state.present? and @all_locks.present?
+    .form-group.hide_on_new
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Remote Lock
+        %span Assign the lock to this unit
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        = text_field_tag :edgestate_locks_input, @unit.remote_locks.edgestate_locks.present? ? @unit.remote_locks.edgestate_locks.last.name + " (" + @unit.remote_locks.edgestate_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
+        %datalist#edgestate_locks_list
+          - @all_locks[:edgestate_locks].each do |lock|
+            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+
+  - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present? and @all_locks.present?
+    .form-group.hide_on_new
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Dwelo lock
+        %span Assign the lock to this unit
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        = text_field_tag :dwelo_locks_input, @unit.remote_locks.dwelo_locks.present? ? @unit.remote_locks.dwelo_locks.last.name + " (" + @unit.remote_locks.dwelo_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
+        %datalist#dwelo_locks_list
+          - @all_locks[:dwelo_locks].each do |lock|
+            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+  - elsif @community.locks_provider == "Latch" and @community.latch.present? and @all_locks.present?
+    .form-group.hide_on_new
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Latch lock
+        %span Assign the lock to this unit
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        = text_field_tag :latch_locks_input, @unit.latch_locks.present? ?  @unit.latch_locks.last.lock_name : '', :placeholder => "Search by lock name", :list => "latch_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
+        %datalist#latch_locks_list
+          - @all_locks[:latch_locks].each do |lock|
+            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+  - elsif @community.locks_provider == "Zerv" and @community.zerv.present? and @all_locks.present?
+    .form-group.hide_on_new
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Pynwheel Access (zerv)
+        %span Assign the lock to this unit
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        = text_field_tag :zerv_locks_input, @unit.zerv_locks.present? ?  @unit.zerv_locks.last.sub_location_name + " (" + @unit.zerv_locks.last.sub_location_friendly_name + ")" : '', :placeholder => "Search by lock name", :list => "zerv_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
+        %datalist#zerv_locks_list
+          - @all_locks[:zerv_locks].each do |lock|
+            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+  - elsif @community.locks_provider == nil or @community.locks_provider == ""
+    .form-group
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Access Code
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control", :placeholder=>"Access Code"
+
 - if @community.touchscreen_app
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -107,13 +144,16 @@
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
-
-.form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Directional Text
-
-  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_area :stop_description,:class=>"form-control mb-20 ",:placeholder=>"Enter Directional Description", :rows => "8"
+- if @community.self_tour
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Directional Text
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+        %span#propertyDetailNameText
+          This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_area :stop_description,:class=>"form-control mb-20 wysihtml5",:placeholder=>"Enter Directional Description", :rows => "8"
+      %span.unit_directional_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
 -#.form-group
 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 -#    Available
@@ -150,50 +190,117 @@
           %label Model unit
 
 .form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Upload Primary Image
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{style: "margin-top: 50px;"}
+    Primary Floor Plan Image
     %span
-      Upload primary image of this Unit.
+      THIS WILL REPLACE THE STANDARD FLOOR PLAN IMAGE FOR THIS UNIT.
       %br/
       Images will appear at a size of 325 x 300 px. Please note that images that are too small may appear pixelated.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     -#.select-img.mb-20
     -#  .select-img-img
-    .image-box.video-box
-      .images.height-200
-        %a.preview-image{:href=>f.object.image.present? ? f.object.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Primary Image"}
-          = image_tag f.object.image.present? ? f.object.image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;"
-      = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.image.present? ? ((f.object.image.width < 300 && f.object.image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
-
-    %span.btn.btn-default.black-button.btn-sm.btn-file
-      Select Image
-      = f.file_field :image
+    .col-lg-5.col-md-5.col-sm-6.col-xs-6
+      .slide-image
+        .image-box.video-box
+          .images.height-200
+            - rn =  rand(9999999999999999999999999)
+            %a.preview-image{:href=>f.object.image.present? ? (f.object.image.url + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Primary Image"}
+              = image_tag f.object.image.present? ? (f.object.image.url + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;"
+          = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.image.present? ? ((f.object.image.width < 300 && f.object.image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+        - if f.object.image.present?
+          .icons
+            %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/units/#{@unit.id}/remove_pri_scnd_image?image=primary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+              %i.fa.fa-close
+        .row
+          .col-lg-6
+            %span.btn.btn-default.black-button.btn-sm.btn-file
+              Upload a new image
+              = f.file_field :image
+          .col-lg-6
+            - if  f.object.image.present? && f.object.image.content_type != 'image/svg+xml'
+              .icon
+                = link_to show_unit_image_in_modal_community_unit_path(), remote: true do
+                  %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                    Crop
 
 .form-group
-  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-    Upload Secondary Image
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{style: "margin-top: 50px;"}
+    Secondary Floor Plan Image
     %span
-      Upload secondary image of this Unit.
+      Upload secondary floor plan image of this Unit.
       %br/
       Images will appear at a size of 325 x 300 px. Please note that images that are too small may appear pixelated.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     -#.select-img.mb-20
     -#  .select-img-img
-    .image-box.video-box
-      .images.height-200
-        %a.preview-image{:href=>f.object.secondary_image.present? ? f.object.secondary_image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
-          = image_tag f.object.secondary_image.present? ? f.object.secondary_image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px;"
-      = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.secondary_image.present? ? ((f.object.secondary_image.width < 300 && f.object.secondary_image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
-    %span.btn.btn-default.black-button.btn-sm.btn-file
-      Select Image
-      = f.file_field :secondary_image
+    .col-lg-5.col-md-5.col-sm-6.col-xs-6
+      .slide-image
+        .image-box.video-box
+          .images.height-200
+            - rn =  rand(9999999999999999999999999)
+            %a.preview-image{:href=>f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Unit Secondary Image"}
+              = image_tag f.object.secondary_image.present? ? (f.object.secondary_image.url  + "?timestamp=#{rn}") : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-secondary-image", :style => "max-height: 190px; max-width: 270px;"
+          = image_tag "exclamation-mark.png", class: "waring_exal #{f.object.secondary_image.present? ? ((f.object.secondary_image.width < 300 && f.object.secondary_image.height < 250) ? "" : "hidden") : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
+        - if f.object.secondary_image.present?
+          .icons
+            %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/units/#{@unit.id}/remove_pri_scnd_image?image=secondary", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+              %i.fa.fa-close
+        .row
+          .col-lg-6
+            %span.btn.btn-default.black-button.btn-sm.btn-file
+              Upload a new image
+              = f.file_field :secondary_image
+          .col-lg-6
+            - if  f.object.secondary_image.present? && f.object.secondary_image.content_type != 'image/svg+xml'
+              .icon
+                = link_to show_unit_secondary_image_in_modal_community_unit_path(), remote: true do
+                  %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                    crop
 :javascript
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' });
   $(document).ready(function(){
       $('.wysihtml5').each(function(i, elem) {
-        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false}});
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false},
+        events: {
+                change: function(){
+                    var wysihtml5Editor = $('#unit_stop_description').data("wysihtml5").editor;
+                    var t = wysihtml5Editor.getValue();
+                    t1 = t.substr(0, 90)
+                    t2 = t.substr(90, t.length)
+                    t2 = t2.fontcolor("red");
+                    wysihtml5Editor.setValue(t1 + t2);
+                },
+                load: function(){
+                    $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+                    if (wysihtml5Editor.getValue() != "")
+                    {
+                        var text_split = $('.unit_directional_text').text().split(" ")
+                        var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                        $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+                        }
+                    });
+                    var wysihtml5Editor = $('#unit_stop_description').data("wysihtml5").editor;
+                    var t = wysihtml5Editor.getValue();
+                    t1 = t.substr(0, 90)
+                    t2 = t.substr(90, t.length)
+                    t2 = t2.fontcolor("red");
+                    wysihtml5Editor.setValue(t1 + t2);
+                    var text_split = $('.unit_directional_text').text().split(" ")
+                    var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                    $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+
+                }
+            }
+        });
+
       });
   })
+  if (localStorage.getItem("floorplanCropped") == "1")
+  {
+    localStorage.setItem("floorplanCropped", "0");
+    location.reload(true);
+  }
+
 

@@ -253,7 +253,11 @@
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
                   .grid-graph.hidden
-                  = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+                  - if @sitemap.present? && @sitemap.image.present? && @sitemap.image.content_type == "image/svg+xml"
+                    %object{:data => "your.svg", :type => "image/svg+xml"}
+                      = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
+                  - else
+                    = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
                   - units = @units.sort_by{|u| u.marketing_name}
                   - coordinates_array = []
 
@@ -444,7 +448,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapManageAmenitiesPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="sitemapManageAmenitiesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="sitemapManageAmenitiesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
     $(document).on("click", "#sitemapManageAmenitiesPopoverClose" , function(){
@@ -453,7 +457,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapGridOverlayPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapGridOverlayPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapGridOverlayPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 

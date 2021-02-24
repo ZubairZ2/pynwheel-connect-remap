@@ -2,7 +2,7 @@ class RealPageSvcService < BaseService
   def perform
     @unit_record = []
     import_realpage_svc_floorplans
-    import_initials_realpage_units
+    # import_initials_realpage_units
     import_realpage_svc_units
     import_realpage_svc_price
   end
@@ -369,6 +369,7 @@ class RealPageSvcService < BaseService
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
         date_needed = Date.today + 540
+        limit_result = credentials.limit_result ? "True" : "False"
         community_id = credentials.community_id
         response = HTTParty.post(
             url,
@@ -392,7 +393,7 @@ class RealPageSvcService < BaseService
                               <tem:listCriteria>
                                 <tem:ListCriterion>
                                   <tem:name>Limitresults</tem:name>
-                                  <tem:singlevalue>False</tem:singlevalue>
+                                  <tem:singlevalue>'+limit_result+'</tem:singlevalue>
                                 </tem:ListCriterion>
                                 <tem:ListCriterion>
                                   <tem:name>DateNeeded</tem:name>
@@ -673,7 +674,6 @@ class RealPageSvcService < BaseService
 
                 # unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
             rescue => ex
-              puts ex
 
               unitHash = nil
             end
@@ -692,14 +692,12 @@ class RealPageSvcService < BaseService
                 unit.lease_pricing = rentStr
                 unit.save(:validate => false)
                 # @doc = @doc + response.body
-                puts " **** price updated *** ",unit.marketing_name
               end
 
             end
           end
         end
       rescue => e
-        puts "Pricing Error ********************", e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
@@ -742,12 +740,10 @@ class RealPageSvcService < BaseService
         return result["Envelope"]["Body"]["getpicklistResponse"]["getpicklistResult"]["GetPickList"]["Contents"]["PicklistItem"]
       else
         #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]
-        puts '-----------------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"]
         ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})
       end
     rescue => e
       #Thread.current[:errors] << e.message
-      puts '-------------------------------------', e.message
       #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end

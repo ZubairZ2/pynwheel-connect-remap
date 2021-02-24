@@ -46,7 +46,7 @@ class Yardi4ConnectionService < BaseService
       end
 
     rescue 
-      false
+      return {"Result" => "Invalid Credentials"}
     end
 	end
 

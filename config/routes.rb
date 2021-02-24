@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+
+  get 'crm_providers/update'
+
+  get 'tutorial/index'
+
   mount ActionCable.server => '/cable'
   get 'tour_users/index'
 
@@ -8,12 +13,13 @@ Rails.application.routes.draw do
 
   post '/schedual_tours/:id', to: 'schedual_tours#update', format: :json
   post '/destroy_schedual_tours/:id', to: 'schedual_tours#destroy', format: :json
+  # post '/update_tour_type', to: 'schedual_tours#update_tour_type', format: :json
   resources :schedual_tours do
     # post :create_tour_user_from
     # member do
     # end
   end
-
+  post :map_dwelo_locks, to: 'dwelos#map_dwelo_locks'
   # selfie matching
   get '/id_selfie_matching/:tour_user_id', to: 'tours#id_selfie_matching', as: 'manual_selfie_match', format: :json
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
@@ -23,6 +29,8 @@ Rails.application.routes.draw do
   namespace :scheduler_widget do
     get 'widget', to: 'widgets#widget'
     get 'test_widget', to: 'widgets#test_widget'
+    get 'scheduler_widget_button', to: 'widgets#scheduler_widget_button'
+
     # get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
     
   end 
@@ -31,12 +39,10 @@ Rails.application.routes.draw do
   devise_for :users, :controllers => { :invitations => 'invitations' }
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"
-  
   resources :chatrooms
   resources :chats
   get 'listening_message', to: 'chats#listening_message' 
-  post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages' 
-  
+  post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages'
   resources :companies do
     resources :communities
     resources :community_groups
@@ -72,10 +78,16 @@ Rails.application.routes.draw do
       delete :remove_plots_from_floorplate
     end
     collection do
+      post :make_cordinate
       post :invitation_communities
       post :selected_communities
+      get :authenteq_response
+      get :authenteq_result
+      get :web_cam_test
     end
 
+    resources :building_starting_points 
+    resources :crm_providers 
     resources :remote_locks do
       collection do
         get :authorization_code
@@ -83,7 +95,36 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :edgestate_accounts
+    resources :edgestate_accounts do
+      collection do
+        get :test_edgestate_connection
+        post :import_edgestate_locks
+        post :map_edgestate_locks
+        delete :remove_edgestate_locks
+      end
+    end
+
+    resources :latch_accounts do
+      collection do
+        delete :remove_latch_locks
+      end
+    end
+
+    resources :dwelos do
+      collection do
+        get :test_dwelo_connection
+        delete :remove_dwelo_locks
+      end
+    end
+
+    resources :zerv_accounts do
+      collection do
+        get :test_zerv_connection
+        post :import_zerv_locks
+        post :map_zerv_locks
+        delete :remove_zerv_locks
+      end
+    end
 
     post :save_gallery_settings
     post :save_tour_settings
@@ -100,7 +141,6 @@ Rails.application.routes.draw do
     get :clone_community
     get :change_expressionist_default
     get :test_connection
-    post :make_cordinate
     get :account_report
     get :psi_pricing_test_connection
     get :psi_space_configuration_test_connection
@@ -109,6 +149,7 @@ Rails.application.routes.draw do
     post :save_temporary_image
     delete :delete_temporary_image
     resources :schedual_tours do
+      post :update_tour_type
       # post :create_tour_user_from
       # member do
       # end
@@ -128,6 +169,7 @@ Rails.application.routes.draw do
         get :show_floorplan_image_in_modal
         put :crop_image
         get :show_floorplan_secondary_image_in_modal
+        delete :remove_pri_scnd_image
         put :crop_secondary_image
       end
       collection do
@@ -135,6 +177,7 @@ Rails.application.routes.draw do
         post :save_floorplan_name_order
       end
     end
+    
     resources :elevators do
       resources :elevator_galleries
       # do
@@ -162,10 +205,14 @@ Rails.application.routes.draw do
         get :edit_amenity_gallery_image
         post :load_remotelock_data
         post :clear_locks
+        post :extract_floors
+        get :show_amenity_image_in_modal
+        put :crop_amenity_image
       end
     end
     resources :tour_users do
         get :lock_ploting
+        get :checkpoint_verification
     end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do
@@ -203,6 +250,12 @@ Rails.application.routes.draw do
         end
       end
       member do
+        get :show_unit_image_in_modal
+        put :crop_unit_image
+        get :show_unit_secondary_image_in_modal
+        put :crop_unit_secondary_image
+      end
+      member do
         post :ajaxplotunit
         post :ajaxplotunitforfloorplate
         delete :remove_plot
@@ -210,15 +263,23 @@ Rails.application.routes.draw do
         post :adjust_position
         post :load_remotelock_data
         post :clear_locks
+        delete :remove_pri_scnd_image
+        post :set_amenities_for_units
       end
       collection do
         post :set_floor
+        post :set_building
         post :set_available_date
         post :set_available
         post :set_manual_override
         post :set_sold
         post :add_description
         post :set_image
+      end
+    end
+    resources :tutorials do
+      collection do
+        get :upload_video_direct
       end
     end
     resources :sitemaps do
@@ -272,6 +333,7 @@ Rails.application.routes.draw do
     resources :tours, only: :index do
       collection do
         post :save_opening_hours
+        post :save_guided_opening_hours
       end
       resources :tour_stops do
         member do
@@ -279,12 +341,23 @@ Rails.application.routes.draw do
         end
       end
       collection do
+        get :settings
         post :save_starting_point
+        get :select_status
+        post :select_status
+        post :sort_buildings
         post :sort_stops
         post :display_stop
         post :save_tour_settings
+        get :building_starting_point
+        post :update_building_starting_point
+        get :check_point
+        get :check_point_id_success
+        post :save_check_point_response
         get :starting_point
         get :select_stops
+        get :scheduler_widget
+        post :save_schedule_widget_btn_setting
         get :edit_amenity
         get :test_automate
       end
@@ -365,12 +438,16 @@ Rails.application.routes.draw do
 
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
+      put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
+      post :save_data, to: 'dwelo_devices#load_data'
+      post :device_lock_unlock, to: 'dwelo_devices#device_lock_or_unlock'
       resources :communities, only: :index do
         member do
           get :data
           get :data_group
           get :community_tours
           post :user_saved_tour
+          get :tour_configrations
           get :ios_data
           get :minimum_data
           post :email_favorites
@@ -380,8 +457,10 @@ Rails.application.routes.draw do
           get :unit_and_floorplan_data
           get :update_unit_floorplan_data
           delete :delete_tour_stop
+          delete :delete_tour_stop_v1
         end
         collection do
+          get :authenteq
           post :login
           get :list_communities
           get :portico_list_communities
@@ -404,12 +483,15 @@ Rails.application.routes.draw do
         end
       end
       post :save_shared_tour, to: 'tours#save_shared_tour'
+      post :checkpoint_verification_response, to: 'tours#checkpoint_verification_response'
       get '/get_floorplan_units', to: 'tours#floorplan_units'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
 
       # 
       post :save_tour_history, to: 'tour_histories#save_tour_history'
+      post :alerts_during_tour, to: 'tour_histories#alerts_during_tour'
       get :get_tour_history, to: 'tour_histories#get_tour_history'
+
       # ID/Selfie get status
       get :get_id_selfie_mismatch_status, to: 'tours#get_id_selfie_mismatch'
       post :change_id_selfie_mismatch_status, to: 'tour_histories#change_id_selfie_status'

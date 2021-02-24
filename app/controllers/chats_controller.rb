@@ -1,6 +1,7 @@
 class ChatsController < ApplicationController
     protect_from_forgery with: :null_session
     skip_before_action :authenticate_user!, :only => [:create,:show, :listening_message]
+    before_action :set_tour_user, only: [:create]
 
 
     def index
@@ -15,7 +16,7 @@ class ChatsController < ApplicationController
                 tour_user_name = "You"
             end
 
-            chat = Chat.new(message: params[:message], name: tour_user_name, chatroom_id: params[:chatroom_id], client_date: params[:client_date])
+            chat = Chat.new(message: params[:message], name: tour_user_name, chatroom_id: params[:chatroom_id], client_date: params[:client_date], tour_key: @tour_user.tour_key)
             if chat.save
                 message = serailize_message(chat)
                 render json: {messages: message, chatroom_id: chat.chatroom_id, stats: :OK, code: 200}
@@ -24,7 +25,7 @@ class ChatsController < ApplicationController
             end
         else
             # message from support
-            chat = Chat.new(chat_params)
+            chat = Chat.new(chat_params.merge(tour_key: @tour_user.tour_key))
             if chat.save
                 message = serailize_message(chat)
                 render json: {messages: message, chatroom_id: chat.chatroom_id, stats: :OK, code: 200}
@@ -50,12 +51,23 @@ class ChatsController < ApplicationController
     end
 
     def listening_message
+        begin
+            community = Community.find params[:community_id]
+            chat_control = (community.chat_control and community.is_chat_login) ? community.chat_control : false
+            phone = community.phone.present? ? community.phone.scan(/\d/).join('') : ''
+            phone = phone.present? ? ("Please check back later or call the property at: #{phone[-10..-8]}-#{phone[-7..-5]}-#{phone[-4..-1]}") : ''
+            agent_status = chat_control ? "User is live" : "The agent has logged out. #{phone}"
+        rescue => exception
+            chat_control = true
+            agent_status = "User is live"
+        end
+        
         chats = Chat.where("name = ? AND chatroom_id = ? AND id > ?", "Support Team", params[:chatroom_id], params[:last_msg_id]).order(created_at: :desc)
         if chats.present?
             message_history = serailize_messages(chats)
-            render json: {messages: message_history,chatroom_id: params[:chatroom_id],  stats: :OK, code: 200 }
+            render json: {messages: message_history,chatroom_id: params[:chatroom_id], chat_control: chat_control, agent_status: agent_status, stats: :OK, code: 200 }
         else
-            render json: {messages: [],chatroom_id: params[:chatroom_id], stats: :OK, code: 200}
+            render json: {messages: [],chatroom_id: params[:chatroom_id], chat_control: chat_control, agent_status: agent_status, stats: :OK, code: 200}
         end
     end
 
@@ -135,4 +147,7 @@ class ChatsController < ApplicationController
         params.require(:chat).permit(:message, :name, :chatroom_id, :client_date)
     end
 
+    def set_tour_user
+        @tour_user = (Chatroom.find_by_id chat_params[:chatroom_id]).tour_user rescue TourUser.find_by(id: params[:tour_user_id])
+    end
 end

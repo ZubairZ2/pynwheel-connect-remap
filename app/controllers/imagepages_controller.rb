@@ -34,24 +34,6 @@ class ImagepagesController < ApplicationController
 		PaperTrail::Version.create(item_type: "Imagepage",item_id: @imagepage.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{@imagepage.name}' community_id: '#{current_community.id}'")
 
 	end
-	def check_community
-		unless current_user.is_super_admin?
-			if params[:community_id].present?
-				all_ids = []
-				current_user.communities.each do |c|
-					# all_ids.insert(c.id)
-					all_ids << c.id
-				end
-				# byebug
-				# puts '+++++++++++++++', all_ids[0]
-				if all_ids.include? params[:community_id].to_i
-
-				else
-					redirect_to root_path
-				end
-			end
-		end
-	end
 
 	def destroy
 		@imagepage = @community.imagepages.find(params[:id])

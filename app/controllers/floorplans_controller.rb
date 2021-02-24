@@ -2,7 +2,7 @@ class FloorplansController < ApplicationController
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
-  before_action :set_floorplan, only: [:edit,:update,:destroy]
+  before_action :set_floorplan, only: [:edit,:update,:destroy, :remove_pri_scnd_image]
 
   def index
     @floorplans = @community.floorplans.order(id: :desc)
@@ -33,6 +33,18 @@ class FloorplansController < ApplicationController
   def edit
     add_breadcrumb "Floor plans", community_floorplans_path(@community)
     add_breadcrumb "Floor plan Details", edit_community_floorplan_path(@community,@floorplan)
+  end
+
+  def remove_pri_scnd_image
+    if params[:image] == "primary"
+      @floorplan.remove_image!
+      @floorplan.standard_image_url = nil
+      @floorplan.save
+    elsif params[:image] == "secondary"
+      @floorplan.remove_secondary_image!
+      @floorplan.save
+    end
+    redirect_to :back, notice: "Image removed successfully."
   end
 
   def show_floorplan_image_in_modal
@@ -80,6 +92,8 @@ class FloorplansController < ApplicationController
     @floorplan = Floorplan.find params["id"]
     if @floorplan.crop_x_secondary == params[:floorplan][:crop_x].to_f
       @floorplan.do_crop_secondary = false
+    elsif @floorplan.crop_x == params[:floorplan][:crop_x].to_f and @floorplan.crop_y == params[:floorplan][:crop_y].to_f and @floorplan.crop_w == params[:floorplan][:crop_w].to_f and @floorplan.crop_h == params[:floorplan][:crop_h].to_f
+      @floorplan.do_crop_secondary = false
     else
       @floorplan.do_crop_secondary = true
     end
@@ -97,24 +111,6 @@ class FloorplansController < ApplicationController
 
     redirect_to edit_community_floorplan_path(@community,@floorplan)
     # render :json=> {:success=>false}
-  end
-  def check_community
-    unless current_user.is_super_admin?
-      if params[:community_id].present?
-        all_ids = []
-        current_user.communities.each do |c|
-          # all_ids.insert(c.id)
-          all_ids << c.id
-        end
-        # byebug
-        # puts '+++++++++++++++', all_ids[0]
-        if all_ids.include? params[:community_id].to_i
-
-        else
-          redirect_to root_path
-        end
-      end
-    end
   end
 
   def update

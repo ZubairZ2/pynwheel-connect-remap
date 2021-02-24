@@ -1,0 +1,33 @@
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Lock Provider
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    - if @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
+      = f.select :default_community_id , options_for_select([["Dwelo"]],f.object),{},{:class=>"form-control"}
+    - else
+      = f.select :default_community_id , options_for_select([["Dwelo","Dwelo"],["EdgeState","EdgeState"],["Latch","Latch"],["Pynwheel Access (zerv)","Zerv"]],f.object),{},{:class=>"form-control lock_provider"}
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Community ID
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    -if @community.dwelo.present?
+      = f.text_field :default_community_id, :class => "form-control ", value: @community.dwelo.default_community_id, :readonly => true
+    - else
+      = f.text_field :default_community_id, :class=>"form-control", :placeholder=>"Dwelo Community ID", :required => true
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Client ID
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    - if @community.dwelo.present?
+      = f.text_field :client_id, :class => "form-control dwelo_client_id", value: @community.dwelo.client_id, :readonly => true
+    - else
+      = f.text_field :client_id, :class=>"form-control dwelo_client_id", :placeholder=>"Client ID", :required => true
+
+.form-group#unit_virtual_tour_button_label_field
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Client Secret
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    - if @community.dwelo.present?
+      = f.text_field :client_secret, :class => "form-control", value: @community.dwelo.client_secret, :readonly => true
+    - else
+      = f.text_field :client_secret, :class=>"form-control", :placeholder=>"Client Secret", :required => true

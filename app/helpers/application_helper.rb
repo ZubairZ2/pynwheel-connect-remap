@@ -11,6 +11,22 @@ module ApplicationHelper
     when 'alert' then "alert alert-danger"
     end
   end
+  def encoded(payload)
+    JWT.encode payload, ENV['SECRET_KEY_BASE'], 'HS256'
+  end
+  def decoded(token)
+    JWT.decode token, ENV['SECRET_KEY_BASE'], true, { algorithm: 'HS256' } rescue nil
+  end
+  def grant_access(payload)
+    begin
+        ((TourUser.find payload[0]['tour_user_id'].to_i).secure_random == payload[0]['secure_random']) && (payload[0]['license_key'] == ENV['TEMP_ACESS_TOKEN'])
+    rescue => ex
+        false
+    end
+  end
+  def api_access
+    return true
+  end
 
   def gables_theme_options
     ["gables_organic","gables_refined","gables_energetic","gables_natural","gables_custom"]

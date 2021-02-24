@@ -25,7 +25,10 @@ class TourUser < ApplicationRecord
   has_many :chatrooms, dependent: :destroy
   has_many :as_guests, dependent: :destroy
   has_many :igloo_guests, dependent: :destroy
+  has_many :latch_guests, dependent: :destroy
+  has_many :zerv_guests, dependent: :destroy
   has_many :lock_histories, dependent: :destroy
+  has_many :prospects, dependent: :destroy
   
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
 
@@ -35,7 +38,8 @@ class TourUser < ApplicationRecord
   mount_base64_uploader :id_card, AvatarUploader
   def crop_user_image
     begin
-      image.recreate_versions! if image.present?
+      image.recreate_versions! if (image.present? and crop_image_bit and !crop_image_bit.nil)
+      id_card.recreate_versions! if (id_card.present? and !crop_image_bit and !crop_image_bit.nil)
     rescue => exception
       
     end

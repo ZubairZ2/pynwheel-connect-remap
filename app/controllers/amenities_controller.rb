@@ -1,8 +1,8 @@
 class AmenitiesController < ApplicationController
+  include AssignLocksHelper
   before_action :authenticate_user!
   before_action :check_community
   add_breadcrumb "Home", :root_path
-  skip_before_action :load_tour_users_chats, only: [:load_remotelock_data, :clear_locks]
   def index
     @amenities = current_community.amenities.order(id: :desc)
     add_breadcrumb "Amenity Images", community_amenities_path(current_community)
@@ -23,52 +23,84 @@ class AmenitiesController < ApplicationController
   def edit
     @community = Community.find params[:community_id]
     @amenity = Amenity.find (params[:id])
-    @assigned_lock = @amenity.remote_locks.first
+    if params[:unit].present?
+      @unit = Unit.find (params[:unit])
+    end
+    @from_unit =  (params[:from] == "unit" and @amenity.amenityable_type == "Unit") ?  @amenity.amenityable_id : "0"
+    @floors = @amenity.building.present? ? @community.floorplates.where(building: @amenity.building).map{|x| x.floors}.flatten.sort : (@community.floorplates.map{|x| x.floors}.flatten.uniq).sort
+    @all_locks = all_locks(@community)
+    @locks_provider = @community.locks_provider
   end
 
-  def load_remotelock_data
-    access_token = generate_remotelock_token
-    responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
-    RemoteLockService.new(current_community).update_deivces_in_db(responce)
-    es = EdgeState.find_by(community_id: current_community.id)
-    if es.nil?
-      render json: {locks: []}
-    else
-      render json: {locks: RemoteLock.where(edge_state_id: es.id)}
-    end
+  def show_amenity_image_in_modal
+    @community = Community.find params[:community_id]
+    @amenity = Amenity.find params[:id]
   end
-  
-  def clear_locks
-    amenity = Amenity.find params[:id]
-    amenity.remote_locks.delete_all
-    render json: {locks: amenity.remote_locks}
+
+  def crop_amenity_image
+    @community = Community.find params["community_id"]
+    @amenity = Amenity.find params["id"]
+    @amenity.name = params[:amenity][:name] if params[:amenity][:name].present?
+    if @amenity.crop_x == params[:amenity][:crop_x].to_f
+      @amenity.do_crop = false
+    else
+      @amenity.do_crop = true
+    end
+    @amenity.crop_x = params[:amenity][:crop_x]
+    @amenity.crop_y = params[:amenity][:crop_y]
+    @amenity.crop_w = params[:amenity][:crop_w]
+    @amenity.crop_h = params[:amenity][:crop_h]
+    @amenity.save!
+    if @amenity.amenityable_type == "Unit"
+    redirect_to "/communities/#{@community.id}/amenities/#{@amenity.id}/edit?from=unit&unit=#{@amenity.amenityable_id}", notice: "Amenity updated successfully"
+    else
+      redirect_to edit_community_amenity_path(@community, @amenity)
+    end
+
+
   end
 
   def update
-    @amenity = Amenity.find(params[:id])
-    if params[:remote_lock].present?
-      remote_lock = RemoteLock.find_by(device_id: params[:remote_lock])
-      remote_lock.update_attributes(stop_id: @amenity.id, stop_type: "amenity", stop_name: params[:amenity][:name])
+    @amenity = Amenity.find(params[:id]) 
+    if @community.enable_locks
+      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ( (params[:zerv_lock].present? or params[:zerv_lock] == "") ?  params[:zerv_lock] : nil ) ) )
+      assign_lock(@community, @amenity, lock_id) unless lock_id.nil?
     end
-    begin
-      ts = TourStop.find_by(stop_id: @amenity.id)
-      if ts.present? && params[:amenity][:name].present?
-        ts.name = params[:amenity][:name]
-        ts.save
-      end
-    rescue => ex
-    end
+    
     if @amenity.update_attributes(amenity_params)
-      unless params[:amenity_modal].present?
-        redirect_to edit_community_amenity_path(current_community,@amenity), notice: "Amenity updated successfully"
+      begin
+        ts = TourStop.find_by(stop_id: @amenity.id)
+        if ts.present? && params[:amenity][:name].present?
+          ts.name = params[:amenity][:name]
+          ts.save
+        end
+      rescue => ex
+      end
+      if params[:unit].present? && params[:unit_render].present? && params[:unit_render] != "false"
+          @unit = Unit.find(params[:unit]) rescue nil
+          if @unit.present?
+            redirect_to "/communities/#{@community.id}/amenities/#{@amenity.id}/edit?from=unit&unit=#{params[:unit]}", notice: "Amenity updated successfully"
+          end
       else
-        redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
+      if params[:done_action].present?
+        from_unit = params[:from_id]
+        done_action = (params[:floorNo].nil? and params[:from].nil?) ? community_tours_path(current_community) : ( params[:floorNo].present? ? community_tours_path(current_community) << '?floorNo=' + params[:floorNo] : edit_community_unit_path(current_community,from_unit) )
+        redirect_to done_action , notice: "Unit's Amenity updated successfully"
+      else
+        unless params[:amenity_modal].present?
+          @unit = Unit.find(params[:unit]) if params[:unit].present?
+          redirect_to (params[:floorNo].nil? and params[:from].nil?) ? edit_community_amenity_path(current_community,@amenity) : ( params[:floorNo].present? ? edit_community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  "?floorNo=#{params[:floorNo]}" : edit_community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  '?from=unit'+ (@unit.present? ? '?&unit='+@unit.id.to_s : '')) , notice: "Amenity updated successfully"
+        else
+          redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
+        end
+      end
       end
     else
       unless params[:amenity_modal].present?
-        redirect_to edit_community_amenity_path(current_community,@amenity), alert: @amenity.errors.full_messages.join(',')
+        @unit = Unit.find(params[:unit]) if params[:unit].present?
+        redirect_to (params[:floorNo].nil? and params[:from].nil?) ? edit_community_amenity_path(current_community,@amenity) : ( params[:floorNo].present? ? edit_community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  "?floorNo=#{params[:floorNo]}" : edit_community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  '?from=unit'+ (@unit.present? ? '?&unit='+@unit.id.to_s : '')) , notice: "Amenity updated successfully"
       else
-        redirect_to community_amenities_path(current_community), alert: @amenity.errors.full_messages.join(',')
+        redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
       end
     end
   end
@@ -94,24 +126,6 @@ class AmenitiesController < ApplicationController
       redirect_to community_amenities_path(current_community), notice: "Amenity deleted successfully"
     else
       redirect_to community_amenities_path(current_community), error: @amenity.errors.full_messages.join(',')
-    end
-  end
-  def check_community
-    unless current_user.is_super_admin?
-      if params[:community_id].present?
-        all_ids = []
-        current_user.communities.each do |c|
-          # all_ids.insert(c.id)
-          all_ids << c.id
-        end
-        # byebug
-        # puts '+++++++++++++++', all_ids[0]
-        if all_ids.include? params[:community_id].to_i
-
-        else
-          redirect_to root_path
-        end
-      end
     end
   end
   private

@@ -28,24 +28,6 @@ class SitemapsController < ApplicationController
       # render :new
     end
   end
-  def check_community
-    unless current_user.is_super_admin?
-      if params[:community_id].present?
-        all_ids = []
-        current_user.communities.each do |c|
-          # all_ids.insert(c.id)
-          all_ids << c.id
-        end
-        # byebug
-        # puts '+++++++++++++++', all_ids[0]
-        if all_ids.include? params[:community_id].to_i
-
-        else
-          redirect_to root_path
-        end
-      end
-    end
-  end
 
   def grid_overlay
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path(current_community)
@@ -126,12 +108,12 @@ class SitemapsController < ApplicationController
 
   def save_sitemap_image
     image = MiniMagick::Image.open(params[:file].path)
-    if image.width < 1000 && image.height < 700
+    if image.width < 1000 && image.height < 700 && image.type != "SVG"
       flash[:error] = "Too small property map image"
       redirect_to community_sitemaps_path(@community)
     else
       sitemap = Sitemap.where(community_id: params[:community_id],id: params[:sitemap_id]).first
-      if sitemap.update_attribute(:image,params[:file])
+      if sitemap.update_attributes(image: params[:file], width: image.width  , height: image.height)
         render :json=>{"status"=>"success"}
       else
         render :json=>{"status"=>"fail"}

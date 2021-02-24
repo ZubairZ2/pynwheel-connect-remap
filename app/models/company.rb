@@ -27,4 +27,8 @@ class Company < ApplicationRecord
   def delete_company
     DeleteCompanyJob.perform_async self
   end
+
+  def creator
+    User.find_by(id: self.creator_id)
+  end
 end

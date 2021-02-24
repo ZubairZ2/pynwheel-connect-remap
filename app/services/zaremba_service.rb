@@ -80,7 +80,6 @@ class ZarembaService < BaseService
           PaperTrail.enabled = true
         rescue => err
         end
-        puts '----------------------------' , e.message
       end
     end
 
@@ -89,7 +88,6 @@ class ZarembaService < BaseService
 
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id, ["zaremba"]).map{|x| x.provider_unit_id}
     units.each do |u|
-      puts u
       vacateDate = ""
 
       unit = Unit.find_by(provider: "zaremba",community_id: credentials.community_id,provider_unit_id: u["BuildingID"]+"-"+u["IDValue"],building: u["BuildingID"])#.first_or_initialize

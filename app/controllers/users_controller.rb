@@ -4,7 +4,9 @@ class UsersController < ApplicationController
   before_action :set_user, only: [:edit,:update]
   def index
     if current_user.is_super_admin?
-      @users = User.where(role: ["Community admin","Community manager","Super admin"])
+      @users = User.where(role: ["Community admin","Community manager","Super admin","visitor_detail_page", "Dwelo admin"])
+    elsif current_user.is_dwelo_admin?
+      @users = User.where('id IN (?) or role = ?', Community.where(creator_id: User.where(role: "Dwelo admin").ids).collect{|c| c.users.map(&:id)}.flatten, "Dwelo admin")
     else
       @users = User.find current_user.communities.collect{|c| c.users.map(&:id)}.flatten
     end
@@ -30,39 +32,41 @@ class UsersController < ApplicationController
   end
 
   def update
+    chat_enabled_communites = []
     u = User.find(params[:id])
     data = u.communities.pluck(:id)
-
+    chat_enable_communities = params[:enable_community_id].present? ? params[:enable_community_id] : [""] rescue nil
     if @user.update(user_params)
       data.each do |d|
         if params[:user][:community_ids].present?
           unless params[:user][:community_ids].map(&:to_i).include? d
-            CommunityUser.create(user_id: params[:id],community_id: d )
+            community = CommunityUser.create(user_id: params[:id], community_id: d)
+            chat_enabled_communites.push(community)
           end
         end
       end
-      flash[:notice] = alert_message
-      redirect_to redirect_path
-    else
-      flash[:error] = @user.errors.full_messages.join(',')
-      render render_action
-    end
-  end
-  def check_community
-    unless current_user.is_super_admin?
-      if params[:community_id].present?
-        all_ids = []
-        current_user.communities.each do |c|
-          # all_ids.insert(c.id)
-          all_ids << c.id
-        end
-        # byebug
-        # puts '+++++++++++++++', all_ids[0]
-        if all_ids.include? params[:community_id].to_i
+      if chat_enable_communities.present?
+        chat_enable_communities.each do |community|
+          if community.present?
+            user_community = CommunityUser.where(community_id: community, user_id: u.id)
+            unless user_community.present?
+              user_community = chat_enabled_communites.where(community_id: community, user_id: u.id)
+              user_community.each do |usercommunity|
+                usercommunity.update!(enable_community_id: usercommunity.community_id, chat_enable: true)
+              end
+            else
 
-        else
-          redirect_to root_path
+              user_community.each do |comunity|
+                comunity.update!(enable_community_id: comunity.community_id, chat_enable: true)
+              end
+            end
+          end
         end
+        flash[:notice] = alert_message
+        redirect_to redirect_path
+      else
+        flash[:error] = @user.errors.full_messages.join(',')
+        render render_action
       end
     end
   end

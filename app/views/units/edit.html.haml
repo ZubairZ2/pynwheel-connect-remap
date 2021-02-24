@@ -9,134 +9,172 @@
             %span
         .col-md-12
           = link_to "<Back to All Units", community_units_path(@community), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
-          - if (current_community.self_tour)
-            = link_to "Manage Unit Tour", community_unit_amenities_path(@community,@unit), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
+          -# - if (current_community.self_tour)
+            -# = link_to "Manage Unit Tour", community_unit_amenities_path(@community,@unit), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
       / /.box-header
       / form start
-      = form_for @unit,:url=>community_unit_path(:id=>@unit.id,:community_id=>@community.id),:html=>{:class=>"form-horizontal"} do |f|
+      = form_for @unit,:url=> params[:floorNo].nil? ? community_unit_path(:id=>@unit.id,:community_id=>@community.id) : community_unit_path(:id=>@unit.id,:community_id=>@community.id) <<  '?floorNo=' + params[:floorNo] ,:html=>{:class=>"form-horizontal"} do |f|
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
               = render :partial=>'form',:locals=>{:f=>f}
         / /.box-body
         .box-footer
-          = f.submit "Save Changes", :class=>"btn btn-success pull-right loader_class"
+          = f.submit "Save Changes", :class=>"btn btn-success pull-right submit_button"
+#crop-unit-secondary-image.modal.fade.edit-image
+#crop-unit-image.modal.fade.edit-image
+- if @community.self_tour    
+  %section
+    .content
+      .box.box-info.add-plan.mt-20#logo_header
+        .box-header
+          %h3.box-title
+            Unit Tour Setup
+      .row
+        .col-lg-12.col-md-12
+          .row
+            .col-md-12
+              %h4.title
+                = @unit.marketing_name + " Unit Images"
+              %h4{:style => "color: grey;"}
+                %p
+                  Use the “Add Image” button or drag & drop area below to import images associated with the unit.
+                %p
+                  Once images have been added, a button will appear to allow you to plot them on the unit.
+              = link_to "PLOT IMAGES ON UNIT", plot_amenities_community_unit_amenities_path(@community,@unit), class: "btn btn-primary mb-20", id: "amenity_image"
+            .col-md-6
+              .mt-35
+                %span.btn.btn-success.btn-file
+                  %i.fa.fa-plus-circle
+                  Add image to this unit
+                  %input#unit-amenity-images{:multiple => "multiple", :type => "file"}
+                %button.dropbtn.btn.btn-primary{"data-target" => "#modal-to-set-image", "data-toggle" => "modal"} Add images to multiple units
+              .divLoading.hidden
+          #images-index-unit
+            = render :partial=>'edit'
+
+  #edit-image.modal.fade.edit-image
+  
+  #modal-to-set-image.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+    .modal-dialog
+      .modal-content
+        .modal-header
+          %b Upload Interior Image for Multiple Units
+        = form_tag '/', :id=>"amenities-for-multiple-units", multipart: true do
+          .modal-body.set-floor-modal-body
+            %input#units-amenities-images{:multiple => "multiple", :type => "file", :required=>"required"}
+            .row
+              .col-md-4
+                = check_box_tag 'select_all_units_for_image'
+                %label Select all
+            .row
+              - if @units.present?
+                - @units.each do |unit|
+                  .col-md-3.pt-5.pb-5
+                    = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
+                    = h unit.marketing_name
+          .modal-footer
+            = submit_tag 'Submit',:class=>"btn btn-success"
+            %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
 
 :javascript
+
+  var locks_provider = "#{@locks_provider}"
+  var locks_input, locks_list, param_name;
+
+  if(locks_provider == "EdgeState"){
+    locks_input = "#edgestate_locks_input"
+    locks_list = "#edgestate_locks_list"
+    param_name = "remote_lock"
+  }
+  else if(locks_provider == "Dwelo"){
+    locks_input = "#dwelo_locks_input"
+    locks_list = "#dwelo_locks_list"
+    param_name = "dwelo_remote_lock"
+  }
+  else if(locks_provider == "Latch"){
+    locks_input = "#latch_locks_input"
+    locks_list = "#latch_locks_list"
+    param_name = "latch_lock"
+  }
+  else if(locks_provider == "Zerv"){
+    locks_input = "#zerv_locks_input"
+    locks_list = "#zerv_locks_list"
+    param_name = "zerv_lock"
+  }
 
   $("#unit_secondary_image").change(function(){
       readSecondaryURL(this);   
   });
 
-  var unit_id = #{ @unit.id }
-  var unit_name = '#{ @unit.name }'
-  var building_name = '#{ @unit.building.present? ? @unit.building : '' }'
-  var community_id = #{ @community.id }
-  var lock_name_should_be
-
-  if (building_name.length > 0){
-    lock_name_should_be = building_name + '-' + unit_name
-  }
-  else{
-    lock_name_should_be = unit_name
+  if(#{@unit.amenities.count} == 0){
+    $('#amenity_image').hide();
   }
 
-  var assigned_lock_name = '#{ @assigned_lock.present? ? @assigned_lock.name : '' }'
-  var assigned_lock_type = '#{ @assigned_lock.present? ? @assigned_lock.remote_lock_type : '' }'
-  
-  var IsSelectedLockMatch = function(){
-    if($('#remote_lock :selected').text() != "Select your option"){
-      var index = $('#remote_lock :selected').text().lastIndexOf(" ");
-      var lock_name = $('#remote_lock :selected').text().substring(0, index);
+  if(#{@unit.amenities.count.to_i} > 0){
+    $('#amenity_image').show();
+  }
 
-      var name_should_be
-      if($('#unit_building').val().length > 0){
-        name_should_be = $('#unit_building').val() + '-' + $('#unit_marketing_name').val()
+  $('#select_all_units_for_image').change(function(){
+      if($(this).is(':checked')){
+        $('.image-checkbox').prop('checked',true)
       }
       else{
-        name_should_be = $('#unit_marketing_name').val()
+        $('.image-checkbox').prop('checked',false)
       }
-
-      if(lock_name != name_should_be){
-        $('#remote_lock').addClass('lock_mismatch')
-        $("#update-btn").removeClass('hidden')
-
-        var id = $('#remote_lock :selected').val()
-        var href = '/communities/' + community_id + '/remote_locks/' + id + '/edit?stop_id=' + unit_id + '&stop_name=' + unit_name + '&stop_type=unit'
-
-        $("#a-lock").attr("href",href);
-      }
-      else{
-        $('#remote_lock').removeClass('lock_mismatch')
-        $("#update-btn").addClass('hidden')
-        $("#a-lock").attr("href","#");
-      }
-    }
-    else{
-        $('#remote_lock').removeClass('lock_mismatch')
-        $("#update-btn").addClass('hidden')
-        $("#a-lock").attr("href","#");
-    }
-  }
-  
-  function clear_assigned_lock(){
-    $.ajax({
-      type: 'POST',
-      url: '/communities/'+ community_id + '/units/' + unit_id +'/clear_locks',
-      dataType: 'json',
-      cache: false,
-      success: function(data){
-        console.log(data)
-      },
-      fail: function(error){
-        console.log(error)
-      }
-    })
-  }
-
-  $(document).ready(function(){
-      var assigned_lock_present = false
-      
-      var params = {"unit_name": unit_name}
-      $.ajax({
-        type: 'POST',
-        url: '/communities/'+ community_id + '/units/' + unit_id +'/load_remotelock_data',
-        dataType: 'json',
-        data: params,
-        cache: false,
-        success: function(data){
-          locks = data['locks']
-          for (var item in locks) {
-            if (assigned_lock_name == locks[item].name && assigned_lock_type == locks[item].remote_lock_type){
-              $('#remote_lock').prepend(`<option value="${locks[item].device_id}" , selected="selected">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
-              assigned_lock_present = true
-            }
-            else{
-              $('#remote_lock').append(`<option value="${locks[item].device_id}">${locks[item].name} (${locks[item].remote_lock_type})</option>`)
-            }
-          }
-          if(assigned_lock_present == false){
-              $('#remote_lock').prepend(`<option value="" , selected="selected">Select your option</option>`)
-              // clear_assigned_lock()
-          }
-          else
-            IsSelectedLockMatch()
-        },
-        fail: function(error){
-          console.log(error)
-        }
-      });
-
-
-      $("#remote_lock").change(function () {
-        IsSelectedLockMatch()
-      });      
-
-      $('#unit_building').keyup(function() {
-        IsSelectedLockMatch()
-      });
-
-      $('#unit_marketing_name').keyup(function() {
-        IsSelectedLockMatch()
-      });
   });
+
+  var $chkboxes = $('.mass-override');
+  var lastChecked = null;
+
+  $chkboxes.click(function(e) {
+      if (!lastChecked) {
+          lastChecked = this;
+          return;
+      }
+
+      if (e.shiftKey) {
+          var start = $chkboxes.index(this);
+          var end = $chkboxes.index(lastChecked);
+
+          $chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+      }
+
+      lastChecked = this;
+  });
+
+  $(".submit_button").click(function() {
+    var lock = $(locks_input)[0];
+    if(typeof lock !== 'undefined'){
+      if(lock.value == "")
+            lock.setCustomValidity('')
+
+      if(lock.checkValidity() == true){
+        lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+        input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+        $("#" + lock.id).closest('form').append(input)
+        $("#" + lock.id).closest('form').submit(); 
+      }
+      else{ lock.reportValidity(); }
+    }
+  })
+
+  var inputs = document.querySelectorAll('input[list]');
+  for (var i = 0; i < inputs.length; i++) {
+    inputs[i].addEventListener('change', function() {
+      var optionFound = false,
+      datalist = this.list;
+      for (var j = 0; j < datalist.options.length; j++) {
+          if (this.value == datalist.options[j].value) {
+              optionFound = true;
+              break;
+          }
+      }
+      if (optionFound) {
+        this.setCustomValidity('');
+      } else {
+        if (typeof locks_input !== 'undefined' &&  $(locks_input).val() != "" )
+            this.setCustomValidity('Lock does not exist');
+      }
+    });
+  }

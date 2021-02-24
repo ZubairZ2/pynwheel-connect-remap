@@ -30,6 +30,9 @@ class TourStopsController < ApplicationController
     if @tour_stop.stop_type == "elevator"
       (Elevator.find @tour_stop.stop_id).destroy
     end
+    if @tour_stop.stop_type == "building_starting_point"
+      (BuildingStartingPoint.find @tour_stop.stop_id).destroy
+    end
     if @tour_stop.destroy
       redirect_to community_tours_path(current_community,floorNo = (params[:floorplate].present? ? params[:floorplate] : nil)), :notice => "Tour Stop deleted"
     else

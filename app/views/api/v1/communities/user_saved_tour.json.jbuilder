@@ -1,8 +1,12 @@
+description_limit = 60
+styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
+styling_end = '</p></div>'
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number
 json.email @tour_user.email
-json.visual_id_verification @scheduled_tour.present? ? (@community.present? ? @community.tour.visual_id_verification : true) : false
-json.virtual_tour @scheduled_tour.present? ? true : false # seding reverse value due to last name 'ontime'
+json.visual_id_verification @in_visiting_hours == true ? (@community.present? ? @community.tour.visual_id_verification : true) : false
+json.virtual_tour @in_visiting_hours == true ? true : false   # seding reverse value due to last name of json field i.e 'ontime'
+
 
 # @tours.each do |tour|
 #   if tour[0][1] == last_vs.tour_key
@@ -25,7 +29,7 @@ json.tours tours do |tour|
   json.longitude tour.longitude
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
-  json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url)
+  json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url) rescue ""
   # visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key).group('tour_stop_id').count
 
   json.visited_tour @visited_stops do |visited_stop|
@@ -35,7 +39,9 @@ json.tours tours do |tour|
     @tour = TourStop.find visited_stop rescue next
     stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop,description: nil, image: nil).last
     stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop).last unless stop.present?
-    if @tour.stop_type != "elevator"
+    stop = VisitedStop.where(tour_user_id: @tour_user.id,tour_stop_id: @tour.id).last unless stop.present?
+    
+    if @tour.stop_type != "elevator" && tours[0].id != @tour.id
       json.id @tour.id
       # @tour = TourStop.find visited_stop[0]
       json.type @tour.stop_type
@@ -43,6 +49,7 @@ json.tours tours do |tour|
         unit = Unit.find @tour.stop_id
         json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
         json.name unit.marketing_name
+        json.unit_id unit.id
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
         json.video_link_button_label unit.virtual_tour_button_label
         json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
@@ -52,7 +59,7 @@ json.tours tours do |tour|
           str_split.each do |ss|
             str = ss.split(':')
 
-            pricing_str = str[0]+" Month - $"+str[1]
+            pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
             # h = {"pricing_option" => pricing_str}
             lease_pricing << pricing_str
 
@@ -64,7 +71,7 @@ json.tours tours do |tour|
           end
           lease_pricing = lease_pricing2
         else
-          h = {"pricing_option" => "$"+ unit.effective_rent.to_s}
+          h = {"pricing_option" => "$"+ unit.effective_rent.to_i.to_s}
           lease_pricing << h
         end
         stop_dat = {"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description, "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
@@ -76,7 +83,19 @@ json.tours tours do |tour|
           json.x_plot unit_amenity.x_plot
           json.y_plot unit_amenity.y_plot
           json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
-          json.stop_description unit_amenity.description
+          
+          unit_amenity_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
+          
+          if unit_amenity_description.size > description_limit
+            show_long_stop_description = true
+          else
+            show_long_stop_description = false
+          end
+          json.show_long_stop_description show_long_stop_description
+          json.stop_description (show_long_stop_description ? unit_amenity_description[0..description_limit - 1] : unit_amenity_description)
+          json.long_stop_description  styling_start + unit_amenity.description.gsub('red','') + styling_end rescue ""
+
+
           json.directional_text unit_amenity.directional_text
           json.video_link_button_label unit.virtual_tour_button_label
           json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
@@ -95,13 +114,37 @@ json.tours tours do |tour|
         json.gallery @unit_gallery_arr do |ag|
           json.name ag.name
           json.image ag.image.url
-          json.description ag.description
+          
+          
+          ag_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+          if ag_description.size > description_limit
+            show_long_description = true
+          else
+            show_long_description = false
+          end
+          json.show_long_description show_long_description
+          json.description (show_long_description ? ag_description[0..description_limit - 1] : ag_description)
+          json.long_stop_description  styling_start + ag.description.gsub('red','') + styling_end rescue ""
+          
           json.directional_text ag.directional_text
         end
       elsif @tour.stop_type == "amenity"
         amenity = Amenity.find @tour.stop_id
         json.image amenity.image.present? ? amenity.image.url : "no image"
-        json.stop_description amenity.description
+
+        amenity_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
+          
+        if amenity_description.size > description_limit
+          show_long_stop_description = true
+        else
+          show_long_stop_description = false
+        end
+        json.show_long_stop_description show_long_stop_description
+        json.stop_description (show_long_stop_description ? amenity_description[0..description_limit - 1] : amenity_description)
+        json.long_stop_description  styling_start + amenity.description.gsub('red','') + styling_end rescue ""
+
+
+
         json.name amenity.name
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "") rescue ""
         json.directional_text amenity.directional_text
@@ -119,7 +162,17 @@ json.tours tours do |tour|
           json.name ag.name
           json.type "unit_stop"
           json.image ag.image.url
-          json.description ag.description
+
+          ag_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+          if ag_description.size > description_limit
+            show_long_description = true
+          else
+            show_long_description = false
+          end
+          json.show_long_description show_long_description
+          json.description (show_long_description ? ag_description[0..description_limit - 1] : ag_description)
+          json.long_stop_description  styling_start + ag.description.gsub('red','') + styling_end rescue ""
+
           json.directional_text ag.directional_text
         end
       end

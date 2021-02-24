@@ -108,9 +108,9 @@
   <body>
     <div class="divLoading hidden"></div>
 
-		<%= link_to("Schedule a Visit", "url" , class: "btn btn-success btn-lg", data: { toggle: "modal", target: "#scheduleMyTour" }) %>
+    <%= link_to("Schedule a Visit", "url",id: "schedule_btn" , class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#scheduleMyTour", backdrop: "static"}) %>
 
-	  <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
+    <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
       <div class="modal-dialog" role="document">
         <section>
           <div class="Pyn_Modal">
@@ -119,14 +119,24 @@
             <%= form_for TourUser.new, url: "/create_tour_user_from", :as => :tour_user, class: "form_popup", id: "tour_user_form", method: 'post' do |f| %>
 
               <%= hidden_field_tag :sched_tour_id, nil , :id => "sched_tour_id"%>
+              <%= hidden_field_tag :community_id, @community_id %>
+
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_first_name.nil? ? true : current_community.tour.tour_setting.show_first_name) %>
+
               <div class="form-group">
-                <label>Name *</label>
-                <%= f.text_field :name, class: "form-control", placeholder: "Name", required: 'required' %>
+                <label>First Name *</label>
+                <%= f.text_field :first_name, class: "form-control", placeholder: "First Name", required: 'required' %>
               </div>
+              <div class="form-group">
+                <label>Last Name *</label>
+                <%= f.text_field :last_name, class: "form-control", placeholder: "Last Name", required: 'required' %>
+              </div>
+              <% end %>
               <div class="form-group">
                 <label>Email Address *</label>
                 <%= f.email_field :email, class: "form-control", placeholder: "Email Address", required: 'required' %>
               </div>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_phone.nil? ? true : current_community.tour.tour_setting.show_phone) %>
               <div class="form-group">
                 <div class="inner_phn_wrap">
                  
@@ -141,7 +151,9 @@
                   <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 , required: 'required' %>
                 </div>
               </div>
+              <% end %>
               <% if @credit_card_required %>
+
               <p>A credit card is required to complete the reservation<br>Your credit card will not be charged at this time with the exception of a $0.50 charge for verification purposes.</p>
               <div class="clearfix"></div>
               <div class="form-group cardNumber">
@@ -152,7 +164,7 @@
 
               <div class="form-group expiry">
                 <label>CVV</label>
-                  <%= text_field_tag :card_verification, nil, class: "form-control", "data-stripe" => "cvv", required: 'required', placeholder: "123" %>
+                  <%= text_field_tag :card_verification, nil, class: "form-control", "data-stripe" => "cvv", placeholder: "123", required: 'required' %>
               </div>
 
               <div class="form-group cardNumber">
@@ -165,6 +177,31 @@
                 <%= label_tag "Exp Year", nil, required: true %>
                 <%= select_tag :exp_year, options_for_select((Date.today.year..(Date.today.year+10)).to_a), include_blank: false, "data-stripe" => "exp-year", class: "span1 form-control" %>
               </div>
+              
+              <% end %>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_bedroom.nil? ? true : current_community.tour.tour_setting.show_desired_bedroom )  %>
+              <div class="">
+
+                <label>Desired Number of Bedrooms</label>
+                <span class="hidden" id="bedroom"></span>
+                <%= select_tag :desired_bedroom, options_for_select( @bedroom_list.sort), include_blank: true, :class=>"form-control " %>
+
+
+              </div>
+
+              <% end %> 
+              <div class="form-group hidden">
+                <span class="hidden" id="hidden_tour_type"></span>
+                <%= hidden_field_tag :hidden_tour_type,"", :class=>"form-control"%>
+              </div>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.tour.tour_setting.show_desired_move_in_date  ) %>
+              <div class="form-group">
+                <label>Desired Move-in Date</label>
+                <span class="hidden" id="move-in-date"></span>
+                <%= text_field_tag :desired_move_in_date,"", :class=>"form-control datepicker", :placeholder=>"Move in date",:maxlength=>"15",:autocomplete=>"off"%>
+                
+              </div>
+              <% end %> 
 
 
 
@@ -220,10 +257,17 @@
                   <button type="submit">Submit Payment</button>
                 <% end %>
               <% end %>
-              <% end %>
 
 
               <div class="clearfix"></div>
+
+              <% if @community.data_provider == "realpagesvc" && @marketing_source_required %>
+                <div class="form-group">
+                  <label> How did you hear about <%= @community.name.titleize %> ? </label>
+                  <%= select_tag :marketing_source, options_for_select(@community.credential.realpage_marketing_sources.present? ? @community.credential.realpage_marketing_sources.collect{|s| [ s["Text"], s["Value"] ]} : []), include_blank: false , prompt: "Select your option", required: 'required', class: "span2 form-control"%>
+                </div>
+              <% end %>
+
               <button id ="confirm_reservation" class="btn_popup">Confirm My Reservation!</button>
             <% end %>
           </div>
@@ -246,8 +290,36 @@
                 <%= hidden_field_tag :community_id, @community_id %>
                 <%= hidden_field_tag :user_time_zone, value: nil %>
               </div>
+              <!-- <div class="form-group">
+                <label>Tour Type</label>
+                <span class="hidden" id="tour_type_field"></span>
+                <%= select_tag :tour_type, options_for_select( [["Self Tour","self_tour"],["Virtual","virtual"],["Guided Tour","guided"]]), :class=>"form-control " %>
+               
+              </div> -->
               <div class="clearfix"></div>
               <button class="btn_popup" id="date_schedule_tour">Schedule My Tour!</button>
+            </form>
+          </div>
+        </section>
+      </div>
+    </div>
+
+     <div class="modal fade" id="scheduleTourType" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <section>
+          <div class="Pyn_Modal">
+            <p>What type of tour would you like to schedule today?</p>
+            <form class="form_popup" id="scheduleTourTypeForm">
+              <div class="clearfix"></div>
+              <div class="form-group">
+                <label>Tour Type</label>
+                <span class="hidden" id="tour_type_field"></span>
+                <%= select_tag :tour_type, options_for_select( [[]]), :class=>"form-control " %>
+               
+              </div>
+              <div class="clearfix"></div>
+              <button class="btn_popup" id="type_schedule_tour">Schedule My Tour!</button>
             </form>
           </div>
         </section>
@@ -268,18 +340,35 @@
     </div>
 
     <script type="text/javascript">
+      var show_self_tour_option = false;
+      var show_guided_tour_option = false;
+      var hidden_tour_type_value;
+      var community_id = <%= raw @community.id %>;
+
       $(document).ready(function(){
-        document.getElementById('user_time_zone').value = jstz.determine().name();
-        // -new Date().getTimezoneOffset()/60;
-      })
+        var direct = <%= @direct %>
+        var show_first = <%= @show_first.present? ? @show_first : false %>
+          if(direct)
+          {
+            if(show_first)
+              $('#schedule_btn').click();
+          }
+          else
+          {
+            $('#schedule_btn').removeClass('hidden');
+          }
+          document.getElementById('user_time_zone').value = jstz.determine().name();
+          // -new Date().getTimezoneOffset()/60;
+        })
+      var steps = <%= @stepping %>
       var success = "<%= flash[:success]  %>";
       var credit_card_required = <%= @credit_card_required %>
-      // debugger
+
       <% flash[:success] = "" %>
       if(success){
         $("#modalLoginForm").modal('hide');
         $('.divLoading').addClass('hidden')
-        $("#scheduleMyTourSuccess").modal()
+        $("#scheduleMyTourSuccess").modal({backdrop: 'static', keyboard: false})
         $("html, body").animate({ scrollTop: 0 }, 600);
       }
       else
@@ -586,8 +675,12 @@
           showClose: true,
           useCurrent: true,
           toolbarPlacement: "bottom",
-          stepping: 15,
+          stepping: steps,
           daysOfWeekDisabled: days_disabled
+        });
+        $('.datepicker').datepicker({
+          
+          
         });
           $('.phoneNumber').keypress(function(event) {
               if ((event.which != 46 || $(this).val().indexOf('.') != -1) &&
@@ -609,20 +702,41 @@
             var time = str.split(':');
             return time[0]*60+time[1]*1;
         }
-        function schedual_my_tour(params_data){
+        function schedual_my_tour(params_data, error){
           $.ajax({
             type: "POST",
             url: "/schedual_tours.json",
-            data: params_data.serialize(),
+            data: params_data.serialize()+"&show_self_tour_option="+show_self_tour_option+"&show_guided_tour_option="+show_guided_tour_option+"&error="+error,
             cache: false,
             success: function(data){
               if(data.code != 400){
-                document.getElementById('sched_tour_id').value = data.id
-                tour_id = data.id;
+                document.getElementById('sched_tour_id').value = data.schedual_tour.id
+                tour_id = data.schedual_tour.id;
                 $('.divLoading').addClass('hidden');
+                if(data.show_tour_type_modal  && (data.type_list.length > 1))
+                {
+                  $("#scheduleMyTour").modal('hide');
+                  var select = $("#tour_type")[0];
+                  $('#tour_type').empty()
+                  for (op of data.type_list)
+                  {
+                    select.add(new Option(op[0], op[1]));
+                  }
+                  // $("#modalLoginForm").modal();
+                  $("#scheduleTourType").modal({backdrop: 'static', keyboard: false});
 
-                $("#scheduleMyTour").modal('hide');
-                $("#modalLoginForm").modal();
+                }
+                else
+                {
+                  $("#scheduleMyTour").modal('hide');
+                  $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
+                  // hidden_tour_type_value = data.type_list[0][1]
+                  send_tour_type(data.schedual_tour.id,data.type_list[0][1])
+                  // $("#scheduleTourType").modal();
+                }
+
+                
+
                 $("#not-visiting-hours").addClass('hidden')
               }
               else{
@@ -635,39 +749,138 @@
             }
           });
         }
+
+        $("#scheduleTourTypeForm").on('submit', function(e){
+
+          var visiting_times = <%= raw @visiting_times %>;
+          var guided_visiting_times = <%= raw @guided_visiting_times %>;
+
+          var error_messages = <%= raw @error_message %>;
+          var selected_date = $(".datepickertime").val()
+          var matched = false
+          var error
+          selected_day = moment(selected_date).format('dddd')
+          selected_time = moment(selected_date).format('HH:mm')
+          // hidden_tour_type_value = $("#tour_type option:selected").val()
+          send_tour_type(document.getElementById('sched_tour_id').value,$("#tour_type option:selected").val())
+          $('.divLoading').addClass('hidden');
+          $("#scheduleTourType").modal('hide');
+          $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
+          // $.ajax({
+          //     type: 'POST',
+          //     dataType: 'json',
+          //     cache: false,
+          //     url: "/communities/4/schedual_tours/"+document.getElementById('sched_tour_id').value+"/update_tour_type",
+          //     data: {"tour_type" : $("#tour_type option:selected").text()},
+          //     success: function(data){
+          //       $('.divLoading').addClass('hidden');
+          //       $("#scheduleTourType").modal('hide');
+          //       $("#modalLoginForm").modal();
+          //     },
+          //     fail: function(data){
+          //       console.log(data)
+          //     }
+          //   });
+          
+
+          // if(visiting_times.length > 0){
+          //   for(var d_t in visiting_times){
+          //     if (selected_day == visiting_times[d_t][0]){
+          //       var start = getMinutes(visiting_times[d_t][1]);
+          //       var end = getMinutes(visiting_times[d_t][2]);
+          //       var selected = getMinutes(selected_time);
+
+          //       if ((selected >= start) && (selected <= end)) {
+          //         matched = true
+          //         schedual_my_tour($(this))
+          //       }
+          //       else{
+          //         $("#not-visiting-hours").removeClass('hidden')
+          //         for(var each in error_messages){
+          //           if (visiting_times[d_t][0] == error_messages[each][0]){
+          //             error = error_messages[each][1]
+          //           }
+          //         }
+          //       }
+          //     }
+          //   }
+          //   if (matched == false)
+          //     $("#not-visiting-hours").addClass('color-red').text(error)
+          // }
+          // else{
+          //   schedual_my_tour($(this))
+          // }
+          e.preventDefault();
+        });
         
         $("#scheduleMyTourForm").on('submit', function(e){
 
           var visiting_times = <%= raw @visiting_times %>
+
+          var guided_visiting_times = <%= raw @guided_visiting_times %>;
           var error_messages = <%= raw @error_message %>
           var selected_date = $(".datepickertime").val()
+          var self_tour_matched = false
+          var guided_tour_matched = false
+          var error
           selected_day = moment(selected_date).format('dddd')
           selected_time = moment(selected_date).format('HH:mm')
-          // debugger
 
           if(visiting_times.length > 0){
+
             for(var d_t in visiting_times){
               if (selected_day == visiting_times[d_t][0]){
                 var start = getMinutes(visiting_times[d_t][1]);
                 var end = getMinutes(visiting_times[d_t][2]);
                 var selected = getMinutes(selected_time);
-
-                if ((selected > start) && (selected < end)) {
-                  schedual_my_tour($(this))
+                if ((selected >= start) && (selected <= end)) {
+                  self_tour_matched = true
+                  show_self_tour_option = true;
+                  // schedual_my_tour($(this))
                 }
                 else{
                   $("#not-visiting-hours").removeClass('hidden')
                   for(var each in error_messages){
                     if (visiting_times[d_t][0] == error_messages[each][0]){
-                      $("#not-visiting-hours").addClass('color-red').text(error_messages[each][1])
+                      error = error_messages[each][1]
                     }
                   }
                 }
               }
             }
           }
-          else{
-            schedual_my_tour($(this))
+          if(guided_visiting_times.length > 0){
+
+            for(var d_t in guided_visiting_times){
+              if (selected_day == guided_visiting_times[d_t][0]){
+                var start = getMinutes(guided_visiting_times[d_t][1]);
+                var end = getMinutes(guided_visiting_times[d_t][2]);
+                var selected = getMinutes(selected_time);
+                if ((selected >= start) && (selected <= end)) {
+                  guided_tour_matched = true
+                  show_guided_tour_option = true;
+                  // schedual_my_tour($(this))
+                }
+                else{
+                  $("#not-visiting-hours").removeClass('hidden')
+                  for(var each in error_messages){
+                    if (guided_visiting_times[d_t][0] == error_messages[each][0]){
+                      error = error_messages[each][1]
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if(guided_tour_matched || self_tour_matched)
+          {
+            schedual_my_tour($(this),error)
+          }
+          else
+          { 
+            schedual_my_tour($(this),error)
+            // $("#not-visiting-hours").addClass('color-red').text(error)
+            // $("#not-visiting-hours").removeClass('hidden')
           }
           e.preventDefault();
         });
@@ -679,7 +892,6 @@
         //     data: $(this).serialize(),
         //     cache: false,
         //     success: function(data){
-        //       // debugger
         //       $("#scheduleMyTourSuccess .Pyn_Modal p").html(data.message)
         //       $("#modalLoginForm").modal('hide');
         //       $("#scheduleMyTourSuccess").modal()
@@ -694,17 +906,37 @@
 
         $("#close").on('click', function(){
           $("#scheduleMyTourSuccess").modal('hide')
+          $("#scheduleMyTour").modal({backdrop: 'static', keyboard: false})
+
           // window.location.reload();
         });
 
       });
+      function send_tour_type(s_id,type)
+      {
+        $.ajax({
+              type: 'POST',
+              dataType: 'json',
+              cache: false,
+              url: "/communities/"+community_id+"/schedual_tours/"+s_id+"/update_tour_type",
+              data: {"tour_type" : type},
+              success: function(data){
+              },
+              fail: function(data){
+                console.log(data)
+              }
+            });
+      }
 
       if(credit_card_required == true){
       jQuery(function ($) {
         var show_error, stripeResponseHandler;
-        // debugger
         $("#new_tour_user").submit(function (event) {
-          // debugger
+          if (parseInt($('#desired_bedroom').val()) < 0 || parseInt($('#desired_bedroom').val()) > 10)
+          {
+            alert("Invalid Number of Berdrooms");
+            return false;
+          }
           var $form;
           $form = $(this);
           $form.find("input[type=submit]").prop("disabled", true);
@@ -717,7 +949,6 @@
         stripeResponseHandler = function (status, response) {
         var $form, token;
         $form = $("#new_tour_user");
-        // debugger
           if (response.error) {
             show_error(response.error.message);
             $form.find("input[type=submit]").prop("disabled", false);
@@ -729,7 +960,6 @@
             // $("[data-stripe=exp-year]").remove();
             // $("[data-stripe=exp-month]").remove();
             $form.append($("<input type=\"hidden\" name=\"sched_tour_id\" />").val(tour_id));
-            // debugger
             $form.get(0).submit();
             
 
@@ -739,14 +969,12 @@
             //   data: {data: $($form.get(0)).serialize()},
             //   cache: false,
             //   success: function(data){
-            //     debugger
             //     $("#scheduleMyTourSuccess .Pyn_Modal p").html(data.message)
             //     $("#modalLoginForm").modal('hide');
             //     $("#scheduleMyTourSuccess").modal()
             //     $("html, body").animate({ scrollTop: 0 }, 600);
             //   },
             //   fail: function(error){
-            //     debugger
             //     console.log(error)
             //   }
             // });
@@ -781,17 +1009,13 @@
 
 
       !function(){function l(l,n){var u=l.split("."),d=Z;u[0]in d||!d.execScript||d.execScript("var "+u[0]);for(var $;u.length&&($=u.shift());)u.length||void 0===n?d=d[$]?d[$]:d[$]={}:d[$]=n}function n(l,n){function u(){}u.prototype=n.prototype,l.M=n.prototype,l.prototype=new u,l.prototype.constructor=l,l.N=function(l,u,d){for(var $=Array(arguments.length-2),t=2;t<arguments.length;t++)$[t-2]=arguments[t];return n.prototype[u].apply(l,$)}}function u(l,n){null!=l&&this.a.apply(this,arguments)}function d(l){l.b=""}function $(l,n){l.sort(n||t)}function t(l,n){return l>n?1:l<n?-1:0}function e(l){var n,u=[],d=0;for(n in l)u[d++]=l[n];return u}function r(l,n){this.b=l,this.a={};for(var u=0;u<n.length;u++){var d=n[u];this.a[d.b]=d}}function i(l){return l=e(l.a),$(l,function(l,n){return l.b-n.b}),l}function a(l,n){switch(this.b=l,this.g=!!n.v,this.a=n.c,this.i=n.type,this.h=!1,this.a){case w:case x:case J:case Q:case X:case Y:case W:this.h=!0}this.f=n.defaultValue}function o(){this.a={},this.f=this.j().a,this.b=this.g=null}function C(l,n){for(var u=i(l.j()),d=0;d<u.length;d++){var $=u[d],t=$.b;if(null!=n.a[t]){l.b&&delete l.b[$.b];var e=11==$.a||10==$.a;if($.g)for(var $=s(n,t)||[],r=0;r<$.length;r++){var a=l,o=t,f=e?$[r].clone():$[r];a.a[o]||(a.a[o]=[]),a.a[o].push(f),a.b&&delete a.b[o]}else $=s(n,t),e?(e=s(l,t))?C(e,$):h(l,t,$.clone()):h(l,t,$)}}}function s(l,n){var u=l.a[n];if(null==u)return null;if(l.g){if(!(n in l.b)){var d=l.g,$=l.f[n];if(null!=u)if($.g){for(var t=[],e=0;e<u.length;e++)t[e]=d.b($,u[e]);u=t}else u=d.b($,u);return l.b[n]=u}return l.b[n]}return u}function f(l,n,u){var d=s(l,n);return l.f[n].g?d[u||0]:d}function p(l,n){var u;if(null!=l.a[n])u=f(l,n,void 0);else l:{if(u=l.f[n],void 0===u.f){var d=u.i;if(d===Boolean)u.f=!1;else if(d===Number)u.f=0;else{if(d!==String){u=new d;break l}u.f=u.h?"0":""}}u=u.f}return u}function c(l,n){return l.f[n].g?null!=l.a[n]?l.a[n].length:0:null!=l.a[n]?1:0}function h(l,n,u){l.a[n]=u,l.b&&(l.b[n]=u)}function g(l,n){var u,d=[];for(u in n)0!=u&&d.push(new a(u,n[u]));return new r(l,d)}/*
-
          Protocol Buffer 2 Copyright 2008 Google Inc.
          All other code copyright its respective owners.
          Copyright (C) 2010 The Libphonenumber Authors
-
          Licensed under the Apache License, Version 2.0 (the "License");
          you may not use this file except in compliance with the License.
          You may obtain a copy of the License at
-
          http://www.apache.org/licenses/LICENSE-2.0
-
          Unless required by applicable law or agreed to in writing, software
          distributed under the License is distributed on an "AS IS" BASIS,
          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -799,15 +1023,11 @@
          limitations under the License.
         */
         function S(){o.call(this)}function M(){o.call(this)}function A(){o.call(this)}function m(){}function b(){}function G(){}/*
-
          Copyright (C) 2010 The Libphonenumber Authors.
-
          Licensed under the Apache License, Version 2.0 (the "License");
          you may not use this file except in compliance with the License.
          You may obtain a copy of the License at
-
          http://www.apache.org/licenses/LICENSE-2.0
-
          Unless required by applicable law or agreed to in writing, software
          distributed under the License is distributed on an "AS IS" BASIS,
          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -815,15 +1035,11 @@
          limitations under the License.
         */
         function y(){this.a={}}function T(l){return 0==l.length||tl.test(l)}function N(l,n){if(null==n)return null;n=n.toUpperCase();var u=l.a[n];if(null==u){if(u=nl[n],null==u)return null;u=(new G).a(A.j(),u),l.a[n]=u}return u}function B(l){return l=ll[l],null==l?"ZZ":l[0]}function E(l){this.H=RegExp(" "),this.C="",this.m=new u,this.w="",this.i=new u,this.u=new u,this.l=!0,this.A=this.o=this.F=!1,this.G=y.b(),this.s=0,this.b=new u,this.B=!1,this.h="",this.a=new u,this.f=[],this.D=l,this.J=this.g=v(this,this.D)}function v(l,n){var u;if(null!=n&&isNaN(n)&&n.toUpperCase()in nl){if(u=N(l.G,n),null==u)throw Error("Invalid region code: "+n);u=p(u,10)}else u=0;return u=N(l.G,B(u)),null!=u?u:el}function R(l){for(var n=l.f.length,u=0;u<n;++u){var $=l.f[u],t=p($,1);if(l.w==t)return!1;var e;e=l;var r=$,i=p(r,1);if(-1!=i.indexOf("|"))e=!1;else{i=i.replace(rl,"\\d"),i=i.replace(il,"\\d"),d(e.m);var a;a=e;var r=p(r,2),o="999999999999999".match(i)[0];o.length<a.a.b.length?a="":(a=o.replace(new RegExp(i,"g"),r),a=a.replace(RegExp("9","g")," ")),0<a.length?(e.m.a(a),e=!0):e=!1}if(e)return l.w=t,l.B=ol.test(f($,4)),l.s=0,!0}return l.l=!1}function I(l,n){for(var u=[],d=n.length-3,$=l.f.length,t=0;t<$;++t){var e=l.f[t];0==c(e,3)?u.push(l.f[t]):(e=f(e,3,Math.min(d,c(e,3)-1)),0==n.search(e)&&u.push(l.f[t]))}l.f=u}function K(l,n){l.i.a(n);var u=n;if($l.test(u)||1==l.i.b.length&&dl.test(u)){var $,u=n;"+"==u?($=u,l.u.a(u)):($=ul[u],l.u.a($),l.a.a($)),n=$}else l.l=!1,l.F=!0;if(!l.l){if(!l.F)if(U(l)){if(O(l))return L(l)}else if(0<l.h.length&&(u=l.a.toString(),d(l.a),l.a.a(l.h),l.a.a(u),u=l.b.toString(),$=u.lastIndexOf(l.h),d(l.b),l.b.a(u.substring(0,$))),l.h!=H(l))return l.b.a(" "),L(l);return l.i.toString()}switch(l.u.b.length){case 0:case 1:case 2:return l.i.toString();case 3:if(!U(l))return l.h=H(l),F(l);l.A=!0;default:return l.A?(O(l)&&(l.A=!1),l.b.toString()+l.a.toString()):0<l.f.length?(u=V(l,n),$=_(l),0<$.length?$:(I(l,l.a.toString()),R(l)?D(l):l.l?P(l,u):l.i.toString())):F(l)}}function L(l){return l.l=!0,l.A=!1,l.f=[],l.s=0,d(l.m),l.w="",F(l)}function _(l){for(var n=l.a.toString(),u=l.f.length,d=0;d<u;++d){var $=l.f[d],t=p($,1);if(new RegExp("^(?:"+t+")$").test(n))return l.B=ol.test(f($,4)),n=n.replace(new RegExp(t,"g"),f($,2)),P(l,n)}return""}function P(l,n){var u=l.b.b.length;return l.B&&0<u&&" "!=l.b.toString().charAt(u-1)?l.b+" "+n:l.b+n}function F(l){var n=l.a.toString();if(3<=n.length){for(var u=l.o&&0==l.h.length&&0<c(l.g,20)?s(l.g,20)||[]:s(l.g,19)||[],d=u.length,$=0;$<d;++$){var t=u[$];0<l.h.length&&T(p(t,4))&&!f(t,6)&&null==t.a[5]||(0!=l.h.length||l.o||T(p(t,4))||f(t,6))&&al.test(p(t,2))&&l.f.push(t)}return I(l,n),n=_(l),0<n.length?n:R(l)?D(l):l.i.toString()}return P(l,n)}function D(l){var n=l.a.toString(),u=n.length;if(0<u){for(var d="",$=0;$<u;$++)d=V(l,n.charAt($));return l.l?P(l,d):l.i.toString()}return l.b.toString()}function H(l){var n,u=l.a.toString(),$=0;return 1!=f(l.g,10)?n=!1:(n=l.a.toString(),n="1"==n.charAt(0)&&"0"!=n.charAt(1)&&"1"!=n.charAt(1)),n?($=1,l.b.a("1").a(" "),l.o=!0):null!=l.g.a[15]&&(n=new RegExp("^(?:"+f(l.g,15)+")"),n=u.match(n),null!=n&&null!=n[0]&&0<n[0].length&&(l.o=!0,$=n[0].length,l.b.a(u.substring(0,$)))),d(l.a),l.a.a(u.substring($)),u.substring(0,$)}function U(l){var n=l.u.toString(),u=new RegExp("^(?:\\+|"+f(l.g,11)+")"),u=n.match(u);return null!=u&&null!=u[0]&&0<u[0].length&&(l.o=!0,u=u[0].length,d(l.a),l.a.a(n.substring(u)),d(l.b),l.b.a(n.substring(0,u)),"+"!=n.charAt(0)&&l.b.a(" "),!0)}function O(l){if(0==l.a.b.length)return!1;var n,$=new u;l:{if(n=l.a.toString(),0!=n.length&&"0"!=n.charAt(0))for(var t,e=n.length,r=1;3>=r&&r<=e;++r)if(t=parseInt(n.substring(0,r),10),t in ll){$.a(n.substring(r)),n=t;break l}n=0}return 0!=n&&(d(l.a),l.a.a($.toString()),$=B(n),"001"==$?l.g=N(l.G,""+n):$!=l.D&&(l.g=v(l,$)),l.b.a(""+n).a(" "),l.h="",!0)}function V(l,n){var u=l.m.toString();if(0<=u.substring(l.s).search(l.H)){var $=u.search(l.H),u=u.replace(l.H,n);return d(l.m),l.m.a(u),l.s=$,u.substring(0,l.s+1)}return 1==l.f.length&&(l.l=!1),l.w="",l.i.toString()}var Z=this;u.prototype.b="",u.prototype.set=function(l){this.b=""+l},u.prototype.a=function(l,n,u){if(this.b+=String(l),null!=n)for(var d=1;d<arguments.length;d++)this.b+=arguments[d];return this},u.prototype.toString=function(){return this.b};var W=1,Y=2,w=3,x=4,J=6,Q=16,X=18;o.prototype.set=function(l,n){h(this,l.b,n)},o.prototype.clone=function(){var l=new this.constructor;return l!=this&&(l.a={},l.b&&(l.b={}),C(l,this)),l},n(S,o);var j=null;n(M,o);var q=null;n(A,o);var k=null;S.prototype.j=function(){var l=j;return l||(j=l=g(S,{0:{name:"NumberFormat",I:"i18n.phonenumbers.NumberFormat"},1:{name:"pattern",required:!0,c:9,type:String},2:{name:"format",required:!0,c:9,type:String},3:{name:"leading_digits_pattern",v:!0,c:9,type:String},4:{name:"national_prefix_formatting_rule",c:9,type:String},6:{name:"national_prefix_optional_when_formatting",c:8,defaultValue:!1,type:Boolean},5:{name:"domestic_carrier_code_formatting_rule",c:9,type:String}})),l},S.j=S.prototype.j,M.prototype.j=function(){var l=q;return l||(q=l=g(M,{0:{name:"PhoneNumberDesc",I:"i18n.phonenumbers.PhoneNumberDesc"},2:{name:"national_number_pattern",c:9,type:String},9:{name:"possible_length",v:!0,c:5,type:Number},10:{name:"possible_length_local_only",v:!0,c:5,type:Number},6:{name:"example_number",c:9,type:String}})),l},M.j=M.prototype.j,A.prototype.j=function(){var l=k;return l||(k=l=g(A,{0:{name:"PhoneMetadata",I:"i18n.phonenumbers.PhoneMetadata"},1:{name:"general_desc",c:11,type:M},2:{name:"fixed_line",c:11,type:M},3:{name:"mobile",c:11,type:M},4:{name:"toll_free",c:11,type:M},5:{name:"premium_rate",c:11,type:M},6:{name:"shared_cost",c:11,type:M},7:{name:"personal_number",c:11,type:M},8:{name:"voip",c:11,type:M},21:{name:"pager",c:11,type:M},25:{name:"uan",c:11,type:M},27:{name:"emergency",c:11,type:M},28:{name:"voicemail",c:11,type:M},29:{name:"short_code",c:11,type:M},30:{name:"standard_rate",c:11,type:M},31:{name:"carrier_specific",c:11,type:M},33:{name:"sms_services",c:11,type:M},24:{name:"no_international_dialling",c:11,type:M},9:{name:"id",required:!0,c:9,type:String},10:{name:"country_code",c:5,type:Number},11:{name:"international_prefix",c:9,type:String},17:{name:"preferred_international_prefix",c:9,type:String},12:{name:"national_prefix",c:9,type:String},13:{name:"preferred_extn_prefix",c:9,type:String},15:{name:"national_prefix_for_parsing",c:9,type:String},16:{name:"national_prefix_transform_rule",c:9,type:String},18:{name:"same_mobile_and_fixed_line_pattern",c:8,defaultValue:!1,type:Boolean},19:{name:"number_format",v:!0,c:11,type:S},20:{name:"intl_number_format",v:!0,c:11,type:S},22:{name:"main_country_for_code",c:8,defaultValue:!1,type:Boolean},23:{name:"leading_digits",c:9,type:String},26:{name:"leading_zero_possible",c:8,defaultValue:!1,type:Boolean}})),l},A.j=A.prototype.j,m.prototype.a=function(l){throw new l.b,Error("Unimplemented")},m.prototype.b=function(l,n){if(11==l.a||10==l.a)return n instanceof o?n:this.a(l.i.prototype.j(),n);if(14==l.a){if("string"==typeof n&&z.test(n)){var u=Number(n);if(0<u)return u}return n}if(!l.h)return n;if(u=l.i,u===String){if("number"==typeof n)return String(n)}else if(u===Number&&"string"==typeof n&&("Infinity"===n||"-Infinity"===n||"NaN"===n||z.test(n)))return Number(n);return n};var z=/^-?[0-9]+$/;n(b,m),b.prototype.a=function(l,n){var u=new l.b;return u.g=this,u.a=n,u.b={},u},n(G,b),G.prototype.b=function(l,n){return 8==l.a?!!n:m.prototype.b.apply(this,arguments)},G.prototype.a=function(l,n){return G.M.a.call(this,l,n)};/*
-
          Copyright (C) 2010 The Libphonenumber Authors
-
          Licensed under the Apache License, Version 2.0 (the "License");
          you may not use this file except in compliance with the License.
          You may obtain a copy of the License at
-
          http://www.apache.org/licenses/LICENSE-2.0
-
          Unless required by applicable law or agreed to in writing, software
          distributed under the License is distributed on an "AS IS" BASIS,
          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.

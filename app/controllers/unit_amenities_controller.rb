@@ -5,7 +5,7 @@ class UnitAmenitiesController < ApplicationController
   before_action :set_community_and_unit
 
   def index
-    @amenities = @unit.amenities.order(id: :desc)
+    @amenities = @unit.amenities.order(:sort)
     # add_breadcrumb "Units", community_unit_path(current_community)
     # add_breadcrumb "Manage Images", community_unit_amenities_path(current_community,@unit)
     @community = Community.find params[:community_id]
@@ -20,13 +20,14 @@ class UnitAmenitiesController < ApplicationController
   def update
     @amenity = @unit.amenities.find(params[:id])
     if @amenity.update_attributes(amenity_params)
-      redirect_to community_unit_amenities_path(@community,@unit), notice: "Amenity updated successfully"
+      Amenity.where('id != ? AND mass_upload_id = ?', @amenity.id, @amenity.mass_upload_id).update_all(name: amenity_params[:name], description: amenity_params[:description]) if @amenity.mass_upload_id.present?
+      redirect_to edit_community_unit_path(@community,@unit), notice: "Unit amenity updated successfully"
     else
       add_breadcrumb "Units", community_unit_path(current_community)
       add_breadcrumb "Amenities", community_unit_amenities_path(current_community,@unit)
       add_breadcrumb "Edit Amenity",edit_community_unit_amenity_path(current_community,@unit,@amenity)
       flash[:error] = @amenity.errors.full_messages.join(',')
-      render :edit
+      render 'units/edit'
     end
   end
   def plot_amenity
@@ -37,12 +38,17 @@ class UnitAmenitiesController < ApplicationController
     @amenity.y_plot = params[:y_plot]
     if @amenity.save(validate: false)
       render json: {amenity: @amenity}, status: 200
+      Amenity.where('id != ? AND mass_upload_id = ?', @amenity.id, @amenity.mass_upload_id).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot]) if @amenity.mass_upload_id.present?
     else
       render json: {}, status: 404
     end
   end
   def create
-    @unit.amenities.create(image: params[:src],name: params[:name])
+    if params[:image_id] == '0'
+      @unit.amenities.create(image: params[:src],name: params[:name])
+    else
+      @unit.amenities.create(image: params[:src],name: params[:name], mass_upload_id: params[:image_id])
+    end
     @amenities = @unit.amenities.order(id: :desc)
   end
   def plot_amenities
@@ -62,24 +68,6 @@ class UnitAmenitiesController < ApplicationController
       amenity.save(validate: false)
     end
     redirect_to plot_amenities_community_unit_amenities_path(@community,@unit), notice: "All plots have been deleted successfully."
-  end
-  def check_community
-    unless current_user.is_super_admin?
-      if params[:community_id].present?
-        all_ids = []
-        current_user.communities.each do |c|
-          # all_ids.insert(c.id)
-          all_ids << c.id
-        end
-        # byebug
-        # puts '+++++++++++++++', all_ids[0]
-        if all_ids.include? params[:community_id].to_i
-
-        else
-          redirect_to root_path
-        end
-      end
-    end
   end
 
   def remove_amenity
@@ -102,6 +90,7 @@ class UnitAmenitiesController < ApplicationController
     @amenity = Amenity.find params[:id]
     @amenity.description = params[:description]
     if @amenity.save
+      Amenity.where('id != ? AND mass_upload_id = ?', @amenity.id, @amenity.mass_upload_id).update_all(description: params[:description]) if @amenity.mass_upload_id.present?
       redirect_to plot_amenities_community_unit_amenities_path(@community,@unit),notice: "Amenity description updated successfully."
     else
       redirect_to plot_amenities_community_unit_amenities_path(@community,@unit)
@@ -119,9 +108,9 @@ class UnitAmenitiesController < ApplicationController
   def destroy
     @amenity = @unit.amenities.find (params[:id])
     if @amenity.destroy
-      redirect_to community_unit_amenities_path(@community,@unit), notice: "Amenity deleted successfully"
+      redirect_to edit_community_unit_path(@community,@unit), notice: "Unit amenity deleted successfully"
     else
-      redirect_to community_unit_amenities_path(@community,@unit), error: @amenity.errors.full_messages.join(',')
+      redirect_to edit_community_unit_path(@community,@unit), error: @amenity.errors.full_messages.join(',')
     end
   end
   private

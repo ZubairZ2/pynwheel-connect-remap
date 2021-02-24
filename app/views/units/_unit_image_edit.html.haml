@@ -1,0 +1,55 @@
+.modal-dialog{:style=>"min-width: 250px !important; width: fit-content; height: fit-content; !important;"}
+  .modal-content
+    = form_for @unit,url: "/communities/#{@community.id}/units/#{@unit.id}/crop_unit_image",method: :put do |f|
+      .modal-body
+        - rn =  rand(9999999999999999999999999)
+        .image-crop{:style=>"max-height: fit-content;"}
+          - if @unit.image.present?
+            = image_tag @unit.crop_x.present? ? @unit.image.url  + "?timestamp=#{rn}" : @unit.image.url  + "?timestamp=#{rn}", id: "cropbox"
+            - %w[x y w h].each do |attribute|
+              = f.hidden_field "crop_#{attribute}"
+        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"}
+            %i.fa.fa-close
+        .form-group.mt-10
+          %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_unit_image{:type => "submit"}
+            Apply Changes
+            %i.fa.fa-check
+        .clearfix
+}
+:javascript
+  $("#crop_unit_image").on("click",function(e){
+    $(".divLoading").removeClass("hidden");
+    localStorage.setItem("floorplanCropped", "1");
+  });
+
+  $('#cropbox').Jcrop({
+  boxWidth: 600, boxHeight: 550,
+    onSelect: update_crop,
+    onChange: update_crop,
+  });
+
+
+  function update_crop(coords){
+    console.log(coords);
+    var ratioW = $('#cropbox')[0].naturalWidth / $('#cropbox').width();
+    var ratioH = $('#cropbox')[0].naturalHeight / $('#cropbox').height();
+    var currentRatio = Math.min(ratioW, ratioH);
+    //$('#home_page_image_crop_x').val(Math.round(coords.x * currentRatio));
+    $('#unit_crop_x').val(coords.x);
+    //$('#home_page_image_crop_y').val(Math.round(coords.y * currentRatio));
+    $('#unit_crop_y').val(coords.y);
+    //$('#home_page_image_crop_w').val(Math.round(coords.w * currentRatio));
+    $('#unit_crop_w').val(coords.w);
+    //$('#home_page_image_crop_h').val(Math.round(coords.h * currentRatio));
+    $('#unit_crop_h').val(coords.h);
+    //update_preview(coords);
+  }
+
+  function update_preview(coords){
+  var width = Math.round(100/coords.w * $('#cropbox').width()) + 'px';
+  var height = Math.round(100/coords.h * $('#cropbox').height()) + 'px';
+  var margin_left = '-' + Math.round(100/coords.w * coords.x) + 'px';
+  var margin_top = '-' + Math.round(100/coords.h * coords.y) + 'px';
+  $('#preview').css({"width": width,"height": height,"marginLeft": margin_left,"marginTop": margin_top});
+  }

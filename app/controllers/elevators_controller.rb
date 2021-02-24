@@ -1,4 +1,5 @@
 class ElevatorsController < ApplicationController
+  include AssignLocksHelper
   before_action :authenticate_user!
   before_action :check_community
   add_breadcrumb "Home", :root_path
@@ -26,12 +27,16 @@ class ElevatorsController < ApplicationController
   def edit
     @community = Community.find params[:community_id]
     @elevator = Elevator.find_by_id(params[:id])
+    @all_locks = all_locks(@community)
+    @locks_provider = @community.locks_provider
   end
+
   def save_elevator_gallery
     @community = Community.find_by_id params[:community_id]
     @elevator = Elevator.find_by_id params[:elevator_id]
     ElevatorGallery.create(name: params[:name],image: params[:src], elevator_id: @elevator.id)
   end
+
   # POST /elevators
   # POST /elevators.json
   def create
@@ -57,6 +62,10 @@ class ElevatorsController < ApplicationController
   # PATCH/PUT /elevators/1
   # PATCH/PUT /elevators/1.json
   def update
+    if @community.enable_locks
+      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ( (params[:zerv_lock].present? or params[:zerv_lock] == "") ?  params[:zerv_lock] : nil ) ) )
+      assign_lock(@community, @elevator, lock_id) unless lock_id.nil?
+    end
     respond_to do |format|
       if @elevator.update(elevator_params)
         ts = TourStop.find_by(stop_type: "elevator", stop_id: @elevator.id)
@@ -66,7 +75,7 @@ class ElevatorsController < ApplicationController
         format.html { redirect_back(fallback_location: community_elevators_path, notice: 'Elevator was successfully updated.') }
         format.js { render :show, status: :ok, location: @elevator }
       else
-        format.html { render :edit }
+        format.html { redirect_back(fallback_location: community_elevators_path, alert: @elevator.errors.full_messages[0]) }
         format.json { render json: @elevator.errors, status: :unprocessable_entity }
       end
     end
@@ -109,24 +118,7 @@ class ElevatorsController < ApplicationController
 
 
   private
-    def check_community
-      unless current_user.is_super_admin?
-        if params[:community_id].present?
-          all_ids = []
-          current_user.communities.each do |c|
-            # all_ids.insert(c.id)
-            all_ids << c.id
-          end
-          # byebug
-          # puts '+++++++++++++++', all_ids[0]
-          if all_ids.include? params[:community_id].to_i
 
-          else
-            redirect_to root_path
-          end
-        end
-      end
-    end
     # Use callbacks to share common setup or constraints between actions.
     def set_elevator
       @elevator = Elevator.find(params[:id])
@@ -134,6 +126,6 @@ class ElevatorsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def elevator_params
-      params.require(:elevator).permit(:name, :description, :x_plot, :y_plot, :directional_text, :floorplate_id, :community_id, :image, :floorplate_covering_range)
+      params.require(:elevator).permit(:name, :description, :x_plot, :y_plot, :directional_text, :floorplate_id, :community_id, :image, :floorplate_covering_range,:building)
     end
 end

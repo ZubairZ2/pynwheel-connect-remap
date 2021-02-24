@@ -37,25 +37,6 @@ class GalleriesController < ApplicationController
     end
 	end
 
-	def check_community
-		unless current_user.is_super_admin?
-			if params[:community_id].present?
-				all_ids = []
-				current_user.communities.each do |c|
-					# all_ids.insert(c.id)
-					all_ids << c.id
-				end
-				# byebug
-				# puts '+++++++++++++++', all_ids[0]
-				if all_ids.include? params[:community_id].to_i
-
-				else
-          redirect_to root_path
-				end
-			end
-		end
-	end
-
 	def destroy
 
 		@gallery = @community.galleries.find(params[:id])
@@ -120,7 +101,6 @@ class GalleriesController < ApplicationController
 	end
 
 	def update_gallery_image
-		puts params
 		@gallery_image = GalleryImage.find(params[:gallery_image_id])
 		@gallery_image.name = params[:gallery_image][:name]
 		if @gallery_image.crop_x == params[:gallery_image][:crop_x].to_f

@@ -1,0 +1,1211 @@
+class Api::V1::CommunitiesController < ActionController::Base
+  #before_action :set_community, only: [:data,:ios_data,:email_favorites]
+  include DweloDevicesHelper
+  before_action :set_community, only: :email_favorites
+  @@counter = 0
+  # $deleted_ids = []
+
+  def test_panzoom
+    puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'
+    puts params["keyCode"]
+    puts '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
+    render :json=> {:success=>true, :message => "#{params['id']}", :operation => "zoom"}
+  end
+
+  def login
+    begin
+      str = params[:community_string]
+      community = Community.where(code: str)
+      unless community.present?
+        community_group = CommunityGroup.where(code: str)
+      end
+      if community_group.present?
+
+        community_group = community_group.first
+
+        if community_group.inactivate == false
+          render :json=> {:success=>true, :community => community_group.id,:name => community_group.name,:community_name => (Company.find community_group.company_id).name,:type => "community_group",:link => "/api/v1/communities/#{community_group.id}/data_group.json",:is_group => true , :message => "success", :operation => "login"}
+        else
+          render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
+        end
+      else
+        if community.present?
+          company = community.first.company
+          group = CommunityGroup.find_by id: community.first.community_group_id if community.first.community_group_id.present?
+          if company.inactivate == false && !(community.first.locked == true)
+            group_link = group.present? ? "/api/v1/communities/#{group.id}/data_group.json" : nil
+            render :json=> {:success=>true, :community => community.first.id,:name => community.first.name,:community_name => company.name,:type => "community",:link =>  group.present? ? group_link : "/api/v1/communities/#{community.first.id}/data.json",:is_group => group.present?, :message => "success", :operation => "login"}
+          else
+            render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
+          end
+        else
+          render :json=> {:success=>false, :message => "Invalid code"}
+        end
+      end
+
+    rescue Exception => e   
+      render :json=> {:success=>false, :message => e.message}, :status=>500
+    end
+  end
+
+
+  def data
+    include_application_data
+  end
+
+  def ios_data
+    include_application_data
+    if !(@community.locked == true) && @community.company.inactivate == false
+      render 'data'
+    else
+      render :json=> {:success=>false, :message => "Your application is inactive. Please contact support@pynwheel.com for help. Thank you!", :operation => "login"}
+    end
+  end
+
+  def minimum_data
+    include_application_data
+    render json: {:ui_settigs=>UiPresenter.minimal_hash(@community),:homescreen=>HomescreenPresenter.minimal_hash(@community),:apartments=>ApartmentsPresenter.minimal_hash(@community,params[:action]),:neighborhood=>NeighborhoodPresenter.minimal_hash(@community),:favorite=>FavoritePresenter.minimal_hash(@community),:gallery=>GalleryPresenter.minimal_hash(@community,params[:action]),:additional_pages=>AdditionalPagesPresenter.minimal_hash(@community)}.to_json
+    #render json: {:ui_settigs=>UiPresenter.minimal_hash(@community),:homescreen=>HomescreenPresenter.minimal_hash(@community),:apartments=>ApartmentsPresenter.minimal_hash(@community,params[:action]),:neighborhood=>NeighborhoodPresenter.minimal_hash(@community),:favorite=>FavoritePresenter.minimal_hash(@community),:additional_pages=>AdditionalPagesPresenter.minimal_hash(@community)}
+  end
+
+  def email_favorites
+    begin
+      if !@community.favorite_setting.present? || @community.favorite_setting.email_from.blank?
+        render :json=> {:success=>false, :message => "Please specify sender email address in CMS first. Email from can't be empty.", :operation => "email favorites"}
+      else
+        if @community.email_favorites(params)
+          render :json=> {:success=>true, :message => "success", :operation => "email favorites"}
+        else
+          render :json=> {:success=>false, :message => "No valid favorites present"}
+        end
+      end
+    rescue Exception => e   
+      ExceptionNotifier.notify_exception(e,data: {community_id: @community.id})
+      render :json=> {:success=>false, :message => e.message}, :status=>500
+    end
+  end
+  
+  def update_version
+    app_version = AppVersion.first
+    if app_version.version != params[:version]
+      app_version.update_attribute(:version,params[:version])
+    end
+    render :json=> {:success=>true, :message => "success", :operation => "update version"}
+  end
+
+  def list_communities
+    @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company)
+  end
+  def portico_list_communities
+    if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+      if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
+        touruser = TourUser.find_by_id params[:tour_user_id]
+        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email.downcase]})
+      else
+        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+      end
+    else
+      if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
+        touruser = TourUser.find_by_id params[:tour_user_id]
+        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email.downcase]})
+      else
+        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+      end
+    end
+  end
+  
+  def lincoln_list_communities
+    if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+      company = Company.where('lower(name) = ?', 'lincoln')
+      @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
+    else
+      company = Company.where('lower(name) = ?', 'lincoln')
+      @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
+    end
+  end
+
+
+  def community_tours
+    @tour_user = TourUser.find_by_id params[:tour_user_id]
+    @community = Community.find params[:id]
+    @community.deleted_ids = []
+    @community.save
+    unless @tour_user.email == "Removed at Consumer Request"
+    #####
+    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+    @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+    @community.tour.building_order.present? ? (@building_list =  @community.tour.building_order) : ""
+
+    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+    #####
+    @tours = Tour.where(community_id: params[:id])
+
+    current_time = get_community_time(@community) rescue nil
+    current_time = params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now if current_time.nil?
+    in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
+
+    if in_visiting_hours == true
+      if @tours.first.only_scheduled_tour
+        scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)
+        if scheduled_tours.present?
+          is_tour_ontime = is_tour_on_time(current_time, scheduled_tours, @tours.first.grace_period)
+          is_tour_virtual = is_tour_ontime.nil? ? true : false
+        else
+          is_tour_virtual = true
+        end
+      else
+        is_tour_virtual = false
+      end
+    else
+      is_tour_virtual = true
+    end
+
+    dwelo_account = Dwelo.find_by(community_id: params[:id]) rescue nil
+    edge_state = EdgeState.find_by(community_id: params[:id]) rescue nil
+
+    if @community.locks_provider == "Dwelo" and dwelo_account.present? and in_visiting_hours and !is_tour_virtual
+      Thread.new do
+        tour_user = TourUser.find params[:tour_user_id]
+        access_token = dwelo_client_credentials(dwelo_account)
+        prev_data = tour_user.as_guests.find_by(community_id: params[:id])
+        # ----------- creating a guest for remote lock (type = locks) ----------------- #
+        unless prev_data.present? 
+          response = create_dwelo_access_guest(access_token, tour_user, current_time)
+          @dwelo_tour_user = tour_user.as_guests.create!(community_id: params[:id],  guest_id: response["id"], dwelo_guest: true)
+        else
+          delete_dwelo_access_guest(access_token, prev_data.guest_id)
+          response = create_dwelo_access_guest(access_token, tour_user, current_time)
+          prev_data.update_attributes!(guest_id: response["id"])
+        end
+        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
+        allowed_ids = stops_arr.ids - @community.deleted_ids
+        allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
+        unit_or_amenity_names = []
+        allowed_stops.each do |stop|
+          if stop[0] == "unit"
+            unit = stop[0].classify.constantize.find_by_id stop[1]
+            if unit.present?
+              if unit.building.present?
+                name = unit.building + "-" + unit.name
+              else
+                name = unit.name
+              end
+              unit_or_amenity_names << name
+            end
+          elsif stop[0] == "amenity"
+            amentiy = stop[0].classify.constantize.find_by_id stop[1]
+            unit_or_amenity_names << amentiy.name if amentiy.present?
+          end
+        end
+
+        access_token = dwelo_client_credentials(dwelo_account)
+        dwelo = Dwelo.find_by(community_id: @community.id)
+        locks = RemoteLock.where(name: unit_or_amenity_names, dwelo_id: dwelo.id).pluck(:device_id, :remote_lock_type)
+        if locks.present?
+          tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
+          locks.each do |lock|
+            grant_dwelo_user_access(access_token, tour_user_guest_id, lock[0])
+          end
+        end
+      end
+    end
+
+    if @community.locks_provider == "EdgeState" and edge_state.present? and in_visiting_hours  and !is_tour_virtual
+      Thread.new do
+        tour_user = TourUser.find params[:tour_user_id]
+        access_token = RemoteLockService.new(@community).client_credentials
+        prev_data = tour_user.as_guests.where(community_id: params[:id])
+        # ----------- creating a guest for remote lock (type = locks) ----------------- #
+        unless prev_data.present?
+          response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user,current_time)
+          tour_user.as_guests.create(community_id: params[:id], edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+        else
+          RemoteLockService.new(@community).delete_access_guest(access_token,prev_data.last.guest_id)
+          response = RemoteLockService.new(@community).create_access_guest(access_token,tour_user,current_time)
+          prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+        end
+        # ------------ creating guest and granting access for igloo lock -------------------------------- #
+        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+        allowed_stops = TourStop.where(id: stops_arr.ids).pluck(:stop_type, :stop_id)
+
+        unit_or_amenity_names = []
+        allowed_stops.each do |stop|
+          if stop[0] == "unit"
+            unit = stop[0].classify.constantize.find_by_id stop[1]
+            if unit.building.present?
+              name = unit.building + "-" + unit.name
+            else
+              name = unit.name
+            end
+            unit_or_amenity_names << name if unit.present?
+          elsif stop[0] == "amenity"
+            amentiy = stop[0].classify.constantize.find_by_id stop[1]
+            unit_or_amenity_names << amentiy.name if amentiy.present?
+          end
+        end
+
+        locks = RemoteLock.where(name: unit_or_amenity_names, edge_state_id: edge_state.id, remote_lock_type: "igloo_lock").pluck(:device_id, :stop_id)
+        if locks.present?
+          igloo_guest_ids = @tour_user.igloo_guests.where(community_id: @community.id, status: "active").map{|x| x.guest_id} rescue ''
+          locks.each do |lock|
+              response = RemoteLockService.new(@community).create_igloo_guests(access_token, @tour_user, lock[0] ,current_time)
+              @tour_user.igloo_guests.create(community_id: @community.id, stop_id: lock[1], guest_type: response["data"]["type"],  guest_code: response["data"]["attributes"]["code"], guest_id: response["data"]["id"], status: "active")
+          end
+          igloo_guest_ids.map{ |guest_id| RemoteLockService.new(@community).delete_igloo_guests(access_token, guest_id) unless guest_id == ''}
+          IglooGuest.where(guest_id: igloo_guest_ids).update_all(status: 'deleted')
+        end
+        
+      end
+    end
+    else
+      render :json=> {:success=>false, :message => ""}, :status=>500
+    end
+  end
+  
+  def delete_tour_stop
+    @community = Community.find params[:id]
+    delete_array = params[:stop_id].split(",") if params[:stop_id].present?
+    te = @community.tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
+    @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
+    @community.save 
+    @tours = Tour.where(id: params[:tour_id])
+    @tour_user = TourUser.find_by(id: params[:tour_user_id])
+    @in_visiting_hours = is_tour_in_visiting_hours(params[:current_time],@community) if params[:current_time].present? and @community.present?
+
+    @building_list = @floor_list = []
+
+    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+    @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+    @community.tour.building_order.present? ? (@building_list =  @community.tour.building_order) : ""
+
+    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+
+    current_time = params[:current_time].present? ? params[:current_time] : DateTime.now
+    current_time = current_time.to_datetime
+
+    edge_state = EdgeState.find_by(community_id: params[:id])
+    if @community.locks_provider == "EdgeState" and edge_state.present? and @in_visiting_hours
+      Thread.new do
+        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+        allowed_ids = `stops_arr`.ids - @community.deleted_ids
+        allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
+
+        # unit_or_amentiy_names = allowed_stops.map{|stop_obj| (stop_obj[0].classify.constantize.find stop_obj[1]).name}
+        unit_or_amenity_names = []
+        allowed_stops.each do |stop|
+          if stop[0] == "unit"
+            unit = stop[0].classify.constantize.find_by_id stop[1]
+            if unit.building.present?
+              name = unit.building + "-" + unit.name
+            else
+              name = unit.name
+            end
+            unit_or_amenity_names << name if unit.present?
+          elsif stop[0] == "amenity"
+            amentiy = stop[0].classify.constantize.find_by_id stop[1]
+            unit_or_amenity_names << amentiy.name if amentiy.present?
+          end
+        end
+        access_token = RemoteLockService.new(@community).client_credentials
+        locks = RemoteLock.where(name: unit_or_amenity_names, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
+        if locks.present?
+          tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
+          locks.each do |lock|
+            RemoteLockService.new(@community).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
+          end
+        end
+      end
+    end
+  end
+  def delete_tour_stop_v1
+    puts params
+    access = grant_access (decoded(params[:token])) rescue false
+    if true or access == true
+      @community = Community.find params[:id]
+      delete_array = params[:stop_id].split(",") if params[:stop_id].present?
+      te = @community.tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
+      @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
+      @community.save
+      @tours = Tour.where(id: params[:tour_id])
+      @tour_user = TourUser.find_by(id: params[:tour_user_id])
+
+      current_time = get_community_time(@community) rescue nil
+      current_time = params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now if current_time.nil?
+      @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
+      # binding.pry
+      if @in_visiting_hours == true
+        if @tours.first.only_scheduled_tour
+          scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)
+          if scheduled_tours.present?
+                is_tour_ontime = is_tour_on_time(current_time, scheduled_tours, @tours.first.grace_period)
+                @is_tour_virtual = is_tour_ontime.nil? ? true : false
+          else
+                @is_tour_virtual = true
+          end
+        else
+          @is_tour_virtual = false
+        end
+      else
+        @is_tour_virtual = true
+      end
+
+      @building_list = @floor_list = []
+
+      @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+      @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+      @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+      @community.tour.building_order.present? ? (@building_list =  @community.tour.building_order) : ""
+      
+      @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+      @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}
+
+      # @floor_list = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if x.building.present?}.compact.flatten!
+      # non_building_floor = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if !x.building.present?}.compact.flatten!
+      # @floor_list = (@floor_list.present? ? @floor_list : []) + (non_building_floor.present? ? non_building_floor : [])
+
+      edge_state = EdgeState.find_by(community_id: params[:id])
+      if @community.locks_provider == "EdgeState" and edge_state.present? and @in_visiting_hours
+        Thread.new do
+          stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+          allowed_ids = stops_arr.ids - @community.deleted_ids
+          allowed_stops = TourStop.where(id: allowed_ids).pluck(:stop_type, :stop_id)
+          
+          # unit_or_amentiy_names = allowed_stops.map{|stop_obj| (stop_obj[0].classify.constantize.find stop_obj[1]).name}
+          unit_or_amenity_names = []
+          allowed_stops.each do |stop|
+            if stop[0] == "unit"
+              unit = stop[0].classify.constantize.find_by_id stop[1]
+              if unit.building.present?
+                name = unit.building + "-" + unit.name
+              else
+                name = unit.name
+              end
+              unit_or_amenity_names << name if unit.present?
+            elsif stop[0] == "amenity"
+              amentiy = stop[0].classify.constantize.find_by_id stop[1]
+              unit_or_amenity_names << amentiy.name if amentiy.present?
+            end
+          end
+
+          access_token = RemoteLockService.new(@community).client_credentials
+          locks = RemoteLock.where(name: unit_or_amenity_names, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
+          if locks.present?
+            tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
+            locks.each do |lock|
+              RemoteLockService.new(@community).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
+            end
+          end
+        end
+      else
+        @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
+      end
+    else
+        render :json=> {:success=>false, :message => "Invalid Token"}
+    end
+  end
+
+  def user_saved_tour
+    # @device_id = params[:device_id]
+    @community = Community.find params[:community_id] if params[:community_id].present?
+    @tour_user = TourUser.find params[:tour_user_id]
+    @tour = @community.tour
+    
+    stops_arr = []
+    if @community.is_sitemap
+      stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+    else
+      @building_list = @floor_list = []
+
+      @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+      @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+      @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+      @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+
+      @building_list << "" if @building_list == []
+        @building_list.each do |building|
+          if @floor_list.present?
+            @floor_list.each do |floor|
+              if @community.tour.sort_hash[building + ","+ floor.to_s].present?
+                @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+                  if (s_id.present?)
+                    stop = (TourStop.find_by_id(s_id))
+                    stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
+                  end
+                end
+              end
+            end
+          end
+        end
+    end
+    
+    stops_arr = stops_arr.compact.map{|x| x.id}.uniq
+
+    un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.tour.id ).map{|x| x.tour_stop_id}.uniq
+    @visited_stops = []
+    stops_arr.each do |val|
+      if un_ordered_visited_stops.include?(val)
+        @visited_stops << val
+      end
+    end
+
+    # @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
+    @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
+    
+    current_time = get_community_time(@community) rescue nil
+    current_time = params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now if current_time.nil?
+    @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
+    
+    # @tours = VisitedStop.where(tour_user_id: @tour_user.id,@community.tour.id,tour_key: last_vs.tour_key)
+    # @tours = @tours.map{|h| h}[-4..-1].to_h
+  end
+
+  def tour_configrations
+    if params[:id].present? and params[:tour_user_id].present?
+      @community = Community.find_by_id params[:id]
+      if @community.present?
+        @tour = @community.tour
+        @tour_user = TourUser.find_by_id params[:tour_user_id]
+        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
+        
+        timezone = get_community_time_zone(@community) rescue nil
+        current_time = Time.now.in_time_zone(timezone) rescue params[:current_time].present? ? params[:current_time].to_datetime : DateTime.now
+
+        if current_time.present?
+          @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
+          @scheduled_tours = get_scheduled_tours(current_time, @community.id, @tour_user.id)
+
+          if @scheduled_tours.present?
+            @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)
+            @tour_status , nearest_tour_id = tour_time_status(current_time, @tour.grace_period, @scheduled_tours) unless @is_tour_ontime.present?
+            nearest_time_tour = SchedualTour.find_by_id nearest_tour_id
+            @tour_date = nearest_time_tour.present? ? (SchedualTour.find nearest_tour_id).tour_date.strftime('%_m/%d/%Y')  : "---"
+            @tour_time = nearest_time_tour.present? ?  (SchedualTour.find nearest_tour_id).tour_time.strftime('%l:%M %P') : "---"
+          end
+
+        end
+      end
+    end
+  end
+
+  def get_community_time(community)
+    tz = Ziptz.new
+    if community.zip.present?
+        timezone = tz.time_zone_name(community.zip)
+        community_time = Time.now.in_time_zone(timezone) if timezone.present?
+    end
+
+    if community_time.nil? and community.latitude.present? and community.longitude.present?
+        timezone = Timezone.lookup(community.latitude, community.longitude)
+        community_time = timezone.utc_to_local(Time.now) if timezone.present?
+    end
+
+    community_time.present? ? community_time : nil
+  end
+
+  def get_community_time_zone(community)
+    tz = Ziptz.new
+    timezone = nil
+
+    if community.zip.present?
+        timezone = tz.time_zone_name(community.zip)
+    end
+
+    if timezone.nil? and community.latitude.present? and community.longitude.present?
+        time_zone = Timezone.lookup(community.latitude, community.longitude)
+        timezone = time_zone.name
+    end
+    return timezone
+  end
+
+  def is_tour_in_visiting_hours(time_param, community)
+      current_time = time_param.strftime("%H:%M")
+      current_day = time_param.strftime('%A')
+      community.opening_hours.where('day = ? and opening_time <= ? and closing_time >= ?', current_day, current_time, current_time).present?
+  end
+
+  def get_scheduled_tours(time_param, community_id, tour_user_id)
+    current_tour = get_current_tour(time_param)
+    SchedualTour.where('community_id = ? and tour_user_id = ? and tour_date = ?', community_id, tour_user_id, current_tour.tour_date).order(:id)
+  end
+
+  def is_tour_on_time(time_param, scheduled_tours, grace_time)
+    # check if current tour is within range of any today's scheduled tours
+    current_tour = get_current_tour(time_param)
+
+    before_margin = current_tour.tour_time - grace_time.minutes
+    after_margin = current_tour.tour_time + grace_time.minutes
+
+    scheduled_tours.where(tour_time: before_margin..after_margin).last
+  end
+
+  
+  
+  def tour_time_status(time_param, grace_time, scheduled_tours)
+    # no need of grace, as grace time has already been used in confirming "is_tour_on_time" 
+    # now it is confirmed that either the tour is before or after time
+    current_tour = get_current_tour(time_param)
+    nearest_before_time = scheduled_tours.where("tour_time > ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest before time , remember min function will be applied at the first index of array, which is deliberately set to time
+    nearest_after_time  = scheduled_tours.where("tour_time < ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest after time  , remember min function will be applied at the first index of array, which is deliberately set to time
+
+    if nearest_before_time.present? and nearest_after_time.nil?
+      return ["before time" , nearest_before_time[1]]
+    elsif nearest_before_time.nil? and nearest_after_time.present?
+      return ["after time" , nearest_after_time[1]]
+    end
+
+    if nearest_before_time[0] < nearest_after_time[0]
+      return ["before time" , nearest_before_time[1]]
+    elsif nearest_after_time[0] < nearest_before_time[0]
+      return ["after time" , nearest_after_time[1]]
+    else
+      return ["after time" , nearest_after_time[1]] # if the difference b/w after and before is same, we will pick the upcoming scheduled tour i.e after time tour
+    end
+  end
+
+  def get_current_tour(time_param)
+    current_datetime = time_param.to_datetime.strftime('%d/%m/%Y %l:%M %p')
+    current_time = current_datetime.to_datetime.strftime('%l:%M %p')
+    current_date = current_datetime.to_datetime.strftime('%d/%m/%Y')
+    current_tour = SchedualTour.new(tour_date: current_date, tour_time: current_time)
+  end
+
+  def include_application_data
+    @version = AppVersion.first.version
+    @community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(params[:id])
+  end
+  def update_unit_floorplan_data
+    community = Community.find(params[:id])
+    if community.data_provider == "psi"
+      result = ImportPsiDataJob.perform_async community.credential.attributes.to_json
+    elsif community.data_provider == "yardirentcafe"
+      result = ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
+    elsif community.data_provider == "yardi"
+      result = community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
+    elsif community.data_provider == "resman"
+      result = ImportResmanDataJob.perform_async community.credential.attributes.to_json
+    elsif community.data_provider == "zaremba"
+      result = ImportZarembaDataJob.perform_async community.credential.attributes.to_json
+    elsif community.data_provider == "xml"
+      result = ImportXmlDataJob.perform_async community.credential.attributes.to_json
+    elsif community.data_provider == "realpagesvc"
+      result = ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
+    end
+    render :json=> {:success=>result, :message => "success", :operation => "update data"}
+  end
+  def data_group
+    @version = AppVersion.first.version
+    @community_group = CommunityGroup.find params[:id]
+    @communities = []
+
+    @community_group.communities.each do |com|
+      community = Community.includes(:imagepages,:webpages,:galleries,{floorplans: [:amenities]},:favorite_setting,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]},{gallery_images: [:gallery]},{neighborhood: [:locations]},{design: [:home_page_images,:home_page_video,:gable,:menu,:expressionist,:filter_panel]}).find(com.id)
+      @communities << community unless community.locked
+    end
+    @community_master = Community.find_by(community_group_id: @community_group.id,master_community: true)
+    unless @community_master.present?
+      @community_master = Community.where(community_group_id: @community_group.id).first
+    end
+  end
+  def get_neighbourhood_data
+
+    # @@counter = @@counter + 1
+    if params[:token] == "pynwheeltoken12345"
+      app_version = AppVersion.first
+
+      @community = (params[:id].to_i == 1 ? (Community.find(748)) : (Community.find params[:id]))
+      @community.neighborhood_request_counter = @community.neighborhood_request_counter + 1
+      result = nil
+      if @community.neighborhood_request_counter < @community.neighborhood_request_counter_limit
+        NeighbourhoodLog.create(from_ip: request.ip,cat: params[:cat])
+        begin
+          if @community.neighborhood_request_counter > 19 && @community.neighborhood_request_counter < 21 && !@community.limit_200_hit
+            com = Community.find params[:id]
+            com.neighbourhood_counter_mail_200
+            @community.limit_200_hit = true
+            NeighbourhoodMailer.email_counter_200("muhammad.umer@intagleo.com","umersani47@gmail.com","","Testing api calls 200").deliver
+          end
+          if @community.neighborhood_request_counter > 39 && @community.neighborhood_request_counter < 41 && !@community.limit_400_hit
+            com = Community.find params[:id]
+            com.neighbourhood_counter_mail_400
+            @community.limit_400_hit = true
+            NeighbourhoodMailer.email_counter_400("test@gmail.com","umersani47@gmail.com","","Testing api calls 400").deliver
+          end
+        rescue => ex
+
+        end
+        @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI"
+        response = HTTParty.get(@url)
+        # @client = GooglePlaces::Client.new()
+        results = []
+        # cata = []
+        # cata << params[:cat]
+        # result = @client.spots(params[:latitude].to_f, params[:longitude].to_f,:radius => params[:radius].to_i, :types => cata)
+
+        if response['next_page_token'].present? && (params[:cat] == "restaurant" || params[:cat] == "school" || params[:cat] == "park" || params[:cat] == "bank" || params[:cat] == "atm" )
+          results << response
+          begin
+            @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI&pagetoken=#{response['next_page_token']}"
+            sleep 2
+            response = HTTParty.get(@url)
+          rescue  => ex
+          end
+        end
+        results = []
+        results << response
+        render :json=> {:success=>true,:counter => @community.neighborhood_request_counter, :message => results}, :status=>200
+      else
+        render :json=> {:success=>true,:counter => @community.neighborhood_request_counter, :message => "Limit Exceeded"}, :status=>200
+      end
+      @community.save
+    else
+      render :json=> {:success=>false, :message => "You are not allowd to make this call."}, :status=>200
+    end
+  end
+
+  def reset_counter
+    # @@counter = 0
+    app_version = AppVersion.first
+    app_version.neighborhood_counter = 0
+    app_version.save
+    render :json=> {:success=>true,:counter => app_version.neighborhood_counter}, :status=>200
+  end
+
+  def unit_and_floorplan_data
+    @community = Community.find params[:id]
+    @units = {}
+    @floorplans = []
+    perform(@community , @community.credential)
+
+  end
+
+  def perform(community , credentials)
+    @community = community
+    @credentials = credentials
+    property_ids = @credentials.property_id.split(',') rescue []
+    property_ids.each do |property_id|
+      begin
+        @@floorplanHash = {}
+        if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
+          url = @credentials.entrata_url
+        else
+          url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+        end
+
+
+        password = @credentials.password
+        username = @credentials.username
+        #property_id = credentials.property_id
+
+        response = HTTParty.post(url,
+                                 :body => {
+                                     "auth": {
+                                         "type": "basic",
+                                         "password": password,
+                                         "username": username
+                                     },
+                                     "method": {
+                                         "name": "getMitsPropertyUnits",
+                                         "params": {
+                                             "propertyIds": property_id,
+                                             "availableUnitsOnly": "0",
+                                             "showUnitSpaces": "1"
+                                         }
+                                     }
+                                 }.to_json,
+                                 :headers => { 'Content-Type' => 'application/json' } )
+        response =  JSON.parse(response.body)
+        # if com_test.id == 458
+        #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
+        #   com_test.save
+        # end
+        sleep 2
+        if response["response"]["code"] == 200
+          units = []
+          floorplans = []
+          response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
+            pro["ILS_Unit"].each do |ils|
+              units << ils
+            end
+            pro["Floorplan"].each do |f|
+              floorplans << f
+            end
+          end
+
+
+          save_psi_floorplans(floorplans,property_id)
+
+          save_psi_units(units,property_id,@credentials)
+
+          # save_website_column_of_community(response)
+          #else
+          #puts '-----------------------------' , response["response"]["error"]["message"]
+          #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
+        else
+
+        end
+      rescue => e
+
+        puts '----------------------------' , e.message
+        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+      end
+    end
+    begin
+    rescue => ex
+    end
+    fill_psi_pricing_details
+    @units = @units.values
+  end
+
+  def save_psi_units(units,property_id,credentials)
+    units.each do |u|
+      vacateDate = ""
+      # unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
+      # unless unit.present?
+      #   unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"])#.first_or_initialize
+      # end
+      unit = Unit.new
+      if unit.present?
+        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]
+        unit.community_id = credentials.community_id
+        unit.property_id = property_id
+        unit.unit_type = u["Units"]["Unit"]["UnitType"]
+        unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
+
+        unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
+        if u["Units"]["Unit"]["MarketRent"].present?
+          unit.market_rent = u["Units"]["Unit"]["MarketRent"]
+        end
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+          if u["Units"]["Unit"]["MarketRent"].present?
+            unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
+          elsif u["EffectiveRent"].present?
+            unit.effective_rent = u["EffectiveRent"]
+            # else
+              unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+          end
+        end
+
+        unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+        if u["EffectiveRent"].present?
+          unit.effective_rent = u["EffectiveRent"]
+        else
+          unit.effective_rent = 0
+        end
+        unit.floor = u["FloorLevel"]
+        unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+          unit.availability = u["Availability"]["VacancyClass"] if !unit.sold
+          unit.available = false if !unit.sold
+        end
+
+        if u["Availability"]["VacancyClass"] == "Unoccupied"
+          unit.available = true if !unit.sold
+          year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
+          month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
+          day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
+          vacateDate = Date.parse("#{year}-#{month}-#{day}")
+        end
+        unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+          unit.available_date = vacateDate
+        end
+        unit.availability_url = u['UnitAvailabilityURL'] if u['UnitAvailabilityURL'].present?
+        building = u["Units"]["Unit"]["BuildingName"]
+        unit.building = building.present? ? building.gsub("Building ", "") : ""
+        @units[unit.provider_unit_id] = unit
+        # unit.save(validate: false)
+
+
+
+
+
+
+      end
+    end
+  end
+  def fill_psi_pricing_details
+    floorplanHash = Hash.new
+    property_ids = @credentials.property_id.split(',') rescue []
+    property_ids.each do |property_id|
+      move_in_dates = getMoveInDate(property_id)
+      unless move_in_dates.present?
+        move_in_dates = []
+        move_in_dates << "0"
+      end
+      ########################################## Space configuration
+      move_in_dates.each do |move_in_date|
+        begin
+          if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
+            url = @credentials.entrata_url
+          else
+            url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+          end
+          password = @credentials.password
+          username = @credentials.username
+          #property_id = credentials.property_id
+          if move_in_date == "0"
+            response = HTTParty.post(url,
+                                     :body => {
+                                         "auth": {
+                                             "type": "basic",
+                                             "password": password,
+                                             "username": username
+                                         },
+                                         "method": {
+                                             "name": "getUnitsAvailabilityAndPricing",
+                                             "params": {
+                                                 "propertyId": property_id,
+                                                 "availableUnitsOnly": "0",
+                                                 "showUnitSpaces": "1",
+                                                 "useSpaceConfiguration": "1"
+                                             }
+                                         }
+                                     }.to_json,
+                                     :headers => { 'Content-Type' => 'application/json' } )
+            response =  JSON.parse(response.body)
+          else
+            response = HTTParty.post(url,
+                                     :body => {
+                                         "auth": {
+                                             "type": "basic",
+                                             "password": password,
+                                             "username": username
+                                         },
+                                         "method": {
+                                             "name": "getUnitsAvailabilityAndPricing",
+                                             "params": {
+                                                 "propertyId": property_id,
+                                                 "availableUnitsOnly": "0",
+                                                 "showUnitSpaces": "1",
+                                                 "useSpaceConfiguration": "1",
+                                                 "moveInStartDate": move_in_date
+                                             }
+                                         }
+                                     }.to_json,
+                                     :headers => { 'Content-Type' => 'application/json' } )
+            response =  JSON.parse(response.body)
+          end
+          sleep 3
+
+          if response["response"]["code"] == 200
+            unless response["response"]["result"].include?('No records found')
+              psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
+              psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
+              psi_floorplan.each_with_index do |f,index|
+                floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
+              end
+              psi_units.each do |u|
+                u['UnitSpace'].each do |us|
+
+                  begin
+                    if u['UnitSpace'].count == 1
+                      # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                      unit = @units[ u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s]
+                      unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
+                        unit = @units[ u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]]
+                        # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)],community_id: credentials.community_id)
+                      end
+                    else
+                      unit = @units[ u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s]
+                      # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                      unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
+                        unit = @units[ u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s]
+                        # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                      end
+                    end
+                    unless unit.present?
+                      unit = @units[ u["@attributes"]["Id"]]
+                      # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"],community_id: credentials.community_id)
+                    end
+                    unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
+                      unit = @units[ u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s]
+                      # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                    end
+
+                    if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
+                      unit.availability = 'Unoccupied' if !unit.sold
+                      unit.available = true if !unit.sold
+                    else
+                      unit.availability = 'Occupied'
+                      unit.available = false
+                    end
+
+                    if us[1]["@attributes"]["AvailableOn"].present?
+                      date = us[1]["@attributes"]["AvailableOn"]
+                      dateSplit = date.split('/')
+                      day = dateSplit[0]
+                      month = dateSplit[1]
+                      year = dateSplit[2]
+                      unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+                    end
+                    if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                      unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                    elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
+                      unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
+                    else
+                      unit.effective_rent = 0.0
+                    end
+                    rentStr = ""
+                    begin
+                      if us[1]["Rent"]["TermRent"].count > 1# && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
+                        us[1]["Rent"]["TermRent"].each do |tr|
+                          spaceOption = tr["@attributes"]["SpaceOption"].present? ? tr["@attributes"]["SpaceOption"] : "" rescue ""
+                          startDate = tr["@attributes"]["StartDate"].present? ? tr["@attributes"]["StartDate"] : "" rescue ""
+                          endDate = tr["@attributes"]["EndDate"].present? ? tr["@attributes"]["EndDate"] : "" rescue ""
+                          rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +":"+spaceOption+":"+startDate+":"+endDate+";"
+                        end
+                      end
+                    rescue => rt_ex
+
+                    end
+
+                    unit.lease_pricing = rentStr
+                    @units.index(unit)
+                    @units[unit.provider_unit_id] = unit
+                      # unit.save(validate: false)
+                  rescue => ex
+                    puts "---------------- Space configuration inside loop", ex.message
+                  end
+                end
+              end
+              puts "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"* 300
+              #else
+              #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
+            else
+              #################################### with unit space pricing
+              begin
+                if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
+                  url = @credentials.entrata_url
+                else
+                  url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+                end
+                password = @credentials.password
+                username = @credentials.username
+                #property_id = credentials.property_id
+                response = HTTParty.post(url,
+                                         :body => {
+                                             "auth": {
+                                                 "type": "basic",
+                                                 "password": password,
+                                                 "username": username
+                                             },
+                                             "method": {
+                                                 "name": "getUnitsAvailabilityAndPricing",
+                                                 "params": {
+                                                     "propertyId": property_id,
+                                                     "availableUnitsOnly": "0",
+                                                     "showUnitSpaces": "1"
+                                                 }
+                                             }
+                                         }.to_json,
+                                         :headers => { 'Content-Type' => 'application/json' } )
+                response =  JSON.parse(response.body)
+                sleep 3
+                if response["response"]["code"] == 200
+                  psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
+                  psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
+                  psi_floorplan.each_with_index do |f,index|
+                    floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
+                  end
+                  psi_units.each do |u|
+                    u['UnitSpace'].each do |us|
+                      begin
+                        if u['UnitSpace'].count == 1
+                          # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                          unit = @units[ u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s]
+                          unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
+                            unit = @units[ u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]]
+                            # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)],community_id: credentials.community_id)
+                          end
+                        else
+                          unit = @units[ u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s]
+                          # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                          unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
+                            unit = @units[ u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s]
+                            # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                          end
+                        end
+                        unless unit.present?
+                          unit = @units[ u["@attributes"]["Id"]]
+                          # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"],community_id: credentials.community_id)
+                        end
+                        unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
+                          unit = @units[ u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s]
+                          # unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                        end
+
+                        if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
+                          unit.availability = 'Unoccupied' if !unit.sold
+                          unit.available = true if !unit.sold
+                        else
+                          unit.availability = 'Occupied'
+                          unit.available = false
+                        end
+                        if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
+                          unit.availability = 'Unoccupied' if !unit.sold
+                          unit.available = true if !unit.sold
+                        else
+                          unit.availability = 'Occupied'
+                          unit.available = false
+                        end
+
+                        if us[1]["@attributes"]["AvailableOn"].present?
+                          date = us[1]["@attributes"]["AvailableOn"]
+                          dateSplit = date.split('/')
+                          day = dateSplit[0]
+                          month = dateSplit[1]
+                          year = dateSplit[2]
+                          unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+                        end
+                        if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                          unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                        elsif floorplanHash[u["@attributes"]["FloorPlanName"]] > 0.0
+                          unit.effective_rent = floorplanHash[u["@attributes"]["FloorPlanName"]]
+                        else
+                          unit.effective_rent = 0.0
+                        end
+                        rentStr = ""
+                        begin
+                          if us[1]["Rent"]["TermRent"].count > 1 #0 && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
+                            us[1]["Rent"]["TermRent"].each do |tr|
+                              rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::;"
+                            end
+                          end
+                        rescue => rt_ex
+
+                        end
+
+                        unit.lease_pricing = rentStr
+
+                        @units[unit.provider_unit_id] = unit
+                          # unit.save(validate: false)
+                      rescue => ex
+                        puts "---------------- filling pricing inside loop", ex.message
+                      end
+                    end
+                  end
+                  #else
+                  #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
+                end
+              rescue => e
+
+                puts '-------------- filling pricing --------------' , e.message
+                #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+              end
+
+              ####################################
+            end
+
+          end
+        rescue => e
+          # begin
+          #   com = Community.find credentials.community_id
+          #   unless com.entrata_exception_logs.present?
+          #     com.entrata_exception_logs = ""
+          #   end
+          #   com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ e.message
+          #   com.save
+          # rescue => r
+          # end
+          puts '-------------- filling pricing --------------' , e.message
+          #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+        end
+      end
+
+      ##########################################
+
+
+    end
+  end
+  def save_psi_floorplans(floorplans,property_id)
+
+    floorplans.each do |f|
+      floorplan = Floorplan.new
+      # floorplan = Floorplan.find_by(provider: "psi",community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"])#.first_or_initialize
+      if floorplan.present?
+        floorplan.property_id = property_id
+        floorplan.name = f["Name"]
+        floorplan.unit_count = f["UnitsAvailable"]
+        floorplan.units_available = f["DisplayedUnitsAvailable"]
+        floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
+        floorplan.availability_url = f["FloorplanAvailabilityURL"] if f["FloorplanAvailabilityURL"].present?
+
+
+        room_types = f["Room"]
+        room_types.each do |rt|
+          if rt["@attributes"]["RoomType"] == "Bedroom"
+            floorplan.bedrooms = rt["Count"]
+          else
+            floorplan.bathrooms = rt["Count"]
+          end
+        end
+
+        if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
+
+          floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
+        else
+
+
+          floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
+        end
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+        else
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
+        end
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+
+          floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
+        else
+
+          floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
+        end
+      end
+      @floorplans << floorplan
+      # floorplan.save(validate: false)
+
+    end
+  end
+
+
+  def getMoveInDate(property_id)
+    url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/properties"
+    password = @credentials.password
+    username = @credentials.username
+    #property_id = credentials.property_id
+    begin
+      response = HTTParty.post(url,
+                               :body => {
+                                   "auth": {
+                                       "type": "basic",
+                                       "password": password,
+                                       "username": username
+                                   },
+                                   "requestId": 15,
+                                   "method": {
+                                       "name": "getPropertyPickLists",
+                                       "version":"r1",
+                                       "params": {
+                                           "propertyIds": property_id
+                                       }
+                                   }
+                               }.to_json,
+                               :headers => { 'Content-Type' => 'application/json' } )
+      response =  JSON.parse(response.body)
+      moveIn_dates = []
+      response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
+        if dates['leaseStartDate'].present?
+          moveIn_dates << dates['leaseStartDate']
+        end
+      end
+    rescue
+    end
+    moveIn_dates
+  end
+
+  private
+
+  def set_community
+    @community = Community.find(params[:id])
+  end
+end

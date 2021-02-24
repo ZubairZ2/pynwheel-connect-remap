@@ -176,11 +176,12 @@ class RealPageSvcSwapService < BaseService
               u = u[:UnitObject]
               hit = false
 
-              unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber]).first
-              unless unit.present?
-                unit = Unit.where(community_id: community_id,marketing_name: u[:BuildingID] + "-" + u[:UnitNumber]).first
+              unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber])
+              unless unit.count == 1
+                unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber], building: u[:BuildingNumber])
               end
               if unit.present?
+                unit = unit.first
                 unit.provider = "realpagesvc_new"
                 unit.provider_unit_id = u[:UnitID]
                 unit.property_id = u[:SiteID]
@@ -398,22 +399,16 @@ class RealPageSvcSwapService < BaseService
                         </soapenv:Envelope>')
         sleep 1
         result = Ox.load(response.body, mode: :hash)
-        puts "0000"
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units.each do |u|
+            
             @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
             unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber])
-            unless unit.present?
-              unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:BuildingNumber] + "-" + u[:Address][:UnitNumber])
+            unless unit.count == 1
+              unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber], building: u[:Address][:BuildingNumber])
             end
 
-            if unit.count > 1
-              unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber],building:  u[:Address][:BuildingNumber])unless u[:Address][:BuildingNumber] == "N/A"
-              unless unit.present?
-                unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:BuildingNumber] + "-" + u[:Address][:UnitNumber],building: u[:Address][:BuildingNumber]) unless u[:Address][:BuildingNumber]== "N/A"
-              end
-            end
             if unit.present?
               unit = unit.first
               unit.provider = "realpagesvc_new"
@@ -472,6 +467,7 @@ class RealPageSvcSwapService < BaseService
               unit = Unit.new
               unit.community_id = community_id
               unit.provider = "realpagesvc_new"
+              unit.provider_unit_id u[:Address][:UnitID]
               unit.property_id = u[:SiteID]
               unit.unit_type = u[:Address][:UnitNumber]
               if u[:Address][:BuildingNumber].present?
@@ -633,7 +629,6 @@ class RealPageSvcSwapService < BaseService
 
                 # unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
             rescue => ex
-              puts ex
 
               unitHash = nil
             end
@@ -652,14 +647,12 @@ class RealPageSvcSwapService < BaseService
                 unit.lease_pricing = rentStr
                 unit.save(:validate => false)
                 # @doc = @doc + response.body
-                puts " **** price updated *** ",unit.marketing_name
               end
 
             end
           end
         end
       rescue => e
-        puts "Pricing Error ********************", e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
@@ -703,12 +696,10 @@ class RealPageSvcSwapService < BaseService
         return result["Envelope"]["Body"]["getpicklistResponse"]["getpicklistResult"]["GetPickList"]["Contents"]["PicklistItem"]
       else
         #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]
-        puts '-----------------------------------------' , result["Envelope"]["Body"]["Fault"]["faultstring"]
         ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})
       end
     rescue => e
       #Thread.current[:errors] << e.message
-      puts '-------------------------------------', e.message
       #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
     end
   end

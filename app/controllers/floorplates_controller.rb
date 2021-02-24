@@ -21,21 +21,28 @@ class FloorplatesController < ApplicationController
 
   def create
     @floorplate = current_community.floorplates.new(floorplate_params)
-    image = MiniMagick::Image.open(params[:floorplate][:image].path)
-    if image.width < 1000 && image.height < 700
-      flash[:error] = "Too small property map image"
+    unless params[:floorplate][:image].present?
+      flash[:error] = "Image not present."
       render :new
     else
-      if @floorplate.save
-        flash[:notice] = "Floorplate created successfully."
-        PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
-        redirect_to community_floorplates_path(current_community)
-        PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
-      else
-        add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-        add_breadcrumb "Add Floor plate", new_community_floorplate_path(current_community)
-        flash[:error] = @floorplate.errors.full_messages.join(',')
+      image = MiniMagick::Image.open(params[:floorplate][:image].path)
+      if image.width < 1000 && image.height < 700 && image.type != "SVG"
+        flash[:error] = "Too small property map image"
         render :new
+      else
+        @floorplate.width = (image.width rescue 0)
+        @floorplate.height = (image.height rescue 0)
+        if @floorplate.save
+          flash[:notice] = "Floorplate created successfully."
+          PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+          redirect_to community_floorplates_path(current_community)
+          PaperTrail::Version.create(item_type: "Floorplate",item_id: @floorplate.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
+        else
+          add_breadcrumb "Floor plates", community_floorplates_path(current_community)
+          add_breadcrumb "Add Floor plate", new_community_floorplate_path(current_community)
+          flash[:error] = @floorplate.errors.full_messages.join(',')
+          render :new
+        end
       end
     end
 
@@ -54,25 +61,6 @@ class FloorplatesController < ApplicationController
       render json: {elevator: @elevator}, status: 200
     else
       render json: {}, status: 404
-    end
-  end
-
-  def check_community
-    unless current_user.is_super_admin?
-      if params[:community_id].present?
-        all_ids = []
-        current_user.communities.each do |c|
-          # all_ids.insert(c.id)
-          all_ids << c.id
-        end
-        # byebug
-        # puts '+++++++++++++++', all_ids[0]
-        if all_ids.include? params[:community_id].to_i
-
-        else
-          redirect_to root_path
-        end
-      end
     end
   end
 
@@ -96,10 +84,12 @@ class FloorplatesController < ApplicationController
       @floorplate.building_is_updated = true
     end
     image = MiniMagick::Image.open(params[:floorplate][:image].path) if params[:floorplate][:image].present?
-    if image.present? && image.width < 1000 && image.height < 700
+    if image.present? && image.width < 1000 && image.height < 700 && image.type != "SVG"
       flash[:error] = "Too small property map image"
       render :edit
     else
+      @floorplate.width = (image.width rescue 0)
+      @floorplate.height = (image.height rescue 0)
       if params[:floorplate][:manual_override] == "true"
         if @floorplate.update(floorplate_params)
           flash[:notice] = "Floorplate updated successfully."

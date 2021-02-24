@@ -41,6 +41,7 @@ class Credential < ApplicationRecord
   has_paper_trail
   belongs_to :community
   before_save :set_https_in_url
+  after_update :change_to_scheduled_tours_for_sf
   
   def import_data_from_spreadsheet(file)
     xlsx = Roo::Spreadsheet.open(file.open)
@@ -178,6 +179,17 @@ class Credential < ApplicationRecord
       unless url.include?('https')
         self.url = url.gsub('http','https')
       end
+    end
+  end
+
+  def change_to_scheduled_tours_for_sf
+    community = self.community
+    if self.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"
+      self.community.tour.update_columns(only_scheduled_tour: true)
+      self.community.update_columns(scheduler_widget: false)
+    else
+      self.community.tour.update_columns(only_scheduled_tour: false)
+      self.community.update_columns(scheduler_widget: false)
     end
   end
 end

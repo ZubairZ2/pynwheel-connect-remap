@@ -12,7 +12,7 @@
           %th Role
           %th Actions
       %tbody
-        -if current_user.is_super_admin?
+        -if current_user.is_super_admin? or current_user.is_dwelo_admin?
           - @users.each_with_index  do |u,index|
             %tr
               %td= index+1

@@ -86,7 +86,11 @@
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
                   .grid-graph.hidden
-                  = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg"
+                  - if @floorplate.image? and @floorplate.image.content_type == "image/svg+xml"
+                    .svg_image_style{:style =>  "width: #{@floorplate.width}px; height: #{@floorplate.height}px;"}
+                      = image_tag  @floorplate.image.url
+                  - else
+                    = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg"
                   - community_units = @community_units
                   - coordinates_array = []
                   - community_units.each do |unit|
@@ -204,7 +208,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplateManageAmenitiesPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding"  style="color: black;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding"  style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -213,7 +217,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplateGridOverlayPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: black;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 

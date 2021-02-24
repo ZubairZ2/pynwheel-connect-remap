@@ -68,9 +68,13 @@
               %h3 Need to pare down your list?
               %p{:style => "margin-bottom: 20px"} Tap the heart to remove an item from the page, or click the clear button below to remove all items.
               %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
+      
       .right-side
-        - if @units.count == 0
+        - if @units.nil?
           %b{:style => "color: #FFFFFF; position: relative; top: 45%; left: 45%;"} You have no favorites
+        - if @units.present? && @units.count == 0
+          %b{:style => "color: #FFFFFF; position: relative; top: 45%; left: 45%;"} You have no favorites
+        - @units = [] if @units.nil?
         - @units.each do |unit|
           - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
           .row{:id=>"row-#{unit.id}"}
@@ -139,7 +143,7 @@
       .modal-header
         Share Favorites Link
       .modal-body
-        %input.form-control#url{:value => favorites_share_link_community_webpages_url(:community_id=>@community,:session_id=>@favorite.session_id)}/
+        %input.form-control#url{:value => favorites_share_link_community_webpages_url(:community_id=>@community,:session_id=>(@favorite.present? ? @favorite.session_id : "" )  )}/
       .modal-footer
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} cancel
         %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy to clipboard     

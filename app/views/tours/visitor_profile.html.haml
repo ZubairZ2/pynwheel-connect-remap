@@ -29,6 +29,7 @@
   
   $(document).ready(function() {
     var visitor_id = "#{@visitor.id}"
+    var community_id = "#{@community.id}"
     $('#id_selfie_mismatch').change(function() {
       
       if(this.checked) {
@@ -41,6 +42,7 @@
           $.post("/flag_id_mismatch", 
           { 
             "tour_user_id": visitor_id,
+            "community" : community_id,
             'match_status': this.checked
           },
           function(data,status,xhr) {
@@ -57,6 +59,7 @@
           $.post("/flag_id_mismatch",
             { 
               "tour_user_id": visitor_id,
+              "community" : community_id,
               'match_status': this.checked
             },
             function(data,status,xhr) {

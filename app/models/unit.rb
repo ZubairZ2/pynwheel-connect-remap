@@ -67,6 +67,10 @@ class Unit < ApplicationRecord
   has_many :paths, as: :map_path
   has_many :path_points, through: :paths
   has_many :remote_locks,  -> { for_units }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
+  has_many :latch_locks, as: :stop, dependent: :destroy
+  has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
+  has_many :zerv_locks, as: :stop, dependent: :destroy
+  has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
   
   scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
   #scope :are_available, -> { where("available = ? and sold = ?", true,false) }
@@ -77,6 +81,26 @@ class Unit < ApplicationRecord
   #scope :available_units, -> { ploted_units.or(past_available_units).where.not(available: true) }
   scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true) } #Don't fetch units where are sold
   after_commit :populate_image_urls, on: [:create,:update]
+  after_update :crop_unit_image
+  after_update :crop_unit_secondary_image
+  before_destroy :delete_data
+
+
+  def crop_unit_secondary_image
+    secondary_image.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secpndary)
+    self.update_columns(do_crop_secpndary: false)
+  end
+  def crop_unit_image
+    image.recreate_versions! if (crop_x.present? && image_bit && do_crop)
+    self.update_columns(do_crop: false)
+  end
+  def delete_data
+    begin
+      res = TourStop.where(stop_id: self.id, stop_type: "unit").destroy_all
+      VisitedStop.where(tour_stop_id: res.pluck(:id)).destroy_all
+    rescue => ex
+    end
+  end
 
 
   def floorplan
