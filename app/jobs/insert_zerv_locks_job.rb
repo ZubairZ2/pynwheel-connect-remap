@@ -3,9 +3,8 @@ class InsertZervLocksJob < ApplicationJob
 
     def perform(locks, zerv)
         community = zerv.community
-        location_name_1 = community.company.name.downcase + ' - ' + community.name.downcase
-        location_name_2 = community.company.name.downcase + '-' + community.name.downcase
-        community_locks = locks["listGetDevices"].map{|lock| lock if lock["locationName"].downcase == location_name_1 or lock["locationName"].downcase == location_name_2}.compact
+        location_name = (community.company.name + ' - ' + community.name).downcase.parameterize.gsub("-", "").gsub("_", "")
+        community_locks = locks["listGetDevices"].map{|lock| lock if lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name}.compact
 
         unless community_locks.blank?
             community_locks.each do |lock|
