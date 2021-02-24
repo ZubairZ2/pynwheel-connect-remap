@@ -1,10 +1,11 @@
 module ZervServices
     class GetUsersService < ZervServices::BaseService
 
-        def execute(test_conn)
-            url = "https://api.zervinc.net/v1/portal/getusers"
+        def execute(args)
+            url = base_url + "/getusers"
             id_token = get_id_token
 
+            puts '--------------------------    Zerv get all user called    ------------------------'
             response = HTTParty.get(url,
                 headers: { 'Authorization' => id_token, 'Content-Type' => 'application/json'})
 

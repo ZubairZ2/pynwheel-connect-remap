@@ -619,7 +619,7 @@ json.tours @tours do |tour|
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
-                json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["message"][0..52]
+                json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["error_position"]
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
               else
@@ -753,7 +753,7 @@ json.tours @tours do |tour|
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
-                json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["message"][0..52]
+                json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["error_position"]
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
               else

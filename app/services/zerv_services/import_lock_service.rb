@@ -1,10 +1,13 @@
 module ZervServices
     class ImportLockService < ZervServices::BaseService
 
-        def execute(test_connection)
-            url = "https://api.zervinc.net/v1/portal/clientdevice"
+        def execute(args)
+            test_connection = args[:test_connection]
+
+            url = base_url + "/clientdevice"
             id_token = get_id_token
 
+            puts '--------------------------    Zerv Import locks called    ------------------------'
             response = HTTParty.get(url,
                 headers: { 'Authorization' => id_token, 'Content-Type' => 'application/json'})
 

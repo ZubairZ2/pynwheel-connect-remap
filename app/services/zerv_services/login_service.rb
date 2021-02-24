@@ -1,8 +1,9 @@
 module ZervServices
     class LoginService < ZervServices::BaseService
 
-        def execute(test_conn)
-            url = "https://api.zervinc.net/v1/portal/login"
+        def execute(args)
+            url = base_url + "/login"
+            puts '--------------------------    Zerv Auth token generate    ------------------------'
             response = HTTParty.post(url,
                 body: {
                     username: @zerv.username,

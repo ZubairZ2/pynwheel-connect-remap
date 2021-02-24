@@ -356,26 +356,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       else
         @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
       end
-      begin
-        puts "#############################################      main thread      ##################################################"
-        thread_ref = params[:locks_thread_ref]
-        unless thread_ref == "null"
-          puts thread_ref
-          thread_ref = thread_ref.gsub("run", "sleep")
-          puts thread_ref
-          locks_thread = Thread.list.select {|thread| thread if thread.to_s == thread_ref}
-          puts "---"*50
-          puts locks_thread
-          puts "---"*50
-          puts Thread.list
-          puts "---"*50
-          puts "##############################################  locks thread joined  #################################################"
-          locks_thread[0].join(18) if locks_thread.present? and locks_thread[0].present? and locks_thread[0].alive?
-          puts "#############################################  main thread continued  ################################################"
-        end
-      rescue => exception
-        puts exception
-      end
+      check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
     else
         render :json=> {:success=>false, :message => "Invalid Token"}
     end
@@ -759,7 +740,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       
       if community.enable_locks and providers_account.present? and providers_account.class.name == "Zerv" and in_visiting_hours and !is_tour_virtual
         available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
-        available_stops << ["tour", @community.tour.id]
+        available_stops << ["tour", community.tour.id]
         allowed_stops = available_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
         ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops)
       end
@@ -767,6 +748,35 @@ class Api::V1::CommunitiesController < ActionController::Base
       execution_context.complete! if execution_context
     end
     locks_thread.to_s
+  end
+  
+  def check_zerv_user_existance_again(community, tour_user, thread_ref)
+    if community.enable_locks and community.locks_provider == "Zerv" and community.zerv.present? and tour_user.tour_type != "virtual_tour"
+      puts "-----------------------------------------     main thread halted    ---------------------------------------------------"
+      begin
+        unless thread_ref == "null"
+          available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+          available_stops << ["tour", community.tour.id]
+          allowed_stops = available_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
+
+          thread_ref = thread_ref.gsub("run", "sleep")
+          locks_thread = Thread.list.select {|thread| thread if thread.to_s == thread_ref}.compact
+
+          if locks_thread.present? and locks_thread[0].present? and locks_thread[0].alive?
+            puts "-----------------------------------------  locks thread joined  ---------------------------------------------------"
+            locks_thread[0].join(18)
+          end
+
+          if tour_user.zerv_guests.where(community_id: community.id, status: "active", res_errors: nil).blank?
+            ZervServices::GetUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true)
+          end
+
+        end
+      rescue => exception
+        puts exception
+      end
+      puts "-----------------------------------------  main thread continued  -----------------------------------------"
+    end
   end
   
   def include_application_data
