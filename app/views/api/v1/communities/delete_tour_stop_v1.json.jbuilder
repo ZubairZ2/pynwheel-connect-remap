@@ -46,8 +46,8 @@ json.tours @tours do |tour|
       json.starting_point_locked false
     end
  
-    json.authenticate_zerv @community.multiple_locks_provider.include?("Zerv")
-    json.tour_start_point_lock_type @tours.first.lock_provider
+    json.authenticate_zerv @community.zerv&.zerv_locks.present?
+    json.tour_start_point_lock_type @tour_user.tour_type != "virtual_tour" ? @tours.first.lock_provider : ""
 
     json.current_position_marker_icon tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "19x25" : (tour.marker_icon_size == "1" ? "17x23" : (tour.marker_icon_size == "2" ? "15x21" : (tour.marker_icon_size == "3" ? "13x19" : (tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
     json.next_position_marker_icon  tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "35x35" : (tour.marker_icon_size == "1" ? "33x33" : (tour.marker_icon_size == "2" ? "31x31" : (tour.marker_icon_size == "3" ? "29x29" : (tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
@@ -621,7 +621,7 @@ json.tours @tours do |tour|
           end
 
         elsif stop_lock_provider == "Zerv" and @community.zerv.present? and stop.zerv_locks.present?
-          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: "Tour", stop_id: stop.id)
+          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: "Tour", stop_id: stop.id) if @community.zerv.present?
           if zrv.present?
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: "Tour", guest_of_stop_id: stop.id, status: "active")
             if zrv_guest.present?
@@ -755,7 +755,7 @@ json.tours @tours do |tour|
           end
 
         elsif stop_lock_provider == "Zerv"
-          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: stop.stop_type.camelcase, stop_id: stop.stop_id) if @community.latch.present?
+          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: stop.stop_type.camelcase, stop_id: stop.stop_id) if @community.zerv.present?
           if zrv.present?
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: stop.stop_type.camelcase, guest_of_stop_id: stop.stop_id, status: "active")
             if zrv_guest.present?

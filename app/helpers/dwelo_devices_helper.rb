@@ -332,7 +332,7 @@ module DweloDevicesHelper
     allowed_stops
   end
 
-  def zerv_multiple_stops_access community
+  def zerv_multiple_stops_access(community, allowed_stops = [])
     available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
 
     available_stops.each do |stop|
@@ -429,10 +429,10 @@ module DweloDevicesHelper
 
   def app_usage(community, property_time, limit ,tour_user)
     # return (limit <= TourHistory.where('arrived = ? AND left = ? AND abandoned_tour_at_stop AND active_app = ? AND arrived > ? AND is_virtual_tour', property_time.to_date,  nil, nil, false, property_time - 180.minutes, false).count) ? false : true
-    unless geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude, 1.5)
+    unless geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude, 1)
       return 0
     else
-      return TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, tour_id: community.tour.id).where('tour_status != ? and arrived > ?', "virtual_tour", (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude, 1.5)) }.compact.count
+      return TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, tour_id: community.tour.id).where('tour_status != ? and arrived > ?', "virtual_tour", (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude, 1)) }.compact.count
     end    
   end
 
