@@ -470,6 +470,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           @tour_user.save
           @verfication_type = params[:id_verification].present? ? @community.tour.verification_type : "email"
         end
+        @tour_user.save
       end
     end
   end
