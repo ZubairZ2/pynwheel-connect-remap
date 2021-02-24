@@ -32,3 +32,6 @@ test/
 .byebug_history
 config/database.yml
 config/application.yml
+config/database.yml
+config/environments/development.rb
+db/schema.rb
