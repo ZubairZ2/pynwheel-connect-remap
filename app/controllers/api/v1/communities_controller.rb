@@ -443,20 +443,18 @@ class Api::V1::CommunitiesController < ActionController::Base
                   should_range_be_checked = false
                 end
               else
-                if @community.id != 1240                                                    # only enabled for "Metropolitan" for testing from Prometheus-salesforce
-                  @scheduled_data = sf_nearest_time_tour(@community, @tour_user, current_time, timezone)
-                  if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
-                    if @location_received and (@within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1))
-                      # @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type   ----   # whatever responded in API resonpse
-                    else
-                      @tour_user.tour_type = "self_tour"
-                    end
-                  elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
-                    @tour_date = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%_m/%d/%Y')
-                    @tour_time = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%l:%M %P')
+                @scheduled_data = sf_nearest_time_tour(@community, @tour_user, current_time, timezone)
+                if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
+                  if @location_received and (@within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1))
+                    # @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type   ----   # whatever responded in API resonpse
+                  else
+                    @tour_user.tour_type = "self_tour"
                   end
-                  should_range_be_checked = false
+                elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
+                  @tour_date = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%_m/%d/%Y')
+                  @tour_time = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%l:%M %P')
                 end
+                should_range_be_checked = false
               end
 
               if should_range_be_checked and @location_received and ((@within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1)))
