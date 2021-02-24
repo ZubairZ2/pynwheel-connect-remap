@@ -32,6 +32,10 @@
 #  end
 
 CarrierWave.configure do |config|
+  # 1- set "asset_host" in developmet.rb to your localhost url
+  # 2- uncommet the line if you want to get localhost images
+  # config.asset_host = ActionController::Base.asset_host
+
   config.max_file_size     = 500.megabytes
   config.fog_provider = 'fog/aws'                        # required
   config.fog_credentials = {
