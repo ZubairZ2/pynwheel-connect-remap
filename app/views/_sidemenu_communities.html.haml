@@ -17,8 +17,8 @@
           %li{:class=>"#{controller_name =='community_groups' ? 'active' : ''}"}
             - unless (current_user.is_dwelo_admin? )
               %a{:href => "/companies/#{current_company.id}/community_groups"} Community Group
-          %li{:class=>"#{controller_name =='regions' ? 'active' : ''}"}
-            - unless (current_user.is_dwelo_admin? )
+          - if (current_user.is_super_admin? || current_user.is_dwelo_admin?)
+            %li{:class=>"#{controller_name =='regions' ? 'active' : ''}"}
               %a{:href => "/companies/#{current_company.id}/regions"} Region
           %li{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
             = link_to "Communities",root_path

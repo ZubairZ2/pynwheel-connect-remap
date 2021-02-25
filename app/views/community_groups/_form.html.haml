@@ -33,7 +33,11 @@
     Page Name
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :page_name, :class=>"form-control", :placeholder=>"Page Name"
-
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Region
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.select(:region_id, options_for_select(@all_regions,f.object.region_id), {:include_blank => 'Select a region'}, { :class => 'form-control' })
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Logo

@@ -68,7 +68,7 @@ class CommunitiesController < ApplicationController
     add_breadcrumb "Communities", company_communities_path(current_company)
     add_breadcrumb "Settings"
     @community = Community.find params[:community_id]
-    @all_regions = Region.all.order(:name).collect {|p| [ p.name, p.id ] }
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] }
     # if params[:default_community_id].present?
     #   dwelo_account =Dwelo.find_by(community_id: @community.id) rescue nil
     #   unless dwelo_account.present?
