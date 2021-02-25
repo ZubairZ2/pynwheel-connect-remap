@@ -97,7 +97,13 @@
                         - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                         .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                           .alert-div1{:style => "margin-top: 10px"}
-                            = image_tag  image_url("icon-check.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - if alert.tour_status.present? && (alert.created_at > "2021-02-30".to_date) && alert.tour_status == "virtual_tour"
+                              - @virtual_list << alert.tour_key if alert.tour_key.present?
+                              = image_tag  image_url("virtual_eye_grey.png"), :style => "height: 22px; width: 22px;", "data-content" => "Virtual Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - elsif alert.tour_status.present? && alert.created_at > "2021-02-30".to_date && (alert.tour_status == "self_tour" || alert.tour_status == "guided_tour")
+                              = image_tag  image_url("virtual_walk_grey.png"), :style => "height: 22px; width: 22px;", "data-content" => "In-Person Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - else
+                              = image_tag  image_url("icon-check.png"), :style => "height: 22px; width: 22px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"  
                             - if alert.arrived.present?
                               - if alert.my_time_zone.present?
                                 - begin
@@ -112,7 +118,12 @@
                             #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.lengthy_stay.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
                           %br
                           .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
-                            = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - if alert.tour_status.present? && alert.tour_status == "virtual"
+                              = image_tag  image_url("virtual_cross.png"), :style => "height: 20px; width: 20px;", "data-content" => "Virtual Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - elsif alert.tour_status.present? && (alert.tour_status == "self_tour" || alert.tour_status == "guided")
+                              = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "In-Person Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
+                            - else
+                              = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                             - if end_time.present?
                               - if alert.my_time_zone.present?
                                 - begin
@@ -217,7 +228,10 @@
                               .col-lg-12{:style => "margin-top: 10px; margin-bottom: 5px;"}
                               .row{:style => "margin-left: 13px; margin-right: 0px;"}
                                 %text{:style => "color: gray"}
-                                  %img{:src => "https://img.icons8.com/android/16/000000/walking.png"}/
+                                  - if (stop[1][0].present?) && (@virtual_list.include? stop[1][0].tour_key) 
+                                    %img{:src => image_url("virtual_eye_black.png"), :width => "18px"}/
+                                  - else
+                                    %img{:src => "https://img.icons8.com/android/16/000000/walking.png"}/  
                                   -# -image_hit = false
 
                                   = stop_image.event_date.present? ? stop_image.event_date.strftime("%m/%d/%Y") : stop_image.created_at.strftime("%m/%d/%Y")
