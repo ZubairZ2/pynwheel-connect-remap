@@ -1,6 +1,5 @@
 i = 0
 json.tours @tours do |tour|
-
   json.id tour.id
   require 'securerandom'
   json.tour_key  random_string = SecureRandom.hex
@@ -87,6 +86,8 @@ json.tours @tours do |tour|
   #   last_element = x
   # end
   # new_stops_arr
+
+  stops_arr = @community.filter_final_stops(stops_arr.compact)
 
   json.tour_stop stops_arr.compact.each do |stop|
     unless stop.stop_type == "elevator" || (stop.latitude.present? && (stop.latitude + stop.longitude) < 1) && @community.show_map
