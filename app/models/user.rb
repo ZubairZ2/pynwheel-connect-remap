@@ -64,7 +64,6 @@ class User < ApplicationRecord
   belongs_to :company
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
-  has_many :logged_in_users, dependent: :destroy
 
   # before_validation :gen_uuid, on: :create
   # validates :uuid, presence: true, uniqueness: true

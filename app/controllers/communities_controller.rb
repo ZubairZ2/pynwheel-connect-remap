@@ -671,6 +671,10 @@ class CommunitiesController < ApplicationController
     end
 
     if @community.save
+      if @community.chat_control
+        CommunityUser.joins(:community).where(communities: {chat_control: true}, community_users: {user_id: current_user.id, chat_enable: true}).update_all(is_logged_in: true)
+        Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {user_id: current_user.id, chat_enable: true}).update_all(is_chat_available: true)
+      end
       flash[:notice] = "Tour settings updated successfully."
       redirect_to settings_community_tours_path(@community)
     else
@@ -728,8 +732,7 @@ class CommunitiesController < ApplicationController
   private
 
   def set_community
-    cookies[:community_id] = @community.id if cookies[:community_id].nil?
-    # @community.update_attributes(is_chat_login: true)
+    @community = Community.find params[:id]
   end
  
   def community_params

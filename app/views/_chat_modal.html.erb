@@ -219,6 +219,8 @@
                                                 </p>
                                                 <p> 
                                                     <a> <%= chatroom.tour_user.email %> </a>
+                                                    <i class="fa fa-map-marker fa-1" aria-hidden="true">
+                                                    <%= chatroom.tour.community.name.split(' ').map(&:capitalize).join(' ') %> </i>
                                                 </p>
                                             </a>
                                         </div>
@@ -324,8 +326,8 @@
 
             show_notifi_on_widget = function(){
                 var hidden = true
-                for(var each in chatroom_list){
-                    var span_id = "#notifi_count_of_" + chatroom_list[each]
+                for(var chatroom in chatroom_list){
+                    var span_id = "#notifi_count_of_" + chatroom_list[chatroom]
                     if($(span_id).length>0){
                         hidden = false
                     }
@@ -465,6 +467,8 @@
                                                 ${span}
                                             </p>
                                             <p> <a> ${chat.tour_user.email} </a> </p>
+                                            <i class="fa fa-map-marker fa-1" aria-hidden="true" style="color: #afb4af;">
+                                            ${ chat.community_name } </i>
                                         </a>
                                     </div> 
                                 </div>
@@ -498,9 +502,11 @@
                             <div class="chat_people">
                                 <div class="chat_img"> <img id="img_id" src=${chatroom.tour_user.image} alt=${chatroom.tour_user.name}> </div>
                                 <div class="chat_ib">
-                                    <a class="sidebar-chat" data-remote="true" href="/chats/${chatroom.id}" style="overflow: hidden;display: block; width: 100%;"> 
+                                    <a class="sidebar-chat" data-remote="true" href="/chats/${chatroom.id}" style="overflow: hidden;display: block; width: 100%; id="chat_person_${chatroom.id}""> 
                                         <p> <span style="color: black;"> ${chatroom.tour_user.name} </span></p>
                                         <p> <a> ${chatroom.tour_user.email} </a> </p>
+                                        <i class="fa fa-map-marker fa-1" aria-hidden="true" style="color: #afb4af;">
+                                        ${ chatroom.community_name } </i>
                                     </a>
                                 </div> 
                             </div>
@@ -553,11 +559,11 @@
                 encrypted: true
             });
 
-            var all_channels = <%= raw @listening_channels %>
+            var channels = <%= raw @listening_channels %>
 
-            for (var each_channel in all_channels) {
-                channel = pusher.subscribe(all_channels[each_channel]);
-                console.log("listening to ", all_channels[each_channel])
+            for (var channel_ of channels) {
+                channel = pusher.subscribe(channel_);
+                console.log("listening to ", channel_)
 
                 channel.bind('new-chat', function(data) {
                     return updateAdminChat(data);

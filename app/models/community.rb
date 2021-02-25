@@ -94,7 +94,6 @@ class Community < ApplicationRecord
   has_many :guided_opening_hours, dependent: :destroy
   has_many :schedual_tours, dependent: :destroy
   has_many :building_starting_point, dependent: :destroy
-  has_many :logged_in_users, dependent: :destroy
   has_many :tutorials, dependent: :destroy
   has_many :elevators, dependent: :destroy
   
@@ -104,7 +103,6 @@ class Community < ApplicationRecord
   has_one :favorite_stop, dependent: :destroy
   has_one :sitemap, dependent: :destroy
   has_one :favorite_setting, dependent: :destroy
-  has_one :dwelo, dependent: :destroy
   has_one :neighborhood, dependent: :destroy
   has_one :tour, dependent: :destroy
   has_one :edge_state, dependent: :destroy
@@ -137,7 +135,7 @@ class Community < ApplicationRecord
   after_update :crop_secondary_image
   after_create :create_tour_also
   after_create :change_touchscreen_app_for_dwelo
-
+  before_save :turn_off_chat, if: Proc.new { chat_control == false }
   #
   # phony_normalize :phone
   # # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
@@ -712,6 +710,16 @@ class Community < ApplicationRecord
     end
     if positions.include?(2) && attributes['display_gallery_on_homepage']  
       errors[:base] << "Position 2 has already been taken."
+    end
+  end
+
+  def turn_off_chat
+     # doesn't matter whether chat was enabled or not, 
+     # just turn the chat OFF for every CMS user and 
+     # for all mobile users of this community
+    if self.id.present?
+      CommunityUser.where(community_id: self.id).update_all(is_logged_in: false)
+      self.update_column(:is_chat_available, false)
     end
   end
 end

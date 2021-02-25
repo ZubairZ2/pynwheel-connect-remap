@@ -2,6 +2,8 @@ class UsersController < ApplicationController
   #load_and_authorize_resource
   before_action :check_community
   before_action :set_user, only: [:edit,:update]
+  protect_from_forgery :except => [:chat_service_not_available]
+
   def index
     if current_user.is_super_admin?
       @users = User.where(role: ["Community admin","Community manager","Super admin","visitor_detail_page", "Dwelo admin", "Community assistant"])
@@ -91,6 +93,19 @@ class UsersController < ApplicationController
 
   def profile
     @user = User.find params[:employee_id]
+  end
+
+  def chat_service_available
+      CommunityUser.joins(:community).where(communities: {chat_control: true}, community_users: {user_id: params[:id], chat_enable: true}).update_all(is_logged_in: true)
+      Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {user_id: params[:id], chat_enable: true}).update_all(is_chat_available: true)
+      puts " ---------------------- chat is turning ON --------------------------------"
+  end
+
+  def chat_service_not_available
+      CommunityUser.joins(:community).where(communities: {chat_control: true}, community_users: {user_id: params[:id], chat_enable: true}).update_all(is_logged_in: false)
+      online_communities = Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {chat_enable: true, is_logged_in: true}).ids
+      Community.where.not(id: online_communities).update_all(is_chat_available: false)
+      puts " ---------------------- chat is turning OFF --------------------------------"
   end
 
   private

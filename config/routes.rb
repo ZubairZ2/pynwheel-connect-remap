@@ -36,7 +36,10 @@ Rails.application.routes.draw do
   end 
   get 'scheduler/change_schedule_tour_time/:id', to: 'scheduler_widget/widgets#change_tour_time_widget', as: :change_tour_time
 
-  devise_for :users, :controllers => { :invitations => 'invitations' }
+  devise_for :users, :controllers => { :invitations => 'invitations', sessions: 'users/sessions' }
+  post 'users/:id/turn_on_chat', to: 'users#chat_service_available'
+  post 'users/:id/turn_off_chat', to: 'users#chat_service_not_available'
+
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"
   resources :chatrooms

@@ -48,7 +48,7 @@ json.tours @tours do |tour|
     json.dotted_line_color @community.tour.dotted_line_color rescue "green"
     json.visual_id_verification (@tour_user.tour_type != "virtual_tour") ? tour.visual_id_verification : false
     json.apply_now_self_tour @community.apply_now_self_tour.present? ? @community.apply_now_self_tour : false
-    json.chat_control (@community.chat_control and @community.is_chat_login) ? @community.chat_control : false
+    json.chat_control (@community.chat_control and @community.is_chat_available) ? @community.chat_control : false
     json.enable_auto_zoom (@community.tour.present?) ? @community.tour.enable_auto_zoom : false
     json.show_map @community.show_map
     json.mdu @community.mdu

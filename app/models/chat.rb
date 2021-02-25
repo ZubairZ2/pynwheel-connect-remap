@@ -7,7 +7,10 @@ class Chat < ApplicationRecord
     def notify_pusher
       data = self.attributes
       tour_user = self.chatroom.tour_user
+      community = self.chatroom.tour.community
+      channel_name = (community.name + "_with_id_" + community.id.to_s).parameterize.gsub("-", "").gsub("_", "")
       
+  
       unless data[:name] == "Support Team"
         data[:tour_user] = {}
         data[:tour_user][:name] = tour_user.name
@@ -15,10 +18,9 @@ class Chat < ApplicationRecord
         data[:tour_user][:image] = tour_user.image.present? ? tour_user.image.url : "/assets/chat-tour-user.jpg"
       end 
       
-      community = self.chatroom.tour.community
-      channel_name = (community.name.gsub(/[^0-9a-z ]/i, '') + "_with_id_" + community.id.to_s).gsub(' ', '_')
 
       data[:unread_count] = send_notification
+      data[:community_name] = community.name.split(' ').map(&:capitalize).join(' ')
 
       Pusher.trigger(channel_name, 'new-chat', data.as_json)
     end
