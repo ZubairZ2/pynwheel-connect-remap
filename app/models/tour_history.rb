@@ -14,7 +14,8 @@
 #
 
 class TourHistory < ApplicationRecord
-	attr_accessor :community
+  attr_accessor :community
+  attr_accessor :length_stay_limit
 
   belongs_to :tour_user
   has_many :lock_histories, dependent: :destroy

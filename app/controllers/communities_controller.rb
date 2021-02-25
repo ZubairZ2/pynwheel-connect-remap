@@ -58,6 +58,7 @@ class CommunitiesController < ApplicationController
 
   def edit
     @com_id = current_community.id
+    @chatroom = params[:tour_user_id].present? ? show_chat_modal(params[:tour_user_id],current_community.tour.id) : Chatroom.new
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
@@ -642,7 +643,8 @@ class CommunitiesController < ApplicationController
         @tour.max_guided_tour_users = params[:max_guided_tour_users]   
         @tour_setting.do_limit_max_tour = params[:do_limit_max_tour]   
         @tour_setting.limit_max_tour_type = params[:limit_max_tour_type]   
-        @tour_setting.limit_max_tour = params[:limit_max_tour]       
+        @tour_setting.limit_max_tour = params[:limit_max_tour]
+        @tour_setting.length_stay_limit = params[:length_stay_limit].to_i
         # @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
         # @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
 
@@ -730,6 +732,12 @@ class CommunitiesController < ApplicationController
     expressionist = design.filter_panel ||  design.create_filter_panel 
   end
   private
+
+  def show_chat_modal(tour_user_id, tour_id)
+    @chatroom = Chatroom.find_by(tour_user_id: tour_user_id, tour_id: tour_id)
+    @chatroom = Chatroom.create(tour_user_id: tour_user_id, tour_id: tour_id) unless @chatroom.present?
+    return @chatroom
+  end
 
   def set_community
     @community = Community.find params[:id]

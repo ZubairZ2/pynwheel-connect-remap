@@ -28,6 +28,7 @@ json.tours @tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.tour_setting do
+    json.last_message_id @chat_count
     json.locks_provider (@community.enable_locks and @community.locks_provider.present?) ? @community.locks_provider : ''
     if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
       if @community.locks_provider == "EdgeState"

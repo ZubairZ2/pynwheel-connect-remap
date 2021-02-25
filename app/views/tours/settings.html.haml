@@ -255,7 +255,17 @@
                       Enter the maximum number of Guided Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.tour.max_guided_tour_users}    
-            
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Lengthy Stay
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    If a visitor stays on tour past the time allotted here, the property will get a notification to check in with them.
+              .col-sm-12.col-lg-2.col-md-2.col-xs-12
+                %input.day-list.max-users-v.form-control{type: "number", id: "length_stay_limit", name: "length_stay_limit", min: "10", max:"300", value: @community.tour.tour_setting.length_stay_limit} 
+              .col-sm-12.col-lg-2.col-md-2.col-xs-12{:style => "margin-top: 13px; margin-left: -4%;"}
+                %span
+                  Minutes
             
             
               / .form-group
@@ -314,19 +324,19 @@
               /       %span.pl-15 Yes
 
               /       %span.pl-15 Yes
-              - if current_user.is_super_admin?
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                    Add Unit Stops Based on Availability
-                    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "6Popover","data-content" => " "}
-                      %span#propertyDetailNameText
-                        Selecting this option will automate which vacant units will appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .TriSea-technologies-Switch
-                      %span.pr-15 No
-                      = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
-                      %label.label-primary{:for => "automate_unit_stop"}
-                      %span.pl-15 Yes 
+            - if current_user.is_super_admin?
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                  Add Unit Stops Based on Availability
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "6Popover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Selecting this option will automate which vacant units will appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
+                    %label.label-primary{:for => "automate_unit_stop"}
+                    %span.pl-15 Yes 
           
 
               / .form-group

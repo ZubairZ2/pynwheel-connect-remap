@@ -76,10 +76,13 @@ class Api::V1::TourHistoriesController < ActionController::Base
           end
         else
           begin
-            id_mismatch = (TourUser.find params[:tour_user_id]).id_selfie_mismatch
+            tu = TourUser.find params[:tour_user_id]
+            id_mismatch = tu.id_selfie_mismatch
           rescue => ex
           end
         end
+
+        check_length_stay(params[:tour_history_id], params[:lengthy_stay], tour.community, tu, params[:current_stop_id]) if (params[:tour_history_id].present? and params[:lengthy_stay].present?)
         chat_control = (tour.community.chat_control and tour.community.is_chat_available) ? tour.community.chat_control : false
         chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
         if chatroom.present?
@@ -100,7 +103,31 @@ class Api::V1::TourHistoriesController < ActionController::Base
       render :json=> {:success=>false, :message => "Invalid Token"}
     end
   end
-  
+  def check_length_stay(tour_history_id, lengthy_stay, community, tu, stop_id)
+    tour_history = TourHistory.find tour_history_id
+    lengthy_stay = (convert_epoch_to_datetime lengthy_stay.to_s)
+    stay_time = time_difference(lengthy_stay, tour_history.arrived)
+    
+    if stay_time > community.tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == false
+      stop = TourStop.find stop_id
+      # contact_user = (tu.phone_number.present? ? ("<br><br><b>Want to check in with them? " + tu.phone_number) + "<b>" : (community.chat_control ? ("#{tu.phone_number.present? ? "<br>Or" : ""}<br><br><b>Want to check in with them?  <a href='" + base_url+"companies/#{community.company.id}/communities/#{community.id}/edit?tour_user_id=#{tu.id}" + "'>Open Chat</a>" ) : "")
+      phone_number = tu.phone_number.last(10).gsub(/^(\d{3})(\d+)(\d{4})$/, '\1-\2-\3') rescue ""
+      phone_number_text = phone_number.present? ? ("<br><br><b>Want to check in with them? " + "<a href='tel:" + phone_number + "'> " + phone_number + " <a>" + "<b>") : ""
+      contact_user = (phone_number_text + (community.chat_control ? ("#{tu.phone_number.present? ? "<br><br>Or" : ""}<br><br><b>Want to check in with them?  <a href='" + base_url+"companies/#{community.company.id}/communities/#{community.id}/edit?tour_user_id=#{tu.id}" + "'>Open Chat</a>" ) : ""))
+
+      @mail_content = ["lengthy_stay", "#{tu.name.titleize} has been on a Self Tour at #{community.name} for #{stay_time} minutes. They are currently at #{stop.name}.#{contact_user}</b>"] #get_alert_message('lengthy_stay')
+      tour_history.update_column 'lengthy_stay_email_sent',true
+
+      emails = community.email.gsub(" ","").split(',')
+      emails.each do |email|
+        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email).deliver
+      end
+
+    end
+  end
+  def time_difference(lengthy_stay, arrival_time)
+    ((lengthy_stay - arrival_time) / 1.minute).round
+  end
   def change_id_selfie_status
     puts params
     access = grant_access (decoded(params[:token])) rescue false
@@ -137,7 +164,9 @@ class Api::V1::TourHistoriesController < ActionController::Base
   end
 
   private
-
+  def base_url
+    Rails.env.development? ? "localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/") 
+  end
   def convert_epoch_to_datetime epoch_str
     Time.strptime(epoch_str, '%s')
   end
