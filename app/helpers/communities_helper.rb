@@ -111,7 +111,7 @@ module CommunitiesHelper
     worksheet.write(0, 3, "Email",format)
     worksheet.write(0, 4, "Phone Number",format)
     worksheet.write(0, 5, "Tour Date",format)
-    worksheet.write(0, 6, "Tour Time",format)
+    worksheet.write(0, 6, "Tour Time UTC",format)
     worksheet.write(0, 7, "Id Verification Provider",format)
     community = current_community
     tour_histories = TourHistory.where(tour_id: community.tour.id, verified_by: "authenteq", created_at: (Date.today - 30.days)..Date.today + 1)  )
