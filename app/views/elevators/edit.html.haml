@@ -150,6 +150,8 @@
             .col-lg-12.col-md-12
               %a.btn-primary.mb-20.done_btn{:href => "javascript:void(0)",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
+              %button.btn-default.done_btn.mb-20{:onclick => "goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                Cancel
 #edit-gallery-image.modal.fade.edit-gallery-image
 :javascript
   var locks_input, locks_list, param_name;
@@ -269,4 +271,6 @@
       });
     }
   }
-
+  function goBack(){
+    window.location.href = '/communities/#{@community.id}/tours';
+  }
