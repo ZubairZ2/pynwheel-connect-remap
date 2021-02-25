@@ -154,20 +154,6 @@
 :javascript
   var locks_input, locks_list, param_name;
   $(document).ready(function(){
-    $('#elevator_lock_provider').change(function(){
-        $('.done_btn').click(function(){
-          if ($('#elevator_lock_provider').val() == "Manual" && $("#elevator_access_code").val().length > 0)
-            $('.edit_elevator').submit();
-          else
-          {
-            if (#{params[:floorNo].nil?})
-              window.location.href = "/communities/#{@community.id}/tours";
-            else
-              window.location.href = "/communities/#{@community.id}/tours?floorNo=#{params[:floorNo]}";
-            //window.location.reload()
-          }
-        });
-    });
     // run it on ready 
     update_locks_select_and_lock_code_field()
     // provide locks on change 
@@ -205,6 +191,42 @@
         $('#manual_access_code').addClass('hide_it')
       }
     }
+    $('#elevator_lock_provider').change(function(){
+        $('.done_btn').click(function(){
+          if ($('#elevator_lock_provider').val() == "Manual" && $("#elevator_access_code").val().length > 0)
+            $('.edit_elevator').submit(); 
+          else if ($('#elevator_lock_provider').val().length > 0 && $("#lock_input").val().length > 0){
+            if (locks_input){
+              var lock = $(locks_input)[0];
+              if(typeof lock !== 'undefined'){
+                if(lock.value == "")
+                  lock.setCustomValidity('')
+
+                if(lock.checkValidity() == true){
+                  lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+                  input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+                  $("#" + lock.id).closest('form').append(input)
+                  $('.edit_elevator').submit(); 
+                }
+                else{ lock.reportValidity(); }
+              }
+              else{
+                  $('.edit_elevator').submit(); 
+              }
+          }
+          else
+            $('.edit_elevator').submit(); 
+          }
+          else
+          {
+            if (#{params[:floorNo].nil?})
+              window.location.href = "/communities/#{@community.id}/tours";
+            else
+              window.location.href = "/communities/#{@community.id}/tours?floorNo=#{params[:floorNo]}";
+            //window.location.reload()
+          }
+        });
+    });
   });
   $('.elevator_edit_field').change(function(){
     setTimeout(function(){ 
