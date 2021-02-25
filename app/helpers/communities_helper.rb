@@ -114,7 +114,7 @@ module CommunitiesHelper
     worksheet.write(0, 6, "Tour Time",format)
     worksheet.write(0, 7, "Id Verification Provider",format)
     community = current_community
-    tour_histories = TourHistory.where(tour_id: community.tour.id, verified_by: "authenteq", created_at: (Date.today - 30.days)..Date.today)  )
+    tour_histories = TourHistory.where(tour_id: community.tour.id, verified_by: "authenteq", created_at: (Date.today - 30.days)..Date.today + 1)  )
     
     tour_histories.each do |th|
       if th.present?
@@ -124,8 +124,8 @@ module CommunitiesHelper
         worksheet.write(row, 2, tour_user.name,format1)
         worksheet.write(row, 3, tour_user.email,format1)
         worksheet.write(row, 4, tour_user.phone_number,format1)
-        worksheet.write(row, 5, tour_user.created_at.strftime("%m/%d/%Y"),format1)
-        worksheet.write(row, 6, tour_user.created_at.strftime("%H:%M"),format1)
+        worksheet.write(row, 5, th.created_at.strftime("%m/%d/%Y"),format1)
+        worksheet.write(row, 6, th.created_at.strftime("%H:%M"),format1)
         worksheet.write(row, 7, "Authenteq",format1)
 
           row = row + 1
