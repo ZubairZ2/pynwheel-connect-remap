@@ -465,6 +465,12 @@ class Api::V1::CommunitiesController < ActionController::Base
               end
             end
           end
+          if (@within_one_km && ( @tour_user.tour_type == "self_tour"))
+            tour_user_arrival_email(@tour_user, @community)
+            @tour_user.arrival_email_sent = true
+          else
+            @tour_user.arrival_email_sent = false
+          end
           @locks_thread = create_zerv_user(@community, @tour_user)
           @tour_user.save
           @verfication_type = params[:id_verification].present? ? @community.tour.verification_type : "email"
@@ -657,6 +663,12 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
 
     OpenStruct.new({tours_exist: tours_exist, on_time_tour: on_time_tour, nearest_tour: nearest_tour, time_status: time_status})
+  end
+  def tour_user_arrival_email(tour_user, community)
+    emails = community.email.gsub(" ","").split(',')
+    emails.each do |email|
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email).deliver
+    end
   end
 
   def create_latch_reservation(community, tour_user, start_time)
