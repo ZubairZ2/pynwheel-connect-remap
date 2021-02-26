@@ -1,4 +1,4 @@
-class FloorplatesController < ApplicationController
+  class FloorplatesController < ApplicationController
   add_breadcrumb "Home", :root_path
   before_action :check_community
   before_action :authenticate_user!
@@ -165,6 +165,7 @@ class FloorplatesController < ApplicationController
       flash[:error] = "Please import unit data first"
     end
     @community_units = @floorplate.fetch_units
+    @test_units = @community_units.to_json
     add_breadcrumb "Floor plates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community,@floorplate)
   end
