@@ -1,5 +1,6 @@
 class RegionsController < ApplicationController
-
+  load_and_authorize_resource
+  
   before_action :find_region, only: [:show, :edit, :update, :destroy]
 
   def index
