@@ -48,6 +48,9 @@ json.data @units do |u|
         json.manual_override u.manual_override
         json.square_feet u.square_feet
         json.description u.description
+        json.bedroom u.floorplan.bedrooms rescue 0
+        json.bathroom u.floorplan.bathrooms rescue 0
+        json.image (u.image.present? ? u.image.url : u.floorplan.image.url) rescue ""
         json.update_apply (u.provider == "resman" || u.provider == "psi") ? true : false
         
         lease_pricing = []
