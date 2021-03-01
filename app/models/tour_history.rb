@@ -52,7 +52,6 @@ class TourHistory < ApplicationRecord
       if self.left and !self.is_left
         community = (Tour.find_by_id self.tour_id).community
         self.update_columns(is_left: true)
-        Jennifer Cyphers has completed a tour of Oeuvre.
         @mail_content = ["tour_has_ended", "#{self.tour_user.name.capitalize} has completed a tour of #{@community.name}"] #get_alert_message('tour_has_ended')
         url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
         # @mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}" + "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
