@@ -306,7 +306,7 @@ iPhone Users:
         email_content = "#{name} visiting #{@community.name} was unable to begin the tour because of an issue with ID verification.#{reason}"
         emails = @community.email.gsub(" ","").split(',')
         emails.each do |email|
-          DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, email)
+          DelayedSchedulerMailerJob.perform_async("ID Verification Issue for #{name}", email_content, email)
         end
         render :json=> {:success=>true, :message => "success"}
       else
