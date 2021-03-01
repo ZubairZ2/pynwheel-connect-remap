@@ -96,7 +96,6 @@ class Api::V1::TourHistoriesController < ActionController::Base
         else
           count = 0
         end
-
         render :json=> {:success=>true, :message => "success", :un_read_msgs_count=> count, :id_mismatch=> id_mismatch, chat_control: chat_control}
       else
         render :json=> {:success=>false, :message => "Please provide community_id, tour_id and tour_user_id"}
