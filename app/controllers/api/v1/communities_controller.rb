@@ -93,7 +93,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def list_communities
-    @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company)
+    @communities = Community.where(touchscreen_app: true).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company)
   end
 
   def portico_list_communities

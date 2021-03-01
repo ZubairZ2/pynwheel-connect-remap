@@ -192,14 +192,14 @@ json.tours @tours do |tour|
 
               arr_to_remove = @community.tour.sort_hash[building + ","+ floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids 
               
-              if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor && @building_list[0] != building) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator") && (@community.tour.starting_floor.present? ? @community.tour.starting_floor != floor.to_i : true )
-                begin
-                  # unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
-                  next
-                  # end
-                rescue
-                end
-              end
+              # if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor && @building_list[0] != building) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator") && (@community.tour.starting_floor.present? ? @community.tour.starting_floor != floor.to_i : true )
+              #   begin
+              #     unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
+              #     next
+              #     end
+              #   rescue
+              #   end
+              # end
               temp_max_floor = floor
               @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
                 # amenity_hit = true
@@ -459,6 +459,7 @@ json.tours @tours do |tour|
       if skip_bool
         skip_1 = true
       end 
+      skip_1 = true if ((new_stops_arr[counter + 1].is_a? TourStop) and new_stops_arr[counter + 1].stop_type == "elevator" and (new_stops_arr[counter + 2].floor rescue new_stops_arr[counter + 2].starting_floor) == (stop.floor rescue stop.starting_floor))
     rescue => ex
     end
     # if counter == 0
