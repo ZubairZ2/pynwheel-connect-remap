@@ -7,7 +7,7 @@
       %a{:href => "#s-dwelo","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.dwelo.present? ? "disabled half_opacity" : "show" } Dwelo
       %a{:href => "#s-edge-state","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.edge_state.present? ? "disabled half_opacity" : "show"} Edge State
       %a{:href => "#s-latch","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.latch.present? ? "disabled half_opacity" : "show"} Latch
-      %a{:href => "#s-zerv","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.zerv.present? ? "disabled half_opacity" : "show"} Pynwheel Access (Zerv)
+      %a{:href => "#s-zerv","aria-expanded" => "false", "data-toggle" => "tab", :role => "tab",:class => @community.zerv.present? ? "disabled half_opacity" : "show"} Pynwheel Access
 
   %ul#lock_tabs.nav.nav-tabs.add-new-lock{:role => "tablist"}
     %li{:role => "presentation",:class => @community.dwelo.nil? ? "hidden" : "show"}
@@ -17,7 +17,7 @@
     %li{:role => "presentation",:class => @community.latch.nil? ? "hidden" : "show"}
       %a#latch-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-latch", :role => "tab"} Latch
     %li{:role => "presentation",:class => @community.zerv.nil? ? "hidden" : "show"}
-      %a#zerv-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-zerv", :role => "tab"} Pynwheel Access (Zerv)
+      %a#zerv-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-zerv", :role => "tab"} Pynwheel Access
 
 
 

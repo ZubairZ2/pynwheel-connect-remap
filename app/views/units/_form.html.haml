@@ -281,7 +281,11 @@
         options = '.' + lock_provider_type + "_options"
         locks_input = "#lock_input"
         // assign values
-        $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this unit</span>")
+        if (lock_provider_type == "zerv")
+          $('#lock_access_code').find('label').html("Lock <span>Assign the lock to this unit</span>")
+        else
+          $('#lock_access_code').find('label').html(capitalize(lock_provider_type) + " Lock <span>Assign the lock to this unit</span>")
+
         $('#lock_input').val( $(lock_input_value).val() )
         $('datalist#locks_list').html($(options).html())
         $('#lock_access_code').removeClass('hide_it') 

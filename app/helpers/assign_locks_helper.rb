@@ -5,12 +5,13 @@ module AssignLocksHelper
 
             if lock_id.present?
                 latch_lock = LatchLock.find_by(door_uuid: lock_id, latch_id: community.latch.id) rescue nil
-                latch_lock.stop.update_column(:lock_provider, "") rescue nil
-                
+
                 if latch_lock.present? and stop.latch_locks.present? and stop.latch_locks.last.door_uuid != latch_lock.door_uuid
+                    latch_lock.stop.update_column(:lock_provider, "") rescue nil
                     stop.latch_locks.update_all(stop_id: nil, stop_type: nil)
                     latch_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name) rescue nil
                 elsif latch_lock.present? and stop.latch_locks.blank?
+                    latch_lock.stop.update_column(:lock_provider, "") rescue nil
                     latch_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name) rescue nil
                 end
             elsif lock_id == ""
@@ -21,12 +22,12 @@ module AssignLocksHelper
 
             if lock_id.present?
                 remote_lock = stop.lock_provider.constantize.find_by(community_id: community.id).remote_locks.dwelo_locks.find_by(device_id: lock_id) rescue nil
-                remote_lock.stop_type.classify.constantize.find(remote_lock.stop_id).update_column(:lock_provider, "") rescue nil
-                
                 if remote_lock.present? and stop.remote_locks.dwelo_locks.present? and stop.remote_locks.dwelo_locks.last.device_id != remote_lock.device_id
+                  remote_lock.stop_type.classify.constantize.find(remote_lock.stop_id).update_column(:lock_provider, "") rescue nil
                   stop.remote_locks.dwelo_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
                   remote_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name.snakecase, stop_name: stop.name) rescue nil
                 elsif remote_lock.present? and stop.remote_locks.dwelo_locks.blank?
+                  remote_lock.stop_type.classify.constantize.find(remote_lock.stop_id).update_column(:lock_provider, "") rescue nil
                   remote_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name.snakecase, stop_name: stop.name) rescue nil
                 end
             elsif lock_id == ""
@@ -36,12 +37,13 @@ module AssignLocksHelper
 
             if lock_id.present?
                 remote_lock = stop.lock_provider.constantize.find_by(community_id: community.id).remote_locks.edgestate_locks.find_by(device_id: lock_id) rescue nil
-                remote_lock.stop_type.classify.constantize.find(remote_lock.stop_id).update_column(:lock_provider, "") rescue nil
 
                 if remote_lock.present? and stop.remote_locks.edgestate_locks.present? and stop.remote_locks.edgestate_locks.last.device_id != remote_lock.device_id
+                  remote_lock.stop_type.classify.constantize.find(remote_lock.stop_id).update_column(:lock_provider, "") rescue nil
                   stop.remote_locks.edgestate_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
                   remote_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name.snakecase, stop_name: stop.name) rescue nil
                 elsif remote_lock.present? and stop.remote_locks.edgestate_locks.blank?
+                  remote_lock.stop_type.classify.constantize.find(remote_lock.stop_id).update_column(:lock_provider, "") rescue nil
                   remote_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name.snakecase, stop_name: stop.name) rescue nil
                 end
             elsif lock_id == ""
@@ -51,12 +53,13 @@ module AssignLocksHelper
 
             if lock_id.present?
                 zerv_lock = ZervLock.find_by(mac_id: lock_id, zerv_id: community.zerv.id) rescue nil
-                zerv_lock.stop.update_column(:lock_provider, "") rescue nil
               
                 if zerv_lock.present? and stop.zerv_locks.present? and stop.zerv_locks.last.mac_id != zerv_lock.mac_id
+                    zerv_lock.stop.update_column(:lock_provider, "") rescue nil
                     stop.zerv_locks.update_all(stop_id: nil, stop_type: nil)
                     zerv_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name) rescue nil
                 elsif zerv_lock.present? and stop.zerv_locks.blank?
+                    zerv_lock.stop.update_column(:lock_provider, "") rescue nil
                     zerv_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name) rescue nil
                 end
             elsif lock_id == ""
