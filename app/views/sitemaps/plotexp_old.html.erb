@@ -138,6 +138,7 @@ function doDraggable() {
       }
     },
     stop: function(event, ui) {
+        debugger;
       if (temp != null) {
 	for (i=0; i<temp.length; i++) {
 	  console.debug("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));

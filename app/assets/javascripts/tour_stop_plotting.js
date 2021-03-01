@@ -134,18 +134,36 @@ $(document).ready(function(){
 
     // });
 
-    $("#map").mouseup(function(e) {
+    function position(elem) {
+        var left = 0,
+            top = 0;
+
+        do {
+            left += elem.offsetLeft-elem.scrollLeft;
+            top += elem.offsetTop-elem.scrollTop;
+        } while ( elem = elem.offsetParent );
+
+        return { left, top };
+    }
+
+    $("#map").bind("mouseup touchend", function(e) {
+        debugger;
         // first check if user is clicking on scrollbar
         if (e.target != $('#map').get(0)){
             e.preventDefault();
-            dx = parseInt($('#active_x_plot').html())-8;
-            dy = parseInt($('#active_y_plot').html()-10);
+            var elemPos = position(e.target);
+            dx = e.type === 'touchend' ? ((e.changedTouches[0].pageX - elemPos.left)) : parseInt($('#active_x_plot').html());
+            dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : parseInt($('#active_y_plot').html());
             marker_color = $('#marker_color').html();
             camera_margin = $('#camera-margin').html();
             marker_font_size = ($('#font_size').html());
             left_margin = parseInt($('#left_margin').html());
             right_margin = parseInt($('#right_margin').html());
 
+            var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+            var scaleFactor = (1/(transform.scale || 1));
+            dx = (dx * scaleFactor) - (10 * scaleFactor);
+            dy = (dy * scaleFactor) - (10 * scaleFactor);
             if (addmode) {
                 // save plotting for each selected unit
                 for (i=0; i<selected.length; i++) {

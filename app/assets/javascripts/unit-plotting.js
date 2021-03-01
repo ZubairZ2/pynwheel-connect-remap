@@ -247,6 +247,7 @@ function doDraggable() {
         containment: 'parent',
         stack: ".marker",
         // get the initial X and Y position when dragging starts
+
         start: function (event, ui) {
             console.log("start drag")
 
@@ -293,6 +294,9 @@ function doDraggable() {
                 }
             }
         }
+    }).on('mousedown', function(e) {
+        e.stopImmediatePropagation();
+        return false;
     });
 }
 
