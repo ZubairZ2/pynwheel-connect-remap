@@ -152,9 +152,14 @@
                 </div>
               </div>
               <% end %>
-              <% if @credit_card_required %>
 
-              <p>A credit card is required to complete the reservation<br>Your credit card will not be charged at this time with the exception of a $0.50 charge for verification purposes.</p>
+              <% if @credit_card_required %>
+                <% if ((@community.tour.present? and @community.tour.tour_setting.present?) ? @community.tour.tour_setting.charge_user_for_id_verfication : false) && (@community.tour.present? ? @community.tour.visual_id_verification : true) %>
+                  <p>A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.</p>
+                <% else %>
+                  <p>A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)</p>
+                <% end %>
+              
               <div class="clearfix"></div>
               <div class="form-group cardNumber">
                 <label>Credit Card Number</label>
