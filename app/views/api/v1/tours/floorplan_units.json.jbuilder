@@ -25,6 +25,7 @@ json.data @units do |u|
         json.floorplan_id u.floorplan_id
         json.market_rent u.market_rent
         json.effective_rent u.effective_rent
+        json.rent u.effective_rent
         json.availability u.availability
         begin
                 json.available_date u.available_date < Date.today + 1 ? "Now" : u.available_date.strftime("%m").to_i.to_s + "/" + u.available_date.strftime("%d").to_i.to_s
@@ -48,8 +49,8 @@ json.data @units do |u|
         json.manual_override u.manual_override
         json.square_feet u.square_feet
         json.description u.description
-        json.bedroom u.floorplan.bedrooms rescue 0
-        json.bathroom u.floorplan.bathrooms rescue 0
+        json.bedrooms u.floorplan.bedrooms rescue 0
+        json.bathrooms u.floorplan.bathrooms rescue 0
         json.image (u.image.present? ? u.image.url : u.floorplan.image.url) rescue ""
         json.update_apply (u.provider == "resman" || u.provider == "psi") ? true : false
         
