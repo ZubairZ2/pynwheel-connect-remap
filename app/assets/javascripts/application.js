@@ -59,6 +59,7 @@
 //= require zoom-marker
 //= require tags
 //= require pinch-zoom.umd
+//= require jquery.ui.touch-punch.min
 //made changes in jquery.multi-select according to our requirement in at library at line #488. Commented sanitize function
 // require_tree .
 //= require bootstrap-wysihtml5

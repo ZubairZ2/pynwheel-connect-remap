@@ -294,7 +294,7 @@ function doDraggable() {
                 }
             }
         }
-    }).on('mousedown', function(e) {
+    }).on('mousedown touchstart', function(e) {
         e.stopImmediatePropagation();
         return false;
     });

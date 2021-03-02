@@ -147,7 +147,6 @@ $(document).ready(function(){
     }
 
     $("#map").bind("mouseup touchend", function(e) {
-        debugger;
         // first check if user is clicking on scrollbar
         if (e.target != $('#map').get(0)){
             e.preventDefault();
