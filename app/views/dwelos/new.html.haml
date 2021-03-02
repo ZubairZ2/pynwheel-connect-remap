@@ -14,15 +14,6 @@
 
 :javascript
 
-    $("#map_locks").click(function (){
-      $.ajax({
-        type: 'POST',
-        url: '/map_dwelo_locks',
-        data: {community_id: #{@community.id}},
-        success: function (data) {}
-      });
-    })
-
     function import_dwelo_locks(community_dwelo_id){
       var community_id = #{@community.id}
       $.ajax({
@@ -32,17 +23,6 @@
         success: function (data) {}
       });
     }
-
-    $("#map_edgestate_locks").click(function (){
-      var community_id = #{@community.id}
-      $.ajax({
-        type: 'POST',
-        url: '/communities/' + community_id + '/edgestate_accounts/map_edgestate_locks',
-        cache: false,
-        success: function (data) {},
-        fail: function (data) {},
-      });
-    })
 
     function import_edgestate_locks(community_id){
       $.ajax({

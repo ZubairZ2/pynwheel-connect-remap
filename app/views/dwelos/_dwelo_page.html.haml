@@ -46,6 +46,6 @@
         .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
           %button.btn.btn-primary.impo#import_locks{:onclick => "import_dwelo_locks(#{@community.dwelo.id rescue 0})", :type => "button"} Import Locks Data
           - if @community.dwelo.present? and @community.dwelo.remote_locks.present?
-            %button.btn.btn-success#map_locks{:type => "button"} Map Units
+            = link_to "Map Units" , map_dwelo_locks_path(community_id: current_community) , :method => :post, :class=>"btn btn-success"
             = link_to "Delete all Existing Locks" , remove_dwelo_locks_community_dwelos_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
           

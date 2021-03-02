@@ -56,5 +56,5 @@
         .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
           %button.btn.btn-primary.impo#import_locks{:onclick => "import_edgestate_locks(#{@community.id})", :type => "button"} Import Locks Data
           - if @community.edge_state.present? and @community.edge_state.remote_locks.present?
-            %button.btn.btn-success#map_edgestate_locks{:type => "button"} Map Units
+            = link_to "Map Units" , map_edgestate_locks_community_edgestate_accounts_path(current_community) , :method => :post, :class=>"btn btn-success"
             = link_to "Delete all Existing Locks" , remove_edgestate_locks_community_edgestate_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
