@@ -58,8 +58,8 @@ class User < ApplicationRecord
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable, :timeoutable, :timeout_in => 8.hours
   #ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]  
-  ROLES = ["Community admin", "Community manager",["Pynwheel admin","Super admin"],["View Visitor Details","visitor_detail_page"], ["Dwelo admin","Dwelo admin"]]
-  ROLES_DWELO_ADMIN = [["Community admin", "Community admin"],["Community manager","Community manager"],["View Visitor Details","visitor_detail_page"]]
+  ROLES = ["Community admin", "Community manager",["Company admin","Company admin"] ,["Regional admin", "Regional admin"], ["Pynwheel admin","Super admin"],["View Visitor Details","visitor_detail_page"], ["Dwelo admin","Dwelo admin"]]
+  ROLES_DWELO_ADMIN = [["Company admin","Company admin"] ,["Regional admin", "Regional admin"], ["Community admin", "Community admin"],["Community manager","Community manager"],["View Visitor Details","visitor_detail_page"]]
   ROLES_ADMIN = [ "Community manager"]   
   belongs_to :company
   has_many :community_users,dependent: :destroy
@@ -103,6 +103,15 @@ class User < ApplicationRecord
   def is_dwelo_admin?
     role == "Dwelo admin"
   end
+
+  def is_company_admin?
+    role == "Company admin"
+  end
+
+  def is_regional_admin?
+    role == "Regional admin"
+  end
+
   # def gen_uuid
   #   self.uuid = SecureRandom.uuid
   # end

@@ -15,6 +15,14 @@
         = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
           .form-group
             - if current_user.is_super_admin?
+              = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
+            - elsif current_user.is_dwelo_admin?
+              = f.select :role, options_for_select(User::ROLES_DWELO_ADMIN,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
+            - elsif current_user.is_community_admin?
+              = f.select :role, options_for_select(User::ROLES_ADMIN,f.object.role),{},{class: "form-control validate[required]"}
+
+          .form-group
+            - if current_user.is_super_admin?
               = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
             - elsif current_user.is_dwelo_admin?
               = f.select :company, options_for_select(current_user.dwelo_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
@@ -46,15 +54,7 @@
               .col-sm-1.col-xs-1.col-lg-12.col-md-12
               .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
                 = select_tag :chat_community_ids, options_for_select(''),{class: "form-control communities_box",:multiple=>true}
-          .col-xs-2
-            %br
-          .form-group
-            - if current_user.is_super_admin?
-              = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
-            - elsif current_user.is_dwelo_admin?
-              = f.select :role, options_for_select(User::ROLES_DWELO_ADMIN,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
-            - elsif current_user.is_community_admin?
-              = f.select :role, options_for_select(User::ROLES_ADMIN,f.object.role),{},{class: "form-control validate[required]"}
+          
           .form-group
             = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true
             %i.fa.fa-envelope    
@@ -76,15 +76,17 @@
     data: {company: selected_company },
 
     success: function(resp){
-    $('#user_community_ids').multiSelect('removeAllOptions');
-    $('#chat_community_ids').multiSelect('removeAllOptions');
-    parsed_arr = $.parseJSON(resp.data);
-    for (var i=0; i<parsed_arr.length  ; i++) {
-
-      $('#user_community_ids').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
-      
-
-    }
+      $('#user_community_ids').multiSelect('removeAllOptions');
+      $('#chat_community_ids').multiSelect('removeAllOptions');
+      parsed_arr = $.parseJSON(resp.data);
+      for (var i=0; i<parsed_arr.length  ; i++) {
+        $('#user_community_ids').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
+      }
+      if ( $('#user_role').val() == "Company admin" ){
+        $('#user_community_ids').multiSelect('select_all');
+        // disable all options on company admin
+        $('#user_community_ids').siblings('.ms-container').find('.ms-selection').find('ul.ms-list li').addClass('disabled')
+      }
     }
 
   });
