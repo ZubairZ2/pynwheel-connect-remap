@@ -155,9 +155,9 @@
 
               <% if @credit_card_required %>
                 <% if ((@community.tour.present? and @community.tour.tour_setting.present?) ? @community.tour.tour_setting.charge_user_for_id_verfication : false) && (@community.tour.present? ? @community.tour.visual_id_verification : true) %>
-                  <p>A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.</p>
+                  <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.</p>
                 <% else %>
-                  <p>A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)</p>
+                  <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)</p>
                 <% end %>
               
               <div class="clearfix"></div>
@@ -734,6 +734,10 @@
                 else
                 {
                   $("#scheduleMyTour").modal('hide');
+                  if(data.type_list[0][1] == "virtual")
+                  {
+                    $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)")
+                  }
                   $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
                   // hidden_tour_type_value = data.type_list[0][1]
                   send_tour_type(data.schedual_tour.id,data.type_list[0][1])
@@ -770,6 +774,10 @@
           send_tour_type(document.getElementById('sched_tour_id').value,$("#tour_type option:selected").val())
           $('.divLoading').addClass('hidden');
           $("#scheduleTourType").modal('hide');
+          if($('#tour_type').val() == "virtual")
+            {
+              $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)")
+            }
           $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
           // $.ajax({
           //     type: 'POST',
