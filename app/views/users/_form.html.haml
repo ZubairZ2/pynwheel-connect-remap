@@ -88,38 +88,44 @@
     success: function(resp){
     $('#chat_enable_com').multiSelect('removeAllOptions');
     parsed_arr = $.parseJSON(resp.data);
+    retrive_all_user_communities()
     for (var i=0; i<parsed_arr.length  ; i++) {
 
       $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
 
     }
 
-
-    $.ajax({
+     $.ajax({
       url: "/communities/",
       type: "GET",
       data: {user:  $('#user_company_name').attr('data-user-id'), enable_communities: "true" , company_id:  #{@company.id}},
 
       success: function(resp2){
-      parsed_arr2 = $.parseJSON(resp2.data);
-      for (var j=0; j < parsed_arr2.length ; j++) {
-        for (var k=0; k < parsed_arr.length;k++)
-        {
-          if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
-          {
-             $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr2[j][0], text: parsed_arr2[j][1],disabled: true});
-              $('#chat_enable_com').multiSelect('select_disable',parsed_arr2[j][0].toString());
-          }
-          else
-          {
-            $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr2[j][0], text: parsed_arr2[j][1],disabled: true});
-            $('#chat_enable_com').multiSelect('select_disable',parsed_arr2[j][0].toString());
+      if(resp2.data.length != 0)
+      {
+        parsed_arr2 = $.parseJSON(resp2.data);
+          for (var j=0; j < parsed_arr2.length ; j++) {
+            for (var k=0; k < parsed_arr.length;k++)
+            {
+              if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
+              {
+                 $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr2[j][0], text: parsed_arr2[j][1],disabled: true});
+                  $('#chat_enable_com').multiSelect('select_disable',parsed_arr2[j][0].toString());
+              }
+              else
+              {
+                $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr2[j][0], text: parsed_arr2[j][1],disabled: true});
+                $('#chat_enable_com').multiSelect('select_disable',parsed_arr2[j][0].toString());
+              }
+            }
+
           }
         }
 
-      }
+
       }
     });
+
     }
 
   });
@@ -144,6 +150,40 @@
     }
 
 
+   
+    retrive_all_user_communities()
+    }
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  });
+  
+
+
+
+  function retrive_all_user_communities()
+  {
     $.ajax({
       url: "/communities/selected_communities",
       type: "POST",
@@ -173,37 +213,8 @@
       }
 
       }
-
-
     });
-    }
-  });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  });
-
-
+  }
 
 
 

@@ -14,6 +14,8 @@ class CommunitiesController < ApplicationController
       if user_enable_communities_ids.present?
         user_enable_communities = Community.where(id: user_enable_communities_ids).pluck(:id, :name).to_json rescue nil
         render :json => {data: user_enable_communities}, :status => 200
+      else
+        render :json => {data: []}, :status => 200
       end
     end
     if current_user.is_super_admin?
