@@ -669,6 +669,33 @@ class Community < ApplicationRecord
   def creator
     User.find_by(id: self.creator_id)
   end
+
+  def filter_final_stops tour_stops
+    amenity_stops = []
+    filtered_stops = []
+    if tour_stops.present?
+      tour_stops.map do |x|
+        if !(x.is_a? Tour) && x.stop_type == "amenity"
+          amenity_stops << x
+        end
+      end
+    end
+
+    non_visible_stops_ids = amenity_stops.present? ? Amenity.where(id: amenity_stops.pluck(:stop_id), breezway_lock_visible: false).pluck(:id) : []
+    
+    tour_stops.map do |x|
+      if (x.is_a? Tour)
+        filtered_stops << x
+      else
+        unless non_visible_stops_ids.include?(x.stop_id))
+          filtered_stops << x
+        end
+      end
+    end
+
+    filtered_stops
+  end
+  
   private
 
   def populate_favorites(items_objs,email_to)
