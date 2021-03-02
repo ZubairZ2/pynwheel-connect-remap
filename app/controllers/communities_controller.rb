@@ -636,7 +636,8 @@ class CommunitiesController < ApplicationController
         @tour_setting.do_limit_max_tour = params[:do_limit_max_tour]   
         @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication] if params[:charge_user_for_id_verfication] .present?
         @tour_setting.limit_max_tour_type = params[:limit_max_tour_type]   
-        @tour_setting.limit_max_tour = params[:limit_max_tour]       
+        @tour_setting.limit_max_tour = params[:limit_max_tour]   
+        @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication].present? ? params[:charge_user_for_id_verfication] : false    
         # @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
         # @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
 
