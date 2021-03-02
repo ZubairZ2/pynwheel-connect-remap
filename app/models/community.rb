@@ -687,7 +687,7 @@ class Community < ApplicationRecord
       if (x.is_a? Tour)
         filtered_stops << x
       else
-        unless non_visible_stops_ids.include?(x.stop_id))
+        unless non_visible_stops_ids.include?(x.stop_id)
           filtered_stops << x
         end
       end
