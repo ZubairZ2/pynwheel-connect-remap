@@ -439,6 +439,23 @@ class Api::V1::CommunitiesController < ActionController::Base
       # @tours = @tours.map{|h| h}[-4..-1].to_h
     end
   end
+  def tour_user_data
+    data = Hash.new
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      @community = Community.find_by_id params[:id]
+      @tour_user = TourUser.find_by_id params[:tour_user_id]
+      if @community.present? and @tour_user.present?
+        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @community.tour.id)
+        data = {visited_history: @visited_history, tour_user: @tour_user}
+        render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
+      else
+        render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
+      end
+    else
+      render :json=> {data: data, :status=>false, :message => "Invalid Token", code: 401}
+    end
+  end
 
   def tour_configrations
     #################### Remember this call is being called twice for one of the usecase in mobile app #######################
