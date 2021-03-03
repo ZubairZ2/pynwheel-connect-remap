@@ -154,7 +154,7 @@
               <% end %>
 
               <% if @credit_card_required %>
-                <% if ((@community.tour.present? and @community.tour.tour_setting.present?) ? @community.tour.tour_setting.charge_user_for_id_verfication : false) && (@community.tour.present? ? @community.tour.visual_id_verification : true) %>
+                <% if ((@community.tour.present? and @community.tour.tour_setting.present?) ? (@community.tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.tour.present? ? @community.tour.visual_id_verification : true)  && (@community.tour.verification_type == "authenteq") %>
                   <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.</p>
                 <% else %>
                   <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)</p>
