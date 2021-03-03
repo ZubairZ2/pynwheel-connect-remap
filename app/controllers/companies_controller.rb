@@ -56,6 +56,16 @@ class CompaniesController < ApplicationController
     redirect_to new_company_path if current_company.nil?
   end
 
+  def get_regions
+    @regions = []
+    if params[:company].present?
+      company = Company.find_by_name(params[:company])
+      @regions = company.regions.map {|r|[r.name, r.id]}
+    end
+    #render 'get_regions'
+    render partial: 'get_regions', layout: false
+  end
+
   private
   def set_company
     @company = Company.find params[:id]

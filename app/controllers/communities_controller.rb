@@ -514,11 +514,13 @@ class CommunitiesController < ApplicationController
       user = User.find params[:user]
       result = user.communities.pluck(:name, :id).to_json
       render :json => {data: result}, :status => 200
-    else
+    elsif params['company'].present?
       company =  params['company']
       comp = Company.find_by(name: company )
-      result = comp.communities.pluck(:name,:id).to_json
+      result = params['region'].present? ? (comp.regions.where(id: params['region']).first.communities.pluck(:name,:id).to_json) :  (comp.communities.pluck(:name,:id).to_json) rescue [].json
       render :json => { data: result }, :status => 200
+    else
+      render :json => { data: [].to_json }, :status => 200
     end
 
   end

@@ -3632,3 +3632,6 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .hide_locks_tour_setup_c_admin {
     display: none;
 }
+.hide_it{
+  display: none; 
+}
