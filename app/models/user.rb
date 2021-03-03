@@ -62,6 +62,7 @@ class User < ApplicationRecord
   ROLES_DWELO_ADMIN = [["Company admin","Company admin"] ,["Regional admin", "Regional admin"], ["Community admin", "Community admin"],["Community manager","Community manager"],["View Visitor Details","visitor_detail_page"]]
   ROLES_ADMIN = [ "Community manager"]   
   belongs_to :company
+  belongs_to :region
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
   has_many :logged_in_users, dependent: :destroy

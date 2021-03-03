@@ -44,11 +44,13 @@ Rails.application.configure do
   config.assets.debug = true
 
   # Suppress logger output for asset requests.
-  config.assets.quiet = true
-  config.after_initialize do
-    ActiveRecord::Base.logger = Rails.logger.clone
-    ActiveRecord::Base.logger.level = Logger::ERROR
-  end
+  # config.assets.quiet = true
+  # config.after_initialize do
+  #   ActiveRecord::Base.logger = Rails.logger.clone
+  #   ActiveRecord::Base.logger.level = Logger::ERROR
+  # end
+
+  
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
 

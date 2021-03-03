@@ -26,7 +26,9 @@
               = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
             - elsif current_user.is_dwelo_admin?
               = f.select :company, options_for_select(current_user.dwelo_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
-
+          = hidden_field_tag "companies_hash", companies_hash.to_json
+          = f.hidden_field "company_id"
+          = f.hidden_field "region_id"
           - if current_user.is_super_admin? || current_user.is_dwelo_admin? 
             .form-group.region_select.hide_it
 
@@ -75,6 +77,12 @@
   // $(".ms-container").addClass("col-sm-12 col-xs-12");
   $(".company_list").change(function(){
     console.log("change called")
+
+    companies_obj = JSON.parse($('#companies_hash').val())
+    company_name = $(this).val()
+    company_id = companies_obj[company_name]
+    $('#user_company_id').val(company_id)
+  
     user_role = $('#user_role').val()
     if (is_regional_admin(user_role)){
       add_region()
@@ -103,6 +111,7 @@
     else if(is_visitor_detail(user_role)){
       $(".company_list").val("").trigger("change");
       $('.chat_feature').addClass('hide_it')
+      $('.region_select').addClass('hide_it')
     }
     else{
       $('.chat_feature').removeClass('hide_it')
@@ -112,6 +121,11 @@
   });
 
   $(document).on('change', '#regions', function() {
+    if ($(this).val().length > 0)
+      $('#user_region_id').val($('#regions').val())
+    else
+      $('#user_region_id').val("")
+      
     add_or_replace_options()
   });
 
