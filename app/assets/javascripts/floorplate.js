@@ -113,48 +113,49 @@ $(document).ready(function () {
         //         doDraggable();
         //     }
         // });
-        $("#map").mouseup(function (e) {
-            // first check if user is clicking on scrollbar
-            if (e.target != $('#map').get(0)) {
-                e.preventDefault();
-                left_margin = parseInt($('#left_margin').html());
-                right_margin = parseInt($('#right_margin').html());
-
-                // var img = document.getElementById('viewArea');
-                // current_width = img.clientWidth;
-                // current_height = img.clientHeight;
-                // orignal_x = 1412;
-                // orignal_y = 932;
-                // new_scale = orignal_x / current_width;
-                dx = parseInt($('#active_x_plot').html());
-                dy = parseInt($('#active_y_plot').html());
-                // dx = dx * new_scale
-                // dy = dy * new_scale
-                // console.log("dx:" + dx + ", dy:" + dy)
-                // dx = dx - left_margin
-                // dy = dy - right_margin
-                fontSize = $('#font_size').html();
-                marker_color = $('#marker_color').html();
-                if (addmode)
-                {
-                    // save plotting for each selected unit
-                    for (i = 0; i < selected.length; i++) {
-                        savePlot(selected[i][0], dx, dy);
-                    }
-                    var url = '/communities/' + community_id + '/units/' + selected[0][0] + '/remove_plot_from_floorplate?floorplate_id=' + floorplate_id;
-                    // add new marker to display
-                    //tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
-                    tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx - left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + fontSize + "px;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-                    tag += "<i class='fas fa-map-marker-alt' style='color: " + marker_color + ";'></i>";
-                    tag += "</a>"
-                    $('#map').append(tag);
-                    // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
-                    //$(".marker:last").trigger("click")
-                    reset();
-                    doDraggable();
-                }
-            }
-        });
+        // $("#map").mouseup(function (e) {
+        //     // first check if user is clicking on scrollbar
+        //     if (e.target != $('#map').get(0)) {
+        //         e.preventDefault();
+        //         debugger;
+        //         left_margin = parseInt($('#left_margin').html());
+        //         right_margin = parseInt($('#right_margin').html());
+        //
+        //         // var img = document.getElementById('viewArea');
+        //         // current_width = img.clientWidth;
+        //         // current_height = img.clientHeight;
+        //         // orignal_x = 1412;
+        //         // orignal_y = 932;
+        //         // new_scale = orignal_x / current_width;
+        //         dx = parseInt($('#active_x_plot').html());
+        //         dy = parseInt($('#active_y_plot').html());
+        //         // dx = dx * new_scale
+        //         // dy = dy * new_scale
+        //         // console.log("dx:" + dx + ", dy:" + dy)
+        //         // dx = dx - left_margin
+        //         // dy = dy - right_margin
+        //         fontSize = $('#font_size').html();
+        //         marker_color = $('#marker_color').html();
+        //         if (addmode)
+        //         {
+        //             // save plotting for each selected unit
+        //             for (i = 0; i < selected.length; i++) {
+        //                 savePlot(selected[i][0], dx, dy);
+        //             }
+        //             var url = '/communities/' + community_id + '/units/' + selected[0][0] + '/remove_plot_from_floorplate?floorplate_id=' + floorplate_id;
+        //             // add new marker to display
+        //             //tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
+        //             tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx - left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + fontSize + "px;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+        //             tag += "<i class='fas fa-map-marker-alt' style='color: " + marker_color + ";'></i>";
+        //             tag += "</a>"
+        //             $('#map').append(tag);
+        //             // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
+        //             //$(".marker:last").trigger("click")
+        //             reset();
+        //             doDraggable();
+        //         }
+        //     }
+        // });
     }
 });
 
