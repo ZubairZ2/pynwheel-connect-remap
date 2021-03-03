@@ -15,7 +15,7 @@ module ZervServices
                 tour_time = Time.now.in_time_zone(timezone)
                 stop_list.each do |stop|
                     attached_lock = stop.zerv_locks.last
-                    access_code = attached_lock.universal_access_code.present? ? attached_lock.universal_access_code : "" rescue ""
+                    access_code = attached_lock.universal_access_code.present? ? attached_lock.universal_access_code : nil rescue nil
                     access_point = attached_lock.mac_id rescue nil
                     if access_point.present?
                         list_add_user_access << time_access_object(community, tour_time)
@@ -30,7 +30,7 @@ module ZervServices
                 "lastName": tour_user.last_name,
                 "phoneNumber":  tour_user.phone_number,
                 "email": tour_user.email,
-                "image": "",
+                "image": nil,
                 "listAddUserAccess": list_add_user_access
             }
             
@@ -109,7 +109,7 @@ module ZervServices
                 "accessStartDate": tour_time.strftime("%Y-%m-%d"),
                 "accessEndDate": (tour_time + 1.day).strftime("%Y-%m-%d"),
                 "credentialIdentifier": "1234",
-                "facilityId": "",
+                "facilityId": nil,
                 "active": true,
                 "monAccess": false,
                 "tueAccess": false,
