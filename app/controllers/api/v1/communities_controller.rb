@@ -157,6 +157,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community.deleted_ids = []
       @tour_user.tour_key = @random_string
       @community.save
+      @tour_user.verified_by = params[:verified_by_provider]
       @tour_user.save
       
       unless @tour_user.email == "Removed at Consumer Request"
