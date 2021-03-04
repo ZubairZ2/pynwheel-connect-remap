@@ -16,4 +16,13 @@ class RemoteLock < ApplicationRecord
   
   scope :dwelo_locks, -> {where edge_state_id: nil}
   scope :edgestate_locks, -> {where dwelo_id: nil}
+
+  before_destroy :remove_stop_lock_provider_type
+
+  def remove_stop_lock_provider_type
+    if self.stop_type.present?
+      self.stop_type.classify.constantize.find(self.stop_id).update_column(:lock_provider, "") rescue nil
+    end
+  end
+
 end

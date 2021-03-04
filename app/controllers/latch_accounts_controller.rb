@@ -44,7 +44,7 @@ class LatchAccountsController < ApplicationController
               redirect_to new_community_dwelo_path(current_community)
             end
           else
-            flash[:error] = "Credentials for EdgeState are missing"
+            flash[:error] = "Credentials for Latch are missing"
             redirect_to new_community_dwelo_path(current_community)
         end
     end
