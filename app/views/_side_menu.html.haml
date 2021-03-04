@@ -20,7 +20,7 @@
                 %a{:href => "/community_groups"} Community Group
             %li.loader_class{:class=>"#{controller_name =='communities' && params[:action] != 'import_page' ? 'active' : ''}"}
               = link_to "Communities", root_path
-      - if current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
+      - if current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?  || current_user.is_community_assistant? 
         %li.loader_class{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
           = link_to edit_company_community_path(current_company,current_community) do
             %i.fa.fa-info
@@ -183,7 +183,7 @@
       /     %a{:href => "#{community_tours_path(current_community)}"}
       /       %i.fa.fa-plane
       /       %span Tour Setup
-      - if (current_user.is_community_manager? and current_community.self_tour)
+      - if ((current_user.is_community_manager?  || current_user.is_community_assistant?) and current_community.self_tour)
         %li.treeview{:class=>"#{controller_name =='tours' ? 'active' : 'active'}"}
           %a{:href => "/"}
             %i.fa.fa-plane
@@ -243,7 +243,7 @@
                 %span.pull-right-container
 
 
-      - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? || current_user.is_view_visitor_details_page?
+      - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? || current_user.is_view_visitor_details_page? || current_user.is_community_assistant? 
         %li.loader_class{:class=>"#{controller_name =='tour_users' ? 'active' : ''}"}
           %a{:href => "#{community_tour_users_path(current_community)}"}
             %i.fa.fa-sticky-note-o
@@ -258,7 +258,7 @@
           %a{:href => "#{community_logs_path(current_community)}"}
             %i.fa.fa-history
             %span CMS Logs
-      - unless (current_user.is_view_visitor_details_page?) 
+      - unless (current_user.is_view_visitor_details_page? || current_user.is_community_assistant?) 
         %li.loader_class{:class=>"#{controller_name =='tutorials' ? 'active' : ''}"}
           %a{:href => "#{community_tutorials_path(current_community)}"}
             %i.fa.fa-video-camera
