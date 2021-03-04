@@ -420,6 +420,81 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def tour_configrations
+    #################### Remember this call is being called twice for one of the usecase in mobile app #######################
+    puts params
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      if params[:id].present? and params[:tour_user_id].present?
+        @community = Community.find_by_id params[:id]
+        if @community.present?
+          @tour = @community.tour
+          @tour_user = TourUser.find_by_id params[:tour_user_id]
+          
+          @locks_thread = create_zerv_user(@community, @tour_user) if params[:second_time].present? and ( params[:second_time] == "false" || params[:second_time] == false )
+          @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
+          @verfication_type = params[:id_verification].present? ? @tour.verification_type : "email" rescue "email"
+          timezone = get_community_time_zone(@community) rescue "UTC"
+          current_time = (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
+
+          @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
+          @in_visiting_hours = is_tour_in_visiting_hours(@community, current_time)
+          
+          @tour_user.is_virtual_tour = ( (@in_visiting_hours ? false : true)  || @limit_exceeded)
+          @tour_user.latitude = params[:latitude]
+          @tour_user.longitude = params[:longitude]
+          # @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
+
+          if @community.credential.present? and @community.credential.use_different_crm_provider and @community.credential.crm_provider == "salesforce"
+            response = SalesforceServices::GetBookingByNeighbor.call(community: @community, tour_user: @tour_user)
+            if response.success? and response.payload.present?
+              @scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
+              if @scheduled_tours.present?
+                @is_tour_ontime = is_sf_tour_on_time(@scheduled_tours, current_time, @tour.grace_period, timezone)
+                current_tour = @is_tour_ontime
+
+                unless @is_tour_ontime.present?
+                  @tour_status , nearest_tour = sf_tour_time_status(@scheduled_tours, current_time, timezone)
+                  current_tour = nearest_tour
+                  @tour_user.tour_type = "virtual_tour"
+                end
+
+                @tour_date = current_tour.present? ?  current_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%_m/%d/%Y')  : "---"
+                @tour_time = current_tour.present? ?  current_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%l:%M %P') : "---"
+                
+                Prospect.where(community_id: @community.id,  tour_user_id: @tour_user.id, crm_provider: "salesforce").update_all(sf_status: "deleted")
+                Prospect.create(community_id: @community.id, tour_user_id: @tour_user.id, data_provider: @community.data_provider, crm_provider: "salesforce", sf_booking_id: current_tour["Id"], sf_booking_name: current_tour["Name"], sf_guest_id: current_tour["Contact__r"]["Id"], sf_status: "active")
+
+              end
+            end
+          else
+
+            @scheduled_tours = get_scheduled_tours(@community.id, @tour_user.id, current_time)
+            @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours ? false : true ) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
+
+            if @scheduled_tours.present?
+              @is_tour_ontime = is_tour_on_time(@scheduled_tours, current_time, @tour.grace_period)
+              current_tour = @is_tour_ontime
+
+              unless @is_tour_ontime.present?
+                @tour_status , nearest_tour = tour_time_status(@scheduled_tours, current_time)
+                current_tour = nearest_tour
+              end
+              
+              @tour_user.tour_type = check_tour_type(@tour_status, current_tour, @tour, @is_tour_ontime) 
+
+              @tour_date = current_tour.present? ? current_tour.tour_date.strftime('%_m/%d/%Y')  : "---"
+              @tour_time = current_tour.present? ? current_tour.tour_time.strftime('%l:%M %P') : "---"
+            else
+              @tour_user.tour_type = (!@tour.only_scheduled_tour ? "self_tour" : "virtual_tour")
+            end
+          end
+          @tour_user.save
+        end
+      end
+    end
+  end
+
+  def tour_configrations_v1
     puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
@@ -488,6 +563,16 @@ class Api::V1::CommunitiesController < ActionController::Base
         end
         @tour_user.save
       end
+    end
+  end
+
+  def check_tour_type(tour_status, nearest_tour, tour, is_tour_ontime)
+    if is_tour_ontime.present? 
+      return is_tour_ontime.tour_type
+    elsif nearest_tour.present? && (tour_status == "on time" || !tour.only_scheduled_tour)
+      return nearest_tour.tour_type
+    else
+      return (!tour.only_scheduled_tour ? "self_tour" : "virtual")
     end
   end
 
