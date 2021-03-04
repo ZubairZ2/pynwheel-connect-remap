@@ -3632,3 +3632,13 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .hide_locks_tour_setup_c_admin {
     display: none;
 }
+.lock-dropdown{
+  display: inline !important;
+  float: left;
+  margin-right: 20px;
+}
+#lock_tabs{ border-bottom: none; }
+#lock_tabs {margin-bottom: 10px;}
+.half_opacity{opacity: 0.5;}
+.add-new-lock a.disabled { pointer-events: none; cursor: not-allowed; } 
+.hide_it{ display: none; }

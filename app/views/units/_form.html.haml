@@ -89,53 +89,56 @@
     = f.text_field :virtual_tour_url, :class=>"form-control", :placeholder=>"Virtual Tour URL"
 
 - if @community.enable_locks
-  - if @community.locks_provider == "EdgeState" and @community.edge_state.present? and @all_locks.present?
-    .form-group.hide_on_new
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Remote Lock
-        %span Assign the lock to this unit
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = text_field_tag :edgestate_locks_input, @unit.remote_locks.edgestate_locks.present? ? @unit.remote_locks.edgestate_locks.last.name + " (" + @unit.remote_locks.edgestate_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
-        %datalist#edgestate_locks_list
-          - @all_locks[:edgestate_locks].each do |lock|
-            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+  - locks_present_hash = {}
+  - locks_present_hash["Dwelo"] = @community.multiple_locks_provider.include?("Dwelo") && @community.dwelo.present? && @all_locks[:dwelo_locks].any?
+  - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?
+  - locks_present_hash["Latch"] = @community.multiple_locks_provider.include?("Latch") &&  @community.latch.present? && @all_locks[:latch_locks].any?
+  - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
 
-  - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present? and @all_locks.present?
-    .form-group.hide_on_new
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Dwelo lock
-        %span Assign the lock to this unit
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = text_field_tag :dwelo_locks_input, @unit.remote_locks.dwelo_locks.present? ? @unit.remote_locks.dwelo_locks.last.name + " (" + @unit.remote_locks.dwelo_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
-        %datalist#dwelo_locks_list
-          - @all_locks[:dwelo_locks].each do |lock|
-            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-  - elsif @community.locks_provider == "Latch" and @community.latch.present? and @all_locks.present?
-    .form-group.hide_on_new
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Latch lock
-        %span Assign the lock to this unit
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = text_field_tag :latch_locks_input, @unit.latch_locks.present? ?  @unit.latch_locks.last.lock_name : '', :placeholder => "Search by lock name", :list => "latch_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
-        %datalist#latch_locks_list
-          - @all_locks[:latch_locks].each do |lock|
-            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-  - elsif @community.locks_provider == "Zerv" and @community.zerv.present? and @all_locks.present?
-    .form-group.hide_on_new
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Pynwheel Access (zerv)
-        %span Assign the lock to this unit
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = text_field_tag :zerv_locks_input, @unit.zerv_locks.present? ?  @unit.zerv_locks.last.sub_location_name + " (" + @unit.zerv_locks.last.sub_location_friendly_name + ")" : '', :placeholder => "Search by lock name", :list => "zerv_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
-        %datalist#zerv_locks_list
-          - @all_locks[:zerv_locks].each do |lock|
-            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-  - elsif @community.locks_provider == nil or @community.locks_provider == ""
-    .form-group
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Access Code
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control", :placeholder=>"Access Code"
+  // load options and input values start
+  - if locks_present_hash["Dwelo"]
+    = hidden_field_tag "dwelo_lock_input_value", @unit.remote_locks.dwelo_locks.present? ? @unit.remote_locks.dwelo_locks.last.name + " (" + @unit.remote_locks.dwelo_locks.last.remote_lock_type + ")" : ''
+    .dwelo_options.hide_it
+      - @all_locks[:dwelo_locks].each do |lock|
+        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+  - if locks_present_hash["EdgeState"]
+    = hidden_field_tag "edgestate_lock_input_value", @unit.remote_locks.edgestate_locks.present? ? @unit.remote_locks.edgestate_locks.last.name + " (" + @unit.remote_locks.edgestate_locks.last.remote_lock_type + ")" : ''
+    .edgestate_options.hide_it
+      - @all_locks[:edgestate_locks].each do |lock|
+        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
+  - if locks_present_hash["Latch"]
+    = hidden_field_tag "latch_lock_input_value", @unit.latch_locks.present? ?  @unit.latch_locks.last.lock_name : ''
+    .latch_options.hide_it
+      - @all_locks[:latch_locks].each do |lock|
+        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+  - if locks_present_hash["Zerv"]
+    = hidden_field_tag "zerv_lock_input_value", @unit.zerv_locks.present? ?  @unit.zerv_locks.last.sub_location_name + " (" + @unit.zerv_locks.last.sub_location_friendly_name + ")" : ''
+    .zerv_options.hide_it
+      - @all_locks[:zerv_locks].each do |lock|
+        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+  // load options and input values send
+
+
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Select Lock Type
+      %span Select the access provider for this stop
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), f.object.lock_provider),{},{:class=>"form-control"}
+
+  .form-group.hide_it#manual_access_code
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Access Code
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
+
+  .form-group#lock_access_code.hide_it
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control lock_provider_input"
+      %datalist#locks_list
+    = hidden_field_tag "lock_id", ""
 
 - if @community.touchscreen_app
   .form-group
@@ -259,6 +262,62 @@
                   %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
                     crop
 :javascript
+  var locks_input,locks_list = "#locks_list";
+  $(document).ready(function(){
+    // run it on ready 
+    update_locks_select_and_lock_code_field()
+    // provide locks on change 
+    $('#unit_lock_provider').change(function(){
+      update_locks_select_and_lock_code_field();
+    });
+
+    function update_locks_select_and_lock_code_field(){
+      // if any lock selected 
+      if ($('#unit_lock_provider').val().length > 0 && $('#unit_lock_provider').val() != "Manual" ){
+        $('#manual_access_code').addClass('hide_it')
+        // initialize elements 
+        lock_provider_type = $('#unit_lock_provider').val().toLowerCase()
+        lock_input_value = "#" + lock_provider_type + "_lock_input_value"
+        options = '.' + lock_provider_type + "_options"
+        locks_input = "#lock_input"
+        // assign values
+        if (lock_provider_type == "zerv")
+          $('#lock_access_code').find('label').html("Lock <span>Assign the lock to this unit</span>")
+        else
+          $('#lock_access_code').find('label').html(capitalize(lock_provider_type) + " Lock <span>Assign the lock to this unit</span>")
+
+        $('#lock_input').val( $(lock_input_value).val() )
+        $('datalist#locks_list').html($(options).html())
+        $('#lock_access_code').removeClass('hide_it') 
+      }
+      else if ($('#unit_lock_provider').val().length > 0){
+        $('#lock_access_code').addClass('hide_it')
+        $('#manual_access_code').removeClass('hide_it')
+        locks_input = undefined
+      }  
+      else
+      {
+        $('#lock_access_code').addClass('hide_it')
+        $('#manual_access_code').addClass('hide_it')
+      }
+    }
+
+    $('.lock_provider_input').change(function(){
+      if (locks_input){
+        var lock = $(locks_input)[0];
+        if(lock.value == "")
+            lock.setCustomValidity('')
+
+        if(lock.checkValidity() == true){
+          lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+          $('#lock_id').val(lock_id)
+        }
+        else{ lock.reportValidity(); }
+      }
+    });
+
+  });
+
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' });
   $(document).ready(function(){
       $('.wysihtml5').each(function(i, elem) {

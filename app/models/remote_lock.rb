@@ -13,7 +13,16 @@ class RemoteLock < ApplicationRecord
   scope :for_elevators, -> { where stop_type: "elevator"}
   scope :for_building_starting_points, -> { where stop_type: "building_starting_point"}
   scope :for_starting_points, -> { where stop_type: "tour"}
-
+  
   scope :dwelo_locks, -> {where edge_state_id: nil}
   scope :edgestate_locks, -> {where dwelo_id: nil}
+
+  before_destroy :remove_stop_lock_provider_type
+
+  def remove_stop_lock_provider_type
+    if self.stop_type.present?
+      self.stop_type.classify.constantize.find(self.stop_id).update_column(:lock_provider, "") rescue nil
+    end
+  end
+
 end

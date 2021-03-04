@@ -2,12 +2,12 @@
 
     $(document).ready(function(){
         var community_name = '<%= @community.present? ? ( (@community.name.gsub(/[^0-9a-z ]/i, '') + "_with_id_" + @community.id.to_s).gsub(' ', '_') ) : 'undefined' %>'
-        var locks_provider = '<%= @community.present? ? ( (@community.enable_locks and @community.locks_provider.present?) ? @community.locks_provider : 'undefined' ) : 'undefined' %>'
+        var locks_provider = '<%= @community.present? ? ( (@community.enable_locks and @community.multiple_locks_provider.present?) ? @community.multiple_locks_provider : 'undefined' ) : 'undefined' %>'
 
 
         var pusher, generic_channel;
         
-        if(community_name != "undefined" && locks_provider == "Latch"){
+        if(community_name != "undefined" && locks_provider.includes("Latch"){
             var latch_import_status;
             var latch_channel_name = "latch_channel_for_" + community_name;
             console.log(latch_channel_name)

@@ -864,3 +864,7 @@ function setHrefAndFormUrl(element){
   $('#markers-modal').find('.delete-marker-ok').attr('href', $(element).data('href'));
   $('#markers-modal').find("form").attr("action",$(element).data('unit-form-url'));
 }
+function capitalize(s)
+{
+  return s && s[0].toUpperCase() + s.slice(1);
+}

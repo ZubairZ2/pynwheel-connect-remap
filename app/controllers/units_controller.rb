@@ -4,6 +4,7 @@ class UnitsController < ApplicationController
   before_action :set_community
   before_action :check_community
   before_action :set_unit, only: [:edit,:update,:destroy,:remove_pri_scnd_image]
+  before_action :load_all_locks, only: [:new, :create, :edit, :update]
   def index
     #@units = @community.units.page(params[:page]).per(10)
     @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
@@ -83,6 +84,7 @@ class UnitsController < ApplicationController
       @unit.available = false
     end
     if @unit.save
+      update_enable_locks()
       if @unit.floorplan.present? and @unit.floorplan.amenities.present? 
         floorplan_amenities = @unit.floorplan.amenities
         add_floorplan_amenities = "true"
@@ -104,7 +106,6 @@ class UnitsController < ApplicationController
     @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
     @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
     @all_locks = all_locks(@community)
-    @locks_provider = @community.locks_provider
   end
 
   def update
@@ -116,11 +117,6 @@ class UnitsController < ApplicationController
     end
     @unit.image_bit = nil
     unit_previous_floorplan_amenities = @unit.amenities.where.not(floorplan_amenity_id: nil) rescue nil
-
-    if @community.enable_locks
-      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ( (params[:zerv_lock].present? or params[:zerv_lock] == "") ?  params[:zerv_lock] : nil ) ) )
-      assign_lock(@community, @unit, lock_id) unless lock_id.nil?
-    end
 
     respond_to do |format|
       ######## save item that updated
@@ -198,6 +194,7 @@ class UnitsController < ApplicationController
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
         if @unit.update(unit_params)
+          update_enable_locks()
           if params[:unit].present? and @unit.floorplan.present? and params[:unit][:floorplan_id] != @unit.floorplan.id
             delete_previous_floorplan_images = "delete previous"
             if unit_previous_floorplan_amenities.present?
@@ -228,6 +225,7 @@ class UnitsController < ApplicationController
       else
         if params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
           @unit.update(unit_params)
+          update_enable_locks()
           if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != @unit.floorplan.id
             delete_previous_floorplan_images = "delete previous"
             AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
@@ -257,6 +255,9 @@ class UnitsController < ApplicationController
             format.json { respond_with_bip(@unit) }
           else
             @unit.update(unit_params)
+
+            update_enable_locks()
+
             if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != @unit.floorplan.id
               delete_previous_floorplan_images = "delete previous"
               AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
@@ -537,6 +538,22 @@ class UnitsController < ApplicationController
   end
   def set_unit
     @unit = Unit.find params[:id]
+  end
+
+  def load_all_locks
+    @all_locks = all_locks(@community)
+  end
+
+  def update_enable_locks()
+    if @community.enable_locks
+        lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+        assign_lock(@community, @unit, lock_id) unless lock_id.nil?
+        if params[:unit][:lock_provider] == "Manual"
+          @unit.update_column(:lock_provider, "") if params[:unit][:access_code] == ""
+        else
+          @unit.update_column(:lock_provider, "") if lock_id.nil? or params[:lock_id] == ""
+        end
+      end 
   end
 
 end

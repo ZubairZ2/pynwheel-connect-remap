@@ -50,6 +50,7 @@ class Latch < ApplicationRecord
                 data.latch_locks.map{|l| l.update_attributes(stop_type: nil, stop_id: nil)}
                 lock.destroy if lock.present?
                 data.latch_locks.create(door_uuid: door_uuid, lock_name: lock_name, latch_id: community.latch.id, lock_id:lock_id)
+                data.update_column(:lock_provider, "Latch")
             end
         end
     end
