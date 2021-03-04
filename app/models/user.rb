@@ -113,6 +113,10 @@ class User < ApplicationRecord
     role == "Regional admin"
   end
 
+  def is_admin?
+    is_super_admin? || is_community_admin? ||  is_community_manager? || is_company_admin? || is_regional_admin?
+  end
+
   # def gen_uuid
   #   self.uuid = SecureRandom.uuid
   # end
