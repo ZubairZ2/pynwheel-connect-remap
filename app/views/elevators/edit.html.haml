@@ -136,7 +136,7 @@
           ADD FILES
           %input#elevator-gallery-images{:multiple => "multiple", :type => "file"}/
         .mt-10
-          - if @community.is_sitemap && (current_user.is_super_admin? || current_user.is_community_admin? )
+          - if @community.is_sitemap && current_user.is_admin?
             = link_to "PLOT ELEVATORS", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn"
         .divLoading.hidden
         #images-index1

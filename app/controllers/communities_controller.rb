@@ -18,8 +18,10 @@ class CommunitiesController < ApplicationController
     end
     if current_user.is_super_admin?
       @communities = alphabetical_sort(current_company.communities)
-    elsif current_user.is_dwelo_admin?
+    elsif current_user.is_dwelo_admin? || current_user.is_company_admin?
       @communities = alphabetical_sort(current_company.communities) # Community.all.where(creator_id: User.all.map{|u| u.id if u.role == "Dwelo admin"}.compact)
+    elsif current_user.is_regional_admin?
+      @communities = alphabetical_sort(current_user.region.communities)
     else
       @communities = alphabetical_sort(current_user.communities)
     end
