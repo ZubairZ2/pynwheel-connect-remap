@@ -93,7 +93,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def list_communities
-    @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company)
+    @communities = Community.where(touchscreen_app: true).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company)
   end
 
   def portico_list_communities
@@ -381,6 +381,23 @@ class Api::V1::CommunitiesController < ActionController::Base
       
       # @tours = VisitedStop.where(tour_user_id: @tour_user.id,@community.tour.id,tour_key: last_vs.tour_key)
       # @tours = @tours.map{|h| h}[-4..-1].to_h
+    end
+  end
+  def tour_user_data
+    data = Hash.new
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      @community = Community.find_by_id params[:id]
+      @tour_user = TourUser.find_by_id params[:tour_user_id]
+      if @community.present? and @tour_user.present?
+        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @community.tour.id)
+        data = {visited_history: @visited_history, tour_user: @tour_user}
+        render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
+      else
+        render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
+      end
+    else
+      render :json=> {data: data, :status=>false, :message => "Invalid Token", code: 401}
     end
   end
 
