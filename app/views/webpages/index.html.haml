@@ -302,12 +302,13 @@
                           Available
                         %b
                           %span#available-date
-                      %li#unit-lease-pricing-text-li
-                        %span#unit-lease-pricing-text
-                          %b
-                            Pricing Options
-                          %br
-                          %span#unit-lease-pricing
+                      - if @community.display_rent
+                        %li#unit-lease-pricing-text-li
+                          %span#unit-lease-pricing-text
+                            %b
+                              Pricing Options
+                            %br
+                            %span#unit-lease-pricing
                       %li#unit-description-text-li
                         %span#unit-description-text
                           %b
@@ -318,7 +319,8 @@
                       %li.unit-buttons
 
                     .price-details
-                      .price-count.pull-left#market-rent
+                      - if @community.display_rent
+                        .price-count.pull-left#market-rent
 
                       .available-now
                         %p#availability
@@ -369,7 +371,8 @@
       %small#hover-available-text Available
       %b#popover-available-date
     %p
-      %b#popover-price
+      - if @community.display_rent
+        %b#popover-price
 
 :javascript
   $(window).on('resize', function() {
