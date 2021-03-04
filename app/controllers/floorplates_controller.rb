@@ -1,7 +1,7 @@
 class FloorplatesController < ApplicationController
   add_breadcrumb "Home", :root_path
-  before_action :check_community
   before_action :authenticate_user!
+  before_action :check_community
   before_action :set_floorplate, only: [:edit,:update,:destroy]
   skip_before_action :load_tour_users_chats, only: [:floatplate_images]
   

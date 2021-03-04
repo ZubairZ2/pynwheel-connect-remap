@@ -28,6 +28,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
           if !@tour.visual_id_verification
             tu.id_selfie_mismatch = false
           end
+          tour_history.verified_by = tu.verified_by
           tour_history.desired_bedroom = tu.desired_bedroom
           tour_history.latitude = tu.latitude
           tour_history.longitude = tu.longitude

@@ -3,6 +3,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   include DweloDevicesHelper
   before_action :set_community, only: :email_favorites
   include ApplicationHelper
+  include ToursHelper
   require 'securerandom'
   @@counter = 0
   # $deleted_ids = []
@@ -98,6 +99,8 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def portico_list_communities
     puts params
+    @allow_usage, @redirect_url = get_version_access params
+    
     unless params[:access_token].present?
       begin
         secure_random = SecureRandom.hex
@@ -135,13 +138,14 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   
   def lincoln_list_communities
+    @allow_usage, @redirect_url = get_version_access params 
     if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
       company = Company.where('lower(name) = ?', 'lincoln')
       @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
     else
       company = Company.where('lower(name) = ?', 'lincoln')
       @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
-    end
+      end
   end
 
   def community_tours
@@ -157,6 +161,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community.deleted_ids = []
       @tour_user.tour_key = @random_string
       @community.save
+      @tour_user.verified_by = params[:verified_by_provider]
       @tour_user.save
       
       unless @tour_user.email == "Removed at Consumer Request"
