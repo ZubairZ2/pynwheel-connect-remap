@@ -89,7 +89,7 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Access Code
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control building_starting_point_edit_field", :placeholder=>"Access Code"
+                  = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control building_starting_point_edit_field", :placeholder=>"Access Code",:maxlength => "6"
 
               .form-group#lock_access_code.hide_it
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -116,6 +116,8 @@
     // provide locks on change 
     $('#building_starting_point_lock_provider').change(function(){
       update_locks_select_and_lock_code_field();
+      if ($('#building_starting_point_lock_provider').val().length == 0)
+        $('.save-building-starting-point-form').submit();
     });
 
     function update_locks_select_and_lock_code_field(){
@@ -131,68 +133,76 @@
         locks_list = "#locks_list"
         param_name = "lock_id"
         // assign values
-        $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this amenity</span>")
+        $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this building starting point</span>")
         $('#lock_input').val( $(lock_input_value).val() )
         $('datalist#locks_list').html($(options).html())
         $('#lock_access_code').removeClass('hide_it') 
       }
-      else
+      else if ($('#building_starting_point_lock_provider').val().length > 0)
       {
         $('#lock_access_code').addClass('hide_it')
         $('#manual_access_code').removeClass('hide_it')
         locks_input = undefined
       }
-    }
-  });
-  
-  $('.building_starting_point_edit_field').change(function(){
-    var one_time_run = false
-    in_change = true
-
-    $('#on_done').click(function(e){
-      if (locks_input){
-        one_time_run = true
-        setTimeout(function(){
-          var lock = $(locks_input)[0];
-          if(lock.checkValidity() == true){
-            lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-            input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-            $("#" + lock.id).closest('form').append(input)
-            $('.save-building-starting-point-form').submit(function() {
-              $(this).append('<input type="hidden" name="done_action" value="true">');
-            });
-          }
-          else{ lock.reportValidity(); }
-        }, 300);
+      else
+      {
+        $('#lock_access_code').addClass('hide_it')
+        $('#manual_access_code').addClass('hide_it')
       }
-    })
+    }
+    $('.building_starting_point_edit_field').change(function(){
+      var one_time_run = false
+      in_change = true
+      $('#on_done').click(function(e){
+       if (locks_input){
+          one_time_run = true
+          setTimeout(function(){
+            var lock = $(locks_input)[0];
+            if(typeof lock !== 'undefined'){
 
-    if(one_time_run == false){
-      setTimeout(function(){
-        if (locks_input){
-          var lock = $(locks_input)[0];
-          if(lock.value == "")
-            lock.setCustomValidity('')
-
-          if(lock.checkValidity() == true){
-            lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-            input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-            $("#" + lock.id).closest('form').append(input)
-            $('.save-building-starting-point-form').submit();
+              if(lock.checkValidity() == true){
+                lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+                input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+                $("#" + lock.id).closest('form').append(input)
+                $('.save-building-starting-point-form').submit()
+              }
+              else{ lock.reportValidity(); }
+            }
+          else{
+            $('.save-building-starting-point-form').submit()
           }
-          else{ lock.reportValidity(); }
+        }, 300);
         }
         else
-          $('.save-building-starting-point-form').submit();
+          $('.save-building-starting-point-form').submit()
+      })
+      
+    });
 
-      }, 300);
-    }
+    $('#on_done').click(function(e){
+        if (locks_input){
+          setTimeout(function(){
+            var lock = $(locks_input)[0];
+            if(typeof lock !== 'undefined'){
+
+              if(lock.checkValidity() == true){
+                lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+                input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+                $("#" + lock.id).closest('form').append(input)
+                $('.save-building-starting-point-form').append('<input type="hidden" name="done_action" value="true">');
+                $('.save-building-starting-point-form').submit();
+              }
+              else{ lock.reportValidity(); }
+            }
+          else{
+            $('.save-building-starting-point-form').submit()
+          }
+        }, 300);
+        }
+        else
+          $('.save-building-starting-point-form').submit()
+    })
   });
-
-  $('#on_done').click(function(e){
-    setTimeout(function(){
-      if(in_change == false){ window.location.replace("#{session[:go_back]}");} }, 300)
-  })
   if (locks_input){
     var inputs = document.querySelectorAll('input[list]');
     for (var i = 0; i < inputs.length; i++) {

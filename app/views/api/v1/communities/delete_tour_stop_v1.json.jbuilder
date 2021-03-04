@@ -9,6 +9,8 @@ def check_unit_occupied add_stop
 end
 i = 0
 description_limit = 70
+is_zerv_lock_present = false
+
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
 styling_end = '</p></div>'
 json.tours @tours do |tour|
@@ -27,39 +29,6 @@ json.tours @tours do |tour|
   json.longitude tour.longitude
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
-  json.tour_setting do
-    
-    json.last_message_id @chat_count
-
-    json.locks_provider (@community.enable_locks and @community.locks_provider.present?) ? @community.locks_provider : ''
-    if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
-      if @community.locks_provider == "EdgeState"
-        json.starting_point_locked tour.remote_locks.where(dwelo_id: nil).present? ? true : false
-      elsif @community.locks_provider == "Dwelo"
-        json.starting_point_locked tour.remote_locks.where.not(dwelo_id: nil).present? ? true : false
-      elsif  @community.locks_provider == "Latch"
-        json.starting_point_locked tour.latch_locks.present? ? (@tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: tour.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active").present?) : false
-      else
-        json.starting_point_locked false
-      end
-    else
-      json.starting_point_locked false
-    end
- 
-    json.authenticate_zerv @community.zerv&.zerv_locks.present?
-    json.tour_start_point_lock_type @tour_user.tour_type != "virtual_tour" ? @tours.first.lock_provider : ""
-
-    json.current_position_marker_icon tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "19x25" : (tour.marker_icon_size == "1" ? "17x23" : (tour.marker_icon_size == "2" ? "15x21" : (tour.marker_icon_size == "3" ? "13x19" : (tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
-    json.next_position_marker_icon  tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "35x35" : (tour.marker_icon_size == "1" ? "33x33" : (tour.marker_icon_size == "2" ? "31x31" : (tour.marker_icon_size == "3" ? "29x29" : (tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
-    json.show_camera_button (@tour_user.tour_type != "virtual_tour") ? @community.show_camera_button : false
-    json.dotted_line_color @community.tour.dotted_line_color rescue "green"
-    json.visual_id_verification (@tour_user.tour_type != "virtual_tour") ? tour.visual_id_verification : false
-    json.apply_now_self_tour @community.apply_now_self_tour.present? ? @community.apply_now_self_tour : false
-    json.chat_control (@community.chat_control and @community.is_chat_available) ? @community.chat_control : false
-    json.enable_auto_zoom (@community.tour.present?) ? @community.tour.enable_auto_zoom : false
-    json.show_map @community.show_map
-    json.mdu @community.mdu
-  end
   plates_name = {}
 
   current_floor = nil
@@ -625,12 +594,14 @@ json.tours @tours do |tour|
           if zrv.present?
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: "Tour", guest_of_stop_id: stop.id, status: "active")
             if zrv_guest.present?
+              is_zerv_lock_present = true
               json.guest_pin 'Your tour has started. Make sure your phone is in close proximity to the door. Enjoy your tour!'
               json.latch_link ''
               json.unit_dwelo_lock_id ''
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
+                is_zerv_lock_present = true
                 json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["error_position"]
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
@@ -759,12 +730,14 @@ json.tours @tours do |tour|
           if zrv.present?
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: stop.stop_type.camelcase, guest_of_stop_id: stop.stop_id, status: "active")
             if zrv_guest.present?
+              is_zerv_lock_present = true
               json.guest_pin 'Take your mobile near the lock to unlock the next door'
               json.latch_link ''
               json.unit_dwelo_lock_id ''
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
+                is_zerv_lock_present = true
                 json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["error_position"]
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
@@ -1298,5 +1271,40 @@ json.tours @tours do |tour|
     i+=1
     counter += 1
   end
+
+  json.tour_setting do
+
+    json.last_message_id @chat_count
+
+    json.locks_provider (@community.enable_locks and @community.locks_provider.present?) ? @community.locks_provider : ''
+    if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
+      if @community.locks_provider == "EdgeState"
+        json.starting_point_locked tour.remote_locks.where(dwelo_id: nil).present? ? true : false
+      elsif @community.locks_provider == "Dwelo"
+        json.starting_point_locked tour.remote_locks.where.not(dwelo_id: nil).present? ? true : false
+      elsif  @community.locks_provider == "Latch"
+        json.starting_point_locked tour.latch_locks.present? ? (@tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: tour.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active").present?) : false
+      else
+        json.starting_point_locked false
+      end
+    else
+      json.starting_point_locked false
+    end
+    
+    json.authenticate_zerv is_zerv_lock_present
+    json.tour_start_point_lock_type (@tour_user.tour_type != "virtual_tour" &&  @community.enable_locks)  ? @tours.first.lock_provider : ""
+
+    json.current_position_marker_icon tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "19x25" : (tour.marker_icon_size == "1" ? "17x23" : (tour.marker_icon_size == "2" ? "15x21" : (tour.marker_icon_size == "3" ? "13x19" : (tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
+    json.next_position_marker_icon  tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "35x35" : (tour.marker_icon_size == "1" ? "33x33" : (tour.marker_icon_size == "2" ? "31x31" : (tour.marker_icon_size == "3" ? "29x29" : (tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
+    json.show_camera_button (@tour_user.tour_type != "virtual_tour") ? @community.show_camera_button : false
+    json.dotted_line_color @community.tour.dotted_line_color rescue "green"
+    json.visual_id_verification (@tour_user.tour_type != "virtual_tour") ? tour.visual_id_verification : false
+    json.apply_now_self_tour @community.apply_now_self_tour.present? ? @community.apply_now_self_tour : false
+    json.chat_control (@community.chat_control and @community.is_chat_available) ? @community.chat_control : false
+    json.enable_auto_zoom (@community.tour.present?) ? @community.tour.enable_auto_zoom : false
+    json.show_map @community.show_map
+    json.mdu @community.mdu
+  end
+
 
 end

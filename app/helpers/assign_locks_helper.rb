@@ -59,10 +59,10 @@ module AssignLocksHelper
 
     def all_locks(community_id)
         community = Community.where(id: community_id).includes({edge_state: [:remote_locks]}, {dwelo: [:remote_locks]}, {latch: [:latch_locks]}, {zerv: [:zerv_locks]}).first
-        edge_state_locks =  community.edge_state.present? ? community.edge_state.remote_locks.sort_by { |l| l.id}.collect{ |l| {name: (l.name + " (" + l.remote_lock_type + ")"), id: (l.device_id)} } : []
-        dwelo_locks      =  community.dwelo.present?      ? community.dwelo.remote_locks.sort_by      { |l| l.id}.collect{ |l| {name: (l.name + " (" + l.remote_lock_type + ")"), id: (l.device_id)} } : []
-        latch_locks      =  community.latch.present?      ? community.latch.latch_locks.sort_by       { |l| l.id}.collect{ |l| {name:  l.lock_name, id: l.door_uuid} } : []
-        zerv_locks       =  community.zerv.present?       ? community.zerv.zerv_locks.sort_by         { |l| l.id}.collect{ |l| {name: (l.sub_location_name + " (" + l.sub_location_friendly_name + ")"), id: (l.mac_id)} } : []
+        edge_state_locks =  community.edge_state.present? ? community.edge_state.remote_locks.sort_by { |l| l.id}.collect{ |l| {name: (l.name + " (" + l.remote_lock_type + ")"), id: (l.device_id), stop_id: (l.stop_id) } } : []
+        dwelo_locks      =  community.dwelo.present?      ? community.dwelo.remote_locks.sort_by      { |l| l.id}.collect{ |l| {name: (l.name + " (" + l.remote_lock_type + ")"), id: (l.device_id), stop_id: (l.stop_id) } } : []
+        latch_locks      =  community.latch.present?      ? community.latch.latch_locks.sort_by       { |l| l.id}.collect{ |l| {name:  l.lock_name, id: l.door_uuid, stop_id: (l.stop_id) } } : []
+        zerv_locks       =  community.zerv.present?       ? community.zerv.zerv_locks.sort_by         { |l| l.id}.collect{ |l| {name: (l.sub_location_name + " (" + l.sub_location_friendly_name + ")"), id: (l.mac_id), stop_id: (l.stop_id) } } : []
         return {edgestate_locks: edge_state_locks, dwelo_locks: dwelo_locks, latch_locks: latch_locks, zerv_locks: zerv_locks}
     end
 

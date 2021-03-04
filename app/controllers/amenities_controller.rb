@@ -62,10 +62,7 @@ class AmenitiesController < ApplicationController
   def update
     @amenity = Amenity.find(params[:id]) 
     if @amenity.update_attributes(amenity_params)
-      if @community.enable_locks
-        lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
-        assign_lock(@community, @amenity, lock_id) unless lock_id.nil?
-      end
+      update_enable_locks()
       begin
         ts = TourStop.find_by(stop_id: @amenity.id)
         if ts.present? && params[:amenity][:name].present?
@@ -130,6 +127,18 @@ class AmenitiesController < ApplicationController
 
   def amenity_params
     params.require(:amenity).permit!
+  end
+
+  def update_enable_locks()
+    if @community.enable_locks
+        lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+        assign_lock(@community, @amenity, lock_id) unless lock_id.nil?
+        if params[:amenity][:lock_provider] == "Manual"
+          @amenity.update_column(:lock_provider, "") if params[:amenity][:access_code] == ""
+        else
+          @amenity.update_column(:lock_provider, "") if lock_id.nil? or params[:lock_id] == ""
+        end
+      end 
   end
 
 end

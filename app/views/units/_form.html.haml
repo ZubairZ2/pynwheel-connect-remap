@@ -130,7 +130,7 @@
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Access Code
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control", :placeholder=>"Access Code"
+      = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
 
   .form-group#lock_access_code.hide_it
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -281,16 +281,21 @@
         options = '.' + lock_provider_type + "_options"
         locks_input = "#lock_input"
         // assign values
-        $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this amenity</span>")
+        $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this unit</span>")
         $('#lock_input').val( $(lock_input_value).val() )
         $('datalist#locks_list').html($(options).html())
         $('#lock_access_code').removeClass('hide_it') 
       }
-      else{
+      else if ($('#unit_lock_provider').val().length > 0){
         $('#lock_access_code').addClass('hide_it')
         $('#manual_access_code').removeClass('hide_it')
         locks_input = undefined
       }  
+      else
+      {
+        $('#lock_access_code').addClass('hide_it')
+        $('#manual_access_code').addClass('hide_it')
+      }
     }
 
     $('.lock_provider_input').change(function(){

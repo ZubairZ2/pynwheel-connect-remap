@@ -665,7 +665,7 @@ class Community < ApplicationRecord
   end
 
   def lock_options(locks_present_hash)
-    options = [["Manual", "Manual"]]
+    options = [["Select an option",""],["Manual", "Manual"]]
     locks_present_hash.each do |key,value|
       if value
         options << (key == "Zerv" ? ["Pynwheel Access (zerv)", key] : [key, key])

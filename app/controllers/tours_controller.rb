@@ -341,10 +341,7 @@ class ToursController < ApplicationController
       redirect_to starting_point_community_tours_path(@community)
     else
       if @tours.save
-        if @community.enable_locks
-          lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
-          assign_lock(@community, @tours, lock_id) unless lock_id.nil?
-        end
+        update_enable_locks()
         flash[:notice] = "Tour settings updated successfully."
         redirect_to starting_point_community_tours_path(@community)
       else
@@ -752,5 +749,19 @@ class ToursController < ApplicationController
     end
 
     render json: {match_status: tour_user.id_selfie_mismatch ||= nil, message: message, status: status }
+  end
+
+  private
+
+  def update_enable_locks()
+    if @community.enable_locks
+        lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+        assign_lock(@community, @tours, lock_id) unless lock_id.nil?
+        if params[:lock_provider] == "Manual"
+          @tours.update_column(:lock_provider, "") if params[:access_code] == ""
+        else
+          @tours.update_column(:lock_provider, "") if lock_id.nil? or params[:lock_id] == ""
+        end
+    end 
   end
 end

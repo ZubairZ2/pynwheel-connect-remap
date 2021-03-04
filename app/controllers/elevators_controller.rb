@@ -63,10 +63,7 @@ class ElevatorsController < ApplicationController
   def update
     respond_to do |format|
       if @elevator.update(elevator_params)
-        if @community.enable_locks
-          lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
-          assign_lock(@community, @elevator, lock_id) unless lock_id.nil?
-        end
+        update_enable_locks()
         ts = TourStop.find_by(stop_type: "elevator", stop_id: @elevator.id)
         if ts.present?
           ts.update_attributes(name: @elevator.name)
@@ -127,4 +124,16 @@ class ElevatorsController < ApplicationController
     def elevator_params
       params.require(:elevator).permit(:name, :description, :x_plot, :y_plot, :directional_text, :floorplate_id, :community_id, :image, :floorplate_covering_range,:building,:access_code, :lock_provider)
     end
+    def update_enable_locks()
+      if @community.enable_locks
+          lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+          assign_lock(@community, @elevator, lock_id) unless lock_id.nil?
+          if params[:elevator][:lock_provider] == "Manual"
+            @elevator.update_column(:lock_provider, "") if params[:elevator][:access_code] == ""
+          else
+            @elevator.update_column(:lock_provider, "") if lock_id.nil? or params[:lock_id] == ""
+          end
+      end 
+    end
+
 end

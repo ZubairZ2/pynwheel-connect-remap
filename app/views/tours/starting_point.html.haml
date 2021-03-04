@@ -91,8 +91,9 @@
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                       Access Code
                     .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                      = text_field_tag :access_code,@tours.access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control save-starting-point-field", :placeholder=>"Access Code"
-
+                      = text_field_tag :access_code,@tours.access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control save-starting-point-field", :placeholder=>"Access Code",:maxLength => "6"
+                      .alert.alert-warning-custom.locks_blank_error{style: "display: none"}
+                        please add a lock code.
                   .form-group#lock_access_code.hide_it
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                     
@@ -223,6 +224,8 @@
             .col-md-12.col-lg-12
               %button.btn-primary.done_btn.mb-20{:onclick => "starting_point_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
+              %button.btn-default.done_btn.mb-20{:onclick => "goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                Cancel
 :javascript
   var floor = null;
   var locks_input, locks_list, param_name;
@@ -232,6 +235,8 @@
   // provide locks on change 
   $('#lock_provider').change(function(){
     update_locks_select_and_lock_code_field();
+    if ($('#lock_provider').val().length == 0)
+      $('.save-starting-point-form').submit();
   });
 
   function update_locks_select_and_lock_code_field(){
@@ -246,16 +251,21 @@
       locks_list = "#locks_list"
       param_name = "lock_id"
       // assign values
-      $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this amenity</span>")
+      $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this starting point</span>")
       $('#lock_input').val( $(lock_input_value).val() )
       $('datalist#locks_list').html($(options).html())
       $('#lock_access_code').removeClass('hide_it') 
     }
-    else
+    else if ($('#lock_provider').val().length > 0)
     {
       $('#lock_access_code').addClass('hide_it')
       $('#manual_access_code').removeClass('hide_it')
       locks_input = undefined
+    }
+    else
+    {
+      $('#lock_access_code').addClass('hide_it')
+      $('#manual_access_code').addClass('hide_it')
     }
   }
 
@@ -281,14 +291,30 @@
 
   function starting_point_goBack()
   {
-     if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.location.href = '/communities/#{@community.id}/tours';
-     }
+    if ($('#lock_provider').val().length > 0 && locks_input && $(locks_input).val().length > 0){
+      if (locks_input){
+          var lock = $(locks_input)[0];
+          if(typeof lock !== 'undefined'){
+            if(lock.value == "")
+                lock.setCustomValidity('')
+
+            if(lock.checkValidity() == true){
+              lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+              input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+              $("#" + lock.id).closest('form').append(input)
+              $('.save-starting-point-form').submit(); 
+            }
+            else{ lock.reportValidity(); }
+          }
+          else
+            $('.save-starting-point-form').submit(); 
+      }
+      else
+        $('.save-starting-point-form').submit();
+    }  
+  }
+  function goBack(){
+    window.location.href = '/communities/#{@community.id}/tours';
   }
   if (#{@tours.x_plot.to_i + @tours.y_plot.to_i == 0})
   {

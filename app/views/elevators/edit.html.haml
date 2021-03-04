@@ -95,7 +95,7 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Access Code
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/, '')", :class=>"form-control elevator_edit_field", :placeholder=>"Access Code"
+                  = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control elevator_edit_field", :placeholder=>"Access Code",:maxLength => "6"
 
               .form-group#lock_access_code.hide_it
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -104,7 +104,7 @@
                   = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control elevator_edit_field"
                   %datalist#locks_list
 
-            = submit_tag 'Save', class: "hidden"
+              
 
     %span.btn.btn-primary.btn-file
       %i.fa.fa-upload
@@ -148,17 +148,33 @@
         .col-lg-10
           .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
             .col-lg-12.col-md-12
-              %a.btn-primary.mb-20.done_btn{:href => "#{params[:floorNo].nil? ? community_tours_path(current_community) : community_tours_path(current_community) << '?floorNo=' + params[:floorNo]}",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+              %a.btn-primary.mb-20.done_btn{:href => "javascript:void(0)",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 #edit-gallery-image.modal.fade.edit-gallery-image
 :javascript
   var locks_input, locks_list, param_name;
   $(document).ready(function(){
+    $('#elevator_lock_provider').change(function(){
+        $('.done_btn').click(function(){
+          if ($('#elevator_lock_provider').val() == "Manual" && $("#elevator_access_code").val().length > 0)
+            $('.edit_elevator').submit();
+          else
+          {
+            if (#{params[:floorNo].nil?})
+              window.location.href = "/communities/#{@community.id}/tours";
+            else
+              window.location.href = "/communities/#{@community.id}/tours?floorNo=#{params[:floorNo]}";
+            //window.location.reload()
+          }
+        });
+    });
     // run it on ready 
     update_locks_select_and_lock_code_field()
     // provide locks on change 
     $('#elevator_lock_provider').change(function(){
       update_locks_select_and_lock_code_field();
+      if ($('#elevator_lock_provider').val().length == 0)
+        $('.edit_elevator').submit();
     });
     function update_locks_select_and_lock_code_field(){
       // if any lock selected selected
@@ -173,16 +189,20 @@
         locks_list = "#locks_list"
         param_name = "lock_id"
         // assign values
-        $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this amenity</span>")
+        $('#lock_access_code').find('label').html(lock_provider_type + " Lock <span>Assign the lock to this elevator</span>")
         $('#lock_input').val( $(lock_input_value).val() )
         $('datalist#locks_list').html($(options).html())
         $('#lock_access_code').removeClass('hide_it') 
       }
-      else
+      else if ($('#elevator_lock_provider').val().length > 0)
       {
         $('#lock_access_code').addClass('hide_it')
         $('#manual_access_code').removeClass('hide_it')
         locks_input = undefined
+      }
+      else{
+        $('#lock_access_code').addClass('hide_it')
+        $('#manual_access_code').addClass('hide_it')
       }
     }
   });

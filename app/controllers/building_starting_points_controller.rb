@@ -14,10 +14,7 @@ class BuildingStartingPointsController < ApplicationController
     @building_starting_point = BuildingStartingPoint.find params[:id]
     respond_to do |format|
       if @building_starting_point.update(building_starting_point_params)
-        if @community.enable_locks
-          lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
-          assign_lock(@community, @building_starting_point, lock_id) unless lock_id.nil?
-        end
+        update_enable_locks()
         ts = TourStop.find_by(stop_type: "building_starting_point", stop_id: @building_starting_point.id)
         if ts.present?
           ts.update_attributes(name: @building_starting_point.name)
@@ -57,5 +54,18 @@ class BuildingStartingPointsController < ApplicationController
 
   def previous_url
     session[:go_back] = request.referer if request.referer != request.url
+  end
+
+  private
+  def update_enable_locks()
+    if @community.enable_locks
+        lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+        assign_lock(@community, @building_starting_point, lock_id) unless lock_id.nil?
+        if params[:building_starting_point][:lock_provider] == "Manual"
+          @building_starting_point.update_column(:lock_provider, "") if params[:building_starting_point][:access_code] == ""
+        else
+          @building_starting_point.update_column(:lock_provider, "") if lock_id.nil? or params[:lock_id] == ""
+        end
+    end 
   end
 end
