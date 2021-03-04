@@ -156,12 +156,9 @@
         $('#manual_access_code').addClass('hide_it')
       }
     }
+  
     $('.building_starting_point_edit_field').change(function(){
-      var one_time_run = false
-      in_change = true
-      $('#on_done').click(function(e){
        if (locks_input){
-          one_time_run = true
           setTimeout(function(){
             var lock = $(locks_input)[0];
             if(typeof lock !== 'undefined'){
@@ -181,7 +178,6 @@
         }
         else
           $('.save-building-starting-point-form').submit()
-      })
       
     });
 
@@ -224,7 +220,7 @@
         if (optionFound) {
           this.setCustomValidity('');
         } else {
-          if ( $(locks_input).val() != "" )
+          if ( typeof locks_input !== 'undefined' && $(locks_input).val() != "" )
               this.setCustomValidity('Lock does not exist');
         }
       });
