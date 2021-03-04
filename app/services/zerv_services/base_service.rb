@@ -64,7 +64,7 @@ module ZervServices
                 timezone = tz.time_zone_name(community.zip)
             end
 
-            return timezone
+            return timezone.present? ? timezone : "UTC"
         rescue
             return "UTC"
         end
