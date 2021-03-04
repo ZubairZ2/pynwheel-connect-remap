@@ -275,7 +275,7 @@ class Community < ApplicationRecord
 
   end
   def use_crm_credentials?
-    if self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
+    if self.credential.present? &&self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
       (true)
     else
       (false)

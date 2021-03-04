@@ -2,7 +2,9 @@ json.success true
 json.message "success"
 json.data @units do |u|
         json.id u.id
-        if u.provider == "resman"
+        if @community.credential.present? and @community.credential.apply_now == "separate_link"
+            json.availability_url @community.credential.separate_link
+        elsif u.provider == "resman"
                 begin
                       j = u.availability_url.split('/')
 
@@ -15,6 +17,9 @@ json.data @units do |u|
             json.availability_url u.availability_url_deep_linking.present? ? u.availability_url_deep_linking : u.availability_url
         else
                 json.availability_url u.availability_url.present? ? u.availability_url : ""
+        end
+        if @community.credential.present? and @community.credential.apply_now.to_s == "separate_link"
+            json.availability_url @community.credential.separate_link
         end
         json.community_id u.community_id
         json.provider u.provider
@@ -52,7 +57,7 @@ json.data @units do |u|
         json.bedrooms u.floorplan.bedrooms rescue 0
         json.bathrooms u.floorplan.bathrooms rescue 0
         json.image (u.image.present? ? u.image.url : u.floorplan.image.url) rescue ""
-        json.update_apply (u.provider == "resman" || u.provider == "psi") ? true : false
+        json.update_apply ((u.provider == "resman" || u.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
         
         lease_pricing = []
         begin
