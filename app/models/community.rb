@@ -696,6 +696,16 @@ class Community < ApplicationRecord
     filtered_stops
   end
   
+  def lock_options(locks_present_hash)
+    options = [["Select an option",""],["Manual", "Manual"]]
+    locks_present_hash.each do |key,value|
+      if value
+        options << (key == "Zerv" ? ["Pynwheel Access", key] : [key, key])
+      end
+    end
+    options
+  end
+
   private
 
   def populate_favorites(items_objs,email_to)

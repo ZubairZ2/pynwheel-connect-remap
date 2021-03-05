@@ -1,0 +1,34 @@
+- content_for :title, "Save Latch - Pynwheel", class: "latch hide_latch"
+.box.box-info.add-plan
+  .box-header
+    %h3.box-title
+      Create
+      %span Latch Account
+  = form_for :latch, :url=>community_latch_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal",  multipart: true} do |f|
+    .box-body
+      .row
+        .col-lg-9.col-lg-offset-1
+          .form-group
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              Client ID
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=> @community.latch.present? ? @community.latch.client_id : ""
+          .form-group
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              Client Secret
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> @community.latch.present? ? @community.latch.client_secret : ""
+          .form-group
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              Upload CSV File
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = file_field_tag 'file'
+            = f.hidden_field :community_id, :value=> current_community.id
+    / /.box-body
+    .box-footer
+      - if current_community.latch.present?
+        = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
+      - else
+        = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
+      - if @community.latch.present?
+        = link_to "Delete all Existing Locks" , remove_latch_locks_community_latch_accounts_path(current_community) , :class=>"btn btn-danger", :method => :delete, :style=> "background-color: #dd4b39d4;"
