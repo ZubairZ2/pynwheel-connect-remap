@@ -25,6 +25,8 @@ Rails.application.routes.draw do
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
   
   get 'tours/index'
+  post 'tours/customize_tour', to: 'tours#customize_tour' 
+  delete 'tours/reset_to_standard_tour', to: 'tours#reset_to_standard_tour'
 
   namespace :scheduler_widget do
     get 'widget', to: 'widgets#widget'

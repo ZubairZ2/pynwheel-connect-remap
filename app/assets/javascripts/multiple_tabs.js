@@ -4,7 +4,6 @@ var isFirefox = typeof InstallTrigger !== 'undefined';
 
 
 window.addEventListener('load', function () {           // after page is fully loaded
-    debugger
     current_user_id = $( "body" ).data( "user-id" )
     current_user_role = $( "body" ).data( "user-role" )
     allowed_roles = ["Super admin", "Community admin", "Dwelo admin", "Community manager"]
@@ -28,7 +27,7 @@ window.addEventListener('load', function () {           // after page is fully l
 })
 
 window.addEventListener('beforeunload', function () {
-    debugger
+
     if (allowed_roles.includes(current_user_role) && current_user_id != "undefined" && $("#widget-button").length == 1){
         if(window.localStorage.getItem('tabs_count') > 0)
             window.localStorage.setItem('tabs_count', (parseInt(window.localStorage.getItem('tabs_count')) - 1))
@@ -53,7 +52,6 @@ window.addEventListener('beforeunload', function () {
 window.addEventListener('storage', storageChange)
 
 function storageChange (event) {
-    debugger
     console.log("total tabs are ", event.newValue)
 }
 
@@ -63,7 +61,6 @@ function chat_service_available(){
 
 
 function chat_service_not_available(){
-    debugger
     $.ajax({ type: 'POST', cache: false, url: '/users/' + current_user_id + '/turn_off_chat' })
 }
 

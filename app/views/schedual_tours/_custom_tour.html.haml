@@ -1,0 +1,36 @@
+%a.btn.btn-success.custom-tour-btn{"data-target" => "#customTourModal#{tour.id}", "data-toggle" => "modal", :href => "#"}
+  %i.fa.fa-edit.icon_size
+
+.modal.fade{:id => "customTourModal#{tour.id}", :class => "customTourModal", "aria-hidden" => "true", "aria-labelledby" => "customTourModal#{tour_user.id}", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog.modal-md
+    .modal-content
+      .modal-header
+        %h4#myModalLabel.modal-title 
+          %strong Manage Scheduled Tour
+        %button.close.close-modal-btn{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"} ×
+      .modal-body
+        %strong Tour Date & Time:
+        = scheduled_tour_date_time(tour)
+        %br
+        %strong Visitor Name: 
+        = tour_user_name(tour_user)
+        %br
+        %strong Visitor Email:
+        = tour_user.email
+        %br
+        %strong Visitor Phone:
+        = tour_user.phone_number
+        %br
+
+        %alert.alert-info.set-standard-tour
+          %span Your customized tour is removed and set to community standard tour
+
+      .modal-footer
+        - if is_tour_in_future(tour)
+          %a.btn.btn-success{:href => reschedule_tour(tour, community, community_code)} Reschedule Tour
+          %a.btn.btn-primary{"data-target" => "#customizeStopsModal#{tour.id}", "data-toggle" => "modal", :href => "#"} Customize Tour
+        - if is_tour_customized(community.id, tour_user.id)
+          %button.btn.btn-warning{:type => "button", :onclick => "resetToStandardTour(#{community.id}, #{tour_user.id})"} Reset to Standard Tour
+
+= render :partial => 'customize_tour_stops', :locals => {tour_user: tour_user, tour: tour, community: community, community_code: community_code}

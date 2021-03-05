@@ -27,8 +27,20 @@ class TourStop < ApplicationRecord
 
   has_one :path, as: :map_path
   has_many :path_points, through: :paths
+  
+  after_destroy :remove_associated_stops
 
   def path_data
   	self.stop_type.classify.constantize.path_data
+  end
+
+  def remove_associated_stops
+    user_customized_tours = UserCustomizedTour.where(community_id: self.tour.community_id)
+    user_customized_tours.each do |uct|
+      if uct.tour.present?
+        stop = uct.tour.tour_stops.where(stop_id: self.stop_id)
+        stop.destroy_all
+      end
+    end
   end
 end

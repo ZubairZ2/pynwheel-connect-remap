@@ -146,5 +146,4 @@ module CommunitiesHelper
     File.read(temp_file.path)
 	end
 
-
 end

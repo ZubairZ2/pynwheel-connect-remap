@@ -425,20 +425,25 @@ class ToursController < ApplicationController
       stName = st.marketing_name
     end
     ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: current_community.tour.id,name: stName)
+    add_associated_stops(ts, current_community.id)
     PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{current_community.id}'")
+    
     render json: {tour: ts,community: @community}, status: 200
-    # end
-    # tour_stop = Tour.find params[:tour_stop_id]
-    # if tour.present?
-    #   #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
-    #   tour.x_plot = params[:x_plot]
-    #   tour.y_plot = params[:y_plot]
-    #   tour.save(validate: false)
-    #   render json: {tour: tour}, status: 200
-    # else
-    #   render json: {}, status: 404
-    # end
   end
+
+  def add_associated_stops(ts, community_id)
+    user_customized_tours = UserCustomizedTour.where(community_id: community_id)
+
+    user_customized_tours.each do |uct|
+      if uct.tour.present?
+        stop = ts.dup
+        stop.tour_id = uct.tour.id
+        stop.display_stop = false
+        stop.save!
+      end
+    end
+  end
+
   def edit_amenity
     @community = Community.find params[:community_id]
     @amenity = Amenity.find params[:format]
@@ -749,6 +754,27 @@ class ToursController < ApplicationController
     end
 
     render json: {match_status: tour_user.id_selfie_mismatch ||= nil, message: message, status: status }
+  end
+
+  def customize_tour
+    community = Community.find_by_id params[:community_id] if params[:community_id].present?
+    user_customized_tour = community.user_customized_tours.find_by(tour_user_id: params[:tour_user_id], community_id: params[:community_id]) if community.user_customized_tours.present? && params[:community_id].present? && params[:tour_user_id].present?
+    
+    unless user_customized_tour.present? && user_customized_tour.tour.present?
+      customized_tour = duplicate_tour(community.tour) if community.present? && community.tour.present?
+      user_customized_tour = create_customized_tour(customized_tour, params) if customized_tour.present?
+    end
+    
+    update_tour_visibility(user_customized_tour, params) if user_customized_tour.present?
+
+    render json: {status: 200, message: "Record updated successfully" }
+  end
+
+  def reset_to_standard_tour
+    user_customized_tour = UserCustomizedTour.find_by(community_id: params[:community_id], tour_user_id: params[:tour_user_id])
+    remove_user_customized_tour user_customized_tour if user_customized_tour.present?
+
+    render json: {status: 200, message: "Tour is set to the standard community tour" }
   end
 
   private
