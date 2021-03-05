@@ -261,6 +261,7 @@ Rails.application.routes.draw do
       member do
         post :ajaxplotunit
         post :ajaxplotunitforfloorplate
+        post :ajaxplotunitdoorforfloorplate
         delete :remove_plot
         delete :remove_plot_from_floorplate
         post :adjust_position

@@ -80,6 +80,7 @@ $(document).ready(function () {
     // });
 
     $("#map").mouseup(function (e) {
+      debugger
       // first check if user is clicking on scrollbar
       if (e.target != $('#map').get(0)) {
         e.preventDefault();

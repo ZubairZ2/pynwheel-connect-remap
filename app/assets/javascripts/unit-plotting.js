@@ -1,10 +1,14 @@
 // save an individual unit (even if same x/y)
   function savePlot(id, dx, dy) {
+    debugger
     if (typeof floorplan_id !== 'undefined'){
       saveFloorplanPlot(id,dx,dy);
     }
     else if ( typeof floorplate_id !== 'undefined'){
-      saveFloorplateUnit(id, dx, dy);
+      if(adddoorsmode)
+        saveFloorplateUnitDoor(id, dx, dy);
+      else
+        saveFloorplateUnit(id, dx, dy);
     }
     else if ( typeof isPlotAmenity !== 'undefined'){
       saveAmenityPlot(id, dx, dy);
@@ -30,6 +34,7 @@
   }
 
   function saveFloorplateUnit(id, dx, dy){
+    debugger
   	$.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunitforfloorplate",
      { "x_plot": dx,
         "y_plot": dy,
@@ -56,6 +61,22 @@
 
      });
   }
+
+  function saveFloorplateUnitDoor(id, dx, dy){
+    debugger
+    $.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunitdoorforfloorplate",
+    { 
+      "x_plot": dx,
+      "y_plot": dy,
+      "floorplate_id": floorplate_id
+    }).done(function(data) {
+      if(data.success)
+        $("#door_" + id).remove()
+      else
+        console.log("error: ", data)
+    })
+  }
+
   function saveTourStaringPoint(id, dx, dy){
     $.post( "/communities/"+community_id+"/tours/" + id + "/ajaxplotstartingpoint",
         { "x_plot": dx,
@@ -216,6 +237,8 @@
   }
 
   function plotMode(selected){
+    debugger
+    console.log("new marked is created")
     addmode = true;
     $("#newmsg").css({display: 'inline-block'});
     $("#map").css('cursor','crosshair');
@@ -249,6 +272,7 @@
       stack: ".marker",
       // get the initial X and Y position when dragging starts
       start: function(event, ui) {
+        debugger
         console.log("start drag")
         xpos = Math.round(ui.position.left);
         ypos = Math.round(ui.position.top);
@@ -267,9 +291,10 @@
       },
       // when dragging stops
       drag: function(event, ui) {
+        console.log("draging....");
         // calculate the dragged distance, with the current X and Y position and the "xpos" and "ypos"
-        xmove = ui.position.left - xpos;
-        ymove = ui.position.top - ypos;
+        xmove = ui.position.left - xpos;        // no need of it
+        ymove = ui.position.top - ypos;         // no need of it
         if (temp != null) {
           for (i=0; i<temp.length; i++) {
             $('#m_' + temp[i]).css({"left": ui.position.left, "top": ui.position.top});
@@ -281,12 +306,13 @@
           for (i=0; i<temp.length; i++) {
             console.log("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
             for (j=0; j<arr.length; j++) {
-              if (arr[j][0] == temp[i]) {
+              if (arr[j][0] == temp[i]) {       // computationally expensive, I will try to do this in one iteration
                 arr[j][1] = Math.round(ui.position.left);
                 arr[j][2] = Math.round(ui.position.top);
               }
             }
             // alert(temp[i]);
+            debugger
             savePlot(temp[i], Math.round(ui.position.left ) + lmargin, Math.round(ui.position.top ) + rmargin);
           }
         }
@@ -296,7 +322,9 @@
 
 
   function reset() {
+    debugger
     addmode = false;
+    adddoorsmode = false;
     selected=[];
     dx = 0;
     dy = 0;

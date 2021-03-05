@@ -362,6 +362,20 @@ class UnitsController < ApplicationController
     end
   end
 
+  def ajaxplotunitdoorforfloorplate
+    unit = @community.units.where(provider_unit_id: params[:id]).first
+    if unit.present?
+      if unit.door.present?
+        unit.door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+      else
+        unit.door.create(x_plot: params[:x_plot], y_plot: params[:y_plot])
+      end
+      render json: {door: unit.door.attributes, success: false}
+    else
+      render json: {unit: {}, success: false}
+    end
+  end
+
   def remove_plot
     @unit = Unit.find_by(provider_unit_id: params[:id],community_id: @community.id)
     @unit.x_plot = 0

@@ -135,82 +135,107 @@ $(document).ready(function(){
     // });
 
     $("#map").mouseup(function(e) {
+        debugger
         // first check if user is clicking on scrollbar
         if (e.target != $('#map').get(0)){
             e.preventDefault();
             dx = parseInt($('#active_x_plot').html())-8;
             dy = parseInt($('#active_y_plot').html()-10);
+
             marker_color = $('#marker_color').html();
-            camera_margin = $('#camera-margin').html();
             marker_font_size = ($('#font_size').html());
             left_margin = parseInt($('#left_margin').html());
             right_margin = parseInt($('#right_margin').html());
+            camera_margin = $('#camera-margin').html();
+            
+            door_marker_color = $('#door_marker_color').html();
+            door_fontsize = ($('#door_fontsize').html());
+            door_left_margin = parseInt($('#door_left_margin').html());
+            door_right_margin = parseInt($('#door_right_margin').html());
+
 
             if (addmode) {
                 // save plotting for each selected unit
                 for (i=0; i<selected.length; i++) {
                     savePlot(selected[i][0], dx, dy);
                 }
-                var url = "";
-                if (typeof floorplan_id !== 'undefined'){
-                    url = '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+selected[0][0]+'/remove_amenity';
-                }
-                else if (typeof sitemap_id !== 'undefined'){
-                    // debugger;
-                    url = '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot'
-                    // url = '/communities/'+community_id+'/sitemaps/'+sitemap_id+'/amenities/'+selected[0][0]+'/remove_amenity';
-                }
-                else if (typeof floorplate_id_for_amenity !== 'undefined'){
-                    url = '/communities/'+community_id+'/floorplates/'+floorplate_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity'
-                }
-                else if (typeof tour_id !== 'undefined'){
-                    url = '/communities/'+community_id+'/tours/'+tour_id+'/resetStartingPoint'
-                }
-                else if (typeof tour_id_for_stop !== 'undefined'){
-                    url = '/communities/'+community_id+'/tours/'+community_tour_id+'/tour_stops/'+selected[0][0]+'/resetTourStopPoint'
-                }
-                else if (typeof floorplate_id !== 'undefined'){
-                    url = '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot_from_floorplate?floorplate_id=1'
+
+                var url = getDeletionUrl();
+                if(adddoorsmode){
+                    url = url.split("?")[0] + "_doors?" + url.split("?")[1]
+                    tag = getDoorTag(url)
                 }
                 else{
-                    url = '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'
+                    tag = getUnitTag(url)
                 }
-                if (typeof tour_id_for_stop !== 'undefined')
-                {
-                    tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-                    tag += "<i class='custom-icon' style='width: "+ marker_font_size +"px; height: "+ marker_font_size +"px; border: 2px solid "+ marker_color+"; '><i class='fa fa-star' style='color: "+marker_color+"; font-size: "+(parseInt(marker_font_size) /2)+"px; margin-top:"+ camera_margin +"px;'></i></i>";
-                    tag += "</a>"
-                }
-                else if (typeof tour_id !== 'undefined')
-                {
-                    tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-                    tag += "<img src='/assets/star.png'>";
-                    tag += "</a>"
-                }
-                else if (typeof floorplate_id !== 'undefined' || sitemap_id !== 'undefined')
-                {
-                    tag = "<a class='marker ' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx - left_margin)  + "px; top:" + (dy - right_margin) +"px; position:absolute; font-size: "+ marker_font_size+"px;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-                    tag += "<i class='fas fa-map-marker-alt' style='color: "+marker_color+";'></i>";
-                    tag += "</a>"
-
-                }
-                else
-                {
-                    tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-                    tag += "<i class='custom-icon' style='width: "+ marker_font_size +"px; height: "+ marker_font_size +"px; border: 2px solid "+ marker_color+"; '><i class='fas fa-camera-retro' style='color: "+marker_color+"; font-size: "+(parseInt(marker_font_size) /2)+"px; margin-top:"+ camera_margin +"px;'></i></i>";
-                    tag += "</a>"
-                }
-                // add new marker to display
-                //tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][0] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
 
                 $('#map').append(tag);
-                // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
-                //$(".marker:last").trigger("click")
                 reset();
                 doDraggable();
             }
         }
     });
 
+    function getDeletionUrl(){
+        if (typeof floorplan_id !== 'undefined'){
+            return '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+selected[0][0]+'/remove_amenity';
+        }
+        else if (typeof sitemap_id !== 'undefined'){
+            return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot'
+        }
+        else if (typeof floorplate_id_for_amenity !== 'undefined'){
+            return '/communities/'+community_id+'/floorplates/'+floorplate_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity'
+        }
+        else if (typeof tour_id !== 'undefined'){
+            return '/communities/'+community_id+'/tours/'+tour_id+'/resetStartingPoint'
+        }
+        else if (typeof tour_id_for_stop !== 'undefined'){
+            return '/communities/'+community_id+'/tours/'+community_tour_id+'/tour_stops/'+selected[0][0]+'/resetTourStopPoint'
+        }
+        else if (typeof floorplate_id !== 'undefined'){
+            return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot_from_floorplate?floorplate_id=1'
+        }
+        else{
+            return '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'
+        }
+    }
 
+    function getUnitTag(url){
+        if (typeof tour_id_for_stop !== 'undefined')
+        {
+            tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+            tag += "<i class='custom-icon' style='width: "+ marker_font_size +"px; height: "+ marker_font_size +"px; border: 2px solid "+ marker_color+"; '><i class='fa fa-star' style='color: "+marker_color+"; font-size: "+(parseInt(marker_font_size) /2)+"px; margin-top:"+ camera_margin +"px;'></i></i>";
+            tag += "</a>"
+        }
+        else if (typeof tour_id !== 'undefined')
+        {
+            tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+            tag += "<img src='/assets/star.png'>";
+            tag += "</a>"
+        }
+        else if (typeof floorplate_id !== 'undefined' || sitemap_id !== 'undefined')
+        {
+            tag = "<a class='marker ' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx - left_margin)  + "px; top:" + (dy - right_margin) +"px; position:absolute; font-size: "+ marker_font_size+"px;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+            tag += "<i class='fas fa-map-marker-alt' style='color: "+marker_color+";'></i>";
+            tag += "</a>"
+
+        }
+        else
+        {
+            tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+            tag += "<i class='custom-icon' style='width: "+ marker_font_size +"px; height: "+ marker_font_size +"px; border: 2px solid "+ marker_color+"; '><i class='fas fa-camera-retro' style='color: "+marker_color+"; font-size: "+(parseInt(marker_font_size) /2)+"px; margin-top:"+ camera_margin +"px;'></i></i>";
+            tag += "</a>"
+        }
+        return tag
+    }
+
+    function getDoorTag(url){
+        if (typeof floorplate_id !== 'undefined')
+        {
+            tag = "<a class='marker ' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx - door_left_margin)  + "px; top:" + (dy - door_right_margin) +"px; position:absolute; font-size: " + door_fontsize + "px;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+            tag += "<i class='fa fa-sign-in fa-xs' style='color: " + door_marker_color + ";'></i>";
+            tag += "</a>"
+        }
+        return tag
+    }
 });

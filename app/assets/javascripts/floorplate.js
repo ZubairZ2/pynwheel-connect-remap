@@ -38,6 +38,7 @@ $(document).ready(function () {
     $('.amenities-list-on-popup').multiSelect();
 
     $('.select-units-on-page .ms-elem-selectable').click(function () {
+      debugger
       console.log($(this).children('span').text());
       selected.push([$(this).attr('id').replace("-selectable", ""), $(this).children('span').text()]);
       // $("#selected-units").empty();
@@ -58,6 +59,7 @@ $(document).ready(function () {
     });
 
     $('.unit-selects-in-popup .ms-elem-selection').click(function () {
+      debugger
       console.log('De selecting in popup');
       var unit_providers_array = JSON.parse($('#unit_provider_ids').val());
       unit_providers_array.splice($.inArray($(this).attr('id').split('-')[0], unit_providers_array), 1);
@@ -80,6 +82,7 @@ $(document).ready(function () {
 
     $("#map").mouseup(function (e) {
       // first check if user is clicking on scrollbar
+      debugger
       if (e.target != $('#map').get(0)) {
         e.preventDefault();
         left_margin = parseInt($('#left_margin').html());
@@ -120,4 +123,40 @@ function addMarkerOnFloorplate(){
   $('#add_horizontal_position').val($('#horizontal_position').val());
   $('#add_vertical_position').val($('#vertical_position').val());
   $('#add-marker-modal').modal('show');
+}
+
+function plot_entry_point(event){
+  debugger
+  parent_unit = event.currentTarget.previousSibling
+
+  title = parent_unit.title + " (door)"
+  xpos = parent_unit.offsetLeft
+  ypos = parent_unit.offsetTop
+
+  getUnitsAtSameLocation(xpos, ypos)
+  addSameLocationUnitsToSelected()
+
+  adddoorsmode = true
+  plotMode();
+  // $("#map").append(door_tag);
+}
+
+function getUnitsAtSameLocation(xpos, ypos){
+  temp=[];
+
+  if (arr != null) {
+    for(var unit of arr){
+      if (unit[1] == xpos && unit[2] == ypos) {
+        temp.push(unit[0])                // all units provider_ids plotted on the same location
+      }
+    }
+  }
+
+}
+
+function addSameLocationUnitsToSelected(){
+  selected = []
+  for(var provider_unit_id of temp){
+    selected.push([provider_unit_id, provider_unit_id]);
+  }
 }

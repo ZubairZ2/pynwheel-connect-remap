@@ -24,13 +24,18 @@
     $('#map').mousemove(function(event) {
       var dx = parseInt(event.pageX) - parseInt($('#map').offset().left) + parseInt($('#map').scrollLeft());
       var dy = parseInt(event.pageY) - parseInt($('#map').offset().top) + parseInt($('#map').scrollTop());
+
+      // console.log("event.offsetX:  ", event.offsetX , " -- event.offsetY:  ", event.offsetY)
+      // console.log("dx: ", dx, "  --   dy ", dy)
+
       $('#active_x_plot').html(dx);
       $('#active_y_plot').html(dy);
     });
 
     // place maker on click
     $("#map").click(function(event) {
-      $(this).css('cursor','default');
+      debugger
+      // $(this).css('cursor','default');
       event.preventDefault();
       var dx = parseInt($('#active_x_plot').html()+3);
       var dy = parseInt($('#active_y_plot').html()+3);
@@ -59,6 +64,8 @@
 
     // new marker button click
     $("#new").click(function(e) {
+      debugger
+      console.log("new marked is created")
       addmode = true;
       $("#newmsg").css({display: 'inline-block'});
       e.preventDefault();
