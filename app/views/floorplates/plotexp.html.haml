@@ -196,8 +196,11 @@
     document.addEventListener("touchmove", touchHandler, true);
     document.addEventListener("touchend", touchHandler, true);
     document.addEventListener("touchcancel", touchHandler, true);
-    plot_markers(#{(@test_units.html_safe)})
-    
+    let elem = document.querySelector('#map');
+    window.mapPanZoom = panzoom(elem, {
+      minZoom: 0.6,
+      maxZoom: 1.1
+    });
  
   })
   
@@ -218,64 +221,6 @@
     // event.preventDefault();
   }
 
-  
-  
-  function plot_markers(units){
-
-  // This example also showcases the canvas optio
-  // Pointer events anywhere in the parent move
-  // the target.
-
-  let elem = document.querySelector('#map');
-  window.mapPanZoom = panzoom(elem, {
-    minZoom: 0.6,
-    maxZoom: 1.5
-  });
-  // const panzoom = Panzoom(elem, { canvas: true })
-  // const parent = elem.parentElement
-  // // No function bind needed
-  // parent.addEventListener('wheel', panzoom.zoomWithWheel)
-  //
-  // // This demo binds to shift + wheel
-  // parent.addEventListener('wheel', function(event) {
-  //   if (!event.shiftKey) return
-  //   panzoom.zoomWithWheel(event)
-  // })
-
-  // let el = document.querySelector('#map');
-  // let pz = new PinchZoom(el, {});
-  // const pinchZoom = document.querySelector('#map');
-  // var img = document.getElementById('viewArea');
-  //   $('#viewArea').zoomMarker({
-  //     src: img.src,
-  //     width: img.clientWidth,
-  //     rate: 0.1 , // from 0 to 1
-  //     // markers:marker_arr
-  //   });
-    // debugger;
-    // marker_arr = [];
-    // setTimeout(() => {
-    // units.forEach(function(unit) {
-    //     var src = "/marker.png"
-    //     var x = unit.x_plot;
-    //     var y = unit.y_plot;
-    //
-    //
-    //     const widthFactor = 1;//$('#viewArea').zoomMarker_GetPicSize().width / $('#viewArea').width();
-    //     const heightFactor =  1;//$('#viewArea').zoomMarker_GetPicSize().height / $('#viewArea').height();
-    //     var item = {};
-    //     item ["src"] = src;
-    //     item ["x"] = x * widthFactor;
-    //     item ["y"] = y * heightFactor;
-    //     item["size"] = 20;
-    //     $('#viewArea').zoomMarker_AddMarker(item);
-    //
-    //     // marker_arr.push(item);
-    //   });
-    // }, 1000)
-
-
-  }
   var arr = #{raw arr}
   var lmargin = #{raw left_margin}
   var rmargin = #{raw right_margin}

@@ -52,7 +52,6 @@ function saveFloorplateUnit(id, dx, dy) {
 }
 
 function saveTourStaringPoint(id, dx, dy) {
-    debugger;
     $.post("/communities/" + community_id + "/tours/" + id + "/ajaxplotstartingpoint",
         {
             "x_plot": dx,
@@ -66,7 +65,6 @@ function saveTourStaringPoint(id, dx, dy) {
 }
 
 function saveTourStopPoint(id) {
-    debugger;
     $.post("/communities/" + community_id + "/tours/" + id + "/ajaxplottourstoppoint",
         {
             "floor": floor,
@@ -144,7 +142,7 @@ function saveAmenityPlotForFloorplate(id, dx, dy) {
                     $(this).remove();
                 }
             });
-            window.location.reload(true);
+            // window.location.reload(true);
         });
 }
 
@@ -253,9 +251,10 @@ function doDraggable() {
             // mapPanZoom.dispose();
 
             var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-            var scaleFactor = (1/(transform.scale || 1));
-            ui.position.top = (ui.position.top * scaleFactor) - (transform.y*scaleFactor);
-            ui.position.left = (ui.position.left * scaleFactor) - (transform.x*scaleFactor);
+            var scaleFactor = (1 / (transform.scale || 1));
+            ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
+            ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
+
             xpos = Math.round(ui.position.left);
             ypos = Math.round(ui.position.top);
             // temp array of just markers at same x/y
@@ -273,14 +272,10 @@ function doDraggable() {
         },
         // when dragging stops
         drag: function (event, ui) {
-            // mapPanZoom.recreate();
-            // calculate the dragged distance, with the current X and Y position and the "xpos" and "ypos"
             var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-            var scaleFactor = (1/(transform.scale || 1));
-            ui.position.top = (ui.position.top * scaleFactor) - (transform.y*scaleFactor);
-            ui.position.left = (ui.position.left * scaleFactor) - (transform.x*scaleFactor);
-            // ui.position.top = ui.originalPosition.top + ((ui.position.top - ui.originalPosition.top) * scaleFactor) - (transform.y*scaleFactor);
-            // ui.position.left = ui.originalPosition.left + ((ui.position.left - ui.originalPosition.left) * scaleFactor) - (transform.x*scaleFactor);
+            var scaleFactor = (1 / (transform.scale || 1));
+            ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
+            ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
 
             xmove = ui.position.left - xpos;
             ymove = ui.position.top - ypos;
@@ -306,7 +301,7 @@ function doDraggable() {
                 }
             }
         }
-    }).on('mousedown touchstart', function(e) {
+    }).on('mousedown touchstart', function (e) {
         e.stopImmediatePropagation();
         return false;
     });
