@@ -171,7 +171,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @tour_user.tour_type = params[:tour_status]
       @community.save
       charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
-      @tour_user.verified_by = params[:verified_by_provider]
+      @tour_user.verified_by = params[:verfied_by_provider]
       @tour_user.save
       
       unless @tour_user.email == "Removed at Consumer Request"
