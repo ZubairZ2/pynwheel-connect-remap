@@ -28,25 +28,14 @@ window.addEventListener('load', function () {           // after page is fully l
 })
 
 window.addEventListener('beforeunload', function () {
-    debugger
     if (allowed_roles.includes(current_user_role) && current_user_id != "undefined" && $("#widget-button").length == 1){
         if(window.localStorage.getItem('tabs_count') > 0)
             window.localStorage.setItem('tabs_count', (parseInt(window.localStorage.getItem('tabs_count')) - 1))
-        if(window.localStorage.getItem('tabs_count') <= 0){
-            window.localStorage.setItem('tabs_count', 0)
-            chat_service_not_available()
-        }
 
-        if(isChrome){
-            console.log("Blocking for 50 mili-seconds...");
+        if(isChrome)
+            sleep(100);
+        else
             sleep(200);
-            console.log("Done!!");
-        }
-        else{
-            console.log("Blocking for 200 mili-seconds...");
-            sleep(200);
-            console.log("Done!!");
-        }
     }
 });
 
@@ -55,6 +44,9 @@ window.addEventListener('storage', storageChange)
 function storageChange (event) {
     debugger
     console.log("total tabs are ", event.newValue)
+    if(event.newValue == 0){
+        chat_service_not_available()
+    }
 }
 
 function chat_service_available(){
