@@ -2,7 +2,6 @@ var current_user_id, current_user_role, allowed_roles;
 var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime)
 var isFirefox = typeof InstallTrigger !== 'undefined';
 
-
 window.addEventListener('load', function () {           // after page is fully loaded
     current_user_id = $( "body" ).data( "user-id" )
     current_user_role = $( "body" ).data( "user-role" )
