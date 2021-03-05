@@ -4,6 +4,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   before_action :set_community, only: :email_favorites
   include ApplicationHelper
   include ToursHelper
+  include StripeServices
   require 'securerandom'
   @@counter = 0
   # $deleted_ids = []
@@ -147,6 +148,13 @@ class Api::V1::CommunitiesController < ActionController::Base
       @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
       end
   end
+  def do_verfication verfied_by_provider, community
+    if (verfied_by_provider == "authenteq") && community.tour.tour_setting.present? && community.tour.tour_setting.charge_user_for_id_verfication
+      true
+    else
+      false
+    end
+  end
 
   def community_tours
     puts params
@@ -162,6 +170,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @tour_user.tour_key = @random_string
       @tour_user.tour_type = params[:tour_status]
       @community.save
+      charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
       @tour_user.verified_by = params[:verified_by_provider]
       @tour_user.save
       
@@ -517,6 +526,11 @@ class Api::V1::CommunitiesController < ActionController::Base
         end
         @tour_user.save
       end
+    end
+  end
+  def charge_for_id_verfication(tour_user, amount)
+    if tour_user.strip_customer_id.present?
+      charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
     end
   end
 

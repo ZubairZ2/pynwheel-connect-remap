@@ -173,6 +173,19 @@
                   %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+
+                Charge User for ID Verfication
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "2Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    When set to “Yes” users will be charged $2.00 each time their ID is verified. When set to “No” the property will be charged each time the user’s ID is verified.
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :charge_user_for_id_verfication, true, @community.tour.tour_setting.charge_user_for_id_verfication  , class: "charge_user_for_id_verfication"
+                  %label.label-primary{:for => "charge_user_for_id_verfication"}
+                  %span.pl-15 Yes    
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Show Camera Button
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "3Popover","data-content" => " "}
                   %span#propertyDetailNameText
@@ -227,7 +240,7 @@
                   %span.pr-15 No
                   = check_box_tag :do_limit_max_tour, true, @community.tour.tour_setting.do_limit_max_tour  , class: "do_limit_max_tour"
                   %label.label-primary{:for => "do_limit_max_tour"}
-                  %span.pl-15 Yes  
+                  %span.pl-15 Yes      
             
             .form-group.limit_max_tour_class.hidden
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
