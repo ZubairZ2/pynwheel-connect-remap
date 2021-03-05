@@ -234,6 +234,19 @@ $(document).ready(function () {
             }
         }
     });
+    $(".reset").on('click', function (e) {
+        $(".divLoading").removeClass("hidden");
+        window.location.reload()
+    });
+
+    $(".zoom-in").on('click', function (e) {
+        mapPanZoom.zoomInOut(187);
+    });
+
+
+    $(".zoom-out").on('click', function (e) {
+        mapPanZoom.zoomInOut(189);
+    });
 
 
 });

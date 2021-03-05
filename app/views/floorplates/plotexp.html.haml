@@ -81,18 +81,26 @@
             %a.btn.btn-danger{"data-name" => "floorplate's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
       / /.box-header
       / form start
+      
       %form.form-horizontal
         .box-body.map-body-top
           .row
             .col-lg-9#container.p-0
+              .buttons{:style=>"position: absolute; right: 20px; top: 5px;z-index:999;"}
+                %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls
+                  %i.fa.fa-plus
+                %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls
+                  %i.fa.fa-minus
+                %a.btn.btn-sm.btn-primary.reset.zoom-controls
+                  %i.fa.fa-refresh
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
                   .grid-graph.hidden
                   - if @floorplate.image? and @floorplate.image.content_type == "image/svg+xml"
                     .svg_image_style{:style =>  "width: #{@floorplate.width}px; height: #{@floorplate.height}px;"}
-                      = image_tag  @floorplate.image.url
+                      = image_tag  @floorplate.image.url , class:'img-responsive'
                   - else
-                    = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg" ,name:"viewArea", id:"viewArea",draggable:"false"
+                    = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg" ,name:"viewArea", id:"viewArea",draggable:"false", class:'img-responsive'
                   - community_units = @community_units
                   - coordinates_array = []
                   - community_units.each do |unit|

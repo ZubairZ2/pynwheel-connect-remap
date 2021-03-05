@@ -74,6 +74,13 @@
         .box-body.map-body-top
           .row
             .col-lg-9#container.p-0
+              .buttons{:style=>"position: absolute; right: 20px; top: 5px;z-index:999;"}
+                %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls
+                  %i.fa.fa-plus
+                %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls
+                  %i.fa.fa-minus
+                %a.btn.btn-sm.btn-primary.reset.zoom-controls
+                  %i.fa.fa-refresh
               .map-block{:style=>"position: relative;"}
                 .plot-image#map
                   - if @sitemap.present? && @sitemap.image.present? && @sitemap.image.content_type == "image/svg+xml"
