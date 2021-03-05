@@ -7,10 +7,8 @@ class UsersController < ApplicationController
       @users = User.where(role: ["Community admin","Community manager","Super admin","visitor_detail_page", "Dwelo admin"])
     elsif current_user.is_dwelo_admin?
       @users = User.where('id IN (?) or role = ?', Community.where(creator_id: User.where(role: "Dwelo admin").ids).collect{|c| c.users.map(&:id)}.flatten, "Dwelo admin")
-    elsif current_user.is_company_admin?
-      @users = User.find current_company.communities.collect{|c| c.users.map(&:id)}.flatten
-    elsif current_user.is_regional_admin?
-      @users = User.find current_user.region.communities.collect{|c| c.users.map(&:id)}.flatten
+    elsif current_user.is_company_admin? || current_user.is_regional_admin?
+      @users = User.where(id: current_user.id)
     else
       @users = User.find current_user.communities.collect{|c| c.users.map(&:id)}.flatten
     end
