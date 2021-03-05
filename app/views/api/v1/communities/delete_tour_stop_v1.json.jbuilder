@@ -873,7 +873,7 @@ json.tours @tours do |tour|
       if @community.credential.present? and @community.credential.apply_now == "separate_link"
         availability_url = @community.credential.separate_link
       else
-        availability_url = @community.credential.present? and @community.credential.apply_now.to_s == "separate_link" ? @community.credential.separate_link : (unit.availability_url.present? ? unit.availability_url : (Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url rescue ""))
+        availability_url = (unit.availability_url.present? ? unit.availability_url : u.floorplan.availability_url rescue "")
       end
       stop_dat = {"floorplan" => (Floorplan.find_by(id: unit.floorplan.id).name rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
       json.stop_data stop_dat
