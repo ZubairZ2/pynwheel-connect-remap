@@ -554,6 +554,7 @@ class CommunitiesController < ApplicationController
         # @community.tour.update_attributes(max_tour_users: params[:max_tour_users], max_virtual_tour_users: params[:max_virtual_tour_users],max_self_tour_users: params[:max_self_tour_users],max_guided_tour_users: params[:max_guided_tour_users])
         
         @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
+        @tour.enable_auto_zoom = params[:enable_auto_zoom].present? ? params[:enable_auto_zoom] : false
         @tour.max_virtual_tour_users = params[:max_virtual_tour_users]
         @tour.max_self_tour_users = params[:max_self_tour_users]
         @tour.max_guided_tour_users = params[:max_guided_tour_users]   
