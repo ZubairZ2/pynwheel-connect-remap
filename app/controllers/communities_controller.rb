@@ -14,6 +14,8 @@ class CommunitiesController < ApplicationController
       if user_enable_communities_ids.present?
         user_enable_communities = Community.where(id: user_enable_communities_ids).pluck(:id, :name).to_json rescue nil
         render :json => {data: user_enable_communities}, :status => 200
+      else
+        render :json => {data: user_enable_communities.to_json}, :status => 200
       end
     end
     if current_user.is_super_admin?
@@ -513,8 +515,14 @@ class CommunitiesController < ApplicationController
 
   def invitation_communities
     if params[:user_communities].present?
-      user = User.find params[:user]
-      result = user.communities.pluck(:name, :id).to_json
+      if params[:company_id].present?
+        result = Company.find(params[:company_id]).communities.pluck(:name, :id).to_json
+      elsif
+        result = Region.find(params[:region_id]).communities.pluck(:name, :id).to_json
+      else
+        user = User.find params[:user]
+        result = user.communities.pluck(:name, :id).to_json
+      end
       render :json => {data: result}, :status => 200
     elsif params['company'].present?
       company =  params['company']
