@@ -127,11 +127,14 @@ function addMarkerOnFloorplate(){
 
 function plot_entry_point(event){
   debugger
-  parent_unit = event.currentTarget.previousSibling
+  if ($(event.currentTarget).hasClass('disabled')) return;
+  $(event.currentTarget).addClass('disabled');
+  $(event.target).css({"color": "#c9ffdd", "cursor": "crosshair"})
 
+  parent_unit = event.currentTarget.previousElementSibling  
   title = parent_unit.title + " (door)"
-  xpos = parent_unit.offsetLeft
-  ypos = parent_unit.offsetTop
+  xpos = parseInt(parent_unit.parentElement.style.left)     // parent_unit.offsetLeft is sometime incrementing value by 1
+  ypos = parseInt(parent_unit.parentElement.style.top)
 
   getUnitsAtSameLocation(xpos, ypos)
   addSameLocationUnitsToSelected()

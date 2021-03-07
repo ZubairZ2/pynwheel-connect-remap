@@ -85,6 +85,7 @@ class Unit < ApplicationRecord
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_unit_image
   after_update :crop_unit_secondary_image
+  after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   before_destroy :delete_data
 
 
@@ -170,5 +171,9 @@ class Unit < ApplicationRecord
 
   def self.path_data
     [{x: 1025, y: 503}, {x: 1000, y: 603}, {x: 980, y: 300}]
+  end
+
+  def remove_doors_plotting
+    doors.destroy_all
   end
 end

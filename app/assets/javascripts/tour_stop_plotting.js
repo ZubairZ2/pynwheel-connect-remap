@@ -160,23 +160,28 @@ $(document).ready(function(){
                     savePlot(selected[i][0], dx, dy);
                 }
 
-                var url = getDeletionUrl();
                 if(adddoorsmode){
-                    url = url.split("?")[0] + "_doors?" + url.split("?")[1]
+                    var url = getDeleteDoorUrl();
                     tag = getDoorTag(url)
                 }
                 else{
+                    var url = getDeleteUnitUrl();
                     tag = getUnitTag(url)
                 }
 
                 $('#map').append(tag);
-                reset();
+                // if autowayfinding toggle in On and Unit is just plotted
+                // if (){
+
+                // }
+                // else
+                    reset();
                 doDraggable();
             }
         }
     });
 
-    function getDeletionUrl(){
+    function getDeleteUnitUrl(){
         if (typeof floorplan_id !== 'undefined'){
             return '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+selected[0][0]+'/remove_amenity';
         }
@@ -193,10 +198,16 @@ $(document).ready(function(){
             return '/communities/'+community_id+'/tours/'+community_tour_id+'/tour_stops/'+selected[0][0]+'/resetTourStopPoint'
         }
         else if (typeof floorplate_id !== 'undefined'){
-            return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot_from_floorplate?floorplate_id=1'
+            return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot_from_floorplate?floorplate_id='+floorplate_id
         }
         else{
             return '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'
+        }
+    }
+
+    function getDeleteDoorUrl(){
+        if (typeof floorplate_id !== 'undefined'){
+            return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_unitdoor_plot_from_floorplate?floorplate_id='+floorplate_id
         }
     }
 
@@ -214,11 +225,13 @@ $(document).ready(function(){
             tag += "</a>"
         }
         else if (typeof floorplate_id !== 'undefined' || sitemap_id !== 'undefined')
-        {
-            tag = "<a class='marker ' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx - left_margin)  + "px; top:" + (dy - right_margin) +"px; position:absolute; font-size: "+ marker_font_size+"px;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-            tag += "<i class='fas fa-map-marker-alt' style='color: "+marker_color+";'></i>";
-            tag += "</a>"
-
+        {   
+            tag =   `<a id="m_${selected[0][0]}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${marker_font_size}px" title="${selected[0][1]}" data-toggle="modal" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="unit" href="#">
+                        <i class="fas fa-map-marker-alt" style="color: ${marker_color};"></i>
+                    </a>
+                    <a id="plus_${selected[0][0]}" class="marker ui-draggable ui-draggable-handle" style="left:${dx + 20}px; top:${dy + 20}px; position:absolute; " title="Click to plot this unit(s) door" data-toggle="tooltip" data-plotted-category="create_unit_door" onclick="plot_entry_point(event)" href="#">
+                        <i class="fa fa-plus-circle fa-xs" style="color: #59de83; font-size: ${marker_font_size/2}px;"></i>
+                    </a>`
         }
         else
         {
@@ -231,10 +244,10 @@ $(document).ready(function(){
 
     function getDoorTag(url){
         if (typeof floorplate_id !== 'undefined')
-        {
-            tag = "<a class='marker ' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx - door_left_margin)  + "px; top:" + (dy - door_right_margin) +"px; position:absolute; font-size: " + door_fontsize + "px;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-            tag += "<i class='fa fa-sign-in fa-xs' style='color: " + door_marker_color + ";'></i>";
-            tag += "</a>"
+        {   
+            tag =   `<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="${selected[0][1]} (door)" style="left:${dx - door_left_margin}px; top:${dy - door_right_margin}px; position:absolute; font-size: ${door_fontsize}px;" data-name="door" data-target="#ajax-confirm-delete" data-href="${url} data-plotted-category="unit_door"">
+                        <i class="fa fa-sign-in fa-xs" style="color: ${door_marker_color};"></i>
+                    </a>`
         }
         return tag
     }

@@ -71,9 +71,9 @@
       "floorplate_id": floorplate_id
     }).done(function(data) {
       if(data.success)
-        $("#door_" + id).remove()
+        $("#plus_" + id).remove()
       else
-        console.log("error: ", data)
+        console.warn("error: ", data)
     })
   }
 

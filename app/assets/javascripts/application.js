@@ -39,7 +39,7 @@
 //= require sitemap
 //= require tour
 //= require floorplate
-
+//= require delete-plotting
 //= require ekko-lightbox
 //= require jquery.remotipart
 //= require jquery.mCustomScrollbar.concat.min

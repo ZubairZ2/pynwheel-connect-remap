@@ -264,6 +264,7 @@ Rails.application.routes.draw do
         post :ajaxplotunitdoorforfloorplate
         delete :remove_plot
         delete :remove_plot_from_floorplate
+        delete :remove_unitdoor_plot_from_floorplate
         post :adjust_position
         post :load_remotelock_data
         post :clear_locks

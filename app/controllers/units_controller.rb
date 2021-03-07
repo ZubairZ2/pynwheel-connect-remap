@@ -365,14 +365,11 @@ class UnitsController < ApplicationController
   def ajaxplotunitdoorforfloorplate
     unit = @community.units.where(provider_unit_id: params[:id]).first
     if unit.present?
-      if unit.door.present?
-        unit.door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
-      else
-        unit.door.create(x_plot: params[:x_plot], y_plot: params[:y_plot])
-      end
-      render json: {door: unit.door.attributes, success: false}
+      door = unit.doors.first_or_initialize
+      door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+      render json: {door: door.attributes, success: true}
     else
-      render json: {unit: {}, success: false}
+      render json: {door: {}, success: false}
     end
   end
 
@@ -421,6 +418,17 @@ class UnitsController < ApplicationController
     else
       redirect_to community_floorplate_plotexp_path(@community,@floorplate), error: "Something went wrong."
     end
+  end
+
+  def remove_unitdoor_plot_from_floorplate
+    @floorplate = Floorplate.find params[:floorplate_id]
+  
+    unit = @community.units.where(provider_unit_id: params[:id]).first
+    door = unit.doors
+    render json: {unit: unit, door: door.first, success: true}
+    door.destroy_all
+  rescue
+    render json: {unit: {}, door: {}, success: false}
   end
 
   def adjust_position
