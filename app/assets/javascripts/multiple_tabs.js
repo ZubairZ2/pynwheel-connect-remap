@@ -43,6 +43,7 @@ function storageChange (event) {
     console.log("total tabs are ", event.newValue)
     if(event.newValue == 0){
         chat_service_not_available()
+        sleep(100);
     }
 }
 
