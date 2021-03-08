@@ -320,7 +320,6 @@ iPhone Users:
       render :json=> {:success=>false, :status => 500, :message => ex}
     end
   end
-
   def get_reason verificaion_provider, verification_code, anti_spoofing, confidence
     if verificaion_provider == "check_point_id"
       if verification_code == "MultipleErrors" || verification_code == "ValidationError" || (anti_spoofing.present? && anti_spoofing.to_i < 80) || (confidence.present? && confidence.to_i < 55)
