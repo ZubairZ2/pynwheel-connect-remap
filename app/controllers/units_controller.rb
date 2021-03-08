@@ -367,9 +367,9 @@ class UnitsController < ApplicationController
     if unit.present?
       door = unit.doors.first_or_initialize
       door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
-      render json: {door: door.attributes, success: true}
+      render json: {unit: unit, door: door, success: true}
     else
-      render json: {door: {}, success: false}
+      render json: {unit: unit, door: {}, success: false}
     end
   end
 

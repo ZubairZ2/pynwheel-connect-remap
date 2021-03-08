@@ -32,11 +32,8 @@ function delete_unitdoor_plot(url){
 }
 
 function create_CreateUnitDoor_icon(unit){
-    create_unit_door = `<a id="plus_${unit.provider_unit_id}" style="margin-left: -6px;" title="Click to plot this unit(s) door" data-toggle="tooltip" data-plotted-category="create_unit_door" onclick="plot_entry_point(event)" href="#">
-                            <i class="fa fa-plus-circle fa-xs" style="color: #59de83; font-size: ${marker_font_size/2}px;"></i>
-                        </a>`
-
-    $(("#m_"+unit.provider_unit_id)).after(create_unit_door)
+    plus_icon = create_CreateDoorPlusIcon(unit.provider_unit_id)
+    $(("#m_"+unit.provider_unit_id)).after(plus_icon)
 }
 
 $(document).ready(function(){

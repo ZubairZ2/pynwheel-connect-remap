@@ -123,7 +123,7 @@
 
                         - if unit_door_exists
                           - unit_door = unit.doors.first
-                          = link_to "#", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", name: "door", target: "#ajax-confirm-delete", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_unitdoor_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", plotted_category: "unit_door"}} do
+                          = link_to "#", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", name: "door", target: "#ajax-doors-detail-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_unitdoor_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", plotted_category: "unit_door"}} do
                             %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
 
                       - else
@@ -212,14 +212,46 @@
         .modal-footer
           = submit_tag "Add",:class=>"btn btn-primary" 
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel         
+
+#ajax-doors-detail-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#u-name
+
+      = form_tag "" do
+        .modal-body
+          .form-group.row
+            %label.col-sm-2.col-form-label Locks Provider
+            .col-sm-10
+              = text_field_tag "locks_provider",0,:class=>"form-control"
+          .form-group.row
+            %label.col-sm-2.col-form-label Select the lock
+            .col-sm-10
+              = text_field_tag "locks_id", 0,:class=>"form-control"
+          .unit-buttons
+        .modal-footer
+          = submit_tag "Update",:class=>"btn btn-primary"
+          %a.btn.btn-danger.delete-marker-ok{"data-method"=>"delete"} Delete Marker
+          %a.btn.btn-primary{:onclick=>"addMarkerOnFloorplate()"} Add Marker
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+
 :javascript
   var arr = #{raw arr}
+  var units_info = #{@doors.to_json.html_safe}
+  //  var matched_unit = units_info.filter(row => row.unit_info.unit.name === "B-421")
+
+  /*var matched_unit = $(units_info).filter(function (i,row){
+    if(row.unit_info.unit.name === "B-421")
+        selected.push(i)
+  })*/
+
   var lmargin = #{raw left_margin}
   var rmargin = #{raw right_margin}
   var community_id = #{params[:community_id]}
   var floorplate_id = #{params[:floorplate_id]}
   var addmode = false;
   var adddoorsmode = false;
+  var  selected_doors_index = []
 
   if (#{current_user.welcome_floorplate_plot_page})
     {

@@ -70,8 +70,11 @@
       "y_plot": dy,
       "floorplate_id": floorplate_id
     }).done(function(data) {
-      if(data.success)
+      if(data.success){
         $("#plus_" + id).remove()
+        fetch_unit_index(data.unit.id)
+        update_doors_info(data.door)
+      }
       else
         console.warn("error: ", data)
     })
