@@ -660,6 +660,7 @@ class ToursController < ApplicationController
   end
 
   def flag_id_mismatch
+    
     if params[:tour_user_id].present?
       tour_user = TourUser.find_by_id params[:tour_user_id]
       tour_user.update_attributes id_selfie_mismatch: params[:match_status]
@@ -671,7 +672,7 @@ class ToursController < ApplicationController
       if tour_user.id_selfie_mismatch
         name = tour_user.name || tour_user.email.split('@').first.humanize
 
-        email_content = "The user has a mismatching ID/Selfie. <br/> <a href='#{manual_selfie_match_url tour_user.id }?community=#{community.id}' target='_blank'> Visitor's ID page </a>"
+        email_content = "The photo ID/selfie for #{name} visiting #{community.name} was marked as a mismatch.  Please click on the link below to view.<br><br> <a href='#{manual_selfie_match_url tour_user.id }?community=#{community.id}' target='_blank'> Visitor's ID page</a>"
         DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
         if community_email.present?
           emails = community_email.gsub(" ","").split(',')

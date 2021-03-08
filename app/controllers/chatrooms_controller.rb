@@ -48,7 +48,7 @@ class ChatroomsController < ApplicationController
             if msg.name == "Support Team"
                 user_obj[:_id] = 0  # support team id, no need of it
                 user_obj[:name] = msg.name
-                user_obj[:avatar] = community.logo.present? ? community.logo.url : "/assets/logo-small.png"
+                user_obj[:avatar] = community.self_tour_logo.present? ? community.self_tour_logo.url : (community.logo.present? ? community.logo.url : "/assets/logo-small.png")
             
             else
                 user_obj[:_id] = msg.chatroom.tour_user_id
