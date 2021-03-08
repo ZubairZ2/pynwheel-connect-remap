@@ -98,9 +98,9 @@
                   .grid-graph.hidden
                   - if @floorplate.image? and @floorplate.image.content_type == "image/svg+xml"
                     .svg_image_style{:style =>  "width: #{@floorplate.width}px; height: #{@floorplate.height}px;"}
-                      = image_tag  @floorplate.image.url , class:'img-responsive'
+                      = image_tag  @floorplate.image.url
                   - else
-                    = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg" ,name:"viewArea", id:"viewArea",draggable:"false", class:'img-responsive'
+                    = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg" ,name:"viewArea", id:"viewArea",draggable:"false"
                   - community_units = @community_units
                   - coordinates_array = []
                   - community_units.each do |unit|
@@ -206,10 +206,23 @@
     document.addEventListener("touchcancel", touchHandler, true);
     let elem = document.querySelector('#map');
     window.mapPanZoom = panzoom(elem, {
-      minZoom: 0.6,
+      minZoom: 0.5,
       maxZoom: 1.1
     });
- 
+    var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+    var scaleFactor = (1 / (transform.scale || 1));
+    var previous_scale = 0;
+    while($('#map').width()/scaleFactor > $('.map-block').width()  || $('#map').height()/scaleFactor > $('.map-block').height()){
+       mapPanZoom.zoomInOut(189);
+           transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+           scaleFactor = (1 / (transform.scale || 1));
+           if(scaleFactor === previous_scale)
+           {
+            break;
+           }
+           previous_scale = scaleFactor
+    }
+    mapPanZoom.moveTo(0,0);
   })
   
   function touchHandler(event) {

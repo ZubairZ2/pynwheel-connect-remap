@@ -381,9 +381,9 @@
            scaleFactor = (1 / (transform.scale || 1));
            console.log(scaleFactor);
     }
-    
+    mapPanZoom.moveTo(0,0);
   })
-  
+
   function touchHandler(event) {
     var touch = event.changedTouches[0];
 
@@ -410,7 +410,7 @@
   var rmargin = #{raw right_margin}
   var community_id = #{params[:community_id]};
   var addmode = false;
-  // var sitemap_id = '#{@sitemap.id}';
+  var sitemap_id = '#{@sitemap.id}';
 
   function sitemap_goBack()
   {
