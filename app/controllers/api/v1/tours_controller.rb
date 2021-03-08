@@ -306,8 +306,8 @@ iPhone Users:
         @tour_user = TourUser.find params[:tour_user_id]
         name = @tour_user.name
         @community = Community.find params[:community_id]
-        reason = params[:reason].present? ? "" : "<br><br>#{(get_reason params[:verificaion_provider], params[:verification_code], params[:anti_spoofing], params[:confidence])}"
-        email_content = "#{name} visiting #{@community.name} was unable to begin the tour because of an issue with ID verification.#{reason}"
+        reason = "<br><br>#{(get_reason params[:verificaion_provider], params[:verification_code], params[:anti_spoofing], params[:confidence])}"
+        email_content = "#{name} visiting #{@community.name} was unable to begin the tour because of an issue with ID verification." + reason
         emails = @community.email.gsub(" ","").split(',')
         emails.each do |email|
           DelayedSchedulerMailerJob.perform_async("ID Verification Issue for #{name}", email_content, email)
