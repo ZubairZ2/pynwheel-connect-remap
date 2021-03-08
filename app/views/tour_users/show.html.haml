@@ -97,7 +97,7 @@
                         - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                         .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                           .alert-div1{:style => "margin-top: 10px"}
-                            - if alert.tour_status.present? && (alert.created_at > "2021-03-04".to_date) && alert.tour_status == "virtual_tour"
+                            - if alert.tour_status.present? && alert.created_at > "2021-03-04".to_date && alert.tour_status == "virtual_tour"
                               - @virtual_list << alert.tour_key if alert.tour_key.present?
                               = image_tag  image_url("virtual_eye_grey.png"), :style => "height: 22px; width: 22px;", "data-content" => "Virtual Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                             - elsif alert.tour_status.present? && alert.created_at > "2021-03-04".to_date && (alert.tour_status == "self_tour" || alert.tour_status == "guided_tour")
@@ -107,20 +107,20 @@
                             - if alert.arrived.present?
                               - if alert.my_time_zone.present?
                                 - begin
-                                  #{alert.arrived.to_date} #{alert.arrived.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
+                                  #{alert.arrived.to_date} #{alert.arrived.in_time_zone('America/' +@community.city ).strftime("%I:%M %p") rescue alert.arrived.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
                                 - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                                  #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                                  #{alert.arrived.to_date} #{alert.arrived.in_time_zone('America/' +@community.city).strftime("%I:%M %p") rescue alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                               - else
-                                #{alert.arrived.to_date} #{alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                                #{alert.arrived.to_date} #{alert.arrived.in_time_zone('America/' +@community.city).strftime("%I:%M %p") rescue alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                           %br
                           .alert-div2{:style => "margin-top: -10px"}
                             = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                            #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.lengthy_stay.present? && alert.arrived.present? ? ((((alert.lengthy_stay - alert.arrived) / 3600) - ((alert.lengthy_stay - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
+                            #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.lengthy_stay.present? && alert.arrived.present? ? ((((end_time - alert.arrived) / 3600) - ((end_time - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
                           %br
                           .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
-                            - if alert.tour_status.present? && alert.tour_status == "virtual"
+                            - if alert.tour_status.present? && alert.tour_status == "virtual_tour"
                               = image_tag  image_url("virtual_cross.png"), :style => "height: 20px; width: 20px;", "data-content" => "Virtual Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                            - elsif alert.tour_status.present? && (alert.tour_status == "self_tour" || alert.tour_status == "guided")
+                            - elsif alert.tour_status.present? && (alert.tour_status == "self_tour" || alert.tour_status == "guided_tour")
                               = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "In-Person Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                             - else
                               = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
