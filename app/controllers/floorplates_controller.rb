@@ -168,7 +168,7 @@ class FloorplatesController < ApplicationController
     end
 
     @community_units = @floorplate.fetch_units.includes(:doors)
-    @doors = @community_units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.doors.present? ? { id: unit.doors.first.id, name: unit.doors.first.name, x_plot: unit.doors.first.x_plot, y_plot: unit.doors.first.y_plot} : {} }}}
+    @doors = @community_units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.doors.present? ? unit.doors.first : {} }}}
 
     add_breadcrumb "Floor plates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community,@floorplate)

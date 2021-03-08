@@ -63,20 +63,18 @@
   }
 
   function saveFloorplateUnitDoor(id, dx, dy){
-    debugger
     $.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunitdoorforfloorplate",
     { 
       "x_plot": dx,
       "y_plot": dy,
       "floorplate_id": floorplate_id
-    }).done(function(data) {
-      if(data.success){
+    }).done(function(response) {
+      if(response.success){
         $("#plus_" + id).remove()
-        fetch_unit_index(data.unit.id)
-        update_doors_info(data.door)
+        updateUnitDoorsInfo(response.door, fetchUnitIndex(response.unit.id))
       }
       else
-        console.warn("error: ", data)
+        console.warn("error: ", response)
     })
   }
 

@@ -369,7 +369,7 @@ class UnitsController < ApplicationController
       door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
       render json: {unit: unit, door: door, success: true}
     else
-      render json: {unit: unit, door: {}, success: false}
+      render json: {unit: {}, door: {}, success: false}
     end
   end
 

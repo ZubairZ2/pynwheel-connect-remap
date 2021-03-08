@@ -8,19 +8,16 @@ function delete_plot(removing, url){
 }
 
 function delete_unitdoor_plot(url){
-    debugger
     $.ajax({
         type: "delete",
         url:  url,
         cache: false,
         success: function(response) {
             if(response.success){
-                debugger
                 $('#ajax-confirm-delete').modal('hide');
                 $(("#door_"+response.unit.provider_unit_id)).remove()
-                create_CreateUnitDoor_icon(response.unit)
-
-                // remove it from overall arrays of doors (not created yet)
+                attachPlusIconWithUnit(response.unit)
+                deleteUnitDoorsInfo(fetchUnitIndex(response.unit.id))
             }
             else
                 console.warn(response)
@@ -29,11 +26,6 @@ function delete_unitdoor_plot(url){
             console.warn(errors)
         }
     });
-}
-
-function create_CreateUnitDoor_icon(unit){
-    plus_icon = create_CreateDoorPlusIcon(unit.provider_unit_id)
-    $(("#m_"+unit.provider_unit_id)).after(plus_icon)
 }
 
 $(document).ready(function(){

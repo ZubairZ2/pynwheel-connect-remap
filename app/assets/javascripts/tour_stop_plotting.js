@@ -88,6 +88,13 @@ $(document).ready(function(){
       // window.location.reload()
     });
 
+    $("#ajax-doors-detail-modal").on('show.bs.modal', function(event) {
+        xpos = parseInt( event.relatedTarget.style.left )
+        ypos = parseInt( event.relatedTarget.style.top  )
+        same_location_doors = getUnitDoorsAtSameLocation(xpos, ypos)
+        addDoorButtonsInDoorModal(same_location_doors)
+    })
+
     // $('.amenities-list').on('change', function(e) {
     //   e.preventDefault();
     //   $('.amenities-list :selected').each(function(){
@@ -226,7 +233,7 @@ $(document).ready(function(){
         }
         else if (typeof floorplate_id !== 'undefined' || sitemap_id !== 'undefined')
         {   
-            plus_icon = create_CreateDoorPlusIcon(selected[0][0])
+            plus_icon = plusIconToCreateDoor(selected[0][0])
             tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute">
                         <a id="m_${selected[0][0]}" style="font-size: ${marker_font_size}px" title="${selected[0][1]}" data-toggle="modal" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="unit" href="#">
                             <i class="fas fa-map-marker-alt" style="color: ${marker_color};"></i> </a>
@@ -253,15 +260,42 @@ $(document).ready(function(){
     }
 });
 
-function create_CreateDoorPlusIcon(id){
+function attachPlusIconWithUnit(unit){
+    plus_icon = plusIconToCreateDoor(unit.provider_unit_id)
+    $(("#m_"+unit.provider_unit_id)).after(plus_icon)
+}
+
+function plusIconToCreateDoor(id){
     return `<a id="plus_${id}" style="margin-left: -6px;" title="Click to plot this unit(s) door" data-toggle="tooltip" data-plotted-category="create_unit_door" onclick="plot_entry_point(event)" href="#">
                 <i class="fa fa-plus-circle fa-xs" style="color: #59de83; font-size: ${marker_font_size/2}px;"></i>
             </a>`
 }
 
-function fetch_unit_index(id){
+function fetchUnitIndex(id){
+    selected_doors_index = []
     $(units_info).filter(function (i,row){
         if(row.unit_info.unit.id == id)
             selected_doors_index.push(i)
     })
+    return selected_doors_index
 }
+
+function updateUnitDoorsInfo(updated_door ,position){
+    units_info[position].unit_info.door = updated_door
+}
+
+function deleteUnitDoorsInfo(position){
+    units_info[position].unit_info.door = {}
+}
+
+function getUnitDoorsAtSameLocation(xpos, ypos){
+    return units_info.filter(row => row.unit_info.door.x_plot == xpos && row.unit_info.door.y_plot == ypos)
+}
+
+function addDoorButtonsInDoorModal(doors){
+    for(var door of doors){
+        $('.door-buttons-in-door-modal').append('<button class="btn modal-unit-button ml-5' + '' + '" type="button" ');
+    }
+
+}
+
