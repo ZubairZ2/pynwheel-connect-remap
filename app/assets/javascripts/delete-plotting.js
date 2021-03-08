@@ -17,7 +17,7 @@ function delete_unitdoor_plot(url){
             if(response.success){
                 debugger
                 $('#ajax-confirm-delete').modal('hide');
-                $(("#door_"+response.door.id)).remove()
+                $(("#door_"+response.unit.provider_unit_id)).remove()
                 create_CreateUnitDoor_icon(response.unit)
 
                 // remove it from overall arrays of doors (not created yet)
@@ -32,10 +32,10 @@ function delete_unitdoor_plot(url){
 }
 
 function create_CreateUnitDoor_icon(unit){
-    debugger
-    create_unit_door = `<a id="plus_${unit.provider_unit_id}" class="marker ui-draggable ui-draggable-handle" style="left:${unit.x_plot  - left_margin + 20}px; top:${unit.y_plot  - right_margin + 20}px; position:absolute; " title="Click to plot this unit(s) door" data-toggle="tooltip" data-plotted-category="create_unit_door" onclick="plot_entry_point(event)" href="#">
+    create_unit_door = `<a id="plus_${unit.provider_unit_id}" style="margin-left: -6px;" title="Click to plot this unit(s) door" data-toggle="tooltip" data-plotted-category="create_unit_door" onclick="plot_entry_point(event)" href="#">
                             <i class="fa fa-plus-circle fa-xs" style="color: #59de83; font-size: ${marker_font_size/2}px;"></i>
                         </a>`
+
     $(("#m_"+unit.provider_unit_id)).after(create_unit_door)
 }
 

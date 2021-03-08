@@ -226,12 +226,14 @@ $(document).ready(function(){
         }
         else if (typeof floorplate_id !== 'undefined' || sitemap_id !== 'undefined')
         {   
-            tag =   `<a id="m_${selected[0][0]}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${marker_font_size}px" title="${selected[0][1]}" data-toggle="modal" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="unit" href="#">
-                        <i class="fas fa-map-marker-alt" style="color: ${marker_color};"></i>
-                    </a>
-                    <a id="plus_${selected[0][0]}" class="marker ui-draggable ui-draggable-handle" style="left:${dx + 20}px; top:${dy + 20}px; position:absolute; " title="Click to plot this unit(s) door" data-toggle="tooltip" data-plotted-category="create_unit_door" onclick="plot_entry_point(event)" href="#">
-                        <i class="fa fa-plus-circle fa-xs" style="color: #59de83; font-size: ${marker_font_size/2}px;"></i>
-                    </a>`
+            tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute">
+                        <a id="m_${selected[0][0]}" style="font-size: ${marker_font_size}px" title="${selected[0][1]}" data-toggle="modal" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="unit" href="#">
+                            <i class="fas fa-map-marker-alt" style="color: ${marker_color};"></i>
+                        </a>
+                        <a id="plus_${selected[0][0]}" style="margin-left: -6px;" title="Click to plot this unit(s) door" data-toggle="tooltip" data-plotted-category="create_unit_door" onclick="plot_entry_point(event)" href="#">
+                            <i class="fa fa-plus-circle fa-xs" style="color: #59de83; font-size: ${marker_font_size/2}px;"></i>
+                        </a>
+                    </p>`
         }
         else
         {
@@ -245,7 +247,7 @@ $(document).ready(function(){
     function getDoorTag(url){
         if (typeof floorplate_id !== 'undefined')
         {   
-            tag =   `<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="${selected[0][1]} (door)" style="left:${dx - door_left_margin}px; top:${dy - door_right_margin}px; position:absolute; font-size: ${door_fontsize}px;" data-name="door" data-target="#ajax-confirm-delete" data-href="${url} data-plotted-category="unit_door"">
+            tag =   `<a id="door_${selected[0][0]}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${selected[0][1]} (door)" data-toggle="modal" data-name="door" data-target="#ajax-confirm-delete" data-href="${url}" data-plotted-category="unit_door" href="#">
                         <i class="fa fa-sign-in fa-xs" style="color: ${door_marker_color};"></i>
                     </a>`
         }

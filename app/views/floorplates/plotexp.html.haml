@@ -101,24 +101,31 @@
                       = image_tag  @floorplate.image.url
                   - else
                     = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg"
+
                   - community_units = @community_units
                   - coordinates_array = []
+                  
                   - community_units.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot - left_margin ,unit.y_plot - right_margin])
+
                         - coordinates_array.push([unit.x_plot - left_margin ,unit.y_plot - right_margin])
                         - unit_door_exists = unit.doors.exists? ? true : false
+
                         %p{class: "marker", style: "left:#{unit.x_plot - left_margin }px; top:#{unit.y_plot - right_margin}px; position:absolute"}
                           = link_to "#", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                             %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
+
                           - unless unit_door_exists
-                            = link_to "#", { id: "plus_#{unit.provider_unit_id}", style: "left:10px; top:10px;", title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}, onclick: 'plot_entry_point(event)'} do
+                            = link_to "#", { id: "plus_#{unit.provider_unit_id}", style: "margin-left: -6px;", title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}, onclick: 'plot_entry_point(event)'} do
                               %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/2}px;" }
                             - unit_door_exists = false
+
                         - if unit_door_exists
                           - unit_door = unit.doors.first
-                          = link_to "#", { id: "door_#{unit_door.id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name + " (door " + unit_door.id.to_s + ")", data: {toggle: "tooltip", toggle: "modal", name: "door", target: "#ajax-confirm-delete", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_unitdoor_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", plotted_category: "unit_door"}} do
+                          = link_to "#", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", name: "door", target: "#ajax-confirm-delete", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_unitdoor_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", plotted_category: "unit_door"}} do
                             %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
+
                       - else
                         - puts "duplicated.........."
                       -# .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name,:id=>"h-#{unit.provider_unit_id}", "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
