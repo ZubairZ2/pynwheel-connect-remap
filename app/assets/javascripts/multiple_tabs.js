@@ -23,13 +23,16 @@ window.addEventListener('load', function () {           // after page is fully l
     if(already_called == false && window.localStorage.getItem('tabs_count') >= 1){
         chat_service_available()
     }
+
+    if(window.localStorage.getItem('tabs_count') == 0)
+        chat_service_not_available()
 })
 
 window.addEventListener('beforeunload', function () {
     if (allowed_roles.includes(current_user_role) && current_user_id != "undefined" && $("#widget-button").length == 1){
         if(window.localStorage.getItem('tabs_count') > 0)
             window.localStorage.setItem('tabs_count', (parseInt(window.localStorage.getItem('tabs_count')) - 1))
-
+        
         if(isChrome)
             sleep(100);
         else
