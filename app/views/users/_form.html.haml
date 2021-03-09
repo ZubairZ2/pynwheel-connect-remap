@@ -118,6 +118,10 @@
       $('#user_company_name').attr('disabled',true)
       $('#user_region_id').attr('disabled',true)
     }
+    else{
+      $(`#user_role option[value='Company admin']`).attr('disabled', true)
+      $(`#user_role option[value='Regional admin']`).attr('disabled', true)
+    }
     comp = "#{@company.id}"
     if ( is_company_admin(edit_user_role))
       data = {user_communities: "true", user:  ($('#user-id').val()), company_id: ($('#edit_user_company_id').val())}
