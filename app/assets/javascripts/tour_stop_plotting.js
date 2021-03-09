@@ -88,14 +88,6 @@ $(document).ready(function(){
       // window.location.reload()
     });
 
-    $("#ajax-doors-detail-modal").on('show.bs.modal', function(event) {
-        debugger
-        xpos = parseInt( event.relatedTarget.style.left )
-        ypos = parseInt( event.relatedTarget.style.top  )
-        same_location_doors = getUnitDoorsAtSameLocation(xpos, ypos)
-        addDoorButtonsInDoorModal(event, same_location_doors)
-    })
-
     $("#map").mouseup(function(e) {
         debugger
         // first check if user is clicking on scrollbar
@@ -118,13 +110,17 @@ $(document).ready(function(){
 
             if (addmode) {
                 // save plotting for each selected unit
-                for (i=0; i<selected.length; i++) {
-                    savePlot(selected[i][0], dx, dy);
+                try {
+                    for (i=0; i<selected.length; i++) {
+                        savePlot(selected[i][0], dx, dy);
+                    }
                 }
-
+                catch(err) {
+                    location.reload()
+                }
+                
                 if(adddoorsmode){
-                    var url = getDeleteDoorUrl(selected[0][0]);
-                    tag = getDoorTag(url)
+                    tag = getDoorTag(selected[0][0])
                 }
                 else{
                     var url = getDeleteUnitUrl();
@@ -169,12 +165,6 @@ function getDeleteUnitUrl(){
     }
 }
 
-function getDeleteDoorUrl(provider_id){
-    if (typeof floorplate_id !== 'undefined'){
-        return '/communities/'+community_id+'/units/'+provider_id+'/remove_unitdoor_plot_from_floorplate?floorplate_id='+floorplate_id
-    }
-}
-
 function getUnitTag(url){
     if (typeof tour_id_for_stop !== 'undefined')
     {
@@ -206,10 +196,16 @@ function getUnitTag(url){
     return tag
 }
 
-function getDoorTag(url){
+function getDeleteDoorUrl(provider_id){
+    if (typeof floorplate_id !== 'undefined'){
+        return '/communities/'+community_id+'/units/'+provider_id+'/remove_unitdoor_plot_from_floorplate?floorplate_id='+floorplate_id
+    }
+}
+
+function getDoorTag(provider_id){
     if (typeof floorplate_id !== 'undefined')
     {   
-        tag =   `<a id="door_${selected[0][0]}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${selected[0][1]} (door)" data-toggle="modal" data-name="door" data-target="#ajax-confirm-delete" data-href="${url}" data-plotted-category="unit_door" href="#">
+        tag =   `<a id="door_${provider_id}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${provider_id} (door)" data-toggle="modal" data-target="#ajax-doors-detail-modal" data-plotted-category="unit_door" href="#">
                     <i class="fa fa-sign-in fa-xs" style="color: ${door_marker_color};"></i>
                 </a>`
     }
@@ -226,13 +222,3 @@ function returnPlusIconTag(id){
                 <i class="fa fa-plus-circle fa-xs" style="color: #59de83; font-size: ${marker_font_size/2}px;"></i>
             </a>`
 }
-
-function fetchUnitIndex(id){
-    selected_doors_index = []
-    $(units_info).filter(function (i,row){
-        if(row.unit_info.unit.id == id)
-            selected_doors_index.push(i)
-    })
-    return selected_doors_index
-}
-

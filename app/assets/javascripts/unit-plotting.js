@@ -415,12 +415,19 @@ function saveDraggedDoor(id, dx, dy, doors_count){
   }).done(function(response) {
     debugger
     if(response.success){
-      if(current_door == doors_count)
-        $(".mapLoading").addClass("hidden");
-      else
-        current_door = current_door + 1
+      try {
+        if(response.success){
+          if(current_door == doors_count)
+            $(".mapLoading").addClass("hidden");
+          else
+            current_door = current_door + 1
+        }
+      }
+      catch(err) {
+        location.reload()
+      }
     }
     else
-      location.reload();
+      location.reload()
   })
 }

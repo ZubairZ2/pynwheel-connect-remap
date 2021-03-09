@@ -365,9 +365,8 @@ class UnitsController < ApplicationController
   def ajaxplotunitdoorforfloorplate
     unit = @community.units.where(provider_unit_id: params[:id]).first
     if unit.present?
-      door = unit.doors.first_or_initialize
-      door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
-      render json: {unit: unit, door: door, success: true}
+      unit.doors.first_or_initialize.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+      render json: {unit: unit, door: unit.doors.first, success: true}
     else
       render json: {unit: {}, door: {}, success: false}
     end

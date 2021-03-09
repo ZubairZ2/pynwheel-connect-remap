@@ -124,7 +124,7 @@
 
                         - if unit_door_exists
                           - unit_door = unit.doors.first
-                          = link_to "#", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", name: "door", target: "#ajax-doors-detail-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_unitdoor_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", plotted_category: "unit_door"}} do
+                          = link_to "#", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "unit_door"}} do
                             %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
 
                       - else

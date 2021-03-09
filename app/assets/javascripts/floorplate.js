@@ -132,13 +132,16 @@ function plot_entry_point(event){
   $(event.target).css({"color": "#c9ffdd", "cursor": "crosshair"})
 
   parent_unit = event.currentTarget.previousElementSibling  
+  currently_selected_id = parent_unit.id.split("_")[1]
+ 
   title = parent_unit.title + " (door)"
   xpos = parseInt(parent_unit.parentElement.style.left)     // parent_unit.offsetLeft is sometime incrementing value by 1
   ypos = parseInt(parent_unit.parentElement.style.top)
 
   getUnitsAtSameLocation(xpos, ypos)
   addSameLocationUnitsToSelected()
-
+  sortSelected(currently_selected_id)
+  
   adddoorsmode = true
   plotMode();
   // $("#map").append(door_tag);
@@ -161,5 +164,20 @@ function addSameLocationUnitsToSelected(){
   selected = []
   for(var provider_unit_id of temp){
     selected.push([provider_unit_id, provider_unit_id]);
+  }
+}
+
+function sortSelected(currently_selected_provider_id){
+  // sort if required, first in selected should be according to the current name of plotted unit
+  if(selected[0][0] != currently_selected_provider_id){
+    
+    var index;    
+    for(index=0; index < selected.length; index++ ){
+      if(selected[index][0] == currently_selected_provider_id)
+        break;
+    }
+
+    selected[index] = selected[0]
+    selected[0] = [currently_selected_provider_id, currently_selected_provider_id]
   }
 }
