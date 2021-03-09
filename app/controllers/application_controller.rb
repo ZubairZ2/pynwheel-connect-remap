@@ -145,7 +145,8 @@ class ApplicationController < ActionController::Base
   end
 
   def show_chat_support
-    Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {community_id: current_community.id, user_id: current_user.id, chat_enable: true}).exists? rescue false
+    current_community.present? ? CommunityUser.where(user_id: current_user.id, chat_enable: true).exists? : false rescue false
+    # Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {community_id: current_community.id, user_id: current_user.id, chat_enable: true}).exists? rescue false
   end
   protected
 
