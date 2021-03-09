@@ -95,6 +95,7 @@
             .col-lg-9#container.p-0
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
+                  .mapLoading.hidden
                   .grid-graph.hidden
                   - if @floorplate.image? and @floorplate.image.content_type == "image/svg+xml"
                     .svg_image_style{:style =>  "width: #{@floorplate.width}px; height: #{@floorplate.height}px;"}
@@ -128,7 +129,7 @@
 
                       - else
                         - puts "duplicated.........."
-                      -# .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name,:id=>"h-#{unit.provider_unit_id}", "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
+                      .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name,:id=>"h-#{unit.provider_unit_id}", "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
 
             .col-lg-3.multi-select-units.select-units-on-page
               %h5.mt-40.mb-20
@@ -231,7 +232,7 @@
           .door-buttons-in-door-modal
         .modal-footer
           = submit_tag "Update",:class=>"btn btn-primary"
-          %a.btn.btn-danger.delete-marker-ok{"data-method"=>"delete"} Delete Marker
+          %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Marker
           %a.btn.btn-primary{:onclick=>"addMarkerOnFloorplate()"} Add Marker
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
 

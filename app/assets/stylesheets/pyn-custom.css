@@ -643,6 +643,25 @@ table.upload-image tr td{
   top: 0;
 }
 
+.mapLoading {
+  display: none;
+}
+.mapLoading {
+  display: block;
+  position: fixed;
+  z-index: 100000;
+  background-image: url('loader.gif');
+  background-color: #66666669;
+  opacity: 1;
+  background-repeat: no-repeat;
+  background-position: center;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  top: 0;
+  position: absolute;
+}
+
 #new-search-area input {
   width: 300px;
 }

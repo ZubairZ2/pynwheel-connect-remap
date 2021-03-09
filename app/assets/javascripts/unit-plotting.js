@@ -62,22 +62,6 @@
      });
   }
 
-  function saveFloorplateUnitDoor(id, dx, dy){
-    $.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunitdoorforfloorplate",
-    { 
-      "x_plot": dx,
-      "y_plot": dy,
-      "floorplate_id": floorplate_id
-    }).done(function(response) {
-      if(response.success){
-        $("#plus_" + id).remove()
-        updateUnitDoorsInfo(response.door, fetchUnitIndex(response.unit.id))
-      }
-      else
-        console.warn("error: ", response)
-    })
-  }
-
   function saveTourStaringPoint(id, dx, dy){
     $.post( "/communities/"+community_id+"/tours/" + id + "/ajaxplotstartingpoint",
         { "x_plot": dx,
@@ -267,56 +251,29 @@
 
 
   function doDraggable() {
+    console.log("called do draggable")
     // marker move
     $('.marker').draggable({
       containment: 'parent',
       stack: ".marker",
-      // get the initial X and Y position when dragging starts
       start: function(event, ui) {
         debugger
-        console.log("start drag")
-        xpos = Math.round(ui.position.left);
-        ypos = Math.round(ui.position.top);
-        // temp array of just markers at same x/y
-        temp=[];
-        // alert(arr);
-        if (arr != null) {
-          for (i=0; i<arr.length; i++) {
-            if (arr[i][1] == xpos && arr[i][2] == ypos) {
-                // alert(arr[i]);
-                // alert(arr[i][0]);
-              temp.push(arr[i][0])
-            }
-          }
-        }
+        if(is_ui_a_door(ui))
+          start__door_work(event, ui)
+        else
+          start__original_work(event, ui)
       },
-      // when dragging stops
       drag: function(event, ui) {
-        console.log("draging....");
-        // calculate the dragged distance, with the current X and Y position and the "xpos" and "ypos"
-        xmove = ui.position.left - xpos;        // no need of it
-        ymove = ui.position.top - ypos;         // no need of it
-        if (temp != null) {
-          for (i=0; i<temp.length; i++) {
-            $('#m_' + temp[i]).css({"left": ui.position.left, "top": ui.position.top});
-          }
-        }
+        if(is_ui_a_door(ui))
+          drag__door_work(event, ui)
+        else
+          drag__original_work(event, ui)
       },
       stop: function(event, ui) {
-        if (temp != null) {
-          for (i=0; i<temp.length; i++) {
-            console.log("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
-            for (j=0; j<arr.length; j++) {
-              if (arr[j][0] == temp[i]) {       // computationally expensive, I will try to do this in one iteration
-                arr[j][1] = Math.round(ui.position.left);
-                arr[j][2] = Math.round(ui.position.top);
-              }
-            }
-            // alert(temp[i]);
-            debugger
-            savePlot(temp[i], Math.round(ui.position.left ) + lmargin, Math.round(ui.position.top ) + rmargin);
-          }
-        }
+        if(is_ui_a_door(ui))
+          stop__door_work(event, ui)
+        else
+          stop__original_work(event, ui)
       }
     });
   }
@@ -365,3 +322,105 @@ function removeUnitFromSelectedArray(value){
     }
   }
 }  
+
+
+
+function start__original_work(event, ui){
+  // get the initial X and Y position when dragging starts
+  xpos = Math.round(ui.position.left);
+  ypos = Math.round(ui.position.top);
+  
+  // temp array of just markers at same x/y
+  temp=[];
+
+  if (arr != null) {
+    for (i=0; i<arr.length; i++) {
+      if (arr[i][1] == xpos && arr[i][2] == ypos) {
+          // alert(arr[i]);
+          // alert(arr[i][0]);
+        temp.push(arr[i][0])
+      }
+    }
+  }
+}
+
+function drag__original_work(event, ui){
+
+  if (temp != null) {
+    for (i=0; i<temp.length; i++) {
+      $('#m_' + temp[i]).css({"left": ui.position.left, "top": ui.position.top});
+    }
+  }
+}
+
+function stop__original_work(event, ui){
+  if (temp != null) {
+    for (i=0; i<temp.length; i++) {
+      console.log("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
+      for (j=0; j<arr.length; j++) {
+        if (arr[j][0] == temp[i]) {       // computationally expensive, I will try to do this in one iteration
+          arr[j][1] = Math.round(ui.position.left);
+          arr[j][2] = Math.round(ui.position.top);
+        }
+      }
+      // alert(temp[i]);
+      debugger
+      savePlot(temp[i], Math.round(ui.position.left ) + lmargin, Math.round(ui.position.top ) + rmargin);
+    }
+  }
+}
+
+
+
+
+function is_ui_a_door(ui)
+{
+  return typeof ui.helper.attr("id") != "undefined"  && ui.helper.attr("id").includes("door")
+}
+
+
+function start__door_work(event, ui){
+  xpos = Math.round(ui.position.left);
+  ypos = Math.round(ui.position.top);
+  same_location_doors = getUnitDoorsAtSameLocation(xpos, ypos)
+}
+
+
+function drag__door_work(event, ui){
+  // for(var row of same_location_doors)
+  //   $('#door_' + row.unit_info.unit.provider_id).css({"left": Math.round(ui.position.left), "top": Math.round(ui.position.top)});
+
+  // $('#door_' + row.unit_info.unit.provider_id).css({"left": Math.round(ui.position.left), "top": Math.round(ui.position.top)});
+
+}
+
+
+function stop__door_work(event, ui){
+  for(var row of same_location_doors){
+    row.unit_info.door.x_plot = Math.round(ui.position.left);
+    row.unit_info.door.y_plot = Math.round(ui.position.top);
+    saveDraggedDoor(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, same_location_doors.length)
+  }
+}
+
+
+function saveDraggedDoor(id, dx, dy, doors_count){
+  current_door = 1
+  if ($(".mapLoading").hasClass("hidden")) $(".mapLoading").removeClass("hidden") 
+  $.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunitdoorforfloorplate",
+  { 
+    "x_plot": dx,
+    "y_plot": dy,
+    "floorplate_id": floorplate_id
+  }).done(function(response) {
+    debugger
+    if(response.success){
+      if(current_door == doors_count)
+        $(".mapLoading").addClass("hidden");
+      else
+        current_door = current_door + 1
+    }
+    else
+      location.reload();
+  })
+}
