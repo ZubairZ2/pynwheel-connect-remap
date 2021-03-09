@@ -33,6 +33,9 @@ window.addEventListener('beforeunload', function () {
         if(window.localStorage.getItem('tabs_count') > 0)
             window.localStorage.setItem('tabs_count', (parseInt(window.localStorage.getItem('tabs_count')) - 1))
         
+        if(window.localStorage.getItem('tabs_count') == 0)
+            chat_service_not_available()
+            
         if(isChrome)
             sleep(100);
         else
