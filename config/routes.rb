@@ -479,6 +479,7 @@ Rails.application.routes.draw do
         collection do
           post :tour_user_login
           post :start_tour_auto_message
+          post :save_tour_user_card_info
         end
         member do
           post :tour_user_login
