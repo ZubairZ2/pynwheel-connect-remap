@@ -325,7 +325,12 @@
                       .available-now
                         %p#availability
                     - if @community_info.credential.present? and @community_info.credential.apply_now.to_s == "true"
-                      - if @community_info.data_provider == "psi" || @community_info.data_provider == "realpagesvc"
+                      - if @community_info.data_provider == "resman"
+                        .date-select
+                          %h5= "Lease Term"
+                          .form-group
+                            %input.form-control#lease-term{:type => "number", :min => "1", :max => "36"}/
+                      - if @community_info.data_provider == "psi" || @community_info.data_provider == "realpagesvc" || @community_info.data_provider == "resman"
                         .date-select
                           %h5= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
                           .form-group
@@ -334,6 +339,8 @@
                       .btn-apply
                         - if @community_info.data_provider == "realpagesvc"
                           = link_to "Apply Now","##",:onclick=>"set_realpagesvc_url(this);",:id=>"realpagesvc-anchor-tag"
+                        - elsif @community_info.data_provider == "resman"
+                          = link_to "Apply Now", "##",:onclick=>"set_resman_url(this);",:id=>"psi-anchor-tag"
                         - else
                           = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag"
                     - elsif @community_info.credential.present? and @community_info.credential.apply_now.to_s == "separate_link"

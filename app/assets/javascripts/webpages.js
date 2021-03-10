@@ -894,6 +894,12 @@ function set_psi_url(element) {
     var url = $(element).data('availability-url');
   window.open(url, '_blank');
 }
+function set_resman_url(element)
+{
+  date = new Date($('#leasing-start-date').val())
+  var url = $(element).data('availability-url') + "&leaseTerm=" + $('#lease-term').val() + "&moveInDate=" + date.toISOString().split('T')[0]
+  window.open(url, '_blank');
+}
 
 function set_realpagesvc_url(element) {
   //http://localhost:3000/communities/25/webpages/apply_now?MoveInDate=12/15/2017&UnitId=346&SearchUrl=https%3A//localhost:3000#k=70697
