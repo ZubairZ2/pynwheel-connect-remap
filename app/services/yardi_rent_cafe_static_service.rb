@@ -122,6 +122,7 @@ class YardiRentCafeStaticService < BaseService
     end
   end
 
+
   def import_yardirentcafe_floorplans
     property_codes = credentials.p_code.split(',') rescue []
     property_codes.each do |property_code|
