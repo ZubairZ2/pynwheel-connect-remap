@@ -419,7 +419,6 @@ json.tours @tours do |tour|
 
   # ///////////////////////////////////////////////////////////////////// Stop data //////////////////////////////////////////////////////
   json.tour_stop new_stops_arr.compact do |stop|
-    json.stop_lock_provider ''
 
     begin
       if skip_1
@@ -459,7 +458,7 @@ json.tours @tours do |tour|
         end 
       end
     end
-
+    json.stop_lock_provider ''
 
     # next if !@community.mdu && stop.stop_type == "unit"
     navigation_title = ""
