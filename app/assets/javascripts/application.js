@@ -55,6 +55,7 @@
 //= require bootstrap-select
 //= require jquery.multi-select 
 //= require tags
+//= require update_session
 //= require multiple_tabs
 //= require Chart.min
 //made changes in jquery.multi-select according to our requirement in at library at line #488. Commented sanitize function
