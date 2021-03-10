@@ -36,6 +36,7 @@ $(document).ready(function () {
 
     $('.amenities-list').multiSelect();
     $('.amenities-list-on-popup').multiSelect();
+    $('.doors-list-on-popup').multiSelect();
 
     $('.select-units-on-page .ms-elem-selectable').click(function () {
       debugger
@@ -123,6 +124,10 @@ function addMarkerOnFloorplate(){
   $('#add_horizontal_position').val($('#horizontal_position').val());
   $('#add_vertical_position').val($('#vertical_position').val());
   $('#add-marker-modal').modal('show');
+}
+
+function addDoorsMarkerOnFloorplate(){
+  $('#ajax-add-door-marker-modal').modal('show');
 }
 
 function plot_entry_point(event){

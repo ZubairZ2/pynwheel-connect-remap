@@ -104,9 +104,10 @@
                     = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg"
 
                   - community_units = @community_units
+                  - units_by_plotted_doors_order = @community_units.sort_by {|obj| obj.doors.present? ? obj.doors.first.id : obj.id}
+
                   - coordinates_array = []
-                  
-                  - community_units.each do |unit|
+                  - units_by_plotted_doors_order.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot - left_margin ,unit.y_plot - right_margin])
 
@@ -214,7 +215,7 @@
           = submit_tag "Add",:class=>"btn btn-primary" 
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel         
 
-#ajax-doors-detail-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+#ajax-doors-detail-modal.modal.fade{"aria-hidden" => "true", "data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
       .modal-header#u-name
@@ -232,10 +233,26 @@
           .door-buttons-in-door-modal
         .modal-footer
           = submit_tag "Update",:class=>"btn btn-primary"
-          %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Marker
-          %a.btn.btn-primary{:onclick=>"addMarkerOnFloorplate()"} Add Marker
+          %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Door
+          %a.btn.btn-primary{:onclick=>"addDoorsMarkerOnFloorplate()"} Add Doors
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
 
+#ajax-add-door-marker-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#add-marker-heading
+        Add Marker
+      = form_tag "/communities/#{@community.id}/add_plots_on_floorplate" do
+        .modal-body
+          = hidden_field_tag 'unit_provider_ids',"[]"
+          .form-group.row
+            %label.col-sm-2.col-form-label
+            .col-sm-10.doors-selects-in-popup
+              %select.doors-list-on-popup.form-control{:multiple=>"multiple"}
+
+        .modal-footer
+          = submit_tag "Add",:class=>"btn btn-primary" 
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel   
 :javascript
   var arr = #{raw arr}
   var units_info = #{@doors.to_json.html_safe}
