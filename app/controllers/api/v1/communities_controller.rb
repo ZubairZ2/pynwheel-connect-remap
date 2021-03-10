@@ -558,7 +558,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   
   def check_zerv_user_existance_again(community, tour_user, thread_ref)
-    if community.enable_locks and community.locks_provider == "Zerv" and community.zerv.present? and tour_user.tour_type != "virtual_tour"
+    if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and community.zerv.present? and tour_user.tour_type != "virtual_tour"
       puts "-----------------------------------------     main thread halted    ---------------------------------------------------"
       begin
         unless thread_ref == "null"

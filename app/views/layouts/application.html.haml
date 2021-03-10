@@ -43,6 +43,6 @@
       = render partial: "/delete_confirmation_modal"
       - unless params[:controller] == "tour_users" && params[:action]== "show"  &&  !current_user.present?
         = render partial: "/alert_modals"
-      - if @community.present? and @community.chat_control
+      - if @community.present?
         = render partial: "/chat_modal"
 
