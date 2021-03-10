@@ -97,10 +97,10 @@
                         - end_time = alert.left.present? ? alert.left : alert.lengthy_stay
                         .col-lg-6{:style => "#{index == 0 ? "margin-top: 5px" : "margin-top: 13px"}"}
                           .alert-div1{:style => "margin-top: 10px"}
-                            - if alert.tour_status.present? && (alert.created_at > "2021-02-30".to_date) && alert.tour_status == "virtual_tour"
+                            - if alert.tour_status.present? && (alert.created_at > "2021-02-27".to_date) && alert.tour_status == "virtual_tour"
                               - @virtual_list << alert.tour_key if alert.tour_key.present?
                               = image_tag  image_url("virtual_eye_grey.png"), :style => "height: 22px; width: 22px;", "data-content" => "Virtual Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                            - elsif alert.tour_status.present? && alert.created_at > "2021-02-30".to_date && (alert.tour_status == "self_tour" || alert.tour_status == "guided_tour")
+                            - elsif alert.tour_status.present? && alert.created_at > "2021-02-27".to_date && (alert.tour_status == "self_tour" || alert.tour_status == "guided_tour")
                               = image_tag  image_url("virtual_walk_grey.png"), :style => "height: 22px; width: 22px;", "data-content" => "In-Person Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                             - else
                               = image_tag  image_url("icon-check.png"), :style => "height: 22px; width: 22px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"  
@@ -167,11 +167,14 @@
                             = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
                           - elsif @alerts.last.history == true
                             Removed at Consumer Request
-                  .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "background: #efefef;margin: 30px;"}
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12#parent-div{style: "background: #efefef;margin: 30px;"}
                     -# - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
                     -# - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
+                    .div#mapp
+                      = image_tag @community.is_sitemap ? @community.sitemap.image : @community.floorplates.all.order("id ASC").first.image, :class => "my_class hiddens", :id => "floorplane_img", :style => "height: 100%; width: 100%; display: none"
+                    %canvas#myCanvas{:height => "725", :style => "border:1px solid #d3d3d3;", :width => "725"}
 
-                    = image_tag @community.is_sitemap ? @community.sitemap.image : @community.floorplates.all.order("id ASC").first.image, :class => "my_class", :id => "floorplane_img", :style => "height: 100%; width: 100%;"
+                      
                     -# - if @existing_stops.present?
                       -# - @existing_stops.flatten.each_with_index do |stop, index|
                         -# - next if (stop.x_plot + stop.y_plot) < 1
@@ -414,6 +417,61 @@
                 DONE
 :javascript
 
+  var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    var img = document.getElementById("floorplane_img");
+    width = $('#parent-div').width()
+    height = ( width / img.width) * img.height
+   ctx.drawImage(img, 0, 0, width, height);
+
+
+
+  ctx.lineCap = "round";
+
+  // variable to hold how many frames have elapsed in the animation
+  var t = 1;
+
+  // define the path to plot
+  var vertices = [];
+ 
+   
+  // draw the complete line
+
+
+
+  // set some style
+ 
+
+
+  // calc waypoints traveling along vertices
+  function calcWaypoints(vertices) {
+      var waypoints = [];
+      for (var i = 1; i < vertices.length; i++) {
+          var pt0 = vertices[i - 1];
+          var pt1 = vertices[i];
+          var dx = pt1.x - pt0.x;
+          var dy = pt1.y - pt0.y;
+          for (var j = 0; j < 100; j++) {
+              var x = pt0.x + dx * j / 100;
+              var y = pt0.y + dy * j / 100;
+              waypoints.push({
+                  x: x,
+                  y: y
+              });
+          }
+
+      }
+
+      return (waypoints);
+  }
+
+
+ 
+
+
+
+
+
   $('[data-toggle="popover-hover"]').popover({
       html: true,
       trigger: 'hover',
@@ -532,30 +590,43 @@
     var community_id = #{ raw @community.id};
     var tour_user_id = #{ raw @tour_user.id};
     
-    if((is_sitemap == false && tour_history_id != "" && floorplate_id != "") || (is_sitemap == true && tour_history_id != "")){
-      $.ajax({
-          type: 'GET',
-          dataType: 'json',
-          cache: false,
-          data:  {
-          dwelo_id
-            },
-          url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/lock_ploting?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
-          success: function(data){
-            $(".asdasd").children('i').remove()
-            $("#unlock_history").children('h5').remove()
-            // data.existing_stops.flat().forEach(draw_stop)
-            data.lock_histories.flat().forEach(draw_history)
+    $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        cache: false,
+        data:  {
+        dwelo_id
           },
-          fail: function(data){
-            console.log(data)
+        url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/visited_stops_data?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
+        success: function(data){
+          for(var i=0 ; i < data.stops.length ; i++)
+          {
+            if(data.stops[i][1] != null)
+            {
+              vertices.push({
+                x: ((data.stops[i][1].x_plot / img.width)*width),
+                y:  ((data.stops[i][1].y_plot / img.height)*height)
+              });
+              if(data.stops[i][3] == 'amenity'){
+                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + ((data.stops[i][1].x_plot / img.width)*width) + 'px; top:  '+ ((data.stops[i][1].y_plot / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fas fa-map-marker-alt" style="color: #cf492f; border: solid 5px;"></i></a>')
+              }
+            }
           }
-      });
-    }
-    else{
-      $(".asdasd").children('i').remove()
-      $("#unlock_history").children('h5').remove()
-    }
+          debugger;
+
+          draw_a_line(vertices);
+          
+          debugger;
+
+          //$(".asdasd").children('i').remove()
+          //$("#unlock_history").children('h5').remove()
+          // data.existing_stops.flat().forEach(draw_stop)
+          //data.lock_histories.flat().forEach(draw_history)
+        },
+        fail: function(data){
+          console.log(data)
+        }
+    });
   }
 
   function draw_stop(stop, index){
@@ -580,4 +651,26 @@
   $("#tour_histories_dates").change(function () {
         plot_data()
   })
+  function draw_a_line(vertices)
+  {
+    ctx.lineWidth = 5;
+          ctx.strokeStyle = "blue";
+          // calculate incremental points along the path
+          var points = calcWaypoints(vertices);
+          // extend the line from start to finish with animation
 
+          animate(points);
+           function animate() {
+          if (t < points.length - 1) {
+              requestAnimationFrame(animate);
+          }
+          // draw a line segment from the last waypoint
+          // to the current waypoint
+          ctx.beginPath();
+          ctx.moveTo(points[t - 1].x, points[t - 1].y);
+          ctx.lineTo(points[t].x, points[t].y);
+          ctx.stroke();
+          // increment "t" to get the next waypoint
+          t++;
+      }
+  }

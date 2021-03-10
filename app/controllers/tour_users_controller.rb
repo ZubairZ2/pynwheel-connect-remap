@@ -139,6 +139,20 @@ class TourUsersController < ApplicationController
       render json: {existing_stops: existing_stops, lock_histories: lock_histories}, status: 200
     end
   end
+  def visited_stops_data
+    if(params[:tour_history_id].present? and params[:floorplate_id].present?)
+      tour_history = TourHistory.find params[:tour_history_id]
+      floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
+      stops = VisitedStop.where(tour_key: tour_history.tour_key).map{|x| 
+      
+        (x.stop_type == "amenity") ? ([x, (Amenity.find_by_id x.tour_stop_id), 'amenity'] rescue next): ([x, (Unit.find_by_id x.tour_stop_id) , 'unit'] rescue next)
+      }
+      stops.unshift(['',current_community.tour,"tour"])
+      render json: { :stops => stops}, status: 200
+    else
+      render json: {}, status: 404
+    end
+  end
 
   def destroy
     @community = Community.find params[:community_id]
