@@ -150,7 +150,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   def do_verfication verfied_by_provider, community
     if (verfied_by_provider == "authenteq") && community.tour.tour_setting.present? && community.tour.tour_setting.charge_user_for_id_verfication
-      true
+      false
     else
       false
     end
@@ -435,7 +435,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours ? false : true ) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
 
             if @scheduled_tours.present?
-              @is_tour_ontime = is_tour_on_time(@scheduled_tours, current_time, @tour.grace_period)
+              @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)
               current_tour = @is_tour_ontime
 
               unless @is_tour_ontime.present?
@@ -558,7 +558,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   
   def check_zerv_user_existance_again(community, tour_user, thread_ref)
-    if community.enable_locks and community.locks_provider == "Zerv" and community.zerv.present? and tour_user.tour_type != "virtual_tour"
+    if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and community.zerv.present? and tour_user.tour_type != "virtual_tour"
       puts "-----------------------------------------     main thread halted    ---------------------------------------------------"
       begin
         unless thread_ref == "null"

@@ -114,7 +114,7 @@ class ApplicationController < ActionController::Base
     # request.xhr? => returns numeric or nil values not BOOLEAN values and 
     # it works with unless condition as suited with our case
     unless request.xhr?
-      if current_user.present? and @community.present? and @community.chat_control and @community.tour.present?
+      if current_user.present? and @community.present? and @community.tour.present?
         chat_enabled_communities = current_user.communities.where(community_users: {chat_enable: true}).uniq.includes(:tour)
         @chatrooms = Chatroom.where(tour_id: chat_enabled_communities.map{|c| c.tour.id if c.tour.present?}).includes(:chats, :tour, :tour_user)
         @listening_channels = chat_enabled_communities.map{|c| (c.name + "_with_id_" + c.id.to_s).parameterize.gsub("-", "").gsub("_", "")}
@@ -145,7 +145,8 @@ class ApplicationController < ActionController::Base
   end
 
   def show_chat_support
-    Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {community_id: current_community.id, user_id: current_user.id, chat_enable: true}).exists? rescue false
+    current_community.present? ? CommunityUser.where(user_id: current_user.id, chat_enable: true).exists? : false rescue false
+    # Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {community_id: current_community.id, user_id: current_user.id, chat_enable: true}).exists? rescue false
   end
   protected
 

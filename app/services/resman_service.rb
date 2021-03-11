@@ -20,9 +20,6 @@ class ResmanService < BaseService
         if response["ResMan"]["Status"] == "Success"
           units = []
           floorplans = []
-          begin
-            availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["PropertyAvailabilityURL"]
-          end
           response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["ILS_Unit"].each do |pro|
             units << pro
           end
@@ -30,7 +27,8 @@ class ResmanService < BaseService
           response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Floorplan"].each do |pro|
             floorplans << pro
           end
-          save_resman_units(units,property_id,availability_url)
+          $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
+          save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
           # save_website_column_of_community(response)
           begin
@@ -65,7 +63,7 @@ class ResmanService < BaseService
       end
     end
   end
-  def save_resman_units(units,property_id,availability_url)
+  def save_resman_units(units,property_id)
 
     unit_present =  Unit.where("community_id = ? AND provider IN (?)",  credentials.community_id,  ["resman"]).map{|x| x.provider_unit_id.gsub('*','-')}
     units.each do |u|
@@ -114,10 +112,13 @@ class ResmanService < BaseService
           unit.available_date = vacateDate
         end
 
+        if $units_availability_url.present?
+          unit.availability_url = $units_availability_url + "&unitNumber=#{u['Id']}"
+        end
+
         # building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]
         # unit.building = building.present? ? building.gsub("Building ", "") : ""
         # unit.manually_updated = false
-        unit.availability_url = availability_url if availability_url.present?
         @unit_record << unit.provider_unit_id.gsub('*','-')
         unit.save(validate: false)
 
@@ -176,6 +177,9 @@ class ResmanService < BaseService
           unless unit.building_is_updated.present? && unit.building_is_updated
             building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]
             unit.building = building.present? ? building.gsub("Building ", "") : ""
+          end
+          if $units_availability_url.present?
+            unit.availability_url = $units_availability_url + "&unitNumber=#{u['Id']}"
           end
 
           unit.manually_updated = false
