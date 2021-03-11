@@ -1,4 +1,5 @@
 class ToursController < ApplicationController
+  include Error::ErrorHandler
   include AssignLocksHelper
   include ToursHelper
   

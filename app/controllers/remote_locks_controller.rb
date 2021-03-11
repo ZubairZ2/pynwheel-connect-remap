@@ -1,4 +1,5 @@
 class RemoteLocksController < ApplicationController
+  include Error::ErrorHandler
   include DweloDevicesHelper
   require 'oauth2'
   before_action :set_user, only: [:client_credentials, :get_all_deivces, :create_access_guest, :grant_access, :authorization_code]

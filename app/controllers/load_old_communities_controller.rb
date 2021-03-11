@@ -1,4 +1,5 @@
 class LoadOldCommunitiesController < ApplicationController
+  include Error::ErrorHandler
   def index
 
   end

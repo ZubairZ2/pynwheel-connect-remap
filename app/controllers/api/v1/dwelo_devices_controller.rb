@@ -1,7 +1,7 @@
 class Api::V1::DweloDevicesController < ActionController::Base
   # before_action :set_user, only: [:client_credentials, :get_all_deivces, :create_access_guest, :grant_access, :authorization_code]
   include DweloDevicesHelper
-
+  include Error::ErrorHandler
   def load_data
     dwelo_community_account = Dwelo.find(params[:dwelo_account_id]) rescue nil
     @community = dwelo_community_account.community

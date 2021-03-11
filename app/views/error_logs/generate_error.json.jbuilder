@@ -1,0 +1,1 @@
+json.(@error_log, :status, :message)

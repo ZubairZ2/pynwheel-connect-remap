@@ -1,5 +1,6 @@
 class Api::V1::CommunitiesController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
+  include Error::ErrorHandler
   include DweloDevicesHelper
   before_action :set_community, only: :email_favorites
   include ApplicationHelper
