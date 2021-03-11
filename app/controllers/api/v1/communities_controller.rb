@@ -435,7 +435,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours ? false : true ) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
 
             if @scheduled_tours.present?
-              @is_tour_ontime = is_tour_on_time(@scheduled_tours, current_time, @tour.grace_period)
+              @is_tour_ontime = is_tour_on_time(current_time, @scheduled_tours, @tour.grace_period)
               current_tour = @is_tour_ontime
 
               unless @is_tour_ontime.present?
