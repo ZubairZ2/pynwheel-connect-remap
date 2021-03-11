@@ -171,25 +171,25 @@
                   = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
                   %label.label-primary{:for => "visual_id_verification"}
                   %span.pl-15 Yes
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            / .form-group
+            /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
 
-                Charge User for ID Verfication
-                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "2Popover","data-content" => " "}
-                  %span#propertyDetailNameText
-                    When set to “Yes” users will be charged $2.00 each time their ID is verified. When set to “No” the property will be charged each time the user’s ID is verified.
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                .TriSea-technologies-Switch
-                  %span.pr-15 No
-                  = check_box_tag :charge_user_for_id_verfication, true, @community.tour.tour_setting.charge_user_for_id_verfication  , class: "charge_user_for_id_verfication"
-                  %label.label-primary{:for => "charge_user_for_id_verfication"}
-                  %span.pl-15 Yes    
+            /     Charge User for ID Verfication
+            /     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "2Popover","data-content" => " "}
+            /       %span#propertyDetailNameText
+            /         When set to “Yes” users will be charged $2.00 each time their ID is verified. When set to “No” the property will be charged each time the user’s ID is verified.
+            /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            /     .TriSea-technologies-Switch
+            /       %span.pr-15 No
+            /       = check_box_tag :charge_user_for_id_verfication, true, @community.tour.tour_setting.charge_user_for_id_verfication  , class: "charge_user_for_id_verfication"
+            /       %label.label-primary{:for => "charge_user_for_id_verfication"}
+            /       %span.pl-15 Yes    
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Enable auto zoom
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "2Popover","data-content" => " "}
                   %span#propertyDetailNameText
-                    Auto-zoom on property map between stops. Only recommended for .svg maps.
+                    Auto-zoom on property map between stops.
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
