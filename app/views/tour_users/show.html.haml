@@ -222,7 +222,7 @@
                           - image_hit = true
                           - description_hit = true
                           - is_data_loaded = false
-                          %a.preview-image{:href=> @stop.image? ? @stop.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Stop Image"}
+                          %a.preview-image{:href=> @stop.image? ? @stop.image.url : asset_path("default.jpeg"),"placement"=>"right","data-toggle"=>"lightbox","data-title"=>"Stop Image"}
                             %img{:src => "/assets/checkbox.png", :style => "height:20px; width:20px;color:green; margin-left: 13px; color: green;", "data-placement" => "top", "data-img" => "#{@stop.image.url}", "data-toggle-placement"=>"right", "data-toggle" => "popover-hover"}
                           %strong{:style => "font-size: 16px; position: relative; margin-left: 5px;"}
                             #{@stop.name}
@@ -611,10 +611,15 @@
               
               if(data.stops[i][2] == 'amenity'){
                 
-                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + ((data.stops[i][1].x_plot / img.width)*width) + 'px; top:  '+ ((data.stops[i][1].y_plot / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker" style="color: #cf492f; "></i></a>')
+                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + ((data.stops[i][1].x_plot / img.width)*width) + 'px; top:  '+ ((data.stops[i][1].y_plot / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" data-content=" " data-toggle="propertyDetailNamePopover" style="color: #cf492f; "></i></a>')
               }
             }
           }
+          $('[data-toggle="propertyDetailNamePopover"]').popover({
+            html: true,
+            placement: 'top',
+            template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Name will change the name of the property on the "Favorites" page.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        }).popover('show');
 
           draw_a_line(vertices);
           
