@@ -122,7 +122,9 @@
     let elem = document.querySelector('#map');
     window.mapPanZoom = panzoom(elem, {
       minZoom: 0.6,
-      maxZoom: 1.1
+      maxZoom: 1.1,
+      bounds: true,
+      boundsPadding: 0.3
     });
     var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
     var scaleFactor = (1 / (transform.scale || 1));
