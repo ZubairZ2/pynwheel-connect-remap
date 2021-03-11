@@ -124,7 +124,7 @@
       Select Lock Type
       %span Select the access provider for this stop
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), f.object.lock_provider),{},{:class=>"form-control"}
+      = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), f.object.lock_provider),{},{:class=>"form-control lock_provider_input"}
 
   .form-group.hide_it#manual_access_code
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
