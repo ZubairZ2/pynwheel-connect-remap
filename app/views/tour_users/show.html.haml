@@ -417,12 +417,13 @@
                 DONE
 :javascript
 
+  
   var canvas = document.getElementById("myCanvas");
-    var ctx = canvas.getContext("2d");
-    var img = document.getElementById("floorplane_img");
-    width = $('#parent-div').width()
-    height = ( width / img.width) * img.height
-   ctx.drawImage(img, 0, 0, width, height);
+  var ctx = canvas.getContext("2d");
+  var img = document.getElementById("floorplane_img");
+  width = $('#parent-div').width()
+  height = ( width / img.width) * img.height
+  ctx.drawImage(img, 0, 0, width, height);
 
 
 
@@ -607,17 +608,16 @@
                 x: ((data.stops[i][1].x_plot / img.width)*width),
                 y:  ((data.stops[i][1].y_plot / img.height)*height)
               });
-              if(data.stops[i][3] == 'amenity'){
-                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + ((data.stops[i][1].x_plot / img.width)*width) + 'px; top:  '+ ((data.stops[i][1].y_plot / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fas fa-map-marker-alt" style="color: #cf492f; border: solid 5px;"></i></a>')
+              
+              if(data.stops[i][2] == 'amenity'){
+                
+                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + ((data.stops[i][1].x_plot / img.width)*width) + 'px; top:  '+ ((data.stops[i][1].y_plot / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker" style="color: #cf492f; "></i></a>')
               }
             }
           }
-          debugger;
 
           draw_a_line(vertices);
           
-          debugger;
-
           //$(".asdasd").children('i').remove()
           //$("#unlock_history").children('h5').remove()
           // data.existing_stops.flat().forEach(draw_stop)
