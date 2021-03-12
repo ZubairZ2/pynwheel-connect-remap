@@ -600,6 +600,7 @@
           },
         url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/visited_stops_data?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
         success: function(data){
+          data_array = [];
           for(var i=0 ; i < data.stops.length ; i++)
           {
             if(data.stops[i][1] != null)
@@ -610,7 +611,8 @@
               });
               
               if(data.stops[i][2] == 'amenity'){
-                
+                data_array[i] = [data.stops[i][2].id,{'Name':data.stops[i][2].name,'Arrival Time': data.stops[i][2].event_date + data.stops[i][2].event_time.split(' ')[1] , 'Departure Time:' data.stops[i][2].event_date + data.stops[i][2].event_time.split(' ')[1],'Lock Access Time':  data.stops[i][2].event_date + data.stops[i][2].event_time.split(' ')[1]}]
+
                 $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + ((data.stops[i][1].x_plot / img.width)*width) + 'px; top:  '+ ((data.stops[i][1].y_plot / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" data-content=" " data-toggle="propertyDetailNamePopover" style="color: #cf492f; "></i></a>')
               }
             }
@@ -618,7 +620,7 @@
           $('[data-toggle="propertyDetailNamePopover"]').popover({
             html: true,
             placement: 'top',
-            template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Name will change the name of the property on the "Favorites" page.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+            template: '<div class="popover" style="left: -43px !important; width: 220px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b> A-301<br><b>Arrival Time:</b> 55<br><b>Departure Time:</b> 55<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> 55<br></div></div>'
         }).popover('show');
 
           draw_a_line(vertices);
