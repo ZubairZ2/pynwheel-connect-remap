@@ -1,5 +1,6 @@
 class HomeController < ApplicationController
   before_action :check_community
+  before_action :maintain_session
   def index
   	if current_user.is_super_admin?
     	@communities = alphabetical_sort(Community.select(:id,:name,:updated_at,:company_id,:data_provider).includes(:company))
@@ -13,4 +14,13 @@ class HomeController < ApplicationController
     	@communities = current_user.communities
     end
   end
+
+  def maintain_session
+    session = current_user.return_last_cms_session
+    if session.new_record?
+      session.start_datetime = DateTime.now
+      
+    end
+  end
+
 end
