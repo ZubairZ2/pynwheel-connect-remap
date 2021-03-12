@@ -22,7 +22,7 @@
       .box-header
         %h3.box-title
           Plot
-
+          
           - if @community.theme_name.include?('gables')
             - marker_color = @community.design.property_map_color.present? ? @community.design.property_map_color : "#d37474"
           - elsif @community.theme_name == 'modernist'
@@ -57,17 +57,16 @@
           %span.hidden#left_margin #{left_margin}
           %span.hidden#right_margin #{right_margin}
           %span.hidden#marker_color #{marker_color}
-
+          
           %span= @floorplate.name + " Units"
           %span.hidden#active_x_plot 0
-
+          
           %span.hidden#active_y_plot 0
           %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "plotUnitOnFloorplatePopover","data-content" => " "}
             %span#propertyDetailNameText
               Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.
-
-
-
+        
+        
         .btn-btn-danger.mt-10
           = link_to "ADD AMENITY IMAGES  <i class='propertyDetailName fa fa-question-circle' data-toggle='floorplateManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Click on 'Manage Amenities' to switch from plotting units to uploading and plotting amenity images.</span></i>".html_safe, community_amenities_path(@community), class: "btn btn-primary loader_class"
           %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"}
@@ -77,6 +76,7 @@
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
           - if current_user.is_super_admin?
             %a.btn.btn-danger{"data-name" => "floorplate's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
+          %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
       / /.box-header
       / form start
       %form.form-horizontal
@@ -100,16 +100,16 @@
                         -#- left = unit.x_plot - left_margin
                         -#- right = unit.y_plot - right_margin
                         = link_to "<i class='fas fa-map-marker-alt' style='color: #{marker_color};' ></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, :id => "m_#{unit.provider_unit_id}", :style => "left:#{unit.x_plot - left_margin }px; top:#{unit.y_plot - right_margin}px; position:absolute; font-size: #{fontsize}px", "data-name" => "plot", "data-target" => "#markers-modal", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-horizontal"=>unit.x_plot,"data-vertical"=>unit.y_plot,"data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"
-
+                      
                       .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name,:id=>"h-#{unit.provider_unit_id}", "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
-
+            
             .col-lg-3.multi-select-units.select-units-on-page
               %h5.mt-40.mb-20
                 SELECT UNITS TO PLOT
                 %i.additionalPageAction.fa.fa-question-circle{ "data-toggle" => "floorplateSelectPlotToUnitsPopover","data-content" => " "}
                   %span#additionalPageActionText{:style => "font-weight: normal;"}
                     You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.
-
+              
               %select.amenities-list.form-control{:multiple=>"multiple"}
                 / %option{:value => ""} -- select unit --
                 - arr = []
@@ -124,8 +124,8 @@
                       %option{:value => "#{unit.provider_unit_id}"}= "#{unit.building}-#{unit.marketing_name}"
                     - else
                       %option{:value => "#{unit.provider_unit_id}"}= unit.marketing_name
-
-
+                  
+                  
                   - arr.push([unit.provider_unit_id, (unit.x_plot.to_i - left_margin ), (unit.y_plot.to_i - right_margin ), true, unit.id.to_s])
               %h5.mt-40.hidden SELECTED UNITS
               .add-plan.mt-10.mb-20
@@ -138,7 +138,7 @@
   .modal-dialog
     .modal-content
       .modal-header#u-name
-
+      
       = form_tag "" do
         .modal-body
           = hidden_field_tag 'redirect_path' , community_floorplate_plotexp_path(current_community,@floorplate)
@@ -183,7 +183,7 @@
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
                     - else
                       %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
-
+        
         .modal-footer
           = submit_tag "Add",:class=>"btn btn-primary" 
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel         
@@ -238,5 +238,9 @@
         #{current_user.welcome_floorplate_plot_page = false}
         #{current_user.save}
     });
-
+    function plotting_hallways(thisObj){
+      thisObj.html() == "Start Plotting Hallways" ? thisObj.html("Stop Plotting Hallways") : thisObj.html("Start Plotting Hallways")
+      $(".multi-select-units").css("pointer-events") == "auto" ? $(".multi-select-units").css({ "pointer-events": "none" }) : $(".multi-select-units").css({ "pointer-events": "auto" })
+      $("#map").css('cursor') == "default" ? $("#map").css('cursor','crosshair') :  $("#map").css('cursor','default');
+  }
 

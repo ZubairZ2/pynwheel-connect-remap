@@ -61,7 +61,6 @@ $(document).ready(function(){
 
     // This is for plotting elevator when clicked on ul dropdown
     $("#imageselect3 li").click(function(e){
-
       if ($(this).data("id")!=""){
           console.log($.inArray($(this).data("id"), $.map(selected, function(v) { return v[0]; })) == -1);
           if (selected.length == 0){
