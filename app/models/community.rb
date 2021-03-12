@@ -413,7 +413,7 @@ class Community < ApplicationRecord
   end
 
   def realpage_insert_prospect(tour_user, appointment_time, marketing_source, desired_move_in_date)
-    RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user, appointment_time, marketing_source, desired_move_in_date
+    RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user, appointment_time, marketing_source, desired_move_in_date, self
   end
 
   def realpage_insert_activity(tour_user)
