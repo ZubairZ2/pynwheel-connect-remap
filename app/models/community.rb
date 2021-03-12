@@ -416,26 +416,6 @@ class Community < ApplicationRecord
     RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user, appointment_time, marketing_source, desired_move_in_date, self
   end
 
-  def realpage_insert_activity(tour_user)
-    RealPageInsertActivityJob.perform_async credential.attributes.to_json, tour_user, self
-  end
-
-  def realpage_insert_unit_shown(tour_user)
-    RealPageInsertUnitShownJob.perform_async credential.attributes.to_json, tour_user, self
-  end
-
-  def realpage_insert_follow_up(tour_user)
-    RealPageInsertFollowUpJob.perform_async credential.attributes.to_json, tour_user, self
-  end
-
-  def realpage_get_leasing_agents
-    RealPageGetLeasingAgentsJob.perform_async credential.attributes.to_json, self
-  end
-
-  def real_page_get_activity_types
-    RealPageGetActivityTypesJob.perform_async credential.attributes.to_json
-  end
-
   def real_page_get_marketing_sources
     RealPageGetMarketingSoucesJob.perform_async credential.attributes.to_json, self
   end
