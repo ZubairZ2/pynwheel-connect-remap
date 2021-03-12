@@ -49,7 +49,7 @@ class RealPageGetActivityTypesService < BaseService
                 if type[0] == "Self-guided - Tour"
                   types << type
                   is_required_type_exists = true
-                elsif tour_status != "virutal" and type[0] == "Visit"
+                elsif tour_status != "virutal_tour" and type[0] == "Visit"
                   types << type
                   is_required_type_exists = true
                 end
