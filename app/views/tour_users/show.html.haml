@@ -107,9 +107,9 @@
                             - if alert.arrived.present?
                               - if alert.my_time_zone.present?
                                 - begin
-                                  #{alert.arrived.to_date} #{alert.arrived.in_time_zone('America/' +@community.city ).strftime("%I:%M %p") rescue alert.arrived.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
+                                  #{alert.arrived.in_time_zone('America/' +@community.city).strftime("%Y-%m-%d %I:%M %p") rescue alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%Y-%m-%d %I:%M %p")} 
                                 - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                                  #{alert.arrived.to_date} #{alert.arrived.in_time_zone('America/' +@community.city).strftime("%I:%M %p") rescue alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                                  #{alert.arrived.strftime("%Y-%m-%d %I:%M %p") rescue alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}} 
                               - else
                                 #{alert.arrived.to_date} #{alert.arrived.in_time_zone('America/' +@community.city).strftime("%I:%M %p") rescue alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
                           %br
@@ -127,11 +127,11 @@
                             - if end_time.present?
                               - if alert.my_time_zone.present?
                                 - begin
-                                  #{end_time.to_date} #{end_time.in_time_zone(alert.my_time_zone).strftime("%I:%M %p")}
+                                  #{end_time.in_time_zone(alert.my_time_zone).strftime("%Y-%m-%d %I:%M %p")}
                                 - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                                  #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                                  #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%Y-%m-%d %I:%M %p")}
                               - else
-                                #{end_time.to_date} #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                                #{end_time.in_time_zone("Eastern Time (US & Canada)").strftime("%Y-%m-%d %I:%M %p")}
                     - else
                       Removed at Consumer Request
                   %h4{:style => "margin-left: 30px"}
