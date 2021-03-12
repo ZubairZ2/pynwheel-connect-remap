@@ -258,9 +258,17 @@ $(document).ready(function(){
         units_data = allPlottednitDoorsExceptTheseProviderIds(provider_ids)
 
         for(var row of units_data)
-            $('.doors-list-on-popup').multiSelect('addOption', { value: row.unit_info.door.id, text: row.unit_info.door.name});
+            $('.doors-list-on-popup').multiSelect('addOption', { value: row.unit_info.door.id + '::' + row.unit_info.unit.provider_id + "::", text: row.unit_info.door.name});
 
 
     })
     
+    $('.doors-selects-in-popup').delegate("li", "click", function(event) {
+        debugger
+        alert('you clicked me!');
+        var unit_providers_array = JSON.parse($('#unit_provider_ids').val());
+        unit_providers_array.splice($.inArray($(this).attr('id').split('-')[0], unit_providers_array), 1);
+        $('#unit_provider_ids').val(JSON.stringify(unit_providers_array));
+        console.log(unit_providers_array);
+    });
 })

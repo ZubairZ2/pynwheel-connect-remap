@@ -28,6 +28,8 @@ class TourStop < ApplicationRecord
   has_one :path, as: :map_path
   has_many :path_points, through: :paths
 
+  belongs_to :unit, polymorphic: true
+
   def path_data
   	self.stop_type.classify.constantize.path_data
   end
