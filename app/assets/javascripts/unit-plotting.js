@@ -397,8 +397,8 @@ function drag__door_work(event, ui){
 
 function stop__door_work(event, ui){
   for(var row of same_location_doors){
-    row.unit_info.door.x_plot = Math.round(ui.position.left);
-    row.unit_info.door.y_plot = Math.round(ui.position.top);
+    row.unit_info.door.x_plot = Math.round(parseFloat(ui.position.left));
+    row.unit_info.door.y_plot = Math.round(parseFloat(ui.position.top));
     saveDraggedDoor(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, same_location_doors.length)
   }
 }

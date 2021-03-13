@@ -41,6 +41,7 @@ class Amenity < ApplicationRecord
   has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
   
   has_many :doors, as: :attached_with, dependent: :destroy
+  has_one :tour_stop, as: :stop, dependent: :destroy
   
   scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}

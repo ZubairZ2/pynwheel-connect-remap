@@ -1,3 +1,4 @@
+const zero = 0
 function delete_plot(removing, url){
     debugger
     if ( typeof floorplate_id !== 'undefined'){
@@ -44,8 +45,37 @@ function delete_unitdoor_plot(url){
             debugger
             if(response.success){
                 try {
-                    buttons = $('.door-buttons-in-door-modal').find("button")
+                    /*   remove units data presentin arr(previous implementation)  */
+                    /*var index = arr.findIndex(unit => unit[4] == response.unit.id);
+                    removed_unit = arr.splice(index,1)
 
+                    plotted_unit = $("#m_" + response.unit.provider_unit_id)                             // if this is a plotted element ,replace with crossponding hidden variable if hidden one exists
+                    if (plotted_unit.length > zero){
+
+                        xpos = plotted_unit[zero].dataset.horizontal
+                        ypos = plotted_unit[zero].dataset.vertical
+
+                        hidden_unit_at_same_location = $(".h-" + xpos + "-" + ypos)
+                        if(hidden_unit_at_same_location.length > zero){
+                            tag = hidden_unit_at_same_location[zero]
+                            plotted_unit.attr(
+                                {
+                                    "id": tag.id.replace('h-','m_'),
+                                    "data-title":  tag.dataset.title,
+                                    "data-href": "/communities/" + community_id + "/units/" + tag.id.replace('h-','') + "/remove_plot_from_floorplate?floorplate_id=" + floorplate_id,
+                                    "data-unit-form-url": "/communities/" + community_id + "/units/" + tag.id.replace('h-','') + "/adjust_position"
+                                }
+                            )
+                            hidden_unit_at_same_location.remove()
+                        }
+                        else{
+                            plotted_unit.parent().remove()
+                        }
+                    }*/
+                    
+
+                    /*   changes for new imlpementation of doors */
+                    buttons = $('.door-buttons-in-door-modal').find("button")
                     if(buttons.length > 1){
                         var removed = false
                         for(var button of buttons){
@@ -67,21 +97,22 @@ function delete_unitdoor_plot(url){
                               
                                 $("#door_"+response.unit.provider_unit_id).attr(
                                     {
-                                        "id": "door_" + unit_data[0].unit_info.unit.provider_id,
-                                        "data-door-id": unit_data[0].unit_info.door.id,
-                                        "title": unit_data[0].unit_info.door.name,
+                                        "id": "door_" + unit_data[zero].unit_info.unit.provider_id,
+                                        "data-door-id": unit_data[zero].unit_info.door.id,
+                                        "title": unit_data[zero].unit_info.door.name,
                                     }
                                 )
 
                                 $("#m_"+response.unit.provider_unit_id).attr(
                                     {
-                                        "id": "m_" + unit_data[0].unit_info.unit.provider_id,
-                                        "title": unit_data[0].unit_info.unit.building == null ? unit_data[0].unit_info.unit.name : unit_data[0].unit_info.unit.building + "-" + unit_data[0].unit_info.unit.name,
-                                        "data-href": "/communities/" + community_id + "/units/" + unit_data[0].unit_info.unit.provider_id + "/remove_plot_from_floorplate?floorplate_id=" + floorplate_id,
-                                        "data-unit-form-url": "/communities/" + community_id + "/units/" + unit_data[0].unit_info.unit.id + "/adjust_position"
+                                        "id": "m_" + unit_data[zero].unit_info.unit.provider_id,
+                                        "title": unit_data[zero].unit_info.unit.building == null ? unit_data[zero].unit_info.unit.name : unit_data[zero].unit_info.unit.building + "-" + unit_data[zero].unit_info.unit.name,
+                                        "data-href": "/communities/" + community_id + "/units/" + unit_data[zero].unit_info.unit.provider_id + "/remove_plot_from_floorplate?floorplate_id=" + floorplate_id,
+                                        "data-unit-form-url": "/communities/" + community_id + "/units/" + unit_data[zero].unit_info.unit.id + "/adjust_position"
                                     }
                                 )
-
+                                
+                                // $("#h-" + response.unit.provider_unit_id).remove()                                   // remove the hidden element for this unit (exists or not)
                                 break;
                             }
                         }
@@ -137,24 +168,24 @@ function allPlottedUnitDoors(){
 }
 
 function allPlottednitDoorsExceptThisLocation(xpos, ypos){
-    return units_info.filter(row => ( Object.keys(row.unit_info.door).length !== 0 && row.unit_info.door.x_plot != xpos && row.unit_info.door.y_plot != ypos ) )
+    return units_info.filter(row => ( Object.keys(row.unit_info.door).length !== zero && row.unit_info.door.x_plot != xpos && row.unit_info.door.y_plot != ypos ) )
 }
 
 function allPlottednitDoorsExceptThisProviderId(provider_id){
-    return units_info.filter(row => ( Object.keys(row.unit_info.door).length !== 0 && row.unit_info.unit.provider_id != provider_id) )
+    return units_info.filter(row => ( Object.keys(row.unit_info.door).length !== zero && row.unit_info.unit.provider_id != provider_id) )
 }
 
-function allPlottednitDoorsExceptTheseProviderIds(provider_ids){
-    return units_info.filter(row => ( Object.keys(row.unit_info.door).length !== 0 && provider_ids.includes(row.unit_info.unit.provider_id) == false) )
+function allPlottedunitDoorsExceptTheseProviderIds(provider_ids){
+    return units_info.filter(row => ( Object.keys(row.unit_info.door).length !== zero && provider_ids.includes(row.unit_info.unit.provider_id) == false) )
 }
 function addDoorButtonsInDoorModal(event, attached_doors){
     debugger
     $('.door-buttons-in-door-modal').empty()
     for(var row of attached_doors){
         if (row.unit_info.door.id  == event.relatedTarget.dataset.doorId){
-            deletion_url = getDeleteDoorUrl(row.unit_info.unit.provider_id)
-            $(".delete-door-marker").attr("data-href", deletion_url)
             button_style = "btn-primary"
+            deletion_url = getDeleteDoorUrl(row.unit_info.unit.provider_id)
+            $(".delete-door-marker").attr({ "data-href": deletion_url, "data-provider-id": row.unit_info.unit.provider_id })
         }
         else
             button_style = "btn-default"
@@ -169,16 +200,16 @@ function sortSelectedDoors(event, same_location_doors){
     // sort if required, first in selected should be according to the current name of plotted unit
     currently_selected_provider_id = event.relatedTarget.id.split("_")[1]
 
-    if(same_location_doors[0].unit_info.unit.provider_id != currently_selected_provider_id){
+    if(same_location_doors[zero].unit_info.unit.provider_id != currently_selected_provider_id){
     
         var index;    
-        for(index=0; index < same_location_doors.length; index++ ){
+        for(index=zero; index < same_location_doors.length; index++ ){
           if(same_location_doors[index].unit_info.unit.provider_id == currently_selected_provider_id)
             break;
         }
     
-        same_location_doors[index] = same_location_doors[0]
-        same_location_doors[0] = getUnitDoorsByUnitProviderId(currently_selected_provider_id)[0]
+        same_location_doors[index] = same_location_doors[zero]
+        same_location_doors[zero] = getUnitDoorsByUnitProviderId(currently_selected_provider_id)[zero]
     }
 }
 
@@ -202,25 +233,25 @@ function change_selected_in_unit_modal(event){
    
                     $(".delete-door-marker").attr(
                         {
-                            "data-href": getDeleteDoorUrl(unit_data[0].unit_info.unit.provider_id),
+                            "data-href": getDeleteDoorUrl(unit_data[zero].unit_info.unit.provider_id),
                             "data-plotted-category": "unit_door"
                         }
                     )
                   
                     $("#door_"+button.dataset.providerId).attr(
                         {
-                            "id": "door_" + unit_data[0].unit_info.unit.provider_id,
-                            "data-door-id": unit_data[0].unit_info.door.id,
-                            "title": unit_data[0].unit_info.door.name,
+                            "id": "door_" + unit_data[zero].unit_info.unit.provider_id,
+                            "data-door-id": unit_data[zero].unit_info.door.id,
+                            "title": unit_data[zero].unit_info.door.name,
                         }
                     )
 
                     $("#m_"+button.dataset.providerId).attr(
                         {
-                            "id": "m_" + unit_data[0].unit_info.unit.provider_id,
-                            "title": unit_data[0].unit_info.unit.building == null ? unit_data[0].unit_info.unit.name : unit_data[0].unit_info.unit.building + "-" + unit_data[0].unit_info.unit.name,
-                            "data-href": "/communities/" + community_id + "/units/" + unit_data[0].unit_info.unit.provider_id + "/remove_plot_from_floorplate?floorplate_id=" + floorplate_id,
-                            "data-unit-form-url": "/communities/" + community_id + "/units/" + unit_data[0].unit_info.unit.id + "/adjust_position"
+                            "id": "m_" + unit_data[zero].unit_info.unit.provider_id,
+                            "title": unit_data[zero].unit_info.unit.building == null ? unit_data[zero].unit_info.unit.name : unit_data[zero].unit_info.unit.building + "-" + unit_data[zero].unit_info.unit.name,
+                            "data-href": "/communities/" + community_id + "/units/" + unit_data[zero].unit_info.unit.provider_id + "/remove_plot_from_floorplate?floorplate_id=" + floorplate_id,
+                            "data-unit-form-url": "/communities/" + community_id + "/units/" + unit_data[zero].unit_info.unit.id + "/adjust_position"
                         }
                     )
 
@@ -238,13 +269,14 @@ function change_selected_in_unit_modal(event){
 $(document).ready(function(){
     $(".ajax-btn-delete").click(function(event){
         event.preventDefault();
+        debugger
         delete_plot( $(event.target).attr('data-plotted-category'), $(event.target).attr('data-href') )
     });
 
     $("#ajax-doors-detail-modal").on('show.bs.modal', function(event) {
         debugger
-        xpos = parseInt( event.relatedTarget.style.left )
-        ypos = parseInt( event.relatedTarget.style.top  )
+        xpos = Math.round(parseFloat((event.relatedTarget.style.left)))
+        ypos = Math.round(parseFloat((event.relatedTarget.style.top)))
         same_location_doors = getUnitDoorsAtSameLocation(xpos, ypos)
         sortSelectedDoors(event, same_location_doors)
         addDoorButtonsInDoorModal(event, same_location_doors)
@@ -254,9 +286,14 @@ $(document).ready(function(){
         debugger
         provider_ids = []
         $('.doors-list-on-popup').multiSelect('removeAllOptions')
-        $(".door-buttons-in-door-modal").children().map(function(index, button){provider_ids.push(button.dataset.providerId)})
-        units_data = allPlottednitDoorsExceptTheseProviderIds(provider_ids)
 
+        all_door_buttons = $(".door-buttons-in-door-modal").children()
+        if(all_door_buttons.length > 1)
+            all_door_buttons.map(function(index, button){provider_ids.push(button.dataset.providerId)})
+        else
+            provider_ids.push($(".delete-door-marker")[zero].dataset.providerId)
+
+        units_data = allPlottedunitDoorsExceptTheseProviderIds(provider_ids)
         for(var row of units_data)
             $('.doors-list-on-popup').multiSelect('addOption', { value: row.unit_info.door.id + '::' + row.unit_info.unit.provider_id + "::", text: row.unit_info.door.name});
 
@@ -267,7 +304,7 @@ $(document).ready(function(){
         debugger
         alert('you clicked me!');
         var unit_providers_array = JSON.parse($('#unit_provider_ids').val());
-        unit_providers_array.splice($.inArray($(this).attr('id').split('-')[0], unit_providers_array), 1);
+        unit_providers_array.splice($.inArray($(this).attr('id').split('-')[zero], unit_providers_array), 1);
         $('#unit_provider_ids').val(JSON.stringify(unit_providers_array));
         console.log(unit_providers_array);
     });

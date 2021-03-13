@@ -1,6 +1,7 @@
 class RemoteLock < ApplicationRecord
   belongs_to :edge_state
   belongs_to :dwelo
+  # belongs_to :stop, polymorphic: true
 
   belongs_to :unit
   belongs_to :amenity

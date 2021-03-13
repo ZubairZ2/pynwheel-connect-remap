@@ -365,8 +365,9 @@ class UnitsController < ApplicationController
   def ajaxplotunitdoorforfloorplate
     unit = @community.units.where(provider_unit_id: params[:id]).first
     if unit.present?
-      unit.doors.first_or_initialize.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
-      render json: {unit: unit, door: unit.doors.first, success: true}
+      door ||= unit.door || unit.build_door
+      door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+      render json: {unit: unit, door: door.reload, success: true}
     else
       render json: {unit: {}, door: {}, success: false}
     end
@@ -421,11 +422,11 @@ class UnitsController < ApplicationController
 
   def remove_unitdoor_plot_from_floorplate
     @floorplate = Floorplate.find params[:floorplate_id]
-  
+
     unit = @community.units.where(provider_unit_id: params[:id]).first
-    door = unit.doors
-    render json: {unit: unit, door: door.first, success: true}
-    door.destroy_all
+    render json: {unit: unit, door: unit.door, success: true}
+
+    unit.door.destroy
   rescue
     render json: {unit: {}, door: {}, success: false}
   end
