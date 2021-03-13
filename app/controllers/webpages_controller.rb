@@ -1,13 +1,13 @@
 class WebpagesController < ActionController::Base
   before_action :set_community
-
+  after_action :maintain_session
   def index
     @floorplans = []
-    if cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]"
-      cookies[:favorite_unit_ids] = { value: JSON.generate([]), expiry: 5.years.from_now, same_site: :none}
-      cookies[:webpages_session_id] = { value: SecureRandom.hex(8), expiry: 5.years.from_now, same_site: :none}
-      Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: [])
-    end
+    units_ids_not_present = (cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]")
+    is_cookies_session_nil = cookies[:webpages_session_id].nil?
+    cookies[:favorite_unit_ids] = { value: JSON.generate([]), expiry: 5.years.from_now, same_site: :none} if units_ids_not_present
+    cookies[:webpages_session_id] = { value: SecureRandom.hex(8), expiry: 5.years.from_now, same_site: :none} if is_cookies_session_nil
+    Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: []) if is_cookies_session_nil
     @units_with_floorplan_info = []
     @community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
     unless @community_info.locked
@@ -99,6 +99,18 @@ class WebpagesController < ActionController::Base
     favorite.save
   end
 
+  def sent_favorite
+    
+  end
+
+  def price_opened
+
+  end
+
+  def apply_now_count
+
+  end
+
   def delete_favorite
     array = JSON.parse(cookies[:favorite_unit_ids])
     @unit = Unit.find params[:unit_id]
@@ -146,4 +158,49 @@ class WebpagesController < ActionController::Base
   def set_community
     @community = Community.find(params[:community_id])
   end
+
+  def maintain_session
+    session = return_last_maps_session
+    manage_session_info(session)
+    session.save
+  end
+
+  def return_last_maps_session
+    # Make a new session if not found or session limit expire otherwise retrurn last session 
+    if !TrackSession.where(session_id: cookies[:webpages_session_id]).any?
+      track_session = return_new_session
+    elsif TrackSession.where(session_id: cookies[:webpages_session_id]).last.start_datetime_in_limit?
+      last_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
+      last_session.update_column(:end_datetime, (last_session.start_datetime + 10.minutes) )
+      track_session = return_new_session
+      track_session
+    else
+      last_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
+      last_session
+    end
+
+  end
+
+  def return_new_session
+    TrackSession.new(start_datetime: (DateTime.now.utc), track_session_type: "maps", community_id: @community.id,session_id: cookies[:webpages_session_id])
+  end
+
+  def manage_session_info(session)
+    visited_pages = session.visited_pages
+    if params[:action] == "index"
+      visited_pages << "Webpage main page" unless visited_pages.include?("Webpage main page")
+    elsif params[:action] == "favorites"
+      visited_pages << "View favorites page" unless visited_pages.include?("View favorites page")
+    elsif params[:action] == "save_favorite"
+      session.favorite_saved_counter += 1
+    elsif params[:action] == "sent_favorite"
+      session.favorite_sent_counter += 1
+    elsif params[:action] == "price_opened"
+      session.price_opened_counter += 1
+    elsif params[:action] == "apply_now_count"
+      session.apply_click_counter += 1
+    end
+    session.visited_pages = visited_pages
+  end
+  
 end

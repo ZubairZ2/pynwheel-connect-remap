@@ -48,6 +48,7 @@
           /     %input.form-control{type: "text"}/
           /     %button.send-btn{type: "submit"}
           /       %i.fa.fa-location-arrow
+          = hidden_field_tag :maps_community_id, @community.id
           .bg-bottom
             .need-to{:style => "margin-bottom: 40px;"}
               = image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :width => "288px"
@@ -62,7 +63,7 @@
             .need-to
               %h3 Want to share your list?
               %p{:style => "margin-bottom: 20px"} Click the share button and share your favorites link
-              %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share 
+              %button.btn.btn-primary.btn-block.btn-lg.share-favorite{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share 
           .bg-bottom
             .need-to
               %h3 Need to pare down your list?
@@ -118,9 +119,9 @@
                               %i.fa.fa-calendar
                         .btn-apply
                           - if @community.data_provider == "realpagesvc"
-                            = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank"
+                            = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank", class: "apply_now"
                           - elsif @community.data_provider == "psi" and floorplan.present?
-                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id
+                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply_now"
                     .col-md-6
                       .plan-image
                         = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")
