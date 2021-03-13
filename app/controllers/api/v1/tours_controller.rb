@@ -51,8 +51,11 @@ class Api::V1::ToursController < ActionController::Base
             url = Rails.env.production? ? "https://pynwheelconnect.com/id_selfie_matching/#{vs.id }?community=#{community.id}" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }?community=#{community.id}"
             email_content = "Please verify the user #{vs.name} #{community_name} on the following link <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"
             DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
-            DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
-            DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'nawaal.asif@intagleo.com')
+            community.email.split(',').each do |email|
+              DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, email) unless params[:local_testing].present?
+            end
+            # DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
+            # DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'nawaal.asif@intagleo.com')
           end
           puts "<<<<<<<<<<<<<<<<<<<<<<<<< #{vs.valid?}"
           vs.save!(validate: false)
@@ -267,6 +270,7 @@ iPhone Users:
 
       if params[:unit_id].present?
         unit = Unit.find_by_id(params[:unit_id])
+        @community = Community.find unit.community_id
         @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id,unit.community_id,true) if unit.present?
         @units.each do |u|
           if u.community.is_sitemap?
@@ -293,6 +297,42 @@ iPhone Users:
         render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
       end
     end
+  end
+  def mis_match_verification
+    puts params
+    access = grant_access (decoded(params[:token])) rescue false
+    begin
+      if api_access or access == true
+        @tour_user = TourUser.find params[:tour_user_id]
+        name = @tour_user.name
+        @community = Community.find params[:community_id]
+        reason = "<br><br>#{(get_reason params[:verificaion_provider], params[:verification_code], params[:anti_spoofing], params[:confidence])}"
+        email_content = "#{name} visiting #{@community.name} was unable to begin the tour because of an issue with ID verification." + reason
+        emails = @community.email.gsub(" ","").split(',')
+        emails.each do |email|
+          DelayedSchedulerMailerJob.perform_async("ID Verification Issue for #{name}", email_content, email)
+        end
+        render :json=> {:success=>true, :message => "success"}
+      else
+        render :json=> {:success=>false, :message => "Invalid Token"}
+      end
+    rescue => ex
+      render :json=> {:success=>false, :status => 500, :message => ex}
+    end
+  end
+  def get_reason verificaion_provider, verification_code, anti_spoofing, confidence
+    if verificaion_provider == "check_point_id"
+      if verification_code == "MultipleErrors" || verification_code == "ValidationError" || (anti_spoofing.present? && anti_spoofing.to_i < 80) || (confidence.present? && confidence.to_i < 55)
+        "The Face has not been matched"
+      elsif verification_code == "MRZOCRError" || verification_code == "MRZInNotPresentError"
+        "Unable to capture mrz from the image of the document."
+      else
+        ""
+      end
+    else
+      ""
+    end
+    
   end
 
   private

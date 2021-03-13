@@ -1,16 +1,18 @@
 class EdgestateAccountsController < ApplicationController
     before_action :set_user
-
+    before_action :set_edge_state, only: [:map_edgestate_locks]
     def new
         @edge_state = EdgeState.new
     end
     
     def create
+        locks_provider = current_community.multiple_locks_provider
+        locks_provider << "EdgeState" unless locks_provider.include?("EdgeState")
         unless @is_already_exists
             @edge_state = EdgeState.new(edge_state_params)
             if @edge_state.save
-                current_community.update_columns(locks_provider: "EdgeState")
-                Community.find(params[:community_id]).update!(locks_provider: params[:edgestate][:default_community_id])
+                current_community.update_columns(multiple_locks_provider: locks_provider)
+                Community.find(params[:community_id]).update!(:multiple_locks_provider => locks_provider)
                 flash[:notice] = "EdgeState credentails saved successfully"
                 redirect_to new_community_dwelo_path
             else
@@ -20,7 +22,7 @@ class EdgestateAccountsController < ApplicationController
         else
             @edge_state = EdgeState.find_by(community_id: current_community.id)
             if @edge_state.update_attributes(edge_state_params)
-                current_community.update_columns(locks_provider: "EdgeState")
+                current_community.update_columns(:multiple_locks_provider => locks_provider)
                 flash[:notice] = "EdgeState credentails updated successfully"
                 redirect_to new_community_dwelo_path(current_community)
             else
@@ -79,84 +81,9 @@ class EdgestateAccountsController < ApplicationController
     end
 
     def map_edgestate_locks
-      community = Community.find(params[:community_id])
-      access_token = generate_remotelock_token
-      if access_token.present?
-        if community.present?
-          if community.is_sitemap
-            community_units = community.units
-            community_locks = community.edge_state.remote_locks
-            community_units.each do |community_unit|
-              if community_unit.building.present?
-                name = community_unit.building + "-" + community_unit.marketing_name
-                unit_name = name.gsub('-', '').gsub(' ', '')
-                community_locks.each do |community_lock|
-                  community_lock_name = community_lock.name.gsub('-', '').gsub(' ', '')
-                  if (unit_name == community_lock_name)
-                    community_lock.update_attributes(stop_id: community_unit.id, stop_type: "unit", stop_name: community_unit.marketing_name)
-                  end
-                end
-              else
-                unit_name = community_unit.marketing_name.gsub('-', '').gsub(' ', '')
-                community_locks.each do |community_lock|
-                  community_lock_name = community_lock.name.gsub('-', '').gsub(' ', '')
-                  if (unit_name == community_lock_name)
-                    community_lock.update_attributes(stop_id: community_unit.id, stop_type: "unit", stop_name: community_unit.marketing_name)
-                  end
-                end
-                # same_name_lock = community_locks.find_by(name: community_unit.marketing_name) rescue nil
-              end
-              # if same_name_lock.present?
-              #   same_name_lock.update_attributes(stop_id: community_unit.id, stop_type: "unit", stop_name: community_unit.marketing_name)
-              # end
-    
-            end
-          else
-            community_locks = community.edge_state.remote_locks
-            community_floorplates = community.floorplates rescue nil
-            if community_floorplates.present?
-              community_floorplates.each do |community_floorplate|
-                community_floorplate_units = community_floorplate.units rescue nil
-                community_floorplate_units.each do |floorplate_unit|
-                  if floorplate_unit.building.present?
-                    name = floorplate_unit.building + "-" + floorplate_unit.marketing_name
-                    unit_name = name.gsub('-', '').gsub(' ', '')
-                    # same_name_lock = community_locks.find_by(name: name) rescue nil
-    
-                    community_locks.each do |community_lock|
-                      community_lock_name = community_lock.name.gsub('-', '').gsub(' ', '')
-                      if (unit_name == community_lock_name)
-                        community_lock.update_attributes(stop_id: floorplate_unit.id, stop_type: "unit", stop_name: floorplate_unit.marketing_name)
-                      end
-                    end
-                  else
-                    unit_name = floorplate_unit.marketing_name.gsub('-', '').gsub(' ', '')
-                    community_locks.each do |community_lock|
-                      community_lock_name = community_lock.name.gsub('-', '').gsub(' ', '')
-                      if (unit_name == community_lock_name)
-                        community_lock.update_attributes(stop_id: floorplate_unit.id, stop_type: "unit", stop_name: floorplate_unit.marketing_name)
-                      end
-                    end
-                    # same_name_lock = community_locks.find_by(name: floorplate_unit.marketing_name) rescue nil
-                  end
-                  # if same_name_lock.present?
-                  #   same_name_lock.update_attributes(stop_id: floorplate_unit.id, stop_type: "unit", stop_name: floorplate_unit.marketing_name)
-                  # end
-    
-                end
-    
-              end
-    
-            end
-    
-          end
-        end
-        flash[:notice] = "Locks maped successfully."
-        render :js => "window.location = '/communities/#{community.id}/dwelos/new'"
-      else
-        flash[:error] = "Something went wrong, please check your credentials."
-        render :js => "window.location = '/communities/#{community.id}/dwelos/new'"
-      end
+      @edge_state.map_locks_with_stops
+      flash[:notice] =  "Locks are automapped successfully."
+      redirect_to new_community_dwelo_path(current_community)
     end
 
     def remove_edgestate_locks
@@ -182,6 +109,15 @@ class EdgestateAccountsController < ApplicationController
 
         def set_user
             @is_already_exists = EdgeState.find_by(community_id: current_community.id).present?
+        end
+
+        def set_edge_state
+          @edge_state = current_community.edge_state
+
+          unless @edge_state.present?
+            flash[:error] = "Please enter the Dwelo credentials before testing data."
+            redirect_to new_community_dwelo_path(current_community)
+          end
         end
 
 end

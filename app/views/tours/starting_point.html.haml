@@ -48,64 +48,58 @@
                     = select_tag :starting_floor, options_for_select(@floors, @community.tour.starting_floor) , :class=>"form-control save-starting-point-field" , :include_blank => true
                 
                 - if @community.enable_locks
-                  - if @community.locks_provider == "EdgeState" and @community.edge_state.present? and @all_locks.present?
-                    .form-group
-                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                        Remote lock
-                        %i.unit_manualoverride.fa.fa-question-circle
-                          %span#unit_manualoverride_text
-                            Assign the lock to the starting point
-                      .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                        = text_field_tag :edgestate_locks_input, @tours.remote_locks.edgestate_locks.present? ? @tours.remote_locks.edgestate_locks.last.name + " (" + @tours.remote_locks.edgestate_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "edgestate_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control save-starting-point-field"
-                        %datalist#edgestate_locks_list
-                          - @all_locks[:edgestate_locks].each do |lock|
-                            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+                
+                  - locks_present_hash = {}
+                  - locks_present_hash["Dwelo"] = @community.multiple_locks_provider.include?("Dwelo") && @community.dwelo.present? && @all_locks[:dwelo_locks].any?
+                  - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?
+                  - locks_present_hash["Latch"] = @community.multiple_locks_provider.include?("Latch") &&  @community.latch.present? && @all_locks[:latch_locks].any?
+                  - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
 
-                  - elsif @community.locks_provider == "Dwelo" and @community.dwelo.present? and @all_locks.present?
-                    .form-group
-                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                        Dwelo lock
-                        %i.unit_manualoverride.fa.fa-question-circle
-                          %span#unit_manualoverride_text
-                            Assign the lock to the starting point
-                      .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                        = text_field_tag :dwelo_locks_input, @tours.remote_locks.dwelo_locks.present? ? @tours.remote_locks.dwelo_locks.last.name + " (" + @tours.remote_locks.dwelo_locks.last.remote_lock_type + ")" : '', :placeholder => "Search by lock name", :list => "dwelo_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control save-starting-point-field"
-                        %datalist#dwelo_locks_list
-                          - @all_locks[:dwelo_locks].each do |lock|
-                            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+                  // load options and input values start
+                  - if locks_present_hash["Dwelo"]
+                    = hidden_field_tag "dwelo_lock_input_value", @tours.remote_locks.dwelo_locks.present? ? @tours.remote_locks.dwelo_locks.last.name + " (" + @tours.remote_locks.dwelo_locks.last.remote_lock_type + ")" : ''
+                    .dwelo_options.hide_it
+                      - @all_locks[:dwelo_locks].each do |lock|
+                        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+                  - if locks_present_hash["EdgeState"]
+                    = hidden_field_tag "edgestate_lock_input_value", @tours.remote_locks.edgestate_locks.present? ? @tours.remote_locks.edgestate_locks.last.name + " (" + @tours.remote_locks.edgestate_locks.last.remote_lock_type + ")" : ''
+                    .edgestate_options.hide_it
+                      - @all_locks[:edgestate_locks].each do |lock|
+                        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
+                  - if locks_present_hash["Latch"]
+                    = hidden_field_tag "latch_lock_input_value", @tours.latch_locks.present? ?  @tours.latch_locks.last.lock_name : ''
+                    .latch_options.hide_it
+                      - @all_locks[:latch_locks].each do |lock|
+                        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+                  - if locks_present_hash["Zerv"]
+                    = hidden_field_tag "zerv_lock_input_value", @tours.zerv_locks.present? ?  @tours.zerv_locks.last.sub_location_name + " (" + @tours.zerv_locks.last.sub_location_friendly_name + ")" : ''
+                    .zerv_options.hide_it
+                      - @all_locks[:zerv_locks].each do |lock|
+                        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+                  // load options and input values send
 
-                  - elsif @community.locks_provider == "Latch" and @community.latch.present? and @all_locks.present?
-                    .form-group
-                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                        Latch lock
-                        %i.unit_manualoverride.fa.fa-question-circle
-                          %span#unit_manualoverride_text
-                            Assign the lock to the starting point
-                      .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                        = text_field_tag :latch_locks_input, @tours.latch_locks.present? ?  @tours.latch_locks.last.lock_name : '', :placeholder => "Search by lock name", :list => "latch_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control save-starting-point-field"
-                        %datalist#latch_locks_list
-                          - @all_locks[:latch_locks].each do |lock|
-                            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
-                  - elsif @community.locks_provider == "Zerv" and @community.zerv.present? and @all_locks.present?
-                    .form-group.hide_on_new
-                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                        Pynwheel Access (zerv)
-                        %i.unit_manualoverride.fa.fa-question-circle
-                          %span#unit_manualoverride_text
-                            Assign the lock to this starting point
-                      .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                        = text_field_tag :zerv_locks_input, @tours.zerv_locks.present? ?  @tours.zerv_locks.last.sub_location_name + " (" + @tours.zerv_locks.last.sub_location_friendly_name + ")" : '', :placeholder => "Search by lock name", :list => "zerv_locks_list", :autocomplete=> "off", :type => "text", :class => "form-control save-starting-point-field"
-                        %datalist#zerv_locks_list
-                          - @all_locks[:zerv_locks].each do |lock|
-                            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Select Lock Type
+                      %span Select the access provider for this stop
+                    .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      = select_tag :lock_provider, options_for_select( @community.lock_options(locks_present_hash), @tours.lock_provider), :class=>"form-control" , :include_blank => true
+                      =# f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), f.object.lock_provider),{},{:class=>"form-control save-starting-point-field"}
 
-                  -# - elsif @community.locks_provider == nil or @community.locks_provider == ""
-                  -#   .form-group
-                  -#     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  -#       Access Code
-                  -#     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  -#       = f.text_field :access_code, :class=>"form-control save-starting-point-field", :placeholder=>"Access Code",:maxlength=>"30"
+                  .form-group.hide_it#manual_access_code
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                      Access Code
+                    .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      = text_field_tag :access_code,@tours.access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control save-starting-point-field", :placeholder=>"Access Code",:maxLength => "6"
+                      .alert.alert-warning-custom.locks_blank_error{style: "display: none"}
+                        please add a lock code.
+                  .form-group#lock_access_code.hide_it
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                    
+                    .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                      = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control save-starting-point-field"
+                      %datalist#locks_list
 
                 -#.form-group
                 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -230,66 +224,102 @@
             .col-md-12.col-lg-12
               %button.btn-primary.done_btn.mb-20{:onclick => "starting_point_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
+              %button.btn-default.done_btn.mb-20{:onclick => "goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                Cancel
+
 :javascript
   var floor = null;
-  var locks_provider = "#{@locks_provider}"
   var locks_input, locks_list, param_name;
+  $('#lock_provider').find('option:first').addClass('hide_it')
+  // run it on ready 
+  update_locks_select_and_lock_code_field()
+  // provide locks on change 
+  $('#lock_provider').change(function(){
+    update_locks_select_and_lock_code_field();
+    if ($('#lock_provider').val().length == 0)
+      $('.save-starting-point-form').submit();
+  });
 
-  if(locks_provider == "EdgeState"){
-    locks_input = "#edgestate_locks_input"
-    locks_list = "#edgestate_locks_list"
-    param_name = "remote_lock"
-  }
-  else if(locks_provider == "Dwelo"){
-    locks_input = "#dwelo_locks_input"
-    locks_list = "#dwelo_locks_list"
-    param_name = "dwelo_remote_lock"
-  }
-  else if(locks_provider == "Latch"){
-    locks_input = "#latch_locks_input"
-    locks_list = "#latch_locks_list"
-    param_name = "latch_lock"
-  }
-  else if(locks_provider == "Zerv"){
-    locks_input = "#zerv_locks_input"
-    locks_list = "#zerv_locks_list"
-    param_name = "zerv_lock"
+  function update_locks_select_and_lock_code_field(){
+    if ($('#lock_provider').val().length > 0 && $('#lock_provider').val() != "Manual")
+    {
+      $('#manual_access_code').addClass('hide_it')
+      // initialize elements 
+      lock_provider_type = $('#lock_provider').val().toLowerCase()
+      lock_input_value = "#" + lock_provider_type + "_lock_input_value"
+      options = '.' + lock_provider_type + "_options"
+      locks_input = "#lock_input"
+      locks_list = "#locks_list"
+      param_name = "lock_id"
+      // assign values
+      if (lock_provider_type == "zerv")
+        $('#lock_access_code').find('label').html("Lock <span>Assign the lock to this starting point</span>")
+      else
+        $('#lock_access_code').find('label').html(capitalize(lock_provider_type) + " Lock <span>Assign the lock to this starting point</span>")
+
+      $('#lock_input').val( $(lock_input_value).val() )
+      $('datalist#locks_list').html($(options).html())
+      $('#lock_access_code').removeClass('hide_it') 
+    }
+    else if ($('#lock_provider').val().length > 0)
+    {
+      $('#lock_access_code').addClass('hide_it')
+      $('#manual_access_code').removeClass('hide_it')
+      locks_input = undefined
+    }
+    else
+    {
+      $('#lock_access_code').addClass('hide_it')
+      $('#manual_access_code').addClass('hide_it')
+    }
   }
 
   $('.save-starting-point-field').change(function(){
-
     setTimeout(function(){ 
-
+      if (locks_input){
         var lock = $(locks_input)[0];
-        if(typeof lock !== 'undefined'){
-          if(lock.value == "")
-              lock.setCustomValidity('')
+        if(lock.value == "")
+            lock.setCustomValidity('')
 
-          if(lock.checkValidity() == true){
-            lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-            input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-            $("#" + lock.id).closest('form').append(input)
-            $('.save-starting-point-form').submit(); 
-          }
-          else{ lock.reportValidity(); }
+        if(lock.checkValidity() == true){
+          lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+          input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+          $("#" + lock.id).closest('form').append(input)
+          $('.save-starting-point-form').submit(); 
         }
-        else{
-            $('.save-starting-point-form').submit(); 
-        }
+        else{ lock.reportValidity(); }
+      }
+      else
+        $('.save-starting-point-form').submit();
     }, 300);
-
   });
 
   function starting_point_goBack()
   {
-     if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.location.href = '/communities/#{@community.id}/tours';
-     }
+    if ($('#lock_provider').val().length > 0 ){
+      if (locks_input){
+          var lock = $(locks_input)[0];
+          if(typeof lock !== 'undefined'){
+            if(lock.value == "")
+                lock.setCustomValidity('')
+
+            if(lock.checkValidity() == true){
+              lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
+              input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
+              $("#" + lock.id).closest('form').append(input)
+              $('.save-starting-point-form').submit(); 
+            }
+            else{ lock.reportValidity(); }
+          }
+          else
+            $('.save-starting-point-form').submit(); 
+      }
+      else
+        $('.save-starting-point-form').submit();
+    }  
+  }
+  function goBack(){
+    window.location.href = '/communities/#{@community.id}/tours';
   }
   if (#{@tours.x_plot.to_i + @tours.y_plot.to_i == 0})
   {
@@ -344,22 +374,24 @@
    //          imageBounds );
    //      historicalOverlay.setMap(map);
    //    }
-  var inputs = document.querySelectorAll('input[list]');
-  for (var i = 0; i < inputs.length; i++) {
-    inputs[i].addEventListener('change', function() {
-      var optionFound = false,
-      datalist = this.list;
-      for (var j = 0; j < datalist.options.length; j++) {
-          if (this.value == datalist.options[j].value) {
-              optionFound = true;
-              break;
-          }
-      }
-      if (optionFound) {
-        this.setCustomValidity('');
-      } else {
-        if (typeof locks_input !== 'undefined' && $(locks_input).val() != "" )
-            this.setCustomValidity('Lock does not exist');
-      }
-    });
+  if (locks_input){
+    var inputs = document.querySelectorAll('input[list]');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].addEventListener('change', function() {
+        var optionFound = false,
+        datalist = this.list;
+        for (var j = 0; j < datalist.options.length; j++) {
+            if (this.value == datalist.options[j].value) {
+                optionFound = true;
+                break;
+            }
+        }
+        if (optionFound) {
+          this.setCustomValidity('');
+        } else {
+          if ( $(locks_input).val() != "" )
+              this.setCustomValidity('Lock does not exist');
+        }
+      });
+    }
   }

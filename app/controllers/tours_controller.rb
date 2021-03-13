@@ -261,7 +261,6 @@ class ToursController < ApplicationController
     @tours.x_plot = @tours.x_plot - 3 unless @tours.x_plot == 0
     @tours.y_plot = @tours.y_plot - 3 unless @tours.y_plot == 0
     @all_locks = all_locks(@community)
-    @locks_provider = @community.locks_provider
   end
 
   def sort_buildings
@@ -333,19 +332,16 @@ class ToursController < ApplicationController
     @tours.latitude = params[:latitude].present? ? params[:latitude] : ""
     @tours.longitude = params[:longitude].present? ? params[:longitude] : ""
     @tours.starting_floor = params[:starting_floor].present? ? params[:starting_floor] : nil
-    
+    @tours.access_code = params[:access_code].present? ? params[:access_code] : nil
+    @tours.lock_provider = params[:lock_provider].present? ? params[:lock_provider] : ""
     @tours.building = params[:building].present? ? params[:building] : nil
-
-    if @community.enable_locks
-      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ( (params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "")  ? params[:dwelo_remote_lock] : ( (params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ( (params[:zerv_lock].present? or params[:zerv_lock] == "") ?  params[:zerv_lock] : nil ) ) )
-      assign_lock(@community, @tours, lock_id) unless lock_id.nil?
-    end
 
     if @tours.building.nil? && params[:building].present?
       flash[:error] = "Building can not be empty"
       redirect_to starting_point_community_tours_path(@community)
     else
       if @tours.save
+        update_enable_locks()
         flash[:notice] = "Tour settings updated successfully."
         redirect_to starting_point_community_tours_path(@community)
       else
@@ -664,6 +660,7 @@ class ToursController < ApplicationController
   end
 
   def flag_id_mismatch
+    
     if params[:tour_user_id].present?
       tour_user = TourUser.find_by_id params[:tour_user_id]
       tour_user.update_attributes id_selfie_mismatch: params[:match_status]
@@ -675,7 +672,7 @@ class ToursController < ApplicationController
       if tour_user.id_selfie_mismatch
         name = tour_user.name || tour_user.email.split('@').first.humanize
 
-        email_content = "The user has a mismatching ID/Selfie. <br/> <a href='#{manual_selfie_match_url tour_user.id }?community=#{community.id}' target='_blank'> Visitor's ID page </a>"
+        email_content = "The photo ID/selfie for #{name} visiting #{community.name} was marked as a mismatch.  Please click on the link below to view.<br><br> <a href='#{manual_selfie_match_url tour_user.id }?community=#{community.id}' target='_blank'> Visitor's ID page</a>"
         DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
         if community_email.present?
           emails = community_email.gsub(" ","").split(',')
@@ -753,5 +750,19 @@ class ToursController < ApplicationController
     end
 
     render json: {match_status: tour_user.id_selfie_mismatch ||= nil, message: message, status: status }
+  end
+
+  private
+
+  def update_enable_locks()
+    if @community.enable_locks
+        lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+        assign_lock(@community, @tours, lock_id) unless lock_id.nil?
+        if params[:lock_provider] == "Manual"
+          @tours.update_column(:lock_provider, "") if params[:access_code] == ""
+        else
+          @tours.update_column(:lock_provider, "") if lock_id.nil? or params[:lock_id] == ""
+        end
+    end 
   end
 end

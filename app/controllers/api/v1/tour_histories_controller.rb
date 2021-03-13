@@ -28,6 +28,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
           if !@tour.visual_id_verification
             tu.id_selfie_mismatch = false
           end
+          tour_history.verified_by = tu.verified_by
           tour_history.desired_bedroom = tu.desired_bedroom
           tour_history.latitude = tu.latitude
           tour_history.longitude = tu.longitude
@@ -109,7 +110,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
     lengthy_stay = (convert_epoch_to_datetime lengthy_stay.to_s)
     stay_time = time_difference(lengthy_stay, tour_history.arrived)
     
-    if stay_time > community.tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == false
+    if stay_time > community.tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == false && tour_history.tour_status == "self_tour"
       stop = TourStop.find stop_id
       # contact_user = (tu.phone_number.present? ? ("<br><br><b>Want to check in with them? " + tu.phone_number) + "<b>" : (community.chat_control ? ("#{tu.phone_number.present? ? "<br>Or" : ""}<br><br><b>Want to check in with them?  <a href='" + base_url+"companies/#{community.company.id}/communities/#{community.id}/edit?tour_user_id=#{tu.id}" + "'>Open Chat</a>" ) : "")
       phone_number = tu.phone_number.last(10).gsub(/^(\d{3})(\d+)(\d{4})$/, '\1-\2-\3') rescue ""

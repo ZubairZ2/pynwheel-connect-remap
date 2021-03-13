@@ -13,7 +13,8 @@ module ZervServices
 
             list_add_user_access = []
             if stop_list.present?
-                tour_time = Time.now
+                timezone = get_community_time_zone(community)
+                tour_time = Time.now.in_time_zone(timezone)
                 stop_list.each do |stop|
                     attached_lock = stop.zerv_locks.last
                     access_code = attached_lock.universal_access_code.present? ? attached_lock.universal_access_code : nil rescue nil

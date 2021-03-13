@@ -144,6 +144,7 @@ Rails.application.routes.draw do
     get :clone_community
     get :change_expressionist_default
     get :test_connection
+    get :authenteq_report
     get :account_report
     get :psi_pricing_test_connection
     get :psi_space_configuration_test_connection
@@ -453,6 +454,7 @@ Rails.application.routes.draw do
           get :community_tours
           post :user_saved_tour
           get :tour_configrations
+          get :tour_configrations_v1
           get :tour_user_data
           get :ios_data
           get :minimum_data
@@ -491,6 +493,7 @@ Rails.application.routes.draw do
       post :save_shared_tour, to: 'tours#save_shared_tour'
       post :checkpoint_verification_response, to: 'tours#checkpoint_verification_response'
       get '/get_floorplan_units', to: 'tours#floorplan_units'
+      post '/mis_match_verification', to: 'tours#mis_match_verification'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
 
       # 

@@ -275,7 +275,7 @@ class Community < ApplicationRecord
 
   end
   def use_crm_credentials?
-    if self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
+    if self.credential.present? &&self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
       (true)
     else
       (false)
@@ -413,27 +413,7 @@ class Community < ApplicationRecord
   end
 
   def realpage_insert_prospect(tour_user, appointment_time, marketing_source, desired_move_in_date)
-    RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user, appointment_time, marketing_source, desired_move_in_date
-  end
-
-  def realpage_insert_activity(tour_user)
-    RealPageInsertActivityJob.perform_async credential.attributes.to_json, tour_user, self
-  end
-
-  def realpage_insert_unit_shown(tour_user)
-    RealPageInsertUnitShownJob.perform_async credential.attributes.to_json, tour_user, self
-  end
-
-  def realpage_insert_follow_up(tour_user)
-    RealPageInsertFollowUpJob.perform_async credential.attributes.to_json, tour_user, self
-  end
-
-  def realpage_get_leasing_agents
-    RealPageGetLeasingAgentsJob.perform_async credential.attributes.to_json, self
-  end
-
-  def real_page_get_activity_types
-    RealPageGetActivityTypesJob.perform_async credential.attributes.to_json
+    RealPageInsertProspectJob.perform_async credential.attributes.to_json, tour_user, appointment_time, marketing_source, desired_move_in_date, self
   end
 
   def real_page_get_marketing_sources
@@ -669,6 +649,43 @@ class Community < ApplicationRecord
   def creator
     User.find_by(id: self.creator_id)
   end
+
+  def filter_final_stops tour_stops
+    amenity_stops = []
+    filtered_stops = []
+    if tour_stops.present?
+      tour_stops.map do |x|
+        if !(x.is_a? Tour) && x.stop_type == "amenity"
+          amenity_stops << x
+        end
+      end
+    end
+
+    non_visible_stops_ids = amenity_stops.present? ? Amenity.where(id: amenity_stops.pluck(:stop_id), breezway_lock_visible: false).pluck(:id) : []
+    
+    tour_stops.map do |x|
+      if (x.is_a? Tour)
+        filtered_stops << x
+      else
+        unless non_visible_stops_ids.include?(x.stop_id)
+          filtered_stops << x
+        end
+      end
+    end
+
+    filtered_stops
+  end
+  
+  def lock_options(locks_present_hash)
+    options = [["Select an option",""],["Manual", "Manual"]]
+    locks_present_hash.each do |key,value|
+      if value
+        options << (key == "Zerv" ? ["Pynwheel Access", key] : [key, key])
+      end
+    end
+    options
+  end
+
   private
 
   def populate_favorites(items_objs,email_to)

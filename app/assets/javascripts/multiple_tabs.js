@@ -2,9 +2,7 @@ var current_user_id, current_user_role, allowed_roles;
 var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime)
 var isFirefox = typeof InstallTrigger !== 'undefined';
 
-
 window.addEventListener('load', function () {           // after page is fully loaded
-
     current_user_id = $( "body" ).data( "user-id" )
     current_user_role = $( "body" ).data( "user-role" )
     allowed_roles = ["Super admin", "Community admin", "Dwelo admin", "Community manager"]
@@ -25,27 +23,23 @@ window.addEventListener('load', function () {           // after page is fully l
     if(already_called == false && window.localStorage.getItem('tabs_count') >= 1){
         chat_service_available()
     }
+
+    if(window.localStorage.getItem('tabs_count') == 0)
+        chat_service_not_available()
 })
 
 window.addEventListener('beforeunload', function () {
     if (allowed_roles.includes(current_user_role) && current_user_id != "undefined" && $("#widget-button").length == 1){
         if(window.localStorage.getItem('tabs_count') > 0)
             window.localStorage.setItem('tabs_count', (parseInt(window.localStorage.getItem('tabs_count')) - 1))
-        if(window.localStorage.getItem('tabs_count') <= 0){
-            window.localStorage.setItem('tabs_count', 0)
+        
+        if(window.localStorage.getItem('tabs_count') == 0)
             chat_service_not_available()
-        }
-
-        if(isChrome){
-            console.log("Blocking for 50 mili-seconds...");
-            sleep(50);
-            console.log("Done!!");
-        }
-        else{
-            console.log("Blocking for 200 mili-seconds...");
+            
+        if(isChrome)
             sleep(100);
-            console.log("Done!!");
-        }
+        else
+            sleep(200);
     }
 });
 
@@ -53,6 +47,10 @@ window.addEventListener('storage', storageChange)
 
 function storageChange (event) {
     console.log("total tabs are ", event.newValue)
+    if(event.newValue == 0){
+        chat_service_not_available()
+        sleep(100);
+    }
 }
 
 function chat_service_available(){

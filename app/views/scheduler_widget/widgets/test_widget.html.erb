@@ -152,9 +152,14 @@
                 </div>
               </div>
               <% end %>
-              <% if @credit_card_required %>
 
-              <p>A credit card is required to complete the reservation<br>Your credit card will not be charged at this time with the exception of a $0.50 charge for verification purposes.</p>
+              <% if @credit_card_required %>
+                <% if ((@community.tour.present? and @community.tour.tour_setting.present?) ? (@community.tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.tour.present? ? @community.tour.visual_id_verification : true)  && (@community.tour.verification_type == "authenteq") %>
+                  <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.</p>
+                <% else %>
+                  <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)</p>
+                <% end %>
+              
               <div class="clearfix"></div>
               <div class="form-group cardNumber">
                 <label>Credit Card Number</label>
@@ -729,6 +734,10 @@
                 else
                 {
                   $("#scheduleMyTour").modal('hide');
+                  if(data.type_list[0][1] == "virtual")
+                  {
+                    $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)")
+                  }
                   $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
                   // hidden_tour_type_value = data.type_list[0][1]
                   send_tour_type(data.schedual_tour.id,data.type_list[0][1])
@@ -765,6 +774,10 @@
           send_tour_type(document.getElementById('sched_tour_id').value,$("#tour_type option:selected").val())
           $('.divLoading').addClass('hidden');
           $("#scheduleTourType").modal('hide');
+          if($('#tour_type').val() == "virtual")
+            {
+              $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)")
+            }
           $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
           // $.ajax({
           //     type: 'POST',
@@ -960,6 +973,7 @@
             // $("[data-stripe=exp-year]").remove();
             // $("[data-stripe=exp-month]").remove();
             $form.append($("<input type=\"hidden\" name=\"sched_tour_id\" />").val(tour_id));
+            $form.append($("<input type=\"hidden\" name=\"last_digits\" />").val(  $('#tour_user_credit_card_number').val().substr($('#tour_user_credit_card_number').val().length - 4) ));
             $form.get(0).submit();
             
 

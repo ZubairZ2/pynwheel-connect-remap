@@ -40,13 +40,13 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both @mail_content
       end
 
-      if self.id_mismatch and !self.is_left
-        community = (Tour.find_by_id self.tour_id).community
-        vs = self.tour_user
-        url = Rails.env.production? ? "https://pynwheelconnect.com/id_selfie_matching/#{vs.id }?community=#{community.id}" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }?community=#{community.id}"
-        @mail_content = ["id_mismatch", "The photo ID/selfie for #{vs.name} were flagged as a mis-match <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"] #get_alert_message('id_mismatch')
-        send_email_sms_or_both @mail_content
-      end
+      # if self.id_mismatch and !self.is_left
+      #   community = (Tour.find_by_id self.tour_id).community
+      #   vs = self.tour_user
+      #   url = Rails.env.production? ? "https://pynwheelconnect.com/id_selfie_matching/#{vs.id }?community=#{community.id}" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }?community=#{community.id}"
+      #   @mail_content = ["id_mismatch", "The photo ID/selfie for #{vs.name} were flagged as a mis-match <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"] #get_alert_message('id_mismatch')
+      #   send_email_sms_or_both @mail_content
+      # end
 
       if self.left and !self.is_left
         community = (Tour.find_by_id self.tour_id).community
@@ -116,7 +116,7 @@ class TourHistory < ApplicationRecord
   def save_prospect(endtime)
     end_time = endtime.in_time_zone(self.my_time_zone)
     tour_time = self.arrived.in_time_zone(self.my_time_zone)
-    tour_status = self.tour_status.present? ? self.tour_status : "virutal"
+    tour_status = self.tour_status.present? ? self.tour_status : "virutal_tour"
 
     available_stops = avail_stops_name_of_community
     visited_stops = stop_marketing_names_visited_by_user
