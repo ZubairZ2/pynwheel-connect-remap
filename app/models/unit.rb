@@ -66,14 +66,15 @@ class Unit < ApplicationRecord
 
   has_many :paths, as: :map_path
   has_many :path_points, through: :paths
-  has_many :remote_locks,  -> { for_units }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
+  # has_many :remote_locks,  -> { for_units }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
+  has_many :remote_locks, as: :stop, dependent: :destroy
   has_many :latch_locks, as: :stop, dependent: :destroy
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
   has_many :zerv_locks, as: :stop, dependent: :destroy
   has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
+
   has_one :door, as: :attached_with, dependent: :destroy
   has_one :tour_stop, as: :stop, dependent: :destroy
-  # has_many :remote_locks, as: :stop, dependent: :destroy
 
   scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
   #scope :are_available, -> { where("available = ? and sold = ?", true,false) }

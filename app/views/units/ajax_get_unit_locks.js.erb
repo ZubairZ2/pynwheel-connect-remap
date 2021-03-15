@@ -1,0 +1,3 @@
+var current_buttons = $(".door-buttons-in-door-modal").children()
+$('#locks-info-in-modal').html("<%= escape_javascript render 'locks_info_in_modal', community: @community %>");
+$(".door-buttons-in-door-modal").append(current_buttons)

@@ -374,6 +374,11 @@ class UnitsController < ApplicationController
     end
   end
 
+  def ajax_get_unit_locks
+    @unit = @community.units.where(provider_unit_id: params[:id]).includes(:remote_locks, :latch_locks, :zerv_locks)
+    # render json: { edgestate_lock: unit.remote_locks.edgestate_locks.present? ? unit.remote_locks.edgestate_locks.first : {}, dwelo_lock: unit.remote_locks.dwelo_locks.present? ? unit.remote_locks.dwelo_locks.first : {}, latch_lock: unit.latch_locks.present? ? unit.latch_locks.first : {}, zerv_lock: unit.zerv_locks.present? ? unit.zerv_locks.first : {} }
+  end
+
   def remove_plot
     @unit = Unit.find_by(provider_unit_id: params[:id],community_id: @community.id)
     @unit.x_plot = 0

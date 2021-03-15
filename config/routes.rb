@@ -260,6 +260,7 @@ Rails.application.routes.draw do
         put :crop_unit_secondary_image
       end
       member do
+        get :ajax_get_unit_locks
         post :ajaxplotunit
         post :ajaxplotunitforfloorplate
         post :ajaxplotunitdoorforfloorplate

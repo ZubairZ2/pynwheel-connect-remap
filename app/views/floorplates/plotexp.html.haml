@@ -218,24 +218,61 @@
 #ajax-doors-detail-modal.modal.fade{"aria-hidden" => "true", "data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
-      .modal-header#u-name
+      - if @community.enable_locks
+        - locks_present_hash = {}
+        - locks_present_hash["Dwelo"] = @community.multiple_locks_provider.include?("Dwelo") && @community.dwelo.present? && @all_locks[:dwelo_locks].any?
+        - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?
+        - locks_present_hash["Latch"] = @community.multiple_locks_provider.include?("Latch") &&  @community.latch.present? && @all_locks[:latch_locks].any?
+        - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
 
-      = form_tag "" do
-        .modal-body
-          .form-group.row
-            %label.col-sm-2.col-form-label Locks Provider
-            .col-sm-10
-              = text_field_tag "locks_provider",0,:class=>"form-control"
-          .form-group.row
-            %label.col-sm-2.col-form-label Select the lock
-            .col-sm-10
-              = text_field_tag "locks_id", 0,:class=>"form-control"
-          .door-buttons-in-door-modal
-        .modal-footer
-          = submit_tag "Update",:class=>"btn btn-primary"
-          %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Door
-          %a.btn.btn-primary{:onclick=>"addDoorsMarkerOnFloorplate()"} Add Doors
-          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+        // load options and input values start
+        - if locks_present_hash["Dwelo"]
+          .dwelo_options.hide_it
+            - @all_locks[:dwelo_locks].each do |lock|
+              %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+        - if locks_present_hash["EdgeState"]
+          .edgestate_options.hide_it
+            - @all_locks[:edgestate_locks].each do |lock|
+              %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
+        - if locks_present_hash["Latch"]
+          .latch_options.hide_it
+            - @all_locks[:latch_locks].each do |lock|
+              %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+        - if locks_present_hash["Zerv"]
+          .zerv_options.hide_it
+            - @all_locks[:zerv_locks].each do |lock|
+              %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+
+      .modal-header#u-name
+      .modal-body#locks-info-in-modal
+        = form_tag "" do
+          - if @community.enable_locks
+            .form-group
+              %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+                Select Lock Provider
+              .col-sm-12.col-lg-8.col-md-9.col-xs-12
+                = select_tag :lock_provider , options_for_select(@community.lock_options(locks_present_hash)),{:class=>"form-control lock_provider_input"}
+
+            .form-group.hide_it#manual_access_code
+              %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+                Access Code
+              .col-sm-12.col-lg-8.col-md-9.col-xs-12
+                = text_field_tag :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
+
+            .form-group#lock_access_code
+              %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+                Select the lock
+              .col-sm-12.col-lg-8.col-md-9.col-xs-12
+                = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control lock_provider_input"
+                %datalist#locks_list
+              = hidden_field_tag "lock_id", ""
+
+        .door-buttons-in-door-modal
+      .modal-footer
+        = submit_tag "Update",:class=>"btn btn-primary"
+        %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Door
+        %a.btn.btn-primary{:onclick=>"addDoorsMarkerOnFloorplate()"} Add Doors
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
 
 #ajax-add-door-marker-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog

@@ -10,7 +10,8 @@ class Elevator < ApplicationRecord
   has_many :paths, as: :map_path, dependent: :destroy
   has_many :path_points, through: :paths
   
-  has_many :remote_locks,  -> { for_elevators }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
+  # has_many :remote_locks,  -> { for_elevators }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
+  has_many :remote_locks, as: :stop, dependent: :destroy
   has_many :latch_locks, as: :stop, dependent: :destroy
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
   has_many :zerv_locks, as: :stop, dependent: :destroy
