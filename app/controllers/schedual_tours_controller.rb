@@ -283,7 +283,7 @@ class SchedualToursController < ApplicationController
     end
 
     def scheduled_tour_users community_id
-      TourUser.where(id: SchedualTour.where(community_id: 638).where.not(tour_user_id: nil).where("tour_date > ?", Time.now ).pluck(:tour_user_id)).pluck(:email).uniq
+      TourUser.where(id: SchedualTour.where(community_id: community_id).where.not(tour_user_id: nil).where("tour_date > ?", Time.now ).pluck(:tour_user_id)).pluck(:email).uniq
     end
 
     def filter_tour_with_max_date_time(tour_user)
