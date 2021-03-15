@@ -1,22 +1,21 @@
-= form_tag "" do
+.locks-section-in-modal
     - if community.enable_locks
         .form-group
             %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
-            Select Lock Provider
+                Select Lock Providerssss
             .col-sm-12.col-lg-8.col-md-9.col-xs-12
-            = select_tag :lock_provider , options_for_select(community.lock_options(locks_present_hash)),{:class=>"form-control lock_provider_input"}
+                = select_tag :lock_provider , options_for_select(community.lock_options(locks_present_hash)),{:class=>"form-control lock_provider_input"}
 
         .form-group.hide_it#manual_access_code
             %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
-            Access Code
+                Access Code
             .col-sm-12.col-lg-8.col-md-9.col-xs-12
-            = text_field_tag :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
+                = text_field_tag :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
 
         .form-group#lock_access_code
             %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
-            Select the lock
+                Select the lockssss
             .col-sm-12.col-lg-8.col-md-9.col-xs-12
-            = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control lock_provider_input"
-            %datalist#locks_list
+                = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control lock_provider_input"
+                %datalist#locks_list
             = hidden_field_tag "lock_id", ""
-.door-buttons-in-door-modal

@@ -260,7 +260,7 @@ Rails.application.routes.draw do
         put :crop_unit_secondary_image
       end
       member do
-        get :ajax_get_unit_locks
+        post :ajax_load_unit_locks
         post :ajaxplotunit
         post :ajaxplotunitforfloorplate
         post :ajaxplotunitdoorforfloorplate
@@ -272,6 +272,7 @@ Rails.application.routes.draw do
         post :clear_locks
         delete :remove_pri_scnd_image
         post :set_amenities_for_units
+        put :ajax_update_unit_locks
       end
       collection do
         post :set_floor

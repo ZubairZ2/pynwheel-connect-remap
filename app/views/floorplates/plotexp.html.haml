@@ -93,9 +93,9 @@
         .box-body.map-body-top
           .row
             .col-lg-9#container.p-0
+              .mapLoading.hidden
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
-                  .mapLoading.hidden
                   .grid-graph.hidden
                   - if @floorplate.image? and @floorplate.image.content_type == "image/svg+xml"
                     .svg_image_style{:style =>  "width: #{@floorplate.width}px; height: #{@floorplate.height}px;"}
@@ -244,35 +244,37 @@
               %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
       .modal-header#u-name
-      .modal-body#locks-info-in-modal
-        = form_tag "" do
-          - if @community.enable_locks
-            .form-group
-              %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
-                Select Lock Provider
-              .col-sm-12.col-lg-8.col-md-9.col-xs-12
-                = select_tag :lock_provider , options_for_select(@community.lock_options(locks_present_hash)),{:class=>"form-control lock_provider_input"}
+      .mapLoading.hidden
+      = form_tag "" , {class: 'apartment-settings-form', method: :put, remote: true} do
+        .modal-body
+          .locks-section-in-modal
+            - if @community.enable_locks
+              .form-group
+                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+                  Select Lock Provider
+                .col-sm-12.col-lg-8.col-md-9.col-xs-12
+                  = select_tag :lock_provider , options_for_select(@community.lock_options(locks_present_hash)),{:class=>"form-control lock_provider_input"}
 
-            .form-group.hide_it#manual_access_code
-              %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
-                Access Code
-              .col-sm-12.col-lg-8.col-md-9.col-xs-12
-                = text_field_tag :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
+              .form-group.hide_it#manual_access_code
+                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+                  Access Code
+                .col-sm-12.col-lg-8.col-md-9.col-xs-12
+                  = text_field_tag :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
 
-            .form-group#lock_access_code
-              %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
-                Select the lock
-              .col-sm-12.col-lg-8.col-md-9.col-xs-12
-                = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control lock_provider_input"
-                %datalist#locks_list
-              = hidden_field_tag "lock_id", ""
+              .form-group#lock_access_code
+                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+                  Select the lock
+                .col-sm-12.col-lg-8.col-md-9.col-xs-12
+                  = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control lock_provider_input"
+                  %datalist#locks_list
+                = hidden_field_tag "lock_id", ""
 
-        .door-buttons-in-door-modal
-      .modal-footer
-        = submit_tag "Update",:class=>"btn btn-primary"
-        %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Door
-        %a.btn.btn-primary{:onclick=>"addDoorsMarkerOnFloorplate()"} Add Doors
-        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+          .door-buttons-in-door-modal
+        .modal-footer
+          = submit_tag "Update",:class=>"btn btn-primary"
+          %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Door
+          %a.btn.btn-primary{:onclick=>"addDoorsMarkerOnFloorplate()"} Add Doors
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
 
 #ajax-add-door-marker-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
@@ -298,6 +300,8 @@
   var rmargin = #{raw right_margin}
   var community_id = #{params[:community_id]}
   var floorplate_id = #{params[:floorplate_id]}
+  var locks_present_hash = #{locks_present_hash.to_json.html_safe}
+
   var addmode = false;
   var adddoorsmode = false;
   var  selected_doors_index = []

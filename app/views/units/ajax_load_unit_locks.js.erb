@@ -1,0 +1,2 @@
+$('.locks-section-in-modal').replaceWith("<%= j render partial: 'locks_info_in_modal', locals: { community: @community, unit: @unit , locks_present_hash: JSON.parse(params[:locks_present_hash]) } %>");
+$("#lock_provider").closest("form").attr('action', "<%= ajax_update_unit_locks_community_unit_path(@community, @unit.provider_unit_id) %>");

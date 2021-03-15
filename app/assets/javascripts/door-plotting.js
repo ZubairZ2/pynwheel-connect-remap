@@ -265,7 +265,15 @@ function change_selected_in_unit_modal(event){
         location.reload()
     }
 }
-        
+
+function get_unit_locks(provider_id){
+
+    $.post( "/communities/" + community_id + "/units/" + provider_id + "/ajax_load_unit_locks",
+    { 
+      "locks_present_hash": JSON.stringify(locks_present_hash),
+    })
+}
+
 $(document).ready(function(){
     $(".ajax-btn-delete").click(function(event){
         event.preventDefault();
@@ -275,11 +283,13 @@ $(document).ready(function(){
 
     $("#ajax-doors-detail-modal").on('show.bs.modal', function(event) {
         debugger
+        $("#locks-info-in-modal").prev().removeClass("hidden")
         xpos = Math.round(parseFloat((event.relatedTarget.style.left)))
         ypos = Math.round(parseFloat((event.relatedTarget.style.top)))
         same_location_doors = getUnitDoorsAtSameLocation(xpos, ypos)
         sortSelectedDoors(event, same_location_doors)
         addDoorButtonsInDoorModal(event, same_location_doors)
+        get_unit_locks(event.relatedTarget.id.split("_")[1])
     })
 
     $("#ajax-add-door-marker-modal").on('show.bs.modal', function(event) {
