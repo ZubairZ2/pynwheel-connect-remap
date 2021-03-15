@@ -2,6 +2,7 @@
    Editor: Alexey Klimuk, Softensity, Inc.
  * sitemap, floorplate, amenity map plotting
 */
+var hallways_coordinates = []
 $(window).on('load', function () {
     /**
      * map controls
@@ -49,18 +50,23 @@ $(window).on('load', function () {
                 $("#new-aj-popup").show();
             }
         } else {
-            console.log("Clicked");
-            console.log(dx);
-            console.log(dy);
-            tag = "<a class='marker ui-draggable ui-draggable-handle'  style='left:" + dx + "px; top:" + dy + "px; position:absolute;'>"
-            tag += "<i class='fas fa-dot-circle' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px;  '></i>";
-            tag += "</a>"
-            // tag = "<i class='fas fa-map-marker-alt' style='color: " + '#00FFFF' + ";  left:" + (dx -left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + 14 + "px;'></i>";
-            debugger;
-            $('#map').append(tag);
-        }
+
+                console.log("Clicked");
+                console.log(dx);
+                console.log(dy);
+
+                var points = {dx: dx, dy: dy};
+                hallways_coordinates.push(points);
+                tag = "<a  ondblclick='test($(this))' class='marker ui-draggable ui-draggable-handle'   style='left:" + (dx) + "px; top:" + (dy) + "px; z-index:100; position:absolute;'>"
+                tag += "<i class='fas fa-dot-circle' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100;  ' ></i>";
+                tag += "</a>"
+                // tag = "<i class='fas fa-map-marker-alt' style='color: " + '#00FFFF' + ";  left:" + (dx -left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + 14 + "px;'></i>";
+                $('#map').append(tag);
+                draw_line(hallways_coordinates);
+            }
 
     });
+
 
     // show/hide map-thumb
     $('#showhide').click(function (e) {
@@ -130,4 +136,23 @@ $(window).on('load', function () {
 });
 
 
+function test(a) {
+    debugger;
+}
 
+function draw_line(hallways_coordinates) {
+    if (hallways_coordinates.length > 1) {
+        x1 = hallways_coordinates[hallways_coordinates.length - 1].dx + 8
+        y1 = hallways_coordinates[hallways_coordinates.length - 1].dy + 8
+        x2 = hallways_coordinates[hallways_coordinates.length - 2].dx + 8
+        y2 = hallways_coordinates[hallways_coordinates.length - 2].dy + 8
+        $(".plot-image").line(x1, y1, x2, y2, {
+            zindex: 99,
+            color: '#000000',
+            stroke: "1",
+            style: "solid",
+            class: "line"
+        });
+
+    }
+}
