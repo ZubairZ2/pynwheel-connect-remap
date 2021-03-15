@@ -327,18 +327,25 @@ class TourHistory < ApplicationRecord
 	def stop_marketing_names_visited_by_user
 		visited_stops = []
 
-		current_tour = VisitedStop.where(tour_user_id: self.tour_user_id, tour_id: self.tour_id).last
+		current_tour = VisitedStop.where(tour_key:  self.tour_user.tour_key)
 		tour_key = current_tour.tour_key if current_tour.present?
+
 		if tour_key.present?
-			tour_stop_ids = VisitedStop.where(tour_key: tour_key).pluck(:tour_stop_id)
+			tour_stop_ids = VisitedStop.where(tour_key:  self.tour_user.tour_key).pluck(:tour_stop_id)
 			unit_stops = TourStop.where(id: tour_stop_ids, stop_type: "unit").pluck(:stop_id)
+
+      puts "unit_stops"
+      puts unit_stops
 
 			unit_stops.each do |stop_id|
 				unit = Unit.find_by_id stop_id
 				marketing_name = unit.marketing_name
 				visited_stops << marketing_name if unit.present?
+        puts "marketing_name"
+        puts marketing_name
 			end
 		end
+
 		puts "visited_stops"
 		puts visited_stops
 		return visited_stops
