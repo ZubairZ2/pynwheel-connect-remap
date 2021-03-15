@@ -140,15 +140,19 @@ class TourUsersController < ApplicationController
     end
   end
   def visited_stops_data
-    if(params[:tour_history_id].present? and params[:floorplate_id].present?)
+    if(params[:tour_history_id].present?)
       tour_history = TourHistory.find params[:tour_history_id]
-      floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
+      # floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
       stops = VisitedStop.where(tour_key: tour_history.tour_key).map{|x| 
       
-        (x.stop_type == "amenity") ? ([x, (Amenity.find_by_id x.tour_stop_id), 'amenity'] rescue next): ([x, (Unit.find_by_id x.tour_stop_id) , 'unit'] rescue next)
+        (x.stop_type == "amenity") ? ([x, (Amenity.find_by_id (TourStop.find x.tour_stop_id).stop_id), 'amenity'] rescue next): ([x, (Unit.find_by_id (TourStop.find x.tour_stop_id).stop_id) , 'unit'] rescue next)
       }
+      
+      floors = stops.map{|x| x[1].floor }
+      buildings = stops.map{|x| x[1].building }
+      
       stops.unshift(['',current_community.tour,"tour"])
-      render json: { :stops => stops}, status: 200
+      render json: { :stops => stops, :floors => floors.uniq, :buildings => buildings.uniq}, status: 200
     else
       render json: {}, status: 404
     end

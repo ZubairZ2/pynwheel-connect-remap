@@ -155,6 +155,15 @@
                           - elsif @alerts.last.history == true
                             Removed at Consumer Request
 
+                      .col-sm-12.col-lg-12.col-md-12.col-xs-12.hidden#building_label
+                        %label
+                          Buildings
+                      .col-sm-12.col-lg-12.col-md-12.col-xs-12#building_buttons{style: "margin-top: 10px;"}
+                      .col-sm-12.col-lg-12.col-md-12.col-xs-12.hidden#floor_label
+                        %label
+                          Floors
+                      .col-sm-12.col-lg-12.col-md-12.col-xs-12#floor_buttons{style: "margin-top: 10px;"}
+
                     - else
                       .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
                         - begin
@@ -422,11 +431,11 @@
   var ctx = canvas.getContext("2d");
   var img = document.getElementById("floorplane_img");
   width = $('#parent-div').width()
-  height = ( width / img.width) * img.height
+  height = ( width / img.width) * img.height;
   ctx.drawImage(img, 0, 0, width, height);
 
 
-
+  debugger;
   ctx.lineCap = "round";
 
   // variable to hold how many frames have elapsed in the animation
@@ -601,29 +610,24 @@
         url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/visited_stops_data?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
         success: function(data){
           data_array = [];
-          for(var i=0 ; i < data.stops.length ; i++)
+          for(var i=0; i<data.buildings.length; i++)
           {
-            if(data.stops[i][1] != null)
-            {
-              vertices.push({
-                x: ((data.stops[i][1].x_plot / img.width)*width),
-                y:  ((data.stops[i][1].y_plot / img.height)*height)
-              });
-              
-              if(data.stops[i][2] == 'amenity'){
-                data_array[i] = [data.stops[i][2].id,{'Name':data.stops[i][2].name,'Arrival Time': data.stops[i][2].event_date + data.stops[i][2].event_time.split(' ')[1] , 'Departure Time:' data.stops[i][2].event_date + data.stops[i][2].event_time.split(' ')[1],'Lock Access Time':  data.stops[i][2].event_date + data.stops[i][2].event_time.split(' ')[1]}]
-
-                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + ((data.stops[i][1].x_plot / img.width)*width) + 'px; top:  '+ ((data.stops[i][1].y_plot / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" data-content=" " data-toggle="propertyDetailNamePopover" style="color: #cf492f; "></i></a>')
-              }
-            }
+            $('#building_label').removeClass('hidden');
+            if(data.buildings[i] != "" && data.buildings[i] != null)
+              $('#building_buttons').append('<a class="btn-default btns" id="building_'+ data.buildings[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: ; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.buildings[i] +'</a>')
           }
-          $('[data-toggle="propertyDetailNamePopover"]').popover({
-            html: true,
-            placement: 'top',
-            template: '<div class="popover" style="left: -43px !important; width: 220px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b> A-301<br><b>Arrival Time:</b> 55<br><b>Departure Time:</b> 55<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> 55<br></div></div>'
-        }).popover('show');
 
-          draw_a_line(vertices);
+          for(var i=0; i<data.floors.length; i++)
+          {
+            $('#floor_label').removeClass('hidden');
+            if(data.floors[i] != "" && data.floors[i] != null)
+              $('#floor_buttons').append('<a class="btn-default btns" id="floor_'+ data.floors[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: ; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.floors[i] +'</a>')
+          }
+          $( ".btns" ).click(function() {
+          debugger;
+            show_plot_accordingly(data.stops)
+          });
+          
           
           //$(".asdasd").children('i').remove()
           //$("#unlock_history").children('h5').remove()
@@ -634,6 +638,35 @@
           console.log(data)
         }
     });
+  }
+  function show_plot_accordingly(stops)
+  {
+      for(var i=0 ; i < stops.length ; i++)
+          {
+            if(stops[i][1] != null)
+            {
+              vertices.push({
+                x: ((stops[i][1].x_plot / img.width)*width),
+                y:  ((stops[i][1].y_plot / img.height)*height)
+              });
+              
+              if(stops[i][2] != 'tour'){
+                data_array[i] = [stops[i][2].id,{'Name':stops[i][2].name,'Arrival Time': stops[i][2].event_date , 'Departure Time': stops[i][2].event_date ,'Lock Access Time':  stops[i][2].event_date }]
+
+                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + ((stops[i][1].x_plot / img.width)*width) + 'px; top:  '+ ((stops[i][1].y_plot / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" data-content=" " data-toggle="propertyDetailNamePopover'+i+'" style="color: #cf492f; "></i></a>')
+              }
+            }
+          }
+          for(var j =0; j < data_array.length;  j++)
+          {
+            $('[data-toggle="propertyDetailNamePopover'+j+'"]').popover({
+              html: true,
+              placement: 'top',
+              template: '<div class="popover" style="left: -43px !important; width: 220px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b> A-301<br><b>Arrival Time:</b> 55<br><b>Departure Time:</b> 55<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> 55<br></div></div>'
+            }).popover('show');
+          }
+
+          draw_a_line(vertices);
   }
 
   function draw_stop(stop, index){
