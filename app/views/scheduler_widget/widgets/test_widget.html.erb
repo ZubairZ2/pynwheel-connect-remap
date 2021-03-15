@@ -399,14 +399,10 @@
       });
 
       $("#tour_user_email").keyup(function() {
-        if(existing_tour_users.indexOf($("#tour_user_email").val()) !== -1) {
-          console.log("matched")
-          console.log($("#tour_user_email").val());
-          console.log(existing_tour_users);
-          $(".reshedule-notification").show();
-        } else {
-          $(".reshedule-notification").hide();
-        }
+        if(existing_tour_users.indexOf($("#tour_user_email").val()) !== -1)
+          $(".reshedule-notification").css("display", "block");
+        else 
+          $(".reshedule-notification").css("display", "none");
       });
 
       var tour_id;
