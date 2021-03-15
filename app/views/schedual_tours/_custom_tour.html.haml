@@ -30,6 +30,7 @@
         - if is_tour_in_future(tour)
           %a.btn.btn-success{:href => reschedule_tour(tour, community, community_code)} Reschedule Tour
           %a.btn.btn-primary{"data-target" => "#customizeStopsModal#{tour.id}", "data-toggle" => "modal", :href => "#"} Customize Tour
+        
         - if is_tour_customized(community.id, tour_user.id)
           %button.btn.btn-warning{:type => "button", :onclick => "resetToStandardTour(#{community.id}, #{tour_user.id})"} Reset to Standard Tour
 

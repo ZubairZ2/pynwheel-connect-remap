@@ -29,7 +29,12 @@ class SchedualToursController < ApplicationController
   
   def create_tour_user_from
     phone_number = make_phone
-    tu = TourUser.find_by(email: params[:tour_user][:email].downcase)
+    tour_user_ids =  UserCustomizedTour.where(community_id: params[:community_id]).pluck( :tour_user_id) 
+    
+    tu = TourUser.where(email: params[:tour_user][:email].downcase, id: tour_user_ids) 
+    tu = TourUser.where(id: SchedualTour.where(community_id: params[:community_id]).pluck  (:tour_user_id), email: params[:tour_user][:email].downcase) unless tu.present?
+    tu = tu.last if tu.present?
+    
     community = Community.find_by_id params[:community_id]
 
     f_name = params[:tour_user][:first_name].present? ? params[:tour_user][:first_name] : ""
@@ -58,6 +63,7 @@ class SchedualToursController < ApplicationController
         flash[:error] = e.message
 
       end
+
       new_tour = SchedualTour.find(params[:sched_tour_id])
       schedual_tour = get_scheduled_tour(tu)
       schedual_tour = schedual_tour.present? ? schedual_tour : new_tour
@@ -101,7 +107,7 @@ class SchedualToursController < ApplicationController
       render json: {message: "some errors occured"}, status: 'failed'
     end
     
-    redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: schedual_tour.community_id)
+    redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: community.id)
   end
   # POST /schedual_tours
   # POST /schedual_tours.json
