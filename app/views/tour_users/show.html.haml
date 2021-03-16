@@ -623,9 +623,17 @@
             if(data.floors[i] != "" && data.floors[i] != null)
               $('#floor_buttons').append('<a class="btn-default btns" id="floor_'+ data.floors[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: ; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.floors[i] +'</a>')
           }
-          $( ".btns" ).click(function() {
-          debugger;
-            show_plot_accordingly(data.stops)
+          $('.btns').click(function(){
+            final_stops = [];
+            for(var s = 0; s < data.stops.length; s++)
+            {
+              debugger;
+              if((data.stops[s][1].floor == 1 || data.stops[s][1].starting_floor == 1 ) && (data.stops[s][1].building == "A" || data.stops[s][1].building == ""))
+              { 
+                final_stops.push(data.stops[s]);
+              }
+            }
+            show_plot_accordingly(final_stops);
           });
           
           
@@ -639,6 +647,8 @@
         }
     });
   }
+  
+  
   function show_plot_accordingly(stops)
   {
       for(var i=0 ; i < stops.length ; i++)
