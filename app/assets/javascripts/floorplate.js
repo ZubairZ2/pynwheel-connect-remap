@@ -50,6 +50,7 @@ $(document).ready(function () {
     });
 
     $('.unit-selects-in-popup .ms-elem-selectable').click(function () {
+      debugger
       console.log('selecting in popup');
       var unit_provider_id = $(this).attr('id');
       unit_provider_id = unit_provider_id.replace("-selectable", "")
@@ -69,6 +70,7 @@ $(document).ready(function () {
     });
 
     $('.select-units-on-page .ms-elem-selection').click(function () {
+      debugger
       console.log($(this).attr('id'));
       removeUnitFromSelectedArray($(this).attr('id').split('-')[0]);
     });
@@ -127,7 +129,7 @@ function addMarkerOnFloorplate(){
 }
 
 function addDoorsMarkerOnFloorplate(){
-  $('#ajax-add-door-marker-modal').modal('show');
+  $('#ajax-add-others-plotted-doors-modal').modal('show');
 }
 
 function plot_entry_point(event){

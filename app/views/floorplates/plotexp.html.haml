@@ -245,53 +245,53 @@
 
       .modal-header#u-name
       .modal-loader.hidden
-      = form_tag "" , {class: 'apartment-settings-form', method: :put, remote: true} do
+      = form_tag "" , {method: :put, remote: true} do
         .modal-body
+          %i.fa.fa-v.fa-check-circle{id: "save_lock", style: "color: green; visibility: hidden; margin-left: 540px;margin-bottom: 12px;"}
           .locks-section-in-modal
             - if @community.enable_locks
               .form-group
-                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
                   Select Lock Provider
                 .col-sm-12.col-lg-8.col-md-9.col-xs-12
                   = select_tag :lock_provider , options_for_select(@community.lock_options(locks_present_hash)),{:class=>"form-control lock_provider_input"}
 
-              .form-group.hide_it#manual_access_code
-                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+              .form-group.hide_it.mt-30#manual_access_code
+                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
                   Access Code
                 .col-sm-12.col-lg-8.col-md-9.col-xs-12
                   = text_field_tag :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
 
-              .form-group#lock_access_code
-                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+              .form-group.mt-30#lock_access_code
+                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
                   Select the lock
                 .col-sm-12.col-lg-8.col-md-9.col-xs-12
                   = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control lock_provider_input"
                   %datalist#locks_list
                 = hidden_field_tag "lock_id", ""
 
-          .door-buttons-in-door-modal
+          .door-buttons-in-door-modal.mt-30
         .modal-footer
-          = submit_tag "Update",:class=>"btn btn-primary"
+          = submit_tag "Update",:class=>"btn btn-primary",:id=> "locks-modal-submit"
           %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Door
           %a.btn.btn-primary{:onclick=>"addDoorsMarkerOnFloorplate()"} Add Doors
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
 
-#ajax-add-door-marker-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+#ajax-add-others-plotted-doors-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
       .modal-header#add-marker-heading
         Add Marker
-      = form_tag "/communities/#{@community.id}/add_plots_on_floorplate" do
-        .modal-body
-          = hidden_field_tag 'unit_provider_ids',"[]"
-          .form-group.row
-            %label.col-sm-2.col-form-label
-            .col-sm-10.doors-selects-in-popup
-              %select.doors-list-on-popup.form-control{:multiple=>"multiple"}
+      .modal-body
+        = hidden_field_tag 'selected_doors_info',"[]"
+        .form-group.row
+          %label.col-sm-2.col-form-label
+          .col-sm-10.doors-selects-in-popup
+            %select.doors-list-on-popup.form-control{:multiple=>"multiple"}
 
-        .modal-footer
-          = submit_tag "Add",:class=>"btn btn-primary" 
-          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel   
+      .modal-footer
+        %a.btn.btn-primary{:id=> "update-other-plotted-doors"} Add
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel   
 :javascript
   var arr = #{raw arr}
   var units_info = #{@unit_with_door.to_json.html_safe}

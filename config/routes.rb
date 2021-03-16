@@ -283,6 +283,7 @@ Rails.application.routes.draw do
         post :set_sold
         post :add_description
         post :set_image
+        post :update_unitdoors_plot_for_floorplate
       end
     end
     resources :tutorials do

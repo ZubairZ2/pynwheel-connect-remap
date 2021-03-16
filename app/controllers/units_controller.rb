@@ -374,12 +374,21 @@ class UnitsController < ApplicationController
     end
   end
 
+  def update_unitdoors_plot_for_floorplate
+    Door.where(id: params[:ids]).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot])
+    # @community.doors.where(id: params[:ids]).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot])
+    render json: {success: true}
+  rescue
+    render json: {success: false}
+  end
+
   def ajax_load_unit_locks
     @unit = @community.units.where(provider_unit_id: params[:id]).includes(:remote_locks, :latch_locks, :zerv_locks).first
   end
 
   def ajax_update_unit_locks
     @unit = @community.units.where(provider_unit_id: params[:id]).first
+    @unit.update(unit_params)
     update_enable_locks()
   end
 
@@ -577,7 +586,6 @@ class UnitsController < ApplicationController
 
   def update_enable_locks()
     if @community.enable_locks
-      binding.pry
         lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
         assign_lock(@community, @unit, lock_id) unless lock_id.nil?
         if params[:unit][:lock_provider] == "Manual"

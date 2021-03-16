@@ -1,19 +1,19 @@
 .locks-section-in-modal
     - if community.enable_locks
         .form-group
-            %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+            %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
                 Select Lock Providers
             .col-sm-12.col-lg-8.col-md-9.col-xs-12
-                = select_tag :unit_lock_provider , options_for_select(community.lock_options(locks_present_hash)),{:name => "unit[lock_provider]" ,:class=>"form-control lock_provider_input"}
+                = select_tag :unit_lock_provider , options_for_select(community.lock_options(locks_present_hash), unit.lock_provider),{:name => "unit[lock_provider]" ,:class=>"form-control lock_provider_input"}
 
-        .form-group.hide_it#manual_access_code
-            %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+        .form-group.hide_it.mt-30#manual_access_code
+            %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
                 Access Code
             .col-sm-12.col-lg-8.col-md-9.col-xs-12
                 = text_field_tag :unit_access_code, unit.access_code ,:name => "unit[access_code]" , :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
 
-        .form-group#lock_access_code
-            %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+        .form-group.mt-30#lock_access_code
+            %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
                 Select the lock
             .col-sm-12.col-lg-8.col-md-9.col-xs-12
                 = hidden_field_tag "dwelo_lock_input_value", unit.remote_locks.dwelo_locks.present? ? unit.remote_locks.dwelo_locks.last.name + " (" + unit.remote_locks.dwelo_locks.last.remote_lock_type + ")" : ''
