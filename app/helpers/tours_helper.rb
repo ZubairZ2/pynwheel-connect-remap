@@ -73,21 +73,6 @@ module ToursHelper
     end
   end
 
-  def create_customized_tour(customized_tour, params)
-    UserCustomizedTour.create!(
-      community_id: params[:community_id],
-      tour_user_id: params[:tour_user_id],
-      tour_id: customized_tour.id
-    )
-  end
-
-  def update_tour_visibility(user_customized_tour, params)
-    if user_customized_tour.tour.present? &&  user_customized_tour.tour.tour_stops.present?
-      tour_Stop = user_customized_tour.tour.tour_stops.find_by(stop_id: params[:tour_stop_id]) if params[:tour_stop_id].present?
-      tour_Stop.update(display_stop: params[:visibility]) if params[:visibility].present? && tour_Stop.present?
-    end
-  end
-
   def remove_user_customized_tour user_customized_tour
     user_customized_tour.tour.tour_stops.delete_all if user_customized_tour.tour && user_customized_tour.tour.tour_stops.present?
     tour = user_customized_tour.tour if user_customized_tour.tour.present?

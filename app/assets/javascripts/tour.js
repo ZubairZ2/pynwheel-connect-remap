@@ -1,8 +1,6 @@
+var stops_list =[];
+
 $(document).ready(function () {
-
-  var visible_stops_list = [];
-  var hidden_stops_list = [];
-
   doDraggable();
 
   $('.plot_starting_point').click(function () {
@@ -15,40 +13,54 @@ $(document).ready(function () {
 
 });
 
-function handleTourStopsVisibility(tour_id, community_id, tour_user_id, stop_id, tour_stop_id) {
-  if (stop_id) {
-    let selector = $(`.stop_eye_slash${stop_id}`);
+function onEditButtonClick(tour_id) {
+  stops_list = $(`#customize-tour-stops-${tour_id}`).data("tourStops");
+  console.log(stops_list);
+}
 
+function handleTourStopsVisibility(stop_id, tour_user_id) {
+  let selector = $(`.stop_eye_slash${stop_id}${tour_user_id}`);
+
+  console.log(stops_list.length);
+  
     if(selector && selector[0] && selector[0].classList.contains("fa-eye")) {
+     
+      if(stops_list.length > 1) {
       selector.removeClass("fa-eye");
       selector.addClass("fa-eye-slash");
-      $(`#customizeStopsModal${tour_id} #customize-stop-success-text-${stop_id}`).html(`stop removed from tour stops`);
-      CustomizeUserTour(tour_id, community_id, tour_user_id, stop_id, tour_stop_id, false);
+      index = stops_list.indexOf(stop_id)
+      stops_list.splice(index, 1);
+      console.log(stops_list);
+      } else {
+        alert("Atleast one stop should be visible");
+      }
+
     } else if(selector && selector[0] && selector[0].classList.contains("fa-eye-slash")) {
       selector.removeClass("fa-eye-slash");
       selector.addClass("fa-eye");
-      $(`#customizeStopsModal${tour_id} #customize-stop-success-text-${stop_id}`).html(`stop added in tour stop`);
-      CustomizeUserTour(tour_id, community_id, tour_user_id, stop_id, tour_stop_id, true);
+      stops_list.push(stop_id);
+      console.log(stops_list);
     }
-  }
 }
 
-function CustomizeUserTour(tour_id, community_id, tour_user_id, stop_id, tour_stop_id, visibility) {
+function CustomizeUserTour(community_id, tour_user_id) {
   let url = "/tours/customize_tour";
+  console.log(stops_list);
   $.ajax({
     type: "POST",
     url: url,
     data: {
       community_id: community_id,
       tour_user_id: tour_user_id,
-      visibility: visibility,
-      tour_stop_id: tour_stop_id
-    }, 
+      stops_list: stops_list
+    },
     success: function() {
-     $(`#customizeStopsModal${tour_id} #customize-stop-success-${stop_id}`).css("display", "inline");
+      $(".customizeStopsModal .save-customized-stops").css("display", "block");
       setTimeout(() => {
-       $(`#customizeStopsModal${tour_id} #customize-stop-success-${stop_id}`).css("display", "none");
-      }, 1000);
+        $(".customizeStopsModal .save-customized-stops").css("display", "none");
+
+        window.location.reload();
+      }, 3000)
     }
   });
 }
@@ -69,7 +81,7 @@ function resetToStandardTour(community_id, tour_user_id) {
         $(".customTourModal .set-standard-tour").css("display", "none");
 
         window.location.reload();
-      }, 2000)
+      }, 3000)
     }
   });
 }

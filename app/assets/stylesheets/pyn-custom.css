@@ -534,6 +534,17 @@ table.upload-image tr td{
   background-color: #f39c12 !important;
 }
 
+.customizeStopsModal .save-customized-stops {
+  padding: 3px;
+  margin-bottom: 0px;
+  margin-top: 30px;
+  text-align: center;
+  font-size: 15px;
+  border-radius: 4px;
+  display: none;
+  background-color: #20a445 !important;
+}
+
 .reshedule-notification {
   color: red;
   display: none;

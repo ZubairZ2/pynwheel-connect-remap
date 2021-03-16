@@ -35,11 +35,11 @@ class TourStop < ApplicationRecord
   end
 
   def remove_associated_stops
-    user_customized_tours = UserCustomizedTour.where(community_id: self.tour.community_id)
-    user_customized_tours.each do |uct|
-      if uct.tour.present?
-        stop = uct.tour.tour_stops.where(stop_id: self.stop_id)
-        stop.destroy_all
+    tour_users = TourUser.where(id: SchedualTour.where(community_id: self.tour.community_id).pluck(:tour_user_id))
+    tour_users.find_each do |tour_user|
+      if tour_user.stops_list.present?
+        tour_user.stops_list.delete(self.id)
+        tour_user.save!
       end
     end
   end

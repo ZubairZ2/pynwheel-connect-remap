@@ -1,4 +1,5 @@
 - content_for :title, "Schedule Tours - Pynwheel"
+- community_tour_stops = get_user_tour_stops(@community, @tour_user)
 .divLoading.hidden
 %section
   .content
@@ -43,7 +44,7 @@
                           %td
                             = scheduled_tour_date_time(tour)
                             - if is_tour_in_future(tour)
-                              - if is_tour_customized(@community.id, @tour_user.id)
+                              - if is_tour_customized(@tour_user)
                                 %i.fa.fa-info-circle.icon_size.customizeTourToolTip
                                   %span#customizeTourToolTipText
                                     Customized Tour
@@ -58,8 +59,8 @@
                             = @tour_user.email
                           %td
                             = @tour_user.phone_number
-                          %td
-                            = render :partial => 'custom_tour', :locals => {tour_user: @tour_user, tour: tour, community: @community, community_code: @community_code}
+                          %td{:style => "display: flex;"}
+                            = render :partial => 'custom_tour', :locals => {tour_user: @tour_user, tour: tour, community: @community, community_code: @community_code, community_tour_stops: community_tour_stops}
                             %a.btn.btn-danger{"data-name"=>"Tour","data-href" => "/communities/#{@community.id}/schedual_tours/#{tour.id}?delete_type=page", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                               %i.fa.fa-trash.icon_size
 

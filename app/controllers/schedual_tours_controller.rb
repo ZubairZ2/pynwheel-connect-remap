@@ -29,12 +29,10 @@ class SchedualToursController < ApplicationController
   
   def create_tour_user_from
     phone_number = make_phone
-    tour_user_ids =  UserCustomizedTour.where(community_id: params[:community_id]).pluck( :tour_user_id) 
-    
-    tu = TourUser.where(email: params[:tour_user][:email].downcase, id: tour_user_ids) 
-    tu = TourUser.where(id: SchedualTour.where(community_id: params[:community_id]).pluck  (:tour_user_id), email: params[:tour_user][:email].downcase) unless tu.present?
+    tour_user_ids = SchedualTour.where.not(tour_user_id: nil).where(community_id: params[:community_id]).uniq.pluck(:tour_user_id)
+    tu = TourUser.where(id: tour_user_ids, email: params[:tour_user][:email].downcase)
     tu = tu.last if tu.present?
-    
+
     community = Community.find_by_id params[:community_id]
 
     f_name = params[:tour_user][:first_name].present? ? params[:tour_user][:first_name] : ""
@@ -289,7 +287,7 @@ class SchedualToursController < ApplicationController
     end
 
     def scheduled_tour_users community_id
-      TourUser.where(id: SchedualTour.where(community_id: community_id).where.not(tour_user_id: nil).where("tour_date > ?", Time.now ).pluck(:tour_user_id)).pluck(:email).uniq
+      TourUser.where(id: SchedualTour.where(community_id: community_id).where.not(tour_user_id: nil).where("tour_date > ?", Time.now.utc ).pluck(:tour_user_id)).pluck(:email).uniq
     end
 
     def filter_tour_with_max_date_time(tour_user)
