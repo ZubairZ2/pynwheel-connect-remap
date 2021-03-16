@@ -662,6 +662,26 @@ table.upload-image tr td{
   position: absolute;
 }
 
+.modal-loader {
+  display: none;
+}
+.modal-loader {
+  display: block;
+  position: fixed;
+  z-index: 100000;
+  background-image: url('loader.gif');
+  background-color: #66666669;
+  opacity: 1;
+  background-repeat: no-repeat;
+  background-position: center;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  top: 0;
+  position: absolute;
+  background-size: 140px;
+}
+
 #new-search-area input {
   width: 300px;
 }

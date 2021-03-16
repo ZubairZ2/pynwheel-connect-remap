@@ -379,6 +379,7 @@ class UnitsController < ApplicationController
   end
 
   def ajax_update_unit_locks
+    @unit = @community.units.where(provider_unit_id: params[:id]).first
     update_enable_locks()
   end
 
@@ -576,6 +577,7 @@ class UnitsController < ApplicationController
 
   def update_enable_locks()
     if @community.enable_locks
+      binding.pry
         lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
         assign_lock(@community, @unit, lock_id) unless lock_id.nil?
         if params[:unit][:lock_provider] == "Manual"

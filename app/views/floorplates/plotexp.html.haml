@@ -244,7 +244,7 @@
               %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
       .modal-header#u-name
-      .mapLoading.hidden
+      .modal-loader.hidden
       = form_tag "" , {class: 'apartment-settings-form', method: :put, remote: true} do
         .modal-body
           .locks-section-in-modal

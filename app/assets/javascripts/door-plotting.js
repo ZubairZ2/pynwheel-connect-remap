@@ -7,7 +7,6 @@ function delete_plot(removing, url){
     }
 }
 
-
 function saveFloorplateUnitDoor(id, dx, dy){
     $.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunitdoorforfloorplate",
     { 
@@ -45,35 +44,6 @@ function delete_unitdoor_plot(url){
             debugger
             if(response.success){
                 try {
-                    /*   remove units data presentin arr(previous implementation)  */
-                    /*var index = arr.findIndex(unit => unit[4] == response.unit.id);
-                    removed_unit = arr.splice(index,1)
-
-                    plotted_unit = $("#m_" + response.unit.provider_unit_id)                             // if this is a plotted element ,replace with crossponding hidden variable if hidden one exists
-                    if (plotted_unit.length > zero){
-
-                        xpos = plotted_unit[zero].dataset.horizontal
-                        ypos = plotted_unit[zero].dataset.vertical
-
-                        hidden_unit_at_same_location = $(".h-" + xpos + "-" + ypos)
-                        if(hidden_unit_at_same_location.length > zero){
-                            tag = hidden_unit_at_same_location[zero]
-                            plotted_unit.attr(
-                                {
-                                    "id": tag.id.replace('h-','m_'),
-                                    "data-title":  tag.dataset.title,
-                                    "data-href": "/communities/" + community_id + "/units/" + tag.id.replace('h-','') + "/remove_plot_from_floorplate?floorplate_id=" + floorplate_id,
-                                    "data-unit-form-url": "/communities/" + community_id + "/units/" + tag.id.replace('h-','') + "/adjust_position"
-                                }
-                            )
-                            hidden_unit_at_same_location.remove()
-                        }
-                        else{
-                            plotted_unit.parent().remove()
-                        }
-                    }*/
-                    
-
                     /*   changes for new imlpementation of doors */
                     buttons = $('.door-buttons-in-door-modal').find("button")
                     if(buttons.length > 1){
@@ -85,12 +55,14 @@ function delete_unitdoor_plot(url){
                                 removed = true
                             }
                             if (removed == true && new_primary_button != null ){
+                                get_unit_locks(new_primary_button.dataset.providerId)
                                 new_primary_button.classList.replace("btn-default", "btn-primary")
                                 unit_data = getUnitDoorsByUnitProviderId(new_primary_button.dataset.providerId)
                
                                 $(".delete-door-marker").attr(
                                     {
-                                        "data-href": getDeleteDoorUrl(new_primary_button.dataset.providerId),
+                                        "data-href": getDeleteDoorUrl(unit_data[zero].unit_info.unit.provider_id),
+                                        "data-provider-id": unit_data[zero].unit_info.unit.provider_id,
                                         "data-plotted-category": "unit_door"
                                     }
                                 )
@@ -178,6 +150,7 @@ function allPlottednitDoorsExceptThisProviderId(provider_id){
 function allPlottedunitDoorsExceptTheseProviderIds(provider_ids){
     return units_info.filter(row => ( Object.keys(row.unit_info.door).length !== zero && provider_ids.includes(row.unit_info.unit.provider_id) == false) )
 }
+
 function addDoorButtonsInDoorModal(event, attached_doors){
     debugger
     $('.door-buttons-in-door-modal').empty()
@@ -215,6 +188,9 @@ function sortSelectedDoors(event, same_location_doors){
 
 function change_selected_in_unit_modal(event){
     debugger
+    if (event.currentTarget.classList.contains("btn-primary")) return
+    
+    get_unit_locks(event.target.dataset.providerId)
     try {
         buttons = $('.door-buttons-in-door-modal').find("button")
 
@@ -234,6 +210,7 @@ function change_selected_in_unit_modal(event){
                     $(".delete-door-marker").attr(
                         {
                             "data-href": getDeleteDoorUrl(unit_data[zero].unit_info.unit.provider_id),
+                            "data-provider-id": unit_data[zero].unit_info.unit.provider_id,
                             "data-plotted-category": "unit_door"
                         }
                     )
@@ -267,11 +244,43 @@ function change_selected_in_unit_modal(event){
 }
 
 function get_unit_locks(provider_id){
-
+    $(".modal-loader").removeClass("hidden")
     $.post( "/communities/" + community_id + "/units/" + provider_id + "/ajax_load_unit_locks",
     { 
       "locks_present_hash": JSON.stringify(locks_present_hash),
     })
+}
+
+function update_locks_select_and_lock_code_field(){
+    debugger
+    // if any lock selected 
+    if ($('#unit_lock_provider').val().length > 0 && $('#unit_lock_provider').val() != "Manual" ){
+      $('#manual_access_code').addClass('hide_it')
+      // initialize elements 
+      lock_provider_type = $('#unit_lock_provider').val().toLowerCase()
+      lock_input_value = "#" + lock_provider_type + "_lock_input_value"
+      options = '.' + lock_provider_type + "_options"
+      locks_input = "#lock_input"
+      // assign values
+      if (lock_provider_type == "zerv")
+        $('#lock_access_code').find('label').html("Lock <span>Assign the lock to this unit</span>")
+      else
+        $('#lock_access_code').find('label').html(capitalize(lock_provider_type) + " Lock <span>Assign the lock to this unit</span>")
+
+      $('#lock_input').val( $(lock_input_value).val() )
+      $('datalist#locks_list').html($(options).html())
+      $('#lock_access_code').removeClass('hide_it') 
+    }
+    else if ($('#unit_lock_provider').val().length > 0){
+      $('#lock_access_code').addClass('hide_it')
+      $('#manual_access_code').removeClass('hide_it')
+      locks_input = undefined
+    }  
+    else
+    {
+      $('#lock_access_code').addClass('hide_it')
+      $('#manual_access_code').addClass('hide_it')
+    }
 }
 
 $(document).ready(function(){
@@ -283,13 +292,12 @@ $(document).ready(function(){
 
     $("#ajax-doors-detail-modal").on('show.bs.modal', function(event) {
         debugger
-        $("#locks-info-in-modal").prev().removeClass("hidden")
+        get_unit_locks(event.relatedTarget.id.split("_")[1])
         xpos = Math.round(parseFloat((event.relatedTarget.style.left)))
         ypos = Math.round(parseFloat((event.relatedTarget.style.top)))
         same_location_doors = getUnitDoorsAtSameLocation(xpos, ypos)
         sortSelectedDoors(event, same_location_doors)
         addDoorButtonsInDoorModal(event, same_location_doors)
-        get_unit_locks(event.relatedTarget.id.split("_")[1])
     })
 
     $("#ajax-add-door-marker-modal").on('show.bs.modal', function(event) {
