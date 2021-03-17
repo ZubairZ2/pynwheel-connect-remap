@@ -29,8 +29,8 @@ class SchedualToursController < ApplicationController
   
   def create_tour_user_from
     phone_number = make_phone
-    tour_user_ids = SchedualTour.where.not(tour_user_id: nil).where(community_id: params[:community_id]).uniq.pluck(:tour_user_id)
-    tu = TourUser.where(id: tour_user_ids, email: params[:tour_user][:email].downcase)
+    # tour_user_ids = SchedualTour.where.not(tour_user_id: nil).where(community_id: params[:community_id]).uniq.pluck(:tour_user_id)
+    tu = TourUser.where(email: params[:tour_user][:email].downcase)
     tu = tu.last if tu.present?
 
     community = Community.find_by_id params[:community_id]
@@ -63,7 +63,17 @@ class SchedualToursController < ApplicationController
       end
 
       new_tour = SchedualTour.find(params[:sched_tour_id])
-      schedual_tour = get_scheduled_tour(tu)
+      schedual_tour = MaxDateScheduledTourService.new(tu, community, true).get_scheduled_tour
+      
+      unless schedual_tour.present?
+        scheduled_tours = community.schedual_tours.where(tour_user_id: tu.id)
+        
+        if scheduled_tours.present?
+          new_tour.update(stops_list: scheduled_tours.last.stops_list)
+        end
+      end
+
+      
       schedual_tour = schedual_tour.present? ? schedual_tour : new_tour
 
       previous_tour = {
@@ -132,7 +142,7 @@ class SchedualToursController < ApplicationController
     # in_limit_count = (total_count < community.tour.max_tour_users.to_i) || (virtual_count < community.tour.max_virtual_tour_users.to_i) || (self_tour_count < community.tour.max_self_tour_tour_users.to_i) || (guided_count < community.tour.max_guided_tour_users.to_i)
 
     @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, end_time: after_30_mints, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
-    axisting_tour_users = scheduled_tour_users params[:community_id]
+    axisting_tour_users = scheduled_tour_users community
 
      unless @type_list == []
       respond_to do |format|
@@ -278,35 +288,27 @@ class SchedualToursController < ApplicationController
 
   private
 
-    def get_scheduled_tour(tour_user)      
-      if tour_user.present? && tour_user.schedual_tours.present?
-        filter_tour_with_max_date_time(tour_user)
-      else
-        nil
+    def scheduled_tour_users community
+      scheduled_tours = SchedualTour.where(community_id: community.id).where.not(tour_user_id: nil)
+      tour_user_ids = scheduled_tours_in_future(scheduled_tours, community)
+      TourUser.where(id: tour_user_ids).pluck(:email).uniq
+    end
+
+    def scheduled_tours_in_future(scheduled_tours, community, tour_user_ids = [], community_time_zone = nil)
+      community_time_zone = get_time_zone(community) if community.present? && community.latitude.present? && community.longitude.present?
+
+      scheduled_tours.find_each do |tour|
+        community_time_zone = community_time_zone || tour.user_time_zone
+        is_in_timezone = (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(community_time_zone) > Time.now.in_time_zone(community_time_zone)
+        tour_user_ids << tour.tour_user_id if is_in_timezone
       end
+    
+      tour_user_ids
     end
 
-    def scheduled_tour_users community_id
-      TourUser.where(id: SchedualTour.where(community_id: community_id).where.not(tour_user_id: nil).where("tour_date > ?", Time.now.utc ).pluck(:tour_user_id)).pluck(:email).uniq
-    end
-
-    def filter_tour_with_max_date_time(tour_user)
-      scheduled_tour = tour_user.schedual_tours.first
-      max_date = scheduled_tour_date_time scheduled_tour
-
-      tour_user.schedual_tours.each do |tour|
-        tour_date = scheduled_tour_date_time tour
-        if max_date <  tour_date
-          max_date  = tour_date
-          scheduled_tour = tour
-        end
-      end
-
-      max_date > Time.now ? scheduled_tour : nil
-    end
-
-    def scheduled_tour_date_time tour
-      tour.present? ? tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p") : ""
+    def get_time_zone(community)
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
     end
 
     def get_tour_datetime_and_diff date

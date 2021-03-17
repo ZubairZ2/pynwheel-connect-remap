@@ -7,16 +7,42 @@ module SchedualToursHelper
     end
   end
 
-  def is_visible tour_user, stop
-    if tour_user.present? && tour_user.stops_list.present?
-      tour_user.stops_list.include?(stop.id)
+  def stop_should_be_visible stop 
+    if stop.stop_type === "elevator" || stop.stop_type === "building_starting_point"
+      false
+    else
+      true
+    end
+  end
+
+  def get_building(stop, community)
+    if community.is_sitemap || stop.stop_type === "building_starting_point" || stop.stop_type === "elevator"
+      "-"
+    else
+      new_stop = stop.stop_type.classify.constantize.find_by_id stop.stop_id
+      new_stop.building.present? ? new_stop.building : "-"
+    end
+  end
+
+  def get_floor(stop, community)
+    if community.is_sitemap || stop.stop_type === "building_starting_point" || stop.stop_type === "elevator"
+      "-"
+    else
+      new_stop = stop.stop_type.classify.constantize.find_by_id stop.stop_id
+      new_stop.floor.present? ? new_stop.floor : "-"
+    end
+  end
+
+  def is_visible tour, stop
+    if tour.present? && tour.stops_list.present?
+      tour.stops_list.include?(stop.id)
     else
       stop.display_stop
     end
   end
 
-  def is_tour_customized(tour_user)
-    if tour_user.present? && tour_user.stops_list.present?
+  def is_tour_customized(tour)
+    if tour.present? && tour.stops_list.present?
       true
     else
       false
@@ -39,13 +65,25 @@ module SchedualToursHelper
     "#{root_url}scheduler/change_schedule_tour_time/#{tour.id}?datetime=#{scheduled_tour_date_time(tour)}"
   end
 
-  def is_tour_in_future tour
-    (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")) > Time.now
+  def is_tour_in_future(community, tour, timezone = nil)
+    if community.present? && community.latitude.present? && community.longitude.present?
+      timezone = get_time_zone(community)
+    end
+
+    timezone = timezone || tour.user_time_zone
+
+    (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) > Time.now.in_time_zone(timezone)
+
   end
 
-  def get_visible_tour_stops(community, tour_user)
-    if tour_user.present? && tour_user.stops_list.present?
-      community.tour.tour_stops.where(id: tour_user.stops_list).pluck(:id)
+  def get_time_zone(community)
+    time_zone = Timezone.lookup(community.latitude, community.longitude)
+    timezone = time_zone.name
+  end
+
+  def get_visible_tour_stops(community, tour)
+    if tour.present? && tour.stops_list.present?
+      community.tour.tour_stops.where(id: tour.stops_list).pluck(:id)
     else
       community.tour.tour_stops.where(display_stop: true).pluck(:id)
     end

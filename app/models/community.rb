@@ -711,11 +711,17 @@ class Community < ApplicationRecord
 
 
   def community_tour_available_stops tour_user
-    if tour_user.present? && tour_user.stops_list.present?
-      self.tour.tour_stops.where(id: tour_user.stops_list).order(:sort)
+    scheduled_tour = MaxDateScheduledTourService.new(tour_user, self, false).get_scheduled_tour
+
+    if scheduled_tour.present? && scheduled_tour.stops_list.present?
+      self.tour.tour_stops.where(id: scheduled_tour.stops_list).order(:sort)
     else
-      self.mdu ? self.tour.tour_stops.where(display_stop: true).order(:sort) :  self.tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
+      nil
     end
+  end
+
+  def get_scheduled_tour_stops stop_ids
+    TourStop.where(id: stop_ids)
   end
 
   private

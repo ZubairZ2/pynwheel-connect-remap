@@ -43,8 +43,8 @@
                             = ind = ind + 1
                           %td
                             = scheduled_tour_date_time(tour)
-                            - if is_tour_in_future(tour)
-                              - if is_tour_customized(@tour_user)
+                            - if is_tour_in_future(@community, tour)
+                              - if is_tour_customized(tour)
                                 %i.fa.fa-info-circle.icon_size.customizeTourToolTip
                                   %span#customizeTourToolTipText
                                     Customized Tour

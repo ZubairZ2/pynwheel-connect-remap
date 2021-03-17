@@ -32,5 +32,4 @@ class SchedualTour < ApplicationRecord
       end
     end
   end
-  
 end
