@@ -5,7 +5,7 @@ module ApplicationHelper
   end
 
   def sidemenu_communities_controllers
-    ["home", "companies", "community_groups", "regions", "group_design"]
+    ["home", "companies", "community_groups", "regions", "group_design","analytics"]
   end
 
   def accounts_dropdown_menu

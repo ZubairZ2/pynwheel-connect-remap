@@ -46,6 +46,7 @@ Rails.application.routes.draw do
   resources :chats
   get 'listening_message', to: 'chats#listening_message' 
   post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages'
+  resources :analytics, only: [:index]
   resources :companies do
     resources :communities
     resources :community_groups

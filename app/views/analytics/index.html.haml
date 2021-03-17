@@ -1,0 +1,12 @@
+- content_for :title, "Analytics - Pynwheel"
+%section.is-community-page
+  .content
+    - if current_user.role == "Dwelo admin"
+      .box-info.add-plan{style: "margin-right: 10px;"}
+        %img.dwelo-logo{:alt => "Smiley face", :src => "/assets/Dwelo-Logo.png"}
+    .box.box-info.add-plan.mt-20
+      .box-header
+        %h3.box-title
+          Maps
+          %span Analatics
+
