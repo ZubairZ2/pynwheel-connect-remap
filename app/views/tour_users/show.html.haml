@@ -424,26 +424,41 @@
               %button.btn-primary.done_btn.mb-20{:onclick => "visitor_show_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 :javascript
-
+  var t;
+  var vertices;
+  var canvas;
+  var ctx;
+  var img;
+  var width;
+  var height;
+  var vertices_count = 0;
+  draw_image_canvas();
   
-  var canvas = document.getElementById("myCanvas");
-  var ctx = canvas.getContext("2d");
-  var img = document.getElementById("floorplane_img");
-  width = $('#parent-div').width()
-  height = ( width / img.width) * img.height;
-  ctx.drawImage(img, 0, 0, width, height);
+  function draw_image_canvas()
+  {
+    canvas = document.getElementById("myCanvas");
+    ctx = canvas.getContext("2d");
+    img = document.getElementById("floorplane_img");
+    width = $('#parent-div').width()
+    height = ( width / img.width) * img.height;
+    ctx.drawImage(img, 0, 0, width, height);
 
 
-  debugger;
-  ctx.lineCap = "round";
+    debugger;
+    ctx.lineCap = "round";
 
-  // variable to hold how many frames have elapsed in the animation
-  var t = 1;
+    // variable to hold how many frames have elapsed in the animation
+    t = 1;
 
-  // define the path to plot
-  var vertices = [];
- 
-   
+    // define the path to plot
+    vertices = [];
+  }
+  function delete_image_canvas()
+  {
+    var canvas = document.getElementById("myCanvas");
+    var context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    }
   // draw the complete line
 
 
@@ -631,6 +646,10 @@
           }
           $('.selected_floor').click();
           $('.btns').click(function(){
+            delete_image_canvas();
+            draw_image_canvas();
+            $(".popover").popover('hide');
+            $('.fa-map-marker').hide();
             final_stops = [];
             if(this.id.includes("building"))
             {
@@ -690,16 +709,9 @@
               }
             }
           }
-          for(var j =0; j < data_array.length;  j++)
-          {
-            $('[data-toggle="propertyDetailNamePopover'+j+'"]').popover({
-              html: true,
-              placement: 'top',
-              template: '<div class="popover" style="left: -43px !important; width: 220px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b> A-301<br><b>Arrival Time:</b> 55<br><b>Departure Time:</b> 55<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> 55<br></div></div>'
-            }).popover('show');
-          }
+          
 
-          draw_a_line(vertices);
+          draw_a_line(vertices, data_array);
   }
 
   function draw_stop(stop, index){
@@ -724,7 +736,7 @@
   $("#tour_histories_dates").change(function () {
         plot_data()
   })
-  function draw_a_line(vertices)
+  function draw_a_line(vertices, data_array)
   {
     ctx.lineWidth = 5;
           ctx.strokeStyle = "blue";
@@ -733,9 +745,28 @@
           // extend the line from start to finish with animation
 
           animate(points);
+          
            function animate() {
+           debugger;
           if (t < points.length - 1) {
               requestAnimationFrame(animate);
+              if(points[t-2] != undefined && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y )
+              {
+                $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
+                    html: true,
+                    placement: 'top',
+                    template: '<div class="popover" style="left: -43px !important; width: 220px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b> A-301<br><b>Arrival Time:</b> 55<br><b>Departure Time:</b> 55<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> 55<br></div></div>'
+                  }).popover('show');
+                  vertices_count++;
+              }
+          }
+          else
+          {
+            $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
+              html: true,
+              placement: 'top',
+              template: '<div class="popover" style="left: -43px !important; width: 220px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b> A-301<br><b>Arrival Time:</b> 55<br><b>Departure Time:</b> 55<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> 55<br></div></div>'
+            }).popover('show');
           }
           // draw a line segment from the last waypoint
           // to the current waypoint
@@ -745,5 +776,6 @@
           ctx.stroke();
           // increment "t" to get the next waypoint
           t++;
+
       }
   }
