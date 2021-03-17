@@ -323,8 +323,8 @@ function reset() {
 }
 
 function saveAmenityPlot(id, dx, dy) {
-    console.log("ready to ajaxsave ajaxplotunit", id, dx, dy);
-    $.post("/communities/" + community_id + "/sitemaps/" + sitemap_id + "/amenities/" + id + "/plot_amenity",
+    console.log("ready to ajaxsave ajaxplotunit 123", id, dx, dy);
+    $.post("/communities/" + community_id + "/sitemaps/" + sitemap_id_amenity + "/amenities/" + id + "/plot_amenity",
         {
             "x_plot": dx,
             "y_plot": dy
