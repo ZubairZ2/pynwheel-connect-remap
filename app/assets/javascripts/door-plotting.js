@@ -127,8 +127,12 @@ function deleteUnitDoorsInfo(position){
     units_info[position].unit_info.door = {}
 }
 
-function getUnitDoorsAtSameLocation(xpos, ypos){
+function getUnitDoorsAtSameLocationByDoorCoords(xpos, ypos){
     return units_info.filter(row => row.unit_info.door.x_plot == xpos && row.unit_info.door.y_plot == ypos)
+}
+
+function getUnitDoorsAtSameLocationByUnitCoords(xpos, ypos){
+    return units_info.filter(row => row.unit_info.unit.x_plot == xpos && row.unit_info.unit.y_plot == ypos)
 }
 
 function getUnitDoorsByUnitProviderId(provider_id){
@@ -159,6 +163,10 @@ function updateGivenUnitDoorsPlotting(provider_ids, x_plot, y_plot){
             row.unit_info.door.y_plot = y_plot
         }
     })
+}
+
+function getUnitDoorsAtGivenLocationExceptTheseProviderIds(provider_ids, x_plot, y_plot){
+    return units_info.filter(row => ( Object.keys(row.unit_info.door).length !== zero && provider_ids.includes(row.unit_info.unit.provider_id) == false && row.unit_info.unit.x_plot == xpos && row.unit_info.unit.y_plot == ypos) )
 }
 
 function createDoorButtonsInDoorModal(event, attached_doors){
@@ -344,9 +352,23 @@ $(document).ready(function(){
         get_unit_locks(event.relatedTarget.id.split("_")[1])
         xpos = Math.round(parseFloat((event.relatedTarget.style.left)))
         ypos = Math.round(parseFloat((event.relatedTarget.style.top)))
-        same_location_doors = getUnitDoorsAtSameLocation(xpos, ypos)
-        sortSelectedDoors(event, same_location_doors)
-        createDoorButtonsInDoorModal(event, same_location_doors)
+        same_location_plotted_doors = getUnitDoorsAtSameLocationByDoorCoords(xpos, ypos)
+        sortSelectedDoors(event, same_location_plotted_doors)
+        createDoorButtonsInDoorModal(event, same_location_plotted_doors)
+
+
+
+
+        plotted_unit = $("#m_" + event.relatedTarget.id.split("_")[1]).parent()[zero]
+        xpos = parseFloat(plotted_unit.style.left)
+        ypos = parseFloat(plotted_unit.style.top)
+
+        parent_units_for_this_modal = getUnitDoorsAtSameLocationByUnitCoords(xpos, ypos) // dont get doors value from here
+
+        plotted_units_provider_ids = parent_units_for_this_modal.map(function(row) { return row.unit_info.unit.provider_id})
+        plotted_doors_provider_ids = same_location_plotted_doors.map(function(row) { return row.unit_info.unit.provider_id})
+
+        remaining_doors =  plotted_units_provider_ids.filter(plotted_unit_provider_id => !plotted_doors_provider_ids.includes(plotted_unit_provider_id))
     })
 
     $("#ajax-add-others-plotted-doors-modal").on('show.bs.modal', function(event) {
@@ -357,7 +379,7 @@ $(document).ready(function(){
         all_door_buttons = $(".door-buttons-in-door-modal").children()
         all_door_buttons.map(function(index, button){provider_ids.push(button.dataset.providerId)})
 
-        units_data = allPlottedunitDoorsExceptTheseProviderIds(provider_ids)
+        units_data = getUnitDoorsAtGivenLocationExceptTheseProviderIds(provider_ids, door.x_plot, door.y_plot)
         for(var row of units_data)
             $('.doors-list-on-popup').multiSelect('addOption', { value: (row.unit_info.door.id + '--' + row.unit_info.unit.provider_id + "--"), text: row.unit_info.door.name});
     })
@@ -389,7 +411,7 @@ $(document).ready(function(){
         
         $.ajax({
             type: "post",
-            url:   "/communities/" + community_id + "/units/update_unitdoors_plot_for_floorplate",
+            url:  "/communities/" + community_id + "/units/update_unitdoors_plot_for_floorplate",
             data: {ids: doors_ids, x_plot: data.unit_info.door.x_plot, y_plot: data.unit_info.door.y_plot},
             cache: false,
             success: function(response) {
@@ -398,7 +420,7 @@ $(document).ready(function(){
                 for(var door of selected_doors)
                     provider_ids.push(door.provider_id)
                 
-                units_data =updateGivenUnitDoorsPlotting(provider_ids, data.unit_info.door.x_plot, data.unit_info.door.y_plot)
+                units_data = updateGivenUnitDoorsPlotting(provider_ids, data.unit_info.door.x_plot, data.unit_info.door.y_plot)
             },
             fail: function(response) {},
         })

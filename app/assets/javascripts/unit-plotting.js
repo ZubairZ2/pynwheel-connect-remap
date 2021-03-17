@@ -382,7 +382,7 @@ function is_ui_a_door(ui)
 function start__door_work(event, ui){
   xpos = Math.round(ui.position.left);
   ypos = Math.round(ui.position.top);
-  same_location_doors = getUnitDoorsAtSameLocation(xpos, ypos)
+  same_location_doors = getUnitDoorsAtSameLocationByDoorCoords(xpos, ypos)
 }
 
 
