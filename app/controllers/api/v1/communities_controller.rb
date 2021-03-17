@@ -283,7 +283,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       else
         @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
       end
-      check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
+      check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])  unless @community.id == 1122
     else
         render :json=> {:success=>false, :message => "Invalid Token"}
     end
@@ -520,7 +520,7 @@ class Api::V1::CommunitiesController < ActionController::Base
               end
             end
           end
-          @locks_thread = create_zerv_user(@community, @tour_user)
+          @locks_thread = create_zerv_user(@community, @tour_user) unless @community.id == 1122
           @tour_user.save
           @verfication_type = params[:id_verification].present? ? @community.tour.verification_type : "email"
         end
