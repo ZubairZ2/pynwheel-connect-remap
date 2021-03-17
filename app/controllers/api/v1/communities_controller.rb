@@ -164,8 +164,9 @@ class Api::V1::CommunitiesController < ActionController::Base
       @random_string = SecureRandom.hex
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       @community = Community.find params[:id]
-      @tour = Tour.find_by_id params[:tour_id] if params[:tour_id].present?
-      @tour =  @community.tour unless @tour.present?
+      @tours = []
+      @tours << Tour.find_by_id(params[:tour_id]) if params[:tour_id].present?
+      @tours <<  @community.tour unless @tours.present?
 
       @community.deleted_ids = []
       @tour_user.tour_key = @random_string
