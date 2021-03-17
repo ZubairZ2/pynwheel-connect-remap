@@ -47,6 +47,10 @@
        console.debug(data.unit.x_plot);
        console.debug(data.unit.y_plot);
        console.debug(data.unit.marketing_name);
+
+       var index = arr.findIndex(unit => unit[0] == data.unit.provider_unit_id);
+       arr.splice(index,1)
+
        arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
        doDraggable();
        // delete from unused list
