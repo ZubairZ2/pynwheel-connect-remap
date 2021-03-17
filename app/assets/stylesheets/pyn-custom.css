@@ -3642,3 +3642,15 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .half_opacity{opacity: 0.5;}
 .add-new-lock a.disabled { pointer-events: none; cursor: not-allowed; } 
 .hide_it{ display: none; }
+.h3_box_title{
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding-left: 15px;
+  color: #8b8b8b;
+  font-size: 18px;
+}
+.grey_bar{ 
+  background-color: #f6f6f6; 
+  padding-top: 5px;
+  padding-bottom: 5px;
+}

@@ -4,6 +4,14 @@ module ApplicationHelper
     ["index","new","create","update"]
   end
 
+  def sidemenu_communities_controllers
+    ["home", "companies", "community_groups", "regions", "group_design"]
+  end
+
+  def accounts_dropdown_menu
+    ["companies", "community_groups", "regions", "communities"]
+  end
+
   def flash_class(level)
     case level
     when 'notice' then "alert alert-success"
@@ -1183,6 +1191,11 @@ module ApplicationHelper
       end
     end
 
+  end
+
+  def companies_hash
+    arr = Company.all.map { |c| [c.name , c.id] }
+    arr.to_h
   end
 
 end

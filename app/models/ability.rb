@@ -9,6 +9,7 @@ class Ability
       if user.is_dwelo_admin?
         can :edit_settings_page, User, id: user.id
         can :crud, Company
+        can :manage, Region
       else
         can :read, Company, id: user.company_id
         can :update, Company, id: user.company_id

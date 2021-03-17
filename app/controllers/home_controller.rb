@@ -9,6 +9,10 @@ class HomeController < ApplicationController
       dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).ids # all communities under dwelo_companies (either created by dwelo_admin or super_admin)
       ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
       @communities = Community.where(id: ids)
+    elsif current_user.is_company_admin?
+      @communities = current_user.company.communities
+    elsif current_user.is_regional_admin?
+      @communities = current_user.region.communities
     else
     	@communities = current_user.communities
     end

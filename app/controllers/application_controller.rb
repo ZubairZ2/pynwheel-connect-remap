@@ -31,7 +31,9 @@ class ApplicationController < ActionController::Base
   end
 
   def current_company
-    if params[:company_id].present?
+    if current_user.present? && current_user.company.present?
+      @company = current_user.company
+    elsif params[:company_id].present?
       session[:company_id] = params[:company_id] 
       @company = Company.find params[:company_id]
     elsif current_community.present? && !current_community.new_record?
@@ -140,8 +142,8 @@ class ApplicationController < ActionController::Base
     [chatroom.id , min_count]
   end
 
-  def alphabetical_sort(company_or_community_or_community_groups)
-    company_or_community_or_community_groups.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? c.name.split(" ", 2)[1] : c.name).downcase }
+  def alphabetical_sort(recods)
+    recods.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? c.name.split(" ", 2)[1] : c.name).downcase }
   end
 
   def show_chat_support
@@ -159,7 +161,7 @@ class ApplicationController < ActionController::Base
   end
     
   def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:invite, keys: [:role,:community_ids=>[]])
+    devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:region_id,:role,:community_ids=>[]])
     devise_parameter_sanitizer.permit(:accept_invitation, keys: [:first_name, :last_name, :avatar])
   end
 end

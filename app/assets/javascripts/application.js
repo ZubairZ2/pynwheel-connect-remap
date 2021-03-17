@@ -38,6 +38,8 @@
 //= require unit-plotting
 //= require sitemap
 //= require tour
+//= require communities
+//= require regions
 //= require floorplate
 
 //= require ekko-lightbox

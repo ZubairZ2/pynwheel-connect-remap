@@ -1,27 +1,60 @@
 - unless controller.action_name == "profile"
+  = hidden_field_tag "current_user_role", current_user.role
+  = hidden_field_tag "edit_user_role", f.object.role
+  = hidden_field_tag "edit_user_company_id", f.object&.company_id
+  = hidden_field_tag "edit_user_region_id", f.object&.region_id
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Role
-      %span Select role here	
+      - unless current_user.is_company_admin? or current_user.is_regional_admin?
+        %span Select role	
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control"}
+      - unless current_user.is_company_admin? or current_user.is_regional_admin?
+        = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control"}
+      - else 
+        .grey_bar
+          %h3.h3_box_title= current_user.is_company_admin? ? 'Company admin' : 'Regional admin'
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Company
-      %span Select Company
+      - unless current_user.is_company_admin? or current_user.is_regional_admin?
+        %span Select Company
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.select :company_name, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control company_list", "data-user-id" =>  f.object.id}
+      - unless current_user.is_company_admin? or current_user.is_regional_admin?
+        = f.select :company_name, options_for_select(current_user.all_companies,f.object.company&.name),{:include_blank => 'Select Company'},{class: "form-control company_list"}
+      - else
+        .grey_bar
+          %h3.h3_box_title= current_company.name
+  - if f.object.role == "Regional admin" && !current_user.is_regional_admin?
+    .form-group
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Region
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        = f.select :region_id, options_for_select(f.object.company.regions.map{|r| [r.name, r.id]},f.object.region_id),{:include_blank => 'Select Region'},{class: "form-control"}
+
+
+  = hidden_field_tag 'user-id', f.object.id
+  - if current_user.is_regional_admin?
+    .form-group
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Region
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        .grey_bar
+          %h3.h3_box_title= current_user.region.name
+
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Communities
       %span Select communities  
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-
-
-      -if current_user.is_super_admin?
+      - if current_user.is_regional_admin? || current_user.is_company_admin?
+        - communities = current_user.is_company_admin? ? current_user.company.communities : current_user.region.communities
+        = f.select :community_ids, options_for_select(communities.collect{|c| [c.name,c.id]},communities.map(&:id)),{},{class: "form-control",:multiple=>true}
+      - elsif current_user.is_super_admin? || current_user.is_dwelo_admin?
         = f.select :community_ids, options_for_select('',f.object.communities.map(&:id)),{},{class: "form-control",:multiple=>true}
-      -else
-        = f.select :community_ids, options_for_select(current_user.communities.collect{|c| [c.name,c.id]},f.object.communities.map(&:id)),{},{class: "form-control validate[required]",:multiple=>true}
+      - else
+        = f.select :community_ids, options_for_select(current_user.communities.collect{|c| [c.name,c.id]},f.object.communities.map(&:id)),{},{class: "form-control",:multiple=>true}
+
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Enable Chat
@@ -79,135 +112,129 @@
   $('#chat_enable_com').multiSelect();
   $('#user_community_ids').multiSelect();
   $( document ).ready(function() {
-
-    $.ajax({
-    url: "/communities/invitation_communities",
-    type: "POST",
-    data: {user_communities: "true", user:  $('#user_company_name').attr('data-user-id')},
-
-    success: function(resp){
-    $('#chat_enable_com').multiSelect('removeAllOptions');
-    parsed_arr = $.parseJSON(resp.data);
-    for (var i=0; i<parsed_arr.length  ; i++) {
-
-      $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
-
+    edit_user_role = $('#edit_user_role').val()
+    if ( is_company_admin(edit_user_role) || is_regional_admin(edit_user_role)){
+      $('#user_role').attr('disabled',true)
+      $('#user_company_name').attr('disabled',true)
+      $('#user_region_id').attr('disabled',true)
     }
-
-
+    else{
+      $(`#user_role option[value='Company admin']`).attr('disabled', true)
+      $(`#user_role option[value='Regional admin']`).attr('disabled', true)
+    }
+    comp = "#{@company.id}"
+    if ( is_company_admin(edit_user_role))
+      data = {user_communities: "true", user:  ($('#user-id').val()), company_id: ($('#edit_user_company_id').val())}
+    else if (is_regional_admin(edit_user_role))
+      data = {user_communities: "true", user:  ($('#user-id').val()), region_id: ($('#edit_user_region_id').val())}
+    else
+      data1 = {user_communities: "true", user:  $('#user-id').val()}
     $.ajax({
-      url: "/communities/",
-      type: "GET",
-      data: {user:  $('#user_company_name').attr('data-user-id'), enable_communities: "true" , company_id:  #{@company.id}},
+      url: "/communities/invitation_communities",
+      type: "POST",
+      data: data,
 
-      success: function(resp2){
-      parsed_arr2 = $.parseJSON(resp2.data);
-      for (var j=0; j < parsed_arr2.length ; j++) {
-        for (var k=0; k < parsed_arr.length;k++)
-        {
-          if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
-          {
-             $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr2[j][0], text: parsed_arr2[j][1],disabled: true});
-              $('#chat_enable_com').multiSelect('select_disable',parsed_arr2[j][0].toString());
-          }
-          else
-          {
-            $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr2[j][0], text: parsed_arr2[j][1],disabled: true});
-            $('#chat_enable_com').multiSelect('select_disable',parsed_arr2[j][0].toString());
-          }
+      success: function(resp){
+        $('#chat_enable_com').multiSelect('removeAllOptions');
+        parsed_arr = $.parseJSON(resp.data);
+        for (var i=0; i<parsed_arr.length  ; i++) {
+
+          $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
+
         }
+        $.ajax({
+          url: "/communities/",
+          type: "GET",
+          data: {user:  ($('#user-id').val()), enable_communities: "true" , company_id: comp},
 
+          success: function(resp2){
+            if (resp2.data != "null")
+              parsed_arr2 = $.parseJSON(resp2.data);
+            else
+              parsed_arr2 = []
+            for (var j=0; j < parsed_arr2.length ; j++) {
+              for (var k=0; k < parsed_arr.length;k++)
+              {
+                if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
+                {
+                  $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr2[j][0], text: parsed_arr2[j][1],disabled: true});
+                  $('#chat_enable_com').multiSelect('select_disable',parsed_arr2[j][0].toString());
+                }
+                else
+                {
+                  $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr2[j][0], text: parsed_arr2[j][1],disabled: true});
+                  $('#chat_enable_com').multiSelect('select_disable',parsed_arr2[j][0].toString());
+                }
+              }
+
+            }
+          }
+        });
       }
-      }
+
     });
-    }
-
-  });
+    
+    enable_disable_communities()
   });
 
   $(".company_list").change(function(e){
     var selected_company =  $(".company_list").val()
     var userid = $(this).attr('data-user-id');
     
-  $.ajax({
-    url: "/communities/invitation_communities",
-    type: "POST",
-    data: {company: selected_company },
-
-    success: function(resp){
-    $('#user_community_ids').multiSelect('removeAllOptions');
-    parsed_arr = $.parseJSON(resp.data);
-    for (var i=0; i<parsed_arr.length  ; i++) {
-
-      $('#user_community_ids').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
-
-    }
-
-
     $.ajax({
-      url: "/communities/selected_communities",
+      url: "/communities/invitation_communities",
       type: "POST",
-      data: {user:  $('#user_company_name').attr('data-user-id') },
+      data: {company: selected_company },
 
-      success: function(resp2){
-      parsed_arr2 = $.parseJSON(resp2.data);
-      for (var j=0; j < parsed_arr2.length ; j++) {
-        for (var k=0; k < parsed_arr.length;k++)
-        {
-          if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
-          {
-            $('#user_community_ids').multiSelect('select',parsed_arr2[j][1].toString());
-          }
-          else
-          {
+      success: function(resp){
+        $('#user_community_ids').multiSelect('removeAllOptions');
+        parsed_arr = $.parseJSON(resp.data);
+        for (var i=0; i<parsed_arr.length  ; i++) {
 
+          $('#user_community_ids').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
 
-            $('#user_community_ids').multiSelect('addOption', { value: parsed_arr2[j][1], text: parsed_arr2[j][0],disabled: true});
-            $('#user_community_ids').multiSelect('select_disable',parsed_arr2[j][1].toString());
-
-
-
-          }
         }
 
+
+        $.ajax({
+          url: "/communities/selected_communities",
+          type: "POST",
+          data: {user:  $('#user-id').val() },
+
+          success: function(resp2){
+            parsed_arr2 = $.parseJSON(resp2.data);
+            for (var j=0; j < parsed_arr2.length ; j++) {
+              for (var k=0; k < parsed_arr.length;k++)
+              {
+                if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
+                {
+                  $('#user_community_ids').multiSelect('select',parsed_arr2[j][1].toString());
+                }
+                else
+                {
+                  $('#user_community_ids').multiSelect('addOption', { value: parsed_arr2[j][1], text: parsed_arr2[j][0],disabled: true});
+                  $('#user_community_ids').multiSelect('select_disable',parsed_arr2[j][1].toString());
+                }
+              }
+            }
+          }
+        });
       }
-
-      }
-
-
     });
-    }
   });
 
+  function enable_disable_communities(){
+    user_role = $('#current_user_role').val()
+    if ( is_company_admin(user_role) || is_regional_admin(user_role))
+      $('#user_community_ids').siblings('.ms-container').find('.ms-selection').find('ul.ms-list li').addClass('disabled')
+    else
+      $('#user_community_ids').siblings('.ms-container').find('.ms-selection').find('ul.ms-list li').removeClass('disabled')
+  }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  });
-
-
-
-
-
-
-
-
+  function is_company_admin(val){
+    return val == "Company admin"
+  }
+  function is_regional_admin(val){
+    return val == "Regional admin"
+  }
 

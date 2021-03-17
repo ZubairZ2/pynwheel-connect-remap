@@ -15,12 +15,16 @@ class CommunitiesController < ApplicationController
       if user_enable_communities_ids.present?
         user_enable_communities = Community.where(id: user_enable_communities_ids).pluck(:id, :name).to_json rescue nil
         render :json => {data: user_enable_communities}, :status => 200
+      else
+        render :json => {data: user_enable_communities.to_json}, :status => 200
       end
     end
     if current_user.is_super_admin?
       @communities = alphabetical_sort(current_company.communities)
-    elsif current_user.is_dwelo_admin?
+    elsif current_user.is_dwelo_admin? || current_user.is_company_admin?
       @communities = alphabetical_sort(current_company.communities) # Community.all.where(creator_id: User.all.map{|u| u.id if u.role == "Dwelo admin"}.compact)
+    elsif current_user.is_regional_admin?
+      @communities = alphabetical_sort(current_user.region.communities)
     else
       @communities = alphabetical_sort(current_user.communities)
     end
@@ -70,6 +74,7 @@ class CommunitiesController < ApplicationController
     add_breadcrumb "Communities", company_communities_path(current_company)
     add_breadcrumb "Settings"
     @community = Community.find params[:community_id]
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] }
     # if params[:default_community_id].present?
     #   dwelo_account =Dwelo.find_by(community_id: @community.id) rescue nil
     #   unless dwelo_account.present?
@@ -429,14 +434,22 @@ class CommunitiesController < ApplicationController
 
   def invitation_communities
     if params[:user_communities].present?
-      user = User.find params[:user]
-      result = user.communities.pluck(:name, :id).to_json
+      if params[:company_id].present?
+        result = Company.find(params[:company_id]).communities.pluck(:name, :id).to_json
+      elsif
+        result = Region.find(params[:region_id]).communities.pluck(:name, :id).to_json
+      else
+        user = User.find params[:user]
+        result = user.communities.pluck(:name, :id).to_json
+      end
       render :json => {data: result}, :status => 200
-    else
+    elsif params['company'].present?
       company =  params['company']
       comp = Company.find_by(name: company )
-      result = comp.communities.pluck(:name,:id).to_json
+      result = params['region'].present? ? (comp.regions.where(id: params['region']).first.communities.pluck(:name,:id).to_json) :  (comp.communities.pluck(:name,:id).to_json) rescue [].json
       render :json => { data: result }, :status => 200
+    else
+      render :json => { data: [].to_json }, :status => 200
     end
 
   end
@@ -664,7 +677,7 @@ class CommunitiesController < ApplicationController
  
   def community_params
 
-    params.require(:community).permit(:name,:creator_id,:default_community_id ,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
+    params.require(:community).permit(:name,:creator_id,:default_community_id ,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id, :region_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:enable_locks,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
       :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:crm_credential_attributes=>[:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id, :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username, :salesforce_password, :salesforce_client_id, :salesforce_secret_id, :salesforce_grant_type],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,

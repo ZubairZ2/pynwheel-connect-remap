@@ -25,27 +25,35 @@
                 = link_to new_company_community_group_path(current_company),:class=>"btn btn-success pull-right mb-20 mr-10" do
                   %i.fa.fa-plus-circle
                   ADD COMMUNITY GROUP
+              - if current_user.is_super_admin? || current_user.is_dwelo_admin?
+                = link_to new_company_region_path(current_company),:class=>"btn btn-success pull-right mb-20 mr-10" do
+                  %i.fa.fa-plus-circle
+                  ADD REGION
             .divLoading.hidden
         .box.box-widget.panel-box
           .box-header
             
             .row
               .col-md-12
-                %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive
+                %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.community-index
                   %thead
                     %tr
                       %th{:width => "79"} Sr #
 
                       %th Community Name
+                      %th 
+                        Region Name
                       %th{:width => "250"} Actions
                   %tbody
                     - if current_user.is_super_admin? or can? :crud, Company
-                      - @communities.each_with_index  do |f,index|
+                      - alphabetical_sort(@communities).each_with_index  do |f,index|
                         %tr
                           %td
                             = index+1
                           %td
                             = link_to f.name, edit_company_community_path(current_company,f)
+                          %td
+                            = f.region.present? ? (link_to f.region.name, edit_company_region_path(current_company,f.region)) : "-"
                           %td
                             = link_to edit_company_community_path(current_company,f),:class=>"text-success" do
                               %i.fa.fa-edit.icon_size
@@ -79,5 +87,3 @@
       .col-lg-4.col-md-12
         .row
           .col-md-12
-
-        
