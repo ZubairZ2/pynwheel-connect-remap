@@ -180,7 +180,11 @@ function getUnitTag(url){
     }
     else if (typeof floorplate_id !== 'undefined' || sitemap_id !== 'undefined')
     {   
-        plus_icon = returnPlusIconTag(selected[0][0])
+        if(automate_wayfinding == true) 
+            plus_icon = returnPlusIconTag(selected[0][0])
+        else
+            plus_icon = ''
+
         tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute">
                     <a id="m_${selected[0][0]}" style="font-size: ${marker_font_size}px" title="${selected[0][1]}" data-toggle="modal" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="unit" href="#">
                         <i class="fas fa-map-marker-alt" style="color: ${marker_color};"></i> </a>

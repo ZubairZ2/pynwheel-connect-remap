@@ -118,12 +118,12 @@
                           = link_to "#", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                             %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
 
-                          - unless unit_door_exists
+                          - if !unit_door_exists and @community.auto_wayfinding
                             = link_to "#", { id: "plus_#{unit.provider_unit_id}", style: "margin-left: -6px;", title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}, onclick: 'plot_entry_point(event)'} do
                               %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/2}px;" }
                             - unit_door_exists = false
 
-                        - if unit_door_exists
+                        - if unit_door_exists and @community.auto_wayfinding
                           - unit_door = unit.door
                           = link_to "#", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "unit_door"}} do
                             %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
@@ -272,16 +272,17 @@
 
           .door-buttons-in-door-modal.mt-30
         .modal-footer
-          = submit_tag "Update",:class=>"btn btn-primary",:id=> "locks-modal-submit"
+          - if @community.enable_locks
+            = submit_tag "Update",:class=>"btn btn-primary",:id=> "locks-modal-submit"
           %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Door
           %a.btn.btn-primary{:onclick=>"addDoorsMarkerOnFloorplate()"} Add Doors
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
 
-#ajax-add-others-plotted-doors-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+#ajax-remaining-doors-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
       .modal-header#add-marker-heading
-        Add Marker
+        Add Doors
       .modal-body
         = hidden_field_tag 'selected_doors_info',"[]"
         .form-group.row
@@ -290,7 +291,7 @@
             %select.doors-list-on-popup.form-control{:multiple=>"multiple"}
 
       .modal-footer
-        %a.btn.btn-primary{:id=> "update-other-plotted-doors"} Add
+        %a.btn.btn-primary{:id=> "add-unplotted-doors"} Add
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel   
 :javascript
   var arr = #{raw arr}
@@ -300,6 +301,9 @@
   var rmargin = #{raw right_margin}
   var community_id = #{params[:community_id]}
   var floorplate_id = #{params[:floorplate_id]}
+  var enable_locks = #{@community.enable_locks}
+  var automate_wayfinding = #{@community.auto_wayfinding}
+  
   var locks_present_hash = #{locks_present_hash.to_json.html_safe}
 
   var addmode = false;

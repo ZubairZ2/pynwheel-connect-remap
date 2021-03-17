@@ -375,11 +375,20 @@ class UnitsController < ApplicationController
   end
 
   def update_unitdoors_plot_for_floorplate
-    Door.where(id: params[:ids]).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot])
-    # @community.doors.where(id: params[:ids]).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot])
-    render json: {success: true}
+    params[:ids].each do |id|
+      unit = @community.units.where(provider_unit_id: id).first
+      door ||= unit.door || unit.build_door
+      door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+    end
+
+    data = []
+    units = @community.units.where(provider_unit_id: params[:ids]).includes(:door).each do |unit|
+      data << {id: unit.id, provider_id: unit.provider_unit_id, door: unit.door}
+    end
+    
+    render json: {data: data, success: true}
   rescue
-    render json: {success: false}
+    render json: {data: [{}], success: false}
   end
 
   def ajax_load_unit_locks

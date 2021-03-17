@@ -129,7 +129,7 @@ function addMarkerOnFloorplate(){
 }
 
 function addDoorsMarkerOnFloorplate(){
-  $('#ajax-add-others-plotted-doors-modal').modal('show');
+  $('#ajax-remaining-doors-modal').modal('show');
 }
 
 function plot_entry_point(event){

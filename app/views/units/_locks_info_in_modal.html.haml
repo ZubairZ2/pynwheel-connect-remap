@@ -23,3 +23,5 @@
                 = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control lock_provider_input"
                 %datalist#locks_list
             = hidden_field_tag "lock_id", ""
+    - else
+        %h4{:style=>"margin-top: -20px; margin-left: 10px;"} Locks are not enabled
