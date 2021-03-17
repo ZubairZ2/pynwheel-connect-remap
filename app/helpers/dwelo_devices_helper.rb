@@ -521,4 +521,20 @@ module DweloDevicesHelper
     end
   end
 
+  def tour_stops_ids(tour_user, community)
+    if tour_user.present? && tour_user.stops_list.present?
+      community.tour.tour_stops.pluck(:id) - tour_user.stops_list
+    else
+      community.tour.tour_stops.where(display_stop: false).pluck(:id)
+    end
+  end
+
+  def allowed_stop_ids(tour_user, community)
+    if tour_user.present? && tour_user.stops_list.present?
+      community.tour.tour_stops.where(id: tour_user.stops_list).pluck(:stop_id)
+    else
+      community.tour.tour_stops.where(display_stop: true).pluck(:stop_id)
+    end
+  end
+
 end

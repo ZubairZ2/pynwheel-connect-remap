@@ -709,6 +709,15 @@ class Community < ApplicationRecord
     options
   end
 
+
+  def community_tour_available_stops tour_user
+    if tour_user.present? && tour_user.stops_list.present?
+      self.tour.tour_stops.where(id: tour_user.stops_list).order(:sort)
+    else
+      self.mdu ? self.tour.tour_stops.where(display_stop: true).order(:sort) :  self.tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
+    end
+  end
+
   private
 
   def populate_favorites(items_objs,email_to)

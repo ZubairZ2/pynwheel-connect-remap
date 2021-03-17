@@ -164,7 +164,8 @@ class Api::V1::CommunitiesController < ActionController::Base
       @random_string = SecureRandom.hex
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       @community = Community.find params[:id]
-      @tours = Tour.where(community_id: params[:id])
+      @tour = Tour.find_by_id params[:tour_id] if params[:tour_id].present?
+      @tour =  @community.tour unless @tour.present?
 
       @community.deleted_ids = []
       @tour_user.tour_key = @random_string
@@ -237,12 +238,14 @@ class Api::V1::CommunitiesController < ActionController::Base
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
       @community = Community.find params[:id]
-      delete_array = params[:stop_id].split(",") if params[:stop_id].present?
-      te = @community.tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
+      @tour_user = TourUser.find_by(id: params[:tour_user_id])
+
+      delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
+      te = tour_stops_ids(@tour_user, @community)
+
       @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
       @community.save
       @tours = Tour.where(id: params[:tour_id])
-      @tour_user = TourUser.find_by(id: params[:tour_user_id])
       current_time = current_community_time(@community, params)
 
       @building_list = @floor_list = []
@@ -270,7 +273,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       if @community.enable_locks and @community.multiple_locks_provider.include?("EdgeState") and edge_state.present? and @tour_user.tour_type != "virtual_tour"
         Thread.new do
           access_token = RemoteLockService.new(@community).client_credentials
-          allowed_stops = @community.tour.tour_stops.where(display_stop: true).pluck(:stop_id)
+          allowed_stops = allowed_stop_ids(@tour_user, @community)
           allowed_stops << @community.tour.id
           locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
           if locks.present?
