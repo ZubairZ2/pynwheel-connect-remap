@@ -30,7 +30,7 @@ $(window).on('load', function () {
     });
 
     // place maker on click
-    var DELAY = 150, clicks = 0, timer = null;
+    var DELAY = 250, clicks = 0, timer = null;
     $("#map").click(function (event) {
         clicks++;  //count clicks
         if (clicks === 1) {
@@ -58,12 +58,13 @@ $(window).on('load', function () {
                     console.log(dy);
                     var points = {dx: dx, dy: dy};
                     hallways_coordinates.push(points);
-                    tag = "<a ondblclick='test($(this))' class='marker ui-draggable ui-draggable-handle'   style='left:" + (dx) + "px; top:" + (dy) + "px; z-index:100; position:absolute;'>"
+                    tag = "<a ondblclick='remove_icon($(this))' class='marker ui-draggable ui-draggable-handle'   style='left:" + (dx) + "px; top:" + (dy) + "px; z-index:100; position:absolute;'>"
                     tag += "<i class='fas fa-dot-circle'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100;  ' ></i>";
                     tag += "</a>"
                     // tag = "<i class='fas fa-map-marker-alt' style='color: " + '#00FFFF' + ";  left:" + (dx -left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + 14 + "px;'></i>";
                     $('#map').append(tag);
                     draw_line(hallways_coordinates);
+                    icon_drag();
                 }
                 clicks = 0;             //after action performed, reset counter
             }, DELAY);
@@ -143,23 +144,24 @@ $(window).on('load', function () {
 });
 
 
-function test(thisObj) {
+function remove_icon(thisObj) {
     dx = thisObj.position().left
     dy = thisObj.position().top
-    $(".line").remove();
-    hallways_coordinates = $.grep(hallways_coordinates, function(data){
+    thisObj.remove();
+    this.hallways_coordinates = $.grep(hallways_coordinates, function (data) {
         return data.dx != dx && data.dy != dy;
     });
-
+    draw_line(hallways_coordinates);
 }
 
 function draw_line(hallways_coordinates) {
-    if (hallways_coordinates.length > 1) {
-
-        x1 = hallways_coordinates[hallways_coordinates.length - 1].dx + 8
-        y1 = hallways_coordinates[hallways_coordinates.length - 1].dy + 8
-        x2 = hallways_coordinates[hallways_coordinates.length - 2].dx + 8
-        y2 = hallways_coordinates[hallways_coordinates.length - 2].dy + 8
+    $(".line").remove();
+    for (var i = 0; i < hallways_coordinates.length - 1; i++) {
+        console.log(hallways_coordinates[i]);
+        x1 = hallways_coordinates[i].dx + 8
+        y1 = hallways_coordinates[i].dy + 8
+        x2 = hallways_coordinates[i + 1].dx + 8
+        y2 = hallways_coordinates[i + 1].dy + 8
         x = $(".plot-image").line(x1, y1, x2, y2, {
             zindex: 99,
             color: '#000000',
@@ -167,7 +169,37 @@ function draw_line(hallways_coordinates) {
             style: "solid",
             class: "line"
         });
-        debugger;
-
     }
 }
+
+function icon_drag() {
+    // marker move
+    var current_dx, current_dy;
+
+    $('.marker').draggable({
+        containment: 'parent',
+        stack: ".marker",
+        // get the initial X and Y position when dragging starts
+        start: function (event, ui) {
+            console.log("start drag")
+            current_dx = ui.position.left;
+            current_dy = ui.position.top;
+        },
+        // when dragging stops
+        drag: function (event, ui) {
+
+        },
+        stop: function (event, ui) {
+            $(".line").remove();
+            for (var i = 0; i < hallways_coordinates.length; i++) {
+                if (hallways_coordinates[i].dx === current_dx && hallways_coordinates[i].dy === current_dy) {
+                    hallways_coordinates[i].dx = ui.position.left
+                    hallways_coordinates[i].dy = ui.position.top
+                }
+            }
+            draw_line(hallways_coordinates);
+
+        }
+    });
+}
+
