@@ -5,7 +5,7 @@
 = javascript_include_tag 'moment'
 - content_for :title, "Visitor Details Page - Pynwheel"
 / Main content
-
+- time_zone = get_time_zone @community
 %section
   .content
     .title-heading
@@ -105,13 +105,10 @@
                             - else
                               = image_tag  image_url("icon-check.png"), :style => "height: 22px; width: 22px;", "data-content" => "Tour Start Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"  
                             - if alert.arrived.present?
-                              - if alert.my_time_zone.present?
-                                - begin
-                                  #{(convert_time @community,alert.arrived).strftime("%Y-%m-%d %I:%M %p") rescue alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%Y-%m-%d %I:%M %p")} 
-                                - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                                  #{alert.arrived.strftime("%Y-%m-%d %I:%M %p") rescue alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}} 
-                              - else
-                                #{alert.arrived.to_date} #{alert.arrived.in_time_zone('America/' +@community.city).strftime("%I:%M %p") rescue alert.arrived.in_time_zone("Eastern Time (US & Canada)").strftime("%I:%M %p")}
+                              - begin
+                                #{(alert.arrived.in_time_zone(time_zone)).strftime("%Y-%m-%d %I:%M %p") rescue alert.arrived.strftime("%Y-%m-%d %I:%M %p")} 
+                              - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                                #{alert.arrived.strftime("%Y-%m-%d %I:%M %p") } 
                           %br
                           .alert-div2{:style => "margin-top: -10px"}
                             = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
@@ -126,7 +123,7 @@
                               = image_tag  image_url("open.png"), :style => "height: 20px; width: 20px;", "data-content" => "Tour End Time", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
                             - if end_time.present?
                               - begin
-                                #{(convert_time @community,end_time).strftime("%Y-%m-%d %I:%M %p")}
+                                #{(end_time.in_time_zone(time_zone)).strftime("%Y-%m-%d %I:%M %p")}
                               - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
                                 #{end_time.strftime("%Y-%m-%d %I:%M %p")}
                     - else
@@ -230,8 +227,8 @@
                                   - else
                                     %img{:src => "https://img.icons8.com/android/16/000000/walking.png"}/  
                                   -# -image_hit = false
-                                  = stop_image.event_date.present? ? (convert_time @community,stop_image.event_date).strftime("%Y-%m-%d") : (convert_time @community,stop_image.created_at).strftime("%Y-%m-%d")
-                                  = stop_image.event_time.present? ? (convert_time @community,stop_image.event_time).strftime("%I:%M %p") : (convert_time @community,stop_image.created_at).strftime("%I:%M %p")
+                                  = stop_image.event_date.present? ? (stop_image.event_date.in_time_zone(time_zone)).strftime("%Y-%m-%d") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%Y-%m-%d")
+                                  = stop_image.event_time.present? ? (stop_image.event_time.in_time_zone(time_zone)).strftime("%I:%M %p") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%I:%M %p")
                           - stop[1].each do |stop_image|
                             - if stop_image.image.url.present?
                               - is_data_loaded = true
