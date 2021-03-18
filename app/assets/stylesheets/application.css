@@ -26,6 +26,7 @@
  *= require bootstrap-select
  *= require bootstrap-wysihtml5
  *= require tour_users
+  *= require analytics
  */
  
 @keyframes shadow-pulse
