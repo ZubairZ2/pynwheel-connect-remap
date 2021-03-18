@@ -48,10 +48,10 @@
        console.debug(data.unit.y_plot);
        console.debug(data.unit.marketing_name);
 
-       var index = arr.findIndex(unit => unit[0] == data.unit.provider_unit_id);
-       arr.splice(index,1)
+       var index = arr.findIndex(unit => unit[0] == data.unit.provider_unit_id); 
+       arr.splice(index,1) 
 
-       arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
+       arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]); 
        doDraggable();
        // delete from unused list
        // $('.amenities-list option').each(function(){
@@ -149,7 +149,11 @@
      },
      function(data,status,xhr) {
        console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-       arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
+
+       var index = arr.findIndex(amenity => amenity[0] == data.amenity.id);
+       arr.splice(index,1)
+
+       arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]); 
        doDraggable();
        // delete from unused list
        $('.amenities-list option').each(function(){
@@ -157,7 +161,7 @@
            $(this).remove();
          }
        });
-       window.location.reload(true);
+      //  window.location.reload(true);
      });
   }
 
