@@ -1,4 +1,5 @@
 class FloorplateAmenitiesController < ApplicationController
+  include AssignLocksHelper
   add_breadcrumb "Home", :root_path
   before_action :authenticate_user!
   before_action :check_community
@@ -71,12 +72,41 @@ class FloorplateAmenitiesController < ApplicationController
     end
   end
 
+  def plot_amenity_door
+    amenity = @floorplate.amenities.find_by(id: params[:amenity_id])
+    if amenity.present?
+      if params[:door_id].present? and params[:door_id].to_i != 0
+        door = amenity.doors.find params[:door_id]
+        status = "updated"
+      else
+        door = amenity.doors.build
+        status = "created"
+      end
+      door.update_attributes(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
+      render json: {amenity: amenity, door: door.reload, status: status, success: true}
+    else
+      render json: {unit: {}, door: {}, status: nil, success: false}
+    end
+  end
+
   def plot_amenities
     @floor = params[:floor] if params[:floor].present?
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community,@floorplate)
     @sitemap = @floorplate
     @amenities = @community.amenities
+
+    @amenity_with_doors = []
+    @amenities_doors = @floorplate.amenities.includes(:doors)
+
+    @amenities_doors.each do |amenity|    # following json is created same as with unit to reuse the unit's code.
+        response = amenity.doors.map { |door| { unit_info: { unit: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.id, x_plot: amenity.x_plot, y_plot: amenity.x_plot }, door: door }}}
+          @amenity_with_doors << response
+    end
+    @amenity_with_doors = @amenity_with_doors.flatten
+
+    @all_locks = all_locks(@community)
+
     if @floorplate.image.blank? 
       flash[:error] = "Kindly add floor plate image first"
       redirect_to community_floorplates_path(@community)

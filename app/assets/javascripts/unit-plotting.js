@@ -14,7 +14,10 @@
       saveAmenityPlot(id, dx, dy);
     }
     else if ( typeof floorplate_id_for_amenity !== 'undefined'){
-      saveAmenityPlotForFloorplate(id, dx, dy);
+      if(adddoorsmode)
+        saveAmenityDoorPlotForFloorplate(id, dx, dy);
+      else
+        saveAmenityPlotForFloorplate(id, dx, dy);
     }
     else if(typeof floorplate_id_for_elevator !== 'undefined'){
       saveElevatorPlotForFloorplate(id, dx, dy); 
@@ -404,10 +407,14 @@ function drag__door_work(event, ui){
 
 
 function stop__door_work(event, ui){
+  debugger
   for(var row of same_location_doors){
     row.unit_info.door.x_plot = Math.round(parseFloat(ui.position.left));
     row.unit_info.door.y_plot = Math.round(parseFloat(ui.position.top));
-    saveDraggedDoor(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, same_location_doors.length)
+    if(ui.helper.data("plotted-category") == "unit_door")
+      saveDraggedDoor(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, same_location_doors.length)
+    else
+      saveAmenityDoorPlotForFloorplate(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, row.unit_info.door.id);
   }
 }
 

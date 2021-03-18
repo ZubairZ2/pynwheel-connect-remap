@@ -35,6 +35,42 @@ function saveFloorplateUnitDoor(id, dx, dy){
     })
 }
 
+function saveAmenityDoorPlotForFloorplate(id,dx,dy,door_id=0){
+    $.post( "/communities/"+community_id+"/floorplates/"+floorplate_id_for_amenity+"/amenities/" + id + "/plot_amenity_door",
+     { 
+        "x_plot": dx,
+        "y_plot": dy,
+        "floor" : floor,
+        "door_id" : door_id,
+     }).done(function(response) {
+        debugger
+        if(response.success){
+            try {
+                $("#plus_" + id).removeClass('disabled')
+                $("#plus_" + id).children().css({"color": "#59de83", "cursor": "default"})
+
+                $("#door_" + response.amenity.id).attr(
+                    {
+                        "title": response.door.name,
+                        "data-door-id": response.door.id,
+                        "id": "#door_" + response.door.id,
+                    }
+                )
+                debugger
+                if(response.status == "created")
+                    CreateAmenityDoorInfo(response.amenity, response.door)
+                else
+                    updateUnitDoorsInfo(response.door, fetchDoorIndex(response.door.id))
+            }
+            catch(err) {
+                location.reload()
+            }
+        }
+        else
+            location.reload()
+     });
+}
+
 function delete_unitdoor_plot(url){
     $.ajax({
         type: "delete",
@@ -117,6 +153,21 @@ function fetchUnitIndex(id){
             selected_doors_index.push(i)
     })
     return selected_doors_index
+}
+
+function fetchDoorIndex(id){
+    selected_doors_index = []
+    $(units_info).filter(function (i,row){
+        if(row.unit_info.door.id == id)
+            selected_doors_index.push(i)
+    })
+    return selected_doors_index
+}
+
+function CreateAmenityDoorInfo(amenity, door){
+    units_info[units_info.length] = {
+        unit_info: { unit: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.id, x_plot: amenity.x_plot, y_plot: amenity.x_plot }, door: door }
+    }
 }
 
 function updateUnitDoorsInfo(updated_door ,position){

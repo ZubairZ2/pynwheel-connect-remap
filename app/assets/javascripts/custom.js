@@ -11,7 +11,11 @@ $(document).ready(function(e){
   })
 
   $('body').on("click", ".imageselect", function(e){
-    $("#imageselect").toggle();
+    debugger
+    if($("#selected-units").children().length == 0 )
+        $("#imageselect").toggle();
+    else
+        $("#selected-units").children().addClass("blink_me").css("color", "red");
     e.stopPropagation();
   })
     $('body').on("click", ".amenity-imageselect", function(e){

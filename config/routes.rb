@@ -224,6 +224,7 @@ Rails.application.routes.draw do
       end
       resources :amenities,controller: "floorplate_amenities" do
         post :plot_amenity
+        post :plot_amenity_door
         collection do
           get :plot_amenities
           delete :remove_amenities_plot
