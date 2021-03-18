@@ -114,13 +114,19 @@ class Api::V1::ToursController < ActionController::Base
         begin
           a1 = TourUser.find params[:tour_user_id].to_i
           a2 = Tour.find params[:tour_id].to_i
+          time_zone = Timezone.lookup(tour.community.latitude, tour.community.longitude)
+          timezone = time_zone.name
         rescue => ex
         end
         stops.each do |stop_id|
           begin
             s_id , dateTime = stop_id.split('|')
             a3 = TourStop.find s_id.to_i
-            _date = dateTime.present? ? DateTime.parse(dateTime).utc.strftime('%a, %d %b %Y %H:%M:%S') : nil
+            begin
+              _date = dateTime.present? ? DateTime.parse(dateTime).in_time_zone(timezone).strftime('%a, %d %b %Y %H:%M:%S') : nil
+            rescue Exception => e
+              _date = dateTime.present? ? DateTime.parse(dateTime).strftime('%a, %d %b %Y %H:%M:%S') : nil
+            end
           rescue => ex
           end
           if a1.present? && a2.present? && a3.present?

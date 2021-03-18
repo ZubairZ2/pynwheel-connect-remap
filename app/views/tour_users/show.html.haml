@@ -227,8 +227,8 @@
                                   - else
                                     %img{:src => "https://img.icons8.com/android/16/000000/walking.png"}/  
                                   -# -image_hit = false
-                                  = stop_image.event_date.present? ? (stop_image.event_date.in_time_zone(time_zone)).strftime("%Y-%m-%d") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%Y-%m-%d")
-                                  = stop_image.event_time.present? ? (stop_image.event_time.in_time_zone(time_zone)).strftime("%I:%M %p") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%I:%M %p")
+                                  = stop_image.event_date.present? ? (stop_image.event_date).strftime("%Y-%m-%d") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%Y-%m-%d")
+                                  = stop_image.event_time.present? ? (stop_image.event_time).strftime("%I:%M %p") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%I:%M %p")
                           - stop[1].each do |stop_image|
                             - if stop_image.image.url.present?
                               - is_data_loaded = true
