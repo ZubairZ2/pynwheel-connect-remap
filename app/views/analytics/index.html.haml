@@ -10,3 +10,19 @@
           Maps
           %span Analatics
 
+      .box-body
+        .row
+          .col-lg-6.col-md-12.h-500
+            .col-lg-4.numbers_div
+              .center_it
+                .count_int= '45'
+                .count_text= 'Total number of session'
+                .count_int= '7'
+                .count_text= 'Average number of session per day'
+            .col-lg-8
+              = bar_chart @data, @options
+          .col-lg-6.col-md-12
+            .col-lg-4
+              = 'hi'
+            .col-lg-8
+              = bar_chart @data, @options
