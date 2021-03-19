@@ -53,18 +53,20 @@ $(window).on('load', function () {
                         $("#new-aj-popup").show();
                     }
                 } else {
-                    console.log("Clicked");
-                    console.log(dx);
-                    console.log(dy);
-                    var points = {dx: dx, dy: dy};
-                    hallways_coordinates.push(points);
-                    tag = "<a ondblclick='remove_icon($(this))' class='marker ui-draggable ui-draggable-handle'   style='left:" + (dx) + "px; top:" + (dy) + "px; z-index:100; position:absolute;'>"
-                    tag += "<i class='fas fa-dot-circle'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100;  ' ></i>";
-                    tag += "</a>"
-                    // tag = "<i class='fas fa-map-marker-alt' style='color: " + '#00FFFF' + ";  left:" + (dx -left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + 14 + "px;'></i>";
-                    $('#map').append(tag);
-                    draw_line(hallways_coordinates);
-                    icon_drag();
+                    if ($('#hallway_btn').length) {
+                        console.log("Clicked");
+                        console.log(dx);
+                        console.log(dy);
+                        var points = {dx: dx, dy: dy};
+                        hallways_coordinates.push(points);
+                        tag = "<a ondblclick='remove_icon($(this))' class='marker ui-draggable ui-draggable-handle'   style='left:" + (dx) + "px; top:" + (dy) + "px; z-index:100; position:absolute;'>"
+                        tag += "<i class='fas fa-dot-circle'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100;  ' ></i>";
+                        tag += "</a>"
+                        // tag = "<i class='fas fa-map-marker-alt' style='color: " + '#00FFFF' + ";  left:" + (dx -left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + 14 + "px;'></i>";
+                        $('#map').append(tag);
+                        draw_line(hallways_coordinates);
+                        icon_drag();
+                    }
                 }
                 clicks = 0;             //after action performed, reset counter
             }, DELAY);
