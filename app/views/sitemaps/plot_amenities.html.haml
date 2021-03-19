@@ -28,7 +28,7 @@
           %span.hidden#active_x_plot 0
           
           %span.hidden#active_y_plot 0
-
+          
           - if @community.theme_name.include?('gables')
             - marker_color = @community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : "#d37474"
           - elsif @community.theme_name == 'modernist'
@@ -41,7 +41,7 @@
             - marker_color = @community.design.panther_amenity_map_marker_color.present? ? @community.design.panther_amenity_map_marker_color : "#d37474"
           - else
             - marker_color = 'rgba(247, 0, 0, 0.61)'
-
+          
           - if @community.theme_name.include?('gables')
             - marker_font_size = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : 30
           - elsif @community.theme_name == 'modernist'
@@ -63,7 +63,7 @@
           %span.hidden#font_size #{marker_font_size}
           %span.hidden#marker_color #{marker_color}
           %span.hidden#camera-margin #{camera_margin}
-
+        
         .btn-btn-danger.mt-10.loader_class
           = link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "loader_class btn btn-primary"
           = link_to "PLOT UNITS <i class='propertyDetailName fa fa-question-circle'><span id='propertyDetailNameText' style='font-weight: normal'>Click on 'Plot Units' to switch from plotting amenity images to plotting units.</span></i>".html_safe, plotexp_community_sitemaps_path(@community), class: "loader_class btn btn-primary"
@@ -110,7 +110,7 @@
                           %span.ml-5
                             = amenity.name
                     - amenity_arr.push([amenity.id.to_s, amenity.x_plot.to_i, amenity.y_plot.to_i, true, amenity.name])
-
+              
               %h5.mt-40 SELECTED AMENITIES
               .add-plan.mt-10.mb-20
                 %ul#selected-units
@@ -126,26 +126,25 @@
     document.addEventListener("touchcancel", touchHandler, true);
     let elem = document.querySelector('#map');
     window.mapPanZoom = panzoom(elem, {
-      minZoom: 0.6,
-      maxZoom: 1.1,
-      bounds: true,
-      boundsPadding: 0.3
+        minZoom: 0.5,
+        maxZoom: 1.0,
+        bounds: true,
+        boundsPadding: 0.3
     });
     var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
     var scaleFactor = (1 / (transform.scale || 1));
     var previous_scale = 0;
-    while($('#map').width()/scaleFactor > $('.map-block').width()  || $('#map').height()/scaleFactor > $('.map-block').height()){
-       mapPanZoom.zoomInOut(189);
-           transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-           scaleFactor = (1 / (transform.scale || 1));
-           if(scaleFactor === previous_scale)
-           {
+    while ($('#map').width() / scaleFactor > $('.map-block').width() || $('#map').height() / scaleFactor > $('.map-block').height()) {
+        mapPanZoom.zoomInOut(189);
+        transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+        scaleFactor = (1 / (transform.scale || 1));
+        if (scaleFactor === previous_scale) {
             break;
-           }
-           previous_scale = scaleFactor
+        }
+        previous_scale = scaleFactor
     }
-    mapPanZoom.moveTo(0,0);
-  })
+    mapPanZoom.moveTo(0, 0);
+    })
   
   function touchHandler(event) {
     var touch = event.changedTouches[0];
