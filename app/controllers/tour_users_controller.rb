@@ -55,7 +55,13 @@ class TourUsersController < ApplicationController
     @existing_stops = []
     @existing_stops << units if units.present?
     @existing_stops << amenities if amenities.present?
- 
+    if @community.is_sitemap
+      @sitemap = @community.sitemap
+    else
+      min_floor = @community.floorplates.map{|x| x.floors}.flatten.min
+      @sitemap = @community.floorplates.map{|x| x if x.floors.include?(min_floor)}.compact.first
+     
+    end
     # ------------ evnets history below the maps ---------------- #
     # unless amenities.present?
     #   puts '------------------ testing line amenities --------------------'
@@ -147,12 +153,17 @@ class TourUsersController < ApplicationController
       
         (x.stop_type == "amenity") ? ([x, (Amenity.find_by_id (TourStop.find x.tour_stop_id).stop_id), 'amenity'] rescue next): ([x, (Unit.find_by_id (TourStop.find x.tour_stop_id).stop_id) , 'unit'] rescue next)
       }
-      
-      floors = stops.map{|x| x[1].floor }
-      buildings = stops.map{|x| x[1].building }
+      if @community.is_sitemap
+        floor_image = @community.floorplates.map{|x| [x.floors,x.image.url]}
+        floors = buildings = nil
+      else
+        floor_image = @community.floorplates.map{|x| [x.floors,x.image.url]}
+        floors = stops.map{|x| x[1].floor }.uniq
+        buildings = stops.map{|x| x[1].building }.uniq
+      end
       
       stops.unshift(['',current_community.tour,"tour"])
-      render json: { :stops => stops, :floors => floors.uniq, :buildings => buildings.uniq}, status: 200
+      render json: { :stops => stops, :floors => floors, :buildings => buildings, :floor_image => floor_image}, status: 200
     else
       render json: {}, status: 404
     end

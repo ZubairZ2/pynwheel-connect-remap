@@ -139,47 +139,46 @@
                       %span#propertyDetailNameText
                         This section will show you where the visitor went on their tour and when online controlled access points were unlocked (if applicable).
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "margin-top: 10px;margin-left: 15px;margin-right: 15px;"}
-                    - unless @community.is_sitemap
-                      .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-left: 0px;"}
-                        = select :floorplates , :images , @community.floorplates.all.order("id ASC").collect{|f| [ f.name, f.id ] },{:prompt => 'Select the Floorplate'}, class: "form-control"
-                      .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-right: 0;"}
-                        - begin
-                          - if @alerts.last.history == false
-                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                          - elsif @alerts.last.history == true
-                            Removed at Consumer Request
-                        - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                          - if @alerts.last.history == false
-                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                          - elsif @alerts.last.history == true
-                            Removed at Consumer Request
+                    //.col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-left: 0px;"}
+                    -#= select :floorplates , :images , @community.floorplates.all.order("id ASC").collect{|f| [ f.name, f.id ] },{:prompt => 'Select the Floorplate'}, class: "form-control"
+                    .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "padding-right: 0;"}
+                      - begin
+                        - if @alerts.last.history == false
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - elsif @alerts.last.history == true
+                          Removed at Consumer Request
+                      - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                        - if @alerts.last.history == false
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - elsif @alerts.last.history == true
+                          Removed at Consumer Request
 
-                      .col-sm-12.col-lg-12.col-md-12.col-xs-12.hidden#building_label
-                        %label
-                          Buildings
-                      .col-sm-12.col-lg-12.col-md-12.col-xs-12#building_buttons{style: "margin-top: 10px;"}
-                      .col-sm-12.col-lg-12.col-md-12.col-xs-12.hidden#floor_label
-                        %label
-                          Floors
-                      .col-sm-12.col-lg-12.col-md-12.col-xs-12#floor_buttons{style: "margin-top: 10px;"}
+                    .col-sm-12.col-lg-12.col-md-12.col-xs-12.hidden#building_label
+                      %label
+                        Buildings
+                    .col-sm-12.col-lg-12.col-md-12.col-xs-12#building_buttons{style: "margin-top: 10px;"}
+                    .col-sm-12.col-lg-12.col-md-12.col-xs-12.hidden#floor_label
+                      %label
+                        Floors
+                    .col-sm-12.col-lg-12.col-md-12.col-xs-12#floor_buttons{style: "margin-top: 10px;"}
 
-                    - else
-                      .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
-                        - begin
-                          - if @alerts.last.history == false
-                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                          - elsif @alerts.last.history == true
-                            Removed at Consumer Request
-                        - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                          - if @alerts.last.history == false
-                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                          - elsif @alerts.last.history == true
-                            Removed at Consumer Request
+                    / - else
+                    /   .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
+                    /     - begin
+                    /       - if @alerts.last.history == false
+                    /         = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                    /       - elsif @alerts.last.history == true
+                    /         Removed at Consumer Request
+                    /     - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                    /       - if @alerts.last.history == false
+                    /         = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                    /       - elsif @alerts.last.history == true
+                    /         Removed at Consumer Request
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12#parent-div{style: "background: #efefef;margin: 30px;"}
                     -# - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
                     -# - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
                     .div#mapp
-                      = image_tag @community.is_sitemap ? @community.sitemap.image : @community.floorplates.all.order("id ASC").first.image, :class => "my_class hiddens", :id => "floorplane_img", :style => "height: 100%; width: 100%; display: none"
+                      = image_tag @sitemap.image, :class => "my_class hiddens", :id => "floorplane_img", :style => "height: 100%; width: 100%; display: none"
                     %canvas#myCanvas{:height => "725", :style => "border:1px solid #d3d3d3;", :width => "725"}
 
                       
@@ -432,13 +431,18 @@
   var width;
   var height;
   var vertices_count = 0;
-  draw_image_canvas();
+  setTimeout(function(){
+    draw_image_canvas(null);
+  }, 2000);
+
   
-  function draw_image_canvas()
+  function draw_image_canvas(img_src)
   {
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
     img = document.getElementById("floorplane_img");
+    if(img_src != null)
+      img.src = img_src
     width = $('#parent-div').width()
     height = ( width / img.width) * img.height;
     ctx.drawImage(img, 0, 0, width, height);
@@ -626,57 +630,74 @@
           data_array = [];
           first_building = null;
           first_floor = null;
-          for(var i=0; i<data.buildings.length; i++)
+          if(data.floors == null && data.buildings == null )
           {
-            $('#building_label').removeClass('hidden');
-            if(data.buildings[i] != "" && data.buildings[i] != null){
-              if(first_building == null)
-                first_building = data.buildings[i];
-              $('#building_buttons').append('<a class="btn-default btns building_btn '+ (first_building == data.buildings[i] ? 'selected_building' : '') +'" id="building_'+ data.buildings[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_building == data.buildings[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.buildings[i] +'</a>')
-            }
+            show_plot_accordingly(data.stops);
           }
 
-          for(var i=0; i<data.floors.length; i++)
-          {
-            if(first_floor == null)
-              first_floor = data.floors[i];
-            $('#floor_label').removeClass('hidden');
-            if(data.floors[i] != "" && data.floors[i] != null)
-              $('#floor_buttons').append('<a class="btn-default btns floor_btn '+ (first_floor == data.floors[i] ? 'selected_floor' : '') +'" id="floor_'+ data.floors[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_floor == data.floors[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.floors[i] +'</a>')
-          }
-          $('.selected_floor').click();
-          $('.btns').click(function(){
-            delete_image_canvas();
-            draw_image_canvas();
-            $(".popover").popover('hide');
-            $('.fa-map-marker').hide();
-            final_stops = [];
-            if(this.id.includes("building"))
+          else
             {
-              $('.building_btn').each(function( index, item ) { item.style.background = ""; $('#'+item.id).removeClass('selected_building');});
-              this.style.background = "green";
-              $('#'+this.id).addClass('selected_building');
-            }
-            else
-            {
-              $('.floor_btn').each(function( index, item ) { item.style.background = "" ; $('#'+item.id).removeClass('selected_floor'); });
-              this.style.background = "green";
-              $('#'+this.id).addClass('selected_floor');
-            }
-            selected_building = $('.selected_building').text();
-            selected_floor = $('.selected_floor').text();
-            selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
-            selected_building = (selected_building == first_building ? [selected_building, "", null] : [selected_building])
-            
-            for(var s = 0; s < data.stops.length; s++)
-            {
-              if(( (selected_floor.includes(String(data.stops[s][1].floor)) || selected_floor.includes(String(data.stops[s][1].starting_floor))) && selected_building.includes( String(data.stops[s][1].building) ) ))
-              { 
-                final_stops.push(data.stops[s]);
+              for(var i=0; i<data.buildings.length; i++)
+              {
+                $('#building_label').removeClass('hidden');
+                if(data.buildings[i] != "" && data.buildings[i] != null){
+                  if(first_building == null)
+                    first_building = data.buildings[i];
+                  $('#building_buttons').append('<a class="btn-default btns building_btn '+ (first_building == data.buildings[i] ? 'selected_building' : '') +'" id="building_'+ data.buildings[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_building == data.buildings[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.buildings[i] +'</a>')
+                }
               }
+    
+              for(var i=0; i<data.floors.length; i++)
+              {
+                if(first_floor == null)
+                  first_floor = data.floors[i];
+                $('#floor_label').removeClass('hidden');
+                if(data.floors[i] != "" && data.floors[i] != null)
+                  $('#floor_buttons').append('<a class="btn-default btns floor_btn '+ (first_floor == data.floors[i] ? 'selected_floor' : '') +'" id="floor_'+ data.floors[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_floor == data.floors[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.floors[i] +'</a>')
+              }
+              $('.selected_floor').click();
+              $('.btns').click(function(){
+                vertices_count = 0;
+                delete_image_canvas();
+                $(".popover").popover('hide');
+                $('.fa-map-marker').hide();
+                $('.start-point').hide();
+    
+                final_stops = [];
+                if(this.id.includes("building"))
+                {
+                  $('.building_btn').each(function( index, item ) { item.style.background = ""; $('#'+item.id).removeClass('selected_building');});
+                  this.style.background = "green";
+                  $('#'+this.id).addClass('selected_building');
+                }
+                else
+                {
+                  $('.floor_btn').each(function( index, item ) { item.style.background = "" ; $('#'+item.id).removeClass('selected_floor'); });
+                  this.style.background = "green";
+                  $('#'+this.id).addClass('selected_floor');
+                }
+                selected_building = $('.selected_building').text();
+                selected_floor = $('.selected_floor').text();
+                selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
+                selected_building = (selected_building == first_building ? [selected_building, "", null] : [selected_building])
+                
+    
+                for(var f=0; f< data.floor_image.length; f++)
+                {
+                  if(data.floor_image[f][0].includes(parseInt($('.selected_floor').text())))
+                    img_ = data.floor_image[f][1]
+                }
+                draw_image_canvas(img_);
+                for(var s = 0; s < data.stops.length; s++)
+                {
+                  if(( (selected_floor.includes(String(data.stops[s][1].floor)) || selected_floor.includes(String(data.stops[s][1].starting_floor))) && selected_building.includes( String(data.stops[s][1].building) ) ))
+                  { 
+                    final_stops.push(data.stops[s]);
+                  }
+                }
+                show_plot_accordingly(final_stops);
+              });
             }
-            show_plot_accordingly(final_stops);
-          });
           
           
           //$(".asdasd").children('i').remove()
@@ -693,19 +714,28 @@
   
   function show_plot_accordingly(stops)
   {
+      vs = 0;
       for(var i=0 ; i < stops.length ; i++)
           {
             if(stops[i][1] != null)
-            {
+            { debugger;
               vertices.push({
                 x: ((stops[i][1].x_plot / img.width)*width),
                 y:  ((stops[i][1].y_plot / img.height)*height)
               });
               
               if(stops[i][2] != 'tour'){
-                data_array[i] = [stops[i][2].id,{'Name':stops[i][2].name,'Arrival Time': stops[i][2].event_date , 'Departure Time': stops[i][2].event_date ,'Lock Access Time':  stops[i][2].event_date }]
+                data_array[vs] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': stops[i][0].event_time.split('T')[1].split('.')[0] , 'departure_time': stops[i][0].event_time.split('T')[1].split('.')[0] ,'lock_access_time':  stops[i][0].event_date }]
 
-                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + ((stops[i][1].x_plot / img.width)*width) + 'px; top:  '+ ((stops[i][1].y_plot / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" data-content=" " data-toggle="propertyDetailNamePopover'+i+'" style="color: #cf492f; "></i></a>')
+                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot-70) / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
+                vs++;
+              }
+              else
+              {
+                // data_array[i] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': stops[i][0].event_time.split('T')[1].split('.')[0] , 'departure_time': stops[i][0].event_time.split('T')[1].split('.')[0] ,'lock_access_time':  stops[i][0].event_date }]
+
+                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot -30)/ img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="start-point propertyDetailName" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
+                vs++;
               }
             }
           }
@@ -747,26 +777,40 @@
           animate(points);
           
            function animate() {
-           debugger;
           if (t < points.length - 1) {
-              requestAnimationFrame(animate);
               if(points[t-2] != undefined && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y )
-              {
-                $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
-                    html: true,
-                    placement: 'top',
-                    template: '<div class="popover" style="left: -43px !important; width: 220px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b> A-301<br><b>Arrival Time:</b> 55<br><b>Departure Time:</b> 55<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> 55<br></div></div>'
-                  }).popover('show');
+              { debugger;
+                $(".popover").popover('hide');
+
+                if (data_array[vertices_count] != undefined)
+                {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
+                                  html: true,
+                                  placement: 'top',
+                                  template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].lock_access_time +'<br></div></div>'
+                                }).popover('show');}
                   vertices_count++;
+                  setTimeout(function(){
+                      //do what you need here
+                  }, 2000);
+                  requestAnimationFrame(animate);
               }
+              else
+              {
+                requestAnimationFrame(animate);
+              }
+              
           }
           else
           {
-            $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
-              html: true,
-              placement: 'top',
-              template: '<div class="popover" style="left: -43px !important; width: 220px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b> A-301<br><b>Arrival Time:</b> 55<br><b>Departure Time:</b> 55<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> 55<br></div></div>'
-            }).popover('show');
+            sleep(2000);
+            debugger;
+            $(".popover").popover('hide');
+            if (data_array[vertices_count] != undefined)
+            {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
+                          html: true,
+                          placement: 'top',
+                          template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].lock_access_time +'<br></div></div>'
+                        }).popover('show');}
           }
           // draw a line segment from the last waypoint
           // to the current waypoint
