@@ -3,7 +3,11 @@ function delete_plot(removing, url){
     debugger
     if ( typeof floorplate_id !== 'undefined'){
         if(removing == "unit_door")
-            delete_unitdoor_plot(url)
+            delete_unit_door_plot(url)
+    }
+    else if(typeof floorplate_id_for_amenity !== 'undefined'){
+        if(removing == "amenity_door")
+            delete_amenity_door_plot(url)
     }
 }
 
@@ -49,11 +53,11 @@ function saveAmenityDoorPlotForFloorplate(id,dx,dy,door_id=0){
                 $("#plus_" + id).removeClass('disabled')
                 $("#plus_" + id).children().css({"color": "#59de83", "cursor": "default"})
 
-                $("#door_" + response.amenity.id).attr(
+                $("#amenity_" + response.amenity.id).attr(
                     {
                         "title": response.door.name,
                         "data-door-id": response.door.id,
-                        "id": "#door_" + response.door.id,
+                        "id": "#amenity_" + response.amenity.id + "__" + "door_" + response.door.id,
                     }
                 )
                 debugger
@@ -71,7 +75,7 @@ function saveAmenityDoorPlotForFloorplate(id,dx,dy,door_id=0){
      });
 }
 
-function delete_unitdoor_plot(url){
+function delete_unit_door_plot(url){
     $.ajax({
         type: "delete",
         url:  url,
@@ -144,6 +148,24 @@ function delete_unitdoor_plot(url){
             location.reload()
         }
     });
+}
+
+function delete_amenity_door_plot(url){
+    $.ajax({
+        type: "delete",
+        url:  url,
+        cache: false,
+        success: function(response) {
+            if(response.success){
+                $('#amenity-door-detail-modal').modal('hide');
+                $('[data-door-id=' + response.door.id + ']').remove()
+                deleteUnitDoorsInfo(fetchDoorIndex(response.door.id))
+            }
+            else
+                location.reload()
+        },
+        fail: function(response) {location.reload()}
+    })
 }
 
 function fetchUnitIndex(id){
@@ -361,6 +383,38 @@ function update_locks_select_and_lock_code_field(){
     }
 }
 
+var digital_lock = false
+function update_locks_fields(){
+    debugger
+    // if any lock selected 
+    if(enable_locks == true){
+        if($('#lock_provider').val() == '' || $('#lock_provider').val() == null){
+            $('#access_code_field').addClass('hidden')
+            $('#digital_lock_field').addClass('hidden')
+            digital_lock = false
+        }
+        else if($('#lock_provider').val() == "Manual" ){
+            $('#digital_lock_field').addClass('hidden')
+            $('#access_code_field').removeClass('hidden')
+            digital_lock = false
+        }
+        else{
+            $('#digital_lock_field').removeClass('hidden')
+            $('#access_code_field').addClass('hidden') 
+            
+            lock_provider         =  $('#lock_provider').val().toLowerCase()
+            selected_lock_name    =  $("#"+lock_provider+"_lock_name").val()
+            selected_lock_options =  $('.'+lock_provider+"_options").html()
+            debugger
+            $('datalist#locks_list').html(selected_lock_options)
+            $('#lock_name').val(selected_lock_name)
+
+            $('#lock_name').change()
+            digital_lock = true
+        }
+    }
+}
+
 function add_into_selected_doors(event){
     debugger
     var provider_id = $(event).attr("id").replace('-selectable', '')
@@ -375,7 +429,7 @@ function add_into_selected_doors(event){
 
 function remove_from_selected_doors(event){
     debugger
-    var provider_id = $(event).attr("id").replace('-selectable', '')
+    var provider_id = $(event).attr("id").replace('-selection', '')
     var selected_doors = JSON.parse($('#selected_doors_info').val());
 
     var index = selected_doors.findIndex(data => data.provider_id == provider_id);
@@ -383,6 +437,20 @@ function remove_from_selected_doors(event){
 
     $('#selected_doors_info').val(JSON.stringify(selected_doors));
     console.log($('#selected_doors_info').val());
+}
+
+function open_amenity_door_modal(event){
+    debugger
+    amenity_id = event.currentTarget.id.split("_")[1]
+    door_id = event.currentTarget.dataset.doorId
+
+    $.post( "/communities/" + community_id + "/floorplates/" + floorplate_id_for_amenity + "/amenities/" + amenity_id + "/show_amenity_door_modal",
+    {
+        "floor": floor,
+        "door_id": door_id,
+        "locks_present_hash": JSON.stringify(locks_present_hash),
+    })
+    
 }
 
 $(document).ready(function(){
@@ -403,14 +471,14 @@ $(document).ready(function(){
     })
 
     $("#ajax-remaining-doors-modal").on('show.bs.modal', function(event) {
-
+        debugger
         $('#selected_doors_info').val('[]')
         $('.doors-list-on-popup').multiSelect('removeAllOptions')
         buttons = $('.door-buttons-in-door-modal').find("button")
 
         plotted_doors_in_modal = []
 
-        active_provider_id = $(".delete-door-marker").data("provider-id")
+        active_provider_id = $(".delete-door-marker")[0].dataset.providerId
         plotted_unit = arr.filter(data => data[zero] == active_provider_id)[zero]
 
         units_associated_with_this_modal = arr.filter(data => data[1] == plotted_unit[1] && data[2] == plotted_unit[2]).map(function(data) { return data[zero]})
@@ -423,44 +491,52 @@ $(document).ready(function(){
     })
     
     $('#locks-modal-submit').click(function(){
-        var lock = $("#lock_input")[0];
-        $("#save_lock").css('visibility', 'visible')
-
-        if(typeof lock !== 'undefined'){
+        debugger
+        if(digital_lock == true){
+            lock = $("#lock_name")[0]
             if(lock.checkValidity() == true){
+                $("#save_lock").css('visibility', 'visible')
                 lock_id = $("#locks_list" + ' [value="' + lock.value + '"]').data('value')
-                input = $("<input>").attr("type", "hidden").attr("name", "lock_id").val(lock_id);
-                $("#" + lock.id).closest('form').append(input)
-                $("#" + lock.id).closest('form').submit()
+                $("#lock_id").val(lock_id)
+                $("#lock_id").closest('form').submit()
+                setTimeout(function() { $("#save_lock").css('visibility', 'hidden') }, 1500);
             }
             else{ lock.reportValidity(); }
+        }
+        else{
+            $("#save_lock").css('visibility', 'visible')
+            $("#lock_id").val("")
+            $("#lock_id").closest('form').submit()
+            setTimeout(function() { $("#save_lock").css('visibility', 'hidden') }, 1500);
         }
        
     })
 
     $('#add-unplotted-doors').click(function(){
         debugger
-        selected_doors = JSON.parse($('#selected_doors_info').val())
-        door = getUnitDoorsByUnitProviderId($(".delete-door-marker").attr("data-provider-id"))[zero].unit_info.door
-
-        provider_ids = selected_doors.map(function(obj){return obj.provider_id})
-
-        $.ajax({
-            type: "post",
-            url:  "/communities/" + community_id + "/units/update_unitdoors_plot_for_floorplate",
-            data: {ids: provider_ids, x_plot: door.x_plot, y_plot: door.y_plot},
-            cache: false,
-            success: function(response) {
-                for(var unit_data of response.data){
-                    updateUnitDoorsInfo(unit_data.door, fetchUnitIndex(unit_data.id))
-                    AddNewDoorButtonsInDoorModal(unit_data.provider_id, unit_data.door)
-                }
-                $("#ajax-remaining-doors-modal").modal('hide');
-            },
-            fail: function() {
-                location.reload()
-            },
-        })
+        if($('#selected_doors_info').val() != "[]"){
+            selected_doors = JSON.parse($('#selected_doors_info').val())
+            door = getUnitDoorsByUnitProviderId($(".delete-door-marker").attr("data-provider-id"))[zero].unit_info.door
+    
+            provider_ids = selected_doors.map(function(obj){return obj.provider_id})
+    
+            $.ajax({
+                type: "post",
+                url:  "/communities/" + community_id + "/units/update_unitdoors_plot_for_floorplate",
+                data: {ids: provider_ids, x_plot: door.x_plot, y_plot: door.y_plot},
+                cache: false,
+                success: function(response) {
+                    for(var unit_data of response.data){
+                        updateUnitDoorsInfo(unit_data.door, fetchUnitIndex(unit_data.id))
+                        AddNewDoorButtonsInDoorModal(unit_data.provider_id, unit_data.door)
+                    }
+                    $("#ajax-remaining-doors-modal").modal('hide');
+                },
+                fail: function() {
+                    location.reload()
+                },
+            })
+        }
     })
 
     $('.doors-selects-in-popup').delegate("li", "click", function() {

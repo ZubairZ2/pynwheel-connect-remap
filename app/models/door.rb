@@ -2,6 +2,11 @@ class Door < ApplicationRecord
     belongs_to :community
     belongs_to :attached_with, polymorphic: true
 
+    has_one :edgestate_lock, -> { where(dwelo_id: nil) },  class_name: 'RemoteLock', as: :stop, dependent: :destroy
+    has_one :dwelo_lock, -> { where(edge_state_id: nil) },  class_name: 'RemoteLock', as: :stop, dependent: :destroy
+    has_one :latch_lock,  as: :stop, dependent: :destroy
+    has_one :zerv_lock,   as: :stop, dependent: :destroy
+
     after_save :re_arrange_door_names
     after_destroy :re_arrange_door_names
     # after_destroy :unplot_crossponding_unit

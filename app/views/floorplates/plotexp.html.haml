@@ -218,58 +218,13 @@
 #ajax-doors-detail-modal.modal.fade{"aria-hidden" => "true", "data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
-      - if @community.enable_locks
-        - locks_present_hash = {}
-        - locks_present_hash["Dwelo"] = @community.multiple_locks_provider.include?("Dwelo") && @community.dwelo.present? && @all_locks[:dwelo_locks].any?
-        - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?
-        - locks_present_hash["Latch"] = @community.multiple_locks_provider.include?("Latch") &&  @community.latch.present? && @all_locks[:latch_locks].any?
-        - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
-
-        // load options and input values start
-        - if locks_present_hash["Dwelo"]
-          .dwelo_options.hide_it
-            - @all_locks[:dwelo_locks].each do |lock|
-              %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-        - if locks_present_hash["EdgeState"]
-          .edgestate_options.hide_it
-            - @all_locks[:edgestate_locks].each do |lock|
-              %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
-        - if locks_present_hash["Latch"]
-          .latch_options.hide_it
-            - @all_locks[:latch_locks].each do |lock|
-              %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-        - if locks_present_hash["Zerv"]
-          .zerv_options.hide_it
-            - @all_locks[:zerv_locks].each do |lock|
-              %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-
-      .modal-header#u-name
+      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks}
+      .modal-header#door-name
       .modal-loader.hidden
       = form_tag "" , {method: :put, remote: true} do
         .modal-body
           %i.fa.fa-v.fa-check-circle{id: "save_lock", style: "color: green; visibility: hidden; margin-left: 540px;margin-bottom: 12px;"}
           .locks-section-in-modal
-            - if @community.enable_locks
-              .form-group
-                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
-                  Select Lock Provider
-                .col-sm-12.col-lg-8.col-md-9.col-xs-12
-                  = select_tag :lock_provider , options_for_select(@community.lock_options(locks_present_hash)),{:class=>"form-control lock_provider_input"}
-
-              .form-group.hide_it.mt-30#manual_access_code
-                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
-                  Access Code
-                .col-sm-12.col-lg-8.col-md-9.col-xs-12
-                  = text_field_tag :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
-
-              .form-group.mt-30#lock_access_code
-                %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label{style: "margin-top: 8px;"}
-                  Select the lock
-                .col-sm-12.col-lg-8.col-md-9.col-xs-12
-                  = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control lock_provider_input"
-                  %datalist#locks_list
-                = hidden_field_tag "lock_id", ""
-
           .door-buttons-in-door-modal.mt-30
         .modal-footer
           - if @community.enable_locks
@@ -303,8 +258,6 @@
   var floorplate_id = #{params[:floorplate_id]}
   var enable_locks = #{@community.enable_locks}
   var automate_wayfinding = #{@community.auto_wayfinding}
-  
-  var locks_present_hash = #{locks_present_hash.to_json.html_safe}
 
   var addmode = false;
   var adddoorsmode = false;

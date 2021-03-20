@@ -212,6 +212,8 @@ Rails.application.routes.draw do
         post :extract_floors
         get :show_amenity_image_in_modal
         put :crop_amenity_image
+        put :update_amenity_door_lock
+        delete :remove_amenity_door_plot
       end
     end
     resources :tour_users do
@@ -231,6 +233,7 @@ Rails.application.routes.draw do
         end
         member do
           delete :remove_amenity
+          post :show_amenity_door_modal
         end
       end
       get :select_floor

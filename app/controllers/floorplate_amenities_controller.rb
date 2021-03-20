@@ -124,6 +124,11 @@ class FloorplateAmenitiesController < ApplicationController
     redirect_to plot_amenities_community_floorplate_amenities_path(@community,@floorplate), notice: "All plots have been deleted successfully."
   end
 
+  def show_amenity_door_modal
+    @amenity = @floorplate.amenities.find params[:id]
+    @door = @amenity.doors.find params[:door_id]
+  end
+
   def remove_amenity
     @amenity = Amenity.find params[:id]
     amenities = @floorplate.amenities.where(x_plot: @amenity.x_plot, y_plot: @amenity.y_plot)

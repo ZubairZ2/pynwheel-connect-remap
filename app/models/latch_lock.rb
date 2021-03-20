@@ -1,13 +1,7 @@
 class LatchLock < ApplicationRecord
-    belongs_to :stop, polymorphic: true
-    belongs_to :latch
+  include StandardBehaviourForLock
+  belongs_to :stop, polymorphic: true
+  belongs_to :latch
 
-    before_destroy :remove_stop_lock_provider_type
-
-    def remove_stop_lock_provider_type
-      if self.stop.present?
-        self.stop.update_column(:lock_provider, "")
-      end
-    end
-
+  before_destroy  :clear_lock_provider
 end

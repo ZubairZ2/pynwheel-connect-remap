@@ -48,6 +48,7 @@ class Amenity < ApplicationRecord
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_amenity_image
+  after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   # validate :url_validity
   # validate :image_size
 
@@ -78,5 +79,9 @@ class Amenity < ApplicationRecord
 
   def self.path_data
     [{x: 120, y: 455}, {x: 165, y: 655}, {x: 400, y: 155}]
+  end
+
+  def remove_doors_plotting
+    doors.destroy_all
   end
 end

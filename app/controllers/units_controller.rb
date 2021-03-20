@@ -393,12 +393,13 @@ class UnitsController < ApplicationController
 
   def ajax_load_unit_locks
     @unit = @community.units.where(provider_unit_id: params[:id]).includes(:remote_locks, :latch_locks, :zerv_locks).first
+    @door = @unit.door
   end
 
   def ajax_update_unit_locks
     @unit = @community.units.where(provider_unit_id: params[:id]).first
-    @unit.update(unit_params)
-    update_enable_locks()
+    @unit.update_attributes(lock_provider: params[:lock_provider], access_code: params[:access_code])
+    assign_lock(@community, @unit, params[:lock_id]) if params[:lock_id].present?
   end
 
   def remove_plot

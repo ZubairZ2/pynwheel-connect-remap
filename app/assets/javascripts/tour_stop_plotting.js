@@ -226,7 +226,7 @@ function getDoorTag(provider_id){
     }
     else if(typeof floorplate_id_for_amenity !== 'undefined'){
         amenity_id = provider_id
-        tag =   `<a id="door_${amenity_id}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${amenity_id} (door)" data-toggle="modal" data-target="#ajax-doors-detail-modal" data-plotted-category="amenity_door" href="#">
+        tag =   `<a id="amenity_${amenity_id}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${amenity_id} (door)" data-toggle="modal" data-target="#amenity-door-detail-modal" data-plotted-category="amenity_door" href="#" onclick="open_amenity_door_modal(event)">
                     <i class="fa fa-sign-in fa-xs" style="color: ${door_marker_color};"></i>
                 </a>`
     }

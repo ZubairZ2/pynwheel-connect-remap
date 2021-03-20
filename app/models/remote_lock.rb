@@ -1,4 +1,5 @@
 class RemoteLock < ApplicationRecord
+  include StandardBehaviourForLock
   belongs_to :edge_state
   belongs_to :dwelo
   belongs_to :stop, polymorphic: true
@@ -18,12 +19,5 @@ class RemoteLock < ApplicationRecord
   scope :dwelo_locks, -> {where edge_state_id: nil}
   scope :edgestate_locks, -> {where dwelo_id: nil}
 
-  before_destroy :remove_stop_lock_provider_type
-
-  def remove_stop_lock_provider_type
-    if self.stop_type.present?
-      self.stop_type.classify.constantize.find(self.stop_id).update_column(:lock_provider, "") rescue nil
-    end
-  end
-
+  before_destroy :clear_lock_provider
 end
