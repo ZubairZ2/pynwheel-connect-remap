@@ -430,6 +430,7 @@
   var img;
   var width;
   var height;
+  var lock_access_time;
   var vertices_count = 0;
   setTimeout(function(){
     draw_image_canvas(null);
@@ -448,7 +449,6 @@
     ctx.drawImage(img, 0, 0, width, height);
 
 
-    debugger;
     ctx.lineCap = "round";
 
     // variable to hold how many frames have elapsed in the animation
@@ -617,7 +617,7 @@
       var floorplate_id = 0
     var community_id = #{ raw @community.id};
     var tour_user_id = #{ raw @tour_user.id};
-    
+    data = null;
     $.ajax({
         type: 'GET',
         dataType: 'json',
@@ -627,10 +627,28 @@
           },
         url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/visited_stops_data?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
         success: function(data){
+          delete_image_canvas();
+          setTimeout(function(){
+            draw_image_canvas(null);
+          }, 1000);
+          $('#building_label').addClass('hidden');
+          $('#floor_label').addClass('hidden');
+          $(".popover").popover('hide');
+          $('.fa-map-marker').hide();
+          $('.start-point').hide();
+          $('.building_btn').hide();
+          $('.floor_btn').hide();
+
+
           data_array = [];
           first_building = null;
           first_floor = null;
-          if(data.floors == null && data.buildings == null )
+          lock_access_time = data.lock_access_time;
+          if(data.stops[0][2] == "tour" && data.stops.length == 1)
+          {
+
+          }
+          else if(data.floors == null && data.buildings == null && data.stop != [])
           {
             show_plot_accordingly(data.stops);
           }
@@ -639,20 +657,19 @@
             {
               for(var i=0; i<data.buildings.length; i++)
               {
-                $('#building_label').removeClass('hidden');
                 if(data.buildings[i] != "" && data.buildings[i] != null){
+                  $('#building_label').removeClass('hidden');
                   if(first_building == null)
                     first_building = data.buildings[i];
                   $('#building_buttons').append('<a class="btn-default btns building_btn '+ (first_building == data.buildings[i] ? 'selected_building' : '') +'" id="building_'+ data.buildings[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_building == data.buildings[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.buildings[i] +'</a>')
                 }
               }
-    
               for(var i=0; i<data.floors.length; i++)
               {
                 if(first_floor == null)
                   first_floor = data.floors[i];
                 $('#floor_label').removeClass('hidden');
-                if(data.floors[i] != "" && data.floors[i] != null)
+                if(String(data.floors[i]) != "" && String(data.floors[i]) != null)
                   $('#floor_buttons').append('<a class="btn-default btns floor_btn '+ (first_floor == data.floors[i] ? 'selected_floor' : '') +'" id="floor_'+ data.floors[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_floor == data.floors[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.floors[i] +'</a>')
               }
               $('.selected_floor').click();
@@ -679,7 +696,7 @@
                 selected_building = $('.selected_building').text();
                 selected_floor = $('.selected_floor').text();
                 selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
-                selected_building = (selected_building == first_building ? [selected_building, "", null] : [selected_building])
+                selected_building = (first_building == "null" ? (selected_building == first_building ? [selected_building, "", null] : [selected_building]) : ["null", ""])
                 
     
                 for(var f=0; f< data.floor_image.length; f++)
@@ -695,6 +712,7 @@
                     final_stops.push(data.stops[s]);
                   }
                 }
+                debugger;
                 show_plot_accordingly(final_stops);
               });
             }
@@ -718,7 +736,7 @@
       for(var i=0 ; i < stops.length ; i++)
           {
             if(stops[i][1] != null)
-            { debugger;
+            { 
               vertices.push({
                 x: ((stops[i][1].x_plot / img.width)*width),
                 y:  ((stops[i][1].y_plot / img.height)*height)
@@ -779,14 +797,14 @@
            function animate() {
           if (t < points.length - 1) {
               if(points[t-2] != undefined && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y )
-              { debugger;
+              { 
                 $(".popover").popover('hide');
 
                 if (data_array[vertices_count] != undefined)
                 {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
                                   html: true,
                                   placement: 'top',
-                                  template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].lock_access_time +'<br></div></div>'
+                                  template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Access Code:</b>'+data_array[vertices_count][1].stop_pin +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> '+ lock_access_time +'<br></div></div>'
                                 }).popover('show');}
                   vertices_count++;
                   setTimeout(function(){
@@ -803,13 +821,12 @@
           else
           {
             sleep(2000);
-            debugger;
             $(".popover").popover('hide');
             if (data_array[vertices_count] != undefined)
             {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
                           html: true,
                           placement: 'top',
-                          template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].lock_access_time +'<br></div></div>'
+                          template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Access Code:</b>'+data_array[vertices_count][1].stop_pin +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> 55<br><b>Door Unlock Time:</b> '+ lock_access_time +'<br></div></div>'
                         }).popover('show');}
           }
           // draw a line segment from the last waypoint

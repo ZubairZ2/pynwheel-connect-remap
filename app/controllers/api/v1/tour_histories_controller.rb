@@ -33,6 +33,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
           tour_history.longitude = tu.longitude
           tour_history.tour_key = tu.tour_key
           tour_history.tour_status = tu.tour_type
+          tour_history.lock_access_time = tu.lock_access_time
       
           tu.save
         rescue => ex
