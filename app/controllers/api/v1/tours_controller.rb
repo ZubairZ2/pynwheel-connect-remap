@@ -122,7 +122,7 @@ class Api::V1::ToursController < ActionController::Base
           end
           if a1.present? && a2.present? && a3.present?
             unless (stop_id.to_i == params[:tour_id].to_i)
-              vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false, event_date: _date, event_time: _date,stop_type: stop_type, stop_pin: stop_pin)
+              vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false, event_date: _date, event_time: _date,stop_type: stop_type, stop_pin: (((stop_pin.size < 7) ? stop_pin : "") rescue ""))
             end
           end
           if vs.present?
