@@ -638,7 +638,8 @@
           $('.start-point').hide();
           $('.building_btn').hide();
           $('.floor_btn').hide();
-          vertices_count = 0
+          already_watched = [];
+          vertices_count = 0;
 
 
           data_array = [];
@@ -750,7 +751,7 @@
               });
               
               if(stops[i][2] != 'tour'){
-                data_array[vs] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': stops[i][0].event_time.split('T')[1].split('.')[0] , 'departure_time': stops[i][0].departure_time.split('T')[1].split('.')[0] ,'lock_access_time':  stops[i][0].event_date }]
+                data_array[vs] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': stops[i][0].event_time.split('T')[1].split('.')[0] , 'departure_time': (stops[i][0].departure_time == null ? "" : stops[i][0].departure_time.split('T')[1].split('.')[0]) ,'lock_access_time':  stops[i][0].event_date }]
 
                 $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot-70) / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
                 vs++;
