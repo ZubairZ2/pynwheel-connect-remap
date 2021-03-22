@@ -4,27 +4,37 @@
     - if current_user.role == "Dwelo admin"
       .box-info.add-plan{style: "margin-right: 10px;"}
         %img.dwelo-logo{:alt => "Smiley face", :src => "/assets/Dwelo-Logo.png"}
-    .box.box-info.add-plan.mt-20
-      .box-header
-        %h3.box-title
-          Maps
-          %span Analatics
+    - if @maps_records.any? 
+      .box.box-info.add-plan.mt-20
+        .box-header
+          %h3.box-title
+            Maps
+            %span Analatics
 
-      .box-body
-        .row
-          .col-lg-6.col-md-12.h-500
-            .col-lg-4.numbers_div
-              .center_it
-                .count_int= @track_session_count
-                .count_text= 'Total number of session'
-                .count_int= @avg_track_session
-                .count_text= 'Average number of session per day'
-            .col-lg-8
-              = bar_chart @session_each_day_data, @session_each_day_options
-          .col-lg-6.col-md-12.h-500
-            .col-lg-4.numbers_div
-              .center_it
-                .count_int= @average_duration_each_session_in_minutes
-                .count_text= 'Average duration of each session in minutes'
-            .col-lg-8
-              = line_chart @session_each_day_minutes_data, @session_each_day_minutes_options
+        .box-body
+          .row
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .count_int= @track_session_count
+                  .count_text= 'Total number of session'
+                  .count_int= @avg_track_session
+                  .count_text= 'Average number of session per day'
+              .col-lg-8
+                = bar_chart @session_each_day_data, @session_each_day_options
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .count_int= @average_duration_each_session_in_minutes
+                  .count_text= 'Average duration of each session in minutes'
+              .col-lg-8
+                = line_chart @session_each_day_minutes_data, @session_each_day_minutes_options
+          .row.marg-150.hour_session_row
+            .col-lg-12.h-900
+              .col-lg-2.numbers_div_900
+                .center_it
+                  .count_int= @max_count
+                  .count_text= @max_datetime
+                  .count_text= 'Maximum number of session in hour'
+              .col-lg-10
+                = bar_chart @session_each_day_hour_data, @session_each_day_hour_options

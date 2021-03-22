@@ -1,8 +1,15 @@
 .h-500{
   height: 500px;
 }
+.h-900{
+  height: 900px;
+}
 .numbers_div{
   height: 500px;
+  display: table;
+}
+.numbers_div_900{
+  height: 900px;
   display: table;
 }
 .center_it{
@@ -13,3 +20,10 @@
 .count_int{ font-size: 100px; }
 .count_text{ font-size: 16px; }
 .chartjs-render-monitor{ margin-top: 60px; }
+.marg-150 {
+	margin-top: 150px;
+  margin-bottom: 150px;
+}
+.hour_session_row .chartjs-render-monitor{
+  height: 900px !important;
+}
