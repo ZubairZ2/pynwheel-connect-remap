@@ -193,8 +193,15 @@
   var rmargin = #{raw right_margin}
   var community_id = #{params[:community_id]}
   var floorplate_id = #{params[:floorplate_id]}
+  var fp_id = #{params[:floorplate_id]}
   var addmode = false;
-
+  hallways_coordinates = #{raw @hallways.to_json}
+  $( document ).ready(function() {
+  draw_initial_hallways(hallways_coordinates)
+  draw_line(hallways_coordinates);
+  });
+  
+  
   if (#{current_user.welcome_floorplate_plot_page})
     {
       $('[data-toggle="plotUnitOnFloorplatePopover"]').popover({
@@ -238,29 +245,5 @@
         #{current_user.welcome_floorplate_plot_page = false}
         #{current_user.save}
     });
-    function plotting_hallways(thisObj){
-    if ( thisObj.html() == "Start Plotting Hallways"){
-      thisObj.html("Stop Plotting Hallways")
-      $(".multi-select-units").css({ "pointer-events": "none" })
-      $("#map").css('cursor','crosshair')
-      $("<div id='overlay'></div>").css({
-          position: "absolute",
-          width: "100%",
-          height: "100%",
-          top: 0,
-          left: 0,
-          background: "#000000",
-          opacity: 0.5
-    }).appendTo($(".multi-select-units").css("position", "relative"));
-    $('.marker').draggable( 'enable' )
-    }
-    else{
-      thisObj.html("Start Plotting Hallways")
-       $(".multi-select-units").css({ "pointer-events": "auto" })
-       $("#map").css('cursor','default');
-       $(".multi-select-units").find('#overlay').remove();
-       $('.marker').draggable( 'disable' )
-    }
     
-  }
 

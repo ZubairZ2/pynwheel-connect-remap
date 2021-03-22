@@ -57,7 +57,7 @@ $(window).on('load', function () {
                         console.log("Clicked");
                         console.log(dx);
                         console.log(dy);
-                        var points = {dx: dx, dy: dy};
+                        var points = {x_plot: dx, y_plot: dy};
                         hallways_coordinates.push(points);
                         tag = "<a ondblclick='remove_icon($(this))' class='marker ui-draggable ui-draggable-handle'   style='left:" + (dx) + "px; top:" + (dy) + "px; z-index:100; position:absolute;'>"
                         tag += "<i class='fas fa-dot-circle'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100;  ' ></i>";
@@ -147,23 +147,26 @@ $(window).on('load', function () {
 
 
 function remove_icon(thisObj) {
-    dx = thisObj.position().left
-    dy = thisObj.position().top
-    thisObj.remove();
-    this.hallways_coordinates = $.grep(hallways_coordinates, function (data) {
-        return data.dx != dx && data.dy != dy;
-    });
-    draw_line(hallways_coordinates);
+    if ($('#hallway_btn').html() === "Stop Plotting Hallways") {
+        dx = thisObj.position().left
+        dy = thisObj.position().top
+        thisObj.remove();
+        this.hallways_coordinates = $.grep(hallways_coordinates, function (data) {
+            return data.x_plot != dx && data.y_plot != dy;
+        });
+        draw_line(hallways_coordinates);
+    }
+
 }
 
 function draw_line(hallways_coordinates) {
     $(".line").remove();
     for (var i = 0; i < hallways_coordinates.length - 1; i++) {
         console.log(hallways_coordinates[i]);
-        x1 = hallways_coordinates[i].dx + 8
-        y1 = hallways_coordinates[i].dy + 8
-        x2 = hallways_coordinates[i + 1].dx + 8
-        y2 = hallways_coordinates[i + 1].dy + 8
+        x1 = hallways_coordinates[i].x_plot + 8
+        y1 = hallways_coordinates[i].y_plot + 8
+        x2 = hallways_coordinates[i + 1].x_plot + 8
+        y2 = hallways_coordinates[i + 1].y_plot + 8
         x = $(".plot-image").line(x1, y1, x2, y2, {
             zindex: 99,
             color: '#000000',
@@ -172,6 +175,23 @@ function draw_line(hallways_coordinates) {
             class: "line"
         });
     }
+    hallways_ajax();
+}
+
+function draw_initial_hallways(hallways_coordinates) {
+    marker_color = $('#marker_color').html();
+    camera_margin = $('#camera-margin').html();
+    marker_font_size = ($('#font_size').html());
+    left_margin = parseInt($('#left_margin').html());
+    right_margin = parseInt($('#right_margin').html());
+    for (var i = 0; i < hallways_coordinates.length; i++) {
+        tag = "<a ondblclick='remove_icon($(this))' class='marker ui-draggable ui-draggable-handle'   style='left:" + (hallways_coordinates[i].x_plot) + "px; top:" + (hallways_coordinates[i].y_plot) + "px; z-index:100; position:absolute;'>"
+        tag += "<i class='fas fa-dot-circle'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100;  ' ></i>";
+        tag += "</a>"
+        $('#map').append(tag);
+        icon_drag();
+    }
+
 }
 
 function icon_drag() {
@@ -194,9 +214,9 @@ function icon_drag() {
         stop: function (event, ui) {
             $(".line").remove();
             for (var i = 0; i < hallways_coordinates.length; i++) {
-                if (hallways_coordinates[i].dx === current_dx && hallways_coordinates[i].dy === current_dy) {
-                    hallways_coordinates[i].dx = ui.position.left
-                    hallways_coordinates[i].dy = ui.position.top
+                if (hallways_coordinates[i].x_plot === current_dx && hallways_coordinates[i].y_plot === current_dy) {
+                    hallways_coordinates[i].x_plot = ui.position.left
+                    hallways_coordinates[i].y_plot = ui.position.top
                 }
             }
             draw_line(hallways_coordinates);
@@ -205,3 +225,38 @@ function icon_drag() {
     });
 }
 
+function hallways_ajax() {
+    $.ajax({
+        url: '/save_hallways_point',
+        type: 'Post',
+        data: {
+            'floor_plate_id': typeof fp_id !== 'undefined' ? fp_id : null,
+            'sitemap_id': typeof sm_id !== 'undefined' ? sm_id : null,
+            'hallway_points': JSON.stringify(hallways_coordinates)
+        },
+    });
+}
+
+function plotting_hallways(thisObj) {
+    if (thisObj.html() == "Start Plotting Hallways") {
+        thisObj.html("Stop Plotting Hallways")
+        $(".multi-select-units").css({"pointer-events": "none"})
+        $("#map").css('cursor', 'crosshair')
+        $("<div id='overlay'></div>").css({
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            top: 0,
+            left: 0,
+            background: "#000000",
+            opacity: 0.5
+        }).appendTo($(".multi-select-units").css("position", "relative"));
+        $('.marker').draggable('enable')
+    } else {
+        thisObj.html("Start Plotting Hallways")
+        $(".multi-select-units").css({"pointer-events": "auto"})
+        $("#map").css('cursor', 'default');
+        $(".multi-select-units").find('#overlay').remove();
+        $('.marker').draggable('disable')
+    }
+}

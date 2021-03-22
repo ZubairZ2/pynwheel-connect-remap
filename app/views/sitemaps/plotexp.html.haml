@@ -366,7 +366,12 @@
   var community_id = #{params[:community_id]};
   var addmode = false;
   var sitemap_id = '#{@sitemap.id}';
-
+  var sm_id = '#{@sitemap.id}';
+  hallways_coordinates = #{raw @hallways.to_json}
+  $( document ).ready(function() {
+    draw_initial_hallways(hallways_coordinates)
+    draw_line(hallways_coordinates);
+  });
   function sitemap_goBack()
   {
     $('.apartment-settings-form').submit();
@@ -478,12 +483,7 @@
         #{current_user.welcome_sitemap_page = true}
         #{current_user.save}
     });
-  function plotting_hallways(thisObj){
-    thisObj.html() == "Start Plotting Hallways" ? thisObj.html("Stop Plotting Hallways") : thisObj.html("Start Plotting Hallways")
-    $(".multi-select-units").css("pointer-events") == "auto" ? $(".multi-select-units").css({ "pointer-events": "none" }) : $(".multi-select-units").css({ "pointer-events": "auto" })
-    $("#map").css('cursor') == "default" ? $("#map").css('cursor','crosshair') :  $("#map").css('cursor','default');
   
-  }
 :css
   .overlay {
     width: 100%;

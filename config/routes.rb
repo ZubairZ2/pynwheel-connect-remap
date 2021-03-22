@@ -439,7 +439,7 @@ Rails.application.routes.draw do
   post :update_path_point, to: 'tours#point_update'
   post :delete_path_point, to: 'tours#point_delete'
   post :delete_path_on_sort_change, to: 'tours#delete_path_on_sort_change'
-
+  post :save_hallways_point, to: 'hallways#point_save'
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
       put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
