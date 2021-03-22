@@ -708,18 +708,18 @@
                   if(data.floor_image[f][0].includes(parseInt($('.selected_floor').text())))
                     img_ = data.floor_image[f][1]
                 }
-                setTimeout(function(){
+                  sleep(2000);
                   draw_image_canvas(img_);
-                }, 2000);
+                
                 for(var s = 0; s < data.stops.length; s++)
                 {
-                  
                   if(( (selected_floor.includes(String(data.stops[s][1].floor)) || selected_floor.includes(String(data.stops[s][1].starting_floor))) && selected_building.includes( String(data.stops[s][1].building) ) ))
                   { 
+                    data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
                     final_stops.push(data.stops[s]);
                   }
                 }
-                
+                sleep(000);
                 show_plot_accordingly(final_stops);
               });
             }
@@ -742,7 +742,6 @@
       vs = 0;
       for(var i=0 ; i < stops.length ; i++)
           {
-          debugger;
             if(stops[i][1] != null)
             { 
               vertices.push({
@@ -751,7 +750,7 @@
               });
               
               if(stops[i][2] != 'tour'){
-                data_array[vs] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': stops[i][0].event_time.split('T')[1].split('.')[0] , 'departure_time': stops[i][0].event_time.split('T')[1].split('.')[0] ,'lock_access_time':  stops[i][0].event_date }]
+                data_array[vs] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': stops[i][0].event_time.split('T')[1].split('.')[0] , 'departure_time': stops[i][0].departure_time.split('T')[1].split('.')[0] ,'lock_access_time':  stops[i][0].event_date }]
 
                 $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot-70) / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
                 vs++;
@@ -820,7 +819,7 @@
                 {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
                                   html: true,
                                   placement: 'top',
-                                  template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Access Code:</b>'+data_array[vertices_count][1].stop_pin +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br><b>Door Unlock Time:</b> '+ lock_access_time +'<br></div></div>'
+                                  template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Access Code:</b>'+data_array[vertices_count][1].stop_pin +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> '+ lock_access_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                                 }).popover('show');}
                   vertices_count++;
                   setTimeout(function(){
@@ -842,7 +841,7 @@
               {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
                             html: true,
                             placement: 'top',
-                            template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Access Code:</b>'+data_array[vertices_count][1].stop_pin +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br><b>Door Unlock Time:</b> '+ lock_access_time +'<br></div></div>'
+                            template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Access Code:</b>'+data_array[vertices_count][1].stop_pin +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> '+ lock_access_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                           }).popover('show');}
               already_watched.push([selected_floor[0],selected_building[0]]);            
             }
