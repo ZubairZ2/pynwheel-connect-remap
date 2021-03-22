@@ -12,6 +12,13 @@ class Api::V1::TourHistoriesController < ActionController::Base
         tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
         tour_history.tour_state = "completed" if params[:left].present?
         tour_history.tour_type = params[:tour_session_type] if params[:tour_session_type].present?
+        if  params[:tour_site].present?
+          if params[:tour_site] == "self_tour"
+            tour_history.tour_site = "onsite"
+          elsif params[:tour_site] == "virtual_tour"
+            tour_history.tour_site = "offsite"
+          end
+        end
         tour_history.tour_id = params[:tour_id].to_i if params[:tour_id].present?
         tour_history.lengthy_stay = convert_epoch_to_datetime params[:lengthy_stay] if params[:lengthy_stay].present?
         if params[:time_zone].present?
