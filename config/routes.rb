@@ -298,11 +298,13 @@ Rails.application.routes.draw do
     resources :sitemaps do
       resources :amenities, controller: "sitemap_amenities" do
         post :plot_amenity
+        post :plot_amenity_door
         collection do
           delete :remove_amenities_plot
         end
         member do
           delete :remove_amenity
+          post :show_amenity_door_modal
         end
       end
       post :save_sitemap_image

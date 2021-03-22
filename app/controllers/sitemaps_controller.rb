@@ -1,4 +1,5 @@
 class SitemapsController < ApplicationController
+  include AssignLocksHelper
   before_action :set_community
   before_action :check_community
   add_breadcrumb "Home", :root_path
@@ -97,6 +98,23 @@ class SitemapsController < ApplicationController
     add_breadcrumb "Plot Property Map Amenities", plot_amenities_community_sitemaps_path(current_community) 
     @sitemap = @community.sitemap
     @amenities = @community.amenities
+
+    @amenity_with_doors = []
+    @amenities_doors = @sitemap.amenities.includes(:doors)
+
+    @amenities_doors.each do |amenity|    # following json is created same as with unit to reuse the unit's code.
+        response = amenity.doors.map { |door| { unit_info: { unit: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.id, x_plot: amenity.x_plot, y_plot: amenity.x_plot }, door: door }}}
+        @amenity_with_doors << response
+    end
+    @amenity_with_doors = @amenity_with_doors.flatten
+
+    @all_locks = all_locks(@community)
+
+    if @sitemap.image.blank? 
+      flash[:error] = "Kindly add Sitemap image first"
+      redirect_to community_sitemaps_path(@community)
+    end
+
   end
 
   def plot_elevators

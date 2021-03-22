@@ -1,5 +1,5 @@
 // save an individual unit (even if same x/y)
-  function savePlot(id, dx, dy) {
+  function savePlot(id, dx, dy, door_id=0) {
     debugger
     if (typeof floorplan_id !== 'undefined'){
       saveFloorplanPlot(id,dx,dy);
@@ -11,11 +11,14 @@
         saveFloorplateUnit(id, dx, dy);
     }
     else if ( typeof isPlotAmenity !== 'undefined'){
-      saveAmenityPlot(id, dx, dy);
+      if(adddoorsmode)
+        saveAmenityDoorPlot(id, dx, dy, door_id);
+      else
+        saveAmenityPlot(id, dx, dy);
     }
     else if ( typeof floorplate_id_for_amenity !== 'undefined'){
       if(adddoorsmode)
-        saveAmenityDoorPlotForFloorplate(id, dx, dy);
+        saveAmenityDoorPlot(id, dx, dy, door_id);
       else
         saveAmenityPlotForFloorplate(id, dx, dy);
     }
@@ -414,7 +417,7 @@ function stop__door_work(event, ui){
     if(ui.helper.data("plotted-category") == "unit_door")
       saveDraggedDoor(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, same_location_doors.length)
     else
-      saveAmenityDoorPlotForFloorplate(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, row.unit_info.door.id);
+      saveAmenityDoorPlot(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, row.unit_info.door.id);
   }
 }
 

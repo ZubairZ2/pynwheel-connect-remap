@@ -5,7 +5,7 @@ function delete_plot(removing, url){
         if(removing == "unit_door")
             delete_unit_door_plot(url)
     }
-    else if(typeof floorplate_id_for_amenity !== 'undefined'){
+    else if(typeof floorplate_id_for_amenity !== 'undefined' || typeof sitemap_id !== 'undefined' ){
         if(removing == "amenity_door")
             delete_amenity_door_plot(url)
     }
@@ -39,8 +39,14 @@ function saveFloorplateUnitDoor(id, dx, dy){
     })
 }
 
-function saveAmenityDoorPlotForFloorplate(id,dx,dy,door_id=0){
-    $.post( "/communities/"+community_id+"/floorplates/"+floorplate_id_for_amenity+"/amenities/" + id + "/plot_amenity_door",
+function saveAmenityDoorPlot(id,dx,dy,door_id){
+
+    if(typeof floorplate_id_for_amenity !== "undefined")
+        url = "/communities/"+community_id+"/floorplates/"+floorplate_id_for_amenity+"/amenities/" + id + "/plot_amenity_door"
+    else
+        url = "/communities/"+community_id+"/sitemaps/"+sitemap_id+"/amenities/" + id + "/plot_amenity_door"
+  
+    $.post( url,
      { 
         "x_plot": dx,
         "y_plot": dy,
@@ -444,7 +450,12 @@ function open_amenity_door_modal(event){
     amenity_id = event.currentTarget.id.split("_")[1]
     door_id = event.currentTarget.dataset.doorId
 
-    $.post( "/communities/" + community_id + "/floorplates/" + floorplate_id_for_amenity + "/amenities/" + amenity_id + "/show_amenity_door_modal",
+    if(typeof floorplate_id_for_amenity !== "undefined")
+        url = "/communities/" + community_id + "/floorplates/" + floorplate_id_for_amenity + "/amenities/" + amenity_id + "/show_amenity_door_modal"
+    else
+        url = "/communities/" + community_id + "/sitemaps/" + sitemap_id + "/amenities/" + amenity_id + "/show_amenity_door_modal"
+    
+    $.post( url,
     {
         "floor": floor,
         "door_id": door_id,

@@ -146,7 +146,8 @@ function getDeleteUnitUrl(){
         return '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+selected[0][0]+'/remove_amenity';
     }
     else if (typeof sitemap_id !== 'undefined'){
-        return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot'
+        return '/communities/'+community_id+'/sitemaps/'+sitemap_id+'/amenities/'+selected[0][0]+'/remove_amenity'
+        // return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot'
     }
     else if (typeof floorplate_id_for_amenity !== 'undefined'){
         return '/communities/'+community_id+'/floorplates/'+floorplate_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity?floor=' + floor
@@ -176,7 +177,7 @@ function getUnitTag(url){
         tag += "<img src='/assets/star.png'>";
         tag += "</a>"
     }
-    else if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined'){   
+    else if (typeof floorplate_id !== 'undefined'){   
         if(automate_wayfinding == true) 
             plus_icon = returnPlusIconTag(selected[0][0], "unit", -6)
         else
@@ -188,7 +189,7 @@ function getUnitTag(url){
                     ${plus_icon}
                 </p>`
     }
-    else if(typeof floorplate_id_for_amenity !== 'undefined'){
+    else if(typeof floorplate_id_for_amenity !== 'undefined' || typeof sitemap_id !== 'undefined'){
         if(automate_wayfinding == true) 
             plus_icon = returnPlusIconTag(selected[0][0], "amenity", 0)
         else
@@ -202,11 +203,6 @@ function getUnitTag(url){
                     </a>
                     ${plus_icon}
                 </p>`
-    }
-    else{
-        tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-        tag += "<i class='custom-icon' style='width: "+ marker_font_size +"px; height: "+ marker_font_size +"px; border: 2px solid "+ marker_color+"; '><i class='fas fa-camera-retro' style='color: "+marker_color+"; font-size: "+(parseInt(marker_font_size) /2)+"px; margin-top:"+ camera_margin +"px;'></i></i>";
-        tag += "</a>"
     }
     return tag
 }
@@ -225,6 +221,12 @@ function getDoorTag(provider_id){
                 </a>`
     }
     else if(typeof floorplate_id_for_amenity !== 'undefined'){
+        amenity_id = provider_id
+        tag =   `<a id="amenity_${amenity_id}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${amenity_id} (door)" data-toggle="modal" data-target="#amenity-door-detail-modal" data-plotted-category="amenity_door" href="#" onclick="open_amenity_door_modal(event)">
+                    <i class="fa fa-sign-in fa-xs" style="color: ${door_marker_color};"></i>
+                </a>`
+    }
+    else if(typeof sitemap_id !== 'undefined'){
         amenity_id = provider_id
         tag =   `<a id="amenity_${amenity_id}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${amenity_id} (door)" data-toggle="modal" data-target="#amenity-door-detail-modal" data-plotted-category="amenity_door" href="#" onclick="open_amenity_door_modal(event)">
                     <i class="fa fa-sign-in fa-xs" style="color: ${door_marker_color};"></i>
