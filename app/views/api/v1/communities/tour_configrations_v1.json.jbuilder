@@ -9,7 +9,7 @@
         json.visual_id_verification    @tour_user.tour_type != "virtual_tour" ? @community.tour.visual_id_verification : false # can't confirm here
         json.tour_type                 @tour_user.tour_type
         json.verification_type         @verfication_type
-        json.with_in_radius            true         # @within_one_km  # original line commented for short term solution on live
+        json.with_in_radius            @within_one_km
         json.scheduler_widget_allowed  @community.scheduler_widget
         json.scheduler_widget_url      ""
         json.tour_alert                "Every thing is fine. Enjoy your tour"

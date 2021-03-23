@@ -477,10 +477,6 @@ class Api::V1::CommunitiesController < ActionController::Base
             @location_received = true
           end
 
-          ### short term solution for urgent bug ###
-          @location_received = false
-          ##########################################
-
           timezone = get_community_time_zone(@community)
           current_time = current_community_time(@community, params)
           @is_salesforce_crm = (@community.credential.present? and @community.credential.use_different_crm_provider and @community.credential.crm_provider == "salesforce") ? true : false
