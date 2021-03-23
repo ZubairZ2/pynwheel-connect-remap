@@ -40,41 +40,34 @@
             - marker_color = 'rgba(247, 0, 0, 0.61)'
 
           - if @community.theme_name.include?('gables')
-            - marker_font_size = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : 30
+            - fontsize = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : 30
           - elsif @community.theme_name == 'modernist'
-            - marker_font_size = @community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size : 30
+            - fontsize = @community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size : 30
           - elsif @community.theme_name == 'futurist'
-            - marker_font_size = @community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : 30
+            - fontsize = @community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : 30
           - elsif @community.theme_name == 'expressionist'
-            - marker_font_size = @community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : 30
+            - fontsize = @community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : 30
           - elsif @community.theme_name == 'panther'
-            - marker_font_size = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : 30
+            - fontsize = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : 30
           - else
-            - marker_font_size = 30
+            - fontsize = 30
 
-          -#- marker_font_size = @community.design.amenity_map_marker_size_integer
-          -#- marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
-          - marker_font_size = marker_font_size -5
-          - camera_font_size = marker_font_size / 2
+          - left_margin = 0
+          - right_margin = 0
+          - fontsize = fontsize -5
+          - camera_font_size = fontsize / 2
 
-          - marker_font_size2 = marker_font_size
+          - marker_font_size2 = fontsize
           - camera_margin = (marker_font_size2 <= 27 ? 3 : (marker_font_size2 <= 30 ? 4 : (marker_font_size2 <= 33 ? 5 : (marker_font_size2 <= 35 ? 6 : 6))))
-          
-          %span.hidden#font_size #{marker_font_size}
-          %span.hidden#left_margin #{0}
-          %span.hidden#right_margin #{0}
-          %span.hidden#marker_color #{marker_color}
-          %span.hidden#camera-margin #{camera_margin}
-          
-          - door_left_margin  = 0
-          - door_right_margin = 0
-          - door_fontsize     = marker_font_size
-          - door_marker_color = "#3153d2"
 
-          %span.hidden#door_left_margin   #{door_left_margin}
-          %span.hidden#door_right_margin  #{door_right_margin}
-          %span.hidden#door_fontsize      #{door_fontsize}
-          %span.hidden#door_marker_color  #{door_marker_color}
+          %span.hidden#left_margin #{left_margin}
+          %span.hidden#right_margin #{right_margin}
+          %span.hidden#font_size #{fontsize}
+          %span.hidden#marker_color #{marker_color}
+          %span.hidden#camera_margin #{camera_margin}
+
+          - door_fontsize     = fontsize
+          - door_marker_color = "#3153d2"
 
           %span.hidden#door_fontsize      #{door_fontsize}
           %span.hidden#door_marker_color  #{door_marker_color}
@@ -106,12 +99,12 @@
 
                         %p{class: "marker", style: "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute"}
                           = link_to "#", :id => "m_#{amenity.id}", :title => amenity.name, data: {toggle: "tooltip", name: "plot", target: "#confirm-delete", toggle: "modal", href: "/communities/#{@community.id}/floorplates/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity?floor=#{@floor}", plotted_category: "amenity"} do
-                            %i{class: "custom-icon", style: "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};"}
+                            %i{class: "custom-icon", style: "height:#{fontsize}px; width: #{fontsize}px; border: 2px solid  #{marker_color};"}
                               %i{class: "fas fa-camera-retro", style: "font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;"}
                           
                           - if @community.auto_wayfinding
                             = link_to "#", { id: "plus_#{amenity.id}", title:  "Click to plot this amenity door", data: {toggle: "tooltip", plotted_category: "create_amenity_door"}, onclick: 'plot_entry_point(event)'} do
-                              %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{marker_font_size/1.8}px;" }
+                              %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/1.8}px;" }
                         
                         - if @community.auto_wayfinding
                           - amenity.doors.each do |door|
@@ -166,14 +159,14 @@
   var arr = #{raw amenity_arr}
   var units_info = #{@amenity_with_doors.to_json.html_safe}
 
-  var lmargin = 0
-  var rmargin = 0
+  var left_margin = #{raw left_margin}
+  var right_margin = #{raw right_margin}
   var community_id = #{params[:community_id]}
+  var floorplate_id_for_amenity = #{@sitemap.id}
+
+  var enable_locks = #{@community.enable_locks}
+  var automate_wayfinding = #{@community.auto_wayfinding}
 
   var addmode = false;
   var adddoorsmode = false;
-
-  var floorplate_id_for_amenity = #{@sitemap.id}
-  var enable_locks = #{@community.enable_locks}
-  var automate_wayfinding = #{@community.auto_wayfinding}
   var amenity_type = "floorplate"

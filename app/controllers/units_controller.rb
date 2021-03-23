@@ -363,7 +363,7 @@ class UnitsController < ApplicationController
     end
   end
 
-  def ajaxplotunitdoorforfloorplate
+  def ajax_plot_unit_door
     unit = @community.units.where(provider_unit_id: params[:id]).first
     if unit.present?
       door ||= unit.door || unit.build_door
@@ -449,8 +449,8 @@ class UnitsController < ApplicationController
     end
   end
 
-  def remove_unitdoor_plot_from_floorplate
-    @floorplate = Floorplate.find params[:floorplate_id]
+  def remove_unit_door_plot
+    # @floorplate = Floorplate.find params[:floorplate_id]
 
     unit = @community.units.where(provider_unit_id: params[:id]).first
     render json: {unit: unit, door: unit.door, success: true}

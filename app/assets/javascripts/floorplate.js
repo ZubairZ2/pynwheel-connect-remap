@@ -151,7 +151,6 @@ function plot_entry_point(event){
   
   adddoorsmode = true
   plotMode();
-  // $("#map").append(door_tag);
 }
 
 function getUnitsAtSameLocation(xpos, ypos){
@@ -187,4 +186,11 @@ function sortSelected(currently_selected_provider_id){
     selected[index] = selected[0]
     selected[0] = [currently_selected_provider_id, currently_selected_provider_id]
   }
+}
+
+
+function select_multiple_floors(event){
+  selected = multi_floors.selected()
+  AccessPointPlot = true
+  plotMode()
 }

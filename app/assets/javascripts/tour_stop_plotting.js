@@ -98,41 +98,46 @@ $(document).ready(function(){
 
             marker_color = $('#marker_color').html();
             marker_font_size = ($('#font_size').html());
-            left_margin = parseInt($('#left_margin').html());
-            right_margin = parseInt($('#right_margin').html());
-            camera_margin = $('#camera-margin').html();
+            camera_margin = $('#camera_margin').html();
             
             door_marker_color = $('#door_marker_color').html();
             door_fontsize = ($('#door_fontsize').html());
-            door_left_margin = parseInt($('#door_left_margin').html());
-            door_right_margin = parseInt($('#door_right_margin').html());
-
-
+            
             if (addmode) {
                 // save plotting for each selected unit
-                try {
-                    for (i=0; i<selected.length; i++) {
-                        savePlot(selected[i][0], dx, dy);
+                if(typeof AccessPointPlot !== "undefined" && AccessPointPlot == true){
+                    try {
+                        for (i=0; i<selected.length; i++) {
+                            saveAccessPoint(dx, dy, selected[i]);
+                        }
                     }
-                }
-                catch(err) {
-                    location.reload()
-                }
-                
-                if(adddoorsmode){
-                    tag = getDoorTag(selected[0][0])
+                    catch(err) {
+                        location.reload()
+                    }
+                    // createAccessPointPlot(dx, dy);
+                    // tag = getAccessPointTag();
                 }
                 else{
-                    var url = getDeleteUnitUrl();
-                    tag = getUnitTag(url)
+                    try {
+                        for (i=0; i<selected.length; i++) {
+                            savePlot(selected[i][0], dx, dy);
+                        }
+                    }
+                    catch(err) {
+                        location.reload()
+                    }
+                    
+                    if(adddoorsmode){
+                        tag = getDoorTag(selected[0][0])
+                    }
+                    else{
+                        var url = getDeletionUrl();
+                        tag = getTagToPlot(url)
+                    }
                 }
+                
 
                 $('#map').append(tag);
-                // if autowayfinding toggle in On and Unit is just plotted
-                // if (){
-
-                // }
-                // else
                 doDraggable();
                 reset();
             }
@@ -141,16 +146,18 @@ $(document).ready(function(){
 
 });
 
-function getDeleteUnitUrl(){
+function getDeletionUrl(){
     if (typeof floorplan_id !== 'undefined'){
         return '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+selected[0][0]+'/remove_amenity';
     }
     else if (typeof sitemap_id !== 'undefined'){
-        return '/communities/'+community_id+'/sitemaps/'+sitemap_id+'/amenities/'+selected[0][0]+'/remove_amenity'
-        // return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot'
+        return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot'
     }
     else if (typeof floorplate_id_for_amenity !== 'undefined'){
         return '/communities/'+community_id+'/floorplates/'+floorplate_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity?floor=' + floor
+    }
+    else if (typeof sitemap_id_for_amenity !== 'undefined'){
+        return '/communities/'+community_id+'/sitemaps/'+sitemap_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity'
     }
     else if (typeof tour_id !== 'undefined'){
         return '/communities/'+community_id+'/tours/'+tour_id+'/resetStartingPoint'
@@ -166,7 +173,7 @@ function getDeleteUnitUrl(){
     }
 }
 
-function getUnitTag(url){
+function getTagToPlot(url){
     if (typeof tour_id_for_stop !== 'undefined'){
         tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
         tag += "<i class='custom-icon' style='width: "+ marker_font_size +"px; height: "+ marker_font_size +"px; border: 2px solid "+ marker_color+"; '><i class='fa fa-star' style='color: "+marker_color+"; font-size: "+(parseInt(marker_font_size) /2)+"px; margin-top:"+ camera_margin +"px;'></i></i>";
@@ -177,7 +184,7 @@ function getUnitTag(url){
         tag += "<img src='/assets/star.png'>";
         tag += "</a>"
     }
-    else if (typeof floorplate_id !== 'undefined'){   
+    else if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined'){   
         if(automate_wayfinding == true) 
             plus_icon = returnPlusIconTag(selected[0][0], "unit", -6)
         else
@@ -189,7 +196,7 @@ function getUnitTag(url){
                     ${plus_icon}
                 </p>`
     }
-    else if(typeof floorplate_id_for_amenity !== 'undefined' || typeof sitemap_id !== 'undefined'){
+    else if(typeof floorplate_id_for_amenity !== 'undefined' || typeof sitemap_id_for_amenity !== 'undefined'){
         if(automate_wayfinding == true) 
             plus_icon = returnPlusIconTag(selected[0][0], "amenity", 0)
         else
@@ -208,25 +215,20 @@ function getUnitTag(url){
 }
 
 function getDeleteDoorUrl(provider_id){
-    if (typeof floorplate_id !== 'undefined'){
-        return '/communities/'+community_id+'/units/'+provider_id+'/remove_unitdoor_plot_from_floorplate?floorplate_id='+floorplate_id
+    floorplate_id = sitemap_id // temp line for now
+    if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined'){
+        return '/communities/'+community_id+'/units/'+provider_id+'/remove_unit_door_plot?floorplate_id='+floorplate_id
     }
 }
 
 function getDoorTag(provider_id){
-    if (typeof floorplate_id !== 'undefined')
+    if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined')
     {   
         tag =   `<a id="door_${provider_id}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${provider_id} (door)" data-toggle="modal" data-target="#ajax-doors-detail-modal" data-plotted-category="unit_door" href="#">
                     <i class="fa fa-sign-in fa-xs" style="color: ${door_marker_color};"></i>
                 </a>`
     }
-    else if(typeof floorplate_id_for_amenity !== 'undefined'){
-        amenity_id = provider_id
-        tag =   `<a id="amenity_${amenity_id}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${amenity_id} (door)" data-toggle="modal" data-target="#amenity-door-detail-modal" data-plotted-category="amenity_door" href="#" onclick="open_amenity_door_modal(event)">
-                    <i class="fa fa-sign-in fa-xs" style="color: ${door_marker_color};"></i>
-                </a>`
-    }
-    else if(typeof sitemap_id !== 'undefined'){
+    else if(typeof floorplate_id_for_amenity !== 'undefined' || typeof sitemap_id_for_amenity !== 'undefined'){
         amenity_id = provider_id
         tag =   `<a id="amenity_${amenity_id}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${amenity_id} (door)" data-toggle="modal" data-target="#amenity-door-detail-modal" data-plotted-category="amenity_door" href="#" onclick="open_amenity_door_modal(event)">
                     <i class="fa fa-sign-in fa-xs" style="color: ${door_marker_color};"></i>
@@ -243,5 +245,11 @@ function attachPlusIconWithUnit(unit){
 function returnPlusIconTag(id, for_, margin){
     return `<a id="plus_${id}" style="margin-left: ${margin}px;" title="Click to plot this ${for_}(s) door" data-toggle="tooltip" data-plotted-category="create_${for_}_door" onclick="plot_entry_point(event)" href="#">
                 <i class="fa fa-plus-circle fa-xs" style="color: #59de83; font-size: ${marker_font_size/2}px;"></i>
+            </a>`
+}
+
+function getAccessPointTag(){
+    return `<a id="access_point_id" title="access point" data-toggle="tooltip" data-plotted-category="access_point" href="#">
+                <i class="fa fa-plus-circle fa-xs" style="color: #59de83; font-size: 30px;"></i>
             </a>`
 }

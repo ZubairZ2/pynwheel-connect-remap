@@ -96,6 +96,7 @@ class Community < ApplicationRecord
   has_many :building_starting_point, dependent: :destroy
   has_many :tutorials, dependent: :destroy
   has_many :elevators, dependent: :destroy
+  # has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
   
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy

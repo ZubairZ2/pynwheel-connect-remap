@@ -1,22 +1,26 @@
 const zero = 0
+function saveAccessPoint(dx, dy, id){
+    
+}
+
 function delete_plot(removing, url){
     debugger
     if ( typeof floorplate_id !== 'undefined'){
         if(removing == "unit_door")
             delete_unit_door_plot(url)
     }
-    else if(typeof floorplate_id_for_amenity !== 'undefined' || typeof sitemap_id !== 'undefined' ){
+    else if(typeof floorplate_id_for_amenity !== 'undefined' || typeof sitemap_id_for_amenity !== 'undefined' ){
         if(removing == "amenity_door")
             delete_amenity_door_plot(url)
     }
 }
 
-function saveFloorplateUnitDoor(id, dx, dy){
-    $.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunitdoorforfloorplate",
+function saveUnitDoor(id, dx, dy){
+    $.post( "/communities/"+community_id+"/units/" + id + "/ajax_plot_unit_door",
     { 
       "x_plot": dx,
-      "y_plot": dy,
-      "floorplate_id": floorplate_id
+      "y_plot": dy
+    //   "floorplate_id": floorplate_id
     }).done(function(response) {
         debugger
         if(response.success){
@@ -44,7 +48,7 @@ function saveAmenityDoorPlot(id,dx,dy,door_id){
     if(typeof floorplate_id_for_amenity !== "undefined")
         url = "/communities/"+community_id+"/floorplates/"+floorplate_id_for_amenity+"/amenities/" + id + "/plot_amenity_door"
     else
-        url = "/communities/"+community_id+"/sitemaps/"+sitemap_id+"/amenities/" + id + "/plot_amenity_door"
+        url = "/communities/"+community_id+"/sitemaps/"+sitemap_id_for_amenity+"/amenities/" + id + "/plot_amenity_door"
   
     $.post( url,
      { 
@@ -453,7 +457,7 @@ function open_amenity_door_modal(event){
     if(typeof floorplate_id_for_amenity !== "undefined")
         url = "/communities/" + community_id + "/floorplates/" + floorplate_id_for_amenity + "/amenities/" + amenity_id + "/show_amenity_door_modal"
     else
-        url = "/communities/" + community_id + "/sitemaps/" + sitemap_id + "/amenities/" + amenity_id + "/show_amenity_door_modal"
+        url = "/communities/" + community_id + "/sitemaps/" + sitemap_id_for_amenity + "/amenities/" + amenity_id + "/show_amenity_door_modal"
     
     $.post( url,
     {
@@ -462,6 +466,25 @@ function open_amenity_door_modal(event){
         "locks_present_hash": JSON.stringify(locks_present_hash),
     })
     
+}
+
+function drawAccessPoint(event){
+    debugger
+    if ($(event.currentTarget).hasClass('disabled')) return;
+    $(event.currentTarget).addClass('disabled');
+    $(event.target).css({"color": "#c9ffdd"})
+
+    AccessPointPlot = true
+}
+
+function createAccessPointPlot(dx,dy){
+    $.post( "/communities/"+community_id+"/create_access_point_plot",
+    { 
+      "x_plot": dx,
+      "y_plot": dy,
+    }).done(function(response) {
+
+    })
 }
 
 $(document).ready(function(){

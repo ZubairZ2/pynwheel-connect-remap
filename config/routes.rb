@@ -129,6 +129,8 @@ Rails.application.routes.draw do
       end
     end
 
+    # post :create_access_point_plot
+    # put  :update_access_point_plot
     post :save_gallery_settings
     post :save_tour_settings
     post :save_apartment_settings
@@ -238,6 +240,7 @@ Rails.application.routes.draw do
       end
       get :select_floor
       post :select_floor
+      get :select_many_floors
       get :plotexp
       get :grid_overlay
       post :adjust_marker_positions
@@ -267,10 +270,10 @@ Rails.application.routes.draw do
         post :ajax_load_unit_locks
         post :ajaxplotunit
         post :ajaxplotunitforfloorplate
-        post :ajaxplotunitdoorforfloorplate
+        post :ajax_plot_unit_door
         delete :remove_plot
         delete :remove_plot_from_floorplate
-        delete :remove_unitdoor_plot_from_floorplate
+        delete :remove_unit_door_plot
         post :adjust_position
         post :load_remotelock_data
         post :clear_locks

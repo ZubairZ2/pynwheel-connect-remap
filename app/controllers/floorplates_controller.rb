@@ -77,6 +77,11 @@ class FloorplatesController < ApplicationController
     end
   end
 
+  def select_many_floors
+    @community = Community.find params[:community_id]
+    @floorplate = Floorplate.find params[:floorplate_id]
+  end
+
   def update
     if params[:floorplate][:name] != @floorplate.name
       @floorplate.name_is_updated = true
@@ -169,6 +174,7 @@ class FloorplatesController < ApplicationController
     end
 
     @community_units = @floorplate.fetch_units.includes(:door)
+    # @access_points   = @community.access_points
     @unit_with_door = @community_units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.door.present? ? unit.door : {} }}}
     @all_locks = all_locks(@community)
     add_breadcrumb "Floor plates", community_floorplates_path(current_community)

@@ -650,6 +650,17 @@ class CommunitiesController < ApplicationController
     expressionist = design.expressionist ||  design.create_expressionist 
     expressionist = design.filter_panel ||  design.create_filter_panel 
   end
+
+  # def create_access_point_plot
+  #   access_point = @community.access_points.create(community_id: params[:community_id], x_plot: params[:x_plot], y_plot: params[:y_plot])
+  #   render json: {access_point: access_point, success: true}
+  # rescue
+  #   render json: {access_point: {}, success: false}
+  # end
+
+  # def save_access_point_plot
+  #   Door.
+  # end
   private
 
   def show_chat_modal(tour_user_id, tour_id)

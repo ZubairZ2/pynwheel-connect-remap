@@ -54,38 +54,22 @@ class SitemapsController < ApplicationController
   end
 
   def plotexp
-    add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
     if @community.sitemap.present?
       @sitemap = @community.sitemap
     else
       @sitemap = Sitemap.new(community_id: @community.id)
       @sitemap.save(validate: false)
     end
+
     unless @community.units.size > 0
       flash[:error] = "Please import unit data first"
     end
-    @units = @community.units.where(floorplate_id: nil).order(:building, :unit_type)
-    # get member(:plotexp) do
-    #   authorize! :plot, Sitemap
-    #   @map = @sitemap
-    #   @units = Unit.all :community_id => @sitemap.community_id, :order => [:building, :number]
-            
-    #   if params[:unit_id].to_i != 0
-    #     @unit = @sitemap.community.units.get params[:unit_id].to_i
-    #   end
-      
-    #   # get pre-selected units
-    #   session[:before] = []
-    #   @sitemap.community.units.sort! { |x, y| x["number"].to_s <=> y["number"].to_s }
-    #   @sitemap.community.units.each do |u|
-    #     session[:before] << u.id
-    #   end
-      
-    #   marker = Marker.first :community_id => @sitemap.community_id, :type => "sitemap_bdr_1"
-    #   @marker_tag = "<i class='icon-screenshot'></i>"
-			
-    #   erb :'sitemap/plotexp'
-    # end
+
+    @units = @community.units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door)
+    @unit_with_door = @units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.door.present? ? unit.door : {} }}}
+    @all_locks = all_locks(@community)
+
+    add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
   end
 
   def list_amenities
