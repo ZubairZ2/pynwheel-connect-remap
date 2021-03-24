@@ -73,10 +73,6 @@ class UsersController < ApplicationController
     redirect_to company_employees_path(current_company)
   end
 
-  def update_session
-    #binding.pry
-  end
-
   def alert_message
     params[:action_name].present? && params[:action_name] == "profile" ? "Profile is updated successfully" : "User is updated successfully"
   end

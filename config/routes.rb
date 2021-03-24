@@ -39,7 +39,7 @@ Rails.application.routes.draw do
   devise_for :users, :controllers => { :invitations => 'invitations', sessions: 'users/sessions' }
   post 'users/:id/turn_on_chat', to: 'users#chat_service_available'
   post 'users/:id/turn_off_chat', to: 'users#chat_service_not_available'
-  post 'users/:id/update_session', to: 'users#update_session'
+  post 'webpages/:id/update_session', to: 'webpages#update_session'
 
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"

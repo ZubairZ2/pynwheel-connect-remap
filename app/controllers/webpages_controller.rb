@@ -1,6 +1,6 @@
 class WebpagesController < ActionController::Base
-  before_action :set_community
-  after_action :maintain_session
+  before_action :set_community, except: [:update_session]
+  after_action :maintain_session, except: [:update_session]
   def index
     @floorplans = []
     units_ids_not_present = (cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]")
@@ -151,6 +151,10 @@ class WebpagesController < ActionController::Base
     favorite.save
     flash[:notice] = "Favorites cleared successfully."
     redirect_to :back
+  end
+
+  def update_session
+    #binding.pry
   end
 
   private

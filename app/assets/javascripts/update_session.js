@@ -147,15 +147,17 @@ function windowUpdated()
 }
 
 $(document).ready(function () {
-  current_user_id = $( "body" ).data( "user-id" )
+  current_user_id = 0 // For send post call
   var need_reload;
-  update_session_url = '/users/' + current_user_id + '/update_session'
+  update_session_url = '/webpages/' + current_user_id + '/update_session'
   var load_check = true
   $(document).on('click','a, img, .btn',function (e) {
-    load_check = false
+    //load_check = false
   });
-  
-  window.onbeforeunload = function (event) {
+  $(window).on('load', function (event) {
+    //load_check = true
+  });
+  $(window).on('beforeunload', function (event) {
       if (event) {
           window_validation = JSON.parse(localStorage.getItem("WINDOW_VALIDATION"))
           if (!(window_validation === null || window_validation === "NaN"))
@@ -169,15 +171,14 @@ $(document).ready(function () {
             need_reload = true
 
           if (load_check && need_reload) {
-              debugger
+
               $.ajax({ type: 'POST', cache: false, url: update_session_url  });
               window.localStorage.removeItem("run_only_one_time");
           }
       }
-  };
+  });
 });
 
 if (window.localStorage.getItem("run_only_one_time") == null){
-    debugger
-    window.localStorage.setItem("run_only_one_time", "true")
+  window.localStorage.setItem("run_only_one_time", "true")
 }
