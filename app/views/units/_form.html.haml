@@ -262,6 +262,10 @@
                   %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
                     crop
 :javascript
+  
+  var community_id = #{params[:community_id]}
+  var unit_id = #{@unit.id}
+  
   var locks_input,locks_list = "#locks_list";
   $(document).ready(function(){
     // run it on ready 
