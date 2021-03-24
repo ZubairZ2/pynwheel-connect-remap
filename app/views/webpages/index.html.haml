@@ -329,7 +329,7 @@
                         .date-select
                           %h5= "Lease Term"
                           .form-group
-                            %input.form-control#lease-term{:type => "number", :min => "1", :max => "36"}/
+                            %input.form-control#lease-term{:type => "number", :min => "1", :max => "36", :value => "12"}/
                       - if @community_info.data_provider == "psi" || @community_info.data_provider == "realpagesvc" || @community_info.data_provider == "resman"
                         .date-select
                           %h5= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
