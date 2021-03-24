@@ -30,11 +30,11 @@
               .col-lg-8
                 = line_chart @session_each_day_minutes_data, @session_each_day_minutes_options
           .row.marg-150.hour_session_row
-            .col-lg-12.h-900
-              .col-lg-2.numbers_div_900
+            .col-lg-12.h-700
+              .col-lg-2.numbers_div_700
                 .center_it
-                  .count_int= @max_count
-                  .count_text= @max_datetime
+                  .count_int= @session_in_highest_hour
+                  .count_text= @highest_hour
                   .count_text= 'Maximum number of session in hour'
-              .col-lg-10
+              .col-lg-10.h-700
                 = bar_chart @session_each_day_hour_data, @session_each_day_hour_options

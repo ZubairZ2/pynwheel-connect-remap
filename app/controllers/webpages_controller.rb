@@ -5,8 +5,8 @@ class WebpagesController < ActionController::Base
     @floorplans = []
     units_ids_not_present = (cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]")
     is_cookies_session_nil = cookies[:webpages_session_id].nil?
-    cookies[:favorite_unit_ids] = { value: JSON.generate([]), expiry: 5.years.from_now, same_site: :none} if units_ids_not_present
-    cookies[:webpages_session_id] = { value: SecureRandom.hex(8), expiry: 5.years.from_now, same_site: :none} if is_cookies_session_nil
+    cookies.permanent[:favorite_unit_ids] = JSON.generate([]) if units_ids_not_present
+    cookies.permanent[:webpages_session_id] = SecureRandom.hex(8) if is_cookies_session_nil
     Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: []) if is_cookies_session_nil
     @units_with_floorplan_info = []
     @community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
@@ -170,19 +170,36 @@ class WebpagesController < ActionController::Base
   end
 
   def return_last_maps_session
-    # Make a new session if not found or session limit expire otherwise retrurn last session 
-    if !TrackSession.where(session_id: cookies[:webpages_session_id]).any?
-      track_session = return_new_session
-    elsif TrackSession.where(session_id: cookies[:webpages_session_id]).last.start_datetime_in_limit?
-      last_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
-      last_session.update_column(:end_datetime, (last_session.start_datetime + 10.minutes) )
-      track_session = return_new_session
-      track_session
-    else
-      last_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
-      last_session
+    # every time you close browser new session id will create
+    if session[:last_active_datetime].nil?
+      session[:last_active_datetime] = DateTime.now
+      session_nil = true
     end
-
+    # Make a new session if not found or session limit expire otherwise retrurn last session 
+    if !TrackSession.where(session_id: cookies[:webpages_session_id]).any? || session_nil
+      session_nil = false
+      if TrackSession.where(session_id: cookies[:webpages_session_id]).any? && TrackSession.where(session_id: cookies[:webpages_session_id]).last.end_datetime.nil?
+        last_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
+        last_date_time = cookies[:coo_last_active_datetime].present? ? cookies[:coo_last_active_datetime].to_datetime + 1.minutes : last_session.start_datetime + 10.minutes
+        last_session.update_column(:end_datetime, last_date_time)
+        track_session = return_new_session 
+      else
+        track_session = return_new_session
+      end
+    elsif session_datetime_not_in_limit?(session[:last_active_datetime].to_datetime)
+      if TrackSession.where(session_id: cookies[:webpages_session_id]).last.end_datetime.nil?
+        last_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
+        last_session.update_column(:end_datetime, (session[:last_active_datetime].to_datetime + 10.minutes) )
+        track_session = return_new_session 
+      else
+        track_session = return_new_session
+      end
+    else
+      track_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
+    end
+    session[:last_active_datetime] = DateTime.now
+    cookies.permanent[:coo_last_active_datetime] = DateTime.now
+    track_session
   end
 
   def return_new_session
@@ -205,6 +222,11 @@ class WebpagesController < ActionController::Base
       session.apply_click_counter += 1
     end
     session.visited_pages = visited_pages
+  end
+
+  def session_datetime_not_in_limit?(session_datetime)
+   current_datetime = DateTime.now.utc
+   (current_datetime - session_datetime.utc) > 10.minutes # return true to make a new record
   end
   
 end

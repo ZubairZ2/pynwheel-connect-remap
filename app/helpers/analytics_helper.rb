@@ -24,12 +24,10 @@ module AnalyticsHelper
     return h
   end
 
-  def return_empty_hash_hourly(days_count,start_date)
+  def return_empty_hash_hourly
     h = {}
-    days_count.times do |i|
-      24.times do |j|
-        h[start_date + (i.day) + j.hour] = 0
-      end
+    24.times do |j|
+      h[j] = 0
     end
     return h
   end
