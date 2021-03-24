@@ -1,11 +1,11 @@
 const zero = 0
-function saveAccessPoint(dx, dy, id){
+function saveAccessPoint(floor_or_name, dx, dy){
     
 }
 
 function delete_plot(removing, url){
     debugger
-    if ( typeof floorplate_id !== 'undefined'){
+    if ( typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined' ){
         if(removing == "unit_door")
             delete_unit_door_plot(url)
     }

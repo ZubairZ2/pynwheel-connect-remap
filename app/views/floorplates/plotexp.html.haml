@@ -83,7 +83,7 @@
           - if current_user.is_super_admin?
             %a.btn.btn-danger{"data-name" => "floorplate's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
           = link_to community_floorplate_select_many_floors_path(@community, @floorplate), remote: true do
-            %button.btn.btn-success{data: {name: "Select the floor", target: "#select_multiple_floors", toggle: "modal"}} 
+            %button.btn.btn-success{data: {name: "Select the floor", target: "#select_multiple_floors_modal", toggle: "modal"}} 
               Add Access Point
               %i.propertyDetailName.fa.fa-question-circle
                 %span#propertyDetailNameText{:style => "font-weight: normal;"}

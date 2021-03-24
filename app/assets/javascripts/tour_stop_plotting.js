@@ -108,7 +108,7 @@ $(document).ready(function(){
                 if(typeof AccessPointPlot !== "undefined" && AccessPointPlot == true){
                     try {
                         for (i=0; i<selected.length; i++) {
-                            saveAccessPoint(dx, dy, selected[i]);
+                            saveAccessPoint(selected[i], dx, dy);
                         }
                     }
                     catch(err) {
@@ -215,9 +215,12 @@ function getTagToPlot(url){
 }
 
 function getDeleteDoorUrl(provider_id){
-    floorplate_id = sitemap_id // temp line for now
+    // if(typeof sitemap_id !== 'undefined')
+    //     floorplate_id = sitemap_id // temp line for now
+    //     return '/communities/'+community_id+'/units/'+provider_id+'/remove_unit_door_plot?floorplate_id='+floorplate_id
+        
     if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined'){
-        return '/communities/'+community_id+'/units/'+provider_id+'/remove_unit_door_plot?floorplate_id='+floorplate_id
+        return '/communities/'+community_id+'/units/'+provider_id+'/remove_unit_door_plot'
     }
 }
 

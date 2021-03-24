@@ -190,7 +190,12 @@ function sortSelected(currently_selected_provider_id){
 
 
 function select_multiple_floors(event){
+  debugger
   selected = multi_floors.selected()
-  AccessPointPlot = true
-  plotMode()
+  if(selected.length > 0){
+    $("#select_multiple_floors_modal").modal('hide')
+    AccessPointPlot = true
+    plotMode()
+  }
+  
 }
