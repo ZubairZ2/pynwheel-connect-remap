@@ -725,7 +725,6 @@ function removeValidationsClass(){
 }
 
 function readImageSrc(file){
-    debugger;
       var reader = new FileReader();
       reader.onload = function (e) {
         index++

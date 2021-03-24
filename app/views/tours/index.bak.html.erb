@@ -485,7 +485,6 @@
     $("*#create_path").on("click", function(event){
       arr.push(this.href)
       if arr.length == 2{       
-        debugger;
         $.ajax({
           type: "POST",
           url: this.href,
