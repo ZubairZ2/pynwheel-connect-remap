@@ -11,7 +11,7 @@
             Maps
             %span Analatics
 
-        .box-body
+        .box-body.maps-box
           .row
             .col-lg-6.col-md-12.h-500
               .col-lg-4.numbers_div
@@ -34,7 +34,70 @@
               .col-lg-2.numbers_div_700
                 .center_it
                   .count_int= @session_in_highest_hour
-                  .count_text= @highest_hour
-                  .count_text= 'Maximum number of session in hour'
+                  .count_text= 'Maximum number of session at ' + @highest_hour 
               .col-lg-10.h-700
                 = bar_chart @session_each_day_hour_data, @session_each_day_hour_options
+
+          
+          
+          .row
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_events
+                  .count_text= 'Total number of events' 
+              .col-lg-5
+                = pie_chart @pie_events_data_labels, @pie_events_data_options
+              .col-lg-5
+                = bar_chart @bar_events_data_labels, @bar_events_data_options
+
+
+          .row.mt-80
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_apply_clicks
+                  .count_text= 'Total number of apply clicks' 
+              .col-lg-5
+                = pie_chart @pie_apply_click_data_labels, @pie_apply_click_data_options
+              .col-lg-5
+                = line_chart @line_apply_click_data_labels, @line_apply_click_data_options
+
+          .row.mt-80
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_favourite_saved
+                  .count_text= 'Total number of favourite saved' 
+              .col-lg-5
+                = pie_chart @pie_favourite_saved_data_labels, @pie_favourite_saved_data_options
+              .col-lg-5
+                = bar_chart @bar_favourite_saved_data_labels, @bar_favourite_saved_data_options
+
+          .row.mt-80
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_favourite_sent
+                  .count_text= 'Total number of times favourite emailed' 
+              .col-lg-5
+                = pie_chart @pie_favourite_sent_data_labels, @pie_favourite_sent_data_options
+              .col-lg-5
+                = bar_chart @bar_favourite_sent_data_labels, @bar_favourite_sent_data_options
+
+
+          .row.mt-80
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .half_count_int= @percentage_single_page_visitor
+                  .count_text= "One page viewed session"
+              .col-lg-8
+                = pie_chart @bounce_data_labels, @bounce_data_options
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_price_opened
+                  .count_text= 'Total number of times price was opened'
+              .col-lg-8
+                = pie_chart @pie_price_opened_data_labels, @pie_price_opened_data_options

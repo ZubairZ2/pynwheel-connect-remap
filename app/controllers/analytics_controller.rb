@@ -9,6 +9,12 @@ class AnalyticsController < ApplicationController
       collect_session_each_day_data(start_date, @days_count, @maps_records) # For Maps first bar graph
       collect_session_each_day_data_in_minutes(start_date, @days_count, @maps_records) # For Maps second line graph
       collect_session_each_day_data_in_hours(@maps_records) # For Maps hours bar graph
+      bounce_rate_on_pages(@maps_records)
+      events_per_track_session(start_date, @days_count, @maps_records)
+      apply_clicks_track_session(start_date, @days_count, @maps_records)
+      favourite_saved_track_session(start_date, @days_count, @maps_records)
+      favourite_sent_track_session(start_date, @days_count, @maps_records)
+      price_opened_track_session(start_date, @days_count, @maps_records)
     end
 
   end
@@ -72,47 +78,7 @@ class AnalyticsController < ApplicationController
       session_each_day_counts = sessions_each_day_hash.values
 
       make_sessions_minutes_graph(session_each_day_labels, session_each_day_counts)
-    end
-
-    # def collect_session_each_day_data_in_hours(start_date, days_count, total_records)
-      
-    #   sessions_each_day_hourly_hash = return_empty_hash_hourly(days_count, start_date)
-    #   records_start_datetime = total_records.order(:start_datetime).pluck(:start_datetime)
-    #   records_start_date = total_records.order(:start_datetime).pluck(:start_datetime).map(&:to_date)
-    #   uniq_start_date = records_start_date.uniq
-    #   uniq_start_date_size = uniq_start_date.size
-    #   current_hour = nil
-    #   uniq_start_date_size.times do |i|
-    #     count = 0
-    #     start_date_str = uniq_start_date[i].strftime("%y:%m:%d")
-    #     records_start_datetime.each do |record_datetime|
-    #       current_hour = record_datetime.strftime('%H').to_i if current_hour.nil?
-    #       if record_datetime.strftime("%y:%m:%d") == start_date_str
-    #         if record_datetime.strftime('%H').to_i == current_hour
-    #           count += 1 
-    #         else
-    #           count = 1
-    #           current_hour = record_datetime.strftime('%H').to_i
-    #         end
-    #         key_start_datetime = Time.new(record_datetime.strftime("%Y"), record_datetime.strftime("%m"), record_datetime.strftime("%d"),record_datetime.strftime("%H")).utc
-    #         sessions_each_day_hourly_hash[key_start_datetime] = count
-    #       end
-    #     end
-    #   end
-    #   max_datetime = DateTime.now.strftime("%y:%m:%d %H:00")
-    #   max_count = 0
-    #   session_each_day_labels = sessions_each_day_hourly_hash.map do |k,v|
-    #     if v > max_count
-    #       max_datetime = k.strftime("%y:%m:%d %H:00")
-    #       max_count = v
-    #     end
-    #     k.strftime("%y:%m:%d %H:00")
-    #   end
-    #   session_each_day_counts = sessions_each_day_hourly_hash.values
-    #   make_sessions_hour_graph(session_each_day_labels, session_each_day_counts)
-    #   @max_datetime = max_datetime
-    #   @max_count = max_count
-    # end  
+    end 
 
     def collect_session_each_day_data_in_hours(total_records)
       sessions_each_day_hourly_hash = return_empty_hash_hourly
@@ -129,7 +95,9 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hourly_hash[h] = records_in_1_hour
         records_start_date_hours = records_start_date_hours - [h]
       end
-      @highest_hour = max_hour < 10 ? ("0" + max_hour.to_s + ":00") : (max_hour.to_s + ":00")
+      max_hour_start = max_hour < 10 ? ("0" + max_hour.to_s + ":00") : (max_hour.to_s + ":00")
+      max_hour_end = max_hour + 1 < 10 ? ("0" + (max_hour + 1).to_s + ":00") : ((max_hour + 1).to_s + ":00")
+      @highest_hour = max_hour_start + "-" + max_hour_end
       @session_in_highest_hour = max_count
       hour_labels = sessions_each_day_hourly_hash.keys.map do |h_key|
         start_to = h_key < 10 ? ("0" + h_key.to_s) : (h_key.to_s)
@@ -142,6 +110,169 @@ class AnalyticsController < ApplicationController
 
     end
 
+    def bounce_rate_on_pages(total_records)
+      pages_hash = {"Single" => 0, "Multiple" => 0}
+      visite_pages_counts = total_records.pluck(:visited_pages).map(&:count)
+      single_page_visitor = visite_pages_counts.count(1)
+      multiple_page_visior = visite_pages_counts.size - single_page_visitor
+      pages_hash["Single"] = ((single_page_visitor.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
+      pages_hash["Multiple"] = ((multiple_page_visior.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
+      @percentage_single_page_visitor = pages_hash["Single"].to_s + "%"
+      make_bounce_graph(pages_hash.keys, pages_hash.values)
+    end
+
+    def events_per_track_session(start_date, days_count, total_records)
+      sessions_each_day_hash = return_empty_hash(days_count,start_date)
+      records = total_records.order(:start_datetime).pluck(:start_datetime, :apply_click_counter,:favorite_saved_counter, :favorite_sent_counter, :price_opened_counter)
+      session_with_counts = 0
+      records.each {|ar| session_with_counts += 1 if ar[1] > 0 || ar[2] > 0 || ar[3] > 0 || ar[4] > 0 }
+      records_count = records.size
+      records = records.map{ |arr| [arr.first.to_date, arr[1], arr[2], arr[3], arr[4]] }
+      records_start_date = records.map{ |arr| arr.first }
+      uniq_start_date = records_start_date.uniq
+      uniq_start_date_size = uniq_start_date.size
+      uniq_start_date_size.times do |i|
+        count = 0
+        remove_index = []
+        records.each_with_index do |arr, ind|
+          if arr.first == uniq_start_date[i]
+            count += (arr[1] + arr[2] + arr[3] + arr[4])
+            remove_index << ind
+          end
+        end
+        sessions_each_day_hash[uniq_start_date[i]] = count
+        remove_index.each_with_index {|removing_index,j| records.delete_at(removing_index - j) }
+      end
+
+      @total_number_of_events = sessions_each_day_hash.values.sum
+      session_without_counts = records_count - session_with_counts
+      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      pie_chart_hash = {"Session with events" => percentage_session_with_counts, "Session without events" => percentage_session_without_counts}
+      make_pie_chart_events_track_session(pie_chart_hash.keys, pie_chart_hash.values)
+      make_bar_chart_events_track_session(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values)
+  
+    end
+
+    def apply_clicks_track_session(start_date, days_count, total_records) 
+      
+      sessions_each_day_hash = return_empty_hash(days_count,start_date)
+      records = total_records.order(:start_datetime).pluck(:start_datetime, :apply_click_counter)
+      session_with_counts = 0
+      records.each { |ar| session_with_counts += 1  if ar.last > 0 }
+      records_count = records.size
+      records = records.map{ |arr| [arr.first.to_date, arr.last] }
+      records_start_date = records.map{ |arr| arr.first }
+      uniq_start_date = records_start_date.uniq
+      uniq_start_date_size = uniq_start_date.size
+      uniq_start_date_size.times do |i|
+        count = 0
+        remove_index = []
+        records.each_with_index do |arr, ind|
+          if arr.first == uniq_start_date[i]
+            count += arr.last
+            remove_index << ind
+          end
+        end
+        sessions_each_day_hash[uniq_start_date[i]] = count
+        remove_index.each_with_index {|removing_index,j| records.delete_at(removing_index - j) }
+      end
+      @total_number_of_apply_clicks = sessions_each_day_hash.values.sum
+      session_without_counts = records_count - session_with_counts
+      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      pie_chart_hash = {"Session with Apply clicks" => percentage_session_with_counts, "Session without Apply clicks" => percentage_session_without_counts}
+      make_pie_chart_apply_clicks_track_session(pie_chart_hash.keys, pie_chart_hash.values)
+      make_line_chart_apply_clicks_track_session(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values)
+
+    end
+
+    def favourite_saved_track_session(start_date, days_count, total_records) 
+      
+      sessions_each_day_hash = return_empty_hash(days_count,start_date)
+      records = total_records.order(:start_datetime).pluck(:start_datetime, :favorite_saved_counter)
+      session_with_counts = 0
+      records.each { |ar| session_with_counts += 1  if ar.last > 0 }
+      records_count = records.size
+      records = records.map{ |arr| [arr.first.to_date, arr.last] }
+      records_start_date = records.map{ |arr| arr.first }
+      uniq_start_date = records_start_date.uniq
+      uniq_start_date_size = uniq_start_date.size
+      uniq_start_date_size.times do |i|
+        count = 0
+        remove_index = []
+        records.each_with_index do |arr, ind|
+          if arr.first == uniq_start_date[i]
+            count += arr.last
+            remove_index << ind
+          end
+        end
+        sessions_each_day_hash[uniq_start_date[i]] = count
+        remove_index.each_with_index {|removing_index,j| records.delete_at(removing_index - j) }
+      end
+      @total_number_of_favourite_saved = sessions_each_day_hash.values.sum
+      session_without_counts = records_count - session_with_counts
+      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      pie_chart_hash = {"Session with favourite saved" => percentage_session_with_counts, "Session without favourite saved" => percentage_session_without_counts}
+      make_pie_chart_favourite_saved_track_session(pie_chart_hash.keys, pie_chart_hash.values)
+      make_bar_chart_favourite_saved_track_session(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values)
+
+    end
+
+    def favourite_sent_track_session(start_date, days_count, total_records) 
+      
+      sessions_each_day_hash = return_empty_hash(days_count,start_date)
+      records = total_records.order(:start_datetime).pluck(:start_datetime, :favorite_sent_counter)
+      session_with_counts = 0
+      records.each { |ar| session_with_counts += 1  if ar.last > 0 }
+      records_count = records.size
+      records = records.map{ |arr| [arr.first.to_date, arr.last] }
+      records_start_date = records.map{ |arr| arr.first }
+      uniq_start_date = records_start_date.uniq
+      uniq_start_date_size = uniq_start_date.size
+      uniq_start_date_size.times do |i|
+        count = 0
+        remove_index = []
+        records.each_with_index do |arr, ind|
+          if arr.first == uniq_start_date[i]
+            count += arr.last
+            remove_index << ind
+          end
+        end
+        sessions_each_day_hash[uniq_start_date[i]] = count
+        remove_index.each_with_index {|removing_index,j| records.delete_at(removing_index - j) }
+      end
+      @total_number_of_favourite_sent = sessions_each_day_hash.values.sum
+      session_without_counts = records_count - session_with_counts
+      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      pie_chart_hash = {"Session with favourite emailed" => percentage_session_with_counts, "Session without favourite emailed" => percentage_session_without_counts}
+      make_pie_chart_favourite_sent_track_session(pie_chart_hash.keys, pie_chart_hash.values)
+      make_bar_chart_favourite_sent_track_session(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values)
+
+    end
+
+    def price_opened_track_session(start_date, days_count, total_records) 
+      
+      records = total_records.order(:start_datetime).pluck(:start_datetime, :price_opened_counter)
+      session_with_counts = 0
+      records.each { |ar| session_with_counts += 1  if ar.last > 0 }
+      records_count = records.size
+      records_last_counts = records.map{ |arr| arr.last }
+  
+      @total_number_of_price_opened = records_last_counts.sum
+      session_without_counts = records_count - session_with_counts
+      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      pie_chart_hash = {"Session with price opened" => percentage_session_with_counts, "Session without price opened" => percentage_session_without_counts}
+      make_pie_chart_price_opened_track_session(pie_chart_hash.keys, pie_chart_hash.values)
+
+    end
+
+    # Drawing graph methods
+    # Make two mthods only (make it generic)
+    
     def make_sessions_graph(session_each_day_labels, session_each_day_counts)
       @session_each_day_data = {
         labels: session_each_day_labels,
@@ -186,4 +317,155 @@ class AnalyticsController < ApplicationController
       }
       @session_each_day_hour_options = { legend: {display: false} }
     end
+
+    def make_bounce_graph(session_each_day_labels, session_each_day_counts)
+      @bounce_data_labels = {
+        labels: session_each_day_labels,
+        datasets: [
+          {
+              label: "Total Sessions",
+              backgroundColor: ["rgba(255,90,90,0.8)", "rgba(60,179,113,1)"],
+              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
+              data: session_each_day_counts
+          }
+        ]
+      }
+      @bounce_data_options = { legend: {display: false} }
+    end
+
+    def make_pie_chart_events_track_session(session_each_day_labels, session_each_day_counts)
+      @pie_events_data_labels = {
+        labels: session_each_day_labels,
+        datasets: [
+          {
+              label: "Total Sessions",
+              backgroundColor: ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"],
+              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
+              data: session_each_day_counts
+          }
+        ]
+      }
+      @pie_events_data_options = { legend: {display: false} }
+    end
+
+    def make_bar_chart_events_track_session(session_each_day_labels, session_each_day_counts)
+      @bar_events_data_labels = {
+        labels: session_each_day_labels,
+        datasets: [
+          {
+              label: "Total event",
+              backgroundColor: "rgba(60,141,188,1)",
+              borderColor: "rgba(220,220,220,1)",
+              data: session_each_day_counts
+          }
+        ]
+      }
+      @bar_events_data_options = { legend: {display: false} }
+    end
+
+    def make_pie_chart_apply_clicks_track_session(session_each_day_labels, session_each_day_counts)
+      @pie_apply_click_data_labels = {
+        labels: session_each_day_labels,
+        datasets: [
+          {
+              label: "Total Sessions",
+              backgroundColor: ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"],
+              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
+              data: session_each_day_counts
+          }
+        ]
+      }
+      @pie_apply_click_data_options = { legend: {display: false} }
+    end
+
+    def make_line_chart_apply_clicks_track_session(session_each_day_labels, session_each_day_counts)
+      @line_apply_click_data_labels = {
+        labels: session_each_day_labels,
+        datasets: [
+          {
+              label: "Apply clicks",
+              backgroundColor: "rgba(60,141,188,1)",
+              borderColor: "rgba(220,220,220,1)",
+              data: session_each_day_counts
+          }
+        ]
+      }
+      @line_apply_click_data_options = { legend: {display: false} }
+    end
+
+    def make_pie_chart_favourite_saved_track_session(session_each_day_labels, session_each_day_counts)
+      @pie_favourite_saved_data_labels = {
+        labels: session_each_day_labels,
+        datasets: [
+          {
+              label: "Total Sessions",
+              backgroundColor: ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"],
+              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
+              data: session_each_day_counts
+          }
+        ]
+      }
+      @pie_favourite_saved_data_options = { legend: {display: false} }
+    end
+
+    def make_bar_chart_favourite_saved_track_session(session_each_day_labels, session_each_day_counts)
+      @bar_favourite_saved_data_labels = {
+        labels: session_each_day_labels,
+        datasets: [
+          {
+              label: "Favourite saved",
+              backgroundColor: "rgba(60,141,188,1)",
+              borderColor: "rgba(220,220,220,1)",
+              data: session_each_day_counts
+          }
+        ]
+      }
+      @bar_favourite_saved_data_options = { legend: {display: false} }
+    end
+
+    def make_pie_chart_favourite_sent_track_session(session_each_day_labels, session_each_day_counts)
+      @pie_favourite_sent_data_labels = {
+        labels: session_each_day_labels,
+        datasets: [
+          {
+              label: "Total Sessions",
+              backgroundColor: ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"],
+              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
+              data: session_each_day_counts
+          }
+        ]
+      }
+      @pie_favourite_sent_data_options = { legend: {display: false} }
+    end
+
+    def make_bar_chart_favourite_sent_track_session(session_each_day_labels, session_each_day_counts)
+      @bar_favourite_sent_data_labels = {
+        labels: session_each_day_labels,
+        datasets: [
+          {
+              label: "Favourite emailed",
+              backgroundColor: "rgba(60,141,188,1)",
+              borderColor: "rgba(220,220,220,1)",
+              data: session_each_day_counts
+          }
+        ]
+      }
+      @bar_favourite_sent_data_options = { legend: {display: false} }
+    end
+
+    def make_pie_chart_price_opened_track_session(session_each_day_labels, session_each_day_counts)
+      @pie_price_opened_data_labels = {
+        labels: session_each_day_labels,
+        datasets: [
+          {
+              label: "Total Sessions",
+              backgroundColor: ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"],
+              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
+              data: session_each_day_counts
+          }
+        ]
+      }
+      @pie_price_opened_data_options = { legend: {display: false} }
+    end
+
 end
