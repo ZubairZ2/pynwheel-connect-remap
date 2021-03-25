@@ -580,6 +580,12 @@ class CommunitiesController < ApplicationController
       @tour_setting.save
 
     else
+      @tour_setting = @community.tour.tour_setting
+      @tour_setting.enable_header_footer = params[:enable_header_footer].present? ? true : false
+      @tour_setting.email_header_color = params[:email_header_color] if params[:email_header_color].present?
+      @tour_setting.email_footer_color = params[:email_footer_color] if params[:email_footer_color].present?
+      @tour_setting.save
+      
       @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
       @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
       @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?

@@ -265,7 +265,7 @@
   
   var community_id = #{params[:community_id]}
   var unit_id = #{@unit.id}
-  
+
   var locks_input,locks_list = "#locks_list";
   $(document).ready(function(){
     // run it on ready 
@@ -325,7 +325,7 @@
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' });
   $(document).ready(function(){
       $('.wysihtml5').each(function(i, elem) {
-        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false},
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : true},
         events: {
                 change: function(){
                     var wysihtml5Editor = $('#unit_stop_description').data("wysihtml5").editor;
