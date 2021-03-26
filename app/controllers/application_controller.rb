@@ -31,7 +31,7 @@ class ApplicationController < ActionController::Base
   end
 
   def current_company
-    if current_user.present? && current_user.company.present?
+    if current_user.present? && (current_user.is_company_admin? || current_user.is_regional_admin?) && current_user.company.present?
       @company = current_user.company
     elsif params[:company_id].present?
       session[:company_id] = params[:company_id] 
