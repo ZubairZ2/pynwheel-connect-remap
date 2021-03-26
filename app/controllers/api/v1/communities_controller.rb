@@ -7,7 +7,6 @@ class Api::V1::CommunitiesController < ActionController::Base
   include StripeServices
   require 'securerandom'
   @@counter = 0
-  # $deleted_ids = []
 
   def test_panzoom
     render :json=> {:success=>true, :message => "#{params['id']}", :operation => "zoom"}
