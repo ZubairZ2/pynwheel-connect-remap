@@ -190,7 +190,7 @@ class TourHistory < ApplicationRecord
           send_email_without_humanize mail_content[0], mail_content[1]
           send_sms mail_content[1]
         else
-          send_email mail_content[0], mail_content[1]
+          send_email mail_content[0], mail_content[1],community
           send_sms mail_content[1]
         end
       else
@@ -198,7 +198,7 @@ class TourHistory < ApplicationRecord
           send_email_without_humanize mail_content[0], mail_content[1]
           send_sms mail_content[1]
         else
-          send_email mail_content[0], mail_content[1]
+          send_email mail_content[0], mail_content[1], community
           send_sms mail_content[1]
         end
       end
@@ -206,12 +206,13 @@ class TourHistory < ApplicationRecord
   end
 
   def send_email_sms_or_both_to_touruser thank_you_msg
+    content = (community.tour.tour_setting.enable_header_footer ? (thank_you_msg.gsub("\n", "<br>").html_safe) :  "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + (thank_you_msg.gsub("\n", "<br>").html_safe))
   	if community.alert_contact == "email"
-  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe, community.email
+      send_email_tour_user "Thank you for visiting #{community.name}", content, community.email, community
   	elsif community.alert_contact == "phone"
   		send_sms_tour_user thank_you_ms
   	else
-  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe, community.email
+  		send_email_tour_user "Thank you for visiting #{community.name}", content, community.email, community
   		send_sms_tour_user thank_you_msg
   	end
   end
@@ -223,11 +224,11 @@ class TourHistory < ApplicationRecord
 	# end
   end
 
-  def send_email subj, body
+  def send_email subj, body, community
     begin
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(subj.humanize, body, email).deliver
+        NotificationMailer.tour_history_mail(subj.humanize, body, email,community,false).deliver
       end
       # NotificationMailer.tour_history_mail(subj.humanize, body, community.email).deliver
     rescue
@@ -239,7 +240,7 @@ class TourHistory < ApplicationRecord
     begin
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(subj.humanize, body, email).deliver
+        NotificationMailer.tour_history_mail(subj.humanize, body, email,community,false).deliver
       end
     rescue
 
@@ -249,7 +250,7 @@ class TourHistory < ApplicationRecord
   def send_email_to_user_without_humanize subj, body , community_email=nil
     begin
       emails = community_email.gsub(" ","").split(',')
-      NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, email[0]).deliver
+      NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, email[0],community,false).deliver
     rescue
 
     end
@@ -262,10 +263,10 @@ class TourHistory < ApplicationRecord
     end
   end
 
-  def send_email_tour_user subj, body, community_email
+  def send_email_tour_user subj, body, community_email, community
     begin
       emails = community_email.gsub(" ","").split(',')
-      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0]).deliver
+      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0],community,true).deliver
     rescue
     end
   end

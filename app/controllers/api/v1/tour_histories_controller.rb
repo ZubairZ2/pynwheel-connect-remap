@@ -122,7 +122,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email).deliver
+        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email,community,false).deliver
       end
 
     end
