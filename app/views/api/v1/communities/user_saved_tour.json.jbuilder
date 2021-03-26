@@ -41,7 +41,7 @@ json.tours tours do |tour|
     stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop).last unless stop.present?
     stop = VisitedStop.where(tour_user_id: @tour_user.id,tour_stop_id: @tour.id).last unless stop.present?
     
-    if @tour.stop_type != "elevator" && tours[0].id != @tour.id
+    if @tour.stop_type == "unit" || @tour.stop_type == "amenity"
       json.id @tour.id
       # @tour = TourStop.find visited_stop[0]
       json.type @tour.stop_type
