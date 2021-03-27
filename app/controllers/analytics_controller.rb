@@ -4,7 +4,8 @@ class AnalyticsController < ApplicationController
 
     start_date , end_date = Date.today - 9.day , Date.today + 2.day
     @days_count = return_total_days(start_date, end_date)
-    @maps_records = TrackSession.where.not(end_datetime: nil).where('start_datetime BETWEEN ? AND ?',start_date.yesterday, end_date.tomorrow)
+    # For Webpage
+    @maps_records = TrackSession.where.not(end_datetime: nil).where(track_session_type: "maps").where('start_datetime BETWEEN ? AND ?',start_date.yesterday, end_date.tomorrow)
     if @maps_records.any? 
       collect_session_each_day_data(start_date, @days_count, @maps_records) # For Maps first bar graph
       collect_session_each_day_data_in_minutes(start_date, @days_count, @maps_records) # For Maps second line graph
@@ -16,7 +17,11 @@ class AnalyticsController < ApplicationController
       favourite_sent_track_session(start_date, @days_count, @maps_records)
       price_opened_track_session(start_date, @days_count, @maps_records)
     end
-
+    # For Self Tour
+    @self_tour_records = TourHistory.where.not(left: nil).where('arrived BETWEEN ? AND ?',start_date.yesterday, end_date.tomorrow)    
+    if @self_tour_records.any?
+      
+    end
   end
 
   private
@@ -39,7 +44,7 @@ class AnalyticsController < ApplicationController
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
     
-      make_sessions_graph(session_each_day_labels, session_each_day_counts)
+      @session_each_day_data, @session_each_day_options = make_chart(session_each_day_labels, session_each_day_counts, "Total Sessions", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
 
     end
 
@@ -77,7 +82,7 @@ class AnalyticsController < ApplicationController
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
 
-      make_sessions_minutes_graph(session_each_day_labels, session_each_day_counts)
+      @session_each_day_minutes_data, @session_each_day_minutes_options = make_chart(session_each_day_labels, session_each_day_counts, "Sessions in minutes", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
     end 
 
     def collect_session_each_day_data_in_hours(total_records)
@@ -106,7 +111,7 @@ class AnalyticsController < ApplicationController
         label_str
       end
       hour_values = sessions_each_day_hourly_hash.values
-      make_sessions_hour_graph(hour_labels, hour_values)
+      @session_each_day_hour_data, @session_each_day_hour_options = make_chart(hour_labels, hour_values, "Total Sessions", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
 
     end
 
@@ -118,7 +123,7 @@ class AnalyticsController < ApplicationController
       pages_hash["Single"] = ((single_page_visitor.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
       pages_hash["Multiple"] = ((multiple_page_visior.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
       @percentage_single_page_visitor = pages_hash["Single"].to_s + "%"
-      make_bounce_graph(pages_hash.keys, pages_hash.values)
+      @bounce_data_labels, @bounce_data_options = make_chart(pages_hash.keys, pages_hash.values, "Total Sessions", ["rgba(255,90,90,0.8)", "rgba(60,179,113,1)"], ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"])
     end
 
     def events_per_track_session(start_date, days_count, total_records)
@@ -149,8 +154,8 @@ class AnalyticsController < ApplicationController
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       pie_chart_hash = {"Session with events" => percentage_session_with_counts, "Session without events" => percentage_session_without_counts}
-      make_pie_chart_events_track_session(pie_chart_hash.keys, pie_chart_hash.values)
-      make_bar_chart_events_track_session(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values)
+      @pie_events_data_labels, @pie_events_data_options = make_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"], ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"])
+      @bar_events_data_labels, @bar_events_data_options = make_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values, "Total event", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
   
     end
 
@@ -182,8 +187,8 @@ class AnalyticsController < ApplicationController
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       pie_chart_hash = {"Session with Apply clicks" => percentage_session_with_counts, "Session without Apply clicks" => percentage_session_without_counts}
-      make_pie_chart_apply_clicks_track_session(pie_chart_hash.keys, pie_chart_hash.values)
-      make_line_chart_apply_clicks_track_session(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values)
+      @pie_apply_click_data_labels, @pie_apply_click_data_options = make_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"], ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"])
+      @line_apply_click_data_labels, @line_apply_click_data_options = make_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values, "Apply clicks", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
 
     end
 
@@ -215,8 +220,8 @@ class AnalyticsController < ApplicationController
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       pie_chart_hash = {"Session with favourite saved" => percentage_session_with_counts, "Session without favourite saved" => percentage_session_without_counts}
-      make_pie_chart_favourite_saved_track_session(pie_chart_hash.keys, pie_chart_hash.values)
-      make_bar_chart_favourite_saved_track_session(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values)
+      @pie_favourite_saved_data_labels, @pie_favourite_saved_data_options = make_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"], ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"])
+      @bar_favourite_saved_data_labels, @bar_favourite_saved_data_options = make_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values, "Favourite saved", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
 
     end
 
@@ -248,8 +253,8 @@ class AnalyticsController < ApplicationController
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       pie_chart_hash = {"Session with favourite emailed" => percentage_session_with_counts, "Session without favourite emailed" => percentage_session_without_counts}
-      make_pie_chart_favourite_sent_track_session(pie_chart_hash.keys, pie_chart_hash.values)
-      make_bar_chart_favourite_sent_track_session(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values)
+      @pie_favourite_sent_data_labels, @pie_favourite_sent_data_options = make_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"], ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"])
+      @bar_favourite_sent_data_labels, @bar_favourite_sent_data_options = make_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values, "Favourite emailed", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
 
     end
 
@@ -266,206 +271,24 @@ class AnalyticsController < ApplicationController
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       pie_chart_hash = {"Session with price opened" => percentage_session_with_counts, "Session without price opened" => percentage_session_without_counts}
-      make_pie_chart_price_opened_track_session(pie_chart_hash.keys, pie_chart_hash.values)
+      @pie_price_opened_data_labels, @pie_price_opened_data_options = make_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"], ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"])
 
     end
 
-    # Drawing graph methods
-    # Make two mthods only (make it generic)
-    
-    def make_sessions_graph(session_each_day_labels, session_each_day_counts)
-      @session_each_day_data = {
+    def make_chart(session_each_day_labels, session_each_day_counts, label, background_color, border_color)
+      labels = {
         labels: session_each_day_labels,
         datasets: [
           {
-              label: "Total Sessions",
-              backgroundColor: "rgba(60,141,188,1)",
-              borderColor: "rgba(220,220,220,1)",
+              label: label,
+              backgroundColor: background_color,
+              borderColor: border_color,
               data: session_each_day_counts
           }
         ]
       }
-      @session_each_day_options = { legend: {display: false} }
-    end
-
-    def make_sessions_minutes_graph(session_each_day_labels, session_each_day_counts)
-      @session_each_day_minutes_data = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Sessions in minutes",
-              backgroundColor: "rgba(60,141,188,1)",
-              borderColor: "rgba(220,220,220,1)",
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @session_each_day_minutes_options = { legend: {display: false} }
-    end
-
-    def make_sessions_hour_graph(session_each_day_labels, session_each_day_counts)
-      @session_each_day_hour_data = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Total Sessions",
-              backgroundColor: "rgba(60,141,188,1)",
-              borderColor: "rgba(220,220,220,1)",
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @session_each_day_hour_options = { legend: {display: false} }
-    end
-
-    def make_bounce_graph(session_each_day_labels, session_each_day_counts)
-      @bounce_data_labels = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Total Sessions",
-              backgroundColor: ["rgba(255,90,90,0.8)", "rgba(60,179,113,1)"],
-              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @bounce_data_options = { legend: {display: false} }
-    end
-
-    def make_pie_chart_events_track_session(session_each_day_labels, session_each_day_counts)
-      @pie_events_data_labels = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Total Sessions",
-              backgroundColor: ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"],
-              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @pie_events_data_options = { legend: {display: false} }
-    end
-
-    def make_bar_chart_events_track_session(session_each_day_labels, session_each_day_counts)
-      @bar_events_data_labels = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Total event",
-              backgroundColor: "rgba(60,141,188,1)",
-              borderColor: "rgba(220,220,220,1)",
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @bar_events_data_options = { legend: {display: false} }
-    end
-
-    def make_pie_chart_apply_clicks_track_session(session_each_day_labels, session_each_day_counts)
-      @pie_apply_click_data_labels = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Total Sessions",
-              backgroundColor: ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"],
-              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @pie_apply_click_data_options = { legend: {display: false} }
-    end
-
-    def make_line_chart_apply_clicks_track_session(session_each_day_labels, session_each_day_counts)
-      @line_apply_click_data_labels = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Apply clicks",
-              backgroundColor: "rgba(60,141,188,1)",
-              borderColor: "rgba(220,220,220,1)",
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @line_apply_click_data_options = { legend: {display: false} }
-    end
-
-    def make_pie_chart_favourite_saved_track_session(session_each_day_labels, session_each_day_counts)
-      @pie_favourite_saved_data_labels = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Total Sessions",
-              backgroundColor: ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"],
-              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @pie_favourite_saved_data_options = { legend: {display: false} }
-    end
-
-    def make_bar_chart_favourite_saved_track_session(session_each_day_labels, session_each_day_counts)
-      @bar_favourite_saved_data_labels = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Favourite saved",
-              backgroundColor: "rgba(60,141,188,1)",
-              borderColor: "rgba(220,220,220,1)",
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @bar_favourite_saved_data_options = { legend: {display: false} }
-    end
-
-    def make_pie_chart_favourite_sent_track_session(session_each_day_labels, session_each_day_counts)
-      @pie_favourite_sent_data_labels = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Total Sessions",
-              backgroundColor: ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"],
-              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @pie_favourite_sent_data_options = { legend: {display: false} }
-    end
-
-    def make_bar_chart_favourite_sent_track_session(session_each_day_labels, session_each_day_counts)
-      @bar_favourite_sent_data_labels = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Favourite emailed",
-              backgroundColor: "rgba(60,141,188,1)",
-              borderColor: "rgba(220,220,220,1)",
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @bar_favourite_sent_data_options = { legend: {display: false} }
-    end
-
-    def make_pie_chart_price_opened_track_session(session_each_day_labels, session_each_day_counts)
-      @pie_price_opened_data_labels = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: "Total Sessions",
-              backgroundColor: ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"],
-              borderColor: ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"],
-              data: session_each_day_counts
-          }
-        ]
-      }
-      @pie_price_opened_data_options = { legend: {display: false} }
+      options = { legend: {display: false} }
+      return labels, options
     end
 
 end
