@@ -7,10 +7,10 @@ class AnalyticsController < ApplicationController
     # For Webpage
     @maps_records = TrackSession.where.not(end_datetime: nil).where(track_session_type: "maps").where('start_datetime BETWEEN ? AND ?',start_date.yesterday, end_date.tomorrow)
     if @maps_records.any? 
-      collect_session_each_day_data(start_date, @days_count, @maps_records) # For Maps first bar graph
-      collect_session_each_day_data_in_minutes(start_date, @days_count, @maps_records) # For Maps second line graph
-      collect_session_each_day_data_in_hours(@maps_records) # For Maps hours bar graph
-      bounce_rate_on_pages(@maps_records)
+      collect_session_each_day_data(start_date, @days_count, @maps_records, :start_datetime, "maps")
+      collect_session_each_day_data_in_minutes(start_date, @days_count, @maps_records, :start_datetime, :end_datetime, "maps")
+      collect_session_each_day_data_in_hours(@maps_records, :start_datetime, "maps")
+      bounce_rate_on_pages(@maps_records, :visited_pages ,"maps")
       events_per_track_session(start_date, @days_count, @maps_records)
       apply_clicks_track_session(start_date, @days_count, @maps_records)
       favourite_saved_track_session(start_date, @days_count, @maps_records)
@@ -18,19 +18,22 @@ class AnalyticsController < ApplicationController
       price_opened_track_session(start_date, @days_count, @maps_records)
     end
     # For Self Tour
-    @self_tour_records = TourHistory.where.not(left: nil).where('arrived BETWEEN ? AND ?',start_date.yesterday, end_date.tomorrow)    
+    @self_tour_records = TourHistory.where.not(left: nil).where('arrived BETWEEN ? AND ?',start_date.yesterday, end_date.tomorrow)
     if @self_tour_records.any?
-      
+      collect_session_each_day_data(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
+      collect_session_each_day_data_in_minutes(start_date, @days_count, @self_tour_records, :arrived, :left, "self_tour")
+      collect_session_each_day_data_in_hours(@self_tour_records, :arrived, "self_tour")
+      bounce_rate_on_pages(@self_tour_records, :visited_pages_counter, "self_tour")
     end
   end
 
   private
 
-    def collect_session_each_day_data(start_date, days_count, total_records)
+    def collect_session_each_day_data(start_date, days_count, total_records, start_attr_name, for_device_type)
 
       sessions_each_day_hash = return_empty_hash(days_count,start_date)
 
-      records_start_date = total_records.pluck(:start_datetime).map(&:to_date)
+      records_start_date = total_records.pluck(start_attr_name).map(&:to_date)
       uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
 
@@ -38,22 +41,21 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = records_start_date.count(uniq_start_date[i])
         records_start_date = records_start_date - [uniq_start_date[i]]
       end
-
-      @track_session_count = total_records.count
-      @avg_track_session = total_records.count / days_count
+      instance_variable_set("@track_session_count_#{for_device_type}", total_records.count)
+      instance_variable_set("@avg_track_session_#{for_device_type}", total_records.count / days_count)
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
-    
-      @session_each_day_data, @session_each_day_options = make_chart(session_each_day_labels, session_each_day_counts, "Total Sessions", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
-
+      session_each_day_data, session_each_day_options = make_chart(session_each_day_labels, session_each_day_counts, "Total Sessions", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
+      instance_variable_set("@session_each_day_data_#{for_device_type}", session_each_day_data)
+      instance_variable_set("@session_each_day_options_#{for_device_type}", session_each_day_options)
     end
 
-    def collect_session_each_day_data_in_minutes(start_date, days_count, total_records)
+    def collect_session_each_day_data_in_minutes(start_date, days_count, total_records, start_attr_name, end_attr_name, for_device_type)
       
       sessions_each_day_hash = return_empty_hash(days_count,start_date)
-      start_end_datetime_arr = total_records.pluck(:start_datetime, :end_datetime)
+      start_end_datetime_arr = total_records.pluck(start_attr_name, end_attr_name)
 
-      records_start_date = total_records.pluck(:start_datetime).map(&:to_date)
+      records_start_date = total_records.pluck(start_attr_name).map(&:to_date)
       uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
 
@@ -77,17 +79,19 @@ class AnalyticsController < ApplicationController
         records_start_date = records_start_date - [uniq_start_date[i]]
         remove_index.each_with_index {|removing_index,j| start_end_datetime_arr.delete_at(removing_index - j) }
       end    
-
-      @average_duration_each_session_in_minutes = total_minutes / total_count
+      instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", total_minutes / total_count)
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
 
-      @session_each_day_minutes_data, @session_each_day_minutes_options = make_chart(session_each_day_labels, session_each_day_counts, "Sessions in minutes", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
+      session_each_day_minutes_data, session_each_day_minutes_options = make_chart(session_each_day_labels, session_each_day_counts, "Sessions in minutes", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
+      instance_variable_set("@session_each_day_minutes_data_#{for_device_type}", session_each_day_minutes_data)
+      instance_variable_set("@session_each_day_minutes_options_#{for_device_type}", session_each_day_minutes_options)
+
     end 
 
-    def collect_session_each_day_data_in_hours(total_records)
+    def collect_session_each_day_data_in_hours(total_records, start_attr_name, for_device_type)
       sessions_each_day_hourly_hash = return_empty_hash_hourly
-      records_start_date_hours = total_records.pluck(:start_datetime).map {|dt| dt.strftime("%H").to_i }
+      records_start_date_hours = total_records.pluck(start_attr_name).map {|dt| dt.strftime("%H").to_i }
       uniq_hours = records_start_date_hours.uniq
       max_count = 0
       max_hour = 0
@@ -102,8 +106,8 @@ class AnalyticsController < ApplicationController
       end
       max_hour_start = max_hour < 10 ? ("0" + max_hour.to_s + ":00") : (max_hour.to_s + ":00")
       max_hour_end = max_hour + 1 < 10 ? ("0" + (max_hour + 1).to_s + ":00") : ((max_hour + 1).to_s + ":00")
-      @highest_hour = max_hour_start + "-" + max_hour_end
-      @session_in_highest_hour = max_count
+      instance_variable_set("@highest_hour_#{for_device_type}", max_hour_start + "-" + max_hour_end)
+      instance_variable_set("@session_in_highest_hour_#{for_device_type}", max_count)
       hour_labels = sessions_each_day_hourly_hash.keys.map do |h_key|
         start_to = h_key < 10 ? ("0" + h_key.to_s) : (h_key.to_s)
         end_then = (h_key + 1) < 10 ? ("0" + (h_key + 1).to_s) : ((h_key + 1).to_s)
@@ -111,19 +115,22 @@ class AnalyticsController < ApplicationController
         label_str
       end
       hour_values = sessions_each_day_hourly_hash.values
-      @session_each_day_hour_data, @session_each_day_hour_options = make_chart(hour_labels, hour_values, "Total Sessions", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
-
+      session_each_day_hour_data, session_each_day_hour_options = make_chart(hour_labels, hour_values, "Total Sessions", "rgba(60,141,188,1)", "rgba(220,220,220,1)")
+      instance_variable_set("@session_each_day_hour_data_#{for_device_type}", session_each_day_hour_data)
+      instance_variable_set("@session_each_day_hour_options_#{for_device_type}", session_each_day_hour_options)
     end
 
-    def bounce_rate_on_pages(total_records)
+    def bounce_rate_on_pages(total_records, visited_pages_attr_name, for_device_type)
       pages_hash = {"Single" => 0, "Multiple" => 0}
-      visite_pages_counts = total_records.pluck(:visited_pages).map(&:count)
+      visite_pages_counts = for_device_type == "self_tour" ? total_records.pluck(visited_pages_attr_name) : total_records.pluck(visited_pages_attr_name).map(&:count) 
       single_page_visitor = visite_pages_counts.count(1)
       multiple_page_visior = visite_pages_counts.size - single_page_visitor
       pages_hash["Single"] = ((single_page_visitor.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
       pages_hash["Multiple"] = ((multiple_page_visior.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
-      @percentage_single_page_visitor = pages_hash["Single"].to_s + "%"
-      @bounce_data_labels, @bounce_data_options = make_chart(pages_hash.keys, pages_hash.values, "Total Sessions", ["rgba(255,90,90,0.8)", "rgba(60,179,113,1)"], ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"])
+      instance_variable_set("@percentage_single_page_visitor_#{for_device_type}", pages_hash["Single"].to_s + "%")
+      bounce_data_labels, bounce_data_options = make_chart(pages_hash.keys, pages_hash.values, "Total Sessions", ["rgba(255,90,90,0.8)", "rgba(60,179,113,1)"], ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"])
+      instance_variable_set("@bounce_data_labels_#{for_device_type}", bounce_data_labels)
+      instance_variable_set("@bounce_data_options_#{for_device_type}", bounce_data_options)
     end
 
     def events_per_track_session(start_date, days_count, total_records)
@@ -273,22 +280,6 @@ class AnalyticsController < ApplicationController
       pie_chart_hash = {"Session with price opened" => percentage_session_with_counts, "Session without price opened" => percentage_session_without_counts}
       @pie_price_opened_data_labels, @pie_price_opened_data_options = make_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(60,179,113,1)", "rgba(255,165, 0 , 0.8)"], ["rgba(220,220,220,0.5)","rgba(220,220,220,0.5)"])
 
-    end
-
-    def make_chart(session_each_day_labels, session_each_day_counts, label, background_color, border_color)
-      labels = {
-        labels: session_each_day_labels,
-        datasets: [
-          {
-              label: label,
-              backgroundColor: background_color,
-              borderColor: border_color,
-              data: session_each_day_counts
-          }
-        ]
-      }
-      options = { legend: {display: false} }
-      return labels, options
     end
 
 end

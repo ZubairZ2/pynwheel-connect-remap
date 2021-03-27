@@ -32,4 +32,20 @@ module AnalyticsHelper
     return h
   end
 
+  def make_chart(session_each_day_labels, session_each_day_counts, label, background_color, border_color)
+    labels = {
+      labels: session_each_day_labels,
+      datasets: [
+        {
+            label: label,
+            backgroundColor: background_color,
+            borderColor: border_color,
+            data: session_each_day_counts
+        }
+      ]
+    }
+    options = { legend: {display: false} }
+    return labels, options
+  end
+
 end

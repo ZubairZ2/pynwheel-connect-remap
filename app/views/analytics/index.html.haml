@@ -16,30 +16,30 @@
             .col-lg-6.col-md-12.h-500
               .col-lg-4.numbers_div
                 .center_it
-                  .count_int= @track_session_count
+                  .count_int= @track_session_count_maps
                   .count_text= 'Total number of session'
-                  .count_int= @avg_track_session
+                  .count_int= @avg_track_session_maps
                   .count_text= 'Average number of session per day'
               .col-lg-8
-                = bar_chart @session_each_day_data, @session_each_day_options
+                = bar_chart @session_each_day_data_maps, @session_each_day_options_maps
             .col-lg-6.col-md-12.h-500
               .col-lg-4.numbers_div
                 .center_it
-                  .count_int= @average_duration_each_session_in_minutes
+                  .count_int= @average_duration_each_session_in_minutes_maps
                   .count_text= 'Average duration of each session in minutes'
               .col-lg-8
-                = line_chart @session_each_day_minutes_data, @session_each_day_minutes_options
+                = line_chart @session_each_day_minutes_data_maps, @session_each_day_minutes_options_maps
+          
           .row.marg-150.hour_session_row
             .col-lg-12.h-700
               .col-lg-2.numbers_div_700
                 .center_it
-                  .count_int= @session_in_highest_hour
-                  .count_text= 'Maximum number of session at ' + @highest_hour 
+                  .count_int= @session_in_highest_hour_maps
+                  .count_text= 'Maximum number of session at ' + @highest_hour_maps
               .col-lg-10.h-700
-                = bar_chart @session_each_day_hour_data, @session_each_day_hour_options
+                = bar_chart @session_each_day_hour_data_maps, @session_each_day_hour_options_maps
 
-          
-          
+           
           .row
             .col-lg-12
               .col-lg-2.numbers_div
@@ -90,10 +90,61 @@
             .col-lg-6.col-md-12.h-500
               .col-lg-4.numbers_div
                 .center_it
-                  .half_count_int= @percentage_single_page_visitor
+                  .half_count_int= @percentage_single_page_visitor_maps
                   .count_text= "One page viewed session"
               .col-lg-8
-                = pie_chart @bounce_data_labels, @bounce_data_options
+                = pie_chart @bounce_data_labels_maps, @bounce_data_options_maps
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_price_opened
+                  .count_text= 'Total number of times price was opened'
+              .col-lg-8
+                = pie_chart @pie_price_opened_data_labels, @pie_price_opened_data_options
+
+    - if @self_tour_records.any?
+      .box.box-info.add-plan.mt-20
+        .box-header
+          %h3.box-title
+            Self Tour
+            %span Analatics
+
+        .box-body.maps-box
+          .row
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .count_int= @track_session_count_self_tour
+                  .count_text= 'Total number of session'
+                  .count_int= @avg_track_session_self_tour
+                  .count_text= 'Average number of session per day'
+              .col-lg-8
+                = bar_chart @session_each_day_data_self_tour, @session_each_day_options_self_tour
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .count_int= @average_duration_each_session_in_minutes_self_tour
+                  .count_text= 'Average duration of each session in minutes'
+              .col-lg-8
+                = line_chart @session_each_day_minutes_data_self_tour, @session_each_day_minutes_options_self_tour
+
+          .row.marg-150.hour_session_row
+            .col-lg-12.h-700
+              .col-lg-2.numbers_div_700
+                .center_it
+                  .count_int= @session_in_highest_hour_self_tour
+                  .count_text= 'Maximum number of session at ' + @highest_hour_self_tour
+              .col-lg-10.h-700
+                = bar_chart @session_each_day_hour_data_self_tour, @session_each_day_hour_options_self_tour
+
+          .row.mt-80
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .half_count_int= @percentage_single_page_visitor_self_tour
+                  .count_text= "One page viewed session"
+              .col-lg-8
+                = pie_chart @bounce_data_labels_self_tour, @bounce_data_options_self_tour
             .col-lg-6.col-md-12.h-500
               .col-lg-4.numbers_div
                 .center_it
