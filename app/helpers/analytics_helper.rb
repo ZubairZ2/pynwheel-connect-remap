@@ -48,4 +48,26 @@ module AnalyticsHelper
     return labels, options
   end
 
+  def make_bar_chart_for_site_session(onsite_session_each_day_labels, onsite_session_each_day_counts, offsite_session_each_day_labels, offsite_session_each_day_counts, label1, label2, background_color1, border_color1, background_color2, border_color2)
+    labels = {
+      labels: onsite_session_each_day_labels,
+      datasets: [
+        {
+            label: label1,
+            backgroundColor: background_color1,
+            borderColor: border_color1,
+            data: onsite_session_each_day_counts
+        },
+        {
+            label: label2,
+            backgroundColor: background_color2,
+            borderColor: border_color2,
+            data: offsite_session_each_day_counts
+        }
+      ]
+    }
+    options = { legend: {display: false} }
+    return labels, options
+  end
+
 end

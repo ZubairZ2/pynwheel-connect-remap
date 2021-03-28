@@ -44,24 +44,24 @@
             .col-lg-12
               .col-lg-2.numbers_div
                 .center_it
-                  .half_count_int= @total_number_of_events
+                  .half_count_int= @total_number_of_events_maps
                   .count_text= 'Total number of events' 
               .col-lg-5
-                = pie_chart @pie_events_data_labels, @pie_events_data_options
+                = pie_chart @pie_events_data_labels_maps, @pie_events_data_options_maps
               .col-lg-5
-                = bar_chart @bar_events_data_labels, @bar_events_data_options
+                = bar_chart @bar_events_data_labels_maps, @bar_events_data_options_maps
 
 
           .row.mt-80
             .col-lg-12
               .col-lg-2.numbers_div
                 .center_it
-                  .half_count_int= @total_number_of_apply_clicks
+                  .half_count_int= @total_number_of_apply_clicks_maps
                   .count_text= 'Total number of apply clicks' 
               .col-lg-5
-                = pie_chart @pie_apply_click_data_labels, @pie_apply_click_data_options
+                = pie_chart @pie_apply_click_data_labels_maps, @pie_apply_click_data_options_maps
               .col-lg-5
-                = line_chart @line_apply_click_data_labels, @line_apply_click_data_options
+                = line_chart @line_apply_click_data_labels_maps, @line_apply_click_data_options_maps
 
           .row.mt-80
             .col-lg-12
@@ -97,10 +97,10 @@
             .col-lg-6.col-md-12.h-500
               .col-lg-4.numbers_div
                 .center_it
-                  .half_count_int= @total_number_of_price_opened
+                  .half_count_int= @total_number_of_price_opened_maps
                   .count_text= 'Total number of times price was opened'
               .col-lg-8
-                = pie_chart @pie_price_opened_data_labels, @pie_price_opened_data_options
+                = pie_chart @pie_price_opened_data_labels_maps, @pie_price_opened_data_options_maps
 
     - if @self_tour_records.any?
       .box.box-info.add-plan.mt-20
@@ -137,6 +137,87 @@
               .col-lg-10.h-700
                 = bar_chart @session_each_day_hour_data_self_tour, @session_each_day_hour_options_self_tour
 
+          .row
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_events_self_tour
+                  .count_text= 'Total number of events' 
+              .col-lg-5
+                = pie_chart @pie_events_data_labels_self_tour, @pie_events_data_options_self_tour
+              .col-lg-5
+                = bar_chart @bar_events_data_labels_self_tour, @bar_events_data_options_self_tour
+
+          .row.mt-80
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @percentage_tour_site_true_counts
+                  .count_text= 'percentage of onsite tours' 
+                  .half_count_int= @percentage_tour_site_false_counts
+                  .count_text= 'percentage of offsite tours'
+              .col-lg-5
+                = pie_chart @pie_tour_site_data_labels, @pie_tour_site_data_options
+              .col-lg-5
+                = bar_chart @bar_tour_site_data_labels, @bar_tour_site_data_options
+
+          .row.mt-80
+            .col-lg-12
+              .col-lg-4.numbers_div
+                .center_it
+                  .half_count_int= @tour_scheduled_counts
+                  .count_text= 'Total number of scheduled tours' 
+                  .half_count_int= @tour_unscheduled_counts
+                  .count_text= 'Total number of unscheduled tours'
+              .col-lg-4.numbers_div
+                .center_it
+                  .half_count_int= @percentage_tour_scheduled_counts
+                  .count_text= 'percentage of scheduled tours' 
+                  .half_count_int= @percentage_tour_unscheduled_counts
+                  .count_text= 'percentage of unscheduled tours'
+              .col-lg-4
+                = pie_chart @pie_tour_type_data_labels, @pie_tour_type_data_options
+
+          
+          .row.mt-80
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_apply_clicks_self_tour
+                  .count_text= 'Total number of apply clicks' 
+              .col-lg-5
+                = pie_chart @pie_apply_click_data_labels_self_tour, @pie_apply_click_data_options_self_tour
+              .col-lg-5
+                = line_chart @line_apply_click_data_labels_self_tour, @line_apply_click_data_options_self_tour
+
+          .row.mt-80
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_see_availability
+                  .count_text= 'Total number of see availability' 
+              .col-lg-5
+                = pie_chart @pie_see_availbility_data_labels, @pie_see_availbility_data_options
+              .col-lg-5
+                = line_chart @line_see_availbility_data_labels, @line_see_availbility_data_options
+
+          .row.mt-80
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_camera_opened_counter
+                  .count_text= "Total number of times camera was opened"
+              .col-lg-8
+                = pie_chart @pie_notes_opened_counter_data_labels, @pie_notes_opened_counter_data_options
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_notes_opened_counter
+                  .count_text= 'Total number of times notes was opened'
+              .col-lg-8
+                = pie_chart @pie_camera_opened_counter_data_labels, @pie_camera_opened_counter_data_options
+
+
           .row.mt-80
             .col-lg-6.col-md-12.h-500
               .col-lg-4.numbers_div
@@ -148,7 +229,20 @@
             .col-lg-6.col-md-12.h-500
               .col-lg-4.numbers_div
                 .center_it
-                  .half_count_int= @total_number_of_price_opened
+                  .half_count_int= @total_number_of_price_opened_self_tour
                   .count_text= 'Total number of times price was opened'
               .col-lg-8
-                = pie_chart @pie_price_opened_data_labels, @pie_price_opened_data_options
+                = pie_chart @pie_price_opened_data_labels_self_tour, @pie_price_opened_data_options_self_tour
+
+          .row.mt-80
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @percentage_tour_state_true_counts
+                  .count_text= 'percentage of completed tours' 
+                  .half_count_int= @percentage_tour_state_false_counts
+                  .count_text= 'percentage of abandoned tours'
+              .col-lg-5
+                = pie_chart @pie_tour_state_data_labels, @pie_tour_state_data_options
+              .col-lg-5
+                = bar_chart @bar_tour_state_data_labels, @bar_tour_state_data_options
