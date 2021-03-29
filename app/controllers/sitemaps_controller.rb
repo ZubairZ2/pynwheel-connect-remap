@@ -60,6 +60,7 @@ class SitemapsController < ApplicationController
       @sitemap = Sitemap.new(community_id: @community.id)
       @sitemap.save(validate: false)
     end
+    @hallways = @sitemap.hallways
     unless @community.units.size > 0
       flash[:error] = "Please import unit data first"
     end
@@ -97,6 +98,7 @@ class SitemapsController < ApplicationController
     add_breadcrumb "Plot Property Map Amenities", plot_amenities_community_sitemaps_path(current_community) 
     @sitemap = @community.sitemap
     @amenities = @community.amenities
+    @hallways = @sitemap.hallways
   end
 
   def plot_elevators

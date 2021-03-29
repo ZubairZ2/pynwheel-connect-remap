@@ -17,5 +17,6 @@ class Sitemap < ApplicationRecord
   has_many :amenities, as: :amenityable
 
   has_many :elevators, dependent: :destroy
+  has_many :hallways, as: :parent
 
 end

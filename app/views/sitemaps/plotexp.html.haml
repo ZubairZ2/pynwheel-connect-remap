@@ -244,6 +244,7 @@
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
           - if current_user.is_super_admin?
             %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
+          %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
       / /.box-header
       / form start
       %form.form-horizontal
@@ -417,7 +418,12 @@
   var community_id = #{params[:community_id]};
   var addmode = false;
   var sitemap_id = '#{@sitemap.id}';
-
+  var sm_id = '#{@sitemap.id}';
+  hallways_coordinates = #{raw @hallways.to_json}
+  $( document ).ready(function() {
+    draw_initial_hallways(hallways_coordinates)
+    draw_line(hallways_coordinates);
+  });
   function sitemap_goBack()
   {
     $('.apartment-settings-form').submit();
@@ -529,3 +535,15 @@
         #{current_user.welcome_sitemap_page = true}
         #{current_user.save}
     });
+  
+:css
+  .overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #fff;
+    opacity: .9;
+    display:none;
+  }

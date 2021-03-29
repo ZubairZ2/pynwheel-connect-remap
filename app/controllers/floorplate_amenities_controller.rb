@@ -59,13 +59,13 @@ class FloorplateAmenitiesController < ApplicationController
     @amenity.y_plot = params[:y_plot]
     ts = TourStop.find_by(stop_id: @amenity.id)
     if ts.present?
-      ts.latitude  = @amenity.x_plot
+      ts.latitude = @amenity.x_plot
       ts.longitude = @amenity.y_plot
       ts.save
     end
     @amenity.floor = params[:floor]
     if @amenity.save(validate: false)
-      render json: {amenity: @amenity}, status: 200
+      render json: { amenity: @amenity }, status: 200
     else
       render json: {}, status: 404
     end
@@ -74,10 +74,11 @@ class FloorplateAmenitiesController < ApplicationController
   def plot_amenities
     @floor = params[:floor] if params[:floor].present?
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
-    add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community,@floorplate)
+    add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community, @floorplate)
     @sitemap = @floorplate
     @amenities = @community.amenities
-    if @floorplate.image.blank? 
+    @hallways = @floorplate.hallways
+    if @floorplate.image.blank?
       flash[:error] = "Kindly add floor plate image first"
       redirect_to community_floorplates_path(@community)
     end
@@ -91,7 +92,7 @@ class FloorplateAmenitiesController < ApplicationController
       amenity.amenityable_id = nil
       amenity.save(validate: false)
     end
-    redirect_to plot_amenities_community_floorplate_amenities_path(@community,@floorplate), notice: "All plots have been deleted successfully."
+    redirect_to plot_amenities_community_floorplate_amenities_path(@community, @floorplate), notice: "All plots have been deleted successfully."
   end
 
   def remove_amenity
@@ -108,7 +109,7 @@ class FloorplateAmenitiesController < ApplicationController
       Path.where(:map_path_to_id => amenity.id).destroy_all rescue ""
       Path.where(:map_path_from_id => amenity.id).destroy_all rescue ""
     end
-    redirect_to plot_amenities_community_floorplate_amenities_path(@community,@floorplate,floor: params[:floor]), notice: "Amenity plot have been deleted successfully."
+    redirect_to plot_amenities_community_floorplate_amenities_path(@community, @floorplate, floor: params[:floor]), notice: "Amenity plot have been deleted successfully."
   end
 
   private
