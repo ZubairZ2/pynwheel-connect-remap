@@ -96,6 +96,8 @@ module ZervServices
 
         def create_zerv_guest__failure(community, tour_user, errors)
             puts '--------------------------    Failure in creating Zerv User      ------------------------'
+            puts errors
+            puts '--------------------------    Failure in creating Zerv User      ------------------------'
             ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
             ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active", res_errors: errors)
             Rails.cache.delete(:id_token)
