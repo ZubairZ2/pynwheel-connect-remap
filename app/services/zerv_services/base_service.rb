@@ -70,7 +70,7 @@ module ZervServices
         end
 
         def base_url
-            "https://api.zervinc.net/v1/portal"
+            "https://accessapi.zervinc.net/v1/portal"
         end
 
         def check_response(community, tour_user, stop_list, response, errors)
