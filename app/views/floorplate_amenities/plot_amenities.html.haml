@@ -25,7 +25,7 @@
           %span.hidden#active_x_plot 0
           
           %span.hidden#active_y_plot 0
-
+          
           - if @community.theme_name.include?('gables')
             - marker_color = @community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : "#d37474"
           - elsif @community.theme_name == 'modernist'
@@ -38,7 +38,7 @@
             - marker_color = @community.design.panther_amenity_map_marker_color.present? ? @community.design.panther_amenity_map_marker_color : "#d37474"
           - else
             - marker_color = 'rgba(247, 0, 0, 0.61)'
-
+          
           - if @community.theme_name.include?('gables')
             - marker_font_size = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : 30
           - elsif @community.theme_name == 'modernist'
@@ -56,13 +56,13 @@
           -#- marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
           - marker_font_size = marker_font_size -5
           - camera_font_size = marker_font_size / 2
-
+          
           - marker_font_size2 = marker_font_size
           - camera_margin = (marker_font_size2 <= 27 ? 3 : (marker_font_size2 <= 30 ? 4 : (marker_font_size2 <= 33 ? 5 : (marker_font_size2 <= 35 ? 6 : 6))))
-          %span.hidden#marker-font-size #{marker_font_size}
-          %span.hidden#marker-color #{marker_color}
+          %span.hidden#font_size #{marker_font_size}
+          %span.hidden#marker_color #{marker_color}
           %span.hidden#camera-margin #{camera_margin}
-
+        
         .btn-btn-danger.mt-10
           = link_to "Back",community_floorplate_amenities_path(@community,@sitemap), :class=>"btn btn-primary mr-5 hidden" 
           = link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "btn btn-primary"
@@ -73,6 +73,13 @@
         .box-body.map-body-top
           .row
             .col-lg-9#container.p-0
+              .buttons{:style=>"position: absolute; right: 20px; top: 5px;z-index:999;"}
+                %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls
+                  %i.fa.fa-plus
+                %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls
+                  %i.fa.fa-minus
+                %a.btn.btn-sm.btn-primary.reset.zoom-controls
+                  %i.fa.fa-refresh
               .map-block{:style=>"position: relative;"}
                 .plot-image#map
                   - if @sitemap.image? and @sitemap.image.content_type == "image/svg+xml"
@@ -98,7 +105,7 @@
                           %span.ml-5
                             = amenity.name
                     - amenity_arr.push([amenity.id.to_s, amenity.x_plot.to_i, amenity.y_plot.to_i, true, amenity.name])
-
+              
               %h5.mt-40 SELECTED IMAGES
               .add-plan.mt-10.mb-20
                 %ul#selected-units
@@ -107,11 +114,58 @@
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
 :javascript
-  var floor = #{raw @floor}
-  var arr = #{raw amenity_arr}
+  $(document).ready(function () {
+    document.addEventListener("touchstart", touchHandler, true);
+    document.addEventListener("touchmove", touchHandler, true);
+    document.addEventListener("touchend", touchHandler, true);
+    document.addEventListener("touchcancel", touchHandler, true);
+    let elem = document.querySelector('#map');
+    window.mapPanZoom = panzoom(elem, {
+      minZoom: 0.5,
+      maxZoom: 1.0,
+      bounds: true,
+      boundsPadding: 0.3
+    });
+    var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+    var scaleFactor = (1 / (transform.scale || 1));
+    var previous_scale = 0;
+    while($('#map').width()/scaleFactor > $('.map-block').width()  || $('#map').height()/scaleFactor > $('.map-block').height()){
+       mapPanZoom.zoomInOut(189);
+           transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+           scaleFactor = (1 / (transform.scale || 1));
+           if(scaleFactor === previous_scale)
+           {
+            break;
+           }
+           previous_scale = scaleFactor
+    }
+    mapPanZoom.moveTo(0,0);
+  })
+  
+  function touchHandler(event) {
+    var touch = event.changedTouches[0];
+
+    var simulatedEvent = document.createEvent("MouseEvent");
+        simulatedEvent.initMouseEvent({
+        touchstart: "mousedown",
+        touchmove: "mousemove",
+        touchend: "mouseup"
+    }[event.type], true, true, window, 1,
+        touch.screenX, touch.screenY,
+        touch.clientX, touch.clientY, false,
+        false, false, false, 0, null);
+
+    touch.target.dispatchEvent(simulatedEvent);
+    // event.preventDefault();
+  }
+  
+  var arr = #{raw amenity_arr};
   var lmargin = 0
   var rmargin = 0
   var community_id = #{params[:community_id]}
   var addmode = false;
   var floorplate_id_for_amenity = #{@sitemap.id}
   var amenity_type = "floorplate"
+  var floor = #{raw @floor.present? ? @floor : 'undefined' }
+
+  

@@ -18,7 +18,7 @@
     .row
       .col-md-12
         - if @community.touchscreen_app
-
+          
           .box.box-widget.panel-box.add-plan.pt-30
             = form_tag community_save_apartment_settings_path(@community) ,{:class => 'apartment-settings-form'} do
               = hidden_field_tag "community_id", @community.id
@@ -43,7 +43,7 @@
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-
+                  
                   Show property map page
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "siteShowPropertyMapPagePopover","data-content" => " "}
                     %span#propertyDetailNameText
@@ -72,7 +72,7 @@
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitempaDisplayHomepagePopover","data-content" => " "}
                     %span#propertyDetailNameText
                       Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.
-
+                
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -143,14 +143,14 @@
                   -#    Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.
                 .col-sm-12.col-lg-6.col-md-6.col-xs-12
                   = text_field_tag :show_amenity_key_text, @community.show_amenity_key_text, :class=>"form-control apartment-setting-field"
-
+              
               .form-group
                 .col-lg-12.col-md-12
                   %button.btn-success.done_btn{:onclick => "sitemap_goBack()"}
                     %i.fa.fa-plus-circle
                     DONE
-
-
+              
+              
               = submit_tag 'Save', class: "hidden"
     -#.box.box-info.add-plan
     -#  .box-header
@@ -161,12 +161,12 @@
         To change the image of the property map, upload a new image here.
       %p
         Images will appear at a size of 1412 x 932 px. Please note that images that are too small may appear pixelated.
-
+    
     .box.box-widget.panel-box.alert-danger
       %h5{style: "margin-left: 15px; margin-top: 0px;"}
         Note: If the new image uploaded is not the exact same dimensions as the existing image, the unit and amenity markers will not be in the correct place on the map.
-
-
+    
+    
     %span.btn.btn-primary.btn-file{:onclick=>"$('#sitemap-image-upload-holder').click();"}
       %i.fa.fa-upload
       Upload File
@@ -174,7 +174,7 @@
       %span#propertyDetailNameText{:style => "font-weight: normal;"}
         Uploading a file will change the property map image that appears in the Pynwheel app. Careful! Do not change the file unless you are sure that it is the exact same dimensions as the one already loaded, or the markers will all be in the wrong position.
     %br
-
+    
     .text-center.image-upload.home-page-drag-box#sitemap-image-upload-holder
       = image_tag "upload-image.png",:class=>"drag-image-padding-top"
       %p Drag &amp; Drop images to Upload
@@ -196,9 +196,9 @@
               Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.
           %span
           %span.hidden#active_x_plot 0
-
+          
           %span.hidden#active_y_plot 0
-
+          
           - if @community.theme_name.include?('gables')
             - marker_color = @community.design.property_map_color.present? ? @community.design.property_map_color : "#d37474"
           - elsif @community.theme_name == 'modernist'
@@ -211,7 +211,7 @@
             - marker_color = @community.design.panther_property_map_marker_color.present? ? @community.design.panther_property_map_marker_color : "#d37474"
           - else
             - marker_color = 'rgba(247, 0, 0, 0.61)'
-
+          
           - if @community.theme_name.include?('gables')
             - fontsize = @community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : "30"
           - elsif @community.theme_name == 'modernist'
@@ -233,10 +233,10 @@
           %span.hidden#left_margin #{left_margin}
           %span.hidden#right_margin #{right_margin}
           %span.hidden#marker_color #{marker_color}
-
+        
         .btn-btn-danger.mt-10
           = link_to "MANAGE AMENITIES <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Click on 'Manage Amenities' to switch from plotting units to uploading and plotting amenity images.</span></i>".html_safe , community_amenities_path(@community), :class=>"btn btn-success loader_class"
-
+          
           %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"}
             GRID OVERLAY
             %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapGridOverlayPopover","data-content" => " "}
@@ -250,6 +250,13 @@
         .box-body.map-body-top
           .row
             .col-lg-9#container.p-0{:style => "float: right;"}
+              .buttons{:style=>"position: absolute; right: 20px; top: 5px;z-index:999;"}
+                %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls
+                  %i.fa.fa-plus
+                %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls
+                  %i.fa.fa-minus
+                %a.btn.btn-sm.btn-primary.reset.zoom-controls
+                  %i.fa.fa-refresh
               .map-block{:style=>"position: relative;"}
                 #map.plot-image
                   .grid-graph.hidden
@@ -257,20 +264,20 @@
                     %object{:data => "your.svg", :type => "image/svg+xml"}
                       = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
                   - else
-                    = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+                    = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img"
                   - units = @units.sort_by{|u| u.marketing_name}
                   - coordinates_array = []
-
+                  
                   - units.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
                         - coordinates_array.push([unit.x_plot - left_margin,unit.y_plot - right_margin])
                         = link_to "<i class='fas fa-map-marker-alt' style='color: #{marker_color};'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, :id => "m_#{unit.provider_unit_id}", :style => "left:#{unit.x_plot - left_margin}px; top:#{unit.y_plot - right_margin}px; position:absolute; font-size: #{fontsize}px", "data-name" => "plot", "data-target" => "#markers-modal", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot","data-horizontal"=>unit.x_plot,"data-vertical"=>unit.y_plot,"data-unit-form-url"=>"/communities/#{@community.id}/units/#{unit.id}/adjust_position"
-
-
+                      
+                      
                       .hidden{:class=>"h-#{unit.x_plot}-#{unit.y_plot}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name,:id=>"h-#{unit.provider_unit_id}", "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot","data-unit-form-url"=>"/communities/#{@community.id}/units/#{unit.id}/adjust_position"}
             .col-lg-3.multi-select-units.select-units-on-page{:style => "float: left;"}
-
+              
               %h5.mt-40.mb-20
                 SELECT UNITS TO PLOT
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapSelectPlotToUnitsPopover","data-content" => " "}
@@ -289,8 +296,8 @@
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
                     - else
                       %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
-
-
+                  
+                  
                   - arr.push([unit.provider_unit_id, unit.x_plot.to_i - left_margin, unit.y_plot.to_i - right_margin, true, unit.id.to_s, 5 , 0])
               %h5.mt-40 SELECTED UNITS
               .add-plan.mt-10.mb-20
@@ -303,7 +310,7 @@
   .modal-dialog
     .modal-content
       .modal-header#u-name
-
+      
       = form_tag "" do
         .modal-body
           = hidden_field_tag 'redirect_path' , plotexp_community_sitemaps_path(@community)
@@ -348,13 +355,58 @@
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
                     - else
                       %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
-
-
+        
+        
         .modal-footer
           = submit_tag "Add",:class=>"btn btn-primary" 
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
 
 :javascript
+  $(document).ready(function () {
+  
+    document.addEventListener("touchstart", touchHandler, true);
+    document.addEventListener("touchmove", touchHandler, true);
+    document.addEventListener("touchend", touchHandler, true);
+    document.addEventListener("touchcancel", touchHandler, true);
+    let elem = document.querySelector('#map');
+    window.mapPanZoom = panzoom(elem, {
+        minZoom: 0.5,
+        maxZoom: 1.0,
+        bounds: true,
+        boundsPadding: 0.3
+    });
+    var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+    var scaleFactor = (1 / (transform.scale || 1));
+    var previous_scale = 0;
+    while ($('#map').width() / scaleFactor > $('.map-block').width() || $('#map').height() / scaleFactor > $('.map-block').height()) {
+        mapPanZoom.zoomInOut(189);
+        transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+        scaleFactor = (1 / (transform.scale || 1));
+        if (scaleFactor === previous_scale) {
+            break;
+        }
+        previous_scale = scaleFactor
+    }
+    mapPanZoom.moveTo(0, 0);
+    })
+
+  function touchHandler(event) {
+    var touch = event.changedTouches[0];
+
+    var simulatedEvent = document.createEvent("MouseEvent");
+    simulatedEvent.initMouseEvent({
+    touchstart: "mousedown",
+    touchmove: "mousemove",
+    touchend: "mouseup"
+  }
+  [event.type], true, true, window, 1,
+    touch.screenX, touch.screenY,
+    touch.clientX, touch.clientY, false,
+    false, false, false, 0, null);
+
+    touch.target.dispatchEvent(simulatedEvent);
+    // event.preventDefault();
+  }
   $('.apartment-setting-field').change(function(){
     $('.apartment-settings-form').submit();
   });

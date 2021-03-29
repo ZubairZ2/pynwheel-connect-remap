@@ -7,10 +7,11 @@ class UnitsController < ApplicationController
   before_action :load_all_locks, only: [:new, :create, :edit, :update]
   def index
     #@units = @community.units.page(params[:page]).per(10)
-    @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
+    @community_info = Community.includes(:floorplans, :units).find(params[:community_id])
     @communities = current_company.communities
     add_breadcrumb "Units", community_units_path(@community)
   end
+
   def show_unit_image_in_modal
     @community = Community.find params[:community_id]
     @unit = Unit.find params[:id]
@@ -35,7 +36,7 @@ class UnitsController < ApplicationController
     @unit.save!
     # PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
-    redirect_to edit_community_unit_path(@community,@unit)
+    redirect_to edit_community_unit_path(@community, @unit)
     # render :json=> {:success=>false}
   end
 
@@ -43,6 +44,7 @@ class UnitsController < ApplicationController
     @community = Community.find params[:community_id]
     @unit = Unit.find params[:id]
   end
+
   def crop_unit_secondary_image
     @community = Community.find params["community_id"]
     @unit = Unit.find params["id"]
@@ -65,7 +67,7 @@ class UnitsController < ApplicationController
     @unit.save
     # PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
-    redirect_to edit_community_unit_path(@community,@unit)
+    redirect_to edit_community_unit_path(@community, @unit)
     # render :json=> {:success=>false}
   end
 
@@ -88,11 +90,11 @@ class UnitsController < ApplicationController
       if @unit.floorplan.present? and @unit.floorplan.amenities.present? 
         floorplan_amenities = @unit.floorplan.amenities
         add_floorplan_amenities = "true"
-        AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities,add_floorplan_amenities, @unit
-        PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
+        AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities, add_floorplan_amenities, @unit
+        PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "create", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
       end
       flash[:notice] = "Unit created successfully."
-      redirect_to community_units_path(:community_id=>@community.id)
+      redirect_to community_units_path(:community_id => @community.id)
     else
       flash[:error] = @unit.errors.full_messages.join(',')
       render :new
@@ -101,15 +103,15 @@ class UnitsController < ApplicationController
 
   def edit
     add_breadcrumb "Units", community_units_path(@community)
-    add_breadcrumb "Edit Unit",edit_community_unit_path(@community,@unit)
+    add_breadcrumb "Edit Unit", edit_community_unit_path(@community, @unit)
     @amenities = @unit.amenities.order(id: :desc)
-    @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
-    @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
+    @community_info = Community.includes(:floorplans, :units).find(params[:community_id])
+    @units = @community_info.units.map { |i| i.marketing_name.gsub(/\d+/) { |s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map { |x, y| y }
     @all_locks = all_locks(@community)
   end
 
   def update
-    if  params[:unit].present? and params[:unit][:image]
+    if params[:unit].present? and params[:unit][:image]
       @unit.crop_x = nil
     end
     if params[:unit].present? and params[:unit][:secondary_image]
@@ -131,7 +133,7 @@ class UnitsController < ApplicationController
         end
         @unit.available = false
       end
-      if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name )
+      if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name)
         @unit.name_is_updated = true
         begin
           ts = TourStop.find_by(stop_id: @unit.id)
@@ -166,11 +168,11 @@ class UnitsController < ApplicationController
       end
       if params[:unit][:modal_unit].present?
         if params[:unit][:modal_unit] == "1"
-          ts = TourStop.find_by(stop_id: @unit.id,tour_id: @community.tour.id, stop_type: "unit")
+          ts = TourStop.find_by(stop_id: @unit.id, tour_id: @community.tour.id, stop_type: "unit")
           TourStop.create(tour_id: @community.tour.id, stop_type: "unit", name: @unit.marketing_name, display_stop: true, stop_id: @unit.id, latitude: @unit.x_plot, longitude: @unit.y_plot) unless ts.present?
         else
           unless @unit.modal_unit == false
-            ts = TourStop.find_by(stop_id: @unit.id,tour_id: @community.tour.id, stop_type: "unit")
+            ts = TourStop.find_by(stop_id: @unit.id, tour_id: @community.tour.id, stop_type: "unit")
             if ts.present?
               paths = Path.where(map_path_from_id: ts.stop_id)
               paths.each do |path|
@@ -205,18 +207,18 @@ class UnitsController < ApplicationController
             AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities, add_floorplan_amenities, @unit
           end
           set_manually_updated_column
-          PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
+          PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
           if params[:floorNo].nil?
             format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
           else
-            format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo] , :notice => 'Unit updated successfully.') }
+            format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo], :notice => 'Unit updated successfully.') }
           end
           format.json { respond_with_bip(@unit) }
         else
           # incase of failure, redering to edit will require the edit page @varaibles
           @amenities = @unit.amenities.order(:sort)
-          @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
-          @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
+          @community_info = Community.includes(:floorplans, :units).find(params[:community_id])
+          @units = @community_info.units.map { |i| i.marketing_name.gsub(/\d+/) { |s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map { |x, y| y }
 
           flash[:error] = @unit.errors.full_messages.join(',')
           format.html { render :action => "edit" }
@@ -234,21 +236,21 @@ class UnitsController < ApplicationController
             AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities, add_floorplan_amenities, @unit
           end
           set_manually_updated_column
-          PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id ,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
+          PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
           if params[:floorNo].nil?
             format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
           else
-            format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo] , :notice => 'Unit updated successfully.') }
+            format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo], :notice => 'Unit updated successfully.') }
           end
           format.json { respond_with_bip(@unit) }
         else
-          if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name ) || (params[:unit][:floorplan_id].present? && params[:unit][:floorplan_id] != @unit.floorplan_id) ||(params[:unit][:effective_rent].present? && params[:unit][:effective_rent] != @unit.effective_rent.to_i.to_s) || (params[:unit][:availability].present? && params[:unit][:availability] != @unit.availability) || (params[:unit][:building].present? && params[:unit][:building] != @unit.building) || (params[:unit][:available_date].present? && params[:unit][:available_date] != @unit.available_date.to_s) ||(params[:unit][:square_feet].present? && params[:unit][:square_feet] != @unit.square_feet.to_i.to_s) || (params[:unit][:available].present? && params[:unit][:available] != @unit.available) || (params[:unit][:sold].present? && params[:unit][:sold] != @unit.sold.to_s) || (params[:unit][:floor].present? && params[:unit][:floor].to_i != @unit.floor) || (params[:unit][:provider_unit_id].present? && params[:unit][:provider_unit_id] != @unit.provider_unit_id)
+          if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name) || (params[:unit][:floorplan_id].present? && params[:unit][:floorplan_id] != @unit.floorplan_id) || (params[:unit][:effective_rent].present? && params[:unit][:effective_rent] != @unit.effective_rent.to_i.to_s) || (params[:unit][:availability].present? && params[:unit][:availability] != @unit.availability) || (params[:unit][:building].present? && params[:unit][:building] != @unit.building) || (params[:unit][:available_date].present? && params[:unit][:available_date] != @unit.available_date.to_s) || (params[:unit][:square_feet].present? && params[:unit][:square_feet] != @unit.square_feet.to_i.to_s) || (params[:unit][:available].present? && params[:unit][:available] != @unit.available) || (params[:unit][:sold].present? && params[:unit][:sold] != @unit.sold.to_s) || (params[:unit][:floor].present? && params[:unit][:floor].to_i != @unit.floor) || (params[:unit][:provider_unit_id].present? && params[:unit][:provider_unit_id] != @unit.provider_unit_id)
             @unit.errors[:base] << "Please set manual override field first"
 
             # incase of failure, redering to edit will require the edit page @varaibles
             @amenities = @unit.amenities.order(:sort)
-            @community_info = Community.includes(:floorplans,:units).find(params[:community_id])
-            @units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
+            @community_info = Community.includes(:floorplans, :units).find(params[:community_id])
+            @units = @community_info.units.map { |i| i.marketing_name.gsub(/\d+/) { |s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map { |x, y| y }
 
             flash[:error] = @unit.errors.full_messages.join(',')
             format.html { render :action => "edit" }
@@ -266,11 +268,11 @@ class UnitsController < ApplicationController
               AssignFloorplanImagesToUnitJob.perform_async floorplan_amenities, add_floorplan_amenities, @unit
             end
             set_manually_updated_column
-            PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
+            PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "update", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
             if params[:floorNo].nil?
               format.html { redirect_to(community_units_path(@community.id), :notice => 'Unit updated successfully.') }
             else
-              format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo] , :notice => 'Unit updated successfully.') }
+              format.html { redirect_to(community_tours_path(@community) << '?floorNo=' + params[:floorNo], :notice => 'Unit updated successfully.') }
             end
             format.json { respond_with_bip(@unit) }
           end
@@ -287,14 +289,14 @@ class UnitsController < ApplicationController
   def set_manually_updated_column
     # @unit.update_attribute(:manually_updated, true)
     if @unit.sold
-      @unit.update_attributes(availability: "Occupied",available: false,available_date: '',availability_is_updated: true)
+      @unit.update_attributes(availability: "Occupied", available: false, available_date: '', availability_is_updated: true)
     end
     if params[:unit][:available] == 'true'
 
-      @unit.update_attributes(availability: "Unoccupied",available: true, availability_is_updated: true)
+      @unit.update_attributes(availability: "Unoccupied", available: true, availability_is_updated: true)
     end
     if params[:unit][:available] == 'false'
-      @unit.update_attributes(availability: "Occupied",available: false,  availability_is_updated: true)
+      @unit.update_attributes(availability: "Occupied", available: false, availability_is_updated: true)
     end
   end
 
@@ -304,10 +306,10 @@ class UnitsController < ApplicationController
       VisitedStop.where(tour_stop_id: ts.id).destroy_all
       ts.destroy
     end
-    PaperTrail::Version.create(item_type: "Unit",item_id: @unit.id,event: "delete",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
+    PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "delete", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
     @unit.destroy
     flash[:notice] = "Unit deleted successfully."
-    redirect_to community_units_path(:community_id=>@community.id)
+    redirect_to community_units_path(:community_id => @community.id)
   end
 
   def remove_pri_scnd_image
@@ -323,7 +325,7 @@ class UnitsController < ApplicationController
   end
 
   def ajaxplotunit
-    unit = @community.units.where(floorplate_id: nil,provider_unit_id: params[:id])
+    unit = @community.units.where(floorplate_id: nil, provider_unit_id: params[:id])
     if unit.present?
       unit = unit.first
       #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot])
@@ -332,11 +334,11 @@ class UnitsController < ApplicationController
       unit.save(validate: false)
       ts = TourStop.find_by(stop_id: unit.id)
       if ts.present?
-        ts.latitude  = unit.x_plot
+        ts.latitude = unit.x_plot
         ts.longitude = unit.y_plot
         ts.save
       end
-      render json: {unit: unit}, status: 200
+      render json: { unit: unit }, status: 200
     else
       render json: {}, status: 404
     end
@@ -353,18 +355,19 @@ class UnitsController < ApplicationController
       unit.save(validate: false)
       ts = TourStop.find_by(stop_id: unit.id)
       if ts.present?
-        ts.latitude  = unit.x_plot
+        ts.latitude = unit.x_plot
         ts.longitude = unit.y_plot
         ts.save
       end
-      render json: {unit: unit}, status: 200
+      @test_units = Floorplate.find(params[:floorplate_id]).fetch_units
+      render json: { unit: unit }, status: 200
     else
       render json: {}, status: 404
     end
   end
 
   def remove_plot
-    @unit = Unit.find_by(provider_unit_id: params[:id],community_id: @community.id)
+    @unit = Unit.find_by(provider_unit_id: params[:id], community_id: @community.id)
     @unit.x_plot = 0
     @unit.y_plot = 0
     ts = TourStop.find_by(stop_id: @unit.id)
@@ -374,7 +377,7 @@ class UnitsController < ApplicationController
     end
     if @unit.save(validate: false)
       if params[:floorplate].present?
-        redirect_to community_floorplate_plotexp_path(current_community,@floorplate), notice: "The plot has been deleted successfully."
+        redirect_to community_floorplate_plotexp_path(current_community, @floorplate), notice: "The plot has been deleted successfully."
       else
         redirect_to plotexp_community_sitemaps_path(@community), notice: "The plot has been deleted successfully."
       end
@@ -385,7 +388,7 @@ class UnitsController < ApplicationController
 
   def remove_plot_from_floorplate
     @floorplate = Floorplate.find params[:floorplate_id]
-    @unit = Unit.find_by(provider_unit_id: params[:id],community_id: @community.id) 
+    @unit = Unit.find_by(provider_unit_id: params[:id], community_id: @community.id)
     @unit.x_plot = 0
     @unit.y_plot = 0
     @unit.floorplate_id = nil
@@ -404,9 +407,9 @@ class UnitsController < ApplicationController
     end
 
     if @unit.save(validate: false)
-      redirect_to community_floorplate_plotexp_path(@community,@floorplate), notice: "The plot has been deleted successfully."
+      redirect_to community_floorplate_plotexp_path(@community, @floorplate), notice: "The plot has been deleted successfully."
     else
-      redirect_to community_floorplate_plotexp_path(@community,@floorplate), error: "Something went wrong."
+      redirect_to community_floorplate_plotexp_path(@community, @floorplate), error: "Something went wrong."
     end
   end
 
@@ -423,56 +426,57 @@ class UnitsController < ApplicationController
     redirect_to params[:redirect_path]
   end
 
-
   def set_floor
-    @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor],manually_updated: true,floor_is_updated: true)
+    @community.units.where(id: params[:unit_ids]).update_all(floor: params[:floor], manually_updated: true, floor_is_updated: true)
     flash[:notice] = "Floor is updated for units successfully."
     redirect_to :back
   end
+
   def set_building
-    @community.units.where(id: params[:unit_ids]).update_all(building: params[:building],manually_updated: true)
+    @community.units.where(id: params[:unit_ids]).update_all(building: params[:building], manually_updated: true)
     flash[:notice] = "Building is updated for units successfully."
     redirect_to :back
   end
 
   def set_available_date
-    @community.units.where(id: params[:unit_ids]).update_all(available_date: params[:available_date],manually_updated: true,available_date_is_updated: true)
+    @community.units.where(id: params[:unit_ids]).update_all(available_date: params[:available_date], manually_updated: true, available_date_is_updated: true)
     flash[:notice] = "Available date is updated for units successfully."
     redirect_to :back
   end
-  
+
   def set_available
     if params[:available] == 'true'
-      @community.units.where(id: params[:unit_ids]).update_all(availability: "Unoccupied",manually_updated: true,available_date: Date.today-1,available_is_updated: true,availability_is_updated: true,available: true)
+      @community.units.where(id: params[:unit_ids]).update_all(availability: "Unoccupied", manually_updated: true, available_date: Date.today - 1, available_is_updated: true, availability_is_updated: true, available: true)
     else
-      @community.units.where(id: params[:unit_ids]).update_all(availability: "Occupied",manually_updated: true,available: false,available_is_updated: true, availability_is_updated: true)
+      @community.units.where(id: params[:unit_ids]).update_all(availability: "Occupied", manually_updated: true, available: false, available_is_updated: true, availability_is_updated: true)
     end
     flash[:notice] = "Available is updated for units successfully."
     redirect_to :back
   end
-  
+
   def set_manual_override
     @community.units.where(id: params[:unit_ids]).update_all(manual_override: params[:manual_override])
     flash[:notice] = "Manual Override is updated for units successfully."
     redirect_to :back
   end
-  
+
   def set_sold
     if params[:sold] == "true"
-      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold],manually_updated: true,availability: "Occupied",available: false, availability_is_updated: true, available_is_updated: true)
+      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold], manually_updated: true, availability: "Occupied", available: false, availability_is_updated: true, available_is_updated: true)
     else
-      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold],manually_updated: true, availability_is_updated: true, available_is_updated: true)
+      @community.units.where(id: params[:unit_ids]).update_all(sold: params[:sold], manually_updated: true, availability_is_updated: true, available_is_updated: true)
     end
     flash[:notice] = "Sold is updated for units successfully."
     redirect_to :back
   end
+
   def add_description
 
     description = params[:description].to_s
-    desc = description[2..description.length-3]
+    desc = description[2..description.length - 3]
     str2 = add_padding_description desc
 
-    @community.units.where(id: params[:unit_ids]).update_all(description:  str2,manually_updated: true)
+    @community.units.where(id: params[:unit_ids]).update_all(description: str2, manually_updated: true)
     flash[:notice] = "description is updated for units successfully."
     redirect_to :back
   end
@@ -526,16 +530,19 @@ class UnitsController < ApplicationController
 
   def set_amenities_for_units
     UploadAmenityForUnit.perform_async @community, params[:type_ids], params[:image], params[:name], params[:image_id]
-    render json: {success: "success"}
+    render json: { success: "success" }
   end
 
   private
+
   def set_community
     @community = Community.find(params[:community_id])
   end
+
   def unit_params
     params.require(:unit).permit!
   end
+
   def set_unit
     @unit = Unit.find params[:id]
   end
