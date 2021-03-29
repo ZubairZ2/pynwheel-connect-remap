@@ -48,6 +48,30 @@ module AnalyticsHelper
     return labels, options
   end
 
+  def make_horizontal_chart(session_each_day_labels, session_each_day_counts, label, background_color, border_color)
+    labels = {
+      labels: session_each_day_labels,
+      datasets: [
+        {
+            label: label,
+            backgroundColor: background_color,
+            borderColor: border_color,
+            data: session_each_day_counts
+        }
+      ]
+    }
+    options = { legend: {display: false}, 
+      scales: {
+        xAxes: [{
+            ticks: {
+                beginAtZero: true
+            }
+        }]
+      }
+    }
+    return labels, options
+  end
+
   def make_bar_chart_for_site_session(onsite_session_each_day_labels, onsite_session_each_day_counts, offsite_session_each_day_labels, offsite_session_each_day_counts, label1, label2, background_color1, border_color1, background_color2, border_color2)
     labels = {
       labels: onsite_session_each_day_labels,

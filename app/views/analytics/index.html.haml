@@ -67,23 +67,23 @@
             .col-lg-12
               .col-lg-2.numbers_div
                 .center_it
-                  .half_count_int= @total_number_of_favourite_saved
+                  .half_count_int= @total_number_of_favourite_saved_maps
                   .count_text= 'Total number of favourite saved' 
               .col-lg-5
-                = pie_chart @pie_favourite_saved_data_labels, @pie_favourite_saved_data_options
+                = pie_chart @pie_favourite_saved_data_labels_maps, @pie_favourite_saved_data_options_maps
               .col-lg-5
-                = bar_chart @bar_favourite_saved_data_labels, @bar_favourite_saved_data_options
+                = bar_chart @bar_favourite_saved_data_labels_maps, @bar_favourite_saved_data_options_maps
 
           .row.mt-80
             .col-lg-12
               .col-lg-2.numbers_div
                 .center_it
-                  .half_count_int= @total_number_of_favourite_sent
+                  .half_count_int= @total_number_of_favourite_sent_maps
                   .count_text= 'Total number of times favourite emailed' 
               .col-lg-5
-                = pie_chart @pie_favourite_sent_data_labels, @pie_favourite_sent_data_options
+                = pie_chart @pie_favourite_sent_data_labels_maps, @pie_favourite_sent_data_options_maps
               .col-lg-5
-                = bar_chart @bar_favourite_sent_data_labels, @bar_favourite_sent_data_options
+                = bar_chart @bar_favourite_sent_data_labels_maps, @bar_favourite_sent_data_options_maps
 
 
           .row.mt-80
@@ -246,3 +246,148 @@
                 = pie_chart @pie_tour_state_data_labels, @pie_tour_state_data_options
               .col-lg-5
                 = bar_chart @bar_tour_state_data_labels, @bar_tour_state_data_options
+
+          
+          .row.marg-150.hour_session_row
+            .col-lg-12.h-700
+              .col-lg-2.numbers_div_700
+                .center_it
+                  .count_int= @average_number_of_stops_per_session
+                  .count_text= "Average number of visited stops per session"
+              .col-lg-10.h-700
+                = bar_chart @session_each_day_stops_hour_data, @session_each_day_stops_hour_options
+
+          .row.marg-150.hour_session_row
+            .col-lg-12.h-700
+              .col-lg-2.numbers_div_700
+                .center_it
+                  .count_int= @average_number_of_stops_per_session_tour_stop
+                  .count_text= "Average number of visited stops per session"
+              .col-lg-10.h-700
+                = horizontal_bar_chart @visited_per_tour_stop_data_labels, @visited_per_tour_stop_data_options
+
+          .row.mt-80
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .count_int= @no_show_count
+                  .count_text= "total number of scheduled tours which is not visited"
+              .col-lg-8
+                = bar_chart @session_each_day_no_show_data, @session_each_day_no_show_options
+
+    - if @metro_records.any? 
+      .box.box-info.add-plan.mt-20
+        .box-header
+          %h3.box-title
+            Metro
+            %span Analatics
+
+        .box-body.maps-box
+          .row
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .count_int= @track_session_count_metro
+                  .count_text= 'Total number of session'
+                  .count_int= @avg_track_session_metro
+                  .count_text= 'Average number of session per day'
+              .col-lg-8
+                = bar_chart @session_each_day_data_metro, @session_each_day_options_metro
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .count_int= @average_duration_each_session_in_minutes_metro
+                  .count_text= 'Average duration of each session in minutes'
+              .col-lg-8
+                = line_chart @session_each_day_minutes_data_metro, @session_each_day_minutes_options_metro
+          
+          .row.marg-150.hour_session_row
+            .col-lg-12.h-700
+              .col-lg-2.numbers_div_700
+                .center_it
+                  .count_int= @session_in_highest_hour_metro
+                  .count_text= 'Maximum number of session at ' + @highest_hour_metro
+              .col-lg-10.h-700
+                = bar_chart @session_each_day_hour_data_metro, @session_each_day_hour_options_metro
+
+          .row.marg-150.hour_session_row
+            .col-lg-12.h-700
+              .col-lg-2.numbers_div_700
+                .center_it
+                  .count_int= @average_number_of_pages_per_session
+                  .count_text= "Average number of visited pages per session"
+              .col-lg-10.h-700
+                = bar_chart @session_each_day_hour_pages_data, @session_each_day_hour_pages_options
+
+          
+          .row
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_events_metro
+                  .count_text= 'Total number of events' 
+              .col-lg-5
+                = pie_chart @pie_events_data_labels_metro, @pie_events_data_options_metro
+              .col-lg-5
+                = bar_chart @bar_events_data_labels_metro, @bar_events_data_options_metro
+
+
+          .row.mt-80
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_apply_clicks_metro
+                  .count_text= 'Total number of apply clicks' 
+              .col-lg-5
+                = pie_chart @pie_apply_click_data_labels_metro, @pie_apply_click_data_options_metro
+              .col-lg-5
+                = line_chart @line_apply_click_data_labels_metro, @line_apply_click_data_options_metro
+
+          .row.mt-80
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_favourite_saved_metro
+                  .count_text= 'Total number of favourite saved' 
+              .col-lg-5
+                = pie_chart @pie_favourite_saved_data_labels_metro, @pie_favourite_saved_data_options_metro
+              .col-lg-5
+                = bar_chart @bar_favourite_saved_data_labels_metro, @bar_favourite_saved_data_options_metro
+
+          .row.mt-80
+            .col-lg-12
+              .col-lg-2.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_favourite_sent_metro
+                  .count_text= 'Total number of times favourite emailed' 
+              .col-lg-5
+                = pie_chart @pie_favourite_sent_data_labels_metro, @pie_favourite_sent_data_options_metro
+              .col-lg-5
+                = bar_chart @bar_favourite_sent_data_labels_metro, @bar_favourite_sent_data_options_metro
+
+
+          .row.mt-80
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .half_count_int= @percentage_single_page_visitor_metro
+                  .count_text= "One page viewed session"
+              .col-lg-8
+                = pie_chart @bounce_data_labels_metro, @bounce_data_options_metro
+            .col-lg-6.col-md-12.h-500
+              .col-lg-4.numbers_div
+                .center_it
+                  .half_count_int= @total_number_of_price_opened_metro
+                  .count_text= 'Total number of times price was opened'
+              .col-lg-8
+                = pie_chart @pie_price_opened_data_labels_metro, @pie_price_opened_data_options_metro
+
+          .row.marg-150.hour_session_row
+            .col-lg-12.h-700
+              .col-lg-2.numbers_div_700
+                .center_it
+                  .count_int= @average_number_of_pages_per_session_metro
+                  .count_text= "Average number of visited pages per session"
+              .col-lg-10.h-700
+                = horizontal_bar_chart @visited_pages_data_labels, @visited_pages_data_options
+

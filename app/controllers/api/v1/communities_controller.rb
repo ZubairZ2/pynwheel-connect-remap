@@ -461,6 +461,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     puts params
     access = grant_access (decoded(params[:token])) rescue false
     @tour_session_type = "unscheduled"
+    @not_on_time = false
     if api_access or access == true
       if params[:id].present? and params[:tour_user_id].present?
         @community = Community.find_by_id params[:id]
@@ -496,6 +497,7 @@ class Api::V1::CommunitiesController < ActionController::Base
                   elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
                     @tour_date = @scheduled_data.nearest_tour.tour_date.strftime('%_m/%d/%Y')
                     @tour_time = @scheduled_data.nearest_tour.tour_time.strftime('%l:%M %P')
+                    @not_on_time = true
                   end
                   should_range_be_checked = false
                 end
