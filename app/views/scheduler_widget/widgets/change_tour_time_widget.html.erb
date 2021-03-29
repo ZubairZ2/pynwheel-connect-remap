@@ -148,7 +148,8 @@
       }
 
       var tour_id;
-      $(document).ready(function(){        
+
+      $(document).ready(function(){
         // $(".datepicker").datetimepicker({minDate: new Date(), format: 'MM/DD/YYYY'});
         var datepickertime = $('.datepickertime').datetimepicker({
           
@@ -161,11 +162,11 @@
           showClose: true,
           useCurrent: true,
           toolbarPlacement: "bottom",
-          stepping: 15
-          
+          stepping: 15          
         });
         <% if params["datetime"].present? %>
-          $('.datepickertime').data("DateTimePicker").date(moment('<%= params[:datetime].split(' ').first %>'))
+          let dateTime = getTourDate('<%= params[:datetime] %>');
+          $('.datepickertime').data("DateTimePicker").defaultDate(dateTime);
           $("#scheduleMyTour").modal()
         <% end %>
 
@@ -213,6 +214,17 @@
 
       function redirectSheduledTourPage(url){
         window.location.href = url
+      }
+
+      function getTourDate(datetime) {
+        datetime = datetime.toUpperCase();
+
+        if(datetime.includes("AM"))
+          return new Date(datetime.split('AM').join(" AM"));
+        else if(datetime.includes("PM"))
+          return new Date(datetime.split('PM').join(" PM"));
+        else
+          return new Date();
       }
 
     </script>
