@@ -6,7 +6,7 @@ module ZervServices
             check_again = args[:checking_twice].present? ? true : false
             tour_user.phone_number[0] = '' unless is_number?(tour_user.phone_number[0])
 
-            url =  base_url + "/user/getuserwithtimezone/" + tour_user.phone_number + "?customerId=PynWheel-jKOOe"
+            url =  base_url + "/user/getuserwithtimezone/" + tour_user.phone_number + "?customerId=PynWheel-TCXVx"
             id_token = get_id_token
 
             puts '--------------------------    Zerv get user with accesses called    ------------------------'
