@@ -13,6 +13,7 @@
 //= require jquery.min
 //= require jquery-ui.min
 //= require jquery_ujs
+//= require intlTelInput
 //= require bootstrap.min
 //= require best_in_place
 //= require best_in_place.jquery-ui
@@ -54,10 +55,11 @@
 //= require jquery.multi-select 
 //= require tags
 //= require multiple_tabs
+//= require pynwheel_access
 //made changes in jquery.multi-select according to our requirement in at library at line #488. Commented sanitize function
 // require_tree .
 //= require bootstrap-wysihtml5
 //= require bootstrap-wysihtml5/locales
-$(document).ready(function(){
-	new Clipboard('.clipboard-btn');
+$(document).ready(function() {
+    new Clipboard('.clipboard-btn');
 });

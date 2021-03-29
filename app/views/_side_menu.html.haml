@@ -253,6 +253,13 @@
           %a{:href => "#{community_schedual_tours_path(current_community)}"}
             %i.fa.fa-sticky-note-o
             %span Scheduled Tours      
+      
+      - if current_community.pynwheel_access && current_user.is_super_admin?
+        %li.loader_class{:class=>"#{controller_name =='pynwheel_accesses' ? 'active' : ''}"}
+          %a{:href => "#{community_pynwheel_accesses_path(current_community)}"}
+            %i.fa.fa-lock
+            %span Pynwheel Access      
+
       - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_user.is_super_admin?
         %li.loader_class{:class=>"#{controller_name =='Community' && params[:action] == "logs" ? 'active' : ''}"}
           %a{:href => "#{community_logs_path(current_community)}"}
