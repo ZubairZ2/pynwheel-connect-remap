@@ -27,6 +27,25 @@ module ApplicationHelper
   def api_access
     return true
   end
+  def make_link str
+    start_index = str.index('{')
+    end_index = str.index('}')
+    middle_index = str.index(',')
+    while start_index.present? and end_index.present? and middle_index.present? and start_index < middle_index and middle_index < end_index do
+        puts "res"
+        word = str[start_index..end_index] rescue nil
+        if word.present? && word.include?(',')
+            link, text = str[start_index+1..end_index-1].split(',')
+            link = "<a href=#{link} target='_blank'>#{text}</a>"
+            str = str.sub(word,link)
+        end
+        start_index = str.index('{')
+        end_index = str.index('}')
+        middle_index = str.index(',')
+    end
+    
+    str
+  end
 
   def gables_theme_options
     ["gables_organic","gables_refined","gables_energetic","gables_natural","gables_custom"]
