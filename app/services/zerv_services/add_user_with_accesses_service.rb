@@ -19,7 +19,7 @@ module ZervServices
                     access_point = attached_lock.mac_id rescue nil
                     if access_point.present?
                         list_add_user_access << time_access_object(community, tour_time)
-                        list_add_user_access.last.merge!({"accessCode": access_code,"accessPoint": "5678"})
+                        list_add_user_access.last.merge!({"accessCode": "5678","accessPoint": access_point})
                     end
                 end
             end

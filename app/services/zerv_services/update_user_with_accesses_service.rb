@@ -30,7 +30,7 @@ module ZervServices
                                 list_add_user_access << time_access_object(community, tour_time, previous_access)
                             end
                         end
-                        list_add_user_access.last.merge!({"accessCode": access_code,"accessPoint": "5678"})
+                        list_add_user_access.last.merge!({"accessCode": "5678","accessPoint": access_point})
                     end
                 end
             end
