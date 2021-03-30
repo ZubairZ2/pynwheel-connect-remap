@@ -12,7 +12,10 @@ module SalesforceServices
                     grant_type: "password"
                 }
             )
-
+            puts "---"*50
+            puts url
+            puts response
+            puts "---"*50
         rescue HTTParty::Error => e
             OpenStruct.new({success?: false, error: e, payload: nil})
         else
