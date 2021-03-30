@@ -500,8 +500,8 @@
   var addmode = false;
   var adddoorsmode = false;
   var accesspointplot = false;
-  var sm_id = '#{@sitemap.id}';
   
+  var sm_id = '#{@sitemap.id}';
   hallways_coordinates = #{raw @hallways.to_json}
   $( document ).ready(function() {
     draw_initial_hallways(hallways_coordinates)

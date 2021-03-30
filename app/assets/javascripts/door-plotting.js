@@ -632,6 +632,7 @@ function stop__door_work(event, ui){
         else{
             adddoorsmode = true
             savePlot(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, row.unit_info.door.id) 
+            adddoorsmode = false
         }
         // saveAmenityDoorPlot(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, row.unit_info.door.id);
     }
