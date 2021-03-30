@@ -153,4 +153,16 @@ function start_access_point_plot(event){
     accesspointplot = true
     selected = [null]
     plotMode()
+
+    $(".multi-select-units").css({"pointer-events": "none"})
+    $("#map").css('cursor', 'crosshair')
+    $("<div id='overlay'></div>").css({
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+      top: 0,
+      left: 0,
+      background: "#000000",
+      opacity: 0.5
+    }).appendTo($(".multi-select-units").css("position", "relative"));
 }

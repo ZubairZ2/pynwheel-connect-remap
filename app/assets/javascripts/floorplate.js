@@ -239,21 +239,35 @@ if(selected[0][0] != currently_selected_provider_id){
 
 
 function select_multiple_floors(event){
-  debugger
+  if($(event.currentTarget).hasClass("disabled")) return
   selected = multi_floors.selected()
   if(selected.length > 0){
+    $(event.currentTarget).addClass("disabled")
     $("#select_multiple_floors_modal").modal('hide')
     accesspointplot = true
     plotMode()
+
+    $(".multi-select-units").css({"pointer-events": "none"})
+    $("#map").css('cursor', 'crosshair')
+    $("<div id='overlay'></div>").css({
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+      top: 0,
+      left: 0,
+      background: "#000000",
+      opacity: 0.5
+    }).appendTo($(".multi-select-units").css("position", "relative"));
   }
 }
 
 function select_remaining_floors(event){
+  if($(event.currentTarget).hasClass("disabled")) return
   selected = remaining_floors.selected()
   id =  $("#active_access_point").val()
 
   if(selected.length > 0){
-
+    $(event.currentTarget).addClass("disabled")
     jQuery.ajax({
       url:  "/communities/" + community_id + "/floorplates/" + floorplate_id + "/access_points/" + id + "/add_new_access_points",
       type: "post",

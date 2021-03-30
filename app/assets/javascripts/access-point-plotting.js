@@ -25,6 +25,10 @@ function saveAccessPoint(floor, dx, dy, id=0){
             )
             plotted_data = true
         }
+
+        $(".multi-select-units").css({"pointer-events": "auto"})
+        $(".multi-select-units").find('#overlay').remove();
+
     })
 }
 
