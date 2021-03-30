@@ -366,6 +366,45 @@ class UnitsController < ApplicationController
     end
   end
 
+  def ajax_plot_unit_door
+    unit = @community.units.where(provider_unit_id: params[:id]).first
+    if unit.present?
+      door ||= unit.door || unit.build_door
+      door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+      render json: {unit: unit, door: door.reload, success: true}
+    else
+      render json: {unit: {}, door: {}, success: false}
+    end
+  end
+
+  def update_unitdoors_plot_for_floorplate
+    params[:ids].each do |id|
+      unit = @community.units.where(provider_unit_id: id).first
+      door ||= unit.door || unit.build_door
+      door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+    end
+
+    data = []
+    units = @community.units.where(provider_unit_id: params[:ids]).includes(:door).each do |unit|
+      data << {id: unit.id, provider_id: unit.provider_unit_id, door: unit.door}
+    end
+    
+    render json: {data: data, success: true}
+  rescue
+    render json: {data: [{}], success: false}
+  end
+
+  def ajax_load_unit_locks
+    @unit = @community.units.where(provider_unit_id: params[:id]).includes(:remote_locks, :latch_locks, :zerv_locks).first
+    @door = @unit.door
+  end
+
+  def ajax_update_unit_locks
+    @unit = @community.units.where(provider_unit_id: params[:id]).first
+    @unit.update_attributes(lock_provider: params[:lock_provider], access_code: params[:access_code])
+    assign_lock(@community, @unit, params[:lock_id]) if params[:lock_id].present?
+  end
+
   def remove_plot
     @unit = Unit.find_by(provider_unit_id: params[:id], community_id: @community.id)
     @unit.x_plot = 0
@@ -411,6 +450,17 @@ class UnitsController < ApplicationController
     else
       redirect_to community_floorplate_plotexp_path(@community, @floorplate), error: "Something went wrong."
     end
+  end
+
+  def remove_unit_door_plot
+    # @floorplate = Floorplate.find params[:floorplate_id]
+
+    unit = @community.units.where(provider_unit_id: params[:id]).first
+    render json: {unit: unit, door: unit.door, success: true}
+
+    unit.door.destroy
+  rescue
+    render json: {unit: {}, door: {}, success: false}
   end
 
   def adjust_position

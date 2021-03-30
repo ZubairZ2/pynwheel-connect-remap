@@ -650,6 +650,17 @@ class CommunitiesController < ApplicationController
     expressionist = design.expressionist ||  design.create_expressionist 
     expressionist = design.filter_panel ||  design.create_filter_panel 
   end
+
+  # def create_access_point_plot
+  #   access_point = @community.access_points.create(community_id: params[:community_id], x_plot: params[:x_plot], y_plot: params[:y_plot])
+  #   render json: {access_point: access_point, success: true}
+  # rescue
+  #   render json: {access_point: {}, success: false}
+  # end
+
+  # def save_access_point_plot
+  #   Door.
+  # end
   private
 
   def show_chat_modal(tour_user_id, tour_id)
@@ -665,7 +676,7 @@ class CommunitiesController < ApplicationController
   def community_params
 
     params.require(:community).permit(:name,:creator_id,:default_community_id ,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
-      :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:enable_locks,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
+      :auto_wayfinding, :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:enable_locks,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
       :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:crm_credential_attributes=>[:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id, :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username, :salesforce_password, :salesforce_client_id, :salesforce_secret_id, :salesforce_grant_type],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,

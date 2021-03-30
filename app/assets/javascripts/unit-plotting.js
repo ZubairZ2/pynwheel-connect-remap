@@ -1,58 +1,83 @@
 // save an individual unit (even if same x/y)
-function savePlot(id, dx, dy) {
-    if (typeof floorplan_id !== 'undefined') {
-        saveFloorplanPlot(id, dx, dy);
-    } else if (typeof floorplate_id !== 'undefined') {
-        saveFloorplateUnit(id, dx, dy);
-    } else if (typeof isPlotAmenity !== 'undefined') {
-        saveAmenityPlot(id, dx, dy);
-    } else if (typeof floorplate_id_for_amenity !== 'undefined') {
-        saveAmenityPlotForFloorplate(id, dx, dy);
-    } else if (typeof floorplate_id_for_elevator !== 'undefined') {
-        saveElevatorPlotForFloorplate(id, dx, dy);
-    } else if (typeof unit_id_for_amenity !== 'undefined') {
-        saveAmenityPlotForUnit(id, dx, dy);
-    } else if (typeof tour_id !== 'undefined') {
-        saveTourStaringPoint(tour_id, dx, dy);
-    } else if (typeof tour_id_for_stop !== 'undefined') {
-        saveTourStopPoint(id, dx, dy);
-    } else {
-        saveSiteMapUnit(id, dx, dy);
+  function savePlot(id, dx, dy, door_id=0) {
+    debugger
+    if (typeof floorplan_id !== 'undefined'){
+      saveFloorplanPlot(id,dx,dy);
     }
-}
+    else if ( typeof floorplate_id !== 'undefined'){
+      if(adddoorsmode)
+        saveUnitDoor(id, dx, dy);
+      else
+        saveFloorplateUnit(id, dx, dy);
+    }
+    else if ( typeof sitemap_id !== 'undefined'){
+      if(adddoorsmode)
+        saveUnitDoor(id, dx, dy);
+      else
+    	  saveSiteMapUnit(id, dx, dy);
+    }
+    else if ( typeof floorplate_id_for_amenity !== 'undefined'){
+      if(adddoorsmode)
+        saveAmenityDoorPlot(id, dx, dy, door_id);
+      else
+        saveAmenityPlotForFloorplate(id, dx, dy);
+    }
+    else if ( typeof sitemap_id_for_amenity !== 'undefined'){
+      if(adddoorsmode)
+        saveAmenityDoorPlot(id, dx, dy, door_id);
+      else
+        saveAmenityPlotForSitemap(id, dx, dy);
+    }
+    else if(typeof floorplate_id_for_elevator !== 'undefined'){
+      saveElevatorPlotForFloorplate(id, dx, dy); 
+    } 
+    else if ( typeof unit_id_for_amenity !== 'undefined'){
+      saveAmenityPlotForUnit(id, dx, dy);
+    }
+    else if ( typeof tour_id !== 'undefined'){
+      saveTourStaringPoint(tour_id, dx, dy);
+    }
+    else if ( typeof tour_id_for_stop !== 'undefined'){
+      saveTourStopPoint(id, dx, dy);
+    }
+  }
 
-function saveFloorplateUnit(id, dx, dy) {
-    $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunitforfloorplate", {
-            "x_plot": dx,
-            "y_plot": dy,
-            "floorplate_id": floorplate_id
-        },
-        function(data, status, xhr) {
-            console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-            console.debug(data.unit);
-            console.debug(data.unit.id);
-            console.debug(data.unit.x_plot);
-            console.debug(data.unit.y_plot);
-            console.debug(data.unit.marketing_name);
-            // plot_markers(data['test_unit']);
-            // arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
-            doDraggable();
-            // delete from unused list
-            // $('.amenities-list option').each(function(){
-            //   if ($(this).val() == id) {
-            //     $(this).remove();
-            //   }
-            // });
+  function saveFloorplateUnit(id, dx, dy){
+    debugger
+  	$.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunitforfloorplate",
+     { "x_plot": dx,
+        "y_plot": dy,
+        "floorplate_id": floorplate_id
+     },
+     function(data,status,xhr) {
+       console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+       console.debug(data.unit);
+       console.debug(data.unit.id);
+       console.debug(data.unit.x_plot);
+       console.debug(data.unit.y_plot);
+       console.debug(data.unit.marketing_name);
 
-            $('#' + data.unit.provider_unit_id + '-selectable').remove();
-            $('#' + data.unit.provider_unit_id + '-selection').remove();
+       var index = arr.findIndex(unit => unit[0] == data.unit.provider_unit_id); 
+       arr.splice(index,1) 
 
-        });
-}
+       arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]); 
+       doDraggable();
+       // delete from unused list
+       // $('.amenities-list option').each(function(){
+       //   if ($(this).val() == id) {
+       //     $(this).remove();
+       //   }
+       // });
 
-function saveTourStaringPoint(id, dx, dy) {
-    $.post("/communities/" + community_id + "/tours/" + id + "/ajaxplotstartingpoint", {
-            "x_plot": dx,
+       $('#'+data.unit.provider_unit_id+'-selectable').remove();
+       $('#'+data.unit.provider_unit_id+'-selection').remove();
+
+     });
+  }
+
+  function saveTourStaringPoint(id, dx, dy){
+    $.post( "/communities/"+community_id+"/tours/" + id + "/ajaxplotstartingpoint",
+        { "x_plot": dx,
             "y_plot": dy,
             "tour_id": tour_id
         },
@@ -103,112 +128,123 @@ function saveTourStopPoint(id) {
         });
 }
 
-function saveFloorplanPlot(id, dx, dy) {
-    $.post("/communities/" + community_id + "/floorplans/" + floorplan_id + "/amenities/" + id + "/plot_amenity", {
-            "x_plot": dx,
-            "y_plot": dy,
-        },
-        function(data, status, xhr) {
-            console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-            arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
-            doDraggable();
-            // delete from unused list
-            $('.amenities-list option').each(function() {
-                if ($(this).val() == id) {
-                    $(this).remove();
-                }
-            });
-        });
-}
+  function saveFloorplanPlot(id,dx,dy){
+    $.post( "/communities/"+community_id+"/floorplans/"+floorplan_id+"/amenities/" + id + "/plot_amenity",
+     { "x_plot": dx,
+        "y_plot": dy,
+     },
+     function(data,status,xhr) {
+       console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+       arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
+       doDraggable();
+       // delete from unused list
+       $('.amenities-list option').each(function(){
+         if ($(this).val() == id) {
+           $(this).remove();
+         }
+       });
+     });
+  }
 
-function saveAmenityPlotForFloorplate(id, dx, dy) {
-    $.post("/communities/" + community_id + "/floorplates/" + floorplate_id_for_amenity + "/amenities/" + id + "/plot_amenity", {
-            "x_plot": dx,
-            "y_plot": dy,
-            "floor": floor
-        },
-        function(data, status, xhr) {
-            console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-            arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
-            doDraggable();
-            // delete from unused list
-            $('.amenities-list option').each(function() {
-                if ($(this).val() == id) {
-                    $(this).remove();
-                }
-            });
-            // window.location.reload(true);
-        });
-}
+  function saveAmenityPlotForFloorplate(id,dx,dy){
+    $.post( "/communities/"+community_id+"/floorplates/"+floorplate_id_for_amenity+"/amenities/" + id + "/plot_amenity",
+     { "x_plot": dx,
+        "y_plot": dy,
+         "floor" : floor
+     },
+     function(data,status,xhr) {
+       console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
 
-function saveElevatorPlotForFloorplate(id, dx, dy) {
-    $.post("/communities/" + community_id + "/floorplates/" + floorplate_id_for_elevator + "/elevators/" + id + "/plot_elevator", {
-            "x_plot": dx,
-            "y_plot": dy,
-        },
-        function(data, status, xhr) {
-            console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-            arr.push([data.elevator.id, data.elevator.x_plot, data.elevator.y_plot, true, data.elevator.name]);
-            doDraggable();
-            // delete from unused list
-            $('.amenities-list option').each(function() {
-                if ($(this).val() == id) {
-                    $(this).remove();
-                }
-            });
-        });
-}
+       var index = arr.findIndex(amenity => amenity[0] == data.amenity.id);
+       arr.splice(index,1)
 
-function saveAmenityPlotForUnit(id, dx, dy) {
-    $.post("/communities/" + community_id + "/units/" + unit_id_for_amenity + "/amenities/" + id + "/plot_amenity", {
-            "x_plot": dx,
-            "y_plot": dy,
-        },
-        function(data, status, xhr) {
-            console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-            arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
-            doDraggable();
-            // delete from unused list
-            $('.amenities-list option').each(function() {
-                if ($(this).val() == id) {
-                    $(this).remove();
-                }
-            });
-        });
-}
+       arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]); 
+       doDraggable();
+       // delete from unused list
+       $('.amenities-list option').each(function(){
+         if ($(this).val() == id) {
+           $(this).remove();
+         }
+       });
+      //  window.location.reload(true);
+     });
+  }
 
-function saveSiteMapUnit(id, dx, dy) {
-    $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunit", {
-            "x_plot": dx,
-            "y_plot": dy
-        },
-        function(data, status, xhr) {
-            console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-            console.debug(data.unit);
-            console.debug(data.unit.id);
-            console.debug(data.unit.x_plot);
-            console.debug(data.unit.y_plot);
-            console.debug(data.unit.marketing_name);
-            arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
-            doDraggable();
-            // delete from unused list
-            // $('.amenities-list option').each(function(){
-            //   if ($(this).val() == id) {
-            //     $(this).remove();
-            //   }
-            // });
+  function saveElevatorPlotForFloorplate(id,dx,dy){
 
-            $('#' + data.unit.provider_unit_id + '-selectable').remove();
-            $('#' + data.unit.provider_unit_id + '-selection').remove();
+    $.post( "/communities/"+community_id+"/floorplates/"+floorplate_id_for_elevator+"/elevators/" + id + "/plot_elevator",
+     { "x_plot": dx,
+        "y_plot": dy,
+     },
+     function(data,status,xhr) {
+       console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+       arr.push([data.elevator.id, data.elevator.x_plot, data.elevator.y_plot, true, data.elevator.name]);
+       doDraggable();
+       // delete from unused list
+       $('.amenities-list option').each(function(){
+         if ($(this).val() == id) {
+           $(this).remove();
+         }
+       });
+     });
+  }
+  
+  function saveAmenityPlotForUnit(id,dx,dy){
+    $.post( "/communities/"+community_id+"/units/"+unit_id_for_amenity+"/amenities/" + id + "/plot_amenity",
+     { "x_plot": dx,
+        "y_plot": dy,
+     },
+     function(data,status,xhr) {
+       console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+       arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
+       doDraggable();
+       // delete from unused list
+       $('.amenities-list option').each(function(){
+         if ($(this).val() == id) {
+           $(this).remove();
+         }
+       });
+     });
+  }
 
-        });
-}
+  function saveSiteMapUnit(id, dx, dy){
+  	$.post( "/communities/"+community_id+"/units/" + id + "/ajaxplotunit",
+     { "x_plot": dx,
+        "y_plot": dy
+     },
+     function(data,status,xhr) {
+       console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+       console.debug(data.unit);
+       console.debug(data.unit.id);
+       console.debug(data.unit.x_plot);
+       console.debug(data.unit.y_plot);
+       console.debug(data.unit.marketing_name);
 
-function plotMode(selected) {
+       var index = arr.findIndex(unit => unit[0] == data.unit.provider_unit_id); 
+       arr.splice(index,1)
+
+       arr.push([data.unit.provider_unit_id, data.unit.x_plot, data.unit.y_plot, true, data.unit.id]);
+       doDraggable();
+       // delete from unused list
+       // $('.amenities-list option').each(function(){
+       //   if ($(this).val() == id) {
+       //     $(this).remove();
+       //   }
+       // });
+
+       $('#'+data.unit.provider_unit_id+'-selectable').remove();
+       $('#'+data.unit.provider_unit_id+'-selection').remove();
+       
+     });
+  }
+
+  function plotMode(selected){
+    debugger
+    console.log("new marked is created")
     addmode = true;
     $("#newmsg").css({ display: 'inline-block' });
     $("#map").css('cursor', 'crosshair');
-}
+  }
 
 $(document).on("click", ".s-unit", function() {
     //selected.splice( $.inArray("1001", selected), 1 )
@@ -230,143 +266,235 @@ function resetDataIds() {
     })
 }
 
-
 function doDraggable() {
+  console.log("called do draggable")
+  // marker move
+  var pointerX;
+  var pointerY;
+
+  $('.marker').draggable({
+    containment: 'parent',
+    stack: ".marker",
+
+      // get the initial X and Y position when dragging starts
+      start: function(event, ui) {
+      debugger
+
+      console.log("start drag 123")
+      var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+      var scaleFactor = (1 / (transform.scale || 1));
+      ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
+      ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
+
+      pointerY = (event.pageY - $('#map').offset().top) / transform.scale - parseInt($(event.target).css('top'));
+      pointerX = (event.pageX - $('#map').offset().left) / transform.scale - parseInt($(event.target).css('left'));
+
+      if(is_ui_a_door(ui))
+        start__door_work(event, ui)
+      else
+        start__original_work(event, ui)
+    },
+    drag: function(event, ui) {
+
+      var canvasTop = $('#map').offset().top;
+      var canvasLeft = $('#map').offset().left;
+      var canvasHeight = $('#map').height();
+      var canvasWidth = $('#map').width();
 
 
-    // marker move
-    var pointerX;
-    var pointerY;
+      var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+      var scaleFactor = (1 / (transform.scale || 1));
+      ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
+      ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
 
-    $('.marker').draggable({
-        containment: 'parent',
-        stack: ".marker",
-        // get the initial X and Y position when dragging starts
+      if (ui.position.left < 0) ui.position.left = 0;
+      if (ui.position.left + $(this).width() > canvasWidth) ui.position.left = canvasWidth - $(this).width();
+      if (ui.position.top < 0) ui.position.top = 0;
+      if (ui.position.top + $(this).height() > canvasHeight) ui.position.top = canvasHeight - $(this).height();
 
-        start: function(event, ui) {
-            console.log("start drag 123")
-            var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-            var scaleFactor = (1 / (transform.scale || 1));
-            ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
-            ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
-
-            pointerY = (event.pageY - $('#map').offset().top) / transform.scale - parseInt($(event.target).css('top'));
-            pointerX = (event.pageX - $('#map').offset().left) / transform.scale - parseInt($(event.target).css('left'));
+      // Finally, make sure offset aligns with position
+      ui.offset.top = Math.round(ui.position.top + canvasTop);
+      ui.offset.left = Math.round(ui.position.left + canvasLeft);
 
 
-            xpos = Math.round(ui.position.left);
-            ypos = Math.round(ui.position.top);
-            // temp array of just markers at same x/y
-            temp = [];
-            // alert(arr);
-            if (arr != null) {
-                for (i = 0; i < arr.length; i++) {
-                    if (arr[i][1] == xpos && arr[i][2] == ypos) {
-                        // alert(arr[i]);
-                        // alert(arr[i][0]);
-                        temp.push(arr[i][0])
-                    }
-                }
-            }
-        },
-        // when dragging stops
-        drag: function(event, ui) {
-            var canvasTop = $('#map').offset().top;
-            var canvasLeft = $('#map').offset().left;
-            var canvasHeight = $('#map').height();
-            var canvasWidth = $('#map').width();
-
-
-            var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-            var scaleFactor = (1 / (transform.scale || 1));
-            ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
-            ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
-
-            if (ui.position.left < 0) ui.position.left = 0;
-            if (ui.position.left + $(this).width() > canvasWidth) ui.position.left = canvasWidth - $(this).width();
-            if (ui.position.top < 0) ui.position.top = 0;
-            if (ui.position.top + $(this).height() > canvasHeight) ui.position.top = canvasHeight - $(this).height();
-
-            // Finally, make sure offset aligns with position
-            ui.offset.top = Math.round(ui.position.top + canvasTop);
-            ui.offset.left = Math.round(ui.position.left + canvasLeft);
-
-
-            xmove = ui.position.left - xpos;
-            ymove = ui.position.top - ypos;
-            if (temp != null) {
-                for (i = 0; i < temp.length; i++) {
-                    $('#m_' + temp[i]).css({ "left": ui.position.left, "top": ui.position.top });
-                }
-            }
-        },
-        stop: function(event, ui) {
-            console.log('hashdasdhad');
-            if (temp != null) {
-                for (i = 0; i < temp.length; i++) {
-                    console.log("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
-                    for (j = 0; j < arr.length; j++) {
-                        if (arr[j][0] == temp[i]) {
-                            arr[j][1] = Math.round(ui.position.left);
-                            arr[j][2] = Math.round(ui.position.top);
-                        }
-                    }
-                    // alert(temp[i]);
-                    savePlot(temp[i], Math.round(ui.position.left) + lmargin, Math.round(ui.position.top) + rmargin);
-                }
-            }
-        }
-    }).on('mousedown touchstart', function(e) {
-        e.stopImmediatePropagation();
-        return false;
-    });
+      xmove = ui.position.left - xpos;
+      ymove = ui.position.top - ypos;
+      
+      if(is_ui_a_door(ui))
+        drag__door_work(event, ui)
+      else
+        drag__original_work(event, ui)
+    },
+    stop: function(event, ui) {
+      if(is_ui_a_door(ui))
+        stop__door_work(event, ui)
+      else
+        stop__original_work(event, ui)
+    }
+  }).on('mousedown touchstart', function(e) {
+    e.stopImmediatePropagation();
+    return false;;
+  })
 }
 
 
-function reset() {
+  function reset() {
+    debugger
     addmode = false;
-    selected = [];
+    adddoorsmode = false;
+    selected=[];
     dx = 0;
     dy = 0;
     $("#map").css('cursor', 'default');
     $("#selected-units").empty();
     $("#newmsg").css({ display: 'none' });
     // reset any hidden unused ones that didn't get plotted
-    $('.amenities-list option').each(function() {
-        $(this).css({ "display": "block" });
-    });
-}
+    $('.amenities-list option').each(function(){
+      $(this).css({"display": "block"});
+    }); 
+  }
 
-function saveAmenityPlot(id, dx, dy) {
-    console.log("ready to ajaxsave ajaxplotunit 123", id, dx, dy);
-    $.post("/communities/" + community_id + "/sitemaps/" + sitemap_id_amenity + "/amenities/" + id + "/plot_amenity", {
-            "x_plot": dx,
-            "y_plot": dy
-        },
-        function(data, status, xhr) {
-            console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
-            arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
-            doDraggable();
-            // delete from unused list
-            $('.amenities-list option').each(function() {
-                if ($(this).val() == id) {
-                    $(this).remove();
-                }
-            });
-        });
-}
+  function saveAmenityPlotForSitemap(id, dx, dy) {
+    console.log("ready to ajaxsave ajaxplotunit", id, dx, dy);
+    $.post( "/communities/"+community_id+"/sitemaps/" + sitemap_id_for_amenity + "/amenities/" + id + "/plot_amenity",
+     { "x_plot": dx,
+        "y_plot": dy
+     },
+     function(data,status,xhr) {
+       console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
+
+       var index = arr.findIndex(amenity => amenity[0] == data.amenity.id);
+       arr.splice(index,1)
+       
+       arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
+       doDraggable();
+       // delete from unused list
+       $('.amenities-list option').each(function(){
+         if ($(this).val() == id) {
+           $(this).remove();
+         }
+       });
+     });
+  }
 
 
-function removeUnitFromSelectedArray(value) {
-    for (i = 0; i < selected.length; i++) {
-        if (selected[i][0] == value) {
-            selected.splice(i, i + 1);
-        }
+function removeUnitFromSelectedArray(value){
+  for(i=0; i<selected.length; i++){
+    if (selected[i][0] == value){
+      selected.splice(i,i+1);
     }
+  }
+}  
+
+
+
+function start__original_work(event, ui){
+  // get the initial X and Y position when dragging starts
+  xpos = Math.round(ui.position.left);
+  ypos = Math.round(ui.position.top);
+  
+  // temp array of just markers at same x/y
+  temp=[];
+
+  if (arr != null) {
+    for (i=0; i<arr.length; i++) {
+      if (arr[i][1] == xpos && arr[i][2] == ypos) {
+          // alert(arr[i]);
+          // alert(arr[i][0]);
+        temp.push(arr[i][0])
+      }
+    }
+  }
+}
+
+function drag__original_work(event, ui){
+
+  if (temp != null) {
+    for (i=0; i<temp.length; i++) {
+      $('#m_' + temp[i]).css({"left": Math.round(ui.position.left), "top": Math.round(ui.position.top)});
+    }
+  }
+}
+
+function stop__original_work(event, ui){
+  if (temp != null) {
+    for (i=0; i<temp.length; i++) {
+      console.log("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
+      for (j=0; j<arr.length; j++) {
+        if (arr[j][0] == temp[i]) {       // computationally expensive, I will try to do this in one iteration
+          arr[j][1] = Math.round(ui.position.left);
+          arr[j][2] = Math.round(ui.position.top);
+        }
+      }
+      // alert(temp[i]);
+      debugger
+      savePlot(temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
+    }
+  }
 }
 
 
 
 
+function is_ui_a_door(ui)
+{
+  return typeof ui.helper.attr("id") != "undefined"  && ui.helper.attr("id").includes("door")
+}
 
 
+function start__door_work(event, ui){
+  xpos = Math.round(ui.position.left);
+  ypos = Math.round(ui.position.top);
+  same_location_doors = getUnitDoorsAtSameLocationByDoorCoords(xpos, ypos)
+}
+
+
+function drag__door_work(event, ui){
+  // for(var row of same_location_doors)
+  //   $('#door_' + row.unit_info.unit.provider_id).css({"left": Math.round(ui.position.left), "top": Math.round(ui.position.top)});
+
+  // $('#door_' + row.unit_info.unit.provider_id).css({"left": Math.round(ui.position.left), "top": Math.round(ui.position.top)});
+
+}
+
+
+function stop__door_work(event, ui){
+  debugger
+  for(var row of same_location_doors){
+    row.unit_info.door.x_plot = Math.round(parseFloat(ui.position.left));
+    row.unit_info.door.y_plot = Math.round(parseFloat(ui.position.top));
+    if(ui.helper.data("plotted-category") == "unit_door")
+      saveDraggedDoor(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, same_location_doors.length)
+    else
+      saveAmenityDoorPlot(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, row.unit_info.door.id);
+  }
+}
+
+
+function saveDraggedDoor(id, dx, dy, doors_count){
+  current_door = 1
+  if ($(".mapLoading").hasClass("hidden")) $(".mapLoading").removeClass("hidden") 
+  $.post( "/communities/"+community_id+"/units/" + id + "/ajax_plot_unit_door",
+  { 
+    "x_plot": dx,
+    "y_plot": dy,
+    "floorplate_id": floorplate_id
+  }).done(function(response) {
+    debugger
+    if(response.success){
+      try {
+        if(response.success){
+          if(current_door == doors_count)
+            $(".mapLoading").addClass("hidden");
+          else
+            current_door = current_door + 1
+        }
+      }
+      catch(err) {
+        location.reload()
+      }
+    }
+    else
+      location.reload()
+  })
+}

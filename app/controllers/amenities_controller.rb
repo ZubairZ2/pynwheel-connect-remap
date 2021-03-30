@@ -123,6 +123,26 @@ class AmenitiesController < ApplicationController
       redirect_to community_amenities_path(current_community), error: @amenity.errors.full_messages.join(',')
     end
   end
+
+  def update_amenity_door_lock
+    @amenity = @community.amenities.find_by(id: params[:id])
+    @door = @amenity.doors.find_by(id: params[:door_id])
+    @door.update_attributes(lock_provider: params[:lock_provider], access_code: params[:access_code])
+    assign_lock_to_amenity_door(@community, @door, params[:lock_id]) if params[:lock_id].present?
+  end
+
+  def remove_amenity_door_plot
+    @amenity = @community.amenities.find_by(id: params[:id])
+    @door = @amenity.doors.find_by(id: params[:door_id])
+    @door.destroy
+    redirect_to plot_amenities_community_floorplate_amenities_path(@community, @amenity) + "?floor=" + params["floor"]
+    # render json: {amenity: @amenity, door: @door, success: true}
+    # @door.destroy
+
+  rescue
+    render json: {unit: {}, door: {}, success: false}
+  end
+
   private
 
   def amenity_params

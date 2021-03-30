@@ -129,6 +129,8 @@ Rails.application.routes.draw do
       end
     end
 
+    # post :create_access_point_plot
+    # put  :update_access_point_plot
     post :save_gallery_settings
     post :save_tour_settings
     post :save_apartment_settings
@@ -212,6 +214,8 @@ Rails.application.routes.draw do
         post :extract_floors
         get :show_amenity_image_in_modal
         put :crop_amenity_image
+        put :update_amenity_door_lock
+        delete :remove_amenity_door_plot
       end
     end
     resources :tour_users do
@@ -224,16 +228,19 @@ Rails.application.routes.draw do
       end
       resources :amenities,controller: "floorplate_amenities" do
         post :plot_amenity
+        post :plot_amenity_door
         collection do
           get :plot_amenities
           delete :remove_amenities_plot
         end
         member do
           delete :remove_amenity
+          post :show_amenity_door_modal
         end
       end
       get :select_floor
       post :select_floor
+      get :select_many_floors
       get :plotexp
       get :grid_overlay
       post :adjust_marker_positions
@@ -260,15 +267,19 @@ Rails.application.routes.draw do
         put :crop_unit_secondary_image
       end
       member do
+        post :ajax_load_unit_locks
         post :ajaxplotunit
         post :ajaxplotunitforfloorplate
+        post :ajax_plot_unit_door
         delete :remove_plot
         delete :remove_plot_from_floorplate
+        delete :remove_unit_door_plot
         post :adjust_position
         post :load_remotelock_data
         post :clear_locks
         delete :remove_pri_scnd_image
         post :set_amenities_for_units
+        put :ajax_update_unit_locks
       end
       collection do
         post :set_floor
@@ -279,6 +290,7 @@ Rails.application.routes.draw do
         post :set_sold
         post :add_description
         post :set_image
+        post :update_unitdoors_plot_for_floorplate
       end
     end
     resources :tutorials do
@@ -289,11 +301,13 @@ Rails.application.routes.draw do
     resources :sitemaps do
       resources :amenities, controller: "sitemap_amenities" do
         post :plot_amenity
+        post :plot_amenity_door
         collection do
           delete :remove_amenities_plot
         end
         member do
           delete :remove_amenity
+          post :show_amenity_door_modal
         end
       end
       post :save_sitemap_image

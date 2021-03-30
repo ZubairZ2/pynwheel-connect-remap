@@ -1,0 +1,65 @@
+$('.locks-section-in-modal').replaceWith("<%= j render partial: 'floorplate_amenities/locks_info_in_modal', locals: { community: @community, door: @door , locks_present_hash: JSON.parse(params[:locks_present_hash]) } %>");
+$("#lock_provider").closest("form").attr('action', "<%= update_amenity_door_lock_community_amenity_path(@community, @amenity) %>");
+$('#door-name').html("<%= @door.name %>")
+$('.ajax-btn-delete').attr("data-href", "<%= remove_amenity_door_plot_community_amenity_path(@community, @amenity) + "?door_id=" + @door.id.to_s + "&floor=" + params[:floor].to_s %>")
+$(".modal-loader").addClass("hidden")
+update_locks_fields()
+
+
+setTimeout(function() { $("#save_lock").css('visibility', 'hidden') }, 1500);
+
+$('#lock_provider').change(function(){
+    update_locks_fields();
+});
+
+$('#lock_name').change(function(){
+    var optionFound = false,
+    datalist = this.list;
+
+    for(var j = 0; j < datalist.options.length; j++) {
+        if(this.value == datalist.options[j].value) {
+            optionFound = true;
+            break;
+        }
+    }
+
+    if(optionFound) {
+        this.setCustomValidity('');
+    } 
+    else if( $('#lock_name').val() != "" ) {
+        this.setCustomValidity('Lock does not exist');
+    }
+    else{
+        this.setCustomValidity('Select the lock');
+    }
+})
+
+
+
+
+
+
+
+
+//----------- to be on secure side, in case DB has in-valid values ---------------//
+
+if(typeof $('#locks_list')[0] !== 'undefined'){
+    var optionFound = false, datalist_options = $('#locks_list')[0].options;
+
+    for(var i = 0; i < datalist_options.length; i++) {
+        if($('#lock_name').val()  == datalist_options[i].value) {
+            optionFound = true;
+            break;
+        }
+    }
+
+    if(optionFound) {
+        $('#lock_name')[0].setCustomValidity('');
+    } 
+    else if( $('#lock_name').val() != "" ) {
+        $('#lock_name')[0].setCustomValidity('Lock does not exist');
+    }
+    else{
+        $('#lock_name')[0].setCustomValidity('Select the lock');
+    }
+}

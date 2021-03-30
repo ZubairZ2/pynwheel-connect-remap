@@ -1,4 +1,5 @@
-  class FloorplatesController < ApplicationController
+class FloorplatesController < ApplicationController
+  include AssignLocksHelper
   add_breadcrumb "Home", :root_path
   before_action :authenticate_user!
   before_action :check_community
@@ -75,6 +76,11 @@
     if params[:floor].present?
       redirect_to plot_amenities_community_floorplate_amenities_path(current_community, @floorplate, floor: params[:floor])
     end
+  end
+
+  def select_many_floors
+    @community = Community.find params[:community_id]
+    @floorplate = Floorplate.find params[:floorplate_id]
   end
 
   def update
@@ -162,12 +168,17 @@
 
   def plotexp
     @floorplate = Floorplate.find params[:floorplate_id]
-    unless current_community.units.size > 0
-      flash[:error] = "Please import unit data first"
-    end
-    @community_units = @floorplate.fetch_units
-    @hallways = @floorplate.hallways
 
+    unless current_community.units.size > 0
+      flash[:error] = "Please import unit data first" 
+      return
+    end
+
+    @community_units = @floorplate.fetch_units.includes(:door)
+    # @access_points   = @community.access_points
+    @hallways = @floorplate.hallways
+    @unit_with_door = @community_units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.door.present? ? unit.door : {} }}}
+    @all_locks = all_locks(@community)
     add_breadcrumb "Floor plates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community, @floorplate)
   end

@@ -43,27 +43,38 @@
             - marker_color = 'rgba(247, 0, 0, 0.61)'
           
           - if @community.theme_name.include?('gables')
-            - marker_font_size = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : 30
+            - fontsize = @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : 30
           - elsif @community.theme_name == 'modernist'
-            - marker_font_size = @community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size : 30
+            - fontsize = @community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size : 30
           - elsif @community.theme_name == 'futurist'
-            - marker_font_size = @community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : 30
+            - fontsize = @community.design.futurist_amenity_map_size.present? ? @community.design.futurist_amenity_map_size : 30
           - elsif @community.theme_name == 'expressionist'
-            - marker_font_size = @community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : 30
+            - fontsize = @community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : 30
           - elsif @community.theme_name == 'panther'
-            - marker_font_size = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : 30
+            - fontsize = @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : 30
           - else
-            - marker_font_size = 30
-          - marker_font_size2 = marker_font_size
-          -#- marker_font_size = @community.design.amenity_map_marker_size_integer
-          -#- marker_color = @community.theme_name.include?('gables') ? @community.design.amenity_map_marker_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernists_amenity_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
-          - marker_font_size = marker_font_size -5
-          - camera_font_size = marker_font_size / 2
+            - fontsize = 30
+
+          - left_margin = 0
+          - right_margin = 0
+          - fontsize = fontsize -5
+          - camera_font_size = fontsize / 2
+          
+          - marker_font_size2 = fontsize
           - camera_margin = (marker_font_size2 <= 27 ? 3 : (marker_font_size2 <= 30 ? 4 : (marker_font_size2 <= 33 ? 5 : (marker_font_size2 <= 35 ? 6 : 6))))
-          %span.hidden#font_size #{marker_font_size}
+          
+          %span.hidden#left_margin #{left_margin}
+          %span.hidden#right_margin #{right_margin}
+          %span.hidden#font_size #{fontsize}
           %span.hidden#marker_color #{marker_color}
-          %span.hidden#camera-margin #{camera_margin}
-        
+          %span.hidden#camera_margin #{camera_margin}
+
+          - door_fontsize     = fontsize
+          - door_marker_color = "#3153d2"
+
+          %span.hidden#door_fontsize      #{door_fontsize}
+          %span.hidden#door_marker_color  #{door_marker_color}
+
         .btn-btn-danger.mt-10.loader_class
           = link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "loader_class btn btn-primary"
           = link_to "PLOT UNITS <i class='propertyDetailName fa fa-question-circle'><span id='propertyDetailNameText' style='font-weight: normal'>Click on 'Plot Units' to switch from plotting amenity images to plotting units.</span></i>".html_safe, plotexp_community_sitemaps_path(@community), class: "loader_class btn btn-primary"
@@ -90,9 +101,29 @@
                     = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
                   - else
                     = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+
+                  - coordinates_array = []
                   - @sitemap.amenities.each do |amenity|
                     - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                      = link_to "<i class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{marker_color}; margin-top:#{camera_margin}px;'   ></i></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => amenity.name, :id => "m_#{amenity.id}", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity"
+                      - unless coordinates_array.include?([amenity.x_plot, amenity.y_plot])
+
+                        - coordinates_array.push([amenity.x_plot, amenity.y_plot])
+                        %p{class: "marker", style: "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute"}
+                          = link_to "#", :id => "m_#{amenity.id}", :title => amenity.name, data: {toggle: "tooltip", name: "plot", target: "#confirm-delete", toggle: "modal", href: "/communities/#{@community.id}/sitemaps/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity", plotted_category: "amenity"} do
+                            %i{class: "custom-icon", style: "height:#{fontsize}px; width: #{fontsize}px; border: 2px solid  #{marker_color};"}
+                              %i{class: "fas fa-camera-retro", style: "font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;"}
+                          
+                          - if @community.auto_wayfinding
+                            = link_to "#", { id: "plus_#{amenity.id}", title:  "Click to plot this amenity door", data: {toggle: "tooltip", plotted_category: "create_amenity_door"}, onclick: 'plot_entry_point(event)'} do
+                              %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/1.8}px;" }
+                        
+                        - if @community.auto_wayfinding
+                          - amenity.doors.each do |door|
+                            = link_to "#", { id: "amenity_#{amenity.id}__door_#{door.id}", class: "marker", style: "left:#{door.x_plot}px; top:#{door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{door.name}", data: {door_id: "#{door.id}", toggle: "tooltip", toggle: "modal", target: "#amenity-door-detail-modal", plotted_category: "amenity_door"}, onclick: 'open_amenity_door_modal(event)'} do
+                              %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
+
+                      - else
+                        - puts "duplicated.........."
             .col-lg-3.multi-select-units
               %h5.mt-40.mb-20
                 SELECT AMENITIES TO PLOT
@@ -120,6 +151,23 @@
               %label#newmsg Place marker for selected amenities on Map
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
+#amenity-door-detail-modal.modal.fade{"aria-hidden" => "true", "data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks}
+      .modal-header#door-name
+      .modal-loader.hidden
+      = form_tag "" , {method: :put, remote: true} do
+        .modal-body
+          %i.fa.fa-v.fa-check-circle{id: "save_lock", style: "color: green; visibility: hidden; margin-left: 540px;margin-bottom: 8px;"}
+          .locks-section-in-modal
+          .door-buttons-in-door-modal.mt-30
+        .modal-footer
+          - if @community.enable_locks
+            = submit_tag "Update",:class=>"btn btn-primary",:id=> "locks-modal-submit"
+          %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "amenity_door"}} Delete Door
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+
 :javascript
   $(document).ready(function () {
     document.addEventListener("touchstart", touchHandler, true);
@@ -166,10 +214,19 @@
   }
   var floor = null;
   var arr = #{raw amenity_arr}
-  var lmargin = 0
-  var rmargin = 0
+  var units_info = #{@amenity_with_doors.to_json.html_safe}
+
+  var left_margin = #{raw left_margin}
+  var right_margin = #{raw right_margin}
   var community_id = #{params[:community_id]}
+  var sitemap_id_for_amenity = #{@sitemap.id}
+
+  var enable_locks = #{@community.enable_locks}
+  var automate_wayfinding = #{@community.auto_wayfinding}
+
   var addmode = false;
+  var adddoorsmode = false;
+
   var sitemap_id_amenity = #{@sitemap.id}
   var isPlotAmenity = true;
   var sm_id = '#{@sitemap.id}';

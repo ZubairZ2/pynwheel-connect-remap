@@ -21,6 +21,7 @@
 // require turbolinks
 //= require amenity
 //= require tour_stop_plotting
+//= require door-plotting
 //= require pyn.min
 //= require jquery.validationEngine-en
 //= require jquery.validationEngine
@@ -39,7 +40,6 @@
 //= require sitemap
 //= require tour
 //= require floorplate
-
 //= require ekko-lightbox
 //= require jquery.remotipart
 //= require jquery.mCustomScrollbar.concat.min

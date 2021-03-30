@@ -1,0 +1,27 @@
+- if community.enable_locks
+    - locks_present_hash = {}
+    - locks_present_hash["Dwelo"] = community.multiple_locks_provider.include?("Dwelo") && community.dwelo.present? && all_locks[:dwelo_locks].any?
+    - locks_present_hash["EdgeState"] = community.multiple_locks_provider.include?("EdgeState") && community.edge_state.present? && all_locks[:edgestate_locks].any?
+    - locks_present_hash["Latch"] = community.multiple_locks_provider.include?("Latch") &&  community.latch.present? && all_locks[:latch_locks].any?
+    - locks_present_hash["Zerv"] = community.multiple_locks_provider.include?("Zerv") &&  community.zerv.present? && all_locks[:zerv_locks].any?
+
+    // load options and input values start
+    - if locks_present_hash["Dwelo"]
+        .dwelo_options.hide_it
+            - all_locks[:dwelo_locks].each do |lock|
+                %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+    - if locks_present_hash["EdgeState"]
+        .edgestate_options.hide_it
+            - all_locks[:edgestate_locks].each do |lock|
+                %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
+    - if locks_present_hash["Latch"]
+        .latch_options.hide_it
+            - all_locks[:latch_locks].each do |lock|
+                %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+    - if locks_present_hash["Zerv"]
+        .zerv_options.hide_it
+            - all_locks[:zerv_locks].each do |lock|
+                %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
+
+:javascript
+    var locks_present_hash = #{locks_present_hash.to_json.html_safe}
