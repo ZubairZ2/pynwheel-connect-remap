@@ -195,7 +195,7 @@ $(document).ready(function () {
             debugger
             if (addmode) {
                 // save plotting for each selected unit
-                if(typeof AccessPointPlot !== "undefined" && AccessPointPlot == true){
+                if(typeof accesspointplot !== "undefined" && accesspointplot == true){
                     try {
                         for (i=0; i<selected.length; i++) {
                             saveAccessPoint(selected[i], dx, dy);
@@ -204,8 +204,9 @@ $(document).ready(function () {
                     catch(err) {
                         location.reload()
                     }
-                    // createAccessPointPlot(dx, dy);
-                    // tag = getAccessPointTag();
+
+                    debugger
+                    tag = getAccessPointTag();
                 }
                 else{
                     try {
@@ -216,6 +217,7 @@ $(document).ready(function () {
                     catch(err) {
                         location.reload()
                     }
+                    
                     debugger
                     if(adddoorsmode){
                         tag = getDoorTag(selected[0][0])
@@ -334,47 +336,4 @@ function getTagToPlot(url){
         tag += "</a>"
     }
     return tag
-}
-
-function getDeleteDoorUrl(provider_id){
-    // if(typeof sitemap_id !== 'undefined')
-    //     floorplate_id = sitemap_id // temp line for now
-    //     return '/communities/'+community_id+'/units/'+provider_id+'/remove_unit_door_plot?floorplate_id='+floorplate_id
-        
-    if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined'){
-        return '/communities/'+community_id+'/units/'+provider_id+'/remove_unit_door_plot'
-    }
-}
-
-function getDoorTag(provider_id){
-    if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined')
-    {   
-        tag =   `<a id="door_${provider_id}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${provider_id} (door)" data-toggle="modal" data-target="#ajax-doors-detail-modal" data-plotted-category="unit_door" href="javascript:void(0)">
-                    <i class="fa fa-sign-in fa-xs" style="color: ${door_marker_color};"></i>
-                </a>`
-    }
-    else if(typeof floorplate_id_for_amenity !== 'undefined' || typeof sitemap_id_for_amenity !== 'undefined'){
-        amenity_id = provider_id
-        tag =   `<a id="amenity_${amenity_id}" class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute; font-size: ${door_fontsize}px;" title="${amenity_id} (door)" data-toggle="modal" data-target="#amenity-door-detail-modal" data-plotted-category="amenity_door" href="javascript:void(0)" onclick="open_amenity_door_modal(event)">
-                    <i class="fa fa-sign-in fa-xs" style="color: ${door_marker_color};"></i>
-                </a>`
-    }
-    return tag
-}
-
-function attachPlusIconWithUnit(unit){
-    plus_icon = returnPlusIconTag(unit.provider_unit_id, "unit", -6)
-    $(("#m_"+unit.provider_unit_id)).after(plus_icon)
-}
-
-function returnPlusIconTag(id, for_, margin){
-    return `<a id="plus_${id}" style="margin-left: ${margin}px;" title="Click to plot this ${for_}(s) door" data-toggle="tooltip" data-plotted-category="create_${for_}_door" onclick="plot_entry_point(event)" href="javascript:void(0)">
-                <i class="fa fa-plus-circle fa-xs" style="color: #59de83; font-size: ${marker_font_size/2}px;"></i>
-            </a>`
-}
-
-function getAccessPointTag(){
-    return `<a id="access_point_id" title="access point" data-toggle="tooltip" data-plotted-category="access_point" href="javascript:void(0)">
-                <i class="fa fa-plus-circle fa-xs" style="color: #59de83; font-size: 30px;"></i>
-            </a>`
 }

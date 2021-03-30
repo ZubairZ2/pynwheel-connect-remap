@@ -129,8 +129,6 @@ Rails.application.routes.draw do
       end
     end
 
-    # post :create_access_point_plot
-    # put  :update_access_point_plot
     post :save_gallery_settings
     post :save_tour_settings
     post :save_apartment_settings
@@ -228,14 +226,24 @@ Rails.application.routes.draw do
       end
       resources :amenities,controller: "floorplate_amenities" do
         post :plot_amenity
-        post :plot_amenity_door
         collection do
           get :plot_amenities
           delete :remove_amenities_plot
         end
         member do
+          post :plot_amenity_door
+          post :load_amenity_door_lock
           delete :remove_amenity
-          post :show_amenity_door_modal
+        end
+      end
+      resources :access_points do
+        member do
+          get :open_access_point_modal
+          post :plot_access_point
+          post :add_new_access_points
+          post :load_access_point_lock
+          put :update_access_point_lock
+          delete :remove_access_point_plot
         end
       end
       get :select_floor
@@ -245,6 +253,7 @@ Rails.application.routes.draw do
       get :grid_overlay
       post :adjust_marker_positions
       get :floatplate_images
+      post :save_access_point_for_floorplate
     end
     resources :units do
       resources :amenities,controller: "unit_amenities" do
@@ -267,10 +276,10 @@ Rails.application.routes.draw do
         put :crop_unit_secondary_image
       end
       member do
-        post :ajax_load_unit_locks
+        post :load_unit_door_lock
         post :ajaxplotunit
         post :ajaxplotunitforfloorplate
-        post :ajax_plot_unit_door
+        post :plot_unit_door
         delete :remove_plot
         delete :remove_plot_from_floorplate
         delete :remove_unit_door_plot
@@ -279,7 +288,7 @@ Rails.application.routes.draw do
         post :clear_locks
         delete :remove_pri_scnd_image
         post :set_amenities_for_units
-        put :ajax_update_unit_locks
+        put :update_unit_door_lock
       end
       collection do
         post :set_floor
@@ -290,7 +299,7 @@ Rails.application.routes.draw do
         post :set_sold
         post :add_description
         post :set_image
-        post :update_unitdoors_plot_for_floorplate
+        post :plot_multiple_units_door_for_floorplate
       end
     end
     resources :tutorials do
@@ -301,13 +310,22 @@ Rails.application.routes.draw do
     resources :sitemaps do
       resources :amenities, controller: "sitemap_amenities" do
         post :plot_amenity
-        post :plot_amenity_door
         collection do
           delete :remove_amenities_plot
         end
         member do
+          post :plot_amenity_door
+          post :load_amenity_door_lock
           delete :remove_amenity
-          post :show_amenity_door_modal
+        end
+      end
+      resources :access_points do
+        member do
+          get :open_access_point_modal
+          post :plot_access_point
+          post :load_access_point_lock
+          put :update_access_point_lock
+          delete :remove_access_point_plot
         end
       end
       post :save_sitemap_image
@@ -448,6 +466,7 @@ Rails.application.routes.draw do
   post '/draw_map_line/:unit_or_amenity', to: 'tours#draw_map_line', as: :draw_line
   post '/add_elevator/:tour_id/:community_id', to: 'tours#add_elevator', as: :create_elevator
   post '/update_elevator', to: 'tours#update_elevator', as: :update_elevator
+  get '/remaining_floors', to: 'access_points#remaining_access_point_floors'
   
   post :save_path_point, to: 'tours#point_save'
   post :update_path_point, to: 'tours#point_update'

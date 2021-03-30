@@ -1,0 +1,11 @@
+- if same_access_points.count > 1
+    - same_access_points.each do |access_point|
+        - if access_point.id == active_button.to_i
+            = link_to open_access_point_modal_community_floorplate_access_point_path(community, property_type, access_point, x_plot: access_point.x_plot, y_plot: access_point.y_plot, plotted_id: active_button, locks_present_hash: locks_present_hash), remote: true, class: "disabled" do
+                %button.btn.btn-primary.ml-5.mb-5
+                    = access_point.name
+        - else
+            = link_to open_access_point_modal_community_floorplate_access_point_path(community, property_type, access_point, x_plot: access_point.x_plot, y_plot: access_point.y_plot, plotted_id: active_button, locks_present_hash: locks_present_hash), remote: true do
+                %button.btn.btn-default.ml-5.mb-5
+                    = access_point.name
+

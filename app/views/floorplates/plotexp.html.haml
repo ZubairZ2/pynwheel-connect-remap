@@ -84,16 +84,18 @@
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
           - if current_user.is_super_admin?
             %a.btn.btn-danger{"data-name" => "floorplate's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
-          %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
-          = link_to community_floorplate_select_many_floors_path(@community, @floorplate), remote: true do
-            %button.btn.btn-success{data: {name: "Select the floor", target: "#select_multiple_floors_modal", toggle: "modal"}} 
-              Add Access Point
-              %i.propertyDetailName.fa.fa-question-circle
-                %span#propertyDetailNameText{:style => "font-weight: normal;"}
-                  Add Access point in hallways that are not associated with any specific unit or amenity
+          - if @community.auto_wayfinding
+            %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
+          - if @community.enable_locks and @community.auto_wayfinding
+            = link_to community_floorplate_select_many_floors_path(@community, @floorplate), remote: true do
+              %button.btn.btn-success 
+                Add Access Point
+                %i.propertyDetailName.fa.fa-question-circle
+                  %span#propertyDetailNameText{:style => "font-weight: normal;"}
+                    Add Access point in hallways that are not associated with any specific unit or amenity
       / /.box-header
       / form start
-      
+      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
       %form.form-horizontal
         .box-body.map-body-top
           .row
@@ -128,25 +130,32 @@
                         - right = unit.y_plot - right_margin
 
                         %p{class: "marker", style: "left:#{unit.x_plot - left_margin }px; top:#{unit.y_plot - right_margin}px; position:absolute"}
-                          = link_to "#", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
+                          = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                             %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
 
                           - if !unit_door_exists and @community.auto_wayfinding
-                            = link_to "#", { id: "plus_#{unit.provider_unit_id}", style: "margin-left: -6px;", title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}, onclick: 'plot_entry_point(event)'} do
+                            = link_to "javascript:void(0);", { id: "plus_#{unit.provider_unit_id}", style: "margin-left: -6px;", title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}, onclick: 'plot_entry_point(event)'} do
                               %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/2}px;" }
                             - unit_door_exists = false
 
                         - if unit_door_exists and @community.auto_wayfinding
                           - unit_door = unit.door
-                          = link_to "#", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "unit_door"}} do
+                          = link_to "javascript:void(0);", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "unit_door"}} do
                             %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
 
                       - else
                         - puts "duplicated.........."
                       .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}", :id=>"h-#{unit.provider_unit_id}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
-                  -# - @access_points.each do |access_point|
-                    = link_to "#", { id: "access_point_#{access_point.id}", class: "marker", style: "left:#{access_point.x_plot}px; top:#{access_point.y_plot}px; position:absolute; font-size: #{door_fontsize/2}px", title: "#{access_point.name}", data: {door_id: "#{access_point.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "access_point"}} do
-                      %i{class: "fa fa-lock", style: "color: #66bf60"}
+
+                  - if @community.enable_locks and @community.auto_wayfinding
+                    - coordinates_array = []
+
+                    - @access_points.each do |access_point|
+                      - unless coordinates_array.include?([access_point.x_plot, access_point.y_plot])
+                        - coordinates_array.push([access_point.x_plot, access_point.y_plot])
+
+                        = link_to open_access_point_modal_community_floorplate_access_point_path(@community, @floorplate, access_point, x_plot: access_point.x_plot, y_plot: access_point.y_plot, plotted_id: access_point.id, locks_present_hash: @current_locks_provider.to_json), { id: "access_point_#{access_point.id}", class: "marker", style: "left:#{access_point.x_plot}px; top:#{access_point.y_plot}px; position:absolute; font-size: #{door_fontsize/2}px", title: "#{access_point.name}", data: {door_id: "#{access_point.id}", toggle: "tooltip", remote: true, plotted_category: "access_point"}} do
+                          %i{class: "fa fa-lock", style: "color: #66bf60"}
 
             .col-lg-3.multi-select-units.select-units-on-page
               %h5.mt-40.mb-20
@@ -233,17 +242,16 @@
 #ajax-doors-detail-modal.modal.fade{"aria-hidden" => "true", "data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
-      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks}
       .modal-header#door-name
       .modal-loader.hidden
       = form_tag "" , {method: :put, remote: true} do
         .modal-body
-          %i.fa.fa-v.fa-check-circle{id: "save_lock", style: "color: green; visibility: hidden; margin-left: 540px;margin-bottom: 12px;"}
+          %i.fa.fa-v.fa-check-circle.save_lock{style: "color: green; visibility: hidden; margin-left: 540px;margin-bottom: 12px;"}
           .locks-section-in-modal
           .door-buttons-in-door-modal.mt-30
         .modal-footer
           - if @community.enable_locks
-            = submit_tag "Update",:class=>"btn btn-primary",:id=> "locks-modal-submit"
+            = submit_tag "Update",:class=>"btn btn-primary locks-modal-submit"
           %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Door
           %a.btn.btn-primary{:onclick=>"addDoorsMarkerOnFloorplate()"} Add Doors
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
@@ -313,11 +321,20 @@
   var multi_floors;
   var arr = #{raw arr}
   var units_info = #{@unit_with_door.to_json.html_safe}
+  var access_points = #{@access_points.to_json.html_safe}
 
   var left_margin = #{raw left_margin}
   var right_margin = #{raw right_margin}
   var community_id = #{params[:community_id]}
   var floorplate_id = #{params[:floorplate_id]}
+
+  var enable_locks = #{@community.enable_locks}
+  var automate_wayfinding = #{@community.auto_wayfinding}
+
+  var addmode = false;
+  var adddoorsmode = false;
+  var accesspointplot = false;
+
   var fp_id = #{params[:floorplate_id]}
   hallways_coordinates = #{raw @hallways.to_json}
 
@@ -325,12 +342,6 @@
     draw_initial_hallways(hallways_coordinates)
     draw_line(hallways_coordinates);
   });
-  
-  var enable_locks = #{@community.enable_locks}
-  var automate_wayfinding = #{@community.auto_wayfinding}
-
-  var addmode = false;
-  var adddoorsmode = false;
 
   if (#{current_user.welcome_floorplate_plot_page})
     {

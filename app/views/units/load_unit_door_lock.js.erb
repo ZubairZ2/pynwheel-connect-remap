@@ -1,11 +1,12 @@
-$('.locks-section-in-modal').replaceWith("<%= j render partial: 'locks_info_in_modal', locals: { community: @community, unit: @unit , door: @door, locks_present_hash: JSON.parse(params[:locks_present_hash]) } %>");
-$("#lock_provider").closest("form").attr('action', "<%= ajax_update_unit_locks_community_unit_path(@community, @unit.provider_unit_id) %>");
-$('#door-name').html("<%= @door.name %>")
+$(".locks-section-in-modal").empty()
+$('#ajax-doors-detail-modal').find(".locks-section-in-modal").replaceWith("<%= j render partial: 'locks_info_in_modal', locals: { community: @community, unit: @unit , door: @door, locks_present_hash: JSON.parse(params[:locks_present_hash]) } %>");
+$('#ajax-doors-detail-modal').find("#lock_provider").closest("form").attr('action', "<%= update_unit_door_lock_community_unit_path(@community, @unit.provider_unit_id) %>");
+$('#ajax-doors-detail-modal').find('#door-name').html("<%= @door.name %>")
 $(".modal-loader").addClass("hidden")
 update_locks_fields()
 
 
-setTimeout(function() { $("#save_lock").css('visibility', 'hidden') }, 1500);
+setTimeout(function() { $(".save_lock").css('visibility', 'hidden') }, 1500);
 
 $('#lock_provider').change(function(){
     update_locks_fields();

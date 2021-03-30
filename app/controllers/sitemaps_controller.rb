@@ -64,10 +64,12 @@ class SitemapsController < ApplicationController
       flash[:error] = "Please import unit data first"
     end
 
-    @hallways = @sitemap.hallways
-    @units = @community.units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door)
-    @unit_with_door = @units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.door.present? ? unit.door : {} }}}
-    @all_locks = all_locks(@community)
+    @units                  =   @community.units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door)
+    @all_locks              =   all_locks(@community)
+    @current_locks_provider =   existing_locks_provider(@community)
+    @hallways               =   @sitemap.hallways
+    @access_points          =   @sitemap.access_points     # @sitemap.access_points.select('DISTINCT ON (x_plot, y_plot) *')
+    @unit_with_door         =   @units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.door.present? ? unit.door : {} }}}
 
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
   end
@@ -80,8 +82,12 @@ class SitemapsController < ApplicationController
   def plot_amenities
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
     add_breadcrumb "Plot Property Map Amenities", plot_amenities_community_sitemaps_path(current_community) 
+    
     @sitemap = @community.sitemap
     @amenities = @community.amenities
+    @current_locks_provider =   existing_locks_provider(@community)
+    @hallways = @sitemap.hallways
+    @all_locks = all_locks(@community)
 
     if @sitemap.image.blank? 
       flash[:error] = "Kindly add Sitemap image first"
@@ -96,10 +102,6 @@ class SitemapsController < ApplicationController
         @amenity_with_doors << response
     end
     @amenity_with_doors = @amenity_with_doors.flatten
-
-    @hallways = @sitemap.hallways
-    @all_locks = all_locks(@community)
-
   end
 
   def plot_elevators

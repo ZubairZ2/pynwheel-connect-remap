@@ -174,16 +174,16 @@ class FloorplatesController < ApplicationController
       return
     end
 
-    @community_units = @floorplate.fetch_units.includes(:door)
-    # @access_points   = @community.access_points
-    @hallways = @floorplate.hallways
-    @unit_with_door = @community_units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.door.present? ? unit.door : {} }}}
-    @all_locks = all_locks(@community)
+    @community_units        =   @floorplate.fetch_units.includes(:door)
+    @current_locks_provider =   existing_locks_provider(@community)
+    @all_locks              =   all_locks(@community)
+    @hallways               =   @floorplate.hallways
+    @access_points          =   @floorplate.access_points     # @floorplate.access_points.select('DISTINCT ON (x_plot, y_plot) *')
+    @unit_with_door         =   @community_units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.door.present? ? unit.door : {} }}}
+
     add_breadcrumb "Floor plates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community, @floorplate)
   end
-
-
 
   def ajax_path_draw_on_floorplate
     unit = @community.units.where(provider_unit_id: params[:id])

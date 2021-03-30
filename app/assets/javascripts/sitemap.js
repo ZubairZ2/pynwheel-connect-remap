@@ -148,3 +148,9 @@ function addMarker(){
   $('#add_vertical_position').val($('#vertical_position').val());
   $('#add-marker-modal').modal('show');
 }
+
+function start_access_point_plot(event){
+    accesspointplot = true
+    selected = [null]
+    plotMode()
+}

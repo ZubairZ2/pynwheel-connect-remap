@@ -187,6 +187,28 @@
 
 #select_multiple_floors_modal.modal.fade
 
+- if current_community.present? and current_community.enable_locks and current_community.auto_wayfinding
+  #access_point_modal.modal.fade
+    .modal-dialog
+      .modal-content
+        .modal-header#door-name
+        .modal-loader.hidden
+        = form_tag "" , {method: :put, remote: true} do
+          .modal-body
+            %i.fa.fa-v.fa-check-circle.save_lock{style: "color: green; visibility: hidden; margin-left: 540px;margin-bottom: 8px;"}
+            .locks-section-in-modal
+            .access-points-in-door-modal.mt-30
+          .modal-footer
+            = submit_tag "Update",:class=>"btn btn-primary locks-modal-submit"
+            = link_to "#", {class: "delete-access-point", data: {remote: :true, method: :delete, plotted_category: :access_point}} do
+              %button.btn.btn-danger Delete
+            - unless current_community.is_sitemap
+              = link_to "/remaining_floors", remote: true do
+                %button.btn.btn-primary 
+                  Add Access Points
+            %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+  #select_remaining_floors_modal.modal.fade
+
 :javascript
   $(".welcome_prompt_btn2").click(function(){
     #{current_user.welcome_prompt = true}

@@ -22,6 +22,7 @@
 //= require amenity
 //= require tour_stop_plotting
 //= require door-plotting
+//= require access-point-plotting
 //= require pyn.min
 //= require jquery.validationEngine-en
 //= require jquery.validationEngine

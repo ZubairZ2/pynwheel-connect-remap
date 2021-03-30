@@ -76,7 +76,16 @@ module AssignLocksHelper
         return {edgestate_locks: edge_state_locks, dwelo_locks: dwelo_locks, latch_locks: latch_locks, zerv_locks: zerv_locks} 
     end
 
-    def assign_lock_to_amenity_door(community, door, lock_id)
+    def existing_locks_provider(community)
+        locks_present_hash = {}
+        locks_present_hash["Dwelo"] = community.multiple_locks_provider.include?("Dwelo") && community.dwelo.present? && community.dwelo.remote_locks.dwelo_locks.present?
+        locks_present_hash["EdgeState"] = community.multiple_locks_provider.include?("EdgeState") && community.edge_state.present? && community.edge_state.remote_locks.edgestate_locks.present?
+        locks_present_hash["Latch"] = community.multiple_locks_provider.include?("Latch") && community.latch.present? && community.latch.latch_locks.present?
+        locks_present_hash["Zerv"] = community.multiple_locks_provider.include?("Zerv") && community.zerv.present? && community.zerv.zerv_locks.present?
+        return locks_present_hash
+    end
+
+    def assign_lock_to_door(community, door, lock_id)
         if door.lock_provider == "Latch"
 
             if lock_id.present?

@@ -366,7 +366,7 @@ class UnitsController < ApplicationController
     end
   end
 
-  def ajax_plot_unit_door
+  def plot_unit_door                                # create or update
     unit = @community.units.where(provider_unit_id: params[:id]).first
     if unit.present?
       door ||= unit.door || unit.build_door
@@ -377,7 +377,26 @@ class UnitsController < ApplicationController
     end
   end
 
-  def update_unitdoors_plot_for_floorplate
+  def remove_unit_door_plot
+    unit = @community.units.where(provider_unit_id: params[:id]).first
+    render json: {unit: unit, door: unit.door, success: true}
+    unit.door.destroy rescue return
+  rescue
+    render json: {unit: {}, door: {}, success: false}
+  end
+
+  def load_unit_door_lock
+    @unit = @community.units.where(provider_unit_id: params[:id]).first
+    @door = @unit.door
+  end
+
+  def update_unit_door_lock
+    @unit = @community.units.where(provider_unit_id: params[:id]).first
+    @unit.update_attributes(lock_provider: params[:lock_provider], access_code: params[:access_code])
+    assign_lock(@community, @unit, params[:lock_id]) if params[:lock_id].present?
+  end
+
+  def plot_multiple_units_door_for_floorplate
     params[:ids].each do |id|
       unit = @community.units.where(provider_unit_id: id).first
       door ||= unit.door || unit.build_door
@@ -392,17 +411,6 @@ class UnitsController < ApplicationController
     render json: {data: data, success: true}
   rescue
     render json: {data: [{}], success: false}
-  end
-
-  def ajax_load_unit_locks
-    @unit = @community.units.where(provider_unit_id: params[:id]).includes(:remote_locks, :latch_locks, :zerv_locks).first
-    @door = @unit.door
-  end
-
-  def ajax_update_unit_locks
-    @unit = @community.units.where(provider_unit_id: params[:id]).first
-    @unit.update_attributes(lock_provider: params[:lock_provider], access_code: params[:access_code])
-    assign_lock(@community, @unit, params[:lock_id]) if params[:lock_id].present?
   end
 
   def remove_plot
@@ -450,17 +458,6 @@ class UnitsController < ApplicationController
     else
       redirect_to community_floorplate_plotexp_path(@community, @floorplate), error: "Something went wrong."
     end
-  end
-
-  def remove_unit_door_plot
-    # @floorplate = Floorplate.find params[:floorplate_id]
-
-    unit = @community.units.where(provider_unit_id: params[:id]).first
-    render json: {unit: unit, door: unit.door, success: true}
-
-    unit.door.destroy
-  rescue
-    render json: {unit: {}, door: {}, success: false}
   end
 
   def adjust_position

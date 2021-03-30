@@ -6,13 +6,13 @@
     }
     else if ( typeof floorplate_id !== 'undefined'){
       if(adddoorsmode)
-        saveUnitDoor(id, dx, dy);
+        saveUnitDoorPlot(id, dx, dy);
       else
         saveFloorplateUnit(id, dx, dy);
     }
     else if ( typeof sitemap_id !== 'undefined'){
       if(adddoorsmode)
-        saveUnitDoor(id, dx, dy);
+        saveUnitDoorPlot(id, dx, dy);
       else
     	  saveSiteMapUnit(id, dx, dy);
     }
@@ -290,7 +290,9 @@ function doDraggable() {
       pointerX = (event.pageX - $('#map').offset().left) / transform.scale - parseInt($(event.target).css('left'));
 
       if(is_ui_a_door(ui))
-        start__door_work(event, ui)
+          start__door_work(event, ui)
+      else if(is_ui_a_accesspoint(ui))
+        start__access_point(event, ui)
       else
         start__original_work(event, ui)
     },
@@ -300,7 +302,6 @@ function doDraggable() {
       var canvasLeft = $('#map').offset().left;
       var canvasHeight = $('#map').height();
       var canvasWidth = $('#map').width();
-
 
       var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
       var scaleFactor = (1 / (transform.scale || 1));
@@ -321,13 +322,18 @@ function doDraggable() {
       ymove = ui.position.top - ypos;
       
       if(is_ui_a_door(ui))
-        drag__door_work(event, ui)
+          drag__door_work(event, ui)
+      else if(is_ui_a_accesspoint(ui))
+        drag__access_point(event, ui)
       else
         drag__original_work(event, ui)
     },
     stop: function(event, ui) {
+      debugger
       if(is_ui_a_door(ui))
-        stop__door_work(event, ui)
+          stop__door_work(event, ui)
+      else if(is_ui_a_accesspoint(ui))
+        stop__access_point(event, ui)
       else
         stop__original_work(event, ui)
     }
@@ -342,6 +348,7 @@ function doDraggable() {
     debugger
     addmode = false;
     adddoorsmode = false;
+    accesspointplot = false;
     selected=[];
     dx = 0;
     dy = 0;
@@ -387,7 +394,6 @@ function removeUnitFromSelectedArray(value){
 }  
 
 
-
 function start__original_work(event, ui){
   // get the initial X and Y position when dragging starts
   xpos = Math.round(ui.position.left);
@@ -422,6 +428,7 @@ function stop__original_work(event, ui){
       console.log("stop drag", temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
       for (j=0; j<arr.length; j++) {
         if (arr[j][0] == temp[i]) {       // computationally expensive, I will try to do this in one iteration
+          $('#m_' + temp[i]).parent().css({"left": Math.round(ui.position.left), "top": Math.round(ui.position.top)});
           arr[j][1] = Math.round(ui.position.left);
           arr[j][2] = Math.round(ui.position.top);
         }
@@ -431,70 +438,4 @@ function stop__original_work(event, ui){
       savePlot(temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
     }
   }
-}
-
-
-
-
-function is_ui_a_door(ui)
-{
-  return typeof ui.helper.attr("id") != "undefined"  && ui.helper.attr("id").includes("door")
-}
-
-
-function start__door_work(event, ui){
-  xpos = Math.round(ui.position.left);
-  ypos = Math.round(ui.position.top);
-  same_location_doors = getUnitDoorsAtSameLocationByDoorCoords(xpos, ypos)
-}
-
-
-function drag__door_work(event, ui){
-  // for(var row of same_location_doors)
-  //   $('#door_' + row.unit_info.unit.provider_id).css({"left": Math.round(ui.position.left), "top": Math.round(ui.position.top)});
-
-  // $('#door_' + row.unit_info.unit.provider_id).css({"left": Math.round(ui.position.left), "top": Math.round(ui.position.top)});
-
-}
-
-
-function stop__door_work(event, ui){
-  debugger
-  for(var row of same_location_doors){
-    row.unit_info.door.x_plot = Math.round(parseFloat(ui.position.left));
-    row.unit_info.door.y_plot = Math.round(parseFloat(ui.position.top));
-    if(ui.helper.data("plotted-category") == "unit_door")
-      saveDraggedDoor(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, same_location_doors.length)
-    else
-      saveAmenityDoorPlot(row.unit_info.unit.provider_id, row.unit_info.door.x_plot, row.unit_info.door.y_plot, row.unit_info.door.id);
-  }
-}
-
-
-function saveDraggedDoor(id, dx, dy, doors_count){
-  current_door = 1
-  if ($(".mapLoading").hasClass("hidden")) $(".mapLoading").removeClass("hidden") 
-  $.post( "/communities/"+community_id+"/units/" + id + "/ajax_plot_unit_door",
-  { 
-    "x_plot": dx,
-    "y_plot": dy,
-    "floorplate_id": floorplate_id
-  }).done(function(response) {
-    debugger
-    if(response.success){
-      try {
-        if(response.success){
-          if(current_door == doors_count)
-            $(".mapLoading").addClass("hidden");
-          else
-            current_door = current_door + 1
-        }
-      }
-      catch(err) {
-        location.reload()
-      }
-    }
-    else
-      location.reload()
-  })
 }

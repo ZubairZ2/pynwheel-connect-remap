@@ -74,8 +74,8 @@ class SitemapAmenitiesController < ApplicationController
 	    end
 	end
 
-	def plot_amenity_door
-		amenity = @sitemap.amenities.find_by(id: params[:amenity_id])
+	def plot_amenity_door                                # create or update
+		amenity = @sitemap.amenities.find_by(id: params[:id])
 		if amenity.present?
 		  if params[:door_id].present? and params[:door_id].to_i != 0
 			door = amenity.doors.find params[:door_id]
@@ -88,6 +88,15 @@ class SitemapAmenitiesController < ApplicationController
 		  render json: {amenity: amenity, door: door.reload, status: status, success: true}
 		else
 		  render json: {unit: {}, door: {}, status: nil, success: false}
+		end
+	end
+
+	def load_amenity_door_lock
+		@amenity = @sitemap.amenities.find params[:id]
+		@door = @amenity.doors.find params[:door_id]
+
+		respond_to do |format|
+			format.js { render :template => "floorplate_amenities/load_amenity_door_lock.js.erb" }
 		end
 	end
 
@@ -105,15 +114,6 @@ class SitemapAmenitiesController < ApplicationController
 			end
 		end
 		redirect_to plot_amenities_community_sitemaps_path(@community,@sitemap), notice: "All plots have been deleted successfully."
-	end
-
-	def show_amenity_door_modal
-		@amenity = @sitemap.amenities.find params[:id]
-		@door = @amenity.doors.find params[:door_id]
-
-		respond_to do |format|
-			format.js { render :template => "floorplate_amenities/show_amenity_door_modal.js.erb" }
-		end
 	end
 
 	def remove_amenity

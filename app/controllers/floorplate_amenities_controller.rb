@@ -72,8 +72,8 @@ class FloorplateAmenitiesController < ApplicationController
     end
   end
 
-  def plot_amenity_door
-    amenity = @floorplate.amenities.find_by(id: params[:amenity_id])
+  def plot_amenity_door                                # create or update
+    amenity = @floorplate.amenities.find_by(id: params[:id])
     if amenity.present?
       if params[:door_id].present? and params[:door_id].to_i != 0
         door = amenity.doors.find params[:door_id]
@@ -89,16 +89,24 @@ class FloorplateAmenitiesController < ApplicationController
     end
   end
 
+  def load_amenity_door_lock
+    @amenity = @floorplate.amenities.find params[:id]
+    @door = @amenity.doors.find params[:door_id]
+  end
+
   def plot_amenities
     @floor = params[:floor] if params[:floor].present?
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community, @floorplate)
     @sitemap = @floorplate
-    @amenities = @community.amenities
-    @hallways = @floorplate.hallways
+
+    @amenities              = @community.amenities
+    @current_locks_provider =   existing_locks_provider(@community)
+    @hallways               = @floorplate.hallways
+    @all_locks              = all_locks(@community)
 
     @amenity_with_doors = []
-    @amenities_doors = @floorplate.amenities.includes(:doors)
+    @amenities_doors        = @floorplate.amenities.includes(:doors)
 
     @amenities_doors.each do |amenity|    # following json is created same as with unit to reuse the unit's code.
         response = amenity.doors.map { |door| { unit_info: { unit: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.id, x_plot: amenity.x_plot, y_plot: amenity.x_plot }, door: door }}}
@@ -123,11 +131,6 @@ class FloorplateAmenitiesController < ApplicationController
       amenity.save(validate: false)
     end
     redirect_to plot_amenities_community_floorplate_amenities_path(@community, @floorplate), notice: "All plots have been deleted successfully."
-  end
-
-  def show_amenity_door_modal
-    @amenity = @floorplate.amenities.find params[:id]
-    @door = @amenity.doors.find params[:door_id]
   end
 
   def remove_amenity

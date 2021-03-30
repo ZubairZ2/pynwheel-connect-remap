@@ -175,31 +175,31 @@ $('#ajax-remaining-doors-modal').modal('show');
 }
 
 function plot_entry_point(event){
-debugger
-if ($(event.currentTarget).hasClass('disabled')) return;
-$(event.currentTarget).addClass('disabled');
-$(event.target).css({"color": "#c9ffdd", "cursor": "crosshair"})
+  debugger
+  if ($(event.currentTarget).hasClass('disabled')) return;
+  $(event.currentTarget).addClass('disabled');
+  $(event.target).css({"color": "#c9ffdd", "cursor": "crosshair"})
 
-parent_unit = event.currentTarget.previousElementSibling  
-currently_selected_id = parent_unit.id.split("_")[1]
+  parent_unit = event.currentTarget.previousElementSibling  
+  currently_selected_id = parent_unit.id.split("_")[1]
+ 
+  title = parent_unit.title + " (door)"
+  xpos = parseInt(parent_unit.parentElement.style.left)     // parent_unit.offsetLeft is sometime incrementing value by 1
+  ypos = parseInt(parent_unit.parentElement.style.top)
 
-title = parent_unit.title + " (door)"
-xpos = parseInt(parent_unit.parentElement.style.left)     // parent_unit.offsetLeft is sometime incrementing value by 1
-ypos = parseInt(parent_unit.parentElement.style.top)
-
-try {
-  getUnitsAtSameLocation(xpos, ypos)
-  addSameLocationUnitsToSelected()
-  sortSelected(currently_selected_id)
-  adddoorsmode = true
-  plotMode();  
-} catch (error) {
-  $(event.currentTarget).removeClass('disabled')
-  $(event.target).css({"color": "#59de83", "cursor": "default"})
-  console.log(error, " ------------ error occured in selected plots")
-}
-
-
+  try {
+    getUnitsAtSameLocation(xpos, ypos)
+    addSameLocationUnitsToSelected()
+    sortSelected(currently_selected_id)
+    adddoorsmode = true
+    plotMode();  
+  } catch (error) {
+    $(event.currentTarget).removeClass('disabled')
+    $(event.target).css({"color": "#59de83", "cursor": "default"})
+    console.log(error, " ------------ error occured in selected plots")
+  }
+  
+  
 }
 
 function getUnitsAtSameLocation(xpos, ypos){
@@ -239,11 +239,30 @@ if(selected[0][0] != currently_selected_provider_id){
 
 
 function select_multiple_floors(event){
-debugger
-selected = multi_floors.selected()
-if(selected.length > 0){
-  $("#select_multiple_floors_modal").modal('hide')
-  AccessPointPlot = true
-  plotMode()
+  debugger
+  selected = multi_floors.selected()
+  if(selected.length > 0){
+    $("#select_multiple_floors_modal").modal('hide')
+    accesspointplot = true
+    plotMode()
+  }
 }
+
+function select_remaining_floors(event){
+  selected = remaining_floors.selected()
+  id =  $("#active_access_point").val()
+
+  if(selected.length > 0){
+
+    jQuery.ajax({
+      url:  "/communities/" + community_id + "/floorplates/" + floorplate_id + "/access_points/" + id + "/add_new_access_points",
+      type: "post",
+      data: {floors: selected},
+      cache: false,
+      async: false,
+    })
+
+    $("#select_remaining_floors_modal").modal('hide')
+  }
+
 }

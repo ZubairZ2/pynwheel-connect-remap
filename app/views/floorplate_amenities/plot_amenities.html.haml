@@ -80,6 +80,7 @@
 
       / /.box-header
       / form start
+      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
       %form.form-horizontal
         .box-body.map-body-top
           .row
@@ -107,17 +108,17 @@
                         - coordinates_array.push([amenity.x_plot, amenity.y_plot])
 
                         %p{class: "marker", style: "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute"}
-                          = link_to "#", :id => "m_#{amenity.id}", :title => amenity.name, data: {toggle: "tooltip", name: "plot", target: "#confirm-delete", toggle: "modal", href: "/communities/#{@community.id}/floorplates/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity?floor=#{@floor}", plotted_category: "amenity"} do
+                          = link_to "javascript:void(0);", :id => "m_#{amenity.id}", :title => amenity.name, data: {toggle: "tooltip", name: "plot", target: "#confirm-delete", toggle: "modal", href: "/communities/#{@community.id}/floorplates/#{@sitemap.id}/amenities/#{amenity.id}/remove_amenity?floor=#{@floor}", plotted_category: "amenity"} do
                             %i{class: "custom-icon", style: "height:#{fontsize}px; width: #{fontsize}px; border: 2px solid  #{marker_color};"}
                               %i{class: "fas fa-camera-retro", style: "font-size:#{camera_font_size}px; color: #{marker_color}; margin-top: #{camera_margin}px;"}
                           
                           - if @community.auto_wayfinding
-                            = link_to "#", { id: "plus_#{amenity.id}", title:  "Click to plot this amenity door", data: {toggle: "tooltip", plotted_category: "create_amenity_door"}, onclick: 'plot_entry_point(event)'} do
+                            = link_to "javascript:void(0);", { id: "plus_#{amenity.id}", title:  "Click to plot this amenity door", data: {toggle: "tooltip", plotted_category: "create_amenity_door"}, onclick: 'plot_entry_point(event)'} do
                               %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/1.8}px;" }
                         
                         - if @community.auto_wayfinding
                           - amenity.doors.each do |door|
-                            = link_to "#", { id: "amenity_#{amenity.id}__door_#{door.id}", class: "marker", style: "left:#{door.x_plot}px; top:#{door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{door.name}", data: {door_id: "#{door.id}", toggle: "tooltip", toggle: "modal", target: "#amenity-door-detail-modal", plotted_category: "amenity_door"}, onclick: 'open_amenity_door_modal(event)'} do
+                            = link_to "javascript:void(0);", { id: "amenity_#{amenity.id}__door_#{door.id}", class: "marker", style: "left:#{door.x_plot}px; top:#{door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{door.name}", data: {door_id: "#{door.id}", toggle: "tooltip", toggle: "modal", target: "#amenity-door-detail-modal", plotted_category: "amenity_door"}, onclick: 'open_amenity_door_modal(event)'} do
                               %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
 
                       - else
@@ -149,17 +150,16 @@
 #amenity-door-detail-modal.modal.fade{"aria-hidden" => "true", "data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
-      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks}
       .modal-header#door-name
       .modal-loader.hidden
       = form_tag "" , {method: :put, remote: true} do
         .modal-body
-          %i.fa.fa-v.fa-check-circle{id: "save_lock", style: "color: green; visibility: hidden; margin-left: 540px;margin-bottom: 8px;"}
+          %i.fa.fa-v.fa-check-circle.save_lock{style: "color: green; visibility: hidden; margin-left: 540px;margin-bottom: 8px;"}
           .locks-section-in-modal
           .door-buttons-in-door-modal.mt-30
         .modal-footer
           - if @community.enable_locks
-            = submit_tag "Update",:class=>"btn btn-primary",:id=> "locks-modal-submit"
+            = submit_tag "Update",:class=>"btn btn-primary locks-modal-submit"
           %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "amenity_door"}} Delete Door
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
 

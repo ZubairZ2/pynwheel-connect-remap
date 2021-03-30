@@ -1,12 +1,13 @@
-$('.locks-section-in-modal').replaceWith("<%= j render partial: 'floorplate_amenities/locks_info_in_modal', locals: { community: @community, door: @door , locks_present_hash: JSON.parse(params[:locks_present_hash]) } %>");
-$("#lock_provider").closest("form").attr('action', "<%= update_amenity_door_lock_community_amenity_path(@community, @amenity) %>");
-$('#door-name').html("<%= @door.name %>")
-$('.ajax-btn-delete').attr("data-href", "<%= remove_amenity_door_plot_community_amenity_path(@community, @amenity) + "?door_id=" + @door.id.to_s + "&floor=" + params[:floor].to_s %>")
+$(".locks-section-in-modal").empty()
+$('#amenity-door-detail-modal').find('.locks-section-in-modal').replaceWith("<%= j render partial: 'shared/locks_info_in_modal', locals: { community: @community, door: @door , locks_present_hash: JSON.parse(params[:locks_present_hash]) } %>");
+$('#amenity-door-detail-modal').find("#lock_provider").closest("form").attr('action', "<%= update_amenity_door_lock_community_amenity_path(@community, @amenity) %>");
+$('#amenity-door-detail-modal').find('#door-name').html("<%= @door.name %>")
+$('#amenity-door-detail-modal').find('.ajax-btn-delete').attr("data-href", "<%= remove_amenity_door_plot_community_amenity_path(@community, @amenity) + "?door_id=" + @door.id.to_s + "&floor=" + params[:floor].to_s %>")
 $(".modal-loader").addClass("hidden")
 update_locks_fields()
 
 
-setTimeout(function() { $("#save_lock").css('visibility', 'hidden') }, 1500);
+setTimeout(function() { $(".save_lock").css('visibility', 'hidden') }, 1500);
 
 $('#lock_provider').change(function(){
     update_locks_fields();

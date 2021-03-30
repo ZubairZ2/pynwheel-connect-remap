@@ -5,7 +5,7 @@
       %label{style: "margin-bottom: 20px !important;"} Select the floors
       %select{id: "multi_floors", multiple: :true,  placeholder: "Select the floors"}>
         - @floorplate.floors.each do |floor| 
-          %option{value: floor}= "#{floor}" + " floor"
+          %option{value: floor}= "#{floor.ordinalize}" + " floor"
 
       .form-group{style: "padding-bottom: 0px !important;"}
         -#= link_to "fffffff", plot_amenities_community_floorplate_amenities_path(current_community,@floorplate),:class => "btn btn-success"
