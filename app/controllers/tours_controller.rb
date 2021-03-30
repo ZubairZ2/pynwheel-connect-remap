@@ -743,10 +743,13 @@ class ToursController < ApplicationController
   end
 
   def customize_tour
-    ids = params[:stops_list].map(&:to_i) - TourStop.where(id: params[:stops_list]).where(stop_type: ["elevator", "building_starting_point"]).pluck(:id)
-    community = Community.find_by_id params[:community_id] 
-    scheduled_tours = community.schedual_tours.where(tour_user_id: params[:tour_user_id]).update_all(stops_list: ids)
-    sleep(1)
+    if params[:stops_list].present?
+      ids = params[:stops_list].map(&:to_i) - TourStop.where(id: params[:stops_list]).where(stop_type: ["elevator", "building_starting_point"]).pluck(:id)
+      community = Community.find_by_id params[:community_id] 
+      scheduled_tours = community.schedual_tours.where(tour_user_id: params[:tour_user_id]).update_all(stops_list: ids)
+      sleep(1)
+    end
+    
     render json: {status: 200, message: "Record updated successfully" }
   end
 

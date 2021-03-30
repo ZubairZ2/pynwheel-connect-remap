@@ -18,7 +18,7 @@
             %strong Visibility
 
         - if community_tour_stops.present?
-          - community_tour_stops.each_with_index do |stop, index|
+          - community_tour_stops.each do |stop|
             .row.tour_stop_display
               .col-lg-2.col-md-2.col-sm-2
                 %span 

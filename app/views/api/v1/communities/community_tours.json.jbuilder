@@ -32,28 +32,21 @@ json.tours @tours do |tour|
   favorite_amenity_array = (fs.user_favorites_amenity[(@tour_user.present? ? @tour_user.email : nil)].present? ? fs.user_favorites_amenity[@tour_user.email] : [])
 
   stops_arr = []
-  tour_stops = []
 
   scheduled_tour_stops = @community.community_tour_available_stops(@tour_user)
-
-  if scheduled_tour_stops.present?
-    tour_stops =  @community.get_scheduled_tour_stops(scheduled_tour_stops)
-  else
-    tour_stops = @community.tour.tour_stops
-  end
-
   add_start = true
 
   if @community.is_sitemap
-    stops_arr =  @community.mdu ? tour_stops.where(display_stop: true).order(:sort) : tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
+    if scheduled_tour_stops.present?
+      stops_arr = @community.mdu ? scheduled_tour_stops : scheduled_tour_stops.where.not(stop_type: "unit").order(:sort)
+    else
+      stops_arr =  @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
+    end
   else
 
     if scheduled_tour_stops.present?
-      tour_stops = @community.get_scheduled_tour_stops(scheduled_tour_stops)
-      tour_stops.each do |stop|
-        stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
-      end
-
+      stops_arr = @community.mdu ? scheduled_tour_stops : scheduled_tour_stops.where.not(stop_type: "unit").order(:sort)
+      
     else
       @building_list << "" if @building_list == []
       @building_list.each do |building|

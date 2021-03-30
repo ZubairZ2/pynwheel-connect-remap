@@ -720,10 +720,6 @@ class Community < ApplicationRecord
     end
   end
 
-  def get_scheduled_tour_stops stop_ids
-    TourStop.where(id: stop_ids)
-  end
-
   private
 
   def populate_favorites(items_objs,email_to)

@@ -1,13 +1,16 @@
 module SchedualToursHelper
   def get_user_tour_stops (community, tour_user)
     if community.present? && community.tour.present?
-        community.tour.tour_stops.order(:sort)
+      unit_ids = community.tour.tour_stops.where(stop_type: "unit").pluck(:stop_id) 
+      non_available_stops = unit_ids.present? ? Unit.where(id: unit_ids, available: false).ids : []
+      
+      community.tour.tour_stops.where.not(stop_id: non_available_stops)
     else
       []
     end
   end
 
-  def stop_should_be_visible stop 
+  def stop_should_be_visible stop
     if stop.stop_type === "elevator" || stop.stop_type === "building_starting_point"
       false
     else
@@ -81,11 +84,15 @@ module SchedualToursHelper
     timezone = time_zone.name
   end
 
-  def get_visible_tour_stops(community, tour)
+    def get_visible_tour_stops(community, tour)
     if tour.present? && tour.stops_list.present?
       community.tour.tour_stops.where(id: tour.stops_list).pluck(:id)
     else
-      community.tour.tour_stops.where(display_stop: true).pluck(:id)
+      stop_ids = community.tour.tour_stops.where(display_stop: true).where.not(stop_type: "building_starting_point").where.not(stop_type: "elevator").pluck(:id)
+      unit_stops_ids = community.tour.tour_stops.where(id: stop_ids, stop_type: "unit").pluck(:stop_id)
+      ids_list = Unit.where(id: unit_stops_ids, available: false).pluck(:id)
+
+      stop_ids - TourStop.where(stop_id: ids_list).pluck(:id)
     end
 
   end
