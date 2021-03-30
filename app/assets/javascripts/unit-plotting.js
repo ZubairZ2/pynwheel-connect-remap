@@ -275,9 +275,8 @@ function doDraggable() {
   $('.marker').draggable({
     containment: 'parent',
     stack: ".marker",
-
       // get the initial X and Y position when dragging starts
-      start: function(event, ui) {
+    start: function(event, ui) {
       debugger
 
       console.log("start drag 123")
@@ -327,19 +326,21 @@ function doDraggable() {
         drag__access_point(event, ui)
       else
         drag__original_work(event, ui)
+
     },
     stop: function(event, ui) {
       debugger
       if(is_ui_a_door(ui))
-          stop__door_work(event, ui)
+        stop__door_work(event, ui)
       else if(is_ui_a_accesspoint(ui))
         stop__access_point(event, ui)
       else
         stop__original_work(event, ui)
     }
+
   }).on('mousedown touchstart', function(e) {
-    e.stopImmediatePropagation();
-    return false;;
+      e.stopImmediatePropagation();
+      return false;
   })
 }
 
@@ -382,7 +383,7 @@ function doDraggable() {
          }
        });
      });
-  }
+  } 
 
 
 function removeUnitFromSelectedArray(value){
