@@ -89,7 +89,7 @@ class SitemapAmenitiesController < ApplicationController
 		else
 		  render json: {unit: {}, door: {}, status: nil, success: false}
 		end
-	end
+	end 
 
 	def load_amenity_door_lock
 		@amenity = @sitemap.amenities.find params[:id]
