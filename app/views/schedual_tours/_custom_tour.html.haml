@@ -27,12 +27,16 @@
           %span Your customized tour is removed and set to community standard tour
 
       .modal-footer
-        - if is_tour_in_future(community, tour)
-          %a.btn.btn-success{:href => reschedule_tour(tour, community, community_code)} Reschedule Tour
-          %a.btn.btn-primary{"data-target" => "#customizeStopsModal#{tour.id}", "data-toggle" => "modal", :href => "#"} Customize Tour
-        
-        - if is_tour_customized(tour)
-          %button.btn.btn-warning{:type => "button", :onclick => "resetToStandardTour(#{community.id}, #{tour_user.id})"} Reset to Standard Tour
+        - if tour.is_tour_completed
+          %a.btn.btn-success.pull-right{:href => schedule_tour_of_user(@community, @community_code, tour_user.id)} Schedule Tour
+
+        - else
+          - if is_tour_in_future(community, tour)
+            %a.btn.btn-success{:href => reschedule_tour(tour, community, community_code)} Reschedule Tour
+            %a.btn.btn-primary{"data-target" => "#customizeStopsModal#{tour.id}", "data-toggle" => "modal", :href => "#"} Customize Tour
+
+          - if is_tour_customized(tour)
+            %button.btn.btn-warning{:type => "button", :onclick => "resetToStandardTour(#{community.id}, #{tour_user.id})"} Reset to Standard Tour
 
 = render :partial => 'customize_tour_stops', :locals => {tour_user: tour_user, tour: tour, community: community, community_code: community_code, community_tour_stops: community_tour_stops}
 %div{ :id => "customize-tour-stops-#{tour.id}", data: { tour_stops: get_visible_tour_stops(@community, tour) } }

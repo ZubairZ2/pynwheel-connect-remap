@@ -116,7 +116,7 @@
           <div class="Pyn_Modal">
             <p>Great! We are looking forward to having you at our property. Please complete the following fields to confirm your reservation:</p>
             
-            <%= form_for TourUser.new, url: "/create_tour_user_from", :as => :tour_user, class: "form_popup", id: "tour_user_form", method: 'post' do |f| %>
+            <%= form_for @tour_user, url: "/create_tour_user_from", :as => :tour_user, class: "form_popup", id: "tour_user_form", method: 'post' do |f| %>
 
               <%= hidden_field_tag :sched_tour_id, nil , :id => "sched_tour_id"%>
               <%= hidden_field_tag :community_id, @community_id %>

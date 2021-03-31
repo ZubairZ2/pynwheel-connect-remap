@@ -68,6 +68,14 @@ module SchedualToursHelper
     "#{root_url}scheduler/change_schedule_tour_time/#{tour.id}?datetime=#{scheduled_tour_date_time(tour)}"
   end
 
+  def schedule_tour_of_user community, community_code, tour_user_id
+    puts "---------"*100
+    puts tour_user_id
+    puts "---------"*100
+
+    "#{root_url}scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community_code}&tour_user_id=#{tour_user_id}&schedual_tours_page=true&direct=true"
+  end
+
   def is_tour_in_future(community, tour, timezone = nil)
     if community.present? && community.latitude.present? && community.longitude.present?
       timezone = get_time_zone(community)
