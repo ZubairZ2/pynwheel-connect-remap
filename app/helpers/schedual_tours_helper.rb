@@ -69,10 +69,6 @@ module SchedualToursHelper
   end
 
   def schedule_tour_of_user community, community_code, tour_user_id
-    puts "---------"*100
-    puts tour_user_id
-    puts "---------"*100
-
     "#{root_url}scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community_code}&tour_user_id=#{tour_user_id}&schedual_tours_page=true&direct=true"
   end
 
