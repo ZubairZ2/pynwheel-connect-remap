@@ -1,11 +1,12 @@
 .h-500{
-  height: 500px;
+  height: 350px;
+  background: "#d7d7d7";
 }
 .h-700{
   height: 700px;
 }
 .numbers_div{
-  height: 500px;
+  height: 350px;
   display: table;
 }
 .numbers_div_700{
@@ -17,16 +18,59 @@
   vertical-align: middle;
   text-align:center;
 }
-.count_int{ font-size: 100px; }
+.count_int{ font-size: 50px; font-weight: 600;}
 .count_text{ font-size: 16px; }
-.chartjs-render-monitor{ margin-top: 60px; }
 .marg-150 {
 	margin-top: 70px;
   margin-bottom: 70px;
 }
-.hour_session_row .chartjs-render-monitor{
-  height: 700px !important;
+.maps-box .row { border: 1px solid #d7d7d7; padding-bottom: 70px;  }
+.mt-80 { margin-top: 10px;}
+#timeframe{ width: -webkit-fill-available;}
+.row .chartjs-render-monitor, .row .chartjs-size-monitor{
+  height: 330px !important;
 }
-.half_count_int { font-size: 50px !important;}
-.maps-box .row { border: 1px solid #d7d7d7; padding-bottom: 80px; }
-.mt-80 { margin-top: 80px;}
+.row .pie_width .chartjs-render-monitor, .row .pie_width .chartjs-size-monitor{
+  width: 330px !important;
+  margin-left: 100px;
+}
+.align-right{
+ float: right;
+ margin-right: 20px;
+}
+.chart_heading{
+  font-weight: 600;
+  font-size: 30px;
+  margin-top: 20px;
+  margin-left: 35px;
+}
+.pie_description .dot{
+  height: 25px;
+  width: 25px;
+  border-radius: 50%;
+  vertical-align: middle;
+  display: inline-block;
+}
+.pie_description{
+  margin-top: 10px; 
+}
+.events_with, .multiple_page, .tour_site_true{
+  background-color: rgba(176,223,229,0.5);
+  border: 2px solid rgba(176,223,229,1);
+}
+.events_without, .apply_clicks_without, .favourite_saved_without, .favourite_sent_without, .price_opened_without, .tour_site_false, .see_availability_without, .tour_counter_without, .tour_unscheduled{
+  background-color: rgba(255,252,187,0.5);
+  border: 2px solid rgba(255,252,187,1);
+}
+.apply_clicks_with, .price_opened_with, .tour_scheduled{
+  background-color: rgba(209, 255, 213, 0.7);
+  border: 2px solid rgba(209, 255, 213, 1);
+}
+.favourite_saved_with, .see_availability_with{
+  background-color: rgba(205, 183, 246, 0.5);
+  border: 2px solid rgba(205, 183, 246, 1); 
+}
+.favourite_sent_with, .single_page, .tour_counter_with{
+ background-color: rgba(255, 204, 203, 0.8);
+  border: 2px solid rgba(255, 204, 203, 1);  
+}
