@@ -91,6 +91,10 @@ class User < ApplicationRecord
     (role == "Community admin") || (role == "Dwelo admin")
   end
 
+  def is_comm_admin?
+    role == "Community admin"
+  end
+
   def is_community_manager?
     role == "Community manager"
   end

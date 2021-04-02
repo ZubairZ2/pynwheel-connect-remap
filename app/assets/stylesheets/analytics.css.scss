@@ -26,7 +26,7 @@
 }
 .maps-box .row { border: 1px solid #d7d7d7; padding-bottom: 70px;  }
 .mt-80 { margin-top: 10px;}
-#timeframe{ width: -webkit-fill-available;}
+#timeframe{ width: -webkit-fill-available; width: -moz-available;}
 .row .chartjs-render-monitor, .row .chartjs-size-monitor{
   height: 330px !important;
 }
@@ -73,4 +73,9 @@
 .favourite_sent_with, .single_page, .tour_counter_with{
  background-color: rgba(255, 204, 203, 0.8);
   border: 2px solid rgba(255, 204, 203, 1);  
+}
+.empty_other::before {
+  content: "*";
+  color: blue;
+  padding-right: 2px;
 }
