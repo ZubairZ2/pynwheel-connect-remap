@@ -70,3 +70,9 @@
               %button.btn-primary.done_btn.mb-20{:onclick => "visitor_index_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 :javascript
+  if(window.location.href.includes('userSearch'))
+  {
+    email = window.location.href.split('userSearch');
+    oTable = $('#miyazaki').DataTable(); 
+    oTable.search(email[1]).draw();
+  }

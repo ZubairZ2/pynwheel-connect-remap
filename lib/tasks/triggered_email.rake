@@ -11,24 +11,28 @@ namespace :triggered_email do
   		diff = current_time.to_s(:time).to_time - tour.tour_time.to_s(:time).to_time
   		
   		th = TourHistory.where(arrived: [(current_time - 3600)..current_time], tour_id: community.tour.id, tour_user_id: tu.id)
-  		email_msg = "#{tu.name.capitalize} missed a scheduled tour!<br><br>Tour scheduled: #{tour.tour_date.strftime('%Y-%m-%d')}/#{tour.tour_time.strftime('%I:%M %p')}<br><br>We have sent them a message asking if they would like to reschedule. Here is their contact information in case you want to follow up: <br><br><a href='mailto:#{tu.email}'>#{tu.email}</a><br><a href='tel:#{tu.phone_number}'>#{tu.phone_number}</a><br><Link to user’s profile>"
-  		sms_msg = "#{tu.name.capitalize} missed a scheduled tour!<br><br>Tour scheduled: #{tour.tour_date.strftime('%Y-%m-%d')}/#{tour.tour_time.strftime('%I:%M %p')}
-
-  		We have sent them a message asking if they would like to reschedule. Here is their contact information in case you want to follow up: 
   		
-  		<a href='mailto:#{tu.email}'>#{tu.email}</a>
-
-  		<a href='tel:#{tu.phone_number}'>#{tu.phone_number}</a>
   		
-  		<Link to user’s profile>"
-  		
-  		unless diff > 3600 && diff < 6600 && !th.present? && !tour.missed_email_sent
+  		if diff > 3600 && diff < 6600 && !th.present? && !tour.missed_email_sent
+	  		base_url =  Rails.env.development? ? "localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-qa.herokuapp.com/" : "https://pynwheelapp.com/")
   			tour.update_column 'missed_email_sent', true
   			emails = community.email.split(',')
 	  		emails.each do |email|
 				DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,emails[0],false)
 	  		end
-	  		base_url =  Rails.env.development? ? "localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/")
+
+	  		profileUserLink = base_url + "communities/#{community.id}/schedual_tours?userSearch=" + tu.email
+	  		email_msg = "#{tu.name.capitalize} missed a scheduled tour!<br><br>Tour scheduled: #{tour.tour_date.strftime('%Y-%m-%d')}/#{tour.tour_time.strftime('%I:%M %p')}<br><br>We have sent them a message asking if they would like to reschedule. Here is their contact information in case you want to follow up: <br><br><a href='mailto:#{tu.email}'>#{tu.email}</a><br><a href='tel:#{tu.phone_number}'>#{tu.phone_number}</a><br><Link to user’s profile>"
+	  		sms_msg = "#{tu.name.capitalize} missed a scheduled tour!<br><br>Tour scheduled: #{tour.tour_date.strftime('%Y-%m-%d')}/#{tour.tour_time.strftime('%I:%M %p')}
+
+	  		We have sent them a message asking if they would like to reschedule. Here is their contact information in case you want to follow up: 
+	  		
+	  		<a href='mailto:#{tu.email}'>#{tu.email}</a>
+
+	  		<a href='tel:#{tu.phone_number}'>#{tu.phone_number}</a>
+	  		
+	  		<a href='#{profileUserLink}'>Link to user's profile</a>"
+
 	  		community_code = get_community_code community
 	  		scheduler_link = "#{base_url}scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community_code}&direct=true"
 	  		email_msg_tour_user = "Hi, #{tu.name.capitalize}! It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. Please click the link below to reschedule. <br><br><div style='align-item: center;'><a class='btn btn-success primary-button' href='#{scheduler_link}' id='sample_btn' style='align-items: center; display: inline-grid; font-size: 14px; padding: 5px; color: white; border-radius: 4px; width: 130px; height: 30px; background-color: rgb(32, 163, 69); font-family: &quot;Open Sans Regular&quot;;'' target='_blank'>Reschedule My Tour!</a></div><br><br>Thank you!"
