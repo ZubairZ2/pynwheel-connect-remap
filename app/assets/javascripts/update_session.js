@@ -171,8 +171,9 @@ $(document).ready(function () {
             need_reload = true
 
           if (load_check && need_reload) {
-              //$.ajax({ type: 'POST', cache: false, url: update_session_url  });
+              $.ajax({ type: 'POST', cache: false, url: update_session_url  });
               window.localStorage.removeItem("run_only_one_time");
+              sleep(500)
           }
       }
   });
@@ -180,4 +181,8 @@ $(document).ready(function () {
 
 if (window.localStorage.getItem("run_only_one_time") == null){
   window.localStorage.setItem("run_only_one_time", "true")
+}
+function sleep(delay) {
+    var start = new Date().getTime();
+    while (new Date().getTime() < start + delay);
 }

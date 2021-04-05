@@ -91,11 +91,16 @@ def make_bar_chart(session_each_day_labels, session_each_day_counts, label, back
             backgroundColor: background_color,
             borderColor: border_color,
             borderWidth: 4,
+            titleFontSize: 18,
+            bodyFontSize: 18,
+            footerFontSize: 18,
+            fontSize: 18,
+            fontStyle: 'bold',
             data: session_each_day_counts
         }
       ]
     }
-    options = { legend: {display: false} }
+    options = { legend: {display: false}, title: { fontSize: 18, fontStyle: 'bold'} }
     return labels, options
   end
 

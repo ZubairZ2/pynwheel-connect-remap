@@ -1,6 +1,7 @@
 class WebpagesController < ActionController::Base
   before_action :set_community, except: [:update_session]
   after_action :maintain_session, except: [:update_session]
+  protect_from_forgery :except => [:update_session]
   def index
     @floorplans = []
     units_ids_not_present = (cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]")
@@ -154,7 +155,11 @@ class WebpagesController < ActionController::Base
   end
 
   def update_session
-    #binding.pry
+    track_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
+    track_session.update_column(:end_datetime, session[:last_active_datetime].to_datetime)
+    reset_session
+    session[:last_active_datetime] = nil
+    puts " ---------------------- Track Session Completed --------------------------------"
   end
 
   private
@@ -186,6 +191,8 @@ class WebpagesController < ActionController::Base
       else
         track_session = return_new_session
       end
+    elsif TrackSession.where(session_id: cookies[:webpages_session_id]).last.end_datetime.present? 
+        track_session = return_new_session 
     elsif session_datetime_not_in_limit?(session[:last_active_datetime].to_datetime)
       if TrackSession.where(session_id: cookies[:webpages_session_id]).last.end_datetime.nil?
         last_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
@@ -203,7 +210,7 @@ class WebpagesController < ActionController::Base
   end
 
   def return_new_session
-    TrackSession.new(start_datetime: (DateTime.now.utc), track_session_type: "maps", community_id: @community.id,session_id: cookies[:webpages_session_id])
+    TrackSession.new(start_datetime: (DateTime.now), track_session_type: "maps", community_id: @community.id,session_id: cookies[:webpages_session_id])
   end
 
   def manage_session_info(session)
@@ -225,8 +232,8 @@ class WebpagesController < ActionController::Base
   end
 
   def session_datetime_not_in_limit?(session_datetime)
-   current_datetime = DateTime.now.utc
-   (current_datetime - session_datetime.utc) > 10.minutes # return true to make a new record
+   current_datetime = DateTime.now
+   (current_datetime - session_datetime) > 10.minutes # return true to make a new record
   end
   
 end

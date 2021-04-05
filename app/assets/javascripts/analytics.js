@@ -1,6 +1,8 @@
 $(document).ready(function() {
-  $('.filter_select2').select2();
-  default_method();
+  if ($(".filter_select2").length > 0){
+    $('.filter_select2').select2();
+    default_method();
+  }
   $('input[name="timeframe"]').on('apply.daterangepicker', function (ev, picker) {
     set_url()
   });
@@ -14,6 +16,7 @@ $(document).ready(function() {
     $('.date_range_filter').daterangepicker({
         startDate: start,
         endDate: end,
+        minDate: moment('04-04-2021', 'MM-DD-YYYY'),
         ranges: {
            'Today': [moment(), moment()],
            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
