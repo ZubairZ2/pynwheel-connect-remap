@@ -564,11 +564,11 @@ json.tours @tours do |tour|
             end
           end
 
-        elsif stop_lock_provider == "EdgeState" and @community.edge_state.present? and stop.remote_locks.present?
-          rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.remote_locks.last.stop_id) if @community.edge_state.present?
+        elsif stop_lock_provider == "EdgeState" and @community.edge_state.present? and stop.edgestate_locks.present?
+          rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.edgestate_locks.first.stop_id) if @community.edge_state.present?
           if rml.present?
             if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
-              igloo_guest = IglooGuest.find_by(stop_id: stop.remote_locks.last.stop_id, tour_user_id: @tour_user.id, status: "active")
+              igloo_guest = IglooGuest.find_by(stop_id: stop.edgestate_locks.first.stop_id, tour_user_id: @tour_user.id, status: "active")
               if igloo_guest.nil? 
                 pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
                 json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
@@ -619,7 +619,7 @@ json.tours @tours do |tour|
           end
 
         elsif stop_lock_provider == "Dwelo"
-          dwelo_lock = stop.remote_locks.where.not(dwelo_id: nil).last rescue nil
+          dwelo_lock = stop.dwelo_locks.first rescue nil
           if dwelo_lock.present?
             json.guest_pin ''
             json.latch_link ''
@@ -667,7 +667,7 @@ json.tours @tours do |tour|
         json.stop_lock_provider stop_lock_provider
 
         if stop_lock_provider == "EdgeState"
-          rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
+          rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id, stop_type: stop.stop_type.classify) if @community.edge_state.present?
           if rml.present?
             if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
               igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
@@ -693,10 +693,10 @@ json.tours @tours do |tour|
           end
 
         elsif stop_lock_provider == "Latch"
-          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.stop_id) if @community.latch.present?
+          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify) if @community.latch.present?
           if lch.present?
 
-            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, status: "active") if @tour_user.present?
+            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: stop.stop_type.classify, status: "active") if @tour_user.present?
             if latch_guest.present?
               json.guest_pin ''
               json.latch_link latch_guest.latch_link
@@ -714,7 +714,7 @@ json.tours @tours do |tour|
 
         elsif stop_lock_provider == "Dwelo"
           _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
-          dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).last rescue nil
+          dwelo_lock = _stop_.dwelo_locks.first rescue nil
           
           if dwelo_lock.present?
             json.guest_pin ''
@@ -727,9 +727,9 @@ json.tours @tours do |tour|
           end
 
         elsif stop_lock_provider == "Zerv"
-          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: stop.stop_type.camelcase, stop_id: stop.stop_id) if @community.zerv.present?
+          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: stop.stop_type.classify, stop_id: stop.stop_id) if @community.zerv.present?
           if zrv.present?
-            zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: stop.stop_type.camelcase, guest_of_stop_id: stop.stop_id, status: "active")
+            zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: stop.stop_type.classify, guest_of_stop_id: stop.stop_id, status: "active")
             if zrv_guest.present?
               is_zerv_lock_present = true
               json.guest_pin 'The door will automatically unlock when your mobile device is within range'
@@ -1280,9 +1280,9 @@ json.tours @tours do |tour|
     json.locks_provider (@community.enable_locks and @community.locks_provider.present?) ? @community.locks_provider : ''
     if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
       if @community.locks_provider == "EdgeState"
-        json.starting_point_locked tour.remote_locks.where(dwelo_id: nil).present? ? true : false
+        json.starting_point_locked tour.edgestate_locks.present? ? true : false
       elsif @community.locks_provider == "Dwelo"
-        json.starting_point_locked tour.remote_locks.where.not(dwelo_id: nil).present? ? true : false
+        json.starting_point_locked tour.dwelo_locks.present? ? true : false
       elsif  @community.locks_provider == "Latch"
         json.starting_point_locked tour.latch_locks.present? ? (@tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: tour.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active").present?) : false
       else

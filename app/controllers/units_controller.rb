@@ -86,7 +86,7 @@ class UnitsController < ApplicationController
       @unit.available = false
     end
     if @unit.save
-      update_enable_locks()
+      update_locks()
       if @unit.floorplan.present? and @unit.floorplan.amenities.present? 
         floorplan_amenities = @unit.floorplan.amenities
         add_floorplan_amenities = "true"
@@ -108,6 +108,7 @@ class UnitsController < ApplicationController
     @community_info = Community.includes(:floorplans, :units).find(params[:community_id])
     @units = @community_info.units.map { |i| i.marketing_name.gsub(/\d+/) { |s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map { |x, y| y }
     @all_locks = all_locks(@community)
+    @door = @unit.door
   end
 
   def update
@@ -196,7 +197,7 @@ class UnitsController < ApplicationController
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
         if @unit.update(unit_params)
-          update_enable_locks()
+          update_locks()
           if params[:unit].present? and @unit.floorplan.present? and params[:unit][:floorplan_id] != @unit.floorplan.id
             delete_previous_floorplan_images = "delete previous"
             if unit_previous_floorplan_amenities.present?
@@ -227,7 +228,7 @@ class UnitsController < ApplicationController
       else
         if params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
           @unit.update(unit_params)
-          update_enable_locks()
+          update_locks()
           if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != @unit.floorplan.id
             delete_previous_floorplan_images = "delete previous"
             AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
@@ -258,7 +259,7 @@ class UnitsController < ApplicationController
           else
             @unit.update(unit_params)
 
-            update_enable_locks()
+            update_locks()
 
             if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != @unit.floorplan.id
               delete_previous_floorplan_images = "delete previous"
@@ -370,7 +371,7 @@ class UnitsController < ApplicationController
     unit = @community.units.where(provider_unit_id: params[:id]).first
     if unit.present?
       door ||= unit.door || unit.build_door
-      door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+      door.update_attributes(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
       render json: {unit: unit, door: door.reload, success: true}
     else
       render json: {unit: {}, door: {}, success: false}
@@ -392,15 +393,15 @@ class UnitsController < ApplicationController
 
   def update_unit_door_lock
     @unit = @community.units.where(provider_unit_id: params[:id]).first
-    @unit.update_attributes(lock_provider: params[:lock_provider], access_code: params[:access_code])
-    assign_lock(@community, @unit, params[:lock_id]) if params[:lock_id].present?
+    @unit.door.update_attributes(lock_provider: params[:lock_provider], access_code: params[:access_code])
+    assign_lock_to_door(@community, @unit.door, params[:lock_id]) if params[:lock_id].present?
   end
 
   def plot_multiple_units_door_for_floorplate
     params[:ids].each do |id|
       unit = @community.units.where(provider_unit_id: id).first
       door ||= unit.door || unit.build_door
-      door.update_attributes(x_plot: params[:x_plot], y_plot: params[:y_plot])
+      door.update_attributes(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
     end
 
     data = []
@@ -608,6 +609,18 @@ class UnitsController < ApplicationController
           @unit.update_column(:lock_provider, "") if lock_id.nil? or params[:lock_id] == ""
         end
       end 
+  end
+
+  def update_locks
+    if @community.enable_locks
+      if @community.auto_wayfinding and @unit.door.present?
+        @unit.door.update_attributes(lock_provider: params[:unit][:lock_provider], access_code: params[:unit][:access_code])
+        assign_lock_to_door(@community, @unit.door, params[:lock_id]) if params[:lock_id].present?
+      else
+        update_enable_locks()
+        # @unit.door.update_attributes(lock_provider: '') if @unit.door.present?  # secured, we should never have 2 locks in DB (1 for unit and 1 for door), in case only auto_wayfinding is turned off while Door is present in DB
+      end
+    end
   end
 
 end

@@ -296,7 +296,7 @@ function getTagToPlot(url){
         arr[0][2] = dy;
     }
     else if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined'){   
-        if(automate_wayfinding == true) 
+        if(automate_wayfinding == true && self_tour == true) 
             plus_icon = returnPlusIconTag(selected[0][0], "unit", -6)
         else
             plus_icon = ''
@@ -316,7 +316,7 @@ function getTagToPlot(url){
     }
 
     else if(typeof floorplate_id_for_amenity !== 'undefined' || typeof sitemap_id_for_amenity !== 'undefined'){
-        if(automate_wayfinding == true) 
+        if(automate_wayfinding == true && self_tour == true) 
             plus_icon = returnPlusIconTag(selected[0][0], "amenity", 0)
         else
             plus_icon = ''

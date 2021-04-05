@@ -3,7 +3,7 @@ module StandardBehaviourForLock
     
     included do
         def clear_lock_provider
-            self.stop.update_column(:lock_provider, "")
+            self.stop.update_column(:lock_provider, "") rescue nil
         end
     end
     

@@ -15,7 +15,7 @@ class AccessPointsController < ApplicationController
           status = "created"
         end
     
-        access_point.update_attributes(floor: params[:floor], x_plot: params[:x_plot], y_plot: params[:y_plot], community_id: @community.id)
+        access_point.update_attributes(community_id: @community.id, floor: params[:floor], x_plot: params[:x_plot], y_plot: params[:y_plot])
         url = get_open_modal_path(access_point, params)
 
         render json: {property_type: @property_type, access_point: access_point.reload, url: url, status: status, success: true}
@@ -57,7 +57,7 @@ class AccessPointsController < ApplicationController
         
         params[:floors].each do |floor|
             new_point = @property_type.access_points.build
-            new_point.update_attributes(floor: floor.to_i, x_plot: access_point.x_plot, y_plot: access_point.y_plot, community_id: @community.id)
+            new_point.update_attributes(community_id: @community.id, floor: floor.to_i, x_plot: access_point.x_plot, y_plot: access_point.y_plot)
         end
     
         flash[:notice] = "Access Point added successfully."

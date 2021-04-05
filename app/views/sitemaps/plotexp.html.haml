@@ -249,9 +249,9 @@
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
           - if current_user.is_super_admin?
             %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
-          - if @community.auto_wayfinding
+          - if @community.self_tour and @community.auto_wayfinding
             %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
-          - if @community.enable_locks and @community.auto_wayfinding
+          - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
             %button.btn.btn-success{onclick: 'start_access_point_plot(event)'}
               Add Access Point
               %i.propertyDetailName.fa.fa-question-circle
@@ -295,12 +295,12 @@
                           = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{@community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                             %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
 
-                          - if !unit_door_exists and @community.auto_wayfinding
+                          - if !unit_door_exists and @community.self_tour and @community.auto_wayfinding
                             = link_to "javascript:void(0);", { id: "plus_#{unit.provider_unit_id}", style: "margin-left: -6px;", title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}, onclick: 'plot_entry_point(event)'} do
                               %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize.to_i/2}px;" }
                             - unit_door_exists = false
 
-                        - if unit_door_exists and @community.auto_wayfinding
+                        - if unit_door_exists and @community.self_tour and @community.auto_wayfinding
                           - unit_door = unit.door
                           = link_to "javascript:void(0);", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "unit_door"}} do
                             %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
@@ -309,7 +309,7 @@
                         - puts "duplicated.........."
                       .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}", :id=>"h-#{unit.provider_unit_id}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot","data-unit-form-url"=>"/communities/#{@community.id}/units/#{unit.id}/adjust_position"}
                   
-                  - if @community.enable_locks and @community.auto_wayfinding
+                  - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
                     - coordinates_array = []
 
                     - @access_points.each do |access_point|
@@ -494,6 +494,7 @@
   var community_id = #{params[:community_id]};
   var sitemap_id = '#{@sitemap.id}';
 
+  var self_tour = #{@community.self_tour}
   var enable_locks = #{@community.enable_locks}
   var automate_wayfinding = #{@community.auto_wayfinding}
 

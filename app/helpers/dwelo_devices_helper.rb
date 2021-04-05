@@ -313,7 +313,7 @@ module DweloDevicesHelper
           latch_link = response["payload"]["message"]["link"]
 
           if latch_link.present?
-            LatchLock.where(lock_id: lock_info[0]).map{|stop_data| tour_user.latch_guests.create(community_id: community.id, latch_link: latch_link, guest_of_stop_type: stop_data.stop_type , guest_of_stop_id: stop_data.stop_id, start_time: start_time.to_i, end_time: end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
+            LatchLock.where(lock_id: lock_info[0]).map{|stop_data| tour_user.latch_guests.create(community_id: community.id, latch_link: latch_link, guest_of_stop_type: stop_data.stop_type.classify , guest_of_stop_id: stop_data.stop_id, start_time: start_time.to_i, end_time: end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
           end
         end
       end

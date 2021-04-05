@@ -66,11 +66,13 @@ class Unit < ApplicationRecord
 
   has_many :paths, as: :map_path
   has_many :path_points, through: :paths
-  # has_many :remote_locks,  -> { for_units }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
-  has_many :remote_locks, as: :stop, dependent: :destroy
-  has_many :latch_locks, as: :stop, dependent: :destroy
+  # has_many :remote_locks,  -> { for_units }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy  # was being handled manually
+  has_many :remote_locks, as: :stop     # remove it only after confirm refactoring, as it is being used
+  has_many :edgestate_locks, -> { where(dwelo_id: nil) },  class_name: 'RemoteLock', as: :stop
+  has_many :dwelo_locks, -> { where(edge_state_id: nil) },  class_name: 'RemoteLock', as: :stop
+  has_many :latch_locks, as: :stop
+  has_many :zerv_locks, as: :stop
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
-  has_many :zerv_locks, as: :stop, dependent: :destroy
   has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
 
   has_one :door, as: :attached_with, dependent: :destroy
@@ -178,4 +180,9 @@ class Unit < ApplicationRecord
   def remove_doors_plotting
     door.destroy if door.present?
   end
+
+  def digital_lock_provider?
+    self.lock_provider.present? and self.lock_provider != "" and self.lock_provider != "Manual"
+  end
+
 end

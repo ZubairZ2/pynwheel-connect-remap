@@ -462,6 +462,7 @@ Rails.application.routes.draw do
         delete :delete_additional_image
       end
     end
+    get 'return_door_lock', to: 'amenities#return_door_lock'
   end
   post '/draw_map_line/:unit_or_amenity', to: 'tours#draw_map_line', as: :draw_line
   post '/add_elevator/:tour_id/:community_id', to: 'tours#add_elevator', as: :create_elevator
