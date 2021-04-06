@@ -68,6 +68,11 @@
               %h3 Need to pare down your list?
               %p{:style => "margin-bottom: 20px"} Tap the heart to remove an item from the page, or click the clear button below to remove all items.
               %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
+          .bg-bottom
+            .need-to
+              = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary", :target=> "_blank", :style => ' width: -webkit-fill-available; margin-top: 15px; font-weight: bold;'
+              %span.logo-lg{:style => "text-align: center;"}
+                %img{:alt => "", :src => "/assets/pynwheel_connect_logo_v2.png", :title => "",:style => "width: 265px; height: 61px; text-align: center;  margin-top: 15px; margin-left: 12px;"}
       
       .right-side
         - if @units.nil?
