@@ -72,7 +72,7 @@
             .need-to
               = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary", :target=> "_blank", :style => ' width: -webkit-fill-available; margin-top: 15px; font-weight: bold;'
               %span.logo-lg{:style => "text-align: center;"}
-                %img{:alt => "", :src => "/assets/pynwheel_connect_logo_v2.png", :title => "",:style => "width: 265px; height: 61px; text-align: center;  margin-top: 15px; margin-left: 12px;"}
+                %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}" , :title => "",:style => "width: 60%; text-align: center;  margin-top: 15px; display: block; margin-left: auto; margin-right: auto;"}
       
       .right-side
         - if @units.nil?
