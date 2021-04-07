@@ -28,7 +28,8 @@ class TourHistory < ApplicationRecord
   private
 
   def send_arrival_notifications
-  	send_email_sms_or_both ["Visitor Has Arrived", "A Pynwheel Self Tour has begun for: \n #{self.tour_user.name} \n #{self.tour_user.email}"]
+    verification_text = self.verified_by.present? "<br>They have successfully passed the ID verification process." : ""
+  	send_email_sms_or_both ["Visitor Has Arrived", "A Pynwheel Self Tour has begun for: \n #{self.tour_user.name} \n #{self.tour_user.email}" + verification_text]
   end
 
   def send_update_notifications
