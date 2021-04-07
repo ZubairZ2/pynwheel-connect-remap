@@ -3,10 +3,12 @@
  * sitemap, floorplate, amenity map plotting
 */
 var hallways_coordinates = []
+var tmp_id = 0;
 $(window).on('load', function () {
     /**
      * map controls
      */
+
     var xpos;
     var ypos;
     var xmove = 0;
@@ -29,57 +31,53 @@ $(window).on('load', function () {
     });
 
     // place maker on click
-    var DELAY = 250, clicks = 0, timer = null;
     $("#map").click(function (e) {
-        clicks++;  //count clicks
-        if (clicks === 1) {
-            timer = setTimeout(function () {
-                marker_color = $('#marker_color').html();
-                camera_margin = $('#camera-margin').html();
-                marker_font_size = ($('#font_size').html());
-                left_margin = parseInt($('#left_margin').html());
-                right_margin = parseInt($('#right_margin').html());
-                dx = parseInt($('#active_x_plot').html()) - 8;
-                dy = parseInt($('#active_y_plot').html() - 10);
-                if ($("#hallway_btn").html() == "Start Plotting Hallways") {
-                    $(this).css('cursor', 'default');
-                    e.preventDefault();
-                    $('#new-aj-popup #x_plot').val(dx);
-                    $('#new-aj-popup #y_plot').val(dy);
-                    if (addmode) {
-                        //$('#map-marker').css({left: (dx-8)+"px", top: (dy-10)+"px", display: "block"});
-                        $('#map-marker').css({left: (dx) + "px", top: (dy) + "px", display: "block"});
-                        $("#new-aj-popup").show();
-                    }
-                } else {
-                    if ($("#hallway_btn").html() == "Stop Plotting Hallways") {
-                        console.log("Clicked");
-                        dx = e.type === 'touchend' ? ((e.changedTouches[0].pageX - elemPos.left)) : parseInt($('#active_x_plot').html());
-                        dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : parseInt($('#active_y_plot').html());
-                        var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-                        var scaleFactor = (1 / (transform.scale || 1));
-                        dx = (dx * scaleFactor) - (e.type === 'touchend' ? (transform.x * scaleFactor) : (10 * scaleFactor));
-                        dy = (dy * scaleFactor) - (e.type === 'touchend' ? (transform.y * scaleFactor) : (10 * scaleFactor));
-                        dx = Math.round(dx);
-                        dy = Math.round(dy);
-                        var points = {x_plot: dx, y_plot: dy};
-                        hallways_coordinates.push(points);
-                        tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker'   style='left:" + (dx) + "px; top:" + (dy) + "px; z-index:100; position:absolute;'>"
-                        tag += "<i class='fas fa-dot-circle'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100;  ' ></i>";
-                        tag += "</a>"
-                        // tag = "<i class='fas fa-map-marker-alt' style='color: " + '#00FFFF' + ";  left:" + (dx -left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + 14 + "px;'></i>";
-                        $('#map').append(tag);
-                        bind_markers();
-                        draw_line(hallways_coordinates);
-                        icon_drag();
-                    }
-                }
-                clicks = 0;             //after action performed, reset counter
-            }, DELAY);
 
-        } else {
-            clearTimeout(timer);    //prevent single-click action
-            clicks = 0;             //after action performed, reset counter
+        marker_color = $('#marker_color').html();
+        camera_margin = $('#camera-margin').html();
+        marker_font_size = ($('#font_size').html());
+        left_margin = parseInt($('#left_margin').html());
+        right_margin = parseInt($('#right_margin').html());
+        dx = parseInt($('#active_x_plot').html()) - 8;
+        dy = parseInt($('#active_y_plot').html() - 10);
+        if ($("#hallway_btn").html() == "Start Plotting Hallways") {
+            $(this).css('cursor', 'default');
+            e.preventDefault();
+            $('#new-aj-popup #x_plot').val(dx);
+            $('#new-aj-popup #y_plot').val(dy);
+            if (addmode) {
+                //$('#map-marker').css({left: (dx-8)+"px", top: (dy-10)+"px", display: "block"});
+                $('#map-marker').css({left: (dx) + "px", top: (dy) + "px", display: "block"});
+                $("#new-aj-popup").show();
+            }
+        }
+        if ($("#hallway_btn").html() == "Stop Plotting Hallways" && e.target == $('#viewArea').get(0)) {
+
+            dx = e.type === 'touchend' ? ((e.changedTouches[0].pageX - elemPos.left)) : parseInt($('#active_x_plot').html());
+            dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : parseInt($('#active_y_plot').html());
+            var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+            var scaleFactor = (1 / (transform.scale || 1));
+            dx = (dx * scaleFactor) - (e.type === 'touchend' ? (transform.x * scaleFactor) : (10 * scaleFactor));
+            dy = (dy * scaleFactor) - (e.type === 'touchend' ? (transform.y * scaleFactor) : (10 * scaleFactor));
+            dx = Math.round(dx);
+            dy = Math.round(dy);
+            var points = {id: tmp_id++, x_plot: dx, y_plot: dy, selected: true, next_points: []};
+            hallways_coordinates.forEach((element, index) => {
+                if (element.selected === true) {
+                    hallways_coordinates[index].selected = false;
+                    hallways_coordinates[index].next_points.push(points.id);
+                }
+            });
+            hallways_coordinates.push(points);
+            $(".fa-dot-circle").css('color', '#008fd4');
+            tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker' onclick='icon_click($(this))'  style='left:" + (dx) + "px; top:" + (dy) + "px; z-index:100; position:absolute;'>"
+            tag += "<i id='" + points.id + "' class='fas fa-dot-circle fa-lg selected_point'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100; color: #f7296a ' ></i>";
+            tag += "</a>"
+            // tag = "<i class='fas fa-map-marker-alt' style='color: " + '#00FFFF' + ";  left:" + (dx -left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + 14 + "px;'></i>";
+            $('#map').append(tag);
+            bind_markers();
+            draw_line();
+            // icon_drag();
         }
     });
 
@@ -99,12 +97,12 @@ $(window).on('load', function () {
     });
 
     // new marker button click
-    $("#new").click(function(e) {
-      debugger
-      console.log("new marked is created")
-      addmode = true;
-      $("#newmsg").css({display: 'inline-block'});
-      e.preventDefault();
+    $("#new").click(function (e) {
+        debugger
+        console.log("new marked is created")
+        addmode = true;
+        $("#newmsg").css({display: 'inline-block'});
+        e.preventDefault();
     });
 
     // map thumbnail scroller
@@ -154,6 +152,24 @@ $(window).on('load', function () {
 
 });
 
+function icon_click(thiObj) {
+    $(".fa-dot-circle").css('color', '#008fd4');
+    previous_id = $(".selected_point").attr('id');
+    $(".fa-dot-circle").removeClass('selected_point');
+    thiObj.children().css('color', '#f7296a');
+    thiObj.children().addClass('selected_point');
+    current_id = $(".selected_point").attr('id')
+    hallways_coordinates.forEach((element, index) => {
+        if (element.id == current_id) {
+            hallways_coordinates[index].selected = true;
+        } else {
+            hallways_coordinates[index].selected = false;
+        }
+
+
+    });
+}
+
 
 // function remove_icon(thisObj) {
 //     debugger;
@@ -179,34 +195,41 @@ $(window).on('load', function () {
 function bind_markers() {
     $(".hallways_marker").on('dblclick', function (e) {
         if ($('#hallway_btn').html() === "Stop Plotting Hallways") {
+            debuggger;
             dx = Math.round(this.offsetLeft)
             dy = Math.round(this.offsetTop)
             this.remove();
             hallways_coordinates = $.grep(hallways_coordinates, function (data) {
                 return data.x_plot != dx && data.y_plot != dy;
             });
-            draw_line(hallways_coordinates);
         }
     });
 }
 
-function draw_line(hallways_coordinates) {
+function draw_line() {
     $(".line").remove();
     for (var i = 0; i < hallways_coordinates.length - 1; i++) {
-        console.log(hallways_coordinates[i]);
-        x1 = hallways_coordinates[i].x_plot + 8
-        y1 = hallways_coordinates[i].y_plot + 8
-        x2 = hallways_coordinates[i + 1].x_plot + 8
-        y2 = hallways_coordinates[i + 1].y_plot + 8
-        x = $(".plot-image").line(x1, y1, x2, y2, {
-            zindex: 99,
-            color: '#000000',
-            stroke: "1",
-            style: "solid",
-            class: "line"
+        hallways_coordinates[i].next_points.forEach((id, index) => {
+            console.log("asd");
+            console.log(id);
+            for (var j = 0; j < hallways_coordinates.length; j++) {
+                if (id == hallways_coordinates[j].id) {
+                    x1 = hallways_coordinates[i].x_plot + 8
+                    y1 = hallways_coordinates[i].y_plot + 8
+                    x2 = hallways_coordinates[j].x_plot + 8
+                    y2 = hallways_coordinates[j].y_plot + 8
+                    x = $(".plot-image").line(x1, y1, x2, y2, {
+                        zindex: 99,
+                        color: '#000000',
+                        stroke: "1",
+                        style: "solid",
+                        class: "line"
+                    });
+                }
+            }
         });
     }
-    hallways_ajax();
+    // hallways_ajax();
 }
 
 function draw_initial_hallways(hallways_coordinates) {
@@ -216,7 +239,7 @@ function draw_initial_hallways(hallways_coordinates) {
     left_margin = parseInt($('#left_margin').html());
     right_margin = parseInt($('#right_margin').html());
     for (var i = 0; i < hallways_coordinates.length; i++) {
-        tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker'   style='left:" + (hallways_coordinates[i].x_plot) + "px; top:" + (hallways_coordinates[i].y_plot) + "px; z-index:100; position:absolute;'>"
+        tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker' onclick='icon_click($(this))' style='left:" + (hallways_coordinates[i].x_plot) + "px; top:" + (hallways_coordinates[i].y_plot) + "px; z-index:100; position:absolute;'>"
         tag += "<i class='fas fa-dot-circle'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100;  ' ></i>";
         tag += "</a>"
         $('#map').append(tag);
@@ -225,6 +248,7 @@ function draw_initial_hallways(hallways_coordinates) {
     }
 
 }
+
 
 function icon_drag() {
     // marker move
@@ -236,6 +260,7 @@ function icon_drag() {
         // get the initial X and Y position when dragging starts
         start: function (event, ui) {
             console.log("start drag")
+
             var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
             var scaleFactor = (1 / (transform.scale || 1));
             ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);

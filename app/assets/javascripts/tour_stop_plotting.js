@@ -160,7 +160,6 @@ $(document).ready(function () {
     };
 
     $("#map").bind("mouseup touchend", function (e) {
-        debugger
         // first check if user is clicking on scrollbar
         if (e.target != $('#map').get(0)) {
             e.preventDefault();
@@ -192,7 +191,6 @@ $(document).ready(function () {
             door_marker_color = $('#door_marker_color').html();
             door_fontsize = ($('#door_fontsize').html());
             
-            debugger
             if (addmode) {
                 // save plotting for each selected unit
                 if(typeof accesspointplot !== "undefined" && accesspointplot == true){
@@ -205,7 +203,6 @@ $(document).ready(function () {
                         location.reload()
                     }
 
-                    debugger
                     tag = getAccessPointTag();
                 }
                 else{
@@ -218,7 +215,6 @@ $(document).ready(function () {
                         location.reload()
                     }
                     
-                    debugger
                     if(adddoorsmode){
                         tag = getDoorTag(selected[0][0])
                     }
@@ -252,7 +248,6 @@ $(document).ready(function () {
 });
 
 function getDeletionUrl(){
-    debugger
     if (typeof floorplan_id !== 'undefined'){
         return '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+selected[0][0]+'/remove_amenity';
     }
@@ -280,7 +275,6 @@ function getDeletionUrl(){
 }
 
 function getTagToPlot(url){
-    debugger
     if (typeof tour_id_for_stop !== 'undefined') {
         tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
         tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fa fa-star' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top:" + camera_margin + "px;'></i></i>";
