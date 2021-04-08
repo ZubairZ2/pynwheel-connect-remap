@@ -39,6 +39,7 @@
 //= require sitemap
 //= require tour
 //= require floorplate
+//= require chosen.jquery.min
 
 //= require ekko-lightbox
 //= require jquery.remotipart

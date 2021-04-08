@@ -402,6 +402,7 @@ class ToursController < ApplicationController
     @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}
   end
   def ajaxplottourstoppoint
+    byebug
     splitText = params[:tour_stop_id].split(':')
     tour_stop = splitText[0].to_i
     stop_type = splitText[1]
