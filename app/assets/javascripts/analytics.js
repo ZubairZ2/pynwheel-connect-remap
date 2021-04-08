@@ -2,6 +2,8 @@ $(document).ready(function() {
   if ($(".filter_select2").length > 0){
     $('.filter_select2').select2();
     default_method();
+    $('#no-sidemenu .breadcrumb').css('display', 'block')
+    $('#no-sidemenu .breadcrumb').css('margin', '0px')
   }
   $('input[name="timeframe"]').on('apply.daterangepicker', function (ev, picker) {
     set_url()
