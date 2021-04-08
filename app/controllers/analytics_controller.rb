@@ -51,7 +51,7 @@ class AnalyticsController < ApplicationController
       opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :notes_opened_counter) 
       stops_per_tour(start_date, @days_count, @self_tour_records)
       visits_per_tour_stop(@self_tour_records)
-      no_shows(start_date, @days_count, @self_tour_records)
+      #no_shows(start_date, @days_count, @self_tour_records)
     end
     @start_date = start_date
     @end_date = end_date

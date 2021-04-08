@@ -12,7 +12,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
         tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
         tour_history.tour_state = "completed" if params[:left].present?
         tour_history.tour_type = params[:tour_session_type] if params[:tour_session_type].present?
-        tour_history.not_on_time = params[:not_on_time] if params[:not_on_time].present?
+        tour_history.community_id = params[:community_id]
         if  params[:tour_site].present?
           if params[:tour_site] == "self_tour"
             tour_history.tour_site = "onsite"
