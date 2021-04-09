@@ -31,7 +31,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
         tour_history.tour_user_id = params[:tour_user_id]
 
         tour_history.see_availability_counter = params[:see_availability_counter].to_i if params[:see_availability_counter].present?
-        tour_history.apply_clicks_counter = params[:apply_clicks_counter].to_i if params[:apply_clicks_counter].present?
+        tour_history.apply_click_counter = params[:apply_clicks_counter].to_i if params[:apply_clicks_counter].present?
         tour_history.price_opened_counter = params[:price_opened_counter].to_i if params[:price_opened_counter].present?
         tour_history.notes_opened_counter = params[:notes_opened_counter].to_i if params[:notes_opened_counter].present?
         tour_history.camera_opened_counter = params[:camera_opened_counter].to_i if params[:camera_opened_counter].present?
