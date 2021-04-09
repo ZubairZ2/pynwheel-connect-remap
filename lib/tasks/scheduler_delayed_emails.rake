@@ -122,7 +122,7 @@ namespace :delayed_email_notifications do
 		begin
 			emails = community.email.gsub(" ","").split(',')
 			emails.each do |email|
-				NotificationMailer.tour_history_mail(subj.humanize, body, email,community,false).deliver
+				NotificationMailer.tour_history_mail(subj.humanize, body, email,"info@pynwheel.com",community,false).deliver
 			end
 		rescue
 
