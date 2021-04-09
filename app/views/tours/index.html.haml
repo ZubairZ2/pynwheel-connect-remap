@@ -49,18 +49,15 @@
           %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_amenity_Popover","data-content" => " "}
             %span#propertyDetailNameText
               Amenities are added on the "Amenities" page. Select an amenity from the list below to add it to the tour.
-        .imageselect.amenity-imageselect
-          .show-categories
-            = "- select amenity -"
-          %ul#imageselect1{:style => "display: none; z-index: 999;"}
-            - amenity_arr = []
-            - @amenities.each do |amenity|
-              - if !@community.show_map || !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
-                %li{"data-id" => "#{amenity.id.to_s+":amenity"}","data-name" => "#{amenity.name}"}
-                  %a
-                    = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
-                    %span.ml-5
-                      = amenity.name
+    
+        - amenity_arr = []
+        - select_tag_amenity = []
+        - @amenities.each do |amenity|
+          - if !@community.show_map || !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
+            - select_tag_amenity << ["<img src='#{image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"}' />".html_safe + amenity.name, amenity.id.to_s+":amenity"]
+              
+        = select_tag "tour_stop_ids", options_for_select(select_tag_amenity, ""), :class => 'chosen-select-amenity',:"data-placeholder" => "- select amenity -", :multiple => "multiple", :name => "amenity_data_selected", style: "width: 100%;"  
+        %input{:type => "submit", :id=> 'add_amenity_to_stop', :class => 'hidden', :style => "border-radius: 6px; margin-top: 6px;"}/     
 
       - if @community.mdu
         - units = @units.sort_by{|u| u.marketing_name}
@@ -77,9 +74,9 @@
           - units.each do |unit|
             - if (!@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0) ) || !@community.show_map
               - select_tag_unit << [unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name, unit.id.to_s+":unit"]
-          = select_tag "tour_stop_ids", options_for_select(select_tag_unit, ""), :class => 'chosen-select',:"data-placeholder" => "- select unit -", :multiple => "multiple",:name => "unit_data_selected", style: "width: 100%;"
+          = select_tag "tour_stop_ids", options_for_select(select_tag_unit, ""), :class => 'chosen-select-unit',:"data-placeholder" => "- select unit -", :multiple => "multiple",:name => "unit_data_selected", style: "width: 100%;"
 
-          %input{:type => "submit", :id=> 'add_unit_to_stop'}/      
+          %input{:type => "submit", :id=> 'add_unit_to_stop', :class => 'hidden', :style => "border-radius: 6px; margin-top: 6px;"}/      
 
           -#- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
           -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
@@ -415,11 +412,38 @@
               / End Panel left Side
         / /.content
 :javascript
-  $(".chosen-select").chosen({
+  $(".chosen-select-unit").chosen({
     no_results_text: "Oops, nothing found!"
   })
+  $(".chosen-select-amenity").chosen({
+    no_results_text: "Oops, nothing found!"
+  })
+  $(".chosen-select-unit").change(function(){
+    if($('select[name="unit_data_selected"]').val().length > 0)
+    {
+      $("#add_unit_to_stop").removeClass('hidden')
+    }
+    else
+    {
+      $("#add_unit_to_stop").addClass('hidden')
+    }
+  });
+  $(".chosen-select-amenity").change(function(){
+    if($('select[name="amenity_data_selected"]').val().length > 0)
+    {
+      $("#add_amenity_to_stop").removeClass('hidden')
+    }
+    else
+    {
+      $("#add_amenity_to_stop").addClass('hidden')
+    }
+  });
   $("#add_unit_to_stop").click(function(){
     data_to_add = $('select[name="unit_data_selected"]').val();
+    add_stop(data_to_add);
+  });
+  $("#add_amenity_to_stop").click(function(){
+    data_to_add = $('select[name="amenity_data_selected"]').val();
     add_stop(data_to_add);
   });
   function add_stop(data_to_add)
