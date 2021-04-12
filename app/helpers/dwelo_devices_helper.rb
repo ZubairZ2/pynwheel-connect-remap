@@ -373,6 +373,14 @@ module DweloDevicesHelper
     tours_exist = false; on_time_tour=nil; nearest_tour=nil; time_status=nil;
 
     response = SalesforceServices::GetBookingByNeighbor.call(community: community, tour_user: tour_user)
+    
+    puts "---"*50
+    puts "Response"
+    puts "---"*50
+
+    puts response.payload
+    puts "---"*50
+
     if response.success? and response.payload.present?
       today_scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
       if tours_exist = today_scheduled_tours.present?

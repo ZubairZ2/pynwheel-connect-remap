@@ -16,12 +16,7 @@ module SalesforceServices
                         :headers => { 'Authorization' => auth_header,
                                     'Content-Type' => 'application/json' }
                     )
-                    puts "---"*50
-                    puts url
-                    puts "---"*50
-
-                    puts response.payload
-                    puts "---"*50
+                    
                 rescue HTTParty::Error => e
                     OpenStruct.new({success?: false, error: e, payload: nil})
                 else
