@@ -70,7 +70,7 @@ module ZervServices
         end
 
         def base_url
-            "https://api.zervinc.net/v1/portal"
+            "https://accessapi.zervinc.net/v1/portal"
         end
 
         def check_response(community, tour_user, stop_list, response, errors)
@@ -95,6 +95,8 @@ module ZervServices
         end
 
         def create_zerv_guest__failure(community, tour_user, errors)
+            puts '--------------------------    Failure in creating Zerv User      ------------------------'
+            puts errors
             puts '--------------------------    Failure in creating Zerv User      ------------------------'
             ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
             ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active", res_errors: errors)

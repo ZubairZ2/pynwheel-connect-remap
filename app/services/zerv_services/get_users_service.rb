@@ -8,7 +8,9 @@ module ZervServices
             puts '--------------------------    Zerv get all user called    ------------------------'
             response = HTTParty.get(url,
                 headers: { 'Authorization' => id_token, 'Content-Type' => 'application/json'})
-
+            puts url
+            puts "***"*50
+            puts response
         rescue HTTParty::Error => e
             OpenStruct.new({success?: false, error: e, payload: nil})
         else

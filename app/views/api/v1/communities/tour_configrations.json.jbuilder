@@ -49,7 +49,7 @@
             json.late_arrive_message ""
             json.late_arrive_with_reschduler "" 
         end
-        if @community.credential.present? and @community.credential.use_different_crm_provider and @community.credential.crm_provider == "salesforce"
+        if @community.credential.present? and @community.credential.use_different_crm_provider and @community.crm_credential.present? and @community.crm_credential.crm_provider == "salesforce"
             json.scheduler_widget_allowed false
             json.scheduler_widget_url ""
         else
