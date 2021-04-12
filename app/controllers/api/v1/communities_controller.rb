@@ -407,7 +407,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           @tour_user.longitude = params[:longitude]
           # @tour_user.update_attributes(is_virtual_tour: ((@in_visiting_hours.present? ? (@in_visiting_hours ? false : true) : false) || @limit_exceeded), latitude: params[:latitude], longitude: params[:longitude])
 
-          if @community.credential.present? and @community.credential.use_different_crm_provider and @community.credential.crm_provider == "salesforce"
+          if @community.credential.present? and @community.credential.use_different_crm_provider and @community.crm_credential.present? and @community.crm_credential.crm_provider == "salesforce"
             response = SalesforceServices::GetBookingByNeighbor.call(community: @community, tour_user: @tour_user)
             if response.success? and response.payload.present?
               @scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
@@ -479,7 +479,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
           timezone = get_community_time_zone(@community)
           current_time = current_community_time(@community, params)
-          @is_salesforce_crm = (@community.credential.present? and @community.credential.use_different_crm_provider and @community.credential.crm_provider == "salesforce") ? true : false
+          @is_salesforce_crm = (@community.credential.present? and @community.credential.use_different_crm_provider and @community.crm_credential.present? and @community.crm_credential.crm_provider == "salesforce") ? true : false
 
           if @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
             unless @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)

@@ -227,7 +227,7 @@
             /       %label.label-primary{:for => "show_checklist"}
             /       %span.pl-15 Yes 
             
-            .form-group{:class => "#{(@community.credential.present? and @community.credential.crm_provider.present? and @community.credential.crm_provider == "salesforce") ? 'hidden' : ''}"}
+            .form-group{:class => "#{(@community.credential.present? and @community.crm_credential.present? and @community.crm_credential.crm_provider.present? and @community.crm_credential.crm_provider == "salesforce") ? 'hidden' : ''}"}
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Scheduler Tool
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
@@ -477,7 +477,7 @@
                             .checkbox
                               = check_box_tag :marketing_source_required, true, @community.tour.marketing_source_required
                               %label Lead source
-                .div_checklist{:class => "#{(@community.credential.present? and @community.credential.crm_provider.present? and @community.credential.crm_provider == "salesforce") ? '' : ( (@community.scheduler_widget.present? and @community.scheduler_widget == true) ? '' : 'hidden')}"}
+                .div_checklist{:class => "#{(@community.credential.present? and @community.crm_credential.crm_provider.present? and @community.crm_credential.crm_provider == "salesforce") ? '' : ( (@community.scheduler_widget.present? and @community.scheduler_widget == true) ? '' : 'hidden')}"}
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                       Only allow scheduled tours
