@@ -374,29 +374,28 @@ module DweloDevicesHelper
 
     response = SalesforceServices::GetBookingByNeighbor.call(community: community, tour_user: tour_user)
     puts "\n\n"
+    puts "tour_user"
+    puts tour_user
     puts "---"*50
     puts "Response"
     puts "---"*50
-    puts response.payload
+    puts response.inspect
     puts "---"*50
     puts "current_time"
     puts "---"*50
     puts current_time
     puts "---"*50
-
     puts "timezone"
     puts "---"*50
-    
     puts timezone
     puts "---"*50
-    
     puts "community"
     puts "---"*50
-    puts community
+    puts community.inspect
     puts "---"*50
     puts "response.payload"
     puts "---"*50
-    puts response
+    puts response.payload.inspect
     puts "\n\n"
 
 
