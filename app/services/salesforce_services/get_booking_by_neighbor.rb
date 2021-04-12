@@ -17,6 +17,7 @@ module SalesforceServices
                                     'Content-Type' => 'application/json' }
                     )
                     
+                    sleep(10)
                 rescue HTTParty::Error => e
                     OpenStruct.new({success?: false, error: e, payload: nil})
                 else
