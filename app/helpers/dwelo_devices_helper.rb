@@ -405,7 +405,7 @@ module DweloDevicesHelper
         on_time_tour = is_sf_tour_on_time(current_time, today_scheduled_tours, community.tour.grace_period, timezone)
         current_tour = on_time_tour
         unless on_time_tour.present?
-          time_status , nearest_tour = sf_tour_time_status(current_time, today_scheduled_tours, timezone)
+          time_status , nearest_tour = sf_tour_time_status(today_scheduled_tours, current_time, timezone)
           current_tour = nearest_tour
         end
         
