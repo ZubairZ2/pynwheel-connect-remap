@@ -547,6 +547,7 @@ table.upload-image tr td{
 
 .reshedule-notification {
   color: red;
+  display: none;
 }
 
 .expired_tour_text {
@@ -3816,3 +3817,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .half_opacity{opacity: 0.5;}
 .add-new-lock a.disabled { pointer-events: none; cursor: not-allowed; } 
 .hide_it{ display: none; }
+
+.add-line-on-stop {
+  text-decoration: line-through;
+}

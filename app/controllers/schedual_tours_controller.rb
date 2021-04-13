@@ -65,6 +65,8 @@ class SchedualToursController < ApplicationController
       new_tour = SchedualTour.find(params[:sched_tour_id])
       schedual_tour = MaxDateScheduledTourService.new(tu, community, true).get_scheduled_tour
       
+
+
       unless schedual_tour.present?
         scheduled_tours = community.schedual_tours.where(tour_user_id: tu.id)
         
@@ -74,7 +76,7 @@ class SchedualToursController < ApplicationController
       end
 
       
-      schedual_tour = schedual_tour.present? ? schedual_tour : new_tour
+      schedual_tour = (schedual_tour.present? && !schedual_tour.is_tour_completed) ? schedual_tour : new_tour
 
       previous_tour = {
         tour_date: schedual_tour.tour_date,
@@ -277,9 +279,17 @@ class SchedualToursController < ApplicationController
       redirect_to community_schedual_tours_path(@community), notice: 'Schedual tour was successfully destroyed.'
     else
       @schedual_tour.destroy
+
       respond_to do |format|
-        format.html { redirect_to schedual_tours_url, notice: 'Schedual tour was successfully destroyed.' }
-        format.json { head :no_content }
+        if user_signed_in?
+          flash[:notice] = 'Schedual tour was successfully destroyed.'
+          format.html { redirect_to community_schedual_tours_path(@community) }
+          format.json { render :json => {logged_in: true} }
+        else
+          flash[:notice] = 'Schedual tour was successfully destroyed.'
+          format.html { redirect_to schedual_tours_url }
+          format.json { render :json => {logged_in: false} }
+        end        
       end
     end
 
@@ -298,9 +308,11 @@ class SchedualToursController < ApplicationController
       community_time_zone = get_time_zone(community) if community.present? && community.latitude.present? && community.longitude.present?
 
       scheduled_tours.find_each do |tour|
-        community_time_zone = community_time_zone || tour.user_time_zone
-        is_in_timezone = (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(community_time_zone) > Time.now.in_time_zone(community_time_zone)
-        tour_user_ids << tour.tour_user_id if is_in_timezone
+        unless tour.is_tour_completed
+          community_time_zone = community_time_zone || tour.user_time_zone
+          is_in_timezone = (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(community_time_zone) > Time.now.in_time_zone(community_time_zone)
+          tour_user_ids << tour.tour_user_id if is_in_timezone
+        end
       end
     
       tour_user_ids
@@ -361,7 +373,7 @@ class SchedualToursController < ApplicationController
       # DelayedSchedulerMailerJob.perform_in(day_before, "Your Tomorrow Tour", delayed_day_before_content, tu.email) if day_before.present?
       # DelayedSchedulerMailerJob.perform_in(hour_before, "Your self-guided tour starts soon!", delayed_hour_before_content, tu.email) if hour_before.present?
 
-      community_mail = is_rescheduled ? "<div style='vertical-align:middle; text-align:center'><img style='width: 150px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Lucky you! Someone has rescheduled a Self Tour at your property <b>#{community.name if community.present?}</b> from  <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b> to <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}" : "<div style='vertical-align:middle; text-align:center'><img style='width: 150px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Lucky you! Someone has scheduled a Self Tour at your property <b>#{community.name if community.present?}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}"
+      community_mail = is_rescheduled ? "<div style='vertical-align:middle; text-align:center'><img style='width: 150px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Someone has rescheduled a Self Tour at your property <b>#{community.name if community.present?}</b> from  <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b> to <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}" : "<div style='vertical-align:middle; text-align:center'><img style='width: 150px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Someone has scheduled a Self Tour at your property <b>#{community.name if community.present?}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}"
 
       # NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
 

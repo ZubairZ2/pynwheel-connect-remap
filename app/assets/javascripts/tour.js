@@ -28,6 +28,7 @@ function handleTourStopsVisibility(stop_id, tour_user_id) {
       if(stops_list.length > 1) {
       selector.removeClass("fa-eye");
       selector.addClass("fa-eye-slash");
+      $(`#stopName${stop_id}`).addClass("add-line-on-stop");
       index = stops_list.indexOf(stop_id)
       stops_list.splice(index, 1);
       console.log(stops_list);
@@ -38,6 +39,7 @@ function handleTourStopsVisibility(stop_id, tour_user_id) {
     } else if(selector && selector[0] && selector[0].classList.contains("fa-eye-slash")) {
       selector.removeClass("fa-eye-slash");
       selector.addClass("fa-eye");
+      $(`#stopName${stop_id}`).removeClass("add-line-on-stop");
       stops_list.push(stop_id);
       console.log(stops_list);
     }

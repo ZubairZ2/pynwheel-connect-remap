@@ -135,7 +135,7 @@
               <div class="form-group">
                 <label>Email Address *</label>
                 <%= f.email_field :email, class: "form-control", placeholder: "Email Address", required: 'required' %>
-                <span class="reshedule-notification" style="display: <%= @tour_user.id.present? ? "block" : "none" %>">User with this email address already have scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
+                <span class="reshedule-notification">User with this email address already have scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
               </div>
               <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_phone.nil? ? true : current_community.tour.tour_setting.show_phone) %>
               <div class="form-group">
@@ -149,7 +149,7 @@
                   
 
                   <label>Phone Number *</label> 
-                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 , required: 'required' %>
+                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 , required: 'required', id: "user_phone_number_field" %>
                 </div>
               </div>
               <% end %>
@@ -361,6 +361,9 @@
       }
 
       $(document).ready(function(){
+        pNum =$("#user_phone_number_field").val();
+        $("#user_phone_number_field").val(pNum.replace("+", ""));
+        
         var direct = <%= @direct %>
         var show_first = <%= @show_first.present? ? @show_first : false %>
           if(direct)

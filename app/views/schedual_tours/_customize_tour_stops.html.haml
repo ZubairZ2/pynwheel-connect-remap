@@ -27,8 +27,9 @@
                 %span 
                   = get_floor(stop, community)
               .col-lg-6.col-md-6.col-sm-6
-                %span
+                %span{:id => "stopName#{stop.id}", :class => "#{is_visible(tour, stop) ? "" : "add-line-on-stop"}"}
                   = stop.name
+                
               .col-lg-2.col-md-2.col-sm-2
                 - if stop_should_be_visible(stop)
                   %i.tour_stop_visibility{ id: "display_stop", :onclick => "handleTourStopsVisibility(#{ stop.id }, #{tour_user.id});", :data => {:idattr => stop.id}, class: "stop_eye_slash#{stop.id}#{tour_user.id} fa #{is_visible(tour, stop) ? "fa-eye" : "fa-eye-slash"} text-warning ml-5" }

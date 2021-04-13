@@ -4,7 +4,7 @@ module SchedualToursHelper
       unit_ids = community.tour.tour_stops.where(stop_type: "unit").pluck(:stop_id) 
       non_available_stops = unit_ids.present? ? Unit.where(id: unit_ids, available: false).ids : []
       
-      community.tour.tour_stops.where.not(stop_id: non_available_stops)
+      community.tour.tour_stops.where.not(stop_id: non_available_stops).order(:sort)
     else
       []
     end

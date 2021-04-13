@@ -59,7 +59,10 @@ class TourHistory < ApplicationRecord
 
         if touruser.tour_type === "self_tour"
           scheduled_tour = MaxDateScheduledTourService.new(tour_user, community, false).get_scheduled_tour
-          scheduled_tour.update(is_tour_completed: true) if scheduled_tour.present?
+          
+          if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
+            scheduled_tour.update(is_tour_completed: true) if scheduled_tour.present?
+          end
         end 
 
         tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{@community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{@community.id}/tour%5Fusers/#{touruser.id}"
@@ -118,6 +121,37 @@ class TourHistory < ApplicationRecord
     end
   end
 
+  def is_tour_on_time(scheduled_tour, community, timezone = nil)
+    tour = community.tour
+
+    if tour.grace_period.present?
+      if community.present? && community.latitude.present? && community.longitude.present?
+        timezone = get_time_zone(community)
+      end
+
+
+      timezone = timezone || scheduled_tour.user_time_zone
+      grace_period = tour.grace_period
+      current_time = Time.now.in_time_zone(timezone)
+      tour_date_time = (scheduled_tour.tour_date.to_s + " " + scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone)
+
+      before_margin = current_time - grace_period.minutes
+      after_margin = current_time + grace_period.minutes
+
+      if tour_date_time > before_margin && tour_date_time < after_margin
+        true
+      else
+        false
+      end
+    else
+      false
+    end
+  end
+
+  def get_time_zone(community)
+    time_zone = Timezone.lookup(community.latitude, community.longitude)
+    timezone = time_zone.name
+  end
 
   def save_prospect(endtime)
     end_time = endtime.in_time_zone(self.my_time_zone)

@@ -43,17 +43,16 @@
                             = ind = ind + 1
                           %td
                             = scheduled_tour_date_time(tour)
-                            - if is_tour_in_future(@community, tour)
-                              - if is_tour_customized(tour)
-                                %i.fa.fa-info-circle.icon_size.customizeTourToolTip
-                                  %span#customizeTourToolTipText
-                                    Customized Tour
+                            - if tour.is_tour_completed
+                              %i.fa.fa-check-square.icon_size.customizeTourToolTip
+                                %span#customizeTourToolTipText
+                                  Tour has been completed
                             - else
-                              - if tour.is_tour_completed
-                                %i.fa.fa-check-square.icon_size.customizeTourToolTip
-                                  %span#customizeTourToolTipText
-                                    Tour has been completed
-
+                              - if is_tour_in_future(@community, tour)
+                                - if is_tour_customized(tour)
+                                  %i.fa.fa-info-circle.icon_size.customizeTourToolTip
+                                    %span#customizeTourToolTipText
+                                      Customized Tour
                               - else
                                 %i.fa.fa-exclamation-triangle.icon_size.expiredTourToolTip
                                   %span#expiredTourToolTipText

@@ -139,7 +139,8 @@
 
     <script type="text/javascript">
       var success = "<%= flash[:success]  %>";
-      // debugger
+      var community_id = "<%= @community.id %>";
+
       <% flash[:success] = "" %>
       if(success){
         $("#modalLoginForm").modal('hide');
@@ -190,14 +191,20 @@
           e.preventDefault();
         });
 
-        $("#cancel-visit").on('click', function(e){
+        $("#cancel-visit").on('click', function(e) {
           $.ajax({
             type: "POST",
             url: "/destroy_schedual_tours/<%= params[:id]%>.json",
-            data: $(this).serialize(),
+            data: {community_id: community_id},
             cache: false,
             success: function(data){
               alert("Your tour has been canceled");
+
+              if(data.logged_in) {
+                window.location.href = `${window.location.origin}/communities/${community_id}/schedual_tours`;
+              } else {
+                window.location.href = window.location.origin
+              }
             },
             fail: function(error){
               console.log(error)
