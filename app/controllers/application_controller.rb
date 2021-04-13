@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::Base
   before_action :set_paper_trail_whodunnit
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: :generate_error
   layout :layout_by_resource
   config.time_zone = 'Eastern Time (US & Canada)'
   # before_action :check_community

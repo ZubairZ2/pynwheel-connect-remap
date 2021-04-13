@@ -1,4 +1,5 @@
 class CommunitiesController < ApplicationController
+  include Error::ErrorHandler
   include DweloDevicesHelper
   include CommunitiesHelper
   #load_and_authorize_resource

@@ -1,4 +1,5 @@
 class BuildingStartingPointsController < ApplicationController
+  include Error::ErrorHandler
   include AssignLocksHelper
   before_action :check_community
   after_filter "previous_url", only: [:edit]

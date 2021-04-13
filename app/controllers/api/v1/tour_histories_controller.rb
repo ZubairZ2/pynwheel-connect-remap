@@ -1,4 +1,5 @@
 class Api::V1::TourHistoriesController < ActionController::Base
+  include Error::ErrorHandler
   include ApplicationHelper
   require 'securerandom'
   def save_tour_history

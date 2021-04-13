@@ -1,4 +1,5 @@
 class AdditionalPagesController < ApplicationController
+	include Error::ErrorHandler
 	before_action :set_community
 	before_action :check_community
 	add_breadcrumb "Home", :root_path

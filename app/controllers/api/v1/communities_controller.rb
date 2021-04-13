@@ -1,5 +1,6 @@
 class Api::V1::CommunitiesController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
+  include Error::ErrorHandler
   include DweloDevicesHelper
   before_action :set_community, only: :email_favorites
   include ApplicationHelper
@@ -7,7 +8,6 @@ class Api::V1::CommunitiesController < ActionController::Base
   include StripeServices
   require 'securerandom'
   @@counter = 0
-  # $deleted_ids = []
 
   def test_panzoom
     render :json=> {:success=>true, :message => "#{params['id']}", :operation => "zoom"}

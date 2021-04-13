@@ -1,4 +1,5 @@
 class FloorplansController < ApplicationController
+  include Error::ErrorHandler
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
