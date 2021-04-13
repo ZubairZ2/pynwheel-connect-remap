@@ -12,5 +12,8 @@ class HomeController < ApplicationController
     else
     	@communities = current_user.communities
     end
+    community_id = session[:community_id]
+    session[:authorization_code] = params['code'] if (params and params['code']).present?
+    redirect_to "/communities/#{community_id}/edgestate_accounts/edgestate_code_grant_authorization" if (params and params['code']).present?
   end
 end

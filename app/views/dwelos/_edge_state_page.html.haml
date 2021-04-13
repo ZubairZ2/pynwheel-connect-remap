@@ -8,27 +8,38 @@
     -#   = link_to "<Back to #{@unit_name} Unit", edit_community_unit_path(current_community,@unit_id), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
   / /.box-header
   / form start
-  = form_for :edgestate, :url=>community_edgestate_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal"} do |f|
-    .box-body
-      .row
-        .col-lg-9.col-lg-offset-1
-          .form-group
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              Client ID
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=> @community.edge_state.present? ? @community.edge_state.client_id : ""
-          .form-group
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              Client Secret
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> @community.edge_state.present? ? @community.edge_state.client_secret : ""
-            = f.hidden_field :community_id, :value=> current_community.id
-    / /.box-body
-    .box-footer
-      - if current_community.edge_state.present?
-        = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
-      - else
-        = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
+
+  .box-body
+  .row
+    .col-lg-9.col-lg-offset-1
+      .col-sm-12.col-lg-3.col-md-3.col-xs-12
+        %input{:name => "lock_authorization", :id => "client_credential_auth", :type => "radio", :value => "client credental", checked: EdgeState.current_client_credential_edgestate(current_community.edge_state) ? true : false}
+        %label Provide Client Credentials
+      .col-sm-12.col-lg-3.col-md-3.col-xs-12
+        %input{:name => "lock_authorization", :id => "code_grant_auth", :type => "radio", :value => "code grant", checked: (current_community.edge_state and current_community.edge_state.refresh_token && !current_community.edge_state.client_id and !current_community.edge_state.client_secret).present? ? true : false}
+        %label Authorize With Pynwheel
+        
+  .row.edgestate_auth_btn.mt-30
+    .col-lg-9.col-lg-offset-1
+      .col-sm-12.col-lg-12.col-md-12.col-xs-12.mb-20
+        - if (current_community.edge_state && current_community.edge_state.refresh_token).present?
+          %p
+            You have been authorized with pynwheel remote lock account. 
+            %a{:href => "https://pynwheel.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "code_grant_btn"} 
+              Click here to change account
+          = link_to "Remove Account" , remove_edgestate_auth_account_community_edgestate_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
+        - else
+          %p
+            This option allows you to authorize the lock without giving credentials. Just click to authorize edgestate with pynwheel.
+          %a{:href => "https://pynwheel.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "code_grant_btn", class: "btn btn-primary"}
+            Authorize With Pynwheel
+          %p{:style => "margin-bottom: -7px; margin-top: 10px;"}
+            %strong NOTE: 
+            You must have logged in EdgeState account under RemoteLock through Pynwheel (pynwheel.remotelock.com) to authorize pynwheel. 
+  
+  = form_for :edgestate, :url=>community_edgestate_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal edgstate_auth_form"} do |f|
+    = render :partial=>'edgestate_form', :locals=>{:f=>f}
+
 .row#data-connection-buttons
   / Start Panel left Side
   .col-lg-12.col-md-12
@@ -58,3 +69,28 @@
           - if @community.edge_state.present? and @community.edge_state.remote_locks.present?
             = link_to "Map Units" , map_edgestate_locks_community_edgestate_accounts_path(current_community) , :method => :post, :class=>"btn btn-success"
             = link_to "Delete all Existing Locks" , remove_edgestate_locks_community_edgestate_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
+
+
+:javascript
+  $(document).ready(function () {
+    if ($('#client_credential_auth')[0].checked == true) {
+      $(".edgestate_auth_btn").hide()
+    }
+    else if ($('#code_grant_auth')[0].checked == true) {
+        $(".edgstate_auth_form").hide()
+    }
+    else {
+      $(".edgstate_auth_form").show()
+      $(".edgestate_auth_btn").hide()
+    }
+    $('input[type=radio][name=lock_authorization]').change(function() {
+    if (this.value == 'client credental') {
+      $(".edgstate_auth_form").show()
+      $(".edgestate_auth_btn").hide()
+      }
+    else if (this.value == 'code grant') {
+      $(".edgstate_auth_form").hide()
+      $(".edgestate_auth_btn").show()
+      }
+    });
+  })

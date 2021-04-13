@@ -4,6 +4,35 @@ class EdgestateAccountsController < ApplicationController
     def new
         @edge_state = EdgeState.new
     end
+
+    def edgestate_code_grant_authorization
+      locks_provider = current_community.multiple_locks_provider
+      locks_provider << "EdgeState" unless locks_provider.include?("EdgeState")
+      authorization_code = session[:authorization_code]
+      if params.present? and authorization_code.present?
+        response = RemoteLockService.new(current_community).code_grant_authorization(authorization_code)
+        if response.present?
+          begin
+            EdgeState.where(community_id: current_community.id).first_or_create(community_id: params['community_id'], refresh_token: response['refresh_token']) rescue nil
+            edgestate_account = current_community.edge_state
+            edgestate_account.update_attributes(refresh_token: response['refresh_token']) if edgestate_account.present? || (edgestate_account.client_id and edgestate_account.client_secret).present?
+            current_community.update_columns(multiple_locks_provider: locks_provider) rescue nil
+            session[:authorization_code] = ''
+          rescue => e
+            nil
+          end
+          flash[:notice] = "EdgeState lock authorized successfully"
+          redirect_to new_community_dwelo_path
+        else
+          flash[:error] = "Something went wrong please try again later."
+          redirect_to new_community_dwelo_path
+        end
+      else
+        flash[:error] = "Something went wrong. Please check the credentails or contact your data provider to troubleshoot."
+        redirect_to new_community_dwelo_path
+      end
+    end
+    
     
     def create
         locks_provider = current_community.multiple_locks_provider
@@ -43,10 +72,10 @@ class EdgestateAccountsController < ApplicationController
     def test_edgestate_connection
         community = Community.find params[:community_id]
         edgestate_account = EdgeState.find_by(community_id: community.id) rescue nil
-        if edgestate_account.present?
+        if (edgestate_account && edgestate_account.client_id && edgestate_account.client_secret).present? || (edgestate_account && edgestate_account.refresh_token).present?
           access_token = generate_remotelock_token
           responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
-          
+
           if responce.present?
             render xml: responce
           else
@@ -62,10 +91,10 @@ class EdgestateAccountsController < ApplicationController
     def import_edgestate_locks
         community = Community.find params[:community_id]
         edgestate_account = EdgeState.find_by(community_id: community.id) rescue nil
-        if edgestate_account.present?
+        if (edgestate_account && edgestate_account.client_id && edgestate_account.client_secret).present? || (edgestate_account && edgestate_account.refresh_token).present?
             access_token = generate_remotelock_token
             responce = RemoteLockService.new(current_community).get_all_deivces(access_token)
-            
+          
             if responce.present? and responce["data"].present?
                 RemoteLockService.new(current_community).update_deivces_in_db(responce)
                 flash[:notice] = "Locks imported successfully."
@@ -75,7 +104,7 @@ class EdgestateAccountsController < ApplicationController
                 render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
             end
         else
-          flash[:error] = "Please enter the EdgeState credentials before testing data."
+          flash[:error] = "Please enter the EdgeState credentials to import the locks."
           render :js => "window.location = '/communities/#{@community.id}/dwelos/new'"
         end
     end
@@ -98,6 +127,22 @@ class EdgestateAccountsController < ApplicationController
         end
       else
         flash[:error] = "Credentials for Latch are missing"
+        redirect_to new_community_dwelo_path(current_community)
+      end
+    end
+
+    def remove_edgestate_auth_account
+      if current_community.edge_state.present?
+        if current_community.edge_state.refresh_token.present?
+          current_community.edge_state.update_attributes(refresh_token: nil)
+          flash[:notice] = "Account disconnected successfully"
+          redirect_to new_community_dwelo_path(current_community)
+        else
+          flash[:error] = "No account is attached"
+          redirect_to new_community_dwelo_path(current_community)
+        end
+      else
+        flash[:error] = "Credentials for edgestate are missing"
         redirect_to new_community_dwelo_path(current_community)
       end
     end
