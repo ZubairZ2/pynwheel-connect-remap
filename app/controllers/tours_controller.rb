@@ -271,7 +271,7 @@ class ToursController < ApplicationController
   end
 
   def sort_stops
-
+    
     if params[:sitemap] == "false"
       tour = Tour.find_by(community_id: params[:community_id])
       hash = {}
