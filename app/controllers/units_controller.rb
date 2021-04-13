@@ -1,4 +1,5 @@
 class UnitsController < ApplicationController
+  include Error::ErrorHandler
   include AssignLocksHelper
   add_breadcrumb "Home", :root_path
   before_action :set_community

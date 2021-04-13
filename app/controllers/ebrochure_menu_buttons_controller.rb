@@ -1,4 +1,5 @@
 class EbrochureMenuButtonsController < ApplicationController
+  include Error::ErrorHandler
   before_action :set_community
   before_action :set_favorite_setting
   before_action :check_community 

@@ -1,4 +1,5 @@
 class ChatsController < ApplicationController
+    include Error::ErrorHandler
     protect_from_forgery with: :null_session
     skip_before_action :authenticate_user!, :only => [:create,:show, :listening_message]
     before_action :set_tour_user, only: [:create]
