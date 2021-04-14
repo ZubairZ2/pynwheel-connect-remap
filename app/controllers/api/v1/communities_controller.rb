@@ -532,9 +532,25 @@ class Api::V1::CommunitiesController < ActionController::Base
       charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
     end
   end
+  def check_lock_access
+    puts params
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      tu = TourUser.find params[:tour_user_id]
+      if (tu.dwelo_status == "in progress" || tu.edge_state_status == "in progress" || tu.latch_status == "in progress" || tu.zerv_status == "in progress")
+        render :json=> {success: "false", completed: false}
+      else
+        render :json=> {success: "true", completed: true}
+      end
+    else
+      render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+    end
+  end
 
   def create_zerv_user(community, tour_user)
     locks_thread = Thread.new do
+      begin
+      tour_user.update_column 'zerv_status' , 'in progress'
       execution_context = Rails.application.executor.run!
 
       # timezone = get_community_time_zone(community) rescue "UTC"
@@ -547,6 +563,11 @@ class Api::V1::CommunitiesController < ActionController::Base
       if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and tour_user.tour_type != "virtual_tour"
         allowed_stops = zerv_multiple_stops_access(community)
         ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops)
+      end
+      tour_user.update_column 'zerv_status' , 'complete'
+      rescue => ex
+        tour_user.update_column 'zerv_status' , 'complete'
+        puts "--------- Zerv error -------- " + ex + "---------------"
       end
 
     ensure

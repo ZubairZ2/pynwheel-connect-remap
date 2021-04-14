@@ -197,7 +197,9 @@ module DweloDevicesHelper
 
   def dwelo_lock_access(params, community, current_time)
     Thread.new do
+      begin
       tour_user = TourUser.find params[:tour_user_id]
+      tour_user.update_column 'dwelo_status' , 'in progress'
       providers_account = Dwelo.find_by(community_id: params[:id]) rescue nil
 
       access_token = dwelo_client_credentials(providers_account)
@@ -225,12 +227,20 @@ module DweloDevicesHelper
           grant_dwelo_user_access(access_token, tour_user_guest_id, lock[0])
         end
       end
+      tour_user.update_column 'dwelo_status' , 'complete'
+      rescue => ex
+        tour_user.update_column 'dwelo_status' , 'complete'
+        puts "--------- Dwelo error -------- " + ex + "---------------"
+      end
+
     end
   end
 
   def edgestate_lock_Access(params, community, current_time)
     Thread.new do
+      begin
       tour_user = TourUser.find params[:tour_user_id]
+      tour_user.update_column 'edge_state_status' , 'in progress'
       access_token = RemoteLockService.new(community).client_credentials
       prev_data = tour_user.as_guests.where(community_id: params[:id])
       # ----------- creating a guest for remote lock (type = locks) ----------------- #
@@ -255,11 +265,19 @@ module DweloDevicesHelper
         igloo_guest_ids.map{ |guest_id| RemoteLockService.new(community).delete_igloo_guests(access_token, guest_id) unless guest_id == ''}
         IglooGuest.where(guest_id: igloo_guest_ids).update_all(status: 'deleted')
       end
+      tour_user.update_column 'edge_state_status' , 'complete'
+      rescue => ex
+        tour_user.update_column 'edge_state_status' , 'complete'
+        puts "--------- EdgeState error -------- " + ex + "---------------"
+      end
+
     end
   end
 
   def create_latch_reservation(community, tour_user, start_time)
     Thread.new do
+      begin
+      tour_user.update_column 'latch_status' , 'in progress'
       end_time = start_time + 90.minutes
 
       stops_arr = community.tour.tour_stops.where(display_stop: true).order(:sort)
@@ -297,7 +315,6 @@ module DweloDevicesHelper
         lock_info = building_starting_point.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
-
       if locks_data.present?
         LatchGuest.where(tour_user_id: tour_user.id, community_id: community.id).update_all(status: "deleted")
         locks_data.each do |lock_info|
@@ -317,6 +334,12 @@ module DweloDevicesHelper
           end
         end
       end
+      tour_user.update_column 'latch_status' , 'complete'
+      rescue => ex
+        tour_user.update_column 'latch_status' , 'complete'
+        puts "--------- Latch error -------- " + ex + "---------------"
+      end
+      
     end
   end
 

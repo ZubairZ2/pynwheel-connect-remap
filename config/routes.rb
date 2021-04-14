@@ -453,6 +453,7 @@ Rails.application.routes.draw do
           post :user_saved_tour
           get :tour_configrations
           get :tour_configrations_v1
+          post :check_lock_access
           get :tour_user_data
           get :ios_data
           get :minimum_data
