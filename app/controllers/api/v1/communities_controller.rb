@@ -5,6 +5,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   before_action :set_community, only: :email_favorites
   include ApplicationHelper
   include ToursHelper
+  include TourStopsHelper
   include StripeServices
   require 'securerandom'
   @@counter = 0
@@ -239,7 +240,9 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community = Community.find params[:id]
       delete_array = params[:stop_id].split(",") if params[:stop_id].present?
       te = @community.tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
-      @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
+      removing_tour_stops = delete_array.present? ? delete_array + te : [] + te
+      @community.deleted_ids = removing_tour_stops
+      removing_stops_arr = removing_tour_stops.present? ? (fetch_removing_stops_sub_location(removing_tour_stops, @community)) : []
       @community.save
       @tours = Tour.where(id: params[:tour_id])
       @tour_user = TourUser.find_by(id: params[:tour_user_id])
@@ -283,7 +286,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       else
         @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
       end
-      check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
+      check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref], removing_stops_arr)
     else
         render :json=> {:success=>false, :message => "Invalid Token"}
     end
@@ -557,7 +560,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     locks_thread.to_s
   end
   
-  def check_zerv_user_existance_again(community, tour_user, thread_ref)
+  def check_zerv_user_existance_again(community, tour_user, thread_ref, removing_stops_arr)
     if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and community.zerv.present? and tour_user.tour_type != "virtual_tour"
       puts "-----------------------------------------     main thread halted    ---------------------------------------------------"
       begin
@@ -578,6 +581,9 @@ class Api::V1::CommunitiesController < ActionController::Base
             ZervServices::GetUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true)
           end
 
+          if removing_stops_arr.present?
+            ZervServices::RemoveStopsAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, removing_stops_arr: removing_stops_arr)
+          end
         end
       rescue => exception
         puts exception

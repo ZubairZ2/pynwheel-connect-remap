@@ -6,6 +6,8 @@ module ZervServices
             tour_user    = args[:tour_user]
             stop_list    = args[:stop_list]
             zerv_user    = args[:zerv_user]
+            existing_access_ids = args[:existing_access_ids].nil? ? [] : (args[:existing_access_ids])
+            existing_access_duration_ids = args[:existing_access_duration_ids].nil? ? [] : (args[:existing_access_duration_ids])
             user_accesses = zerv_user["listGetUserAccess"]
 
             url = base_url + "/user/updateuserandtimezone/" + zerv_user["id"].to_s
@@ -43,8 +45,8 @@ module ZervServices
                 "email": tour_user.email,
                 "id": zerv_user["id"],
                 "image": nil,
-                "removeExistingAccessDuration": [],
-                "removedExistingAccess": [],
+                "removeExistingAccessDuration": existing_access_duration_ids,
+                "removedExistingAccess": existing_access_ids,
                 "listAddUserAccess": list_add_user_access
             }
             
