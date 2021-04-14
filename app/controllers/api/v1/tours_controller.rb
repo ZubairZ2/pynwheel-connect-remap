@@ -1,6 +1,7 @@
 class Api::V1::ToursController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
   # before_action :set_community, only: :email_favorites
+  include Error::ErrorHandler
   include ApplicationHelper
   require 'securerandom'
   def save_user_data

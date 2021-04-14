@@ -30,7 +30,7 @@ module ZervServices
                                 list_add_user_access << time_access_object(community, tour_time, previous_access)
                             end
                         end
-                        list_add_user_access.last.merge!({"accessCode": access_code,"accessPoint": access_point})
+                        list_add_user_access.last.merge!({"accessCode": "5678","accessPoint": access_point})
                     end
                 end
             end
@@ -55,7 +55,9 @@ module ZervServices
             response = HTTParty.put(url,
                 body: body.to_json,
                 headers: { 'Authorization' => id_token, 'Content-Type' => 'application/json'})
-
+            puts url
+            puts "***"*50
+            puts response
         rescue HTTParty::Error => e
             OpenStruct.new({success?: false, error: e, payload: nil})
         else
@@ -131,7 +133,8 @@ module ZervServices
                 "accessStartDate": tour_time.strftime("%Y-%m-%d"),
                 "accessEndDate": (tour_time + 1.day).strftime("%Y-%m-%d"),
                 "credentialIdentifier": "1234",
-                "facilityId": nil,
+                "facilityId": "123",
+                "cardFormat": "HID Prox 26-bit H10301",
                 "active": true,
                 "monAccess": false,
                 "tueAccess": false,

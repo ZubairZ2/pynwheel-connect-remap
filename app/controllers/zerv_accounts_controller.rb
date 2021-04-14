@@ -1,4 +1,5 @@
 class ZervAccountsController < ApplicationController
+    include Error::ErrorHandler
     before_action :set_zerv, except: [:new, :create]
 
     def new

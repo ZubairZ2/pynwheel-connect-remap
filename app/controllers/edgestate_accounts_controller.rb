@@ -1,4 +1,5 @@
 class EdgestateAccountsController < ApplicationController
+  include Error::ErrorHandler
     before_action :set_user
     before_action :set_edge_state, only: [:map_edgestate_locks]
     def new

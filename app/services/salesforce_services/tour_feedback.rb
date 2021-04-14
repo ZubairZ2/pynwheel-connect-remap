@@ -87,6 +87,10 @@ module SalesforceServices
                             :headers => { 'Authorization' => auth_header,
                                         'Content-Type' => 'application/json' }
                         )
+                        puts "---"*50
+                        puts url
+                        puts response
+                        puts "---"*50
                         sf_user.update_attributes(sf_status: "deleted", data: response.merge(feedback: body))
                     rescue HTTParty::Error => e
                         OpenStruct.new({success?: false, error: e, payload: nil})

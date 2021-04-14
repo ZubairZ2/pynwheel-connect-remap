@@ -1,4 +1,5 @@
 class UsersController < ApplicationController
+  include Error::ErrorHandler
   #load_and_authorize_resource
   before_action :check_community
   before_action :set_user, only: [:edit,:update]

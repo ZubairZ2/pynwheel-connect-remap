@@ -1,4 +1,5 @@
 class HomepageIconsController < ApplicationController
+  include Error::ErrorHandler
   before_action :check_community
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Home Page", :community_home_page_index_path

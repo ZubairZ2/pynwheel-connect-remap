@@ -74,7 +74,7 @@ class TourHistory < ApplicationRecord
         # community.deleted_ids = []
 
 
-        if community.credential.present? and community.credential.crm_provider == "salesforce"
+        if community.credential.present? and community.crm_credential.present? and community.crm_credential.crm_provider == "salesforce"
           current_tour = VisitedStop.where(tour_user_id: tour_user.id, tour_id: self.tour_id).last
           if current_tour.present?
             # current_tour.tour_key = "450e96530bb8ae7af1b3f3d019a6a055" # testing line
