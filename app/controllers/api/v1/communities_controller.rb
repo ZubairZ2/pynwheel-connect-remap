@@ -536,8 +536,10 @@ class Api::V1::CommunitiesController < ActionController::Base
     puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
+      community = Community.find params[:id]
       tu = TourUser.find params[:tour_user_id]
-      if (tu.dwelo_status == "in progress" || tu.edge_state_status == "in progress" || tu.latch_status == "in progress" || tu.zerv_status == "in progress")
+      session["check_lock_access"+tu.id_to_s]
+      if ((community.multiple_locks_provider.include?("Dwelo") && (tu.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (tu.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (tu.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (tu.zerv_status == "in progress")))
         render :json=> {success: "false", completed: false}
       else
         render :json=> {success: "true", completed: true}
