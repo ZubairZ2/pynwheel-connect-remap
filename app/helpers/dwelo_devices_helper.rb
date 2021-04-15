@@ -230,7 +230,7 @@ module DweloDevicesHelper
       tour_user.update_column 'dwelo_status' , 'complete'
       rescue => ex
         tour_user.update_column 'dwelo_status' , 'complete'
-        puts "--------- Dwelo error -------- " + ex + "---------------"
+        puts "--------- Dwelo error -------- ", ex
       end
 
     end
@@ -268,7 +268,7 @@ module DweloDevicesHelper
       tour_user.update_column 'edge_state_status' , 'complete'
       rescue => ex
         tour_user.update_column 'edge_state_status' , 'complete'
-        puts "--------- EdgeState error -------- " + ex + "---------------"
+        puts "--------- EdgeState error -------- ", ex
       end
 
     end
@@ -337,7 +337,7 @@ module DweloDevicesHelper
       tour_user.update_column 'latch_status' , 'complete'
       rescue => ex
         tour_user.update_column 'latch_status' , 'complete'
-        puts "--------- Latch error -------- " + ex + "---------------"
+        puts "--------- Latch error -------- ", ex
       end
       
     end
