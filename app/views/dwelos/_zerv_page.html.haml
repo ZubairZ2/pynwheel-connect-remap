@@ -18,6 +18,22 @@
               Password
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = f.text_field :password, :class=>"form-control validate[required]", :placeholder=>"password", :value=> @community.zerv.present? ? @community.zerv.password : ""
+          .form-group
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              Facility ID
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = f.text_field :facility_id, :class=>"form-control", :placeholder=>"facility id", :value=> @community.zerv.present? ? @community.zerv.facility_id : ""
+          .form-group
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              Badge ID
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = f.text_field :badge_id, :class=>"form-control", :placeholder=>"badge id", :value=> @community.zerv.present? ? @community.zerv.badge_id : ""
+          .form-group
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              Card Format
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              - card_format_seleted = @community.zerv.present? ? @community.zerv.card_format : ""
+              = f.select :card_format , options_for_select(cards_formats, card_format_seleted),{:include_blank => 'Choose Card'},{:class=>"form-control"}
             = f.hidden_field :community_id, :value=> current_community.id
     / /.box-body
     .box-footer
