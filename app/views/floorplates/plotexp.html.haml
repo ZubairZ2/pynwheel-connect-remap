@@ -51,21 +51,21 @@
             - fontsize = @community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size : 30
           - else
             - fontsize = 30
-
+          
           - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
           - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
-
+          
           %span.hidden#left_margin #{left_margin}
           %span.hidden#right_margin #{right_margin}
           %span.hidden#font_size #{fontsize}
           %span.hidden#marker_color #{marker_color}
-
+          
           - door_fontsize     = fontsize
           - door_marker_color = "#3153d2"
-
-          %span.hidden#door_fontsize      #{door_fontsize}
-          %span.hidden#door_marker_color  #{door_marker_color}
-
+          
+          %span.hidden#door_fontsize #{door_fontsize}
+          %span.hidden#door_marker_color #{door_marker_color}
+          
           %span= @floorplate.name + " Units"
           %span.hidden#active_x_plot 0
           
@@ -88,11 +88,13 @@
             %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
           - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
             = link_to community_floorplate_select_many_floors_path(@community, @floorplate), remote: true do
-              %button.btn.btn-success 
+              %button.btn.btn-success
                 Add Access Point
                 %i.propertyDetailName.fa.fa-question-circle
                   %span#propertyDetailNameText{:style => "font-weight: normal;"}
-                    Add Access point in hallways that are not associated with any specific unit or amenity
+                    Add Access point in hallways that are not associated with any specific unit or amenity- if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
+          - if @community.self_tour and @community.auto_wayfinding
+            %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
       / /.box-header
       / form start
       = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
@@ -118,45 +120,45 @@
                     = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg" ,name:"viewArea", id:"viewArea",draggable:"false"
                   - community_units = @community_units
                   - units_by_plotted_doors_order = @community_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
-
+                  
                   - coordinates_array = []
                   - units_by_plotted_doors_order.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot - left_margin ,unit.y_plot - right_margin])
-
+                        
                         - coordinates_array.push([unit.x_plot - left_margin ,unit.y_plot - right_margin])
                         - unit_door_exists = unit.door.present? ? true : false
                         - left = unit.x_plot - left_margin
                         - right = unit.y_plot - right_margin
-
+                        
                         %p{class: "marker", style: "left:#{unit.x_plot - left_margin }px; top:#{unit.y_plot - right_margin}px; position:absolute"}
                           = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                             %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
-
+                          
                           - if !unit_door_exists and @community.self_tour and @community.auto_wayfinding
                             = link_to "javascript:void(0);", { id: "plus_#{unit.provider_unit_id}", style: "margin-left: -6px;", title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}, onclick: 'plot_entry_point(event)'} do
                               %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/2}px;" }
                             - unit_door_exists = false
-
+                        
                         - if unit_door_exists and @community.self_tour and @community.auto_wayfinding
                           - unit_door = unit.door
                           = link_to "javascript:void(0);", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "unit_door"}} do
                             %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
-
+                      
                       - else
                         - puts "duplicated.........."
                       .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}", :id=>"h-#{unit.provider_unit_id}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
-
+                  
                   - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
                     - coordinates_array = []
-
+                    
                     - @access_points.each do |access_point|
                       - unless coordinates_array.include?([access_point.x_plot, access_point.y_plot])
                         - coordinates_array.push([access_point.x_plot, access_point.y_plot])
-
+                        
                         = link_to open_access_point_modal_community_floorplate_access_point_path(@community, @floorplate, access_point, x_plot: access_point.x_plot, y_plot: access_point.y_plot, plotted_id: access_point.id, locks_present_hash: @current_locks_provider.to_json), { id: "access_point_#{access_point.id}", class: "marker", style: "left:#{access_point.x_plot}px; top:#{access_point.y_plot}px; position:absolute; font-size: #{door_fontsize/2}px", title: "#{access_point.name}", data: {door_id: "#{access_point.id}", toggle: "tooltip", remote: true, plotted_category: "access_point"}} do
                           %i{class: "fa fa-lock", style: "color: #66bf60"}
-
+            
             .col-lg-3.multi-select-units.select-units-on-page
               %h5.mt-40.mb-20
                 SELECT UNITS TO PLOT
@@ -267,7 +269,7 @@
           %label.col-sm-2.col-form-label
           .col-sm-10.doors-selects-in-popup
             %select.doors-list-on-popup.form-control{:multiple=>"multiple"}
-
+      
       .modal-footer
         %a.btn.btn-primary{:id=> "add-unplotted-doors"} Add
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel   
@@ -341,7 +343,7 @@
 
   $( document ).ready(function() {
     draw_initial_hallways(hallways_coordinates)
-    draw_line(hallways_coordinates);
+    // draw_line(hallways_coordinates);
   });
 
   if (#{current_user.welcome_floorplate_plot_page})
@@ -387,5 +389,7 @@
       #{current_user.welcome_floorplate_plot_page = false}
       #{current_user.save}
   });
-    
+  function automate_path(){
+    alert("clicked");
+  }
 

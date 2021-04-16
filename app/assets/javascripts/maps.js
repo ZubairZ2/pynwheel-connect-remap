@@ -61,23 +61,30 @@ $(window).on('load', function () {
             dy = (dy * scaleFactor) - (e.type === 'touchend' ? (transform.y * scaleFactor) : (10 * scaleFactor));
             dx = Math.round(dx);
             dy = Math.round(dy);
-            var points = {id: tmp_id++, x_plot: dx, y_plot: dy, selected: true, next_points: []};
+            var new_point = {id: tmp_id++, x_plot: dx, y_plot: dy, selected: true, next_points: []};
+            var previous_point;
             hallways_coordinates.forEach((element, index) => {
                 if (element.selected === true) {
                     hallways_coordinates[index].selected = false;
-                    hallways_coordinates[index].next_points.push(points.id);
+                    hallways_coordinates[index].next_points.push(new_point.id);
+                    previous_point = hallways_coordinates[index];
+                    $("#".concat(hallways_coordinates[index].id)).parent().attr('title', 'id:' + hallways_coordinates[index].id + ' np:' + hallways_coordinates[index].next_points.toString());
                 }
             });
-            hallways_coordinates.push(points);
+            add_hallwaypoint(new_point, previous_point);
+
+            hallways_coordinates.push(new_point);
+            np = new_point.next_points.toString();
             $(".fa-dot-circle").css('color', '#008fd4');
-            tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker' onclick='icon_click($(this))'  style='left:" + (dx) + "px; top:" + (dy) + "px; z-index:100; position:absolute;'>"
-            tag += "<i id='" + points.id + "' class='fas fa-dot-circle fa-lg selected_point'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100; color: #f7296a ' ></i>";
+            tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker' onclick='icon_click($(this))' title='id:" + new_point.id + ' np:' + np + "'   style='left:" + (dx) + "px; top:" + (dy) + "px; z-index:100; position:absolute;'>"
+            tag += "<i id='" + new_point.id + "' class='fas fa-dot-circle fa-lg selected_point'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100; color: #f7296a ' ></i>";
             tag += "</a>"
             // tag = "<i class='fas fa-map-marker-alt' style='color: " + '#00FFFF' + ";  left:" + (dx -left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + 14 + "px;'></i>";
             $('#map').append(tag);
             bind_markers();
             draw_line();
-            // icon_drag();
+            icon_drag();
+
         }
     });
 
@@ -152,6 +159,23 @@ $(window).on('load', function () {
 
 });
 
+function add_hallwaypoint(new_point, previous_point) {
+    $.ajax({
+        url: '/save_hallways_point',
+        type: 'Post',
+        data: {
+            'floor_plate_id': typeof fp_id !== 'undefined' ? fp_id : null,
+            'sitemap_id': typeof sm_id !== 'undefined' ? sm_id : null,
+            'new_point': JSON.stringify(new_point),
+            'previous_point': JSON.stringify(previous_point)
+        },
+        success: function (data) {
+            hallways_coordinates = data;
+        }
+    });
+}
+
+
 function icon_click(thiObj) {
     $(".fa-dot-circle").css('color', '#008fd4');
     previous_id = $(".selected_point").attr('id');
@@ -194,24 +218,47 @@ function icon_click(thiObj) {
 // }
 function bind_markers() {
     $(".hallways_marker").on('dblclick', function (e) {
-        if ($('#hallway_btn').html() === "Stop Plotting Hallways") {
-            debuggger;
-            dx = Math.round(this.offsetLeft)
-            dy = Math.round(this.offsetTop)
-            this.remove();
-            hallways_coordinates = $.grep(hallways_coordinates, function (data) {
-                return data.x_plot != dx && data.y_plot != dy;
-            });
+            e.stopImmediatePropagation();
+            if ($('#hallway_btn').html() === "Stop Plotting Hallways") {
+                current_index = undefined;
+                previous_index = undefined;
+                current_id = parseInt(this.firstChild.id);
+                hallways_coordinates.forEach((element, index) => {
+                    if (element.id == current_id) {
+                        current_index = index;
+                    }
+                    if (element.next_points.includes(current_id)) {
+                        previous_index = index;
+                    }
+                });
+                if (previous_index != undefined) {
+                    if (hallways_coordinates[current_index].next_points.length == 0) {
+                        this.remove();
+                        debugger;
+                        hallways_coordinates.splice(current_index, 1);
+                        hallways_coordinates[previous_index].next_points = hallways_coordinates[previous_index].next_points.filter(item => item !== current_id)
+                        hallways_coordinates[previous_index].selected = true;
+                        draw_line();
+                    } else {
+                        alert("You Cannot delete this point");
+                    }
+                } else if (hallways_coordinates.length == 1) {
+                    // $('#'.concat(current_id)).remove();
+                    this.remove();
+                    hallways_coordinates.splice(current_index, 1);
+                } else {
+                    alert("You Cannot delete this point");
+                }
+
+            }
         }
-    });
+    );
 }
 
 function draw_line() {
     $(".line").remove();
     for (var i = 0; i < hallways_coordinates.length - 1; i++) {
         hallways_coordinates[i].next_points.forEach((id, index) => {
-            console.log("asd");
-            console.log(id);
             for (var j = 0; j < hallways_coordinates.length; j++) {
                 if (id == hallways_coordinates[j].id) {
                     x1 = hallways_coordinates[i].x_plot + 8
@@ -229,23 +276,28 @@ function draw_line() {
             }
         });
     }
-    // hallways_ajax();
 }
 
 function draw_initial_hallways(hallways_coordinates) {
+
     marker_color = $('#marker_color').html();
     camera_margin = $('#camera-margin').html();
     marker_font_size = ($('#font_size').html());
     left_margin = parseInt($('#left_margin').html());
     right_margin = parseInt($('#right_margin').html());
+    np = []
     for (var i = 0; i < hallways_coordinates.length; i++) {
-        tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker' onclick='icon_click($(this))' style='left:" + (hallways_coordinates[i].x_plot) + "px; top:" + (hallways_coordinates[i].y_plot) + "px; z-index:100; position:absolute;'>"
-        tag += "<i class='fas fa-dot-circle'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100;  ' ></i>";
+        $(".fa-dot-circle").css('color', '#008fd4');
+        tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker' onclick='icon_click($(this))' title='id:" + hallways_coordinates[i].id + ' np:' + np + "'   style='left:" + (hallways_coordinates[i].x_plot) + "px; top:" + (hallways_coordinates[i].y_plot) + "px; z-index:100; position:absolute;'>"
+        tag += "<i id='" + hallways_coordinates[i].id + "' class='fas fa-dot-circle fa-lg selected_point'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100; color: #f7296a ' ></i>";
         tag += "</a>"
+        np = hallways_coordinates[i].next_points
+        // tag = "<i class='fas fa-map-marker-alt' style='color: " + '#00FFFF' + ";  left:" + (dx -left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + 14 + "px;'></i>";
         $('#map').append(tag);
         bind_markers();
         icon_drag();
     }
+    draw_line();
 
 }
 
@@ -314,17 +366,6 @@ function icon_drag() {
     ;
 }
 
-function hallways_ajax() {
-    $.ajax({
-        url: '/save_hallways_point',
-        type: 'Post',
-        data: {
-            'floor_plate_id': typeof fp_id !== 'undefined' ? fp_id : null,
-            'sitemap_id': typeof sm_id !== 'undefined' ? sm_id : null,
-            'hallway_points': JSON.stringify(hallways_coordinates)
-        },
-    });
-}
 
 function plotting_hallways(thisObj) {
     if (thisObj.html() == "Start Plotting Hallways") {

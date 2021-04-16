@@ -172,7 +172,7 @@ $(document).ready(function () {
 
             dx = e.type === 'touchend' ? ((e.changedTouches[0].pageX - elemPos.left)) : parseInt($('#active_x_plot').html());
             dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : parseInt($('#active_y_plot').html());
-            
+
             marker_color = $('#marker_color').html();
             marker_font_size = ($('#font_size').html());
             left_margin = parseInt($('#left_margin').html());
@@ -190,7 +190,7 @@ $(document).ready(function () {
             camera_margin = $('#camera_margin').html();
             door_marker_color = $('#door_marker_color').html();
             door_fontsize = ($('#door_fontsize').html());
-            
+
             if (addmode) {
                 // save plotting for each selected unit
                 if(typeof accesspointplot !== "undefined" && accesspointplot == true){
@@ -214,7 +214,7 @@ $(document).ready(function () {
                     catch(err) {
                         location.reload()
                     }
-                    
+
                     if(adddoorsmode){
                         tag = getDoorTag(selected[0][0])
                     }
@@ -223,7 +223,7 @@ $(document).ready(function () {
                         tag = getTagToPlot(url)
                     }
                 }
-                
+
 
                 $('#map').append(tag);
                 doDraggable();
@@ -331,3 +331,5 @@ function getTagToPlot(url){
     }
     return tag
 }
+
+

@@ -457,6 +457,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def tour_configrations_v1
+    binding.pry
     puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
