@@ -532,6 +532,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     if tour_user.strip_customer_id.present?
       charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
     end
+    get_pynwheel_user_accesses
   end
   def check_lock_access
     puts params
@@ -540,11 +541,14 @@ class Api::V1::CommunitiesController < ActionController::Base
       community = Community.find params[:id]
       tu = TourUser.find params[:tour_user_id]
       counter = check_lock_access_counter(tu)
-      
-      if ((community.multiple_locks_provider.include?("Dwelo") && (tu.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (tu.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (tu.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (tu.zerv_status == "in progress")) && !(counter >= 20))
-        render :json=> {success: "false", completed: false}
+      if (params[:tour_type] == "self_tour" && tu.tour_type != "guided_tour" && community.enable_locks)
+        if ((community.multiple_locks_provider.include?("Dwelo") && (tu.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (tu.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (tu.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (tu.zerv_status == "in progress")) && !(counter >= 20))
+          render :json=> {success: "false", completed: false}
+        else
+          render :json=> {success: "true", completed: true}
+        end
       else
-        render :json=> {success: "true", completed: true}
+        render :json=> {success: "false", completed: false}
       end
     else
       render :json=> {:status=>false, :message => "Invalid Token", code: 401}
