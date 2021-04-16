@@ -403,32 +403,44 @@ class ToursController < ApplicationController
     @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}
   end
   def ajaxplottourstoppoint
-    splitText = params[:tour_stop_id].split(':')
-    tour_stop = splitText[0].to_i
-    stop_type = splitText[1]
-    # ts = TourStop.find_by(stop_type: stop_type, stop_id: tour_stop)
-    # if ts.present?
-    #   ts.latitude = params[:x_plot]
-    #   ts.longitude = params[:y_plot]
-    #   ts.save
-    #   render json: {tour: ts}, status: 200
-    # else
-    if stop_type == "amenity"
-      st = Amenity.find tour_stop
-      st.floor = params[:floor].to_i unless @community.show_map
-      st.save
-      stName = st.name
-    elsif stop_type == "elevator"
-      st = Elevator.find tour_stop
-      stName = st.name
-    else
-      st = Unit.find tour_stop
-      stName = st.marketing_name
+    stops = params[:data_to_add].each do |stop|
+      splitText = stop.split(':')
+      tour_stop = splitText[0].to_i
+      stop_type = splitText[1]
+      # ts = TourStop.find_by(stop_type: stop_type, stop_id: tour_stop)
+      # if ts.present?
+      #   ts.latitude = params[:x_plot]
+      #   ts.longitude = params[:y_plot]
+      #   ts.save
+      #   render json: {tour: ts}, status: 200
+      # else
+      if stop_type == "amenity"
+        st = Amenity.find tour_stop
+        st.floor = params[:floor].to_i unless @community.show_map
+        st.save
+        stName = st.name
+      elsif stop_type == "elevator"
+        st = Elevator.find tour_stop
+        stName = st.name
+      else
+        st = Unit.find tour_stop
+        stName = st.marketing_name
+      end
+      ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: current_community.tour.id,name: stName)
+      PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{current_community.id}'")
     end
-    ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: current_community.tour.id,name: stName)
-    PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{current_community.id}'")
-    
-    render json: {tour: ts,community: @community}, status: 200
+    render json: {community: @community}, status: 200
+    # end
+    # tour_stop = Tour.find params[:tour_stop_id]
+    # if tour.present?
+    #   #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
+    #   tour.x_plot = params[:x_plot]
+    #   tour.y_plot = params[:y_plot]
+    #   tour.save(validate: false)
+    #   render json: {tour: tour}, status: 200
+    # else
+    #   render json: {}, status: 404
+    # end
   end
 
   def edit_amenity

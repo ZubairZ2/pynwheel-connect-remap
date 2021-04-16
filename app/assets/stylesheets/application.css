@@ -22,6 +22,7 @@
  *= require ekko-lightbox
  *= require pyn-custom
  *= require dropzone
+ *= require chosen.min
  *= require multi-select
  *= require bootstrap-select
  *= require bootstrap-wysihtml5

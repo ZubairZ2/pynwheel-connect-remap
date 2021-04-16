@@ -41,6 +41,7 @@
 //= require communities
 //= require regions
 //= require floorplate
+//= require chosen.jquery.min
 
 //= require ekko-lightbox
 //= require jquery.remotipart
