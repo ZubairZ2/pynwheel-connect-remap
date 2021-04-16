@@ -128,7 +128,7 @@
     else if (is_regional_admin(edit_user_role))
       data = {user_communities: "true", user:  ($('#user-id').val()), region_id: ($('#edit_user_region_id').val())}
     else
-      data1 = {user_communities: "true", user:  $('#user-id').val()}
+      data = {user_communities: "true", user:  $('#user-id').val()}
     $.ajax({
       url: "/communities/invitation_communities",
       type: "POST",
@@ -137,6 +137,7 @@
       success: function(resp){
         $('#chat_enable_com').multiSelect('removeAllOptions');
         parsed_arr = $.parseJSON(resp.data);
+        retrive_all_user_communities();
         for (var i=0; i<parsed_arr.length  ; i++) {
 
           $('#chat_enable_com').multiSelect('addOption', { value: parsed_arr[i][1], text: parsed_arr[i][0] });
@@ -174,7 +175,7 @@
 
     });
     
-    enable_disable_communities()
+    enable_disable_communities();
   });
 
   $(".company_list").change(function(e){
@@ -196,29 +197,10 @@
         }
 
 
-        $.ajax({
-          url: "/communities/selected_communities",
-          type: "POST",
-          data: {user:  $('#user-id').val() },
+        retrive_all_user_communities()
 
-          success: function(resp2){
-            parsed_arr2 = $.parseJSON(resp2.data);
-            for (var j=0; j < parsed_arr2.length ; j++) {
-              for (var k=0; k < parsed_arr.length;k++)
-              {
-                if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
-                {
-                  $('#user_community_ids').multiSelect('select',parsed_arr2[j][1].toString());
-                }
-                else
-                {
-                  $('#user_community_ids').multiSelect('addOption', { value: parsed_arr2[j][1], text: parsed_arr2[j][0],disabled: true});
-                  $('#user_community_ids').multiSelect('select_disable',parsed_arr2[j][1].toString());
-                }
-              }
-            }
-          }
-        });
+
+
       }
     });
   });
@@ -238,3 +220,30 @@
     return val == "Regional admin"
   }
 
+
+  function retrive_all_user_communities()
+  {
+    $.ajax({
+      url: "/communities/selected_communities",
+      type: "POST",
+      data: {user:  $('#user-id').val() },
+
+      success: function(resp2){
+        parsed_arr2 = $.parseJSON(resp2.data);
+        for (var j=0; j < parsed_arr2.length ; j++) {
+          for (var k=0; k < parsed_arr.length;k++)
+          {
+            if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
+            {
+              $('#user_community_ids').multiSelect('select',parsed_arr2[j][1].toString());
+            }
+            else
+            {
+              $('#user_community_ids').multiSelect('addOption', { value: parsed_arr2[j][1], text: parsed_arr2[j][0],disabled: true});
+              $('#user_community_ids').multiSelect('select_disable',parsed_arr2[j][1].toString());
+            }
+          }
+        }
+      }
+    });
+  }

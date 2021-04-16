@@ -37,6 +37,13 @@ class UsersController < ApplicationController
   end
 
   def update
+    chat_enabled_communites = []
+    u = User.find(params[:id])
+    data = u.communities.pluck(:id)
+    chat_enable_communities = params[:enable_community_id].present? ? params[:enable_community_id] : [""] rescue nil
+    comp = Company.find_by params[:company_name]
+    com_to_dlt = (data & comp.communities.ids ) -  params[:user][:community_ids].map(&:to_i) rescue []
+    data = data - com_to_dlt
 
     user = User.find(params[:id])
     user_previous_communities_ids = user.communities.pluck(:id)
