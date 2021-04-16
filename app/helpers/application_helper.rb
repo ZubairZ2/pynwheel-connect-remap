@@ -1199,4 +1199,9 @@ module ApplicationHelper
 
   end
 
+  def companies_hash
+    arr = Company.all.map { |c| [c.name , c.id] }
+    arr.to_h
+  end
+
 end

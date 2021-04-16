@@ -15,7 +15,7 @@
             %h4.title USERS 
           .col-md-6
             .mt-35
-              - unless current_user.is_community_manager?
+              - unless current_user.is_community_manager? || current_user.is_company_admin? || current_user.is_regional_admin?
                 %a.btn.btn-success.pull-right.mb-20{:href => "/users/invitation/new"}
                   %i.fa.fa-plus-circle
                   INVITE USER

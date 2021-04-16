@@ -15,14 +15,14 @@
             %li{:class=>"#{controller_name =='companies' ? 'active' : ''}"}
               %a{:href => "/companies"} Companies
           %li{:class=>"#{controller_name =='community_groups' ? 'active' : ''}"}
-            - unless (current_user.is_dwelo_admin? )
+            - unless (current_user.is_dwelo_admin? || current_user.is_regional_admin?)
               %a{:href => "/companies/#{current_company.id}/community_groups"} Community Group
           - if (current_user.is_super_admin? || current_user.is_dwelo_admin?)
             %li{:class=>"#{controller_name =='regions' ? 'active' : ''}"}
               %a{:href => "/companies/#{current_company.id}/regions"} Region
           %li{:class=>"#{controller_name =='communities' ? 'active' : ''}"}
             = link_to "Communities",root_path
-      - if (current_user.is_super_admin? || current_user.is_dwelo_admin?)
+      - if (current_user.is_super_admin? || current_user.is_dwelo_admin? || current_user.is_company_admin? || current_user.is_regional_admin?)
         %li{:class=>"#{controller_name =='users' ? 'active' : ''}"}
           = link_to company_employees_path(current_company) do 
             %i.fa.fa-user

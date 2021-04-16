@@ -16,12 +16,16 @@ class CommunitiesController < ApplicationController
       if user_enable_communities_ids.present?
         user_enable_communities = Community.where(id: user_enable_communities_ids).pluck(:id, :name).to_json rescue nil
         render :json => {data: user_enable_communities}, :status => 200
+      else
+        render :json => {data: user_enable_communities.to_json}, :status => 200
       end
     end
     if current_user.is_super_admin?
       @communities = alphabetical_sort(current_company.communities)
-    elsif current_user.is_dwelo_admin?
+    elsif current_user.is_dwelo_admin? || current_user.is_company_admin?
       @communities = alphabetical_sort(current_company.communities) # Community.all.where(creator_id: User.all.map{|u| u.id if u.role == "Dwelo admin"}.compact)
+    elsif current_user.is_regional_admin?
+      @communities = alphabetical_sort(current_user.region.communities)
     else
       @communities = alphabetical_sort(current_user.communities)
     end
@@ -431,14 +435,22 @@ class CommunitiesController < ApplicationController
 
   def invitation_communities
     if params[:user_communities].present?
-      user = User.find params[:user]
-      result = user.communities.pluck(:name, :id).to_json
+      if params[:company_id].present?
+        result = Company.find(params[:company_id]).communities.pluck(:name, :id).to_json
+      elsif
+        result = Region.find(params[:region_id]).communities.pluck(:name, :id).to_json
+      else
+        user = User.find params[:user]
+        result = user.communities.pluck(:name, :id).to_json
+      end
       render :json => {data: result}, :status => 200
-    else
+    elsif params['company'].present?
       company =  params['company']
       comp = Company.find_by(name: company )
-      result = comp.communities.pluck(:name,:id).to_json
+      result = params['region'].present? ? (comp.regions.where(id: params['region']).first.communities.pluck(:name,:id).to_json) :  (comp.communities.pluck(:name,:id).to_json) rescue [].json
       render :json => { data: result }, :status => 200
+    else
+      render :json => { data: [].to_json }, :status => 200
     end
 
   end

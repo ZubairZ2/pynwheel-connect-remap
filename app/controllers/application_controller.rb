@@ -31,7 +31,9 @@ class ApplicationController < ActionController::Base
   end
 
   def current_company
-    if params[:company_id].present?
+    if current_user.present? && (current_user.is_company_admin? || current_user.is_regional_admin?) && current_user.company.present?
+      @company = current_user.company
+    elsif params[:company_id].present?
       session[:company_id] = params[:company_id] 
       @company = Company.find params[:company_id]
     elsif current_community.present? && !current_community.new_record?
@@ -159,7 +161,7 @@ class ApplicationController < ActionController::Base
   end
     
   def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:invite, keys: [:role,:community_ids=>[]])
+    devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:region_id,:role,:community_ids=>[]])
     devise_parameter_sanitizer.permit(:accept_invitation, keys: [:first_name, :last_name, :avatar])
   end
 end
