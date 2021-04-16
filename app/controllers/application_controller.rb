@@ -140,8 +140,8 @@ class ApplicationController < ActionController::Base
     [chatroom.id , min_count]
   end
 
-  def alphabetical_sort(company_or_community_or_community_groups)
-    company_or_community_or_community_groups.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? c.name.split(" ", 2)[1] : c.name).downcase }
+  def alphabetical_sort(recods)
+    recods.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? c.name.split(" ", 2)[1] : c.name).downcase }
   end
 
   def show_chat_support

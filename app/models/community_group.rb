@@ -20,6 +20,7 @@ class CommunityGroup < ApplicationRecord
   belongs_to :company
   has_many :communities
   has_one :group_design, dependent: :destroy
+  belongs_to :region
 
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]

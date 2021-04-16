@@ -19,7 +19,9 @@
 
 
                   -if current_user.is_super_admin?
-                    = f.select :communities, options_for_select(@company.communities.collect{|c| [c.name,c.id]},f.object.communities.map(&:id)),{},{class: "form-control group_list",:multiple=>true}
+                    - selected = f.object.communities.present? ? f.object.communities.map(&:id) : []
+                    - @not_assigned_communities ||= []
+                    = f.select :communities, options_for_select(@not_assigned_communities,selected),{},{class: "form-control group_list",:multiple=>true}
 
           .row
             .col-lg-9.col-lg-offset-1
