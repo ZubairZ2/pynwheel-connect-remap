@@ -306,7 +306,6 @@ class SchedualToursController < ApplicationController
 
     def scheduled_tours_in_future(scheduled_tours, community, tour_user_ids = [], community_time_zone = nil)
       community_time_zone = get_time_zone(community) if community.present? && community.latitude.present? && community.longitude.present?
-
       scheduled_tours.find_each do |tour|
         unless tour.is_tour_completed
           community_time_zone = community_time_zone || tour.user_time_zone
