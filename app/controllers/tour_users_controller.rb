@@ -8,9 +8,8 @@ class TourUsersController < ApplicationController
   def index
     add_breadcrumb "All Visitors", '#'
     @community = Community.find params[:community_id]
-    user_ids = TourHistory.where(tour_id: @community.tour.present? ? @community.tour.id : nil).order('arrived desc').map{|x| x.tour_user_id}.uniq
-    @tour_users = []
-    user_ids.each {|x| @tour_users << TourUser.find_by_id(x)}
+    user_ids = TourHistory.where(tour_id: @community.tour.id).pluck(:tour_user_id).uniq if @community.present? && @community.tour.present?
+    @tour_users = user_ids.present? ? TourUser.where(id: user_ids) : []
   end
   
   def show

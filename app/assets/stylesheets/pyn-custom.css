@@ -503,7 +503,100 @@ table.upload-image tr td{
 }
 .add-plan h3.box-title{
   font-weight:700;
+  margin-top: 9px;
 }
+
+.customTourModal .modal-body,
+.customizeStopsModal .modal-body {
+  line-height: 2pc;
+  border-bottom: 1px solid #d6d6d6;
+  border-top: 1px solid #d6d6d6;
+  padding: 20px;
+}
+
+.customizeStopsModal .customize-stop-success {
+  padding: 0px 0px 0px 10px;
+  text-align: center;
+  font-size: 13px;
+  display: none;
+  color: red !important;
+  background-color: #fff !important;
+}
+
+.customTourModal .set-standard-tour {
+  padding: 3px;
+  margin-bottom: 10px;
+  margin-top: 20px;
+  text-align: center;
+  font-size: 15px;
+  border-radius: 4px;
+  display: none;
+  background-color: #f39c12 !important;
+}
+
+.customizeStopsModal .save-customized-stops {
+  padding: 3px;
+  margin-bottom: 0px;
+  margin-top: 30px;
+  text-align: center;
+  font-size: 15px;
+  border-radius: 4px;
+  display: none;
+  background-color: #20a445 !important;
+}
+
+.reshedule-notification {
+  color: red;
+  display: none;
+}
+
+.expired_tour_text {
+  color: red;
+  font-size: 17px;
+}
+
+.scheduled-visitors-detailed-table tbody td {
+  text-align: left;
+}
+
+.tour_stop_display{
+  display: flex;
+  justify-content: left;
+}
+
+.customTourModal .modal-footer {
+  display: flex;
+  justify-content: space-around;
+}
+
+.customTourModal .modal-title,
+.customizeStopsModal .modal-title {
+  text-align: center;
+}
+
+.tour_stop_visibility:hover {
+  transform: scale(1.5);
+}
+
+.customTourModal .close-modal-btn,
+.customizeStopsModal .close-modal-btn {
+  margin-top: -25px;
+  font-size: 25px;
+  padding-right: 10px;
+}
+
+.customizeStopsModal {
+  background: rgba(0,0,0,0);
+}
+
+.custom-tour-btn {
+  margin-right: 15px;
+}
+
+.add-visitor-modal {
+  margin-bottom: 0px !important;
+}
+
 .add-plan h3.box-title span{
   font-weight:500;
 }
@@ -3245,6 +3338,88 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
     border-color: black transparent transparent transparent;
 }
 
+.customizeTourToolTip {
+  position: relative;
+  display: inline-block;
+  margin-left: 15px;
+  color: #008fd4;
+}
+
+.customizeTourToolTip #customizeTourToolTipText {
+  visibility: hidden;
+  width: 140px;
+  background-color: #000000;
+  color: white;
+  text-align: left;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -130px;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  padding: 15px;
+  line-height: 1.3;
+}
+
+.customizeTourToolTip #customizeTourToolTipText::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 78%;
+  margin-left: 10px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+.customizeTourToolTip:hover #customizeTourToolTipText {
+  visibility: visible;
+}
+
+.expiredTourToolTip {
+  position: relative;
+  display: inline-block;
+  margin-left: 15px;
+  color: #dd4b39;
+}
+
+.expiredTourToolTip #expiredTourToolTipText {
+  visibility: hidden;
+  width: 170px;
+  background-color: #000000;
+  color: white;
+  text-align: left;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -148px;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  padding: 15px;
+  line-height: 1.3;
+}
+
+.expiredTourToolTip #expiredTourToolTipText::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 78%;
+  margin-left: 10px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+.expiredTourToolTip:hover #expiredTourToolTipText {
+  visibility: visible;
+}
+
 .additionalPageAction:hover #additionalPageActionText {
     visibility: visible;
 }
@@ -3642,3 +3817,7 @@ div.mydiv{width:331px; position: absolute; /*left:-331px;*/ height:100%; backgro
 .half_opacity{opacity: 0.5;}
 .add-new-lock a.disabled { pointer-events: none; cursor: not-allowed; } 
 .hide_it{ display: none; }
+
+.add-line-on-stop {
+  text-decoration: line-through;
+}

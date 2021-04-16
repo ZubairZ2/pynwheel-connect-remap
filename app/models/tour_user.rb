@@ -30,6 +30,9 @@ class TourUser < ApplicationRecord
   has_many :lock_histories, dependent: :destroy
   has_many :prospects, dependent: :destroy
   has_many :user_stripes, dependent: :destroy
+
+  has_many :user_customized_tours, dependent: :destroy
+  has_many :communities, through: :user_customized_tours
   
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
 

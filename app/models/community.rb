@@ -96,6 +96,9 @@ class Community < ApplicationRecord
   has_many :building_starting_point, dependent: :destroy
   has_many :tutorials, dependent: :destroy
   has_many :elevators, dependent: :destroy
+
+  has_many :user_customized_tours, dependent: :destroy
+  has_many :tour_users, through: :user_customized_tours
   
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy
@@ -684,6 +687,17 @@ class Community < ApplicationRecord
       end
     end
     options
+  end
+
+
+  def community_tour_available_stops tour_user
+    scheduled_tour = MaxDateScheduledTourService.new(tour_user, self, false).get_scheduled_tour
+
+    if scheduled_tour.present? && scheduled_tour.stops_list.present?
+      self.tour.tour_stops.where(id: scheduled_tour.stops_list).order(:sort)
+    else
+      nil
+    end
   end
 
   private

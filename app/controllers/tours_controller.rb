@@ -427,19 +427,10 @@ class ToursController < ApplicationController
     end
     ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: current_community.tour.id,name: stName)
     PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{current_community.id}'")
+    
     render json: {tour: ts,community: @community}, status: 200
-    # end
-    # tour_stop = Tour.find params[:tour_stop_id]
-    # if tour.present?
-    #   #unit.first.update_attributes(x_plot: params[:x_plot],y_plot: params[:y_plot],floorplate_id: params[:floorplate_id])
-    #   tour.x_plot = params[:x_plot]
-    #   tour.y_plot = params[:y_plot]
-    #   tour.save(validate: false)
-    #   render json: {tour: tour}, status: 200
-    # else
-    #   render json: {}, status: 404
-    # end
   end
+
   def edit_amenity
     @community = Community.find params[:community_id]
     @amenity = Amenity.find params[:format]
@@ -751,6 +742,24 @@ class ToursController < ApplicationController
     end
 
     render json: {match_status: tour_user.id_selfie_mismatch ||= nil, message: message, status: status }
+  end
+
+  def customize_tour
+    if params[:stops_list].present?
+      ids = params[:stops_list].map(&:to_i) - TourStop.where(id: params[:stops_list]).where(stop_type: ["elevator", "building_starting_point"]).pluck(:id)
+      community = Community.find_by_id params[:community_id] 
+      scheduled_tours = community.schedual_tours.where(tour_user_id: params[:tour_user_id]).update_all(stops_list: ids)
+      sleep(1)
+    end
+    
+    render json: {status: 200, message: "Record updated successfully" }
+  end
+
+  def reset_to_standard_tour
+    community = Community.find_by_id params[:community_id] 
+    scheduled_tours = community.schedual_tours.where(tour_user_id: params[:tour_user_id]).update_all(stops_list: [])
+    sleep(1)
+    render json: {status: 200, message: "Tour is set to the standard community tour" }
   end
 
   private

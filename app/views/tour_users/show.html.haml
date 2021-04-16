@@ -26,12 +26,7 @@
             Remove all PII
         - unless @chatroom_id == 0
           = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right; margin-right: 8px;", data: { toggle: "modal", target: "#ChatSupport_a" })
-        -#%span{:style => "float: right;"}
-        -#  #{Time.zone.now}
-        -#%span{:style => "float: right;"}
-        -#  = image_tag  image_url("unlock.png"), :style => "height: 20px; width: 20px;"
-        -#%span{:style => "float: right;"}
-        -#  #{Time.zone.now}
+
     #ChatSupport_a.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
       .container.container_a
         %h3.text-center Chat logs
@@ -162,26 +157,8 @@
                           - elsif @alerts.last.history == true
                             Removed at Consumer Request
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "background: #efefef;margin: 30px;"}
-                    -# - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
-                    -# - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
-
                     = image_tag @community.is_sitemap ? @community.sitemap.image : @community.floorplates.all.order("id ASC").first.image, :class => "my_class", :id => "floorplane_img", :style => "height: 100%; width: 100%;"
-                    -# - if @existing_stops.present?
-                      -# - @existing_stops.flatten.each_with_index do |stop, index|
-                        -# - next if (stop.x_plot + stop.y_plot) < 1
-                        -# - if stop.class.to_s == "Amenity"
-                          -# %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot - 2}px; left: #{stop.x_plot - 4}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
-                            -# %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
-
-                        -# - elsif stop.class.to_s == "Elevator"
-
-                          -# - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i))) || (stop.floorplate_covering_range == "-")
-                            -# %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
-
-
-                        -# - else
-                          -# - next if (stop.y_plot + stop.x_plot) < 1
-                          -# %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                  
                   .col-lg-12.p-0
                     .col-lg-4
                     .col-lg-8#unlock_history
@@ -243,8 +220,6 @@
                               - is_data_loaded = true
                               - if description_hit
                                 .col-lg-12{:style => "margin-bottom: 5px;"}
-                                  -#%strong{:style => "font-size: 16px;"}
-                                    -##{@stop.name}
                               - description_hit = false
                               .col-lg-8.col-md-6.col-sm-12.col-xs-12.user_description
                                 %strong{:style => "font-size: 16px;"}
@@ -252,149 +227,8 @@
                                 %text{:style => "color: gray"}
                                 %br
                                 .user_note{:style => "background: ;"}
-                                  -##{stop_decription.description}
                                   = text_area_tag stop_decription.description,stop_decription.description,:class=>"form-control mb-20 ", :rows => "3", :readonly => true, :style => "background: white; margin-top: 10px;"
-                          / - unless is_data_loaded
                         %hr{:style => "border-top: 2px solid white; margin-left: -15px; margin-right: -15px;"}
-
-
-                    -#.col-lg-12{:style => "background: #efefef;  margin: 30px "}
-                    -#  .col-lg-12
-                    -#    Pool
-                    -#  .col-lg-2
-                    -#    Tour photo
-                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
-                    -#  .col-lg-2
-                    -#    User photo
-                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
-                    -#  .col-lg-8
-                    -#    User Notes
-                    -#    %br
-                    -#    jher gr grgr grag grgrgr grioghio grg r gr grugrbsg grugr grgrg
-                    -#.col-lg-12{:style => "background: #efefef;  margin: 30px"}
-                    -#  .col-lg-12
-                    -#    Pool
-                    -#  .col-lg-2
-                    -#    Tour photo
-                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
-                    -#  .col-lg-2
-                    -#    User photo
-                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
-                    -#  .col-lg-8
-                    -#    User Notes
-                    -#    %br
-                    -#    jher gr grgr grag grgrgr grioghio grg r gr grugrbsg grugr grgrg
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
--#%script{:crossorigin => "anonymous", :integrity => "sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n", :src => "https://code.jquery.com/jquery-3.4.1.slim.min.js"}
--#%script{:crossorigin => "anonymous", :integrity => "sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo", :src => "https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"}
--#%script{:crossorigin => "anonymous", :integrity => "sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6", :src => "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"}
-
--#
--#%head
--#  %title Hello, world!
--#%body
--#  .content
--#    .top-title
--#      .row
--#        .col-md-6
--#          %strong SUMMARY
--#          CYPHERS, JENNIFER
--#        .col-md-6
--#          .row
--#            .sm-txt.ml-auto
--#              10/18/19 2:40 PM
--#            .sm-txt
--#              10/19/19 4:39 PM
--#    / top-title ends
--#    .main-content
--#      .row
--#        .col-md-6
--#        .col-md-6
--#          %strong TOUR DETAILS
--#          Shady Acres
--#      .row.pt-2
--#        .col-md-6
--#          .grey-card
--#            .row.ml-0.mr-0
--#              .img-box
--#                %img{:alt => "", :src => "assets/pic1.jpg"}/
--#              .img-box-info
--#                %p.mb-0
--#                  %strong Cyphers, Jennifer
--#                %p.email.mb-0.small-text
--#                  %a{:href => ""} jennifer@pnywheel.com
--#                %p.number.mb-0.small-text 303.640.3652
--#              .id-card.mt-auto.mb-auto
--#                %img{:alt => "", :src => "id.jpg"}/
--#          / grey-card ends
--#          .row.ml-0.mr-0.mt-3.mb-3
--#            %strong Alerts
--#          .grey-card.p-1.small-text
--#            .row.pb-1
--#              .col-md-6
--#                10/10/19 2:38 PM
--#              .col-md-6
--#                10/10/19 2:38 PM
--#            .row.pb-1
--#              .col-md-6
--#                1 hour 25 minutes
--#              .col-md-6
--#                1 hour 25 minutes
--#            .row.pb-1
--#              .col-md-6
--#                10/19/19 4:03 PM
--#              .col-md-6
--#                10/19/19 4:03 PM
--#          / grey-card ends
--#          .row.ml-0.mr-0.mt-4.mb-3
--#            %strong Tour Tracking
--#            Shady Acres
--#          .grey-card.p-1
--#            .slider
--#              %img{:alt => "", :src => "slider.jpg"}/
--#          / grey-card ends
--#        .col-md-6
--#          .grey-card.p-1{:style => "height: 100%;"}
--#            .row.ml-0.mr-0
--#              %strong Pool
--#            .row.ml-0.mr-0
--#              .tpic Tour Photo
--#              .tpic User Photo
--#              .unotes User notes
--#            .row.ml-0.mr-0.pb-1
--#              .tpic
--#                %img{:alt => "", :src => "tpic.jpg"}/
--#              .tpic
--#                %img{:alt => "", :src => "upic.jpg"}/
--#              .unotes{:style => "background-color: #ffffff;"} Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
--#            .row.ml-0.mr-0
--#              %strong Courtyard
--#            .row.ml-0.mr-0
--#              .tpic Tour Photo
--#              .tpic User Photo
--#              .unotes User notes
--#            .row.ml-0.mr-0.pb-1
--#              .tpic
--#                %img{:alt => "", :src => "tpic.jpg"}/
--#              .tpic
--#                %img{:alt => "", :src => "upic.jpg"}/
--#              .unotes{:style => "background-color: #ffffff;"} N/A
--#            .row.ml-0.mr-0
--#              %strong Apartment B-104
--#            .row.ml-0.mr-0
--#              .tpic Tour Photo
--#              .tpic User Photo
--#              .unotes User notes
--#            .row.ml-0.mr-0.pb-1
--#              .tpic
--#                %img{:alt => "", :src => "tpic.jpg"}/
--#              .tpic
--#                %img{:alt => "", :src => "upic.jpg"}/
--#              .unotes{:style => "background-color: #ffffff;"} Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
 -#    / main-content ends
 .row
   .col-md-12{:style => "/*position: absolute; */ bottom: 51px;"}
@@ -537,7 +371,6 @@
           success: function(data){
             $(".asdasd").children('i').remove()
             $("#unlock_history").children('h5').remove()
-            // data.existing_stops.flat().forEach(draw_stop)
             data.lock_histories.flat().forEach(draw_history)
           },
           fail: function(data){
@@ -555,8 +388,6 @@
     if(stop.x_plot + stop.y_plot > 1){
       var left_margin =  #{ ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i }
       var right_margin = #{ ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i }
-
-   //   $(".asdasd").append(`<i class="fa fa-unlock-alt stops" id="stop_${stop.id}" style="font-size: 35px; position: absolute; top: ${stop.y_plot - right_margin + 6}px; left: ${stop.x_plot - left_margin + 3}px; height:25px; width: 25px; color: #d37474; margin-top: 3px; "></i>`)
     }
   }
 

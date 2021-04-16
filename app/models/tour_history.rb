@@ -56,6 +56,15 @@ class TourHistory < ApplicationRecord
         @mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}" + "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
 
         touruser = self.tour_user
+
+        if touruser.tour_type === "self_tour"
+          scheduled_tour = MaxDateScheduledTourService.new(tour_user, community, false).get_scheduled_tour
+          
+          if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
+            scheduled_tour.update(is_tour_completed: true) if scheduled_tour.present?
+          end
+        end 
+
         tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{@community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{@community.id}/tour%5Fusers/#{touruser.id}"
         @complete_tour_content = ["#{@community.name} has been visited", "#{touruser.name.capitalize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.capitalize} Visitor Details</a> "]
         @thank_you_content = @community.thank_you_message.present? ? @community.thank_you_message : "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
@@ -112,6 +121,37 @@ class TourHistory < ApplicationRecord
     end
   end
 
+  def is_tour_on_time(scheduled_tour, community, timezone = nil)
+    tour = community.tour
+
+    if tour.grace_period.present?
+      if community.present? && community.latitude.present? && community.longitude.present?
+        timezone = get_time_zone(community)
+      end
+
+
+      timezone = timezone || scheduled_tour.user_time_zone
+      grace_period = tour.grace_period
+      current_time = Time.now.in_time_zone(timezone)
+      tour_date_time = (scheduled_tour.tour_date.to_s + " " + scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone)
+
+      before_margin = current_time - grace_period.minutes
+      after_margin = current_time + grace_period.minutes
+
+      if tour_date_time > before_margin && tour_date_time < after_margin
+        true
+      else
+        false
+      end
+    else
+      false
+    end
+  end
+
+  def get_time_zone(community)
+    time_zone = Timezone.lookup(community.latitude, community.longitude)
+    timezone = time_zone.name
+  end
 
   def save_prospect(endtime)
     end_time = endtime.in_time_zone(self.my_time_zone)
