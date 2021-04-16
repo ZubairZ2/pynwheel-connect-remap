@@ -32,10 +32,6 @@ $(document).ready(function() {
   community = $("#pynwheelAccessUsers").data("community");
   cardFormates = $("#pynwheelAccessUsers").data("cardFormates");
   defaultHTML = $( ".pynwheel-access-addresses-list" ).html();
-  console.log("pynwheelAccessUsers: ", pynwheelAccessUsers);
-  console.log("subLocations: ", subLocations);
-  console.log("community: ", community);
-  console.log("cardFormates: ", cardFormates);
 });
 
 function handlePynwheelAccessUserActive(phone) {
@@ -161,9 +157,7 @@ function setTimerArray(index) {
     timerArray[objIndex] = getTimeObject(index);
   } else {
     timerArray.push(getTimeObject(index));
-  } 
-
-  console.log("timerArray", timerArray);
+  }
 }
 
 function openPynwheelAccessTimeModal(index) {
@@ -184,7 +178,6 @@ function editPynwheelAccessUser(phoneNumber) {
 }
 
 function getUserAccesses(user) {
-  console.log("getUserAccesses");
   $.ajax({
     url: `/communities/${community.id}/pynwheel_accesses/get_pynwheel_user_accesses`,
     type: "GET",
@@ -193,7 +186,6 @@ function getUserAccesses(user) {
     if(resp.code === "200" && resp.status === "success") {
       $(".pynwheel-access-addresses-list").empty();
       userData = resp;
-      console.log("userData : ", userData);
       userID = userData.id;
 
 
@@ -205,8 +197,6 @@ function getUserAccesses(user) {
         otherCommunitiesAccesses = resp.listGetUserAccess.filter(x => !userAccesses.some(y => x.id == y.id));
       }
 
-      console.log("userAccesses : ", userAccesses);
-
       userAccesses.forEach((access) => {
         addNewPynwheelAccessAddress(access); 
       });
@@ -214,17 +204,12 @@ function getUserAccesses(user) {
       canAddNewAddress();
       displayUserModal();
     }
-
-    console.log("getUserAccesses", resp);
-
   });
 }
 
 function onSubLocationChange(index) {
   let subLocationName = $(`#pynwheelAccessLockSubLocation${index}`).val();
   let assignedIds = [];
-
-  console.log(subLocationName);
 
   if(subLocations.length > 0 && subLocationName) {
     let filteredSubLocation = subLocations.filter((s) => { return s.name === subLocationName});
@@ -236,9 +221,6 @@ function onSubLocationChange(index) {
       });
 
       subLoc = filteredSubLocation[0];
-
-      console.log(assignedIds);
-      console.log(subLoc.accessPoint);
 
       if(assignedIds.includes(subLoc.accessPoint)) {
         alert("Selected Address is already Exists. Please Select New Address.");
@@ -295,12 +277,39 @@ function isPhoneNumber() {
     return false;
   }
 }
+function isEmailValid(email) {
+  var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+  return regex.test(email);
+}
+
+function onlyNumberKey(evt) {
+          
+  // Only ASCII charactar in that range allowed
+  var ASCIICode = (evt.which) ? evt.which : evt.keyCode
+  if (ASCIICode > 31 && (ASCIICode < 48 || ASCIICode > 57))
+    return false;
+
+  return true;
+}
 
 function isEmail() {
-  if($("#pynwheelAccessUserEmail").val()) {
-    return true;
+  let email = $("#pynwheelAccessUserEmail").val();
+
+  if(email) {
+
+    if(!isEmailValid(email)) {
+      $('.email-required').css('display', 'none');
+      $('.email-valid').css('display', 'block');
+      setTimeout(function() {
+        $('.email-valid').css('display', 'none');
+      }, 5000);
+
+      return false;
+    } else {
+      return true;
+    }
   } else {
-    
+    $('.email-valid').css('display', 'none');
     $('.email-required').css('display', 'block');
     setTimeout(function(){
       $('.email-required').css('display', 'none');
@@ -482,14 +491,12 @@ function addNewPynwheelAccessUser() {
 }
 
 function addOrCreateUserWithAccesses(payload) {
-  console.log("Create or Update Pynwheel access user");
   $.ajax({
     url: `/communities/${community.id}/pynwheel_accesses/create_or_update_pynwheel_access_user`,
     type: "POST",
     data: {userData: payload}
   }).done(function() {
-    handleAddButtonDisability(false)
-    console.log("Pynwheel Access User create or update");
+    handleAddButtonDisability(false);
     window.location.reload();
   });
 
@@ -518,7 +525,7 @@ function getSundayStartTime(access) {
 }
 
 function getSundayEndTime(access) {
-  return (access && access.sun_access_end_time) ? access.sun_access_end_time : "00:00";
+  return (access && access.sun_access_end_time) ? access.sun_access_end_time : "23:59";
 }
 
 function getMondayStartTime(access) {
@@ -526,7 +533,7 @@ function getMondayStartTime(access) {
 }  
 
 function getMondayEndTime(access) {
-  return (access && access.mon_access_end_time) ? access.mon_access_end_time : "00:00";
+  return (access && access.mon_access_end_time) ? access.mon_access_end_time : "23:59";
 }
 
 function getTuesdayStartTime(access) {
@@ -534,7 +541,7 @@ function getTuesdayStartTime(access) {
 }
 
 function getTuesdayEndTime(access) {
-  return (access && access.tue_access_end_time) ? access.tue_access_end_time : "00:00";
+  return (access && access.tue_access_end_time) ? access.tue_access_end_time : "23:59";
 }
 
 function getWednessdayStartTime(access) {
@@ -542,7 +549,7 @@ function getWednessdayStartTime(access) {
 }
 
 function getWednessdayEndTime(access) {
-  return (access && access.wed_access_end_time) ? access.wed_access_end_time : "00:00";
+  return (access && access.wed_access_end_time) ? access.wed_access_end_time : "23:59";
 }
 
 function getThursdayStartTime(access) {
@@ -550,7 +557,7 @@ function getThursdayStartTime(access) {
 }
 
 function getThursdayEndTime(access) {
-  return (access && access.thu_access_end_time) ? access.thu_access_end_time : "00:00";
+  return (access && access.thu_access_end_time) ? access.thu_access_end_time : "23:59";
 }
 
 function getFridayStartTime(access) {
@@ -558,7 +565,7 @@ function getFridayStartTime(access) {
 }
 
 function getFridayEndTime(access) {
-  return (access && access.fri_access_end_time) ? access.fri_access_end_time : "00:00";
+  return (access && access.fri_access_end_time) ? access.fri_access_end_time : "23:59";
 }
 
 function getSaturdayStartTime(access) {
@@ -566,7 +573,7 @@ function getSaturdayStartTime(access) {
 }
 
 function getSaturdayEndTime(access) {
-  return (access && access.sat_access_end_time) ? access.sat_access_end_time : "00:00";
+  return (access && access.sat_access_end_time) ? access.sat_access_end_time : "23:59";
 }
 
 function getSundayAccess(access) {
@@ -598,8 +605,6 @@ function getSaturdayAccess(access) {
 }
 
 function isAllChecked(index) {
-  console.log(index);
-  console.log($(`#pynwheelAccessTimeModal${index} input[name='checkboxes']:checkbox:checked`).length);
   if($(`#pynwheelAccessTimeModal${index} input[name='checkboxes']:checkbox:checked`).length >= 7) {
     $(`#pynwheelAccessTimeModal${index} .pynwheel-access-check-all`).prop('checked', true)
   } else {
@@ -664,7 +669,7 @@ function pynwheelAddressTimerHTMLModule(access, index) {
                 <div class="row">
                   <div class="col-lg-4 col-md-4 col-sm-4">
                     <div class="form-check">
-                      <input class="pynwheel-access-check-all form-check-input" type="checkbox" onchange=onCheckAllChange(${index}) ></input>
+                      <input class="pynwheel-access-check-all form-check-input" type="checkbox" onchange=onCheckAllChange(${index}) ${!access ? "checked" : ""} ></input>
                       <label class="form-check-label" for="flexCheckDefault">
                         <strong>Select All</strong>
                       </label>
@@ -682,7 +687,7 @@ function pynwheelAddressTimerHTMLModule(access, index) {
                 <div class="row day-time-entry">
                   <div class="col-lg-4 col-md-4 col-sm-4">
                     <div class="form-check">
-                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-sunday-check-box form-check-input" type="checkbox" ${getSundayAccess(access)} ></input>
+                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-sunday-check-box form-check-input" type="checkbox" ${!access ? "checked" : getSundayAccess(access) } ></input>
                       <label class="form-check-label" for="flexCheckDefault">
                         Sunday
                       </label>
@@ -698,7 +703,7 @@ function pynwheelAddressTimerHTMLModule(access, index) {
                 <div class="row day-time-entry">
                   <div class="col-lg-4 col-md-4 col-sm-4">
                     <div class="form-check">
-                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-monday-check-box form-check-input" type="checkbox" ${getMondayAccess(access)} ></input>
+                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-monday-check-box form-check-input" type="checkbox" ${!access ? "checked" : getMondayAccess(access) } ></input>
                       <label class="form-check-label" for="flexCheckDefault">
                         Monday
                       </label>
@@ -714,7 +719,7 @@ function pynwheelAddressTimerHTMLModule(access, index) {
                 <div class="row day-time-entry">
                   <div class="col-lg-4 col-md-4 col-sm-4">
                     <div class="form-check">
-                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-tuesday-check-box form-check-input" type="checkbox" ${getTuesdayAccess(access)} ></input>
+                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-tuesday-check-box form-check-input" type="checkbox" ${!access ? "checked" : getTuesdayAccess(access) } ></input>
                       <label class="form-check-label" for="flexCheckDefault">
                         Tuesday
                       </label>
@@ -730,7 +735,7 @@ function pynwheelAddressTimerHTMLModule(access, index) {
                 <div class="row day-time-entry">
                   <div class="col-lg-4 col-md-4 col-sm-4">
                     <div class="form-check">
-                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-wednessday-check-box form-check-input" type="checkbox" ${getWednessdayAccess(access)} ></input>
+                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-wednessday-check-box form-check-input" type="checkbox" ${!access ? "checked" : getWednessdayAccess(access) } ></input>
                       <label class="form-check-label" for="flexCheckDefault">
                         Wednessday
                       </label>
@@ -746,7 +751,7 @@ function pynwheelAddressTimerHTMLModule(access, index) {
                 <div class="row day-time-entry">
                   <div class="col-lg-4 col-md-4 col-sm-4">
                     <div class="form-check">
-                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-thursday-check-box form-check-input" type="checkbox" ${getThursdayAccess(access)} ></input>
+                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-thursday-check-box form-check-input" type="checkbox" ${!access ? "checked" : getThursdayAccess(access) } ></input>
                       <label class="form-check-label" for="flexCheckDefault">
                         Thursday
                       </label>
@@ -762,7 +767,7 @@ function pynwheelAddressTimerHTMLModule(access, index) {
                 <div class="row day-time-entry">
                   <div class="col-lg-4 col-md-4 col-sm-4">
                     <div class="form-check">
-                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-friday-check-box form-check-input" type="checkbox" ${getFridayAccess(access)}></input>
+                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-friday-check-box form-check-input" type="checkbox" ${!access ? "checked" : getFridayAccess(access) }></input>
                       <label class="form-check-label" for="flexCheckDefault">
                         Friday
                       </label>
@@ -778,7 +783,7 @@ function pynwheelAddressTimerHTMLModule(access, index) {
                 <div class="row day-time-entry">
                   <div class="col-lg-4 col-md-4 col-sm-4">
                     <div class="form-check">
-                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-saturday-check-box form-check-input" type="checkbox" ${getSaturdayAccess(access)}></input>
+                      <input name="checkboxes" onchange="onChangeCheckbox(${index})" class="pynwheel-access-saturday-check-box form-check-input" type="checkbox" ${!access ? "checked" : getSaturdayAccess(access) }></input>
                       <label class="form-check-label" for="flexCheckDefault">
                         Saturday
                       </label>
@@ -880,7 +885,6 @@ function getPynwheelAccessAddressModuleHTML(access) {
               <select id="pynwheelAccessLockCardFormat${index}">
                 ${
                   cardFormates.map((card) => {
-                    console.log(card)
                     if(access && card == access.cardFormat)
                       return `<option value="${card}" selected>${card}</option>`
                     else
@@ -994,14 +998,12 @@ function showDeleteUserModal(phone_number) {
 }
 
 function deletePynwheelAccessUser() {
-  console.log("Delete Pynwheel access user");
   $.ajax({
     url: `/communities/${community.id}/pynwheel_accesses/delete_pynwheel_access_user`,
     type: "DELETE",
     data: {phone_number: userPhoneNumber}
   }).done(function() {
     window.location.reload();
-    console.log("Pynwheel Access User deleted");
   });
 }
 
@@ -1025,12 +1027,10 @@ function addPynwheelAccessUser() {
   $(".pynwheel-access-modal-title").html("Add Pynwheel Access User");
   $(".pynwheel-access-modal-button").html("Add User");
 
-
   $(".pynwheel-access-addresses-list").empty();
   canAddNewAddress();
   addNewPynwheelAccessAddress(null);
   $("#pynwheel-access-add-user-modal").modal("show");
-  console.log("Add User")
 }
 
 function addNewPynwheelAccessAddress(access = null) {
@@ -1040,10 +1040,6 @@ function addNewPynwheelAccessAddress(access = null) {
     let pynwheelAccessAddressHTML = getPynwheelAccessAddressModuleHTML(access);
     $(".pynwheel-access-addresses-list").append(pynwheelAccessAddressHTML);
     let temp = [...blockNumbersList];
-
-    console.log("temp", temp);
-    console.log("blockNumbersList", blockNumbersList);
-    // console.log("temp.pop()", temp.pop());
 
     setTimerArray(temp.pop());
     $(`.datepicker`).datepicker({
@@ -1077,8 +1073,6 @@ function setRemovedAccessIds(index) {
 }
 
 function removeBlockNumberFromArray(number) {
-  console.log("timerArray", timerArray);  
-
   const index = blockNumbersList.indexOf(number);
   if (index > -1) {
     blockNumbersList.splice(index, 1);
@@ -1088,10 +1082,4 @@ function removeBlockNumberFromArray(number) {
   if (index > -1) {
     timerArray = [...timerArray.splice(t_index, 1)];
   }
-
-  console.log("timerArray", timerArray);
-
-  console.log(number);
-  console.log(blockNumbersList);
-
 }

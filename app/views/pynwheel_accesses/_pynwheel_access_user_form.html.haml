@@ -8,7 +8,7 @@
         %span.red-required-star.first-name-required.required-field First name is required
     .col-lg-6.col-md-6.col-sm-12
       .form-group
-        %label{:for => "pynwheelAccessUserSecondName"} Second Name
+        %label{:for => "pynwheelAccessUserSecondName"} Last Name
         %span.red-required-star *
         %input#pynwheelAccessUserSecondName.form-control{:placeholder => "Enter second name", :type => "text"}
         %span.red-required-star.second-name-required.required-field Second name is required
@@ -19,7 +19,7 @@
         %label{:for => "pynwheelAccessUserPhone"} Phone Number
         %span.red-required-star *
         %br
-        %input#pynwheelAccessUserPhone.form-control{:type => "tel", :placeholder=>"Enter phone number"}
+        %input#pynwheelAccessUserPhone.form-control{:type => "tel", :placeholder=>"Enter phone number", class: "form-control phoneNumber validate[required,custom[onlyNumber]", :onkeypress => "return onlyNumberKey(event)", :maxlength => 15 , :required => 'required' }
         %span.red-required-star.phone-number-required.required-field Phone number is required
       
     .col-lg-6.col-md-6.col-sm-12
@@ -27,4 +27,5 @@
         %label{:for => "pynwheelAccessUserEmail"} Email address
         %span.red-required-star *
         %input#pynwheelAccessUserEmail.form-control{"aria-describedby" => "emailHelp", :placeholder => "Enter email", :type => "email"}
+        %span.red-required-star.email-valid.required-field Email formate is not valid
         %span.red-required-star.email-required.required-field Email is required
