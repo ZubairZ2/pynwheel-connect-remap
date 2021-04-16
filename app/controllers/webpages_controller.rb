@@ -9,6 +9,8 @@ class WebpagesController < ActionController::Base
       cookies[:webpages_session_id] = { value: SecureRandom.hex(8), expiry: 5.years.from_now, same_site: :none}
       Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: [])
     end
+    
+    @scheduler_widget_link = get_scheduler_link
     @units_with_floorplan_info = []
     @community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
     unless @community_info.locked
@@ -31,6 +33,12 @@ class WebpagesController < ActionController::Base
       end
     end
     response.headers.delete "X-Frame-Options"  
+  end
+
+  def get_scheduler_link
+    community_code = get_community_code @community
+    base_url =  Rails.env.development? ? "http://localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-qa.herokuapp.com/" : "https://pynwheelapp.com/")
+    return "#{base_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
   end
 
   def normalize_units
@@ -120,6 +128,7 @@ class WebpagesController < ActionController::Base
 
   def favorites
     begin
+      @scheduler_widget_link = get_scheduler_link
       @favorite = Favorite.find_by_session_id(cookies[:webpages_session_id])
       @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
       @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
@@ -143,6 +152,9 @@ class WebpagesController < ActionController::Base
   end
 
   private
+  def get_community_code community
+    (JWT.encode ({"community_id" => community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
+  end
 
   def set_community
     @community = Community.find(params[:community_id])
