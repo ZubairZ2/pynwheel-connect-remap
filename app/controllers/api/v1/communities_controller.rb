@@ -532,7 +532,6 @@ class Api::V1::CommunitiesController < ActionController::Base
     if tour_user.strip_customer_id.present?
       charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
     end
-    get_pynwheel_user_accesses
   end
   def check_lock_access
     puts params
