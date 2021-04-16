@@ -84,3 +84,9 @@
     $('#miyazaki').DataTable();
     $('.dataTables_length').addClass('bs-select');
   });
+  if(window.location.href.includes('userSearch'))
+  {
+    email = window.location.href.split('userSearch');
+    oTable = $('#miyazaki').DataTable(); 
+    oTable.search(email[1]).draw();
+  }
