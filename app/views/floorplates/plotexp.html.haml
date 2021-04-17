@@ -343,7 +343,6 @@
 
   $( document ).ready(function() {
     draw_initial_hallways(hallways_coordinates)
-    // draw_line(hallways_coordinates);
   });
 
   if (#{current_user.welcome_floorplate_plot_page})
@@ -389,7 +388,5 @@
       #{current_user.welcome_floorplate_plot_page = false}
       #{current_user.save}
   });
-  function automate_path(){
-    alert("clicked");
-  }
+  
 

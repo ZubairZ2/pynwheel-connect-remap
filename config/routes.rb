@@ -23,7 +23,7 @@ Rails.application.routes.draw do
   # selfie matching
   get '/id_selfie_matching/:tour_user_id', to: 'tours#id_selfie_matching', as: 'manual_selfie_match', format: :json
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
-  
+
   get 'tours/index'
 
   namespace :scheduler_widget do
@@ -32,8 +32,8 @@ Rails.application.routes.draw do
     get 'scheduler_widget_button', to: 'widgets#scheduler_widget_button'
 
     # get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
-    
-  end 
+
+  end
   get 'scheduler/change_schedule_tour_time/:id', to: 'scheduler_widget/widgets#change_tour_time_widget', as: :change_tour_time
 
   devise_for :users, :controllers => { :invitations => 'invitations', sessions: 'users/sessions' }
@@ -44,7 +44,7 @@ Rails.application.routes.draw do
   root to: "home#index"
   resources :chatrooms
   resources :chats
-  get 'listening_message', to: 'chats#listening_message' 
+  get 'listening_message', to: 'chats#listening_message'
   post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages'
   resources :companies do
     resources :communities
@@ -89,8 +89,8 @@ Rails.application.routes.draw do
       get :web_cam_test
     end
 
-    resources :building_starting_points 
-    resources :crm_providers 
+    resources :building_starting_points
+    resources :crm_providers
     resources :remote_locks do
       collection do
         get :authorization_code
@@ -159,7 +159,7 @@ Rails.application.routes.draw do
       # end
     end
     resources :floorplans do
-      resources :amenities,controller: "floorplan_amenities" do
+      resources :amenities, controller: "floorplan_amenities" do
         post :plot_amenity
         collection do
           get :plot_amenities
@@ -181,11 +181,11 @@ Rails.application.routes.draw do
         post :save_floorplan_name_order
       end
     end
-    
+
     resources :elevators do
       resources :elevator_galleries
       # do
-        # post :destroy, controller: 'elevators', action: 'destroy_elevator_gallery'
+      # post :destroy, controller: 'elevators', action: 'destroy_elevator_gallery'
       # end
       # member do
       #   get :edit_gallery_image_of
@@ -217,14 +217,14 @@ Rails.application.routes.draw do
       end
     end
     resources :tour_users do
-        get :lock_ploting
-        get :checkpoint_verification
+      get :lock_ploting
+      get :checkpoint_verification
     end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do
         post :plot_elevator
       end
-      resources :amenities,controller: "floorplate_amenities" do
+      resources :amenities, controller: "floorplate_amenities" do
         post :plot_amenity
         collection do
           get :plot_amenities
@@ -256,7 +256,7 @@ Rails.application.routes.draw do
       post :save_access_point_for_floorplate
     end
     resources :units do
-      resources :amenities,controller: "unit_amenities" do
+      resources :amenities, controller: "unit_amenities" do
         post :plot_amenity
         collection do
           get :plot_amenities
@@ -339,7 +339,7 @@ Rails.application.routes.draw do
         post :adjust_marker_positions
       end
     end
-    resources :settings , only: :index
+    resources :settings, only: :index
     resources :design, only: :index do
       collection do
         get :logo
@@ -406,7 +406,6 @@ Rails.application.routes.draw do
       end
     end
 
-
     resources :homepage_icons, only: [:index, :create, :update] do
       collection do
         get :show_image_in_modal
@@ -440,7 +439,7 @@ Rails.application.routes.draw do
         get :show_images
         post :save_gallery_video
       end
-    end  
+    end
     resources :webpages, only: :index do
       collection do
         get :apply_now
@@ -468,12 +467,17 @@ Rails.application.routes.draw do
   post '/add_elevator/:tour_id/:community_id', to: 'tours#add_elevator', as: :create_elevator
   post '/update_elevator', to: 'tours#update_elevator', as: :update_elevator
   get '/remaining_floors', to: 'access_points#remaining_access_point_floors'
-  
+
   post :save_path_point, to: 'tours#point_save'
   post :update_path_point, to: 'tours#point_update'
   post :delete_path_point, to: 'tours#point_delete'
   post :delete_path_on_sort_change, to: 'tours#delete_path_on_sort_change'
+
+  #### Hallways Controller Routes ####
   post :save_hallways_point, to: 'hallways#point_save'
+  post :update_hallways_point, to: 'hallways#update_point'
+  post :delete_hallways_point, to: 'hallways#remove_point'
+
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
       put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
@@ -509,7 +513,7 @@ Rails.application.routes.draw do
           post :update_version
         end
       end
-      resources :tours,only: :index do
+      resources :tours, only: :index do
         collection do
           post :tour_user_login
           post :start_tour_auto_message
