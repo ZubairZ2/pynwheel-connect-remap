@@ -389,6 +389,7 @@ Rails.application.routes.draw do
         delete :delete_pynwheel_access_user
         get :get_pynwheel_user_accesses
         post :create_or_update_pynwheel_access_user
+        post :active_or_inactive_user
       end
     end
 

@@ -119,4 +119,21 @@ class PynwheelAccessService < BaseService
   else
     OpenStruct.new({success?: true, error: nil, payload: response})
   end
+
+  def active_or_inactive_user(payload, token)
+    url = "#{ENV["PYNWHEEL_ACCESS_BASE_URL"]}/v1/portal/active-or-inactive/user"
+
+    response = HTTParty.post(url,
+      body: payload.to_json, 
+      headers: { 
+      'Content-Type' => 'application/json',
+      'Authorization' => token
+      }
+    )
+
+  rescue HTTParty::Error => e
+    OpenStruct.new({success?: false, error: e, payload: nil})
+  else
+    OpenStruct.new({success?: true, error: nil, payload: response})
+  end
 end

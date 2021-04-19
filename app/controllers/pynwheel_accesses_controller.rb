@@ -84,6 +84,26 @@ class PynwheelAccessesController < ApplicationController
     redirect_to community_pynwheel_accesses_path(@community)
   end
 
+  def active_or_inactive_user
+    token = get_id_token
+    if token.present?
+      response = PynwheelAccessService.new().active_or_inactive_user(params["userActivationPayload"], token)
+      if response["payload"]["code"] == "200" && response["payload"]["status"] == "success"
+        if params["userActivationPayload"]["active"] == "false"
+          flash[:notice] = "User de-activated successfully!"
+        else
+          flash[:notice] = "User activated successfully!"
+        end
+      else
+        flash[:error] = "User activationf ailed!"  
+      end
+    else
+      flash[:error] = "User activationf ailed!"
+    end
+
+    redirect_to community_pynwheel_accesses_path(@community)
+  end
+
   private
 
   def get_id_token
@@ -96,11 +116,6 @@ class PynwheelAccessesController < ApplicationController
       result = get_token_if_login_successful(PynwheelAccessService.new().pynwheel_access_login)
       token = result.present? ? result : nil
     end
-
-    puts "---------"*100
-    puts token
-    puts "---------"*100
-
 
     return token 
   end

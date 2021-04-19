@@ -35,8 +35,30 @@ $(document).ready(function() {
 });
 
 function handlePynwheelAccessUserActive(phone) {
-  // debugger;
+  isUserActive = null;
+
+  if($(`#pynwheelAccessUserActiveToggle${phone}`).prop('checked'))
+    isUserActive = true;
+  else
+    isUserActive = false;
+
+  let payload =  {
+    id: phone,
+    active: isUserActive
+  }
+
+  handlePynwheelAccessUserActivation(payload);
 } 
+
+function handlePynwheelAccessUserActivation(payload) {
+  $.ajax({
+    url: `/communities/${community.id}/pynwheel_accesses/active_or_inactive_user`,
+    type: "POST",
+    data: {userActivationPayload: payload}
+  }).done(function() {
+    window.location.reload();
+  });
+}
 
 function onChangeCheckbox(index) {
   isAllChecked(index);
@@ -499,7 +521,6 @@ function addOrCreateUserWithAccesses(payload) {
     handleAddButtonDisability(false);
     window.location.reload();
   });
-
 }
 
 function todayDate() {
