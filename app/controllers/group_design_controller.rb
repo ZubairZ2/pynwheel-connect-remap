@@ -1,4 +1,5 @@
 class GroupDesignController < ApplicationController
+  include Error::ErrorHandler
   def index
 
     @community_group = CommunityGroup.find(params[:community_group_id])
