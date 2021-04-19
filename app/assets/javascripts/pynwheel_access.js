@@ -21,7 +21,7 @@ var defaultCardFormate;
 
 
 $(document).ready(function() {
-  $('#miyazaki').dataTable({
+  $('#pyn-miyazaki').dataTable({
     "searching": true
   });
 
