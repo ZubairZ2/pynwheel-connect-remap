@@ -365,7 +365,7 @@ class UnitsController < ApplicationController
         ts.save
       end
       @test_units = Floorplate.find(params[:floorplate_id]).fetch_units
-      render json: { unit: unit, test_unit: @test_units }, status: 200
+      render json: { unit: unit }, status: 200
     else
       render json: {}, status: 404
     end

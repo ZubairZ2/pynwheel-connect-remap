@@ -22,13 +22,12 @@ function savePlot(id, dx, dy) {
 }
 
 function saveFloorplateUnit(id, dx, dy) {
-    $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunitforfloorplate",
-        {
+    $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunitforfloorplate", {
             "x_plot": dx,
             "y_plot": dy,
             "floorplate_id": floorplate_id
         },
-        function (data, status, xhr) {
+        function(data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
             console.debug(data.unit);
             console.debug(data.unit.id);
@@ -52,27 +51,23 @@ function saveFloorplateUnit(id, dx, dy) {
 }
 
 function saveTourStaringPoint(id, dx, dy) {
-    debugger;
-    $.post("/communities/" + community_id + "/tours/" + id + "/ajaxplotstartingpoint",
-        {
+    $.post("/communities/" + community_id + "/tours/" + id + "/ajaxplotstartingpoint", {
             "x_plot": dx,
             "y_plot": dy,
             "tour_id": tour_id
         },
-        function (data, status, xhr) {
+        function(data, status, xhr) {
             // arr.push([data.tour.id, data.tour.x_plot, data.tour.y_plot, true]);
             doDraggable();
         });
 }
 
 function saveTourStopPoint(id) {
-    debugger;
-    $.post("/communities/" + community_id + "/tours/" + id + "/ajaxplottourstoppoint",
-        {
+    $.post("/communities/" + community_id + "/tours/" + id + "/ajaxplottourstoppoint", {
             "floor": floor,
             "tour_stop_id": id
         },
-        function (data, status, xhr) {
+        function(data, status, xhr) {
             // arr.push([data.tour.id, data.tour.x_plot, data.tour.y_plot, true]);
             // doDraggable();
             if (data.tour.stop_type == "unit") {
@@ -109,17 +104,16 @@ function saveTourStopPoint(id) {
 }
 
 function saveFloorplanPlot(id, dx, dy) {
-    $.post("/communities/" + community_id + "/floorplans/" + floorplan_id + "/amenities/" + id + "/plot_amenity",
-        {
+    $.post("/communities/" + community_id + "/floorplans/" + floorplan_id + "/amenities/" + id + "/plot_amenity", {
             "x_plot": dx,
             "y_plot": dy,
         },
-        function (data, status, xhr) {
+        function(data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
             arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
             doDraggable();
             // delete from unused list
-            $('.amenities-list option').each(function () {
+            $('.amenities-list option').each(function() {
                 if ($(this).val() == id) {
                     $(this).remove();
                 }
@@ -128,38 +122,36 @@ function saveFloorplanPlot(id, dx, dy) {
 }
 
 function saveAmenityPlotForFloorplate(id, dx, dy) {
-    $.post("/communities/" + community_id + "/floorplates/" + floorplate_id_for_amenity + "/amenities/" + id + "/plot_amenity",
-        {
+    $.post("/communities/" + community_id + "/floorplates/" + floorplate_id_for_amenity + "/amenities/" + id + "/plot_amenity", {
             "x_plot": dx,
             "y_plot": dy,
             "floor": floor
         },
-        function (data, status, xhr) {
+        function(data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
             arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
             doDraggable();
             // delete from unused list
-            $('.amenities-list option').each(function () {
+            $('.amenities-list option').each(function() {
                 if ($(this).val() == id) {
                     $(this).remove();
                 }
             });
-            window.location.reload(true);
+            // window.location.reload(true);
         });
 }
 
 function saveElevatorPlotForFloorplate(id, dx, dy) {
-    $.post("/communities/" + community_id + "/floorplates/" + floorplate_id_for_elevator + "/elevators/" + id + "/plot_elevator",
-        {
+    $.post("/communities/" + community_id + "/floorplates/" + floorplate_id_for_elevator + "/elevators/" + id + "/plot_elevator", {
             "x_plot": dx,
             "y_plot": dy,
         },
-        function (data, status, xhr) {
+        function(data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
             arr.push([data.elevator.id, data.elevator.x_plot, data.elevator.y_plot, true, data.elevator.name]);
             doDraggable();
             // delete from unused list
-            $('.amenities-list option').each(function () {
+            $('.amenities-list option').each(function() {
                 if ($(this).val() == id) {
                     $(this).remove();
                 }
@@ -168,17 +160,16 @@ function saveElevatorPlotForFloorplate(id, dx, dy) {
 }
 
 function saveAmenityPlotForUnit(id, dx, dy) {
-    $.post("/communities/" + community_id + "/units/" + unit_id_for_amenity + "/amenities/" + id + "/plot_amenity",
-        {
+    $.post("/communities/" + community_id + "/units/" + unit_id_for_amenity + "/amenities/" + id + "/plot_amenity", {
             "x_plot": dx,
             "y_plot": dy,
         },
-        function (data, status, xhr) {
+        function(data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
             arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
             doDraggable();
             // delete from unused list
-            $('.amenities-list option').each(function () {
+            $('.amenities-list option').each(function() {
                 if ($(this).val() == id) {
                     $(this).remove();
                 }
@@ -187,12 +178,11 @@ function saveAmenityPlotForUnit(id, dx, dy) {
 }
 
 function saveSiteMapUnit(id, dx, dy) {
-    $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunit",
-        {
+    $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunit", {
             "x_plot": dx,
             "y_plot": dy
         },
-        function (data, status, xhr) {
+        function(data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
             console.debug(data.unit);
             console.debug(data.unit.id);
@@ -216,17 +206,17 @@ function saveSiteMapUnit(id, dx, dy) {
 
 function plotMode(selected) {
     addmode = true;
-    $("#newmsg").css({display: 'inline-block'});
+    $("#newmsg").css({ display: 'inline-block' });
     $("#map").css('cursor', 'crosshair');
 }
 
-$(document).on("click", ".s-unit", function () {
+$(document).on("click", ".s-unit", function() {
     //selected.splice( $.inArray("1001", selected), 1 )
     var remove_index = parseInt($(this).attr("data-id"))
     selected.splice(remove_index, remove_index + 1)
     var data_provider_unit_id = $(this).attr("data-provider-unit-id");
     //$('.amenities-list option').val($(this).attr("data-unit-provider-id")).css({"display": "block"})
-    $('.amenities-list option[value="' + data_provider_unit_id + '"]').css({"display": "block"})
+    $('.amenities-list option[value="' + data_provider_unit_id + '"]').css({ "display": "block" })
     $(this).remove()
     if (selected.length > 0)
         resetDataIds()
@@ -234,7 +224,7 @@ $(document).on("click", ".s-unit", function () {
 
 function resetDataIds() {
     var i = 0
-    $("#selected-units li").each(function () {
+    $("#selected-units li").each(function() {
         $(this).attr("data-id", i);
         i++;
     })
@@ -242,20 +232,28 @@ function resetDataIds() {
 
 
 function doDraggable() {
+
+
     // marker move
+    var pointerX;
+    var pointerY;
+
     $('.marker').draggable({
         containment: 'parent',
         stack: ".marker",
         // get the initial X and Y position when dragging starts
 
-        start: function (event, ui) {
-            console.log("start drag")
-            // mapPanZoom.dispose();
-
+        start: function(event, ui) {
+            console.log("start drag 123")
             var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-            var scaleFactor = (1/(transform.scale || 1));
-            ui.position.top = (ui.position.top * scaleFactor) - (transform.y*scaleFactor);
-            ui.position.left = (ui.position.left * scaleFactor) - (transform.x*scaleFactor);
+            var scaleFactor = (1 / (transform.scale || 1));
+            ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
+            ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
+
+            pointerY = (event.pageY - $('#map').offset().top) / transform.scale - parseInt($(event.target).css('top'));
+            pointerX = (event.pageX - $('#map').offset().left) / transform.scale - parseInt($(event.target).css('left'));
+
+
             xpos = Math.round(ui.position.left);
             ypos = Math.round(ui.position.top);
             // temp array of just markers at same x/y
@@ -272,25 +270,37 @@ function doDraggable() {
             }
         },
         // when dragging stops
-        drag: function (event, ui) {
-            // mapPanZoom.recreate();
-            // calculate the dragged distance, with the current X and Y position and the "xpos" and "ypos"
+        drag: function(event, ui) {
+            var canvasTop = $('#map').offset().top;
+            var canvasLeft = $('#map').offset().left;
+            var canvasHeight = $('#map').height();
+            var canvasWidth = $('#map').width();
+
+
             var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
-            var scaleFactor = (1/(transform.scale || 1));
-            ui.position.top = (ui.position.top * scaleFactor) - (transform.y*scaleFactor);
-            ui.position.left = (ui.position.left * scaleFactor) - (transform.x*scaleFactor);
-            // ui.position.top = ui.originalPosition.top + ((ui.position.top - ui.originalPosition.top) * scaleFactor) - (transform.y*scaleFactor);
-            // ui.position.left = ui.originalPosition.left + ((ui.position.left - ui.originalPosition.left) * scaleFactor) - (transform.x*scaleFactor);
+            var scaleFactor = (1 / (transform.scale || 1));
+            ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
+            ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
+
+            if (ui.position.left < 0) ui.position.left = 0;
+            if (ui.position.left + $(this).width() > canvasWidth) ui.position.left = canvasWidth - $(this).width();
+            if (ui.position.top < 0) ui.position.top = 0;
+            if (ui.position.top + $(this).height() > canvasHeight) ui.position.top = canvasHeight - $(this).height();
+
+            // Finally, make sure offset aligns with position
+            ui.offset.top = Math.round(ui.position.top + canvasTop);
+            ui.offset.left = Math.round(ui.position.left + canvasLeft);
+
 
             xmove = ui.position.left - xpos;
             ymove = ui.position.top - ypos;
             if (temp != null) {
                 for (i = 0; i < temp.length; i++) {
-                    $('#m_' + temp[i]).css({"left": ui.position.left, "top": ui.position.top});
+                    $('#m_' + temp[i]).css({ "left": ui.position.left, "top": ui.position.top });
                 }
             }
         },
-        stop: function (event, ui) {
+        stop: function(event, ui) {
             console.log('hashdasdhad');
             if (temp != null) {
                 for (i = 0; i < temp.length; i++) {
@@ -320,26 +330,25 @@ function reset() {
     dy = 0;
     $("#map").css('cursor', 'default');
     $("#selected-units").empty();
-    $("#newmsg").css({display: 'none'});
+    $("#newmsg").css({ display: 'none' });
     // reset any hidden unused ones that didn't get plotted
-    $('.amenities-list option').each(function () {
-        $(this).css({"display": "block"});
+    $('.amenities-list option').each(function() {
+        $(this).css({ "display": "block" });
     });
 }
 
 function saveAmenityPlot(id, dx, dy) {
-    console.log("ready to ajaxsave ajaxplotunit", id, dx, dy);
-    $.post("/communities/" + community_id + "/sitemaps/" + sitemap_id + "/amenities/" + id + "/plot_amenity",
-        {
+    console.log("ready to ajaxsave ajaxplotunit 123", id, dx, dy);
+    $.post("/communities/" + community_id + "/sitemaps/" + sitemap_id_amenity + "/amenities/" + id + "/plot_amenity", {
             "x_plot": dx,
             "y_plot": dy
         },
-        function (data, status, xhr) {
+        function(data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
             arr.push([data.amenity.id, data.amenity.x_plot, data.amenity.y_plot, true, data.amenity.name]);
             doDraggable();
             // delete from unused list
-            $('.amenities-list option').each(function () {
+            $('.amenities-list option').each(function() {
                 if ($(this).val() == id) {
                     $(this).remove();
                 }
@@ -354,4 +363,10 @@ function removeUnitFromSelectedArray(value) {
             selected.splice(i, i + 1);
         }
     }
-}  
+}
+
+
+
+
+
+
