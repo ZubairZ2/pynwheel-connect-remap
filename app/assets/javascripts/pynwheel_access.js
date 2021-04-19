@@ -967,9 +967,73 @@ function closePynwheelAccessTimeModal(index) {
   resetTimerModalValues(index);
 }
 
+function convertIntoTime(eTime, sTime) {
+
+  let endTimeArr = eTime.split(':');
+  let endHours = endTimeArr[0];
+  let endMinutes = endTimeArr[1];
+
+  let startTimeArr = sTime.split(':');
+  let startHours = startTimeArr[0];
+  let startMinutes = startTimeArr[1];
+
+  if(parseInt(endHours) >= parseInt(startHours)) {
+    if(parseInt(endHours) == parseInt(startHours)) {
+      if(parseInt(endMinutes) > parseInt(startMinutes)) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return true;
+    }
+
+  } else {
+    return false;
+  }
+}
+
+function setStartAndEndTime(index, day) {
+ $(`#pynwheelAccessTimeModal${index} .pynwheel-access-${day}-end-time`).val("11:59");
+ $(`#pynwheelAccessTimeModal${index} .pynwheel-access-${day}-start-time`).val("00:00");
+}
+
+function isTimeCorrect(index, day) {
+  let endTime = $(`#pynwheelAccessTimeModal${index} .pynwheel-access-${day}-end-time`).val();
+  let startTime = $(`#pynwheelAccessTimeModal${index} .pynwheel-access-${day}-start-time`).val();
+  let isCorrectTime  = convertIntoTime(endTime, startTime);  
+  
+  return isCorrectTime;
+}
+
+function isEndTimeGreaterThanStartTime(index) {
+  return 
+  ( 
+    isTimeCorrect(index, "sunday") &&
+    isTimeCorrect(index, "monday") &&
+    isTimeCorrect(index, "tuesday") &&
+    isTimeCorrect(index, "wednessday") &&
+    isTimeCorrect(index, "thursday") &&
+    isTimeCorrect(index, "friday") &&
+    isTimeCorrect(index, "saturday")
+  );
+}
+
 function saveAddressDateTime(index) {
-  $(`#pynwheelAccessTimeModal${index}`).modal("hide");
-  setTimerArray(index);
+  if(isEndTimeGreaterThanStartTime()) {
+    $(`#pynwheelAccessTimeModal${index}`).modal("hide");
+    setTimerArray(index);
+  } else {
+    alert("End Time should be greater than Start Time");
+    setStartAndEndTime(index, "sunday"); 
+    setStartAndEndTime(index, "monday");
+    setStartAndEndTime(index, "tuesday"); 
+    setStartAndEndTime(index, "wednessday");     
+    setStartAndEndTime(index, "thursday"); 
+    setStartAndEndTime(index, "friday");
+    setStartAndEndTime(index, "saturday");
+  }
+
 }
 
 function setUserFormData(user) {
