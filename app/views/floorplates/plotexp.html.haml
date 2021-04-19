@@ -1,3 +1,6 @@
+%script{:src => "https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"}
+%script{:src => "https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"}
+%script{:src => "https://timmywil.com/panzoom/demo/panzoom.js"}
 -#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
 = render '/font_awesome_v5'
 - content_for :title, "Plot Unit - Pynwheel"
@@ -22,7 +25,7 @@
       .box-header
         %h3.box-title
           Plot
-
+          
           - if @community.theme_name.include?('gables')
             - marker_color = @community.design.property_map_color.present? ? @community.design.property_map_color : "#d37474"
           - elsif @community.theme_name == 'modernist'
@@ -57,17 +60,16 @@
           %span.hidden#left_margin #{left_margin}
           %span.hidden#right_margin #{right_margin}
           %span.hidden#marker_color #{marker_color}
-
+          
           %span= @floorplate.name + " Units"
           %span.hidden#active_x_plot 0
-
+          
           %span.hidden#active_y_plot 0
           %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "plotUnitOnFloorplatePopover","data-content" => " "}
             %span#propertyDetailNameText
               Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.
-
-
-
+        
+        
         .btn-btn-danger.mt-10
           = link_to "ADD AMENITY IMAGES  <i class='propertyDetailName fa fa-question-circle' data-toggle='floorplateManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Click on 'Manage Amenities' to switch from plotting units to uploading and plotting amenity images.</span></i>".html_safe, community_amenities_path(@community), class: "btn btn-primary loader_class"
           %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"showHideOverlayGrid();"}
@@ -90,26 +92,26 @@
                     .svg_image_style{:style =>  "width: #{@floorplate.width}px; height: #{@floorplate.height}px;"}
                       = image_tag  @floorplate.image.url
                   - else
-                    = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg"
+                    = image_tag @floorplate.image? ? @floorplate.image.url : "default.jpeg" ,name:"viewArea", id:"viewArea",draggable:"false"
                   - community_units = @community_units
                   - coordinates_array = []
                   - community_units.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
                         - coordinates_array.push([unit.x_plot - left_margin ,unit.y_plot - right_margin ])
-                        -#- left = unit.x_plot - left_margin
-                        -#- right = unit.y_plot - right_margin
+                        - left = unit.x_plot - left_margin
+                        - right = unit.y_plot - right_margin
                         = link_to "<i class='fas fa-map-marker-alt' style='color: #{marker_color};' ></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, :id => "m_#{unit.provider_unit_id}", :style => "left:#{unit.x_plot - left_margin }px; top:#{unit.y_plot - right_margin}px; position:absolute; font-size: #{fontsize}px", "data-name" => "plot", "data-target" => "#markers-modal", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-horizontal"=>unit.x_plot,"data-vertical"=>unit.y_plot,"data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"
-
-                      .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name,:id=>"h-#{unit.provider_unit_id}", "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
-
+                        
+                        .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name,:id=>"h-#{unit.provider_unit_id}", "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
+            
             .col-lg-3.multi-select-units.select-units-on-page
               %h5.mt-40.mb-20
                 SELECT UNITS TO PLOT
                 %i.additionalPageAction.fa.fa-question-circle{ "data-toggle" => "floorplateSelectPlotToUnitsPopover","data-content" => " "}
                   %span#additionalPageActionText{:style => "font-weight: normal;"}
                     You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.
-
+              
               %select.amenities-list.form-control{:multiple=>"multiple"}
                 / %option{:value => ""} -- select unit --
                 - arr = []
@@ -124,8 +126,8 @@
                       %option{:value => "#{unit.provider_unit_id}"}= "#{unit.building}-#{unit.marketing_name}"
                     - else
                       %option{:value => "#{unit.provider_unit_id}"}= unit.marketing_name
-
-
+                  
+                  
                   - arr.push([unit.provider_unit_id, (unit.x_plot.to_i - left_margin ), (unit.y_plot.to_i - right_margin ), true, unit.id.to_s])
               %h5.mt-40.hidden SELECTED UNITS
               .add-plan.mt-10.mb-20
@@ -138,7 +140,7 @@
   .modal-dialog
     .modal-content
       .modal-header#u-name
-
+      
       = form_tag "" do
         .modal-body
           = hidden_field_tag 'redirect_path' , community_floorplate_plotexp_path(current_community,@floorplate)
@@ -183,11 +185,97 @@
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
                     - else
                       %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
-
+        
         .modal-footer
           = submit_tag "Add",:class=>"btn btn-primary" 
-          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel         
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+
 :javascript
+  $(document).ready(function () {
+    document.addEventListener("touchstart", touchHandler, true);
+    document.addEventListener("touchmove", touchHandler, true);
+    document.addEventListener("touchend", touchHandler, true);
+    document.addEventListener("touchcancel", touchHandler, true);
+    plot_markers(#{(@test_units.html_safe)})
+    
+ 
+  })
+  
+  function touchHandler(event) {
+    var touch = event.changedTouches[0];
+
+    var simulatedEvent = document.createEvent("MouseEvent");
+        simulatedEvent.initMouseEvent({
+        touchstart: "mousedown",
+        touchmove: "mousemove",
+        touchend: "mouseup"
+    }[event.type], true, true, window, 1,
+        touch.screenX, touch.screenY,
+        touch.clientX, touch.clientY, false,
+        false, false, false, 0, null);
+
+    touch.target.dispatchEvent(simulatedEvent);
+    // event.preventDefault();
+  }
+
+  
+  
+  function plot_markers(units){
+
+  // This example also showcases the canvas optio
+  // Pointer events anywhere in the parent move
+  // the target.
+
+  let elem = document.querySelector('#map');
+  window.mapPanZoom = panzoom(elem, {
+    minZoom: 0.6,
+    maxZoom: 1.5
+  });
+  // const panzoom = Panzoom(elem, { canvas: true })
+  // const parent = elem.parentElement
+  // // No function bind needed
+  // parent.addEventListener('wheel', panzoom.zoomWithWheel)
+  //
+  // // This demo binds to shift + wheel
+  // parent.addEventListener('wheel', function(event) {
+  //   if (!event.shiftKey) return
+  //   panzoom.zoomWithWheel(event)
+  // })
+
+  // let el = document.querySelector('#map');
+  // let pz = new PinchZoom(el, {});
+  // const pinchZoom = document.querySelector('#map');
+  // var img = document.getElementById('viewArea');
+  //   $('#viewArea').zoomMarker({
+  //     src: img.src,
+  //     width: img.clientWidth,
+  //     rate: 0.1 , // from 0 to 1
+  //     // markers:marker_arr
+  //   });
+    // debugger;
+    // marker_arr = [];
+    // setTimeout(() => {
+    // units.forEach(function(unit) {
+    //     var src = "/marker.png"
+    //     var x = unit.x_plot;
+    //     var y = unit.y_plot;
+    //
+    //
+    //     const widthFactor = 1;//$('#viewArea').zoomMarker_GetPicSize().width / $('#viewArea').width();
+    //     const heightFactor =  1;//$('#viewArea').zoomMarker_GetPicSize().height / $('#viewArea').height();
+    //     var item = {};
+    //     item ["src"] = src;
+    //     item ["x"] = x * widthFactor;
+    //     item ["y"] = y * heightFactor;
+    //     item["size"] = 20;
+    //     $('#viewArea').zoomMarker_AddMarker(item);
+    //
+    //     // marker_arr.push(item);
+    //   });
+    // }, 1000)
+
+
+  }
   var arr = #{raw arr}
   var lmargin = #{raw left_margin}
   var rmargin = #{raw right_margin}
