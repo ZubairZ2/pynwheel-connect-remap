@@ -57,11 +57,13 @@ class PynwheelAccessesController < ApplicationController
     token = get_id_token
 
     if token.present?
-      user_data["listAddUserAccess"] = user_data["listAddUserAccess"].values
+      if user_data["listAddUserAccess"].present?
+        user_data["listAddUserAccess"] = user_data["listAddUserAccess"].values
 
-      user_data["listAddUserAccess"].each_with_index do |access, index|
-        access["accessStartDate"] = access["accessStartDate"].to_date.strftime("%Y-%m-%d")
-        access["accessEndDate"] = access["accessEndDate"].to_date.strftime("%Y-%m-%d") 
+        user_data["listAddUserAccess"].each_with_index do |access, index|
+          access["accessStartDate"] = access["accessStartDate"].to_date.strftime("%Y-%m-%d")
+          access["accessEndDate"] = access["accessEndDate"].to_date.strftime("%Y-%m-%d") 
+        end
       end
 
       if user_data["id"].present?
