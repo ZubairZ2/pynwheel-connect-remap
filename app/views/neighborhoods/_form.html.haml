@@ -79,6 +79,7 @@
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_field :zoom, :class=>"form-control validate[required,custom[onlyNumber],custom[zoomRange]] neighborhood-form-field", :placeholder=>"Zoom", :value=> @neighborhood.zoom.present? ? @neighborhood.zoom : 14, :maxlength=>"2"
+- if current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?  
   .form-group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Remove Listing
