@@ -393,6 +393,15 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :pynwheel_accesses, only: [:index] do
+      collection do
+        delete :delete_pynwheel_access_user
+        get :get_pynwheel_user_accesses
+        post :create_or_update_pynwheel_access_user
+        post :active_or_inactive_user
+      end
+    end
+
     resources :favorite_settings, only: [:index, :create, :update] do
       resources :favorite_images
       resources :ebrochure_menu_buttons
