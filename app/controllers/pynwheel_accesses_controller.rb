@@ -1,7 +1,10 @@
 class PynwheelAccessesController < ApplicationController
   def index
     @community = get_community params[:community_id]
-    
+    @faciity_id = get_facility_id @community
+    @badge_id = get_badge_id @community
+    @card_formate = get_card_formate @community
+
     if @community.pynwheel_access    
       token = get_id_token
 
@@ -105,6 +108,30 @@ class PynwheelAccessesController < ApplicationController
   end
 
   private
+
+  def get_facility_id community
+    if community.present? and community.zerv.present? and community.zerv.facility_id.present?
+      community.zerv.facility_id
+    else
+      "123"
+    end
+  end
+
+  def get_badge_id community
+    if community.present? and community.zerv.present? and community.zerv.badge_id.present?
+      community.zerv.badge_id
+    else
+      "5678"
+    end
+  end
+
+  def get_card_formate community
+    if community.present? and community.zerv.present? and community.zerv.card_format.present?
+      community.zerv.card_format
+    else
+      "HID Prox 26-bit H10301"
+    end
+  end
 
   def get_id_token
     token  = Rails.cache.fetch(:pynwheel_access_token, expires_in: 20.minutes.from_now) do

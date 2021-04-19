@@ -15,6 +15,10 @@ var otherCommunitiesAccesses = [];
 var timerArray = [];
 var removedAccessIds = [];
 var removedAccessDurationIds = [];
+var defaultFacilityId;
+var defaultBadgeId;
+var defaultCardFormate;
+
 
 $(document).ready(function() {
   $('#miyazaki').dataTable({
@@ -32,6 +36,9 @@ $(document).ready(function() {
   community = $("#pynwheelAccessUsers").data("community");
   cardFormates = $("#pynwheelAccessUsers").data("cardFormates");
   defaultHTML = $( ".pynwheel-access-addresses-list" ).html();
+  defaultFacilityId = $("#pynwheelAccessUsers").data("defaultFacilityId");
+  defaultBadgeId = $("#pynwheelAccessUsers").data("defaultBadgeId");
+  defaultCardFormate = $("#pynwheelAccessUsers").data("defaultCardFormate");
 });
 
 function handlePynwheelAccessUserActive(phone) {
@@ -883,7 +890,7 @@ function getPynwheelAccessAddressModuleHTML(access) {
           <div class="form-input-group">
             <label for="pynwheelAccessLockFacilityID">Facility ID</label>
             <span class="red-required-star"> * </span>
-            <input class="form-control" id="pynwheelAccessLockFacilityID${index}" type="text" value=${(access && access.facilityId) ? access.facilityId : "123"}></input>
+            <input class="form-control" id="pynwheelAccessLockFacilityID${index}" type="text" value=${(access && access.facilityId) ? access.facilityId : defaultFacilityId }></input>
             <span class="red-required-star facilityId-required-${index} required-field">Facility ID is required</span>
           </div>
         </div>
@@ -891,7 +898,7 @@ function getPynwheelAccessAddressModuleHTML(access) {
           <div class="form-input-group">
             <label for="pynwheelAccessLockBadgeID">Badge ID</label>
             <span class="red-required-star"> * </span>
-            <input class="form-control" id="pynwheelAccessLockBadgeID${index}" type="text" value="5678"></input>
+            <input class="form-control" id="pynwheelAccessLockBadgeID${index}" type="text" value="${defaultBadgeId}"></input>
             <span class="red-required-star badgeId-required-${index} required-field">Badge ID is required</span>
             
           </div>
@@ -909,7 +916,10 @@ function getPynwheelAccessAddressModuleHTML(access) {
                     if(access && card == access.cardFormat)
                       return `<option value="${card}" selected>${card}</option>`
                     else
-                      return `<option value="${card}" >${card}</option>`
+                      if(card == defaultCardFormate)
+                        return `<option value="${card}" selected>${card}</option>`
+                      else
+                        return `<option value="${card}" >${card}</option>`
                   })
                 }
               </select>
