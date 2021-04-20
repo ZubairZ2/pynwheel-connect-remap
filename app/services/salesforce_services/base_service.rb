@@ -21,7 +21,7 @@ module SalesforceServices
         end
 
         def base_url
-            "https://prometheusreg.my.salesforce.com/services/apexrest"
+            Rails.env.production? ? "#{ENV["SALESFORCE_PRODUCTION_URL"]}/services/apexrest" : "#{ENV["SALESFORCE_UAT_URL"]}/services/apexrest"
         end
 
         def get_community_time_zone(community)
