@@ -9,7 +9,7 @@ class PynwheelAccessesController < ApplicationController
     @zerv = @community.zerv
     @zerv_user_name = @zerv.username if @zerv.present?
     @zerv_password = @zerv.password if @zerv.present?
-    
+
     if @community.pynwheel_access 
       if @zerv.present? && @zerv_user_name.present? && @zerv_password.present?   
         @token = get_id_token
