@@ -9,7 +9,6 @@ namespace :triggered_email do
       timezone = time_zone community
       current_time = Time.now.in_time_zone(timezone)
       diff = current_time.to_s(:time).to_time - tour.tour_time.to_s(:time).to_time
-      
       th = TourHistory.where(arrived: [(current_time - 3600)..current_time], tour_id: community.tour.id, tour_user_id: tu.id)
       
       puts diff
@@ -56,7 +55,7 @@ namespace :triggered_email do
   end
 
   def time_zone community
-    if @time_hash[community.id].present?
+    unless @time_hash[community.id].present?
       time_zone = Timezone.lookup(community.latitude, community.longitude)
       timezone = time_zone.name
       @time_hash[community.id] = timezone
