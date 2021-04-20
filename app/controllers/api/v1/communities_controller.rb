@@ -137,7 +137,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       end
     end
   end
-  
+
   def lincoln_list_communities
     @allow_usage, @redirect_url = get_version_access params 
     if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
@@ -158,6 +158,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
     end
   end
+
   def do_verfication verfied_by_provider, community
     if (verfied_by_provider == "authenteq") && community.tour.tour_setting.present? && community.tour.tour_setting.charge_user_for_id_verfication
       false
@@ -356,24 +357,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       # @tours = @tours.map{|h| h}[-4..-1].to_h
     end
   end
-  def tour_user_data
-    data = Hash.new
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
-      @community = Community.find_by_id params[:id]
-      @tour_user = TourUser.find_by_id params[:tour_user_id]
-      if @community.present? and @tour_user.present?
-        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @community.tour.id)
-        data = {visited_history: @visited_history, tour_user: @tour_user}
-        render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
-      else
-        render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
-      end
-    else
-      render :json=> {data: data, :status=>false, :message => "Invalid Token", code: 401}
-    end
-  end
-
+  
   def tour_user_data
     data = Hash.new
     access = grant_access (decoded(params[:token])) rescue false
