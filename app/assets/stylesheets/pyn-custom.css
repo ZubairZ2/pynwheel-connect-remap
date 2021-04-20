@@ -3892,6 +3892,25 @@ div.mydiv {
     display: inline-block;
 }
 
+.propertyDetailName #propertyDetailNameText {
+    visibility: hidden;
+    width: 350px;
+    background-color: #000000;
+    color: white;
+    text-align: left;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -60px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    padding: 15px;
+    line-height: 1.3;
+}
+
 .pyn-toolTip .toolTipText {
     visibility: hidden;
     width: 54px;
