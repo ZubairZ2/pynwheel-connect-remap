@@ -159,6 +159,14 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+  def do_verfication verfied_by_provider, community
+    if (verfied_by_provider == "authenteq") && community.tour.tour_setting.present? && community.tour.tour_setting.charge_user_for_id_verfication
+      false
+    else
+      false
+    end
+  end
+
   def community_tours
     puts params
     access = grant_access (decoded(params[:token])) rescue false
