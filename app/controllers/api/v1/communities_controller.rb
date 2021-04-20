@@ -144,9 +144,19 @@ class Api::V1::CommunitiesController < ActionController::Base
       company = Company.where('lower(name) = ?', 'lincoln')
       @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
     else
+      begin
+        secure_random = SecureRandom.hex
+
+        payload = {tour_user_id: params[:tour_user_id], license_key: params[:license_key],secure_random: secure_random}
+        # session[params[:tour_user_id].to_i] = secure_random
+        (TourUser.find params[:tour_user_id]).update_attributes(secure_random: secure_random)
+        @token = encoded(payload)
+      rescue => ex
+        @token = nil
+      end
       company = Company.where('lower(name) = ?', 'lincoln')
       @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
-      end
+    end
   end
   def do_verfication verfied_by_provider, community
     if (verfied_by_provider == "authenteq") && community.tour.tour_setting.present? && community.tour.tour_setting.charge_user_for_id_verfication
