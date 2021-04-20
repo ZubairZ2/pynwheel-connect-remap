@@ -3977,29 +3977,52 @@ div.mydiv {
     font-size: 13px !important;
 }
 
-.propertyDetailName {
+.propertyDetailName, 
+.pyn-toolTip {
     position: relative;
     display: inline-block;
 }
 
-.propertyDetailName #propertyDetailNameText {
+.pyn-toolTip .toolTipText {
     visibility: hidden;
-    width: 350px;
+    width: 54px;
     background-color: #000000;
     color: white;
-    text-align: left;
+    text-align: center;
     border-radius: 6px;
     padding: 5px 0;
     position: absolute;
     z-index: 1;
-    bottom: 150%;
-    left: 50%;
-    margin-left: -60px;
+    bottom: 115%;
+    left: 87%;
+    margin-left: -32px;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 14px;
-    padding: 15px;
+    padding: 10px;
     line-height: 1.3;
 }
+
+.pyn-toolTip .toolTipText::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.pyn-toolTip:hover .toolTipText {
+    visibility: visible;
+}
+
+
+.active-inactive-tooltip-text {
+    width: 118px !important;
+    left: -5% !important;
+}
+
 
 .propertyDetailName #propertyDetailNameText::after {
     content: "";
@@ -4807,5 +4830,13 @@ input:checked+.slider:before {
 }
 
 .slider.round:before {
-    border-radius: 50%;
+  border-radius: 50%;
+}
+
+.pynwheel-access-credentials {
+    font-size: 20px;
+    color: #ce0000;
+    background: #e6e6e6;
+    padding: 20px;
+    font-weight: 600;
 }
