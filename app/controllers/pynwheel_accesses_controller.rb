@@ -1,16 +1,21 @@
 class PynwheelAccessesController < ApplicationController
-  def index
-    @community = get_community params[:community_id]
-    
-    if @community.pynwheel_access    
-      token = get_id_token
+  before_action :set_community
 
-      if token.present?
-        @pynwheel_acess_users = get_pynwheel_access_users_list(token)
-        @card_formates = ["HID Prox 26-bit H10301", "HID Prox 33-bit D10202", "HID Prox 35-bit C1000", "HID Prox 37-bit H10304", "HID Prox 37-bit H10302"]
-        @sub_locations = get_pynwheel_access_sub_locations(@community.name, token)
-      else
-        @pynwheel_acess_users = []
+  def index
+    @zerv = @community.zerv
+    @zerv_user_name = @zerv.username if @zerv.present?
+    @zerv_password = @zerv.password if @zerv.present?
+    if @community.pynwheel_access 
+      if @zerv.present? && @zerv_user_name.present? && @zerv_password.present?   
+        @token = get_id_token
+
+        if @token.present?
+          @pynwheel_acess_users = get_pynwheel_access_users_list(@token)
+          @card_formates = ["HID Prox 26-bit H10301", "HID Prox 33-bit D10202", "HID Prox 35-bit C1000", "HID Prox 37-bit H10304", "HID Prox 37-bit H10302"]
+          @sub_locations = get_pynwheel_access_sub_locations(@community.name, @token)
+        else
+          @pynwheel_acess_users = []
+        end
       end
     else
       redirect_to root_path
@@ -22,7 +27,6 @@ class PynwheelAccessesController < ApplicationController
 
     if token.present?
       response = PynwheelAccessService.new().pynwheel_access_delete_user(params[:phone_number], token)
-      @community = Community.find_by_id params[:community_id]
 
       if response["payload"]["code"] == "200" && response["payload"]["status"] == "success"
         flash[:notice] = "Pynwheel access user deleted successfully"
@@ -50,7 +54,6 @@ class PynwheelAccessesController < ApplicationController
 
   def create_or_update_pynwheel_access_user
     user_data = params["userData"]
-    @community = Community.find_by_id params[:community_id]
     token = get_id_token
 
     if token.present?
@@ -109,17 +112,18 @@ class PynwheelAccessesController < ApplicationController
   private
 
   def get_id_token
-    token  = Rails.cache.fetch(:pynwheel_access_token, expires_in: 20.minutes.from_now) do
-      result = get_token_if_login_successful(PynwheelAccessService.new().pynwheel_access_login)      
-      result.present? ? result : nil
-    end
+    # token  = Rails.cache.fetch(:pynwheel_access_token, expires_in: 20.minutes.from_now) do
+    #   result = get_token_if_login_successful(PynwheelAccessService.new().pynwheel_access_login(@community))      
+    #   result.present? ? result : nil
+    # end
 
-    if token.nil? or token.blank? or !Rails.cache.exist?(:pynwheel_access_token)
-      result = get_token_if_login_successful(PynwheelAccessService.new().pynwheel_access_login)
-      token = result.present? ? result : nil
-    end
+    # if token.nil? or token.blank? or !Rails.cache.exist?(:pynwheel_access_token)
+    #   result = get_token_if_login_successful(PynwheelAccessService.new().pynwheel_access_login(@community))
+    #   token = result.present? ? result : nil
+    # end
 
-    return token 
+    # return token 
+    get_token_if_login_successful(PynwheelAccessService.new().pynwheel_access_login(@community))
   end
 
   def get_pynwheel_access_sub_locations(location_name, token)
@@ -131,10 +135,6 @@ class PynwheelAccessesController < ApplicationController
       []
     end
   end 
-
-  def get_community community_id
-    Community.find_by_id community_id
-  end
 
   def get_pynwheel_access_users_list token
     get_users_list_if_successful_response(PynwheelAccessService.new().pynwheel_access_get_users(token))
@@ -154,5 +154,9 @@ class PynwheelAccessesController < ApplicationController
     else
       nil
     end
+  end
+
+  def set_community
+    @community = Community.find params[:community_id]
   end
 end
