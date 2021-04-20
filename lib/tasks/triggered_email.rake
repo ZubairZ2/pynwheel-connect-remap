@@ -33,7 +33,8 @@ namespace :triggered_email do
         tour.update_column 'missed_email_sent', true
         emails = community.email.split(',')
         emails.each do |email|
-        DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,emails[0],false)
+        DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,emails[0])
+        # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,emails[0],false)
         end
 
         
@@ -46,7 +47,8 @@ namespace :triggered_email do
         #{community.email.present? ? community.email : ""}
         "
         
-        DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_tour_user, tu.email,community,nil,nil,nil,emails[0],true)
+        DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_tour_user, tu.email,emails[0])
+        # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_tour_user, tu.email,community,nil,nil,nil,emails[0],true)
         DelayedSchedulerTextJob.perform_async(msg_msg_tour_user, tu.phone_number)
       end
       
