@@ -1,0 +1,47 @@
+- content_for :title, "Users - Pynwheel Access"
+.divLoading.hidden
+%section
+  .content
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          Pynwheel Access Users
+        %button.btn.btn-success.add-user-button{:type => "button", :onclick => "addPynwheelAccessUser()"} Add User 
+    .row{:style => "margin-bottom: 70px;"}
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12#outer_div
+            .box.box-widget.panel-box.add-plan
+              %table#pyn-miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units
+                %thead
+                  %tr
+                    %th
+                      Name
+                    %th
+                      Phone
+                    %th
+                      Email
+
+                    %th
+                      Actions
+                %tbody
+                  - @pynwheel_acess_users.each_with_index  do |user,index|
+                    %tr
+                      %td 
+                        = user["name"]
+                      %td 
+                        = user["phoneNumber"]
+                      %td
+                        = user["email"]
+                      %td
+                        %i.fa.fa-pencil-square-o.pynwheel-access-edit{"aria-hidden" => "true", :onclick => "editPynwheelAccessUser(#{user["phoneNumber"]})"}
+                        %i.fa.fa-trash-o.pynwheel-access-delete{"aria-hidden" => "true", :onclick => "showDeleteUserModal(#{user["phoneNumber"]})"}
+
+                        %label.switch
+                          %input{:checked => user["active"], :type => "checkbox", :id => "pynwheelAccessUserActiveToggle#{user["phoneNumber"]}", :onclick => "handlePynwheelAccessUserActive(#{user["phoneNumber"]})"}/
+                          %span.slider.round
+
+#pynwheelAccessUsers{ data: {card_formates: @card_formates.to_json, community: @community.to_json, pynwheel_access_users: @pynwheel_acess_users.to_json, sub_loactions: @sub_locations.to_json, default_facility_id: @faciity_id, default_badge_id: @badge_id, default_card_formate: @card_formate} }
+
+= render :partial=>'delete_user_modal'
+= render :partial=>'add_user_modal', :locals => {community: @community, card_formates: @card_formates, sub_locations: @sub_locations}

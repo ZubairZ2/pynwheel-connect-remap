@@ -92,7 +92,6 @@ $(document).ready(function () {
         // dy = dy -right_margin;
         fontSize = $('#font_size').html();
         marker_color = $('#marker_color').html();
-
         if (addmode) {
           // save plotting for each selected unit
           for (i = 0; i < selected.length; i++) {
