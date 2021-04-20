@@ -34,7 +34,6 @@ class WebpagesController < ActionController::Base
     end
     response.headers.delete "X-Frame-Options"  
   end
-
   def get_scheduler_link
     community_code = get_community_code @community
     base_url =  Rails.env.development? ? "http://localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/")
