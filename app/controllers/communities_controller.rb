@@ -33,6 +33,7 @@ class CommunitiesController < ApplicationController
   def new
     add_breadcrumb "Add Community", new_company_community_path(current_company)
     @community = current_company.communities.new 
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] }
     @com_id = 0
   end
 
@@ -65,6 +66,7 @@ class CommunitiesController < ApplicationController
   def edit
     @com_id = current_community.id
     @chatroom = params[:tour_user_id].present? ? show_chat_modal(params[:tour_user_id],current_community.tour.id) : Chatroom.new
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] }
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
