@@ -87,7 +87,9 @@ class SchedulerWidget::WidgetsController < ApplicationController
       @error_message << message
     end
     @yardi_time_slots = @community.available_slots
-    @yardi_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ]}
+    
+    @yardi_self_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
+    @yardi_guided_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
     flash[:success] = params[:message] if params[:message].present?
     render :test_widget, layout: false
   end

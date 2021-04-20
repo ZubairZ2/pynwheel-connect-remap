@@ -832,34 +832,38 @@
 
           var guided_visiting_times = <%= raw @guided_visiting_times %>;
           var error_messages = <%= raw @error_message %>
-          var yardi_time_slots = <%= raw @yardi_time_slots %>
+          var yardi_self_time_slots = <%= raw @yardi_self_time_slots %>
+          var yardi_guided_time_slots = <%= raw @yardi_guided_time_slots %>
           var selected_date = $(".datepickertime").val()
           var self_tour_matched = false
           var guided_tour_matched = false
-          var in_yardi_time_slot = false
+          var in_yardi_self_time_slot = false
+          var in_yardi_guided_time_slot = false
           var error
           selected_day = moment(selected_date).format('dddd')
-          yardi_selected_day = moment(selected_date).format('dddd')
+          yardi_selected_day = moment(selected_date).format('M/DD/YYYY')
           selected_time = moment(selected_date).format('HH:mm')
-          if(yardi_time_slots.length > 0)
+          debugger;
+          if(yardi_self_time_slots.length > 0)
           {
-            for(var d_t in yardi_time_slots){
-              if (yardi_selected_day == visiting_times[d_t][0]){
+            for(var yt in yardi_self_time_slots){
+              if (yardi_selected_day == yardi_self_time_slots[yt][0]){
 
-                var start = getMinutes(yardi_time_slots[d_t][1]);
-                var end = getMinutes(yardi_time_slots[d_t][2]);
-                var selected = getMinutes(yardi_time_slots);
-                debugger;
-                if ((selected >= start) && (selected <= end)) {
-                  in_yardi_time_slot = true;
-                  self_tour_matched = true;
+                
+                var start = getMinutes(yardi_self_time_slots[yt][1]);
+                var end = getMinutes(yardi_self_time_slots[yt][2]);
+                var selected = getMinutes(selected_time);
+                if ((selected >= (start + 720)) && (selected <= (end + 720))) {
+                  in_yardi_self_time_slot = true;
+                  self_tour_matched = true
                   show_self_tour_option = true;
+                  // schedual_my_tour($(this))
                 }
 
               }
             }
           }
-          if(visiting_times.length > 0 && !in_yardi_time_slot){
+          if(visiting_times.length > 0 && !in_yardi_self_time_slot){
             for(var d_t in visiting_times){
               if (selected_day == visiting_times[d_t][0]){
                 var start = getMinutes(visiting_times[d_t][1]);
@@ -881,7 +885,26 @@
               }
             }
           }
-          if(guided_visiting_times.length > 0){
+          if(yardi_guided_time_slots.length > 0)
+          {
+            for(var yt in yardi_guided_time_slots){
+              if (yardi_selected_day == yardi_guided_time_slots[yt][0]){
+
+                
+                var start = getMinutes(yardi_guided_time_slots[yt][1]);
+                var end = getMinutes(yardi_guided_time_slots[yt][2]);
+                var selected = getMinutes(selected_time);
+                if ((selected >= (start + 720)) && (selected <= (end + 720))) {
+                  in_yardi_guided_time_slot = true;
+                  guided_tour_matched = true
+                  show_guided_tour_option = true;
+                  // schedual_my_tour($(this))
+                }
+
+              }
+            }
+          }
+          if(guided_visiting_times.length > 0 && !in_yardi_guided_time_slot){
 
             for(var d_t in guided_visiting_times){
               if (selected_day == guided_visiting_times[d_t][0]){
