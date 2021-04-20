@@ -3,13 +3,13 @@ class PynwheelAccessService < BaseService
   end
 
 # login to pynwheel access on Zerv portal
-  def pynwheel_access_login
+  def pynwheel_access_login community
     url = "#{ENV["PYNWHEEL_ACCESS_BASE_URL"]}/v1/portal/login"
 
     response = HTTParty.post(url,
       body: {
-        username: ENV["PYNWHEEL_ACCESS_USER_NAME"],
-        password: 'PynWheel123#'
+        username: community.zerv.username,
+        password: community.zerv.password
       }.to_json,
       headers: { 'Content-Type' => 'application/json'})
 
