@@ -36,7 +36,7 @@ class WebpagesController < ActionController::Base
 
   def get_scheduler_link
     community_code = get_community_code @community
-    base_url =  Rails.env.development? ? "http://localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-qa.herokuapp.com/" : "https://pynwheelapp.com/")
+    base_url =  Rails.env.development? ? "http://localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/")
     return "#{base_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
   end
 
