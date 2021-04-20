@@ -832,15 +832,34 @@
 
           var guided_visiting_times = <%= raw @guided_visiting_times %>;
           var error_messages = <%= raw @error_message %>
+          var yardi_time_slots = <%= raw @yardi_time_slots %>
           var selected_date = $(".datepickertime").val()
           var self_tour_matched = false
           var guided_tour_matched = false
+          var in_yardi_time_slot = false
           var error
           selected_day = moment(selected_date).format('dddd')
+          yardi_selected_day = moment(selected_date).format('dddd')
           selected_time = moment(selected_date).format('HH:mm')
+          if(yardi_time_slots.length > 0)
+          {
+            for(var d_t in yardi_time_slots){
+              if (yardi_selected_day == visiting_times[d_t][0]){
 
-          if(visiting_times.length > 0){
+                var start = getMinutes(yardi_time_slots[d_t][1]);
+                var end = getMinutes(yardi_time_slots[d_t][2]);
+                var selected = getMinutes(yardi_time_slots);
+                debugger;
+                if ((selected >= start) && (selected <= end)) {
+                  in_yardi_time_slot = true;
+                  self_tour_matched = true;
+                  show_self_tour_option = true;
+                }
 
+              }
+            }
+          }
+          if(visiting_times.length > 0 && !in_yardi_time_slot){
             for(var d_t in visiting_times){
               if (selected_day == visiting_times[d_t][0]){
                 var start = getMinutes(visiting_times[d_t][1]);
