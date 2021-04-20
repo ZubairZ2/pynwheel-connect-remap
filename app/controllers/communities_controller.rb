@@ -519,7 +519,7 @@ class CommunitiesController < ApplicationController
     if params[:user_communities].present?
       if params[:company_id].present?
         result = Company.find(params[:company_id]).communities.pluck(:name, :id).to_json
-      elsif
+      elsif params[:region_id].present?
         result = Region.find(params[:region_id]).communities.pluck(:name, :id).to_json
       else
         user = User.find params[:user]
