@@ -441,6 +441,11 @@ class Community < ApplicationRecord
     SalesforceSendFeedbackJob.perform_async self, tour_user, tour_history
   end
 
+  def available_slots
+    available_slots = YardirentcafeMarketingApi.new(community_id: self.id)
+    available_slots.available_slots(self)
+  end
+
   def credentials_are_present?
     credential.present?
   end

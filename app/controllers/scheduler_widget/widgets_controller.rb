@@ -86,6 +86,9 @@ class SchedulerWidget::WidgetsController < ApplicationController
       message[1] = '(guided visiting hours for ' +  day_obj.day + ' are from ' + day_hash[day_obj.day] +'). The last tour must be scheduled ' + cutt_of +' before visiting hours end.'
       @error_message << message
     end
+    byebug
+    @yardi_time_slots = @community.available_slots
+    @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ]}
     flash[:success] = params[:message] if params[:message].present?
     render :test_widget, layout: false
   end
