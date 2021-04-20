@@ -46,7 +46,7 @@
                             - if tour.is_tour_completed
                               %i.fa.fa-check-square.icon_size.customizeTourToolTip
                                 %span#customizeTourToolTipText
-                                  Tour has been completed
+                                  Tour has completed
                             - else
                               - if is_tour_in_future(@community, tour)
                                 - if is_tour_customized(tour)
@@ -56,7 +56,7 @@
                               - else
                                 %i.fa.fa-exclamation-triangle.icon_size.expiredTourToolTip
                                   %span#expiredTourToolTipText
-                                    Tour has been expired
+                                    Tour has expired
                                 
                           %td
                             = tour_user_name(@tour_user) 
