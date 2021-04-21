@@ -63,8 +63,11 @@ class CompaniesController < ApplicationController
       company = Company.find_by_name(params[:company])
       @regions = company.regions.map {|r|[r.name, r.id]}
     end
-    #render 'get_regions'
-    render partial: 'get_regions', layout: false
+    if params[:only_region_options_data].present? && params[:only_region_options_data] == "true"
+      render :json => {data: @regions}, :status => 200
+    else
+      render partial: 'get_regions', layout: false
+    end
   end
 
   private
