@@ -129,9 +129,9 @@
               
               - if @community.self_tour && @community.scheduler_widget
                 = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary", :target=> "_blank", :style => ' width: -webkit-fill-available; margin-top: 15px; background #1385e8; height: 43px; padding-top: 10px; font-weight: bold;'
-              .form-group
-                %span.logo-lg{:style => "text-align: center;"}
-                  %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => "",:style => "width: 60%; text-align: center;  margin-top: 15px; display: block; padding-top: 15px; margin-left: auto; margin-right: auto;"}
+              
+              %span.logo-lg{:style => "text-align: center;"}
+                %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => "",:style => "width: 60%; text-align: center;  margin-top: 15px; display: block; padding-top: 15px; margin-left: auto; margin-right: auto;"}
                   
                           
 
