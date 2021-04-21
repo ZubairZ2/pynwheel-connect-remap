@@ -25,12 +25,13 @@
       - else
         .grey_bar
           %h3.h3_box_title= current_company.name
-  - if f.object.role == "Regional admin" && !current_user.is_regional_admin?
-    .form-group
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Region
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = f.select :region_id, options_for_select(f.object.company.regions.map{|r| [r.name, r.id]},f.object.region_id),{:include_blank => 'Select Region'},{class: "form-control"}
+
+  .form-group.region_select{:class => (f.object.role == "Regional admin" && !current_user.is_regional_admin?) ? "" : "hide_it" }
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Region
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      - regions_arr = f.object.company.present? ? (f.object.company.regions.map{|r| [r.name, r.id]}) : ([])
+      = f.select :region_id, options_for_select(regions_arr,f.object.region_id),{:include_blank => 'Select Region'},{class: "form-control validate[required] region_list"}
 
 
   = hidden_field_tag 'user-id', f.object.id
@@ -113,14 +114,23 @@
   $('#user_community_ids').multiSelect();
   $( document ).ready(function() {
     edit_user_role = $('#edit_user_role').val()
+    current_user_role = $('#current_user_role').val()
+    if (!(is_pynwheel_admin(current_user_role) || is_dwelo_admin(current_user_role)))
+    {
+      if ( is_company_admin(edit_user_role) || is_regional_admin(edit_user_role)){
+        $('#user_role').attr('disabled',true)
+        $('#user_company_name').attr('disabled',true)
+        $('#user_region_id').attr('disabled',true)
+      }
+    }
     if ( is_company_admin(edit_user_role) || is_regional_admin(edit_user_role)){
-      $('#user_role').attr('disabled',true)
-      $('#user_company_name').attr('disabled',true)
-      $('#user_region_id').attr('disabled',true)
+      //$('#user_role').attr('disabled',true)
+      //$('#user_company_name').attr('disabled',true)
+      //$('#user_region_id').attr('disabled',true)
     }
     else{
-      $(`#user_role option[value='Company admin']`).attr('disabled', true)
-      $(`#user_role option[value='Regional admin']`).attr('disabled', true)
+      //$(`#user_role option[value='Company admin']`).attr('disabled', true)
+      //$(`#user_role option[value='Regional admin']`).attr('disabled', true)
     }
     comp = "#{@company.id}"
     if ( is_company_admin(edit_user_role))
@@ -174,18 +184,34 @@
       }
 
     });
+    $('#user_role').change(function(){
+      user_role = $('#user_role').val()
+      if (is_regional_admin(user_role)){
+        add_region()
+      }
+      else{
+        $('.region_select').addClass('hide_it')
+      }
+    });
     
-    enable_disable_communities()
+    enable_disable_communities();
   });
 
-  $(".company_list").change(function(e){
+  $(".company_list, .region_list").change(function(e){
     var selected_company =  $(".company_list").val()
     var userid = $(this).attr('data-user-id');
-    
+    var region_id;
+    if ($(e.target).hasClass('region_list')){
+      region_id = $('.region_list').val()
+      data = {region_id: region_id } 
+    }
+    else
+      data = {company: selected_company } 
+
     $.ajax({
       url: "/communities/invitation_communities",
       type: "POST",
-      data: {company: selected_company },
+      data: data,
 
       success: function(resp){
         $('#user_community_ids').multiSelect('removeAllOptions');
@@ -196,32 +222,19 @@
 
         }
 
-
-        $.ajax({
-          url: "/communities/selected_communities",
-          type: "POST",
-          data: {user:  $('#user-id').val() },
-
-          success: function(resp2){
-            parsed_arr2 = $.parseJSON(resp2.data);
-            for (var j=0; j < parsed_arr2.length ; j++) {
-              for (var k=0; k < parsed_arr.length;k++)
-              {
-                if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
-                {
-                  $('#user_community_ids').multiSelect('select',parsed_arr2[j][1].toString());
-                }
-                else
-                {
-                  $('#user_community_ids').multiSelect('addOption', { value: parsed_arr2[j][1], text: parsed_arr2[j][0],disabled: true});
-                  $('#user_community_ids').multiSelect('select_disable',parsed_arr2[j][1].toString());
-                }
-              }
-            }
-          }
-        });
+        retrive_all_user_communities()
       }
     });
+
+    if (is_regional_admin(user_role)){
+      add_region()
+      if (region_id){
+        $('.region_list').unbind("change")
+        $('.region_list').val(region_id)
+        $('.region_list').bind("change")
+      }
+    }
+
   });
 
   function enable_disable_communities(){
@@ -238,37 +251,55 @@
   function is_regional_admin(val){
     return val == "Regional admin"
   }
+  function is_pynwheel_admin(val){
+    return val == "Super admin"
+  }
+  function is_dwelo_admin(val){
+    return val == "Dwelo admin"
+  }
+
 
   function retrive_all_user_communities()
   {
     $.ajax({
       url: "/communities/selected_communities",
       type: "POST",
-      data: {user:   $('#user-id').val() },
-
+      data: {user:  $('#user-id').val() },
       success: function(resp2){
-      parsed_arr2 = $.parseJSON(resp2.data);
-      for (var j=0; j < parsed_arr2.length ; j++) {
-        for (var k=0; k < parsed_arr.length;k++)
-        {
-          if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
+        parsed_arr2 = $.parseJSON(resp2.data);
+        for (var j=0; j < parsed_arr2.length ; j++) {
+          for (var k=0; k < parsed_arr.length;k++)
           {
-            $('#user_community_ids').multiSelect('select',parsed_arr2[j][1].toString());
-          }
-          else
-          {
-
-
-            $('#user_community_ids').multiSelect('addOption', { value: parsed_arr2[j][1], text: parsed_arr2[j][0],disabled: true});
-            $('#user_community_ids').multiSelect('select_disable',parsed_arr2[j][1].toString());
-
-
-
+            if(jQuery.inArray(parsed_arr2[j][0], parsed_arr[k]) !== -1 )
+            {
+              $('#user_community_ids').multiSelect('select',parsed_arr2[j][1].toString());
+            }
+            else
+            {
+              $('#user_community_ids').multiSelect('addOption', { value: parsed_arr2[j][1], text: parsed_arr2[j][0],disabled: true});
+              $('#user_community_ids').multiSelect('select_disable',parsed_arr2[j][1].toString());
+            }
           }
         }
-        retrive_all_user_communities()
       }
+    });
+  }
 
+  function add_region(){
+    selected_company =  $(".company_list").val()
+    data = { company: selected_company, only_region_options_data: true }
+    $('.region_select').removeClass('hide_it')
+    $.ajax({
+      url: "/companies/get_regions",
+      type: "GET",
+      data: data,
+      success: function(resp){
+        regions = resp.data
+        regions_options = '<option value="">Select Region</option>'
+        regions.forEach(function( region, index ) {
+          regions_options += '<option value='+ region[1] + '>' + region[0] + '</option>'
+        })
+        $('#user_region_id').html(regions_options)
       }
     });
   }

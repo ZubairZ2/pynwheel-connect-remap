@@ -81,10 +81,22 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both @complete_tour_content
         send_email_sms_or_both_to_touruser @thank_you_content
         # community.deleted_ids = []
+        puts "************"*100
+        puts "community.credential.present?"
+        puts community.credential.present?
+        puts "************"*100
+        puts community.crm_credential.present?
+        puts "************"*100
+        puts community.crm_credential.crm_provider
+        puts "************"*100
+
 
 
         if community.credential.present? and community.crm_credential.present? and community.crm_credential.crm_provider == "salesforce"
           current_tour = VisitedStop.where(tour_user_id: tour_user.id, tour_id: self.tour_id).last
+          puts "current_tour"
+          puts current_tour
+          puts "************"*100
           if current_tour.present?
             # current_tour.tour_key = "450e96530bb8ae7af1b3f3d019a6a055" # testing line
             Prospect.where(community_id: community.id, tour_user_id: tour_user.id, crm_provider: "salesforce", sf_status: "active").update_all(tour_key: current_tour.tour_key)

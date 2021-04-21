@@ -7,7 +7,18 @@ module SalesforceServices
             tour_history = args[:tour_history]
 
             url = base_url + "/tourFeedback"
+            puts "*******"*100
+            puts "Salesforce base url"
+            puts url
+            puts tour_user
+            puts tour_history
+
             token = get_access_token
+            
+            puts "ACCESS TOKEN"
+            puts token
+            puts "*******"*100
+            
             if token.success?
                 auth_header = "Bearer " + token.payload["access_token"]
                 c_time_zone = get_community_time_zone(community)
