@@ -155,6 +155,7 @@ Rails.application.routes.draw do
     get :test_connection
     get :authenteq_report
     get :account_report
+    get :tour_feedback_report
     get :psi_pricing_test_connection
     get :psi_space_configuration_test_connection
     get :realpage_load_pricing_data
@@ -504,6 +505,7 @@ Rails.application.routes.draw do
           post :save_user_tour
           post :save_user_selfie
           post :save_user_id_card
+          post :feedback
         end
       end
       post :save_shared_tour, to: 'tours#save_shared_tour'

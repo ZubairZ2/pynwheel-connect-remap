@@ -386,6 +386,11 @@ class CommunitiesController < ApplicationController
     zip_data = write_authenteq_report(workbook)
     send_data(zip_data, :type => 'application/zip', :filename => "AuthenteqReport.zip")
   end
+  def tour_feedback_report
+    workbook = WriteXLSX.new("public/STFeedbackReport/STFeedbackReport.xlsx")
+    zip_data = write_feedback_report(workbook)
+    send_data(zip_data, :type => 'application/zip', :filename => "STFeedbackReport.zip")
+  end
   def realpage_load_pricing_data
     @community = Community.find params[:community_id]
     @community.connect_to_pricing(@community)

@@ -141,9 +141,27 @@ class Api::V1::ToursController < ActionController::Base
             arr << false
           end
         end
+        @tour_user = TourUser.find(params[:tour_user_id]) if params[:tour_user_id].present?
+        feedback = Feedback.where(tour_user_id: @tour_user.id).first
+        show_feedback = if feedback.present? and feedback.is_cancelled == false
+          false
+        elsif feedback.present? and feedback.is_cancelled and feedback.cancelled_at > 24.hours.ago
+          false
+        else
+          true
+        end
+        arr << {feedback_option: show_feedback}
         render :json=> {:success=>true, :message => "success", :data => arr}
 
       end
+    end
+  end
+  def feedback 
+    @feedback = Feedback.new(feedback_params)
+    if @feedback.save
+      render json: { success: true, error_code: 200, message: "Feedback submitted successfully", data: @feedback }
+    else
+      render json: { success: false, error_code: 400, message: "Something went wrong, please try again later", data: nil }
     end
   end
   def start_tour_auto_message
@@ -354,5 +372,9 @@ iPhone Users:
 
   def shared_tour_params
     params.permit(:name, :phone, :email, :tour_id, :recipient_name)
+  end
+
+  def feedback_params
+    params.permit(:comment, :rating, :tour_id, :tour_user_id, :is_cancelled, :cancelled_at)
   end
 end
