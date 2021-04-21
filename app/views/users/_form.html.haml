@@ -30,7 +30,8 @@
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Region
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.select :region_id, options_for_select(f.object.company.regions.map{|r| [r.name, r.id]},f.object.region_id),{:include_blank => 'Select Region'},{class: "form-control validate[required] region_list"}
+      - regions_arr = f.object.company.present? ? (f.object.company.regions.map{|r| [r.name, r.id]}) : ([])
+      = f.select :region_id, options_for_select(regions_arr,f.object.region_id),{:include_blank => 'Select Region'},{class: "form-control validate[required] region_list"}
 
 
   = hidden_field_tag 'user-id', f.object.id
