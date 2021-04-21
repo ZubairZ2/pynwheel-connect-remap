@@ -2,9 +2,9 @@ class PynwheelAccessesController < ApplicationController
   before_action :set_community
 
   def index
-    @faciity_id = get_facility_id @community
-    @badge_id = get_badge_id @community
-    @card_formate = get_card_formate @community
+    @faciity_id = get_facility_id 
+    @badge_id = get_badge_id 
+    @card_formate = get_card_formate
 
     @zerv = @community.zerv
     @zerv_user_name = @zerv.username if @zerv.present?
@@ -116,25 +116,25 @@ class PynwheelAccessesController < ApplicationController
 
   private
 
-  def get_facility_id community
-    if community.present? and community.zerv.present? and community.zerv.facility_id.present?
-      community.zerv.facility_id
+  def get_facility_id
+    if @community.present? and @community.zerv.present? and @community.zerv.facility_id.present?
+      @community.zerv.facility_id
     else
       "123"
     end
   end
 
-  def get_badge_id community
-    if community.present? and community.zerv.present? and community.zerv.badge_id.present?
-      community.zerv.badge_id
+  def get_badge_id
+    if @community.present? and @community.zerv.present? and @community.zerv.badge_id.present?
+      @community.zerv.badge_id
     else
       "5678"
     end
   end
 
-  def get_card_formate community
-    if community.present? and community.zerv.present? and community.zerv.card_format.present?
-      community.zerv.card_format
+  def get_card_formate
+    if @community.present? and @community.zerv.present? and @community.zerv.card_format.present?
+      @community.zerv.card_format
     else
       "HID Prox 26-bit H10301"
     end
