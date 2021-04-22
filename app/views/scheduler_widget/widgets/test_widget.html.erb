@@ -888,8 +888,8 @@
               if (yardi_selected_day == yardi_guided_time_slots[yt][0]){
 
                 
-                var start = getMinutes(yardi_guided_time_slots[yt][1]);
-                var end = getMinutes(yardi_guided_time_slots[yt][2]);
+                var start = getMinutes(yardi_guided_time_slots[yt][1])
+                var end = getMinutes(yardi_guided_time_slots[yt][2])
                 var selected = getMinutes(selected_time);
                 if ((selected >= (start + 720)) && (selected <= (end + 720))) {
                   in_yardi_guided_time_slot = true;
