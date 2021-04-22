@@ -16,7 +16,7 @@ class EdgestateAccountsController < ApplicationController
           begin
             EdgeState.where(community_id: current_community.id).first_or_create(community_id: params['community_id'], refresh_token: response['refresh_token']) rescue nil
             edgestate_account = current_community.edge_state
-            edgestate_account.update_attributes(refresh_token: response['refresh_token']) if edgestate_account.present? || (edgestate_account.client_id and edgestate_account.client_secret).present?
+            edgestate_account.update_attributes(refresh_token: response['refresh_token'], is_authorized_with_pynwheel: true) if edgestate_account.present? || (edgestate_account.client_id and edgestate_account.client_secret).present?
             current_community.update_columns(multiple_locks_provider: locks_provider) rescue nil
             session[:authorization_code] = ''
           rescue => e
@@ -53,6 +53,7 @@ class EdgestateAccountsController < ApplicationController
             @edge_state = EdgeState.find_by(community_id: current_community.id)
             if @edge_state.update_attributes(edge_state_params)
                 current_community.update_columns(:multiple_locks_provider => locks_provider)
+                @edge_state.update_attributes(is_authorized_with_pynwheel: false) if @edge_state.is_authorized_with_pynwheel
                 flash[:notice] = "EdgeState credentails updated successfully"
                 redirect_to new_community_dwelo_path(current_community)
             else
@@ -135,7 +136,7 @@ class EdgestateAccountsController < ApplicationController
     def remove_edgestate_auth_account
       if current_community.edge_state.present?
         if current_community.edge_state.refresh_token.present?
-          current_community.edge_state.update_attributes(refresh_token: nil)
+          current_community.edge_state.update_attributes(refresh_token: nil, is_authorized_with_pynwheel: false)
           flash[:notice] = "Account disconnected successfully"
           redirect_to new_community_dwelo_path(current_community)
         else

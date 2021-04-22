@@ -68,11 +68,12 @@
               %h3 Need to pare down your list?
               %p{:style => "margin-bottom: 20px"} Tap the heart to remove an item from the page, or click the clear button below to remove all items.
               %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
-          .bg-bottom
-            .need-to
-              = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary", :target=> "_blank", :style => ' width: -webkit-fill-available; margin-top: 15px; height: 57px; font-size: 17px; padding-top: 17px; color: white;'
-              %span.logo-lg{:style => "text-align: center;"}
-                %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}" , :title => "",:style => "width: 60%; text-align: center;  margin-top: 15px; display: block; margin-left: auto; margin-right: auto;"}
+          - if @community.self_tour && @community.scheduler_widget
+            .bg-bottom
+              .need-to
+                = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary", :target=> "_blank", :style => ' width: 290px; margin-top: 15px; height: 57px; font-size: 18px; padding-top: 17px; color: white;'
+          %span.logo-lg{:style => "text-align: center;"}
+            %img{:alt => "", :src => '/assets/pynwheel-logo.png' , :title => "",:style => "width: 60%; text-align: center;  margin-top: 15px; display: block; margin-left: auto; margin-right: auto;"}
       
       .right-side
         - if @units.nil?
