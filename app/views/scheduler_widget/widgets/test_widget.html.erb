@@ -116,7 +116,7 @@
           <div class="Pyn_Modal">
             <p>Great! We are looking forward to having you at our property. Please complete the following fields to confirm your reservation:</p>
             
-            <%= form_for TourUser.new, url: "/create_tour_user_from", :as => :tour_user, class: "form_popup", id: "tour_user_form", method: 'post' do |f| %>
+            <%= form_for @tour_user, url: "/create_tour_user_from", :as => :tour_user, class: "form_popup", id: "tour_user_form", method: 'post' do |f| %>
 
               <%= hidden_field_tag :sched_tour_id, nil , :id => "sched_tour_id"%>
               <%= hidden_field_tag :community_id, @community_id %>
@@ -135,6 +135,7 @@
               <div class="form-group">
                 <label>Email Address *</label>
                 <%= f.email_field :email, class: "form-control", placeholder: "Email Address", required: 'required' %>
+                <span class="reshedule-notification" style="display: <%= @tour_user.id.present? ? "block" : "none" %>">User with this email address already have scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
               </div>
               <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_phone.nil? ? true : current_community.tour.tour_setting.show_phone) %>
               <div class="form-group">
@@ -148,7 +149,7 @@
                   
 
                   <label>Phone Number *</label> 
-                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 , required: 'required' %>
+                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 , required: 'required', id: "user_phone_number_field" %>
                 </div>
               </div>
               <% end %>
@@ -338,7 +339,11 @@
           <div class="Pyn_Modal">
             <p style="font-weight: normal; font-size: 20px;"><%= flash[:success].html_safe if flash[:success].present?  %></p>
             <div class="clearfix"></div>
-            <button class="btn_popup" id="close">Ok</button>
+            <% if user_signed_in? %>
+              <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/schedual_tours')">Ok</button>
+            <% else %>
+              <button class="btn_popup" id="close">Ok</button>
+            <% end %>
           </div>
         </section>
       </div>
@@ -349,8 +354,24 @@
       var show_guided_tour_option = false;
       var hidden_tour_type_value;
       var community_id = <%= raw @community.id %>;
+      var existing_tour_users = []
+
+      function redirectSheduledTourPage(url){
+        window.location.href = url
+      }
+
+      function onlyNumbers() {
+        let pNum = $("#user_phone_number_field").val();
+        $("#user_phone_number_field").val(pNum.replace("+", ""));        
+      }
 
       $(document).ready(function(){
+        onlyNumbers();
+
+        $("#user_phone_number_field").change(function() {
+          onlyNumbers();
+        });
+
         var direct = <%= @direct %>
         var show_first = <%= @show_first.present? ? @show_first : false %>
           if(direct)
@@ -386,6 +407,13 @@
       });
 
       $('#confirm_reservation').click(function(){
+      });
+
+      $("#tour_user_email").keyup(function() {
+        if(existing_tour_users.indexOf($("#tour_user_email").val()) !== -1)
+          $(".reshedule-notification").css("display", "block");
+        else 
+          $(".reshedule-notification").css("display", "none");
       });
 
       var tour_id;
@@ -715,6 +743,9 @@
             cache: false,
             success: function(data){
               if(data.code != 400){
+                if(data && data.axisting_tour_users)
+                  existing_tour_users = data.axisting_tour_users;
+
                 document.getElementById('sched_tour_id').value = data.schedual_tour.id
                 tour_id = data.schedual_tour.id;
                 $('.divLoading').addClass('hidden');
@@ -827,7 +858,6 @@
         });
         
         $("#scheduleMyTourForm").on('submit', function(e){
-
           var visiting_times = <%= raw @visiting_times %>
 
           var guided_visiting_times = <%= raw @guided_visiting_times %>;

@@ -120,13 +120,20 @@
                   .form-group
                     = select_tag :square_feet, options_for_select(@square_feet),{:class=>"form-control", :include_blank => "Select Min Sq Ft"}
                   %div
-                    = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"btn btn-primary btn-block view-btn", :target=> "pynwheel_iframe"
+                    = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"btn btn-primary btn-block view-btn", :target=> "pynwheel_iframe", :style => "height: 43px;"
               - else
                 .select-price.hidden
                   %h3 Minimum Square Footage
                   .form-group
                     = select_tag :square_feet, options_for_select([]),{:class=>"form-control", :include_blank => "Select Min Sq Ft"}      
-
+              
+              - if @community.self_tour && @community.scheduler_widget
+                = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary", :target=> "_blank", :style => ' width: -webkit-fill-available; margin-top: 15px; background #1385e8; height: 43px; padding-top: 10px; font-weight: bold;'
+              
+              %span.logo-lg{:style => "text-align: center;"}
+                %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => "",:style => "width: 60%; text-align: center;  margin-top: 15px; display: block; padding-top: 15px; margin-left: auto; margin-right: auto;"}
+                  
+                          
 
           - if @community_info.has_floorplates?
             .select-floorP
@@ -151,7 +158,7 @@
             %i.fa.fa-refresh
         .right-side.parent#panzomm-container
           / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
-          .image-map#map#zoomable
+          .image-map#zoomable
             - if @community_info.has_floorplates?
               - @floors.each do |floor|
                 - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first

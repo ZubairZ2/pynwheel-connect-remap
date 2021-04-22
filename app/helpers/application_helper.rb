@@ -4,6 +4,14 @@ module ApplicationHelper
     ["index","new","create","update"]
   end
 
+  def sidemenu_communities_controllers
+    ["home", "companies", "community_groups", "regions", "group_design"]
+  end
+
+  def accounts_dropdown_menu
+    ["companies", "community_groups", "regions", "communities"]
+  end
+
   def flash_class(level)
     case level
     when 'notice' then "alert alert-success"
@@ -861,6 +869,10 @@ module ApplicationHelper
     ["25px","35px","45px","55px","65px"]
   end
 
+  def cards_formats
+    ["HID Prox 26-bit H10301", "HID Prox 33-bit D10202", "HID Prox 35-bit C1000", "HID Prox 37-bit H10304", "HID Prox 37-bit H10302"]
+  end
+
   def convert_float_to_integer(x)
     if x%1 == 0
       return x.to_i
@@ -1189,6 +1201,11 @@ module ApplicationHelper
       end
     end
 
+  end
+
+  def companies_hash
+    arr = Company.all.map { |c| [c.name , c.id] }
+    arr.to_h
   end
 
 end

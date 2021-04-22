@@ -26,6 +26,8 @@ Rails.application.routes.draw do
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
   
   get 'tours/index'
+  post 'tours/customize_tour', to: 'tours#customize_tour' 
+  delete 'tours/reset_to_standard_tour', to: 'tours#reset_to_standard_tour'
 
   namespace :scheduler_widget do
     get 'widget', to: 'widgets#widget'
@@ -50,9 +52,13 @@ Rails.application.routes.draw do
   resources :companies do
     resources :communities
     resources :community_groups
+    resources :regions do
+      delete :remove_community, on: :member
+    end
     resources :employees, :controller => 'users' do
       get :profile
     end
+    get :get_regions ,on: :collection
   end
   resources :community_groups do
     member do
@@ -105,6 +111,8 @@ Rails.application.routes.draw do
         post :import_edgestate_locks
         post :map_edgestate_locks
         delete :remove_edgestate_locks
+        get :edgestate_code_grant_authorization
+        delete :remove_edgestate_auth_account
       end
     end
 
@@ -382,6 +390,15 @@ Rails.application.routes.draw do
         post :save_homepage_icon
         put :update_homepage_icon
         delete :delete_homepage_icon
+      end
+    end
+
+    resources :pynwheel_accesses, only: [:index] do
+      collection do
+        delete :delete_pynwheel_access_user
+        get :get_pynwheel_user_accesses
+        post :create_or_update_pynwheel_access_user
+        post :active_or_inactive_user
       end
     end
 

@@ -22,6 +22,7 @@ class Tour < ApplicationRecord
   has_one :path, as: :map_path
   has_one :tour_setting, dependent: :destroy
   has_one :scheduler_widget_setting, dependent: :destroy
+  has_one :user_customized_tour, dependent: :destroy
   has_many :path_points, through: :path
 
   has_many :remote_locks,  -> { for_starting_points }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy

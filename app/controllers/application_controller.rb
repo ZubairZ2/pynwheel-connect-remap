@@ -13,6 +13,7 @@ class ApplicationController < ActionController::Base
   before_action :load_tour_users_chats
   def current_community
   	if params[:community_id].present?
+      session[:community_id] = params[:community_id] 
 	  	@community ||= Community.find params[:community_id]
 	  elsif controller_name =='communities' && params[:id].present?
 		  @community ||= Community.find params[:id] 
@@ -31,7 +32,9 @@ class ApplicationController < ActionController::Base
   end
 
   def current_company
-    if params[:company_id].present?
+    if current_user.present? && (current_user.is_company_admin? || current_user.is_regional_admin?) && current_user.company.present?
+      @company = current_user.company
+    elsif params[:company_id].present?
       session[:company_id] = params[:company_id] 
       @company = Company.find params[:company_id]
     elsif current_community.present? && !current_community.new_record?
@@ -103,10 +106,15 @@ class ApplicationController < ActionController::Base
   end
 
   def generate_remotelock_token
-      # do block will only execute in case of cache miss
-      # token  = Rails.cache.fetch('access_token', expires_in: 1.8.hours.from_now) do
-        RemoteLockService.new(current_community).client_credentials
-      # end
+    # do block will only execute in case of cache miss
+    # token  = Rails.cache.fetch('access_token', expires_in: 1.8.hours.from_now) do
+    # end
+    edge_state_account = current_community.edge_state
+    if edge_state_account.client_id.present? && edge_state_account.client_secret.present?
+      RemoteLockService.new(current_community).client_credentials
+    elsif edge_state_account.refresh_token.present?
+      RemoteLockService.new(current_community).get_access_token_after_refresh
+    end
   end
  
   def load_tour_users_chats
@@ -140,8 +148,8 @@ class ApplicationController < ActionController::Base
     [chatroom.id , min_count]
   end
 
-  def alphabetical_sort(company_or_community_or_community_groups)
-    company_or_community_or_community_groups.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? c.name.split(" ", 2)[1] : c.name).downcase }
+  def alphabetical_sort(recods)
+    recods.sort_by { |c| ((c.name.include?("(Dwelo)") or c.name.include?("The")) ? c.name.split(" ", 2)[1] : c.name).downcase }
   end
 
   def show_chat_support
@@ -159,7 +167,7 @@ class ApplicationController < ActionController::Base
   end
     
   def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:invite, keys: [:role,:community_ids=>[]])
+    devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:region_id,:role,:community_ids=>[]])
     devise_parameter_sanitizer.permit(:accept_invitation, keys: [:first_name, :last_name, :avatar])
   end
 end

@@ -57,6 +57,19 @@ class CompaniesController < ApplicationController
     redirect_to new_company_path if current_company.nil?
   end
 
+  def get_regions
+    @regions = []
+    if params[:company].present?
+      company = Company.find_by_name(params[:company])
+      @regions = company.regions.map {|r|[r.name, r.id]}
+    end
+    if params[:only_region_options_data].present? && params[:only_region_options_data] == "true"
+      render :json => {data: @regions}, :status => 200
+    else
+      render partial: 'get_regions', layout: false
+    end
+  end
+
   private
   def set_company
     @company = Company.find params[:id]

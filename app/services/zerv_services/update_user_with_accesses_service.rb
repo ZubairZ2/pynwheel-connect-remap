@@ -6,6 +6,10 @@ module ZervServices
             tour_user    = args[:tour_user]
             stop_list    = args[:stop_list]
             zerv_user    = args[:zerv_user]
+            @facilityId   = community.zerv.facility_id.blank? ? "0" : community.zerv.facility_id
+            @accessCode   = community.zerv.badge_id.blank? ? "1234" : community.zerv.badge_id
+            @cardFormat   = community.zerv.card_format.blank? ? "HID Prox 26-bit H10301" : community.zerv.card_format
+
             user_accesses = zerv_user["listGetUserAccess"]
 
             url = base_url + "/user/updateuserandtimezone/" + zerv_user["id"].to_s
@@ -30,7 +34,7 @@ module ZervServices
                                 list_add_user_access << time_access_object(community, tour_time, previous_access)
                             end
                         end
-                        list_add_user_access.last.merge!({"accessCode": "5678","accessPoint": access_point})
+                        list_add_user_access.last.merge!({"accessCode": @accessCode,"accessPoint": access_point})
                     end
                 end
             end
@@ -133,8 +137,8 @@ module ZervServices
                 "accessStartDate": tour_time.strftime("%Y-%m-%d"),
                 "accessEndDate": (tour_time + 1.day).strftime("%Y-%m-%d"),
                 "credentialIdentifier": "1234",
-                "facilityId": "123",
-                "cardFormat": "HID Prox 26-bit H10301",
+                "facilityId": @facilityId,
+                "cardFormat": @cardFormat,
                 "active": true,
                 "monAccess": false,
                 "tueAccess": false,

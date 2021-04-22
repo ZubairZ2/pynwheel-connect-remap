@@ -1,6 +1,6 @@
 - content_for :title, "Schedule Tours - Pynwheel"
+- community_tour_stops = get_user_tour_stops(@community, @tour_user)
 .divLoading.hidden
-/ Main content
 %section
   .content
     .title-heading
@@ -13,34 +13,28 @@
     .box.box-info.add-plan.mt-20#logo_header
       .box-header
         %h3.box-title
-          VISITORS
+          Scheduled Tours
+        %a.btn.btn-success.pull-right{:href => schedule_tour_url(@community, @community_code)} Schedule Tour
+
     .row{:style => "margin-bottom: 70px;"}
-      / Start Panel left Side
       .col-lg-12.col-md-12
         .row
           .col-md-12#outer_div
             .box.box-widget.panel-box.add-plan.pt-30
               
-              %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units.schedule_tour_table
+              %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units.schedule_tour_table.scheduled-visitors-detailed-table
                 %thead
                   %tr
-                    %th{:style => "width: 55px;"}
-                      Sr #
-                    %th
-                      Date & Time
-                    %th
-                      Name
-                    %th
-                      Email
-                    %th
-                      Phone
-                    %th
-                      Action
-
+                    %th{:style => "width: 55px;"} Sr #
+                    %th Date & Time
+                    %th Name
+                    %th Email
+                    %th Phone
+                    %th Actions
               
                 %tbody
                   - ind = 0
-                  - @schedual_tours.each_with_index  do |tour,index|
+                  - @schedual_tours.each_with_index  do |tour, index|
                     - @tour_user = tour.tour_user
                     - if @tour_user.present?
                       .row
@@ -48,17 +42,32 @@
                           %td
                             = ind = ind + 1
                           %td
-                            = tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")
+                            = scheduled_tour_date_time(tour)
+                            - if tour.is_tour_completed
+                              %i.fa.fa-check-square.icon_size.customizeTourToolTip
+                                %span#customizeTourToolTipText
+                                  Tour has completed
+                            - else
+                              - if is_tour_in_future(@community, tour)
+                                - if is_tour_customized(tour)
+                                  %i.fa.fa-info-circle.icon_size.customizeTourToolTip
+                                    %span#customizeTourToolTipText
+                                      Customized Tour
+                              - else
+                                %i.fa.fa-exclamation-triangle.icon_size.expiredTourToolTip
+                                  %span#expiredTourToolTipText
+                                    Tour has expired
+                                
                           %td
-                            = @tour_user.first_name.present? ? (@tour_user.first_name + " " + @tour_user.last_name) : @tour_user.name 
+                            = tour_user_name(@tour_user) 
                           %td
                             = @tour_user.email
                           %td
                             = @tour_user.phone_number
-                          %td
-                            %a.text-danger{"data-name"=>"Tour","data-href" => "/communities/#{@community.id}/schedual_tours/#{tour.id}?delete_type=page", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                          %td{:style => "display: flex;"}
+                            = render :partial => 'custom_tour', :locals => {tour_user: @tour_user, tour: tour, community: @community, community_code: @community_code, community_tour_stops: community_tour_stops}
+                            %a.btn.btn-danger{"data-name"=>"Tour","data-href" => "/communities/#{@community.id}/schedual_tours/#{tour.id}?delete_type=page", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                               %i.fa.fa-trash.icon_size
-                          
 
 .row
   .col-md-12{:style => "position: absolute; bottom: 51px;"}
@@ -69,4 +78,15 @@
             .col-md-12.col-lg-12
               %button.btn-primary.done_btn.mb-20{:onclick => "visitor_index_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
+
 :javascript
+  $(document).ready(function () {
+    $('#miyazaki').DataTable();
+    $('.dataTables_length').addClass('bs-select');
+  });
+  if(window.location.href.includes('userSearch'))
+  {
+    email = window.location.href.split('userSearch=');
+    oTable = $('#miyazaki').DataTable(); 
+    oTable.search(email[1]).draw();
+  }

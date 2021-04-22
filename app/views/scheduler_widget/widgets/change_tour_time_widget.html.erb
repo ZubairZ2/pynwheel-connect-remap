@@ -127,7 +127,11 @@
           <div class="Pyn_Modal">
             <p id="reschedule-content" style="font-weight: normal; font-size: 20px;"></p>
             <div class="clearfix"></div>
-            <button class="btn_popup" id="close">Ok</button>
+            <% if user_signed_in? %>
+              <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/schedual_tours')">Ok</button>
+            <% else %>
+              <button class="btn_popup" id="close">Ok</button>
+            <% end %>
           </div>
         </section>
       </div>
@@ -135,7 +139,8 @@
 
     <script type="text/javascript">
       var success = "<%= flash[:success]  %>";
-      // debugger
+      var community_id = "<%= @community.id %>";
+
       <% flash[:success] = "" %>
       if(success){
         $("#modalLoginForm").modal('hide');
@@ -144,7 +149,10 @@
       }
 
       var tour_id;
-      $(document).ready(function(){        
+
+      $(document).ready(function(){
+        $('#scheduleMyTour').modal({backdrop: 'static', keyboard: false})  
+
         // $(".datepicker").datetimepicker({minDate: new Date(), format: 'MM/DD/YYYY'});
         var datepickertime = $('.datepickertime').datetimepicker({
           
@@ -157,11 +165,11 @@
           showClose: true,
           useCurrent: true,
           toolbarPlacement: "bottom",
-          stepping: 15
-          
+          stepping: 15          
         });
         <% if params["datetime"].present? %>
-          $('.datepickertime').data("DateTimePicker").date(moment('<%= params[:datetime].split(' ').first %>'))
+          let dateTime = getTourDate('<%= params[:datetime] %>');
+          $('.datepickertime').data("DateTimePicker").defaultDate(dateTime);
           $("#scheduleMyTour").modal()
         <% end %>
 
@@ -183,17 +191,20 @@
           e.preventDefault();
         });
 
-        $("#cancel-visit").on('click', function(e){
+        $("#cancel-visit").on('click', function(e) {
           $.ajax({
             type: "POST",
             url: "/destroy_schedual_tours/<%= params[:id]%>.json",
-            data: $(this).serialize(),
+            data: {community_id: community_id},
             cache: false,
             success: function(data){
-              // $("#reschedule-content").html(data.message)
-              // $("#scheduleMyTourForm").modal('hide');
-              // $("#scheduleMyTourSuccess").modal()
-              alert("Your tour has been canceled")
+              alert("Your tour has been canceled");
+
+              if(data.logged_in) {
+                window.location.href = `${window.location.origin}/communities/${community_id}/schedual_tours`;
+              } else {
+                window.location.href = window.location.origin
+              }
             },
             fail: function(error){
               console.log(error)
@@ -209,6 +220,21 @@
         });
 
       });
+
+      function redirectSheduledTourPage(url){
+        window.location.href = url
+      }
+
+      function getTourDate(datetime) {
+        datetime = datetime.toUpperCase();
+
+        if(datetime.includes("AM"))
+          return new Date(datetime.split('AM').join(" AM"));
+        else if(datetime.includes("PM"))
+          return new Date(datetime.split('PM').join(" PM"));
+        else
+          return new Date();
+      }
 
     </script>
 

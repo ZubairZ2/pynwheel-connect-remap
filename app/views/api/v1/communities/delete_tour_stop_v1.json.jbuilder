@@ -87,12 +87,20 @@ json.tours @tours do |tour|
     have_stop_in_building = false
     first_floor_elev = nil
 
+    scheduled_tour_stops = @community.community_tour_available_stops(@tour_user)
+
     if @community.is_sitemap
-      unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit }.compact
-      stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      if scheduled_tour_stops.present?
+        stops_arr = @community.mdu ? scheduled_tour_stops : scheduled_tour_stops.where.not(stop_type: "unit").order(:sort)
+      else
+        unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit }.compact
+        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      end
+
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 2]
-      last_stop_id = stops_arr.compact[stop_count - 1].id
+      last_stop = stops_arr.compact[stop_count - 1]      
+      last_stop_id = last_stop.id if last_stop.present?
       last_stop_desc = stops_arr.compact[stop_count - 1]
     else
       temp_max_floor = nil
@@ -189,10 +197,24 @@ json.tours @tours do |tour|
                   add_stop.building = building
                   next if (check_unit_occupied add_stop)
                   next if add_start and ((add_stop.stop_type == "unit") or (add_stop.stop_type == "amenity"))
-                  
+
                   add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
-                  if (add_stop.display_stop && add_mdu) and !(@community.deleted_ids.include? add_stop.id)
-                    stops_arr << add_stop 
+
+                  if (add_mdu) and !(@community.deleted_ids.include? add_stop.id)
+                    if (add_stop.is_a?(Tour)) || add_stop.stop_type === "elevator" || add_stop.stop_type === "building_starting_point"
+                      stops_arr << add_startop
+                    else
+                      if scheduled_tour_stops.present?
+                        stop_ids = scheduled_tour_stops.pluck(:id)
+
+                        if stop_ids.include?(s_id.to_i)
+                          stops_arr << add_stop 
+                        end
+                      else
+                        stops_arr << add_stop if add_stop.display_stop
+                      end
+                    end
+
                     if add_stop.stop_type == "amenity" || add_stop.stop_type == "unit"
                       last_stop_id = add_stop.id
                       have_stop_in_building = true
