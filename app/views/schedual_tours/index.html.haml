@@ -86,7 +86,7 @@
   });
   if(window.location.href.includes('userSearch'))
   {
-    email = window.location.href.split('userSearch').replace('=','');;
+    email = window.location.href.split('userSearch=');
     oTable = $('#miyazaki').DataTable(); 
     oTable.search(email[1]).draw();
   }
