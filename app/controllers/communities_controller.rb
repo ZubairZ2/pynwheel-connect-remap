@@ -2,6 +2,7 @@ class CommunitiesController < ApplicationController
   include Error::ErrorHandler
   include DweloDevicesHelper
   include CommunitiesHelper
+  include FeedbacksHelper
   #load_and_authorize_resource
   before_action :check_community
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
