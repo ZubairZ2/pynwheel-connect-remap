@@ -13,16 +13,16 @@
   .row
     .col-lg-9.col-lg-offset-1
       .col-sm-12.col-lg-3.col-md-3.col-xs-12
-        %input{:name => "lock_authorization", :id => "client_credential_auth", :type => "radio", :value => "client credental", checked: EdgeState.current_client_credential_edgestate(current_community.edge_state) ? true : false}
+        %input{:name => "lock_authorization", :id => "client_credential_auth", :type => "radio", :value => "client credental", checked: EdgeState.active_client_credential_edgestate(current_community.edge_state) ? true : false}
         %label Provide Client Credentials
       .col-sm-12.col-lg-3.col-md-3.col-xs-12
-        %input{:name => "lock_authorization", :id => "code_grant_auth", :type => "radio", :value => "code grant", checked: (current_community.edge_state and current_community.edge_state.refresh_token && !current_community.edge_state.client_id and !current_community.edge_state.client_secret).present? ? true : false}
+        %input{:name => "lock_authorization", :id => "code_grant_auth", :type => "radio", :value => "code grant", checked: EdgeState.active_code_grant_auth(current_community.edge_state) ? true : false}
         %label Authorize With Pynwheel
         
   .row.edgestate_auth_btn.mt-30
     .col-lg-9.col-lg-offset-1
       .col-sm-12.col-lg-12.col-md-12.col-xs-12.mb-20
-        - if (current_community.edge_state && current_community.edge_state.refresh_token).present?
+        - if (current_community.edge_state && current_community.edge_state.refresh_token).present?        
           %p
             You have been authorized with pynwheel remote lock account. 
             %a{:href => "https://pynwheel.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "code_grant_btn"} 
@@ -35,7 +35,7 @@
             Authorize With Pynwheel
           %p{:style => "margin-bottom: -7px; margin-top: 10px;"}
             %strong NOTE: 
-            You must have logged in EdgeState account under RemoteLock through Pynwheel (pynwheel.remotelock.com) to authorize pynwheel. 
+            You must have EdgeState account under RemoteLock through Pynwheel (pynwheel.remotelock.com) to authorize with pynwheel. 
   
   = form_for :edgestate, :url=>community_edgestate_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal edgstate_auth_form"} do |f|
     = render :partial=>'edgestate_form', :locals=>{:f=>f}
