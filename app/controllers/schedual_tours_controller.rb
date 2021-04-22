@@ -67,6 +67,9 @@ class SchedualToursController < ApplicationController
         flash[:error] = e.message
 
       end
+      byebug
+      yardi_schedule_tour = @community.yardi_schedule_tour(schedual_tour,tu)
+      byebug
       schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back.refund_id : nil,desired_move_in_date: params[:desired_move_in_date],desired_bedroom: params[:desired_bedroom])
 
       begin

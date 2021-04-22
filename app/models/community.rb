@@ -445,6 +445,14 @@ class Community < ApplicationRecord
     available_slots = YardirentcafeMarketingApi.new(community_id: self.id)
     available_slots.available_slots(self)
   end
+  def yardi_schedule_tour(schedule_tour,tu)
+    st = YardirentcafeMarketingApi.new(community_id: self.id)
+    st.schedule_tour(self,schedule_tour,tu)
+  end
+  def yardi_cancel_tour(schedule_tour,tu)
+    st = YardirentcafeMarketingApi.new(community_id: self.id)
+    st.schedule_tour(self,schedule_tour,tu)
+  end
 
   def credentials_are_present?
     credential.present?
