@@ -39,6 +39,7 @@ $(document).ready(function() {
   defaultFacilityId = $("#pynwheelAccessUsers").data("defaultFacilityId");
   defaultBadgeId = $("#pynwheelAccessUsers").data("defaultBadgeId");
   defaultCardFormate = $("#pynwheelAccessUsers").data("defaultCardFormate");
+  
 });
 
 function handlePynwheelAccessUserActive(phone) {
@@ -216,7 +217,6 @@ function getUserAccesses(user) {
       $(".pynwheel-access-addresses-list").empty();
       userData = resp;
       userID = userData.id;
-
 
       if(resp.listGetUserAccess) {
         userAccesses = resp.listGetUserAccess.filter((access) => {

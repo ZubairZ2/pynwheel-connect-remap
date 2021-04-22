@@ -47,7 +47,7 @@
       - else
         .span.pynwheel-access-credentials It seems your pynwheel access credentials are missing, add account details on locks page to proceed.
 - if @token.present?
-  #pynwheelAccessUsers{ data: {card_formates: @card_formates.to_json, community: @community.to_json, pynwheel_access_users: @pynwheel_acess_users.to_json, sub_loactions: @sub_locations.to_json } }
+  #pynwheelAccessUsers{ data: {card_formates: @card_formates.to_json, community: @community.to_json, pynwheel_access_users: @pynwheel_acess_users.to_json, sub_loactions: @sub_locations.to_json, default_facility_id: @faciity_id, default_badge_id: @badge_id, default_card_formate: @card_formate } }
 
   = render :partial=>'delete_user_modal'
   = render :partial=>'add_user_modal', :locals => {community: @community, card_formates: @card_formates, sub_locations: @sub_locations}
