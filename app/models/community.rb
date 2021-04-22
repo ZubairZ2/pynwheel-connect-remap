@@ -449,7 +449,7 @@ class Community < ApplicationRecord
     st = YardirentcafeMarketingApi.new(community_id: self.id)
     st.schedule_tour(self,schedule_tour,tu)
   end
-  def yardi_cancel_tour(schedule_tour,tu)
+  def yardi_cancel_tour(schedule_tour)
     st = YardirentcafeMarketingApi.new(community_id: self.id)
     st.schedule_tour(self,schedule_tour,tu)
   end

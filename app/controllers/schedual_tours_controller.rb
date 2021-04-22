@@ -67,10 +67,10 @@ class SchedualToursController < ApplicationController
         flash[:error] = e.message
 
       end
+      
+      response = yardi_schedule_tour(schedual_tour,tu)
       byebug
-      yardi_schedule_tour = @community.yardi_schedule_tour(schedual_tour,tu)
-      byebug
-      schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back.refund_id : nil,desired_move_in_date: params[:desired_move_in_date],desired_bedroom: params[:desired_bedroom])
+      schedual_tour.update_attributes(tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil,pay_back_id: pay_back.present? ? pay_back.refund_id : nil,desired_move_in_date: params[:desired_move_in_date],desired_bedroom: params[:desired_bedroom],yardirentcafe_prospect_id: response[0],yardirentcafe_appointment_id: response[1])
 
       begin
         sent_notifications = send_email_and_other_notifications schedual_tour
@@ -98,6 +98,12 @@ class SchedualToursController < ApplicationController
     end
     redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: schedual_tour.community_id) and return
 
+  end
+  def yardi_schedule_tour(schedual_tour,tu)
+    yardi_schedule_tour = @community.yardi_schedule_tour(schedual_tour,tu)
+    yardirentcafe_prospect_id = yardi_schedule_tour["Response"][0]["VoyProspectCode"] rescue nil
+    yardirentcafe_appointment_id = yardi_schedule_tour["Response"][0]["VoyProspectApptId"] rescue nil
+    [yardirentcafe_prospect_id, yardirentcafe_appointment_id]
   end
   # POST /schedual_tours
   # POST /schedual_tours.json
@@ -250,6 +256,7 @@ class SchedualToursController < ApplicationController
   def destroy
     if params[:delete_type].present? && params[:delete_type] == "page"
       schedual_tour = SchedualTour.find params[:id]
+      puts "*** yardi_cancel_tour ***", @community.yardi_cancel_tour(schedual_tour)
       schedual_tour.destroy
       redirect_to community_schedual_tours_path(@community), notice: 'Schedual tour was successfully destroyed.'
     else
