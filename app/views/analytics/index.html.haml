@@ -447,15 +447,15 @@
                 .col-lg-8
                   = horizontal_bar_chart @visited_per_tour_stop_data_labels, @visited_per_tour_stop_data_options
 
-            .row.mt-80
-              .col-lg-6.col-md-12.h-500
-                %p.chart_heading No Shows
-                .col-lg-4.numbers_div
-                  .center_it
-                    .count_int= @no_show_count
-                    .count_text= "total number of scheduled tours which is not visited"
-                .col-lg-8
-                  = bar_chart @session_each_day_no_show_data, @session_each_day_no_show_options
+            / .row.mt-80
+            /   .col-lg-6.col-md-12.h-500
+            /     %p.chart_heading No Shows
+            /     .col-lg-4.numbers_div
+            /       .center_it
+            /         .count_int= @no_show_count
+            /         .count_text= "total number of scheduled tours which is not visited"
+            /     .col-lg-8
+            /       = bar_chart @session_each_day_no_show_data, @session_each_day_no_show_options
 
           - else
             %h3 There is no record found on selected date range
