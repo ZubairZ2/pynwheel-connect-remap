@@ -80,10 +80,15 @@ Thank you!"
 
   def time_zone community
     unless @time_hash[community.id].present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-      @time_hash[community.id] = timezone
-      return timezone
+      if(community.latitude.present? && community.longitude.present?)
+
+        time_zone = Timezone.lookup(community.latitude, community.longitude)
+        timezone = time_zone.name
+        @time_hash[community.id] = timezone
+        return timezone
+      else
+        return nil
+      end
     else
       @time_hash[community.id]
     end
