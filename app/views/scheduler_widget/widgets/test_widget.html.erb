@@ -839,6 +839,11 @@
           var in_yardi_self_time_slot = false
           var in_yardi_guided_time_slot = false
           var error
+          var self_time = []
+          var yardi_self_time = []
+          var guided_time = []
+          var yardi_guided_time = []
+          var use_yardi_as_lead = <%= raw @use_yardi_as_lead %>
           selected_day = moment(selected_date).format('dddd')
           yardi_selected_day = moment(selected_date).format('M/DD/YYYY')
           selected_time = moment(selected_date).format('HH:mm')
@@ -851,6 +856,7 @@
                 var start = getMinutes(yardi_self_time_slots[yt][1]);
                 var end = getMinutes(yardi_self_time_slots[yt][2]);
                 var selected = getMinutes(selected_time);
+                yardi_self_time.push([yardi_self_time_slots[yt][1],yardi_self_time_slots[yt][2]])
                 if ((selected >= (start + 720)) && (selected <= (end + 720))) {
                   in_yardi_self_time_slot = true;
                   // self_tour_matched = true
@@ -860,12 +866,17 @@
               }
             }
           }
+          else
+          {
+            in_yardi_self_time_slot = true;
+          }
           if(visiting_times.length > 0){
             for(var d_t in visiting_times){
               if (selected_day == visiting_times[d_t][0]){
                 var start = getMinutes(visiting_times[d_t][1]);
                 var end = getMinutes(visiting_times[d_t][2]);
                 var selected = getMinutes(selected_time);
+                self_time.push([visiting_times[d_t][1],visiting_times[d_t][2]])
                 if ((selected >= start) && (selected <= end) && in_yardi_self_time_slot) {
                   self_tour_matched = true
                   show_self_tour_option = true;
@@ -875,7 +886,10 @@
                   $("#not-visiting-hours").removeClass('hidden')
                   for(var each in error_messages){
                     if (visiting_times[d_t][0] == error_messages[each][0]){
-                      error = error_messages[each][1]
+                      if(use_yardi_as_lead)
+                        error = return_time_intervals("visiting hours",guided_time, yardi_guided_time,selected_day )
+                      else
+                        error = error_messages[each][1]
                     }
                   }
                 }
@@ -891,6 +905,8 @@
                 var start = getMinutes(yardi_guided_time_slots[yt][1])
                 var end = getMinutes(yardi_guided_time_slots[yt][2])
                 var selected = getMinutes(selected_time);
+                yardi_guided_time.push([yardi_guided_time_slots[yt][1],yardi_guided_time_slots[yt][2] ])
+                
                 if ((selected >= (start + 720)) && (selected <= (end + 720))) {
                   in_yardi_guided_time_slot = true;
                   // guided_tour_matched = true
@@ -901,6 +917,10 @@
               }
             }
           }
+          else
+          {
+            in_yardi_guided_time_slot = true;
+          }
           if(guided_visiting_times.length > 0){
 
             for(var d_t in guided_visiting_times){
@@ -908,6 +928,7 @@
                 var start = getMinutes(guided_visiting_times[d_t][1]);
                 var end = getMinutes(guided_visiting_times[d_t][2]);
                 var selected = getMinutes(selected_time);
+                guided_time.push([guided_visiting_times[d_t][1],guided_visiting_times[d_t][2] ])
                 if ((selected >= start) && (selected <= end) && in_yardi_guided_time_slot) {
                   guided_tour_matched = true
                   show_guided_tour_option = true;
@@ -917,13 +938,17 @@
                   $("#not-visiting-hours").removeClass('hidden')
                   for(var each in error_messages){
                     if (guided_visiting_times[d_t][0] == error_messages[each][0]){
-                      error = error_messages[each][1]
+                      if(use_yardi_as_lead)
+                        error = return_time_intervals("guided visiting hours",guided_time, yardi_guided_time,selected_day )
+                      else
+                        error = error_messages[each][1]
                     }
                   }
                 }
               }
             }
           }
+          
           if(guided_tour_matched || self_tour_matched)
           {
             schedual_my_tour($(this),error)
@@ -978,6 +1003,60 @@
                 console.log(data)
               }
             });
+      }
+      function return_time_intervals(tour_type, t1,t2,day)
+      {
+        final_arr = "";
+        first_ele = null;
+        sec_ele = null;
+        if (t1!=[] && t2!=[])
+        { 
+          for(var x in t2)
+          {
+            i = (getMinutes(t2[x][0]) < 420) ? (getMinutes(t2[x][0]) + 720) : getMinutes(t2[x][0])
+            j = (getMinutes(t2[x][1]) < 420) ? (getMinutes(t2[x][1]) + 720) : getMinutes(t2[x][1])
+            for(var y in t1)
+            {
+              a = getMinutes(t1[y][0])
+              b = getMinutes(t1[y][1])
+              if(a <= i && i <= b)
+              { 
+                first_ele = to_str(i)
+              }
+              if(a <= j && j <= b)
+              { 
+                sec_ele = to_str(j)
+              }
+
+              if(i <= a && a <= i)
+              { 
+                first_ele = to_str(a)
+              }
+
+              if(i <= b && b <= j)
+              { 
+                sec_ele = to_str(b)
+              }
+
+
+            }
+            final_arr = (final_arr == "" ? (tour_type + " for "+ day +" are from "+final_arr) : (final_arr + ", ")) + first_ele + " to " + sec_ele;
+          }
+        }
+        return final_arr + ". The last tour must be scheduled 15 minutes before visiting hours end."
+      }
+      function to_str(n)
+      {
+        var num = n;
+        var hours = (num / 60);
+        var rhours = Math.floor(hours);
+        var minutes = (hours - rhours) * 60;
+        var rminutes = Math.round(minutes);
+        return (rhours.toString().length == 1 ? "0" : "") + rhours + (rminutes.toString().length == 1 ? ":0" : ":") + rminutes
+      }
+      function getMinutes(str) {
+        var time = str.split(':');
+        return time[0]*60+time[1]*1;
       }
 
       if(credit_card_required == true){

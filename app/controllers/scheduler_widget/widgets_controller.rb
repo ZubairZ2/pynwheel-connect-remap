@@ -40,6 +40,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     else
       @direct =  false
     end
+    @use_yardi_as_lead = @community.use_yardi_as_lead?
     if @community.opening_hours.present?
       @disable_day_of_week = [0,1,2,3,4,5,6]
       @community.opening_hours.each do |rcd|
@@ -70,6 +71,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @guided_visiting_times = @community.guided_opening_hours.map{|day_obj| [day_obj.day, day_obj.opening_time , (Time.parse(day_obj.closing_time) - (@stepping.minutes)).strftime("%H:%M")] }
     @error_message = []
     day_hash = {}
+    @yardi_time_slots = @community.available_slots
     @community.opening_hours.each do |day_obj|
       day_hash[day_obj.day] = day_hash[day_obj.day].present? ? day_hash[day_obj.day] + ', ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p") : Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p")
       # day_hash[day_obj.day] = day_hash[day_obj.day].present? ? day_hash[day_obj.day] + ', ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p") : Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p")
@@ -86,10 +88,13 @@ class SchedulerWidget::WidgetsController < ApplicationController
       message[1] = '(guided visiting hours for ' +  day_obj.day + ' are from ' + day_hash[day_obj.day] +'). The last tour must be scheduled ' + cutt_of +' before visiting hours end.'
       @error_message << message
     end
-    @yardi_time_slots = @community.available_slots
-    
-    @yardi_self_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
-    @yardi_guided_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
+    if @community.use_yardi_as_lead?
+      @yardi_self_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
+      @yardi_guided_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
+    else
+      @yardi_self_time_slots = []
+      @yardi_guided_time_slots = []
+    end
     flash[:success] = params[:message] if params[:message].present?
     render :test_widget, layout: false
   end
