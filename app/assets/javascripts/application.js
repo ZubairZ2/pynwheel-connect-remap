@@ -64,6 +64,7 @@
 // require_tree .
 //= require bootstrap-wysihtml5
 //= require bootstrap-wysihtml5/locales
+//= require automate_plotting
 $(document).ready(function(){
 	new Clipboard('.clipboard-btn');
 });

@@ -478,6 +478,9 @@ Rails.application.routes.draw do
   post :update_hallways_point, to: 'hallways#update_point'
   post :delete_hallways_point, to: 'hallways#remove_point'
 
+  #### Automate Plotting Controller Routes ####
+  resources :automate_plotting
+
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
       put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'

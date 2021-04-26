@@ -1,7 +1,6 @@
 const zero = 0
 
 function delete_plot(removing, url){
-    debugger
     if ( typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined' ){
         if(removing == "unit_door")
             removeUnitDoorPlot(url)
@@ -19,7 +18,6 @@ function saveUnitDoorPlot(id, dx, dy){
       "y_plot": dy
     //   "floorplate_id": floorplate_id
     }).done(function(response) {
-        debugger
         if(response.success){
             try {
                 $("#plus_" + id).remove()
@@ -54,7 +52,6 @@ function saveAmenityDoorPlot(id,dx,dy,door_id){
         "floor" : floor,
         "door_id" : door_id,
      }).done(function(response) {
-        debugger
         if(response.success){
             try {
                 $("#plus_" + id).removeClass('disabled')
@@ -67,7 +64,6 @@ function saveAmenityDoorPlot(id,dx,dy,door_id){
                         "id": "#amenity_" + response.amenity.id + "__" + "door_" + response.door.id,
                     }
                 )
-                debugger
                 if(response.status == "created")
                     CreateAmenityDoorInfo(response.amenity, response.door)
                 else
@@ -88,7 +84,6 @@ function removeUnitDoorPlot(url){
         url:  url,
         cache: false,
         success: function(response) {
-            debugger
             if(response.success){
                 try {
                     /*   changes for new imlpementation of doors */
@@ -249,7 +244,7 @@ function allPlottedDoors_ExceptGivenProviderIDs(provider_ids){
 }
 
 function updateGivenUnits_DoorPlotting(provider_ids, x_plot, y_plot){
-    debugger
+
     units_info.filter( function(row) {
         if(Object.keys(row.unit_info.door).length !== zero && provider_ids.includes(row.unit_info.unit.provider_id)){
             row.unit_info.door.x_plot = x_plot
@@ -267,7 +262,7 @@ function getUnitDoorsAtGivenLocationExceptTheseProviderIds(provider_ids, x_plot,
 
 // this function is called whenever doors modal for units is opened 
 function createDoorButtonsInDoorModal(event, attached_doors){
-    debugger
+
     $('.door-buttons-in-door-modal').empty()
     for(var row of attached_doors){
         if (row.unit_info.door.id  == event.relatedTarget.dataset.doorId){
@@ -326,7 +321,7 @@ function sortSelectedDoors(event, same_location_doors){
 
 // this function called to rearrange the buttonns such that first button or the last selected one should be active
 function change_selected_in_unit_modal(event){
-    debugger
+
     if (event.currentTarget.classList.contains("btn-primary")) return
     
     get_unit_locks(event.target.dataset.providerId)
@@ -397,7 +392,7 @@ function change_selected_in_unit_modal(event){
 // to adjust the locks provider and selected lock data for the active Unit in UnitDoorModal
 var digital_lock = false
 function update_locks_fields(){
-    debugger
+
     // if any lock selected 
     if(enable_locks == true){
         if($('#lock_provider').val() == '' || $('#lock_provider').val() == null){
@@ -417,7 +412,7 @@ function update_locks_fields(){
             lock_provider         =  $('#lock_provider').val().toLowerCase()
             selected_lock_name    =  $("#"+lock_provider+"_lock_name").val()
             selected_lock_options =  $('.'+lock_provider+"_options").html()
-            debugger
+
             $('datalist#locks_list').html(selected_lock_options)
             $('#lock_name').val(selected_lock_name)
 
@@ -429,7 +424,7 @@ function update_locks_fields(){
 
 // this function is called whenever door is selected in AddNewDoorModal
 function add_into_selected_doors(event){
-    debugger
+
     var provider_id = $(event).attr("id").replace('-selectable', '')
     var door_name = $(event).children("span").text()
 
@@ -442,7 +437,7 @@ function add_into_selected_doors(event){
 
 // this function is called whenever door is removed in AddNewDoorModal
 function remove_from_selected_doors(event){
-    debugger
+
     var provider_id = $(event).attr("id").replace('-selection', '')
     var selected_doors = JSON.parse($('#selected_doors_info').val());
 
@@ -455,7 +450,7 @@ function remove_from_selected_doors(event){
 
 // this function is called whenever doors modal for amenity is opened 
 function open_amenity_door_modal(event){
-    debugger
+
     amenity_id = event.currentTarget.id.split("_")[1]
     door_id = event.currentTarget.dataset.doorId
 
@@ -510,12 +505,12 @@ function returnPlusIconTag(id, for_, margin){
 $(document).ready(function(){
     $(".ajax-btn-delete").click(function(event){
         event.preventDefault();
-        debugger
+
         delete_plot( $(event.target).attr('data-plotted-category'), $(event.target).attr('data-href') )
     });
 
     $("#ajax-doors-detail-modal").on('show.bs.modal', function(event) {
-        debugger
+
         get_unit_locks(event.relatedTarget.id.split("_")[1])
         xpos = Math.round(parseFloat((event.relatedTarget.style.left)))
         ypos = Math.round(parseFloat((event.relatedTarget.style.top)))
@@ -525,7 +520,7 @@ $(document).ready(function(){
     })
 
     $("#ajax-remaining-doors-modal").on('show.bs.modal', function(event) {
-        debugger
+
         $('#selected_doors_info').val('[]')
         $('.doors-list-on-popup').multiSelect('removeAllOptions')
         buttons = $('.door-buttons-in-door-modal').find("button")
@@ -545,7 +540,7 @@ $(document).ready(function(){
     })
     
     $('.locks-modal-submit').click(function(){
-        debugger
+
         if(digital_lock == true){
             lock = $("#lock_name")[0]
             if(lock.checkValidity() == true){
@@ -567,7 +562,7 @@ $(document).ready(function(){
     })
 
     $('#add-unplotted-doors').click(function(){
-        debugger
+
         if($('#selected_doors_info').val() != "[]"){
             selected_doors = JSON.parse($('#selected_doors_info').val())
             door = getUnitDoorInfoByUnitProviderId($(".delete-door-marker").attr("data-provider-id"))[zero].unit_info.door
@@ -594,7 +589,7 @@ $(document).ready(function(){
     })
 
     $('.doors-selects-in-popup').delegate("li", "click", function() {
-        debugger
+
         if($(this).hasClass("ms-selected"))
             add_into_selected_doors(this)
         else
@@ -623,7 +618,7 @@ function drag__door_work(event, ui){
 }
 
 function stop__door_work(event, ui){
-    debugger
+
     for(var row of same_location_doors){
         row.unit_info.door.x_plot = Math.round(parseFloat(ui.position.left));
         row.unit_info.door.y_plot = Math.round(parseFloat(ui.position.top));
@@ -654,7 +649,7 @@ function saveDraggedDoor(id, dx, dy, doors_count){
     "y_plot": dy,
     "property_type_id": property_type_id
   }).done(function(response) {
-    debugger
+
     if(response.success){
       try {
         if(response.success){

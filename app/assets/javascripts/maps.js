@@ -2,7 +2,9 @@
    Editor: Alexey Klimuk, Softensity, Inc.
  * sitemap, floorplate, amenity map plotting
 */
-var hallways_coordinates = []
+var hallways_coordinates = [];
+var algo_data = [];
+var start_point_data = {};
 var tmp_id = 0;
 $(window).on('load', function () {
     /**
@@ -402,7 +404,122 @@ function automate_path() {
     });
     setTimeout(function () {
         draw_initial_hallways();
+        draw_lines_between_door_and_hallways();
+        draw_start_point_line();
     }, hallways_coordinates.length * 1200);
+    algo_data = [];
+    $(".line_hello").remove();
+    for (var i = 0; i < hallways_coordinates.length; i++) {
+
+
+        for (var j = 0; j < units_info.length; j++) {
+            if (!$.isEmptyObject(units_info[j].unit_info.door)) {
+                var a = hallways_coordinates[i].x_plot - units_info[j].unit_info.door.x_plot;
+                var b = hallways_coordinates[i].y_plot - units_info[j].unit_info.door.y_plot;
+                var c = Math.sqrt(a * a + b * b);
+                if (i > 0) {
+                    index = algo_data.findIndex(x => x['door_id'] == units_info[j].unit_info.door.id);
+                    if (algo_data[index].distance > c) {
+                        algo_data[index].hallway_id = hallways_coordinates[i].id;
+                        algo_data[index].distance = c;
+                        algo_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
+                        algo_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
+                    }
+                } else {
+                    var obj = new Object();
+                    obj.hallway_id = hallways_coordinates[i].id;
+                    obj.hallway_x_plot = hallways_coordinates[i].x_plot;
+                    obj.hallway_y_plot = hallways_coordinates[i].y_plot;
+                    obj.door_id = units_info[j].unit_info.door.id;
+                    obj.door_x_plot = units_info[j].unit_info.door.x_plot;
+                    obj.door_y_plot = units_info[j].unit_info.door.y_plot;
+                    obj.distance = c;
+                    obj.is_door = true;
+                    algo_data.push(obj);
+                }
+
+            } else {
+                var a = hallways_coordinates[i].x_plot - units_info[j].unit_info.unit.x_plot;
+                var b = hallways_coordinates[i].y_plot - units_info[j].unit_info.unit.y_plot;
+                var c = Math.sqrt(a * a + b * b);
+                if (i > 0) {
+                    index = algo_data.findIndex(x => x['door_id'] == units_info[j].unit_info.unit.id);
+                    if (algo_data[index].distance > c) {
+                        algo_data[index].hallway_id = hallways_coordinates[i].id;
+                        algo_data[index].distance = c;
+                        algo_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
+                        algo_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
+                    }
+                } else {
+                    var obj = new Object();
+                    obj.hallway_id = hallways_coordinates[i].id;
+                    obj.hallway_x_plot = hallways_coordinates[i].x_plot;
+                    obj.hallway_y_plot = hallways_coordinates[i].y_plot;
+                    obj.door_id = units_info[j].unit_info.unit.id;
+                    obj.door_x_plot = units_info[j].unit_info.unit.x_plot;
+                    obj.door_y_plot = units_info[j].unit_info.unit.y_plot;
+                    obj.distance = c;
+                    obj.is_door = false;
+                    algo_data.push(obj);
+                }
+            }
+        }
+    }
+    for (var i = 0; i < hallways_coordinates.length; i++) {
+        var a = hallways_coordinates[i].x_plot - building_starting_point.x_plot;
+        var b = hallways_coordinates[i].y_plot - building_starting_point.y_plot;
+        var c = Math.sqrt(a * a + b * b);
+        if ($.isEmptyObject(start_point_data)) {
+            start_point_data['hallway_id'] = hallways_coordinates[i].id;
+            start_point_data['hallway_x_plot'] = hallways_coordinates[i].x_plot;
+            start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
+            start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
+            start_point_data['distance'] = c;
+            start_point_data['building_starting_x_plot'] = building_starting_point.x_plot;
+            start_point_data['building_starting_y_plot'] = building_starting_point.y_plot;
+        }
+        if (c < start_point_data['distance']) {
+            start_point_data['hallway_id'] = hallways_coordinates[i].id;
+            start_point_data['hallway_x_plot'] = hallways_coordinates[i].x_plot;
+            start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
+            start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
+            start_point_data['distance'] = c;
+        }
+    }
+}
+
+function draw_start_point_line() {
+    $(".start_line").remove();
+    x0 = start_point_data['building_starting_x_plot'] + 17
+    y0 = start_point_data['building_starting_y_plot'] + 17
+    x1 = start_point_data['hallway_x_plot'] + 8
+    y1 = start_point_data['hallway_y_plot'] + 8
+    $(".plot-image").line(x0, y0, x1, y1, {
+        zindex: 99,
+        color: '#FFA500',
+        stroke: "5",
+        style: "solid",
+        class: "start_line"
+    });
+}
+
+function draw_lines_between_door_and_hallways() {
+
+    for (var i = 0; i < algo_data.length; i++) {
+        x0 = algo_data[i].door_x_plot + 17
+        y0 = algo_data[i].door_y_plot + 17
+        x1 = algo_data[i].hallway_x_plot + 8
+        y1 = algo_data[i].hallway_y_plot + 8
+
+        $(".plot-image").line(x0, y0, x1, y1, {
+            zindex: 99,
+            color: '#008000',
+            stroke: "5",
+            style: "solid",
+            class: "line_hello"
+        });
+    }
+
 }
 
 function points_on_line(x0, y0, x1, y1) {
@@ -411,9 +528,9 @@ function points_on_line(x0, y0, x1, y1) {
     var sx = (x0 < x1) ? 1 : -1;
     var sy = (y0 < y1) ? 1 : -1;
     var err = dx - dy;
-    console.log("Test")
+
     while (true) {
-        console.log(x0, y0); // Do what you need to for this
+        // console.log(x0, y0); // Do what you need to for this
         if ((x0 === x1) && (y0 === y1)) break;
         var e2 = 2 * err;
         if (e2 > -dy) {
@@ -425,7 +542,7 @@ function points_on_line(x0, y0, x1, y1) {
             y0 += sy;
         }
     }
-    console.log("Test1")
+
 }
 
 var delayed = (function () {

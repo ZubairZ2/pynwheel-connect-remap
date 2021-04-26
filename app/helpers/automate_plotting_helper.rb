@@ -1,0 +1,2 @@
+module AutomatePlottingHelper
+end
