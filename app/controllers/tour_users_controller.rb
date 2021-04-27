@@ -1,4 +1,5 @@
 class TourUsersController < ApplicationController
+  include Error::ErrorHandler
   before_action :check_community
   before_action :breadCrumb
   skip_before_action :load_tour_users_chats, only: [:lock_ploting]
@@ -163,7 +164,7 @@ class TourUsersController < ApplicationController
       end
       
       stops.unshift(['',current_community.tour,"tour"])
-      render json: { :stops => stops, :floors => floors, :buildings => buildings, :floor_image => floor_image, :lock_access_time => tour_history.lock_access_time, :left => tour_history.left}, status: 200
+      render json: { :stops => stops, :floors => floors, :buildings => buildings, :floor_image => floor_image, :lock_access_time => (tour_history.lock_access_time.strftime("%I:%M %p") rescue ""), :left => tour_history.left}, status: 200
     else
       render json: {}, status: 404
     end
