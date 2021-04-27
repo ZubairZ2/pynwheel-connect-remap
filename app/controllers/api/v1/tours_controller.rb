@@ -273,7 +273,7 @@ iPhone Users:
   def floorplan_units
     puts params
     access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    if api_access or true
 
       if params[:unit_id].present?
         unit = Unit.find_by_id(params[:unit_id])
