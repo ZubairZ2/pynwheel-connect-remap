@@ -66,9 +66,9 @@ class ResmanSwapService < BaseService
         unit.floor = u["FloorLevel"]
         if u["Availability"].present?
           unit.availability = "Unoccupied"
-          year = u["Availability"]["VacateDate"]["Year"]
-          month = u["Availability"]["VacateDate"]["Month"]
-          day = u["Availability"]["VacateDate"]["Day"]
+          year = u["Availability"]["MadeReadyDate"]["Year"]
+          month = u["Availability"]["MadeReadyDate"]["Month"]
+          day = u["Availability"]["MadeReadyDate"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
           unit.available = true
         else
@@ -103,9 +103,9 @@ class ResmanSwapService < BaseService
         unit.floor = u["FloorLevel"]
         if u["Availability"].present?
           unit.availability = "Unoccupied"
-          year = u["Availability"]["VacateDate"]["Year"]
-          month = u["Availability"]["VacateDate"]["Month"]
-          day = u["Availability"]["VacateDate"]["Day"]
+          year = u["Availability"]["MadeReadyDate"]["Year"]
+          month = u["Availability"]["MadeReadyDate"]["Month"]
+          day = u["Availability"]["MadeReadyDate"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
         else
           unit.availability = "Occupied"

@@ -91,9 +91,9 @@ class ResmanService < BaseService
             unit.availability = "Unoccupied" if !unit.sold
           end
 
-          year = u["Availability"]["VacateDate"]["Year"]
-          month = u["Availability"]["VacateDate"]["Month"]
-          day = u["Availability"]["VacateDate"]["Day"]
+          year = u["Availability"]["MadeReadyDate"]["Year"]
+          month = u["Availability"]["MadeReadyDate"]["Month"]
+          day = u["Availability"]["MadeReadyDate"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
         else
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
@@ -154,9 +154,9 @@ class ResmanService < BaseService
               unit.availability = "Unoccupied"
             end
 
-            year = u["Availability"]["VacateDate"]["Year"]
-            month = u["Availability"]["VacateDate"]["Month"]
-            day = u["Availability"]["VacateDate"]["Day"]
+            year = u["Availability"]["MadeReadyDate"]["Year"]
+            month = u["Availability"]["MadeReadyDate"]["Month"]
+            day = u["Availability"]["MadeReadyDate"]["Day"]
             vacateDate = Date.parse("#{year}-#{month}-#{day}")
           else
             unless unit.availability_is_updated.present? && unit.availability_is_updated
