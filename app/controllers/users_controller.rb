@@ -46,6 +46,29 @@ class UsersController < ApplicationController
     data = data - com_to_dlt
 
     user = User.find(params[:id])
+    if params[:user][:role] == 'Company admin'
+      if user.company_id.blank? || user.company.name != (Company.find_by_name params[:user][:company_name]).name
+        CommunityUser.where(user_id: params[:id].to_i, community_id: user.communities.pluck(:id)).destroy_all
+        user.update_column(:company_id, (Company.find_by_name params[:user][:company_name]).id)
+      end
+      user.update_column(:region_id, nil) 
+    elsif params[:user][:role] == 'Regional admin'
+      if user.company_id.blank? || user.company.name == (Company.find_by_name params[:user][:company_name]).name
+        if user.region_id.blank? || user.region.id != (params[:user][:region_id]).to_i
+          CommunityUser.where(user_id: params[:id].to_i, community_id: user.communities.pluck(:id)).destroy_all
+          user.update_column(:company_id, (Company.find_by_name params[:user][:company_name]).id)
+          user.update_column(:region_id, (params[:user][:region_id]).to_i) 
+        end
+      else
+        CommunityUser.where(user_id: params[:id].to_i, community_id: user.communities.pluck(:id)).destroy_all
+        user.update_column(:company_id, (Company.find_by_name params[:user][:company_name]).id)
+        user.update_column(:region_id, (params[:user][:region_id]).to_i) 
+      end
+    else
+      user.update_column(:company_id, nil) 
+      user.update_column(:region_id, nil) 
+    end
+
     user_previous_communities_ids = user.communities.pluck(:id)
     new_user_communities_ids = params[:user][:community_ids].present? ? ((params[:user][:community_ids].reject {|e| e.blank?}).map(&:to_i)) : []
     if @user.update(user_params)

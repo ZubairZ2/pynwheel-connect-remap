@@ -458,7 +458,17 @@ class CommunitiesController < ApplicationController
   end
   def selected_communities
     user = User.find params['user'].to_i
-    result = user.communities.pluck(:name,:id).to_json
+    if params.has_key?('company_name')
+      company = Company.find_by_name(params[:company_name])
+      if params.has_key?('region_id') && company.regions.where(id: params["region_id"]).any?
+        region = Region.find params[:region_id]
+        result = region.communities.pluck(:name,:id).to_json
+      else
+        result = company.communities.pluck(:name,:id).to_json
+      end
+    else
+      result = user.communities.pluck(:name,:id).to_json
+    end
     render :json => { data: result }, :status => 200
 
   end
