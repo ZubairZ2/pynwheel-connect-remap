@@ -108,6 +108,21 @@
     border-color: #d8d8d8;
     border-width: 2px;
   }
+  @media screen and (min-width: 1300px) {
+    .add_minutes_span {
+      margin-left: -4%;
+    }
+  }
+  @media screen and (max-width: 1100px) {
+    .add_minutes_span {
+      margin-left: 4%;
+    }
+  }
+  @media screen and (min-width: 1101px, max-width: 1299px) {
+    .add_minutes_span {
+      margin-left: 0%;
+    }
+  }
 
 - content_for :title, "Self Tour Settings - Pynwheel"
 .divLoading.hidden
@@ -271,7 +286,7 @@
                       Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.tour.max_self_tour_users}
-            - if @tour_setting.allow_guided_tour.nil? || @tour_setting.allow_guided_tour
+            - if (@tour_setting.allow_guided_tour.nil? || @tour_setting.allow_guided_tour) && !@community.is_salesforce_community?
               .form-group.limit_max_tour_class.hidden
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Max Guided Tours at One Time
@@ -288,7 +303,7 @@
                     If a visitor stays on tour past the time allotted here, the property will get a notification to check in with them.
               .col-sm-12.col-lg-2.col-md-2.col-xs-12
                 %input.day-list.max-users-v.form-control{type: "number", id: "length_stay_limit", name: "length_stay_limit", min: "10", max:"300", value: @community.tour.tour_setting.length_stay_limit} 
-              .col-sm-12.col-lg-2.col-md-2.col-xs-12{:style => "margin-top: 13px; margin-left: -4%;"}
+              .col-sm-12.col-lg-2.col-md-2.col-xs-12.add_minutes_span{:style => "margin-top: 13px;"}
                 %span
                   Minutes
             
@@ -682,7 +697,7 @@
                     Save Time Order
       
     //////////////////////////------------------------------------ Guided  hours
-    - if @tour_setting.allow_guided_tour
+    - if !@community.is_salesforce_community? && @tour_setting.allow_guided_tour
       .box.box-info.add-plan.mt-20#logo_header
         .box-header
           %h3.box-title
@@ -977,7 +992,6 @@
   });
 
   $("#sample_btn").css("font-family", $("#set_font option:selected").text());
-
 
 
   $('#genrate_link').click(function(){

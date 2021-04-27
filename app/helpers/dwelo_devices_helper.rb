@@ -370,7 +370,7 @@ module DweloDevicesHelper
   end
 
   def sf_nearest_time_tour(community, tour_user, current_time, timezone)
-    tours_exist = false; on_time_tour=nil; nearest_tour=nil; time_status=nil;
+    tours_exist = false; on_time_tour=nil; nearest_tour=nil; time_status=nil; salesforce_grace_period=10;
 
     response = SalesforceServices::GetBookingByNeighbor.call(community: community, tour_user: tour_user)
     puts "\n\n"
@@ -402,7 +402,7 @@ module DweloDevicesHelper
     if response.success? and response.payload.present?
       today_scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
       if tours_exist = today_scheduled_tours.present?
-        on_time_tour = is_sf_tour_on_time(current_time, today_scheduled_tours, community.tour.grace_period, timezone)
+        on_time_tour = is_sf_tour_on_time(current_time, today_scheduled_tours, salesforce_grace_period, timezone)
         current_tour = on_time_tour
         unless on_time_tour.present?
           time_status , nearest_tour = sf_tour_time_status(today_scheduled_tours, current_time, timezone)

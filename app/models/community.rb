@@ -286,6 +286,10 @@ class Community < ApplicationRecord
     end
   end
 
+  def is_salesforce_community?
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.salesforce_username.present?
+  end
+
   def select_yardi_provider
     credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? import_yardi2_data : import_yardi4_data
   end
