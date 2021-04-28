@@ -91,10 +91,17 @@ class ResmanStaticService < BaseService
             unit.availability = "Unoccupied"
           end
 
-          year = u["Availability"]["VacateDate"]["Year"]
-          month = u["Availability"]["VacateDate"]["Month"]
-          day = u["Availability"]["VacateDate"]["Day"]
+          year = u["Availability"]["MadeReadyDate"]["Year"]
+          month = u["Availability"]["MadeReadyDate"]["Month"]
+          day = u["Availability"]["MadeReadyDate"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
+          # unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+          #   if vacateDate >= Date.today
+          #     unit.availability = "Unoccupied"
+          #   else
+          #     unit.availability = "Unoccupied"
+          #   end
+          # end
         else
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = "Occupied"

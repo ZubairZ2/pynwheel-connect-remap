@@ -17,7 +17,7 @@ module SalesforceServices
                                     'Content-Type' => 'application/json' }
                     )
                     
-                    rescue HTTParty::Error => e
+                rescue HTTParty::Error => e
                     OpenStruct.new({success?: false, error: e, payload: nil})
                 else
                     if response.code == "200" or response.code == 200
