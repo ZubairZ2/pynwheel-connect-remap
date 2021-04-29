@@ -14,28 +14,45 @@
     .col-lg-9.col-lg-offset-1
       .col-sm-12.col-lg-3.col-md-3.col-xs-12
         %input{:name => "lock_authorization", :id => "client_credential_auth", :type => "radio", :value => "client credental", checked: EdgeState.active_client_credential_edgestate(current_community.edge_state) ? true : false}
-        %label Provide Client Credentials
+        %label OAuth Client Credentials
       .col-sm-12.col-lg-3.col-md-3.col-xs-12
         %input{:name => "lock_authorization", :id => "code_grant_auth", :type => "radio", :value => "code grant", checked: EdgeState.active_code_grant_auth(current_community.edge_state) ? true : false}
-        %label Authorize With Pynwheel
+        %label Authorization Code Grant
         
   .row.edgestate_auth_btn.mt-30
     .col-lg-9.col-lg-offset-1
       .col-sm-12.col-lg-12.col-md-12.col-xs-12.mb-20
         - if (current_community.edge_state && current_community.edge_state.refresh_token).present?        
-          %p
-            You have been authorized with pynwheel remote lock account. 
-            %a{:href => "https://pynwheel.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "code_grant_btn"} 
+          %p.pynwheel-authorized
+            You have been authorized with EdgeState account registered under Pywheel (pynwheel.remotelock.com). 
+            %a{:href => "https://pynwheel.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "pynwheel_auth"} 
+              Click here to change account
+          %p.connect-authorized
+            You have been authorized with EdgeState account registered under RemoteLock (connect.remotelock.com). 
+            %a{:href => "https://connect.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "connect_auth"} 
               Click here to change account
           = link_to "Remove Account" , remove_edgestate_auth_account_community_edgestate_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
         - else
           %p
-            This option allows you to authorize the lock without giving credentials. Just click to authorize edgestate with pynwheel.
-          %a{:href => "https://pynwheel.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "code_grant_btn", class: "btn btn-primary"}
-            Authorize With Pynwheel
-          %p{:style => "margin-bottom: -7px; margin-top: 10px;"}
+            This option allows you to authorize the lock without giving credentials, after selecting whether you signed up for EdgeState via RemoteLock or Pynwheel
+          .row.mb-10
+            -# .col-lg-9.col-lg-offset-1.mb-4
+            .col-sm-12.col-lg-3.col-md-3.col-xs-12
+              %input{:name => "auth_account", :id => "connect_auth_account", :type => "radio", :value => "connect authorization", checked: true}
+                Signed up with Remotelock
+            .col-sm-12.col-lg-3.col-md-3.col-xs-12
+              %input{:name => "auth_account", :id => "pynwheel_auth_account", :type => "radio", :value => "pynwheel authorization"}
+                Signed up with Pynwheel
+          %a{:href => "https://pynwheel.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "code_grant_btn", class: "btn btn-primary pynwheel_acc"}
+            Authorize
+          %a{:href => "https://connect.remotelock.com/oauth/authorize?response_type=code&client_id=#{ENV['REMOTELOCK_CLIENT_ID']}&redirect_uri=#{ENV['REMOTELOCK_REDIRECT_URI']}", id: "code_grant_btn", class: "btn btn-primary connect_acc"}
+            Authorize
+          %p.mt-10.connect_account_note
             %strong NOTE: 
-            You must have EdgeState account under RemoteLock through Pynwheel (pynwheel.remotelock.com) to authorize with pynwheel. 
+            You must have EdgeState account signed up via RemoteLock (connect.remotelock.com)
+          %p.mt-10.pynwheel_account_note
+            %strong NOTE: 
+            You must have EdgeState account through Pynwheel (pynwheel.remotelock.com)
   
   = form_for :edgestate, :url=>community_edgestate_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal edgstate_auth_form"} do |f|
     = render :partial=>'edgestate_form', :locals=>{:f=>f}
@@ -77,7 +94,7 @@
       $(".edgestate_auth_btn").hide()
     }
     else if ($('#code_grant_auth')[0].checked == true) {
-        $(".edgstate_auth_form").hide()
+      $(".edgstate_auth_form").hide()
     }
     else {
       $(".edgstate_auth_form").show()
@@ -93,4 +110,41 @@
       $(".edgestate_auth_btn").show()
       }
     });
+    $(".pynwheel_account_note").hide()
+    $(".pynwheel_acc").hide()
+    $('input[type=radio][name=auth_account]').change(function(){
+    if (this.value == 'connect authorization') {
+      $(".connect_account_note").show()
+      $(".pynwheel_account_note").hide()
+      $(".pynwheel_acc").hide()
+      $(".connect_acc").show()
+    }
+    else if (this.value == 'pynwheel authorization') {
+      $(".connect_account_note").hide()
+      $(".pynwheel_account_note").show()
+      $(".pynwheel_acc").show()
+      $(".connect_acc").hide()
+    }
+    });
+
+    $(".pynwheel_acc").on("click", function() {
+      localStorage.setItem("authorizedPynwheel", "pynwheel_authorized");
+      localStorage.setItem("authorizedConnect", "");
+    });
+
+    $(".connect_acc").on("click", function() {
+      localStorage.setItem("authorizedConnect", "connect_authorized");
+      localStorage.setItem("authorizedPynwheel", "");
+    });
+
+    if (localStorage.getItem("authorizedPynwheel") == "pynwheel_authorized")
+    {
+      $(".pynwheel-authorized").show()
+      $(".connect-authorized").hide()
+    }
+    else if (localStorage.getItem("authorizedConnect") == "connect_authorized") {
+      $(".pynwheel-authorized").hide()
+      $(".connect-authorized").show()
+    }
+
   })
