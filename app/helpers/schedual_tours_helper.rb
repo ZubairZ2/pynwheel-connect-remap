@@ -23,7 +23,7 @@ module SchedualToursHelper
       "-"
     else
       new_stop = stop.stop_type.classify.constantize.find_by_id stop.stop_id
-      new_stop.building.present? ? new_stop.building : "-"
+      (new_stop.present? && new_stop.building.present?) ? new_stop.building : "-"
     end
   end
 
@@ -32,7 +32,7 @@ module SchedualToursHelper
       "-"
     else
       new_stop = stop.stop_type.classify.constantize.find_by_id stop.stop_id
-      new_stop.floor.present? ? new_stop.floor : "-"
+      (new_stop.present? && new_stop.floor.present?) ? new_stop.floor : "-"
     end
   end
 
