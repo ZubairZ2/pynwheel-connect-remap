@@ -8,7 +8,7 @@ namespace :triggered_email do
       tu = TourUser.find tour.tour_user_id
       timezone = time_zone community
       current_time = Time.now.in_time_zone(timezone)
-      diff = tour.tour_time.to_s(:time).to_time - current_time.to_s(:time).to_time
+      diff = current_time.to_s(:time).to_time - tour.tour_time.to_s(:time).to_time 
       th = TourHistory.where(arrived: [(current_time - 3600)..current_time], tour_id: community.tour.id, tour_user_id: tu.id)
       
       puts diff
