@@ -340,7 +340,7 @@
             <p style="font-weight: normal; font-size: 20px;"><%= flash[:success].html_safe if flash[:success].present?  %></p>
             <div class="clearfix"></div>
             <% if user_signed_in? %>
-              <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/schedual_tours')">Ok</button>
+              <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">Ok</button>
             <% else %>
               <button class="btn_popup" id="close">Ok</button>
             <% end %>
