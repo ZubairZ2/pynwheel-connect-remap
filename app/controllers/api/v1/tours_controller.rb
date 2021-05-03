@@ -2,7 +2,9 @@ class Api::V1::ToursController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
   # before_action :set_community, only: :email_favorites
   include ApplicationHelper
+  include StripeServices
   require 'securerandom'
+
   def save_user_data
     puts params
     access = grant_access (decoded(params[:token])) rescue false
@@ -13,30 +15,31 @@ class Api::V1::ToursController < ActionController::Base
       # image_base = Base64.encode64(File.read(tempFile.path))
 
       unless params[:tour_user_id].present? && params[:tour_stop_id].present? && params[:tour_id].present?
-        render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
+        render :json => { :success => false, :message => "Please enter tour user id, tour stop id or tour id" }
       else
         begin
           unless (params[:tour_stop_id].to_i == params[:tour_id].to_i)
-            vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: params[:tour_stop_id].to_i,tour_id: params[:tour_id].to_i,image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false,event_time: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil,event_date: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil) 
+            vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i, tour_stop_id: params[:tour_stop_id].to_i, tour_id: params[:tour_id].to_i, image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false, event_time: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil, event_date: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil)
           end
         rescue => ex
-          render :json=> {:success=>false, :message => "failed"}
+          render :json => { :success => false, :message => "failed" }
         end
         if vs.present?
-          render :json=> {:success=>true, :message => "success"}
+          render :json => { :success => true, :message => "success" }
         else
-          render :json=> {:success=>false, :message => "failed"}
+          render :json => { :success => false, :message => "failed" }
         end
       end
     end
   end
+
   def save_user_selfie
     puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
       tempFile = params[:image]
       unless params[:tour_user_id].present? && params[:image].present?
-        render :json=> {:success=>false, :message => "Please enter tour user id, image"}
+        render :json => { :success => false, :message => "Please enter tour user id, image" }
       else
         begin
           vs = TourUser.find_by(id: params[:tour_user_id].to_i)
@@ -61,16 +64,17 @@ class Api::V1::ToursController < ActionController::Base
           vs.save!(validate: false)
         rescue => ex
           puts "<<<<<<<<<<<<<<<<<<<<<<<<< #{ex.message}"
-          render :json=> {:success=>false, :message => "failed"} and return
+          render :json => { :success => false, :message => "failed" } and return
         end
         if vs.present?
-          render :json=> {:success=>true, :message => "success"} and return 
+          render :json => { :success => true, :message => "success" } and return
         else
-          render :json=> {:success=>false, :message => "failed"} and return
+          render :json => { :success => false, :message => "failed" } and return
         end
       end
     end
   end
+
   def save_user_id_card
     puts params
     access = grant_access (decoded(params[:token])) rescue false
@@ -98,16 +102,17 @@ class Api::V1::ToursController < ActionController::Base
           success = false;
           message = "failed"
         end
-        render :json=> {:success=>success, :message => message}
+        render :json => { :success => success, :message => message }
       end
     end
   end
+
   def save_user_tour
     puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
       unless params[:tour_user_id].present? && params[:tour_stop_id].present? && params[:tour_id].present?
-        render :json=> {:success=>false, :message => "Please enter tour user id, tour stop id or tour id"}
+        render :json => { :success => false, :message => "Please enter tour user id, tour stop id or tour id" }
       else
         arr = []
         stops = params[:tour_stop_id].split(',')
@@ -141,16 +146,17 @@ class Api::V1::ToursController < ActionController::Base
             arr << false
           end
         end
-        render :json=> {:success=>true, :message => "success", :data => arr}
+        render :json => { :success => true, :message => "success", :data => arr }
 
       end
     end
   end
+
   def start_tour_auto_message
     begin
       app_link = params[:company_name].downcase == "lincoln" ? "http://onelink.to/6fsxvq" : "http://onelink.to/m5vuhn" rescue "https://apps.apple.com/us/app/self-tour/id1488907392"
       android_link = params[:company_name].downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour" rescue "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
-       
+
       if params[:access_token] == "AC1097385e8559f1ad63"
         to = params[:phone_number]
         start_tour_auto_msg = "Thank you for choosing to tour our property!
@@ -163,34 +169,34 @@ iPhone Users:
         auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
         @client = Twilio::REST::Client.new(account_sid, auth_token)
 
-
         message = @client.messages
-                      .create(
-                          body: start_tour_auto_msg,
-                          from: prod_from,
-                          to: to
-                      )
-        render :json=> {:success=>true, :message => "Message Sent"}
+                         .create(
+                           body: start_tour_auto_msg,
+                           from: prod_from,
+                           to: to
+                         )
+        render :json => { :success => true, :message => "Message Sent" }
       else
-        render :json=> {:success=>false, :message => "Message Not Sent", :error => "Invalid Token"}
+        render :json => { :success => false, :message => "Message Not Sent", :error => "Invalid Token" }
       end
     rescue => ex
-      render :json=> {:success=>false, :message => "Message Not Sent", :error => ex}
+      render :json => { :success => false, :message => "Message Not Sent", :error => ex }
     end
   end
+
   def tour_user_login
     ph_nm = params[:phone_number]
-    phone_number = ph_nm[0] == "1" ? "+" + ph_nm : ((ph_nm[0] != "+" and ph_nm[0] != "1") ? ("+1" + ph_nm) :  ph_nm)
+    phone_number = ph_nm[0] == "1" ? "+" + ph_nm : ((ph_nm[0] != "+" and ph_nm[0] != "1") ? ("+1" + ph_nm) : ph_nm)
     tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
     if tu.blank?
-      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false)
+      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false)
     else
-      tu.update_attributes(name: params[:first_name] + " " + params[:last_name],first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false)
+      tu.update_attributes(name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false)
     end
 
     begin
       secure_random = SecureRandom.hex
-      payload = {tour_user_id: tu.id, license_key: params[:license_key],secure_random: secure_random}
+      payload = { tour_user_id: tu.id, license_key: params[:license_key], secure_random: secure_random }
       # session[tu.id.to_i] = secure_random
       (TourUser.find tu.id).update_attributes(secure_random: secure_random)
       @token = encoded(payload)
@@ -198,20 +204,19 @@ iPhone Users:
       @token = nil
     end
 
-
     community = Community.find_by_id params[:community_id]
     allow = true
     if tu.present?
       if community.present? and community.restrict_access
         allow = false unless community.allowed_emails.pluck(:email).include?(tu.email.downcase)
       end
-      render :json=> {:success=>true, :message => "User present", tour_user: tu, token: @token, allowed_email: false} and return if allow == false
-      render :json=> {:success=>true, :message => "User present", tour_user: tu, token: @token, allowed_email: true}
+      render :json => { :success => true, :message => "User present", tour_user: tu, token: @token, allowed_email: false } and return if allow == false
+      render :json => { :success => true, :message => "User present", tour_user: tu, token: @token, allowed_email: true }
     else
-      render :json=> {:success=>false, :message => "User not present"}
+      render :json => { :success => false, :message => "User not present" }
     end
   end
-  
+
   def save_shared_tour
     puts params
     access = grant_access (decoded(params[:token])) rescue false
@@ -219,14 +224,14 @@ iPhone Users:
       shared_tour = SharedTour.new shared_tour_params
       if shared_tour.save
         tu = TourUser.find_by(id: params[:tour_user_id])
-        
-             # VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
-        last_stop = VisitedStop.where(tour_user_id: params[:tour_user_id],tour_id: params[:tour_id]).last
-        vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id],tour_key: last_stop.tour_key).group(:tour_stop_id).count
+
+        # VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,device_id: @device_id).group('tour_stop_id').count
+        last_stop = VisitedStop.where(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id]).last
+        vs = VisitedStop.where(tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: last_stop.tour_key).group(:tour_stop_id).count
 
         description_arr = []
         gallery_arr = []
-        
+
         visited_stops = []
         vs.delete(params[:tour_id]) rescue ""
         vs.keys.each { |x| visited_stops << TourStop.find_by_id(x) }
@@ -234,13 +239,13 @@ iPhone Users:
         community = visited_stops.last&.tour.community
         shared_tour_stops = {}
         stops = []
-        visited_stops.compact.each_with_index do |x,i|
+        visited_stops.compact.each_with_index do |x, i|
           if x.stop_type != "elevator" && (x.id != params[:tour_id])
             descriptions = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(description: nil)
 
             images = VisitedStop.where(tour_stop_id: vs.keys[i], tour_id: params[:tour_id], tour_user_id: params[:tour_user_id], tour_key: params[:tour_key]).where.not(image: nil)
             gallery_arr = []
-            
+
             images.each do |ud|
               gallery_arr << ud.image.url
             end
@@ -250,12 +255,12 @@ iPhone Users:
             end
 
             stop = x.stop_type.classify.constantize.where(id: x.stop_id).order(:id) if x.present?
-            shared_tour_stops[x.stop_id] = {stops: stop, description: description_arr, images: gallery_arr }
+            shared_tour_stops[x.stop_id] = { stops: stop, description: description_arr, images: gallery_arr }
           end
         end
         begin
           shared_tour_stops.delete(params[:tour_id])
-          FavoriteMailer.email_shared_tour([shared_tour.email],shared_tour_stops,community).deliver_now
+          FavoriteMailer.email_shared_tour([shared_tour.email], shared_tour_stops, community).deliver_now
         rescue => ex
           puts "Visited Stop #{ex} >>>>>>>>>>>>>>>>>>>>>>>>>"
           puts ex
@@ -263,9 +268,9 @@ iPhone Users:
 
         email_content = "There are total tour stops, we need tour_user_id to get visited stops Please send that #{visited_stops.to_s}"
         # DelayedSchedulerMailerJob.perform_async("A Tour Shared With You", email_content, 'usman.khalid@intagleo.co.uk')
-        render :json=> {:success=>true, :message => "success", :data => visited_stops}
+        render :json => { :success => true, :message => "success", :data => visited_stops }
       else
-        render :json=> {:success=>false, :message => "shared tour was not saved, please try again."}
+        render :json => { :success => false, :message => "shared tour was not saved, please try again." }
       end
     end
   end
@@ -278,7 +283,7 @@ iPhone Users:
       if params[:unit_id].present?
         unit = Unit.find_by_id(params[:unit_id])
         @community = Community.find unit.community_id
-        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id,unit.community_id,true) if unit.present?
+        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id, unit.community_id, true) if unit.present?
         @units.each do |u|
           if u.community.is_sitemap?
             u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
@@ -301,10 +306,11 @@ iPhone Users:
         message = 'Please provide unit_id'
       end
       unless params[:stringFormat].present? && params[:stringFormat] == "true"
-        render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
+        render :json => { :success => success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
       end
     end
   end
+
   def mis_match_verification
     puts params
     access = grant_access (decoded(params[:token])) rescue false
@@ -319,14 +325,15 @@ iPhone Users:
         emails.each do |email|
           DelayedSchedulerMailerJob.perform_async("ID Verification Issue for #{name}", email_content, email)
         end
-        render :json=> {:success=>true, :message => "success"}
+        render :json => { :success => true, :message => "success" }
       else
-        render :json=> {:success=>false, :message => "Invalid Token"}
+        render :json => { :success => false, :message => "Invalid Token" }
       end
     rescue => ex
-      render :json=> {:success=>false, :status => 500, :message => ex}
+      render :json => { :success => false, :status => 500, :message => ex }
     end
   end
+
   def get_reason verificaion_provider, verification_code, anti_spoofing, confidence
     if verificaion_provider == "check_point_id"
       if verification_code == "MultipleErrors" || verification_code == "ValidationError" || (anti_spoofing.present? && anti_spoofing.to_i < 80) || (confidence.present? && confidence.to_i < 55)
@@ -339,7 +346,33 @@ iPhone Users:
     else
       ""
     end
-    
+
+  end
+
+  def save_tour_user_card_info
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access
+      if params[:tour_user_id].present? && TourUser.find_by(id: params[:tour_user_id]).present?
+        begin
+          response = Stripe::Token.create({
+                                            card: {
+                                              number: params[:number].to_s,
+                                              exp_month: params[:exp_month].to_i,
+                                              exp_year: params[:exp_year].to_i,
+                                              cvc: params[:cvc].to_s,
+                                            },
+                                          })
+          TourUser.find(params[:tour_user_id]).update(strip_customer_id: response[:id], card_last_digits: response[:card][:last4])
+          render :json => { :success => true, :message => "Tour User Card Information Saved Successfully" }
+        rescue Stripe::CardError => e
+          render :json => { :success => false, :message => "#{e.error.message}" }
+        end
+      else
+        render :json => { :success => false, :message => "Invalid Tour User Id" }
+      end
+    else
+      render :json => { :status => false, :message => "Invalid Token" }
+    end
   end
 
   private
