@@ -21,6 +21,9 @@ module SalesforceServices
             
             if token.success?
                 auth_header = "Bearer " + token.payload["access_token"]
+                puts "auth_header"
+                puts auth_header
+                puts "*******"*100
                 c_time_zone = get_community_time_zone(community)
 
                 begin
@@ -49,6 +52,12 @@ module SalesforceServices
                 end
 
                 sf_user = Prospect.find_by(community_id: community.id, tour_user_id: tour_user.id, crm_provider: "salesforce", sf_status: "active")
+
+                puts "sf_user"
+                puts "*******"*100
+                puts sf_user
+                puts "*******"*100
+
                 if sf_user.present?
                     show_chat_only_in_first_stop = true
                     stops_visited = VisitedStop.where(tour_id: community.tour.id, tour_user_id: tour_user.id, tour_key: sf_user.tour_key).pluck(:tour_stop_id).uniq
@@ -76,7 +85,6 @@ module SalesforceServices
                     end
 
                     begin
-
                         body = {
                             "bookingId": sf_user.sf_booking_id,
                             "bookingName": sf_user.sf_booking_name,
@@ -93,15 +101,24 @@ module SalesforceServices
                             }
                         }
 
+                        puts "salesforce request body"
+                        puts "*******"*100
+                        puts body
+                        puts "*******"*100 
+
                         response = HTTParty.post(url,
                             body: body.to_json,
                             :headers => { 'Authorization' => auth_header,
                                         'Content-Type' => 'application/json' }
                         )
-                        puts "---"*50
+                        
+                        puts "Salesforce URL"
                         puts url
+                        puts "*******"*100
+                        puts "Salesforce feedback API response"
                         puts response
-                        puts "---"*50
+                        puts "*******"*100
+
                         sf_user.update_attributes(sf_status: "deleted", data: response.merge(feedback: body))
                     rescue HTTParty::Error => e
                         OpenStruct.new({success?: false, error: e, payload: nil})
