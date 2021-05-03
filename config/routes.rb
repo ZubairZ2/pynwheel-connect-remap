@@ -225,6 +225,7 @@ Rails.application.routes.draw do
     end
     resources :tour_users do
         get :lock_ploting
+        get :visited_stops_data
         get :checkpoint_verification
     end
     resources :floorplates do

@@ -55,7 +55,13 @@ class TourUsersController < ApplicationController
     @existing_stops = []
     @existing_stops << units if units.present?
     @existing_stops << amenities if amenities.present?
- 
+    if @community.is_sitemap
+      @sitemap = @community.sitemap
+    else
+      min_floor = @community.floorplates.map{|x| x.floors}.flatten.min
+      @sitemap = @community.floorplates.map{|x| x if x.floors.include?(min_floor)}.compact.first
+     
+    end
     # ------------ evnets history below the maps ---------------- #
     # unless amenities.present?
     #   puts '------------------ testing line amenities --------------------'
@@ -137,6 +143,29 @@ class TourUsersController < ApplicationController
       # end
 
       render json: {existing_stops: existing_stops, lock_histories: lock_histories}, status: 200
+    end
+  end
+  def visited_stops_data
+    if(params[:tour_history_id].present?)
+      tour_history = TourHistory.find params[:tour_history_id]
+      # floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
+      stops = VisitedStop.where(tour_key: tour_history.tour_key).order(:id).map{|x| 
+      
+        (x.stop_type == "amenity") ? ([x, (Amenity.find_by_id (TourStop.find x.tour_stop_id).stop_id), 'amenity'] rescue next): ([x, (Unit.find_by_id (TourStop.find x.tour_stop_id).stop_id) , 'unit'] rescue next)
+      }
+      if @community.is_sitemap
+        floor_image = @community.floorplates.map{|x| [x.floors,x.image.url]}
+        floors = buildings = nil
+      else
+        floor_image = @community.floorplates.map{|x| [x.floors,x.image.url]}
+        floors = stops.map{|x| x[1].floor }.uniq.sort
+        buildings = stops.map{|x| x[1].building }.uniq
+      end
+      
+      stops.unshift(['',current_community.tour,"tour"])
+      render json: { :stops => stops, :floors => floors, :buildings => buildings, :floor_image => floor_image, :lock_access_time => (tour_history.lock_access_time.strftime("%I:%M %p") rescue ""), :left => tour_history.left}, status: 200
+    else
+      render json: {}, status: 404
     end
   end
 

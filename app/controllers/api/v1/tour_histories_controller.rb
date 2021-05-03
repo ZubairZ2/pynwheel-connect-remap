@@ -15,6 +15,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
         if params[:time_zone].present?
           tour_history.my_time_zone = params[:time_zone].to_s rescue nil
         end
+        save_visitedStops params
         tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
         tour_history.active_app = params[:active_app] if params[:active_app].present?
         tour_history.tour_user_id = params[:tour_user_id]
@@ -34,6 +35,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
           tour_history.longitude = tu.longitude
           tour_history.tour_key = tu.tour_key
           tour_history.tour_status = tu.tour_type
+          tour_history.lock_access_time = tu.lock_access_time
       
           tu.save
         rescue => ex
@@ -60,6 +62,37 @@ class Api::V1::TourHistoriesController < ActionController::Base
         render :json=> {:success=>false, :message => "Please provide community_id."}
       end
     end
+  end
+  def save_visitedStops params
+    arr = []
+    stops = params[:tour_stop_id].split(',')
+    begin
+      a1 = TourUser.find params[:tour_user_id].to_i
+      a2 = Tour.find params[:tour_id].to_i
+    rescue => ex
+    end
+    stops.each do |stop_id|
+      begin
+        s_id , dateTime, stop_type, stop_pin = stop_id.split('|')
+        a3 = TourStop.find s_id.to_i
+        _date = dateTime.present? ? DateTime.parse(dateTime).strftime('%a, %d %b %Y %H:%M:%S') : nil
+      rescue => ex
+      end
+      if a1.present? && a2.present? && a3.present?
+        unless (stop_id.to_i == params[:tour_id].to_i)
+          vs_ = VisitedStop.find_by(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, tour_key: params[:tour_key], event_date: _date, event_time: _date.to_s.split(" ").last,stop_type: stop_type)
+          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false, event_date: _date, event_time: _date,stop_type: stop_type, stop_pin: ( (stop_pin).gsub("Use code ","").gsub(" to enter.","").gsub("# to enter.","") rescue "")) unless vs_.present?
+        end
+      end
+      if vs.present?
+        arr << true
+      else
+        arr << false
+      end
+    end
+    puts "------**"*50
+    puts "save_visitedStops"
+    puts arr
   end
 
   def alerts_during_tour
