@@ -535,15 +535,17 @@ class AnalyticsController < ApplicationController
       tour_stops = TourStop.where(id: tour_stop_ids)
       stops = tour_stops.pluck(:stop_type, :stop_id)
       stops.each do |arr|
-        stop = arr.first.capitalize.constantize.find arr.last
+        stop = arr.first.camelcase.constantize.find arr.last
         if arr.first == "unit"
           visites_stops_hash[stop.unit_type] = visites_stops_hash[stop.unit_type].nil? ? (1) : (visites_stops_hash[stop.unit_type] + 1)
-        else
+        elsif arr.first == "amenity"
           if stop.amenity_type == ""
             visites_stops_hash["other amenity"] = visites_stops_hash["other amenity"].nil? ? (1) : (visites_stops_hash["other amenity"] + 1)
           else
             visites_stops_hash[stop.amenity_type] = visites_stops_hash[stop.amenity_type].nil? ? (1) : (visites_stops_hash[stop.amenity_type] + 1)
           end
+        else
+          visites_stops_hash["other than unit and amenity stop"] = visites_stops_hash["other than unit and amenity stop"].nil? ? (1) : (visites_stops_hash["other than unit and amenity stop"] + 1)
         end
       end
       visites_stops_hash = Hash[visites_stops_hash.sort_by{ |_, v| -v }]
