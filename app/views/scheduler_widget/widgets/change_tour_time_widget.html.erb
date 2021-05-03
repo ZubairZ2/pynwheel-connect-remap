@@ -128,7 +128,7 @@
             <p id="reschedule-content" style="font-weight: normal; font-size: 20px;"></p>
             <div class="clearfix"></div>
             <% if user_signed_in? %>
-              <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/schedual_tours')">Ok</button>
+              <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">Ok</button>
             <% else %>
               <button class="btn_popup" id="close">Ok</button>
             <% end %>
@@ -201,7 +201,7 @@
               alert("Your tour has been canceled");
 
               if(data.logged_in) {
-                window.location.href = `${window.location.origin}/communities/${community_id}/schedual_tours`;
+                window.location.href = `${window.location.origin}/communities/${community_id}/scheduled_tours`;
               } else {
                 window.location.href = window.location.origin
               }

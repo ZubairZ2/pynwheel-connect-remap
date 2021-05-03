@@ -161,7 +161,7 @@ Rails.application.routes.draw do
     get :show_realpage_pricing_data
     post :save_temporary_image
     delete :delete_temporary_image
-    resources :schedual_tours do
+    resources :schedual_tours, path: 'scheduled_tours' do
       post :update_tour_type
       # post :create_tour_user_from
       # member do
