@@ -25,7 +25,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
         if params[:time_zone].present?
           tour_history.my_time_zone = params[:time_zone].to_s rescue nil
         end
-        save_visitedStops params
+        save_visitedStops params  if params[:tour_stop_id].present?
         
         tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
         tour_history.active_app = params[:active_app] if params[:active_app].present?
