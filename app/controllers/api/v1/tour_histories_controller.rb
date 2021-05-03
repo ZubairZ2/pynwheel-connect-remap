@@ -10,17 +10,35 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
         tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
         tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
+        tour_history.tour_state = "completed" if params[:left].present?
+        tour_history.tour_type = params[:tour_session_type] if params[:tour_session_type].present?
+        tour_history.community_id = params[:community_id]
+        if  params[:tour_site].present?
+          if params[:tour_site] == "self_tour"
+            tour_history.tour_site = "onsite"
+          elsif params[:tour_site] == "virtual_tour"
+            tour_history.tour_site = "offsite"
+          end
+        end
         tour_history.tour_id = params[:tour_id].to_i if params[:tour_id].present?
         tour_history.lengthy_stay = convert_epoch_to_datetime params[:lengthy_stay] if params[:lengthy_stay].present?
         if params[:time_zone].present?
           tour_history.my_time_zone = params[:time_zone].to_s rescue nil
         end
         save_visitedStops params
+        
         tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
         tour_history.active_app = params[:active_app] if params[:active_app].present?
         tour_history.tour_user_id = params[:tour_user_id]
-        @tour = Tour.find params[:tour_id]
 
+        tour_history.see_availability_counter = params[:see_availability_counter].to_i if params[:see_availability_counter].present?
+        tour_history.apply_click_counter = params[:apply_clicks_counter].to_i if params[:apply_clicks_counter].present?
+        tour_history.price_opened_counter = params[:price_opened_counter].to_i if params[:price_opened_counter].present?
+        tour_history.notes_opened_counter = params[:notes_opened_counter].to_i if params[:notes_opened_counter].present?
+        tour_history.camera_opened_counter = params[:camera_opened_counter].to_i if params[:camera_opened_counter].present?
+        tour_history.visited_pages_counter = params[:visited_pages_counter].to_i if params[:visited_pages_counter].present?
+
+        @tour = Tour.find params[:tour_id]
         tu = TourUser.find params[:tour_user_id]
         tour_history.latitude = tu.latitude rescue nil
         tour_history.longitude = tu.longitude rescue nil

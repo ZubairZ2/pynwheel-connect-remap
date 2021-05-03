@@ -148,4 +148,6 @@ module CommunitiesHelper
     community.tour.verification_type == "authenteq" && community.tour.tour_setting.charge_user_for_id_verfication && community.tour.visual_id_verification && tour_user.strip_customer_id.blank?
   end
 
+  
+
 end

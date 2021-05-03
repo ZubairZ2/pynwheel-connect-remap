@@ -66,7 +66,7 @@
                             = @tour_user.phone_number
                           %td{:style => "display: flex;"}
                             = render :partial => 'custom_tour', :locals => {tour_user: @tour_user, tour: tour, community: @community, community_code: @community_code, community_tour_stops: community_tour_stops}
-                            %a.btn.btn-danger{"data-name"=>"Tour","data-href" => "/communities/#{@community.id}/schedual_tours/#{tour.id}?delete_type=page", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
+                            %a.btn.btn-danger{"data-name"=>"Tour","data-href" => "/communities/#{@community.id}/scheduled_tours/#{tour.id}?delete_type=page", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                               %i.fa.fa-trash.icon_size
 
 .row

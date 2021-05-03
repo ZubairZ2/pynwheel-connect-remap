@@ -1131,3 +1131,27 @@ function adjustAmenitiesPosition() {
     $(this).css({"left": current_left, "top": current_top});
   });
 }
+$(document).on('click','.share-favorite',function(){
+  community_id = $("#maps_community_id").val()
+  $.ajax({
+    type: "GET",
+    url: '/communities/'+community_id+'/webpages/sent_favorite',
+    success: function(response) {}
+  });
+});
+$(document).on('click','.unit_marker',function(){
+  community_id = $("#maps_community_id").val()
+  $.ajax({
+    type: "GET",
+    url: '/communities/'+community_id+'/webpages/price_opened',
+    success: function(response) {}
+  });
+});
+$(document).on('click','.apply_now',function(){
+  community_id = $("#maps_community_id").val()
+    $.ajax({
+      type: "GET",
+      url: '/communities/'+community_id+'/webpages/apply_now_count',
+      success: function(response) {}
+  });
+});

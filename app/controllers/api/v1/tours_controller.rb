@@ -146,12 +146,38 @@ class Api::V1::ToursController < ActionController::Base
             arr << false
           end
         end
-        render :json => { :success => true, :message => "success", :data => arr }
+
+        @tour_user = TourUser.find(params[:tour_user_id]) if params[:tour_user_id].present?
+        feedback = Feedback.where(tour_user_id: @tour_user.id).last
+        show_feedback = if feedback.present? and feedback.is_cancelled == false
+          false
+        elsif feedback.present? and feedback.is_cancelled and feedback.cancelled_at > 24.hours.ago
+          false
+        else
+          true
+        end
+        arr << {feedback_option: show_feedback}
+        render :json=> {:success=>true, :message => "success", :data => arr}
 
       end
     end
   end
 
+  def feedback 
+    feedback = Feedback.where(tour_user_id: params['tour_user_id']).last
+    if !feedback.present? || (feedback and feedback.is_cancelled and feedback.cancelled_at and feedback.cancelled_at < 24.hours.ago)
+      @feedback = Feedback.create(feedback_params) unless feedback.present?
+      updated_feedback = Feedback.find_by(tour_user_id: params['tour_user_id'])
+      updated_feedback.update(feedback_params) if feedback.present?
+      if @feedback || updated_feedback
+        render json: { success: true, error_code: 200, message: "Feedback submitted successfully", data: @feedback ? @feedback : updated_feedback}
+      else
+        render json: { success: false, error_code: 400, message: "Something went wrong, please try again later", data: nil }
+      end
+    else
+      render json: { success: false, error_code: 400, message: "You already have been submitted feedback", data: nil }
+    end
+  end
   def start_tour_auto_message
     begin
       app_link = params[:company_name].downcase == "lincoln" ? "http://onelink.to/6fsxvq" : "http://onelink.to/m5vuhn" rescue "https://apps.apple.com/us/app/self-tour/id1488907392"
@@ -387,5 +413,9 @@ iPhone Users:
 
   def shared_tour_params
     params.permit(:name, :phone, :email, :tour_id, :recipient_name)
+  end
+
+  def feedback_params
+    params.permit(:comment, :rating, :tour_id, :tour_user_id, :is_cancelled, :cancelled_at)
   end
 end

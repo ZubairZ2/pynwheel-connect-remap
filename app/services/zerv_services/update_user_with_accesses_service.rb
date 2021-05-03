@@ -10,6 +10,8 @@ module ZervServices
             @accessCode   = community.zerv.badge_id.blank? ? "1234" : community.zerv.badge_id
             @cardFormat   = community.zerv.card_format.blank? ? "HID Prox 26-bit H10301" : community.zerv.card_format
 
+            existing_access_ids = args[:existing_access_ids].nil? ? [] : (args[:existing_access_ids])
+            existing_access_duration_ids = args[:existing_access_duration_ids].nil? ? [] : (args[:existing_access_duration_ids])
             user_accesses = zerv_user["listGetUserAccess"]
 
             url = base_url + "/user/updateuserandtimezone/" + zerv_user["id"].to_s
@@ -47,8 +49,8 @@ module ZervServices
                 "email": tour_user.email,
                 "id": zerv_user["id"],
                 "image": nil,
-                "removeExistingAccessDuration": [],
-                "removedExistingAccess": [],
+                "removeExistingAccessDuration": existing_access_duration_ids,
+                "removedExistingAccess": existing_access_ids,
                 "listAddUserAccess": list_add_user_access
             }
             

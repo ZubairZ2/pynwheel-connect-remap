@@ -4,6 +4,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   before_action :set_community, only: :email_favorites
   include ApplicationHelper
   include ToursHelper
+  include TourStopsHelper
   include StripeServices
   require 'securerandom'
   @@counter = 0
@@ -250,13 +251,14 @@ class Api::V1::CommunitiesController < ActionController::Base
     if api_access or access == true
       @community = Community.find params[:id]
       @tour_user = TourUser.find_by(id: params[:tour_user_id])
-
       delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
       te = tour_stops_ids(@tour_user, @community)
-
-      @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
+      removing_tour_stops = delete_array.present? ? delete_array + te : [] + te
+      @community.deleted_ids = removing_tour_stops
+      removing_stops_arr = removing_tour_stops.present? ? (fetch_removing_stops_sub_location(removing_tour_stops, @community)) : []
       @community.save
       @tours = Tour.where(id: params[:tour_id])
+      session["check_lock_access"+@tour_user.id.to_s] = 0
       current_time = current_community_time(@community, params)
 
       @building_list = @floor_list = []
@@ -297,7 +299,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       else
         @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
       end
-      check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
+      check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref], removing_stops_arr)
     else
         render :json=> {:success=>false, :message => "Invalid Token"}
     end
@@ -456,6 +458,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   def tour_configrations_v1
     puts params
     access = grant_access (decoded(params[:token])) rescue false
+    @tour_session_type = "unscheduled"
     if api_access or access == true
       if params[:id].present? and params[:tour_user_id].present?
         @community = Community.find_by_id params[:id]
@@ -494,6 +497,7 @@ class Api::V1::CommunitiesController < ActionController::Base
                   end
                   should_range_be_checked = false
                 end
+                @tour_session_type = "scheduled" if (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?)
               else
                 @scheduled_data = sf_nearest_time_tour(@community, @tour_user, current_time, timezone)
                 if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
@@ -535,9 +539,37 @@ class Api::V1::CommunitiesController < ActionController::Base
       charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
     end
   end
+  def check_lock_access
+    puts params
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      community = Community.find params[:id]
+      tu = TourUser.find params[:tour_user_id]
+      counter = check_lock_access_counter(tu)
+      if (params[:tour_type] == "self_tour" && tu.tour_type != "guided_tour" && community.enable_locks)
+        if ((community.multiple_locks_provider.include?("Dwelo") && (tu.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (tu.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (tu.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (tu.zerv_status == "in progress")) && !(counter >= 20))
+          render :json=> {success: "false", completed: false}
+        else
+          render :json=> {success: "true", completed: true}
+        end
+      else
+        render :json=> {success: "false", completed: false}
+      end
+    else
+      render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+    end
+  end
+  def check_lock_access_counter(tu)
+    session["check_lock_access"+tu.id.to_s] = 0 if (session["check_lock_access"+tu.id.to_s].nil? || (session["check_lock_access"+tu.id.to_s] == 20))
+    session["check_lock_access"+tu.id.to_s] += 1
+    puts "&$"*30, session["check_lock_access"+tu.id.to_s]
+    session["check_lock_access"+tu.id.to_s]
+  end
 
   def create_zerv_user(community, tour_user)
     locks_thread = Thread.new do
+      begin
+      tour_user.update_column 'zerv_status' , 'in progress'
       execution_context = Rails.application.executor.run!
 
       # timezone = get_community_time_zone(community) rescue "UTC"
@@ -551,6 +583,11 @@ class Api::V1::CommunitiesController < ActionController::Base
         allowed_stops = zerv_multiple_stops_access(community)
         ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops)
       end
+      tour_user.update_column 'zerv_status' , 'complete'
+      rescue => ex
+        tour_user.update_column 'zerv_status' , 'complete'
+        puts "--------- Zerv error -------- ", ex
+      end
 
     ensure
       execution_context.complete! if execution_context
@@ -559,7 +596,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     locks_thread.to_s
   end
   
-  def check_zerv_user_existance_again(community, tour_user, thread_ref)
+  def check_zerv_user_existance_again(community, tour_user, thread_ref, removing_stops_arr)
     if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and community.zerv.present? and tour_user.tour_type != "virtual_tour"
       puts "-----------------------------------------     main thread halted    ---------------------------------------------------"
       begin
@@ -580,6 +617,9 @@ class Api::V1::CommunitiesController < ActionController::Base
             ZervServices::GetUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true)
           end
 
+          if removing_stops_arr.present?
+            ZervServices::RemoveStopsAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, removing_stops_arr: removing_stops_arr)
+          end
         end
       rescue => exception
         puts exception

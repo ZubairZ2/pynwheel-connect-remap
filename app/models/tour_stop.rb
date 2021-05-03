@@ -16,6 +16,7 @@
 
 class TourStop < ApplicationRecord
   belongs_to :tour
+  belongs_to :stop, polymorphic: true
   include StandardUrl
   include RailsSortable::Model
   set_sortable :sort
