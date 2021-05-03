@@ -2,6 +2,7 @@ class CommunitiesController < ApplicationController
   include Error::ErrorHandler
   include DweloDevicesHelper
   include CommunitiesHelper
+  include FeedbacksHelper
   #load_and_authorize_resource
   before_action :check_community
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
@@ -385,6 +386,11 @@ class CommunitiesController < ApplicationController
     workbook = WriteXLSX.new("public/AuthenteqReport/AuthenteqReport.xlsx")
     zip_data = write_authenteq_report(workbook)
     send_data(zip_data, :type => 'application/zip', :filename => "AuthenteqReport.zip")
+  end
+  def tour_feedback_report
+    workbook = WriteXLSX.new("public/STFeedbackReport/STFeedbackReport.xlsx")
+    zip_data = write_feedback_report(workbook)
+    send_data(zip_data, :type => 'application/zip', :filename => "STFeedbackReport.zip")
   end
   def realpage_load_pricing_data
     @community = Community.find params[:community_id]
