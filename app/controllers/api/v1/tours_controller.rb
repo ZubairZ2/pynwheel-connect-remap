@@ -337,7 +337,7 @@ iPhone Users:
         end
         success = true
         message = 'success'
-        floorplate_image = @units.first.floorplate.present? ? @units.floorplate.image_url : "No Floorplate Image"
+        floorplate_image = (@units.first.floorplate.present? ? @units.floorplate.image_url : "No Floorplate Image" rescue "")
       else
         success = false
         message = 'Please provide unit_id'
