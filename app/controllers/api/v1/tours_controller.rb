@@ -142,7 +142,7 @@ class Api::V1::ToursController < ActionController::Base
           end
         end
         @tour_user = TourUser.find(params[:tour_user_id]) if params[:tour_user_id].present?
-        feedback = Feedback.where(tour_user_id: @tour_user.id).first
+        feedback = Feedback.where(tour_user_id: @tour_user.id).last
         show_feedback = if feedback.present? and feedback.is_cancelled == false
           false
         elsif feedback.present? and feedback.is_cancelled and feedback.cancelled_at > 24.hours.ago
@@ -157,11 +157,18 @@ class Api::V1::ToursController < ActionController::Base
     end
   end
   def feedback 
-    @feedback = Feedback.new(feedback_params)
-    if @feedback.save
-      render json: { success: true, error_code: 200, message: "Feedback submitted successfully", data: @feedback }
+    feedback = Feedback.where(tour_user_id: params['tour_user_id']).last
+    if !feedback.present? || (feedback and feedback.is_cancelled and feedback.cancelled_at and feedback.cancelled_at < 24.hours.ago)
+      @feedback = Feedback.create(feedback_params) unless feedback.present?
+      updated_feedback = Feedback.find_by(tour_user_id: params['tour_user_id'])
+      updated_feedback.update(feedback_params) if feedback.present?
+      if @feedback || updated_feedback
+        render json: { success: true, error_code: 200, message: "Feedback submitted successfully", data: @feedback ? @feedback : updated_feedback}
+      else
+        render json: { success: false, error_code: 400, message: "Something went wrong, please try again later", data: nil }
+      end
     else
-      render json: { success: false, error_code: 400, message: "Something went wrong, please try again later", data: nil }
+      render json: { success: false, error_code: 400, message: "You already have been submitted feedback", data: nil }
     end
   end
   def start_tour_auto_message
