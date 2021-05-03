@@ -42,6 +42,7 @@ Rails.application.routes.draw do
   devise_for :users, :controllers => { :invitations => 'invitations', sessions: 'users/sessions' }
   post 'users/:id/turn_on_chat', to: 'users#chat_service_available'
   post 'users/:id/turn_off_chat', to: 'users#chat_service_not_available'
+  post 'webpages/:id/update_session', to: 'webpages#update_session'
 
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"
@@ -49,6 +50,7 @@ Rails.application.routes.draw do
   resources :chats
   get 'listening_message', to: 'chats#listening_message' 
   post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages'
+  resources :analytics, only: [:index]
   resources :companies do
     resources :communities
     resources :community_groups
@@ -432,6 +434,9 @@ Rails.application.routes.draw do
       collection do
         get :apply_now
         get :save_favorite
+        get :sent_favorite
+        get :price_opened
+        get :apply_now_count
         get :delete_favorite
         get :favorites
         get :favorites_share_link

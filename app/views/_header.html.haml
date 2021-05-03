@@ -11,7 +11,7 @@
         %img{:alt => "", :src => "/assets/pynwheel_connect_logo_v2.png", :title => "",:style => "width: 265px; height: 61px; text-align: center;"}
         .col-lg-12{:style => "text-align: center;"}
 
-          - unless (params[:controller] == "companies" && params[:action] == "index") || params[:controller] == "communities" && params[:action] == "index"  || params[:controller] == "regions" && params[:action] == "index"
+          - unless (params[:controller] == "companies"  || params[:controller] == "communities" || params[:controller] == "regions" || params[:controller] == "analytics") && params[:action] == "index"
             %span= current_company.name rescue ''
   - else
     %a.logo{:href => company_communities_path(current_company)}

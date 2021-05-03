@@ -30,7 +30,7 @@
  *= require easy-loading
  *= require zoom-marker
  *= require intlTelInput
-
+ *= require analytics
  */
 
 @keyframes shadow-pulse {
