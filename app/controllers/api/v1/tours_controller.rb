@@ -53,9 +53,9 @@ class Api::V1::ToursController < ActionController::Base
             vs.id_selfie_mismatch = false
             url = Rails.env.production? ? "https://pynwheelconnect.com/id_selfie_matching/#{vs.id }?community=#{community.id}" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }?community=#{community.id}"
             email_content = "Please verify the user #{vs.name} #{community_name} on the following link <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"
-            DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
+            DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com',community,nil,nil,nil,nil,false) unless params[:local_testing].present?
             community.email.split(',').each do |email|
-              DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, email) unless params[:local_testing].present?
+              DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, email,community,nil,nil,nil,nil,false) unless params[:local_testing].present?
             end
             # DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
             # DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'nawaal.asif@intagleo.com')
@@ -349,7 +349,7 @@ iPhone Users:
         email_content = "#{name} visiting #{@community.name} was unable to begin the tour because of an issue with ID verification." + reason
         emails = @community.email.gsub(" ","").split(',')
         emails.each do |email|
-          DelayedSchedulerMailerJob.perform_async("ID Verification Issue for #{name}", email_content, email)
+          DelayedSchedulerMailerJob.perform_async("ID Verification Issue for #{name}", email_content, email,@community,nil,nil,nil,nil,false)
         end
         render :json => { :success => true, :message => "success" }
       else

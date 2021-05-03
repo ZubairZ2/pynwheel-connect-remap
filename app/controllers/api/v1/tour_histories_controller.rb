@@ -173,7 +173,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email).deliver
+        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email,community,false).deliver
       end
 
     end
@@ -182,7 +182,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
     if(tu.arrival_email_sent and lat_long.present? and geo_distance(lat_long[:lat],lat_long[:lng],community.latitude, community.longitude, 1)  )
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.capitalize}  has left #{community.name}", email).deliver
+        NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.capitalize}  has left #{community.name}", email,community,false).deliver
         tu.update_column 'arrival_email_sent' , false 
       end
     end

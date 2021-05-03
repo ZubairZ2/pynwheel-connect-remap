@@ -33,7 +33,7 @@ namespace :triggered_email do
         tour.update_column 'missed_email_sent', true
         emails = community.email.split(',')
         emails.each do |email|
-        DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,emails[0])
+        DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,nil,false)
         # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,emails[0],false)
         end
 
@@ -63,12 +63,12 @@ Thank you!"
         
         if community.scheduler_widget
           sleep 1
-          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_st, tu.email,emails[0])
+          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_st, tu.email,community,nil,nil,nil,emails[0],true)
           # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_schedule_tool, tu.email,community,nil,nil,nil,emails[0],true)
           DelayedSchedulerTextJob.perform_async(text_msg_with_st, tu.phone_number)
         else
           sleep 1
-          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_no_st_tour_user, tu.email,emails[0])
+          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_no_st_tour_user, tu.email,community,nil,nil,nil,emails[0],true)
           # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_tour_user, tu.email,community,nil,nil,nil,emails[0],true)
           DelayedSchedulerTextJob.perform_async(text_msg_no_st_tour_user, tu.phone_number)
         end
