@@ -4729,10 +4729,6 @@ div.mydiv {
     margin-bottom: 10px;
 }
 
-.half_opacity {
-    opacity: 0.5;
-}
-
 .add-new-lock a.disabled {
     pointer-events: none;
     cursor: not-allowed;
@@ -4788,33 +4784,12 @@ input:checked+.slider {
     background-color: #2196F3;
 }
 
-#lock_tabs {
-    border-bottom: none;
-}
-
-#lock_tabs {
-    margin-bottom: 10px;
-}
-
 .half_opacity {
     opacity: 0.5;
 }
 
-.add-new-lock a.disabled {
-    pointer-events: none;
-    cursor: not-allowed;
-}
-
-.hide_it {
-    display: none;
-}
-
 .add-line-on-stop {
     text-decoration: line-through;
-}
-
-.hide_it {
-    display: none;
 }
 
 .h3_box_title {

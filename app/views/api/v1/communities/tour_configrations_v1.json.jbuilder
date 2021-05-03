@@ -14,7 +14,7 @@
         json.scheduler_widget_url      ""
         json.tour_alert                "Every thing is fine. Enjoy your tour"
         json.locks_thread_ref          @locks_thread
-
+        json.tour_session_type         @tour_session_type
 
         if @in_visiting_hours
             unless @limit_exceeded

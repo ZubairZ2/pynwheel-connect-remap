@@ -65,7 +65,6 @@ class User < ApplicationRecord
   belongs_to :region
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
-
   # before_validation :gen_uuid, on: :create
   # validates :uuid, presence: true, uniqueness: true
 
@@ -92,6 +91,10 @@ class User < ApplicationRecord
     (role == "Community admin") || (role == "Dwelo admin")
   end
 
+  def is_comm_admin?
+    role == "Community admin"
+  end
+
   def is_community_manager?
     role == "Community manager"
   end
@@ -106,6 +109,18 @@ class User < ApplicationRecord
 
   def is_community_assistant?
     role == "Community assistant"
+  end
+
+  def return_last_cms_session
+    if !self.cms_sessions.any?
+      self.cms_sessions.build
+    elsif self.cms_sessions.start_datetime_in_limit?
+      last_session = self.cms_sessions.last
+      last_session.update_column(:end_datetime, (last_session.start_datetime + 10.minutes) )
+      self.cms_sessions.build
+    else
+      self.cms_sessions.last
+    end
   end
 
   def is_company_admin?
