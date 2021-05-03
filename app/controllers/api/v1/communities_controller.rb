@@ -257,6 +257,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
       @community.save
       @tours = Tour.where(id: params[:tour_id])
+      session["check_lock_access"+@tour_user.id.to_s] = 0
       current_time = current_community_time(@community, params)
 
       @building_list = @floor_list = []
@@ -535,9 +536,37 @@ class Api::V1::CommunitiesController < ActionController::Base
       charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
     end
   end
+  def check_lock_access
+    puts params
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      community = Community.find params[:id]
+      tu = TourUser.find params[:tour_user_id]
+      counter = check_lock_access_counter(tu)
+      if (params[:tour_type] == "self_tour" && tu.tour_type != "guided_tour" && community.enable_locks)
+        if ((community.multiple_locks_provider.include?("Dwelo") && (tu.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (tu.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (tu.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (tu.zerv_status == "in progress")) && !(counter >= 20))
+          render :json=> {success: "false", completed: false}
+        else
+          render :json=> {success: "true", completed: true}
+        end
+      else
+        render :json=> {success: "false", completed: false}
+      end
+    else
+      render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+    end
+  end
+  def check_lock_access_counter(tu)
+    session["check_lock_access"+tu.id.to_s] = 0 if (session["check_lock_access"+tu.id.to_s].nil? || (session["check_lock_access"+tu.id.to_s] == 20))
+    session["check_lock_access"+tu.id.to_s] += 1
+    puts "&$"*30, session["check_lock_access"+tu.id.to_s]
+    session["check_lock_access"+tu.id.to_s]
+  end
 
   def create_zerv_user(community, tour_user)
     locks_thread = Thread.new do
+      begin
+      tour_user.update_column 'zerv_status' , 'in progress'
       execution_context = Rails.application.executor.run!
 
       # timezone = get_community_time_zone(community) rescue "UTC"
@@ -550,6 +579,11 @@ class Api::V1::CommunitiesController < ActionController::Base
       if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and tour_user.tour_type != "virtual_tour"
         allowed_stops = zerv_multiple_stops_access(community)
         ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops)
+      end
+      tour_user.update_column 'zerv_status' , 'complete'
+      rescue => ex
+        tour_user.update_column 'zerv_status' , 'complete'
+        puts "--------- Zerv error -------- ", ex
       end
 
     ensure
