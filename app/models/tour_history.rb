@@ -29,7 +29,8 @@ class TourHistory < ApplicationRecord
 
   def send_arrival_notifications
     verification_text = self.verified_by.present? "<br>They have successfully passed the ID verification process." : ""
-  	send_email_sms_or_both ["Visitor Has Arrived", "A Pynwheel Self Tour has begun for: \n #{self.tour_user.name} \n #{self.tour_user.email}" + verification_text]
+    community = (Tour.find_by_id self.tour_id).community
+  	send_email_sms_or_both ["A tour has begun", "#{self.tour_user.name.capitalize} has begun a tour of #{community.name}" + verification_text]
   end
 
   def send_update_notifications
@@ -52,9 +53,9 @@ class TourHistory < ApplicationRecord
       if self.left and !self.is_left
         community = (Tour.find_by_id self.tour_id).community
         self.update_columns(is_left: true)
-        @mail_content = ["tour_has_ended", "A Pynwheel Self Tour has ended for:"] #get_alert_message('tour_has_ended')
+        @mail_content = ["tour_has_ended", "#{self.tour_user.name.capitalize} has completed a tour of #{@community.name}"] #get_alert_message('tour_has_ended')
         url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
-        @mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}" + "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
+        # @mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}" + "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
 
         touruser = self.tour_user
 

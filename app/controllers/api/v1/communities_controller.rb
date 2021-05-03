@@ -516,6 +516,12 @@ class Api::V1::CommunitiesController < ActionController::Base
               end
             end
           end
+          if (@within_one_km && ( @tour_user.tour_type == "self_tour"))
+            tour_user_arrival_email(@tour_user, @community)
+            @tour_user.arrival_email_sent = true
+          else
+            @tour_user.arrival_email_sent = false
+          end
           @locks_thread = create_zerv_user(@community, @tour_user)
           @tour_user.save
           @verfication_type = params[:id_verification].present? ? @community.tour.verification_type : "email"

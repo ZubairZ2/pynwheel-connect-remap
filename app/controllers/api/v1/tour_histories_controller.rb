@@ -119,6 +119,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
         check_length_stay(params[:tour_history_id], params[:lengthy_stay], tour.community, tu, params[:current_stop_id]) if (params[:tour_history_id].present? and params[:lengthy_stay].present?)
         chat_control = (tour.community.chat_control and tour.community.is_chat_available) ? tour.community.chat_control : false
+        has_tour_user_left(tour.community, tu, params[:lat_langs].last) if params[:lat_langs].present?
         chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
         if chatroom.present?
           if params[:last_msg_id].present?
@@ -129,7 +130,6 @@ class Api::V1::TourHistoriesController < ActionController::Base
         else
           count = 0
         end
-
         render :json=> {:success=>true, :message => "success", :un_read_msgs_count=> count, :id_mismatch=> id_mismatch, chat_control: chat_control}
       else
         render :json=> {:success=>false, :message => "Please provide community_id, tour_id and tour_user_id"}
@@ -159,6 +159,18 @@ class Api::V1::TourHistoriesController < ActionController::Base
       end
 
     end
+  end
+  def has_tour_user_left(community, tu, lat_long)
+    if(tu.arrival_email_sent and lat_long.present? and geo_distance(lat_long[:lat],lat_long[:lng],community.latitude, community.longitude, 1)  )
+      emails = community.email.gsub(" ","").split(',')
+      emails.each do |email|
+        NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.capitalize}  has left #{community.name}", email).deliver
+        tu.update_column 'arrival_email_sent' , false 
+      end
+    end
+  end
+  def geo_distance(lat1,long1,lat2,long2,limit)
+    return ((Geocoder::Calculations.distance_between([lat1,long1],[lat2,long2],options = {:units => :km}) > limit) rescue true)
   end
   def time_difference(lengthy_stay, arrival_time)
     ((lengthy_stay - arrival_time) / 1.minute).round
