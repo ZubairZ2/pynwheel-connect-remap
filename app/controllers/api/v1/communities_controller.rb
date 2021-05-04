@@ -539,6 +539,12 @@ class Api::V1::CommunitiesController < ActionController::Base
       charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
     end
   end
+  def tour_user_arrival_email(tour_user, community)
+    emails = community.email.gsub(" ","").split(',')
+    emails.each do |email|
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email,"info@pynwheel.com",community,false).deliver
+    end
+  end
   def check_lock_access
     puts params
     access = grant_access (decoded(params[:token])) rescue false
