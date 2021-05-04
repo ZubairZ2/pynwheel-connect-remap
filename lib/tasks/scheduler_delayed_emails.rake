@@ -157,7 +157,7 @@ namespace :delayed_email_notifications do
 			android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
 			community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Self Tour" : "Pynwheel Self Tour"
 			# content = "<div style='vertical-align:middle; text-align:center'><img style='width: 150px; max-height: 55px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/> We look forward to having you visit our property(<b>#{community.name.humanize if community.present?}</b>) at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")} tomorrow for your self-guided tour. <br/>Download Pynwheel Self Tour:<br><a href=#{app_link} target='_blank'>Download Pynwheel Self Tour From App Store </a><br><a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play </a>. <br><br/><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a> <br>#{community.one_day_email_text}"
-			change_appointment = (community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce") ? ((community.phone.present? || community.email.present?) ? ("If you want to re-schedule or cancel your visit contact property at #{community.phone.present? ? community.phone : ""} #{(community.phone.present? and community.email.present?)  ? "or" : ""} email #{community.email.present? ? community.email : ""}.") : "") : "<a href='#{change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a>"
+			change_appointment = (show_contact community) ? ((community.phone.present? || community.email.present?) ? ("If you want to re-schedule or cancel your visit contact property at #{community.phone.present? ? community.phone : ""} #{(community.phone.present? and community.email.present?)  ? "or" : ""} email #{community.email.present? ? community.email : ""}.") : "") : "<a href='#{change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a>"
 			if community.tour.tour_setting.enable_header_footer
 				content = "Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive. <br>iPhone Users: <a href=#{app_link} target='_blank'>Download #{community_text} from the App Store</a><br>Android Users: <a href=#{app_link} target='_blank'>Download #{community_text} from Google Play</a><br>#{change_appointment}<br>#{community.one_day_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 			else
@@ -318,6 +318,13 @@ Open #{community_text} for Android #{android_link}
         #   end
 		# end
 		return tour_stops
+	end
+	def show_contact community
+		if community.credential.use_different_crm_provider && (community.crm_credential.crm_provider == "salesforce" || community.crm_credential.crm_provider == "yardirentcafe")
+			return true
+		else
+			return false
+		end
 	end
 
 
