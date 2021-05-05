@@ -619,10 +619,10 @@ class CommunitiesController < ApplicationController
       @tour_setting.save
       
       @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
-      @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
-      @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?
-      @community.one_hour_email_text = params[:community][:one_hour_email_text] if params[:community][:one_hour_email_text].present?
-      @community.thank_you_message = params[:community][:thank_you_message] if params[:community][:thank_you_message].present?
+      @community.email_text = params[:community][:email_text]
+      @community.one_day_email_text = params[:community][:one_day_email_text] 
+      @community.one_hour_email_text = params[:community][:one_hour_email_text]
+      @community.thank_you_message = params[:community][:thank_you_message]
       @community.arrive_too_early_alert = params[:community][:arrive_too_early_alert] if params[:community][:arrive_too_early_alert].present?
       @community.arrive_too_late_alert = params[:community][:arrive_too_late_alert] if params[:community][:arrive_too_late_alert].present?
       @community.unscheduled_alert = params[:community][:unscheduled_alert] if params[:community][:unscheduled_alert].present?
