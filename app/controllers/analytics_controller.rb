@@ -53,7 +53,9 @@ class AnalyticsController < ApplicationController
       opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :notes_opened_counter) 
       stops_per_tour(start_date, @days_count, @self_tour_records)
       visits_per_tour_stop(@self_tour_records)
-      #no_shows(start_date, @days_count, @self_tour_records)
+      @schedule_records = SchedualTour.where(is_tour_completed: false).where('tour_date > ? AND tour_date < ?',start_date.beginning_of_day, DateTime.now)
+      @days_count_for_schedule_records = return_total_days(start_date, Date.today) > 0 ? return_total_days(start_date, end_date) : 1
+      no_shows(start_date, @days_count_for_schedule_records, @schedule_records)
     end
     @start_date = start_date
     @end_date = end_date
@@ -587,40 +589,16 @@ class AnalyticsController < ApplicationController
       @session_each_day_hour_pages_data, @session_each_day_hour_pages_options = make_chart(hour_labels, hour_values, "Total Sessions", "rgba(255,252,187,0.8)", "rgba(255,252,187,1)")
     end
 
-    # def no_shows(start_date, end_date, days_count, total_records)
-    #   sessions_each_day_hash = return_empty_hash(days_count,start_date)      
-    #   tour_histories_start_datetime = total_records.where('arrived BETWEEN ? AND ?',start_date.yesterday, end_date.tomorrow).pluck(:arrived)
-    #   schedule_tours_date_and_time = SchedualTour.where('tour_date BETWEEN ? AND ?',start_date.to_date.yesterday, end_date.to_date.tomorrow).where(tour_user_id: tour_histories.map{|th| th.tour_user_id}).pluck(:tour_date, :tour_time)
-    #   schedule_tours_date_and_time = schedule_tours_date_and_time.map {|arr| [arr.first.to_s, arr.last.strftime('%H:%M:%S')]}
-    #   schedule_tours_datetime = schedule_tours_date_and_time.map {|arr| (arr.first + " " + arr.last).to_datetime}
-
-    #   max_grace_period = (Tour.where(id: (total_records.pluck(:tour_id))).grace_period).max
-    #   records_start_date = tour_histories_start_datetime.pluck(start_attr_name).map(&:to_date)
-    #   uniq_start_date = records_start_date.uniq
-    #   uniq_start_date_size = uniq_start_date.size
-
-    #   uniq_start_date_size.times do |i|
-    #     no_show_count = 0
-        
-        
-    #     sessions_each_day_hash[uniq_start_date[i]] = records_start_date.count(uniq_start_date[i])
-    #     records_start_date = records_start_date - [uniq_start_date[i]]
-    #   end
-    # end
-
     def no_shows(start_date, days_count, total_records)
       sessions_each_day_hash = return_empty_hash(days_count,start_date)      
-      
-      records_start_date = total_records.where(not_on_time: true).pluck(:arrived).map(&:to_date)
+      records_start_date = total_records.where(is_tour_completed: false).pluck(:tour_date)
       uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
-
       uniq_start_date_size.times do |i|
         sessions_each_day_hash[uniq_start_date[i]] = records_start_date.count(uniq_start_date[i])
         records_start_date = records_start_date - [uniq_start_date[i]]
       end
-      @no_show_count = total_records.where(not_on_time: true).count
+      @no_show_count = total_records.where(is_tour_completed: false).count
       @session_each_day_no_show_data, @session_each_day_no_show_options = make_bar_chart(sessions_each_day_hash.keys.map(&:to_s), sessions_each_day_hash.values, "Total Sessions", "rgba(255, 204, 203, 0.8)", "rgba(255, 204, 203, 1)")
     end
-
 end
