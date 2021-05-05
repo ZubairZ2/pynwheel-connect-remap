@@ -108,6 +108,21 @@
     border-color: #d8d8d8;
     border-width: 2px;
   }
+  @media screen and (min-width: 1300px) {
+    .add_minutes_span {
+      margin-left: -4%;
+    }
+  }
+  @media screen and (max-width: 1100px) {
+    .add_minutes_span {
+      margin-left: 4%;
+    }
+  }
+  @media screen and (min-width: 1101px, max-width: 1299px) {
+    .add_minutes_span {
+      margin-left: 0%;
+    }
+  }
 
 - content_for :title, "Self Tour Settings - Pynwheel"
 .divLoading.hidden
@@ -227,7 +242,7 @@
             /       %label.label-primary{:for => "show_checklist"}
             /       %span.pl-15 Yes 
             
-            .form-group{:class => "#{(@community.credential.present? and @community.crm_credential.present? and @community.crm_credential.crm_provider.present? and @community.crm_credential.crm_provider == "salesforce") ? 'hidden' : ''}"}
+            .form-group{:class => "#{(@community.is_salesforce_community?) ? 'hidden' : ''}"}
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Scheduler Tool
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
@@ -271,7 +286,7 @@
                       Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.tour.max_self_tour_users}
-            - if @tour_setting.allow_guided_tour.nil? || @tour_setting.allow_guided_tour
+            - if (@tour_setting.allow_guided_tour.nil? || @tour_setting.allow_guided_tour) && !@community.is_salesforce_community?
               .form-group.limit_max_tour_class.hidden
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Max Guided Tours at One Time
@@ -288,7 +303,7 @@
                     If a visitor stays on tour past the time allotted here, the property will get a notification to check in with them.
               .col-sm-12.col-lg-2.col-md-2.col-xs-12
                 %input.day-list.max-users-v.form-control{type: "number", id: "length_stay_limit", name: "length_stay_limit", min: "10", max:"300", value: @community.tour.tour_setting.length_stay_limit} 
-              .col-sm-12.col-lg-2.col-md-2.col-xs-12{:style => "margin-top: 13px; margin-left: -4%;"}
+              .col-sm-12.col-lg-2.col-md-2.col-xs-12.add_minutes_span{:style => "margin-top: 13px;"}
                 %span
                   Minutes
             
@@ -402,7 +417,7 @@
             .box-footer  
               = submit_tag 'Save', class: "btn btn-success pull-right mr-10", style: "margin-bottom: -36px;"
     ///////////////////// Scheduler Widget setting /////////////////////////
-    - if @community.scheduler_widget || @community.scheduler_widget.nil?
+    - if !@community.is_salesforce_community? && @community.scheduler_widget || @community.scheduler_widget.nil?
       .box.box-info.add-plan.mt-20#logo_header
         .box-header
           %h3.box-title
@@ -682,7 +697,7 @@
                     Save Time Order
       
     //////////////////////////------------------------------------ Guided  hours
-    - if @tour_setting.allow_guided_tour
+    - if !@community.is_salesforce_community? && @tour_setting.allow_guided_tour
       .box.box-info.add-plan.mt-20#logo_header
         .box-header
           %h3.box-title
@@ -823,7 +838,7 @@
                           Select how you would like your prospects to receive their notifications. We recommend selecting 'both'
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = collection_radio_buttons(:community, :alert_contact, Community.alert_contacts, :first, :first, {}, {class: "btn"})
-                - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
+                - if !@community.is_salesforce_community? && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -863,7 +878,7 @@
                           This message will be sent to guest after tour will end.
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
-                - if current_community.tour.only_scheduled_tour and (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
+                - if !@community.is_salesforce_community? && current_community.tour.only_scheduled_tour and (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -885,7 +900,7 @@
 
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :arrive_too_late_alert, :value=> @community.arrive_too_late_alert.nil? ? "I'm sorry! You have missed your scheduled appointment. Your tour was scheduled for <date>, <time>." : @community.arrive_too_late_alert , :class=>"form-control tag-check", :placeholder=>"Custom Message", :rows => 3
-                  - if current_community.scheduler_widget.nil? || current_community.scheduler_widget
+                  - if !@community.is_salesforce_community? && current_community.scheduler_widget.nil? || current_community.scheduler_widget
                     .col-lg-9.col-lg-offset-1
                       .form-group
                         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -896,7 +911,7 @@
 
                         .col-sm-12.col-lg-9.col-md-9.col-xs-12
                           = f.text_area :unscheduled_alert_with_widget, :value=> @community.unscheduled_alert_with_widget.nil? ? "I'm sorry! We only allow scheduled tours." : @community.unscheduled_alert_with_widget , :class=>"form-control tag-check", :placeholder=>"Custom Message", :rows => 3
-                  - else
+                  - elsif !@community.is_salesforce_community?
                     .col-lg-9.col-lg-offset-1
                       .form-group
                         %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -977,7 +992,6 @@
   });
 
   $("#sample_btn").css("font-family", $("#set_font option:selected").text());
-
 
 
   $('#genrate_link').click(function(){

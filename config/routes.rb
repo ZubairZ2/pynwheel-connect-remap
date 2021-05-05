@@ -225,6 +225,7 @@ Rails.application.routes.draw do
     end
     resources :tour_users do
         get :lock_ploting
+        get :visited_stops_data
         get :checkpoint_verification
     end
     resources :floorplates do
@@ -471,6 +472,7 @@ Rails.application.routes.draw do
           post :user_saved_tour
           get :tour_configrations
           get :tour_configrations_v1
+          post :check_lock_access
           get :tour_user_data
           get :ios_data
           get :minimum_data
