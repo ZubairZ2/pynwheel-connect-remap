@@ -29,9 +29,9 @@ class TourHistory < ApplicationRecord
 
   def send_arrival_notifications
     community = (Tour.find_by_id self.tour_id).community if self.tour_id.present?
-  	
+  	 verification_text = self.verified_by.present? ? "<br>They have successfully passed the ID verification process." : ""
     if community.present?
-      send_email_sms_or_both(["Visitor Has Arrived", "A Pynwheel Self Tour has begun for: \n #{self.tour_user.name} \n #{self.tour_user.email}"] , community)
+      send_email_sms_or_both(["A tour has begun", "#{self.tour_user.name.capitalize} has begun a tour of #{community.name}" + verification_text] , community)
     end
   end
 
