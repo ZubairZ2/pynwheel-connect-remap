@@ -185,8 +185,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community.save
       charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
       @tour_user.verified_by = params[:verfied_by_provider]
-      @tour_user.lock_access_time = Time.now.utc
-      @tour_user.save
+
       
       unless @tour_user.email == "Removed at Consumer Request"
         #####
@@ -203,7 +202,8 @@ class Api::V1::CommunitiesController < ActionController::Base
         # in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
         # is_tour_virtual = check_community_type(in_visiting_hours, @tours, @community, @tour_user)
         lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
-      
+        @tour_user.lock_access_time = current_time
+        @tour_user.save
       else
         render :json=> {:success=>false, :message => "Access Denied"}, :status=>500
       end
