@@ -667,6 +667,7 @@
                 if (data_array[vertices_count] != undefined)
                 {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
                                   html: true,
+                                  trigger: "hover",
                                   placement: 'top',
                                   template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name + (data_array[vertices_count][1].stop_pin == '' ? "" : ('<br><b>Access Code:</b>'+data_array[vertices_count][1].stop_pin)) +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> '+ lock_access_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                                 }).popover('show');}
@@ -693,6 +694,7 @@
               if (data_array[vertices_count] != undefined)
               {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
                             html: true,
+                            trigger: "hover",
                             placement: 'top',
                             template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name + (data_array[vertices_count][1].stop_pin == '' ? "" : ('<br><b>Access Code:</b>'+data_array[vertices_count][1].stop_pin)) +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> '+ lock_access_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                           }).popover('show');}
