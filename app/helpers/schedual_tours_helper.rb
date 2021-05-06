@@ -1,10 +1,13 @@
 module SchedualToursHelper
   def get_user_tour_stops (community, tour_user)
     if community.present? && community.tour.present?
-      unit_ids = community.tour.tour_stops.where(stop_type: "unit").pluck(:stop_id) 
+      unit_ids = TourStop.joins(:tour).where("stop_type =? AND tours.community_id =?", "unit", community.id).pluck(:stop_id) 
+      # unit_ids = community.tour.tour_stops.where(stop_type: "unit").pluck(:stop_id) 
       non_available_stops = unit_ids.present? ? Unit.where(id: unit_ids, available: false).ids : []
       
-      community.tour.tour_stops.where.not(stop_id: non_available_stops).order(:sort)
+      # Need to modify this query
+      TourStop.includes(:tour).where("tours.community_id  = ? AND stop_id != ?", community.id, non_available_stops).references(:tours).order(:sort)
+      # community.tour.tour_stops.where.not(stop_id: non_available_stops).order(:sort)
     else
       []
     end

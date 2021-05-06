@@ -7,7 +7,8 @@ class SchedualToursController < ApplicationController
   # GET /schedual_tours
   # GET /schedual_tours.json
   def index
-    @schedual_tours = SchedualTour.where(community_id: @community.id).where.not(tour_user_id: nil).order! 'created_at DESC' rescue ""
+    # @schedual_tours = SchedualTour.where(community_id: @community.id).where.not(tour_user_id: nil).order! 'created_at DESC' rescue ""
+    @schedual_tours = SchedualTour.desc_created_at.includes(:tour_user).joins(:community).where('community_id = ? and tour_user_id is not null', @community.id) rescue ""
   end
 
   # GET /schedual_tours/1

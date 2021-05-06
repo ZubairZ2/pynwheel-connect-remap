@@ -22,6 +22,8 @@ class SchedualTour < ApplicationRecord
   belongs_to :tour, optional: true
   belongs_to :community, optional: true
 
+  scope :desc_created_at, -> {order(created_at: :desc)}
+
   def add_user_in_zerv
     if self.tour_user_id.present? and community.enable_locks and community.multiple_locks_provider.include?("Zerv")
       Thread.new do

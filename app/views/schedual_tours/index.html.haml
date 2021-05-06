@@ -34,7 +34,7 @@
               
                 %tbody
                   - ind = 0
-                  - @schedual_tours.each_with_index  do |tour, index|
+                  - @schedual_tours.each_with_index do |tour|
                     - @tour_user = tour.tour_user
                     - if @tour_user.present?
                       .row
@@ -65,6 +65,10 @@
                           %td
                             = @tour_user.phone_number
                           %td{:style => "display: flex;"}
+                            -# = link_to community_custom_tour_path(current_community), remote: true, class: "btn btn-success custom-tour-btn", :onclick => "onEditButtonClick(#{tour.id})", "data-target" => "#customTourModal#{tour.id}", "data-toggle" => "modal", :href => "#" do
+                            -#   %i.fa.fa-edit.icon_size
+                            -# %a.btn.btn-success.custom-tour-btn{:onclick => "onEditButtonClick(#{tour.id})", "data-target" => "#customTourModal#{tour.id}", "data-toggle" => "modal", :href => "#"}
+                            -#   %i.fa.fa-edit.icon_size
                             = render :partial => 'custom_tour', :locals => {tour_user: @tour_user, tour: tour, community: @community, community_code: @community_code, community_tour_stops: community_tour_stops}
                             %a.btn.btn-danger{"data-name"=>"Tour","data-href" => "/communities/#{@community.id}/scheduled_tours/#{tour.id}?delete_type=page", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                               %i.fa.fa-trash.icon_size
@@ -81,7 +85,15 @@
 
 :javascript
   $(document).ready(function () {
-    $('#miyazaki').DataTable();
+    $('#miyazaki').DataTable(
+      //{
+      //paging: true,
+      //length: "15",
+      //serverSide: true,
+      //pagingType: 'full_numbers',
+      //searching: true
+      //}
+    );
     $('.dataTables_length').addClass('bs-select');
   });
   if(window.location.href.includes('userSearch'))
