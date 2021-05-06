@@ -400,7 +400,7 @@ module DweloDevicesHelper
 
 
     if response.success? and response.payload.present?
-      today_scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
+      today_scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and (b["Status__c"] == "Scheduled" || b["Status__c"] == "Confirmed" || b["Status__c"] == "Rescheduled") and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
       if tours_exist = today_scheduled_tours.present?
         on_time_tour = is_sf_tour_on_time(current_time, today_scheduled_tours, community.tour.grace_period, timezone)
         current_tour = on_time_tour
