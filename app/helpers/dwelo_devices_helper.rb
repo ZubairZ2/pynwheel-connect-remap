@@ -427,6 +427,7 @@ module DweloDevicesHelper
       else
         today_scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and (b["Status__c"] == "Scheduled" || b["Status__c"] == "Confirmed" || b["Status__c"] == "Rescheduled") and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
       end
+
       if tours_exist = today_scheduled_tours.present?
         on_time_tour = is_sf_tour_on_time(current_time, today_scheduled_tours, salesforce_grace_period, timezone)
         current_tour = on_time_tour
@@ -590,6 +591,12 @@ module DweloDevicesHelper
       community.tour.tour_stops.where(id: scheduled_tour.stops_list).pluck(:stop_id)
     else
       community.tour.tour_stops.where(display_stop: true).pluck(:stop_id)
+    end
+  end
+  def tour_user_arrival_email(tour_user, community)
+    emails = community.email.gsub(" ","").split(',')
+    emails.each do |email|
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email,"info@pynwheel.com").deliver
     end
   end
 end
