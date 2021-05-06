@@ -89,7 +89,8 @@ class Api::V1::DweloDevicesController < ActionController::Base
   end
 
   def base_url
-    "https://api.dwelo.com"
+    @community.dwelo.api_url
+    # "https://api.dwelo.com"
   end
 
   private
