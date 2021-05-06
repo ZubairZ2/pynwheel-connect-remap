@@ -362,7 +362,8 @@
 
       function onlyNumbers() {
         let pNum = $("#user_phone_number_field").val();
-        $("#user_phone_number_field").val(pNum.replace("+", ""));        
+        if(pNum)
+          $("#user_phone_number_field").val(pNum.replace("+", ""));        
       }
 
       $(document).ready(function(){
