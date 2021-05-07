@@ -151,13 +151,12 @@ class Api::V1::ToursController < ActionController::Base
         feedback = Feedback.where(tour_user_id: @tour_user.id).last
         show_feedback = if feedback.present? and feedback.is_cancelled == false
           false
-        elsif feedback.present? and feedback.is_cancelled and feedback.cancelled_at > 24.hours.ago
+        elsif feedback.present? and feedback.is_cancelled and feedback.cancelled_at.present? and (feedback.cancelled_at > 24.hours.ago)
           false
         else
           true
         end
-        arr << {feedback_option: show_feedback}
-        render :json=> {:success=>true, :message => "success", :data => arr}
+        render :json=> {:success=>true, :message => "success", :data => arr, :feedback_option => show_feedback}
 
       end
     end
@@ -175,7 +174,7 @@ class Api::V1::ToursController < ActionController::Base
         render json: { success: false, error_code: 400, message: "Something went wrong, please try again later", data: nil }
       end
     else
-      render json: { success: false, error_code: 400, message: "You already have been submitted feedback", data: nil }
+      render json: { success: false, error_code: 400, message: "You already have been submitted feedback"}
     end
   end
   def start_tour_auto_message
