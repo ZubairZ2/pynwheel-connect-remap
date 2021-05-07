@@ -137,7 +137,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       end
     end
   end
-  
+
   def lincoln_list_communities
     @allow_usage, @redirect_url = get_version_access params 
     if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
@@ -363,6 +363,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       # @tours = @tours.map{|h| h}[-4..-1].to_h
     end
   end
+
   def tour_user_data
     data = Hash.new
     access = grant_access (decoded(params[:token])) rescue false
@@ -380,7 +381,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       render :json=> {data: data, :status=>false, :message => "Invalid Token", code: 401}
     end
   end
-  
+
   def tour_configrations
     #################### Remember this call is being called twice for one of the usecase in mobile app #######################
     puts params

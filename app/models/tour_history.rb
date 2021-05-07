@@ -267,7 +267,6 @@ class TourHistory < ApplicationRecord
   		send_sms_tour_user thank_you_msg
   	end
   end
-
   def send_sms message_body
 	# begin
 	# 	DelayedSchedulerTextJob.perform_async(message_body, community.phone) if community.phone.present?
