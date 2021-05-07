@@ -11,6 +11,7 @@ namespace :triggered_email do
       diff = current_time.to_s(:time).to_time - tour.tour_time.to_s(:time).to_time 
       th = TourHistory.where(arrived: [(current_time - 3600)..current_time], tour_id: community.tour.id, tour_user_id: tu.id)
       
+      
       puts diff
       puts tour.id
       puts current_time
