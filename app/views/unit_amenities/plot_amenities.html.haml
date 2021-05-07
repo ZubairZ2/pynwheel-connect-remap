@@ -142,6 +142,50 @@
 -#                = f.submit "Save", :class=>"btn btn-primary"
 
 :javascript
+  $(document).ready(function () {
+    document.addEventListener("touchstart", touchHandler, true);
+    document.addEventListener("touchmove", touchHandler, true);
+    document.addEventListener("touchend", touchHandler, true);
+    document.addEventListener("touchcancel", touchHandler, true);
+    let elem = document.querySelector('#map');
+    window.mapPanZoom = panzoom(elem, {
+      minZoom: 0.5,
+      maxZoom: 1.0,
+      bounds: true,
+      boundsPadding: 0.3
+    });
+    var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+    var scaleFactor = (1 / (transform.scale || 1));
+    var previous_scale = 0;
+    while($('#map').width()/scaleFactor > $('.map-block').width()  || $('#map').height()/scaleFactor > $('.map-block').height()){
+       mapPanZoom.zoomInOut(189);
+           transform = mapPanZoom ? mapPanZoom.getTransform() : {};
+           scaleFactor = (1 / (transform.scale || 1));
+           if(scaleFactor === previous_scale)
+           {
+            break;
+           }
+           previous_scale = scaleFactor
+    }
+    mapPanZoom.moveTo(0,0);
+  })
+
+  function touchHandler(event) {
+    var touch = event.changedTouches[0];
+
+    var simulatedEvent = document.createEvent("MouseEvent");
+        simulatedEvent.initMouseEvent({
+        touchstart: "mousedown",
+        touchmove: "mousemove",
+        touchend: "mouseup"
+    }[event.type], true, true, window, 1,
+        touch.screenX, touch.screenY,
+        touch.clientX, touch.clientY, false,
+        false, false, false, 0, null);
+
+    touch.target.dispatchEvent(simulatedEvent);
+    // event.preventDefault();
+  }
   var floor = null;
   var arr = #{raw amenity_arr}
   var lmargin = 0
