@@ -244,6 +244,8 @@
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
           - if current_user.is_super_admin?
             %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
+
+            = link_to "Auto Plot <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Plot units automatically on the map</span></i>".html_safe , "/communities/#{@community.id}/auto_plot_units" , :class=>"btn btn-success loader_class"
       / /.box-header
       / form start
       %form.form-horizontal

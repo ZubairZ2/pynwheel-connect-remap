@@ -79,6 +79,7 @@ gem 'will_paginate'
 gem "breadcrumbs_on_rails"
 gem 'carrierwave-base64'
 gem "fog-aws"
+gem 'aws-sdk', '~> 3'
 #gem "fog"
 gem 'devise'
 gem 'devise_invitable'

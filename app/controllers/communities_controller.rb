@@ -532,6 +532,15 @@ class CommunitiesController < ApplicationController
     redirect_to plotexp_community_sitemaps_path(@community), notice: "All plots have been deleted successfully."
   end
 
+  def auto_plot_units
+    units = @community.units.where(floorplate_id: nil)
+    aws_ocr_detected_units = get_aws_ocr_detected_units(@community)
+    dimensions = get_image_dimensions(aws_ocr_detected_units, @community)
+    set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
+
+    redirect_to plotexp_community_sitemaps_path(@community), notice: "Auto Plotting is Done"
+  end
+
   def add_plots
     units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
     units.update_all(x_plot: params[:add_horizontal_position],y_plot: params[:add_vertical_position])
@@ -707,6 +716,69 @@ class CommunitiesController < ApplicationController
     expressionist = design.filter_panel ||  design.create_filter_panel 
   end
   private
+
+  def set_unit_markers_on_map(units, detected_units, img_dimensions)
+    detected_units.each do |detected_unit|
+      puts "------"*10
+      if detected_unit[:text].present? && detected_unit[:text].length > 2
+        puts detected_unit[:text]
+        puts detected_unit[:text].length
+
+        units.each do |unit|
+          puts "***"*10
+          puts unit[:marketing_name]
+          puts unit[:marketing_name].include?(detected_unit[:text])
+
+          if(unit[:marketing_name].include?(detected_unit[:text]))
+            x_position = detected_unit[:left] * img_dimensions[:width]
+            y_position = detected_unit[:top] * img_dimensions[:height]
+            unit.update(x_plot: x_position, y_plot: y_position)
+          end
+        end
+      end
+    end
+  end
+
+  def sliced_unit unit
+    if unit.present?
+      unit.slice((unit.index("-") + 1)..-1)
+    else
+      ""
+    end
+  end
+
+  def get_image_dimensions detected_units, community
+    if community.present? && community.sitemap.present? && community.sitemap.image.present? && community.sitemap.image.url.present?  
+      s3_img_dimensions(s3_img_url(community))
+    else
+      {}
+    end
+  end
+
+  def get_aws_ocr_detected_units community
+    #  !Rails.env.development? && 
+    #  community.sitemap.image.url
+
+    if community.present? && community.sitemap.present? && community.sitemap.image.present? && community.sitemap.image.url.present?
+      AwsTextract.aws_texract_ocr_service(s3_img_url(community))
+    else
+      []
+    end
+  end
+
+  def s3_img_dimensions url
+    img = MiniMagick::Image.open(url)
+
+    {
+      width: img[:width],
+      height: img[:height],
+    }
+  end
+
+  def s3_img_url community
+    # community.sitemap.image.url if community.sitemap.image.url.present?
+    "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1127/1575971020-floorplate_image.png"
+  end
 
   def show_chat_modal(tour_user_id, tour_id)
     @chatroom = Chatroom.find_by(tour_user_id: tour_user_id, tour_id: tour_id)
