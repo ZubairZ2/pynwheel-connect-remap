@@ -3,7 +3,9 @@
  * sitemap, floorplate, amenity map plotting
 */
 var hallways_coordinates = [];
-var algo_data = [];
+var algo_unit_data = [];
+var algo_amenity_data = [];
+var algo_access_point_data = [];
 var start_point_data = {};
 var tmp_id = 0;
 $(window).on('load', function () {
@@ -407,23 +409,22 @@ function automate_path() {
         draw_lines_between_door_and_hallways();
         draw_start_point_line();
     }, hallways_coordinates.length * 1200);
-    algo_data = [];
+    algo_unit_data = [];
+    algo_amenity_data = [];
     $(".line_hello").remove();
     for (var i = 0; i < hallways_coordinates.length; i++) {
-
-
         for (var j = 0; j < units_info.length; j++) {
             if (!$.isEmptyObject(units_info[j].unit_info.door)) {
                 var a = hallways_coordinates[i].x_plot - units_info[j].unit_info.door.x_plot;
                 var b = hallways_coordinates[i].y_plot - units_info[j].unit_info.door.y_plot;
                 var c = Math.sqrt(a * a + b * b);
                 if (i > 0) {
-                    index = algo_data.findIndex(x => x['door_id'] == units_info[j].unit_info.door.id);
-                    if (algo_data[index].distance > c) {
-                        algo_data[index].hallway_id = hallways_coordinates[i].id;
-                        algo_data[index].distance = c;
-                        algo_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
-                        algo_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
+                    index = algo_unit_data.findIndex(x => x['door_id'] == units_info[j].unit_info.door.id);
+                    if (algo_unit_data[index].distance > c) {
+                        algo_unit_data[index].hallway_id = hallways_coordinates[i].id;
+                        algo_unit_data[index].distance = c;
+                        algo_unit_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
+                        algo_unit_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
                     }
                 } else {
                     var obj = new Object();
@@ -435,7 +436,7 @@ function automate_path() {
                     obj.door_y_plot = units_info[j].unit_info.door.y_plot;
                     obj.distance = c;
                     obj.is_door = true;
-                    algo_data.push(obj);
+                    algo_unit_data.push(obj);
                 }
 
             } else {
@@ -443,12 +444,12 @@ function automate_path() {
                 var b = hallways_coordinates[i].y_plot - units_info[j].unit_info.unit.y_plot;
                 var c = Math.sqrt(a * a + b * b);
                 if (i > 0) {
-                    index = algo_data.findIndex(x => x['door_id'] == units_info[j].unit_info.unit.id);
-                    if (algo_data[index].distance > c) {
-                        algo_data[index].hallway_id = hallways_coordinates[i].id;
-                        algo_data[index].distance = c;
-                        algo_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
-                        algo_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
+                    index = algo_unit_data.findIndex(x => x['door_id'] == units_info[j].unit_info.unit.id);
+                    if (algo_unit_data[index].distance > c) {
+                        algo_unit_data[index].hallway_id = hallways_coordinates[i].id;
+                        algo_unit_data[index].distance = c;
+                        algo_unit_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
+                        algo_unit_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
                     }
                 } else {
                     var obj = new Object();
@@ -460,9 +461,65 @@ function automate_path() {
                     obj.door_y_plot = units_info[j].unit_info.unit.y_plot;
                     obj.distance = c;
                     obj.is_door = false;
-                    algo_data.push(obj);
+                    algo_unit_data.push(obj);
                 }
             }
+        }
+    }
+    for (var i = 0; i < hallways_coordinates.length; i++) {
+        for (var j = 0; j < amenities_info.length; j++) {
+            if (!$.isEmptyObject(amenities_info[j].amenity_info.door)) {
+                for (var k = 0; k < amenities_info[j].amenity_info.door.length; k++) {
+                    var a = hallways_coordinates[i].x_plot - amenities_info[j].amenity_info.door[k].x_plot;
+                    var b = hallways_coordinates[i].y_plot - amenities_info[j].amenity_info.door[k].y_plot;
+                    var c = Math.sqrt(a * a + b * b);
+                    if (i > 0) {
+                        index = algo_amenity_data.findIndex(x => x['door_id'] == amenities_info[j].amenity_info.door[k].id);
+                        if (algo_amenity_data[index].distance > c) {
+                            algo_amenity_data[index].hallway_id = hallways_coordinates[i].id;
+                            algo_amenity_data[index].distance = c;
+                            algo_amenity_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
+                            algo_amenity_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
+                        }
+                    } else {
+                        var obj = new Object();
+                        obj.hallway_id = hallways_coordinates[i].id;
+                        obj.hallway_x_plot = hallways_coordinates[i].x_plot;
+                        obj.hallway_y_plot = hallways_coordinates[i].y_plot;
+                        obj.door_id = amenities_info[j].amenity_info.door[k].id;
+                        obj.door_x_plot = amenities_info[j].amenity_info.door[k].x_plot;
+                        obj.door_y_plot = amenities_info[j].amenity_info.door[k].y_plot;
+                        obj.distance = c;
+                        obj.is_door = true;
+                        algo_amenity_data.push(obj);
+                    }
+                }
+            } else {
+                var a = hallways_coordinates[i].x_plot - amenities_info[j].amenity_info.amenity.x_plot;
+                var b = hallways_coordinates[i].y_plot - amenities_info[j].amenity_info.amenity.y_plot;
+                var c = Math.sqrt(a * a + b * b);
+                if (i > 0) {
+                    index = algo_amenity_data.findIndex(x => x['door_id'] == amenities_info[j].amenity_info.amenity.id);
+                    if (algo_amenity_data[index].distance > c) {
+                        algo_amenity_data[index].hallway_id = hallways_coordinates[i].id;
+                        algo_amenity_data[index].distance = c;
+                        algo_amenity_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
+                        algo_amenity_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
+                    }
+                } else {
+                    var obj = new Object();
+                    obj.hallway_id = hallways_coordinates[i].id;
+                    obj.hallway_x_plot = hallways_coordinates[i].x_plot;
+                    obj.hallway_y_plot = hallways_coordinates[i].y_plot;
+                    obj.door_id = amenities_info[j].amenity_info.amenity.id;
+                    obj.door_x_plot = amenities_info[j].amenity_info.amenity.x_plot;
+                    obj.door_y_plot = amenities_info[j].amenity_info.amenity.y_plot;
+                    obj.distance = c;
+                    obj.is_door = false;
+                    algo_amenity_data.push(obj);
+                }
+            }
+
         }
     }
     for (var i = 0; i < hallways_coordinates.length; i++) {
@@ -486,6 +543,46 @@ function automate_path() {
             start_point_data['distance'] = c;
         }
     }
+    algo_access_point_data = [];
+    for (var z = 0; z < access_points.length; z++) {
+        hallways_coordinates.forEach((first_hallway, index) => {
+            hallways_coordinates[index].next_points.forEach((element, i) => {
+                let second_hallway = hallways_coordinates.find(o => o.id == element);
+                var a1 = first_hallway.x_plot - access_points[z].x_plot;
+                var b1 = first_hallway.y_plot - access_points[z].y_plot;
+                var d1 = Math.sqrt(a1 * a1 + b1 * b1);
+                var a2 = second_hallway.x_plot - access_points[z].x_plot;
+                var b2 = second_hallway.y_plot - access_points[z].y_plot;
+                var d2 = Math.sqrt(a2 * a2 + b2 * b2);
+                if (z == algo_access_point_data.length) {
+                    var obj = new Object();
+                    obj.hallway_id_1 = first_hallway.id;
+                    obj.hallway_x_plot_1 = first_hallway.x_plot;
+                    obj.hallway_y_plot_1 = first_hallway.y_plot;
+                    obj.h1_access_point = d1;
+                    obj.hallway_id_2 = second_hallway.id;
+                    obj.hallway_x_plot_2 = second_hallway.x_plot;
+                    obj.hallway_y_plot_2 = second_hallway.y_plot;
+                    obj.h2_access_point = d2;
+                    obj.access_point_id = access_points[z].id;
+                    obj.access_point_x_plot = access_points[z].x_plot;
+                    obj.access_point_y_plot = access_points[z].y_plot;
+                    algo_access_point_data.push(obj);
+                } else {
+                    if (d1 < algo_access_point_data[z]['h1_access_point'] && d2 < algo_access_point_data[z]['h2_access_point']) {
+                        algo_access_point_data[z]['hallway_id_1'] = first_hallway.id;
+                        algo_access_point_data[z]['hallway_x_plot_1'] = first_hallway.x_plot;
+                        algo_access_point_data[z]['hallway_y_plot_1'] = first_hallway.y_plot;
+                        algo_access_point_data[z]['h1_access_point'] = d1;
+                        algo_access_point_data[z]['hallway_id_2'] = second_hallway.id;
+                        algo_access_point_data[z]['hallway_x_plot_2'] = second_hallway.x_plot;
+                        algo_access_point_data[z]['hallway_y_plot_2'] = second_hallway.y_plot;
+                        algo_access_point_data[z]['h2_access_point'] = d2;
+                    }
+                }
+            });
+        });
+    }
 }
 
 function draw_start_point_line() {
@@ -505,16 +602,59 @@ function draw_start_point_line() {
 
 function draw_lines_between_door_and_hallways() {
 
-    for (var i = 0; i < algo_data.length; i++) {
-        x0 = algo_data[i].door_x_plot + 17
-        y0 = algo_data[i].door_y_plot + 17
-        x1 = algo_data[i].hallway_x_plot + 8
-        y1 = algo_data[i].hallway_y_plot + 8
+    for (var i = 0; i < algo_unit_data.length; i++) {
+        x0 = algo_unit_data[i].door_x_plot + 17
+        y0 = algo_unit_data[i].door_y_plot + 17
+        x1 = algo_unit_data[i].hallway_x_plot + 8
+        y1 = algo_unit_data[i].hallway_y_plot + 8
 
         $(".plot-image").line(x0, y0, x1, y1, {
             zindex: 99,
             color: '#008000',
             stroke: "5",
+            style: "solid",
+            class: "line_hello"
+        });
+    }
+
+    for (var i = 0; i < algo_amenity_data.length; i++) {
+        x0 = algo_amenity_data[i].door_x_plot + 17
+        y0 = algo_amenity_data[i].door_y_plot + 17
+        x1 = algo_amenity_data[i].hallway_x_plot + 8
+        y1 = algo_amenity_data[i].hallway_y_plot + 8
+
+        $(".plot-image").line(x0, y0, x1, y1, {
+            zindex: 99,
+            color: '#008000',
+            stroke: "5",
+            style: "solid",
+            class: "line_hello"
+        });
+    }
+
+    for (var i = 0; i < algo_access_point_data.length; i++) {
+        x0 = algo_access_point_data[i].hallway_x_plot_1 + 8
+        y0 = algo_access_point_data[i].hallway_y_plot_1 + 8
+        x1 = algo_access_point_data[i].access_point_x_plot + 8
+        y1 = algo_access_point_data[i].access_point_y_plot + 8
+
+        $(".plot-image").line(x0, y0, x1, y1, {
+            zindex: 99,
+            color: '#FF0000',
+            stroke: "3",
+            style: "solid",
+            class: "line_hello"
+        });
+
+        x0 = algo_access_point_data[i].hallway_x_plot_2 + 8
+        y0 = algo_access_point_data[i].hallway_y_plot_2 + 8
+        x1 = algo_access_point_data[i].access_point_x_plot + 8
+        y1 = algo_access_point_data[i].access_point_y_plot + 8
+
+        $(".plot-image").line(x0, y0, x1, y1, {
+            zindex: 99,
+            color: '#FF0000',
+            stroke: "3",
             style: "solid",
             class: "line_hello"
         });
@@ -565,3 +705,52 @@ var delayed = (function () {
         }
     };
 }());
+
+function run_algo() {
+    console.log("Hello");
+    // var new_data = [];
+    // hallways_coordinates.forEach((point, index) => {
+    //     var new_point = new Object();
+    //     new_point.id = point.id;
+    //     new_point.x_plot = point.x_plot;
+    //     new_point.y_plot = point.y_plot;
+    //     new_point.selected = point.selected;
+    //     new_point.parent_id = point.parent_id;
+    //     new_point.parent_type = point.parent_type;
+    //     new_point.next_points = point.next_points;
+    //     new_point.next_points_distance = [];
+    //     hallways_coordinates[index].next_points.forEach((element, i) => {
+    //         let obj = hallways_coordinates.find(o => o.id == element);
+    //         var id = obj.id.toString();
+    //         var a = point.x_plot - obj.x_plot;
+    //         var b = point.y_plot - obj.y_plot;
+    //         var c = Math.sqrt(a * a + b * b);
+    //         temp = {[id]: c};
+    //         new_point.next_points_distance.push(temp);
+    //     });
+    //     new_data.push(new_point);
+    // });
+    var new_data = {};
+    hallways_coordinates.forEach((point, index) => {
+        var new_point = new Object();
+        new_point.id = point.id;
+        new_point.x_plot = point.x_plot;
+        new_point.y_plot = point.y_plot;
+        new_point.selected = point.selected;
+        new_point.parent_id = point.parent_id;
+        new_point.parent_type = point.parent_type;
+        new_point.next_points = point.next_points;
+        new_point.next_points_distance = [];
+        hallways_coordinates[index].next_points.forEach((element, i) => {
+            let obj = hallways_coordinates.find(o => o.id == element);
+            var id = obj.id.toString();
+            var a = point.x_plot - obj.x_plot;
+            var b = point.y_plot - obj.y_plot;
+            var c = Math.sqrt(a * a + b * b);
+            temp = {[id]: c};
+            new_point.next_points_distance.push(temp);
+        });
+        new_data.push(new_point);
+    });
+    debugger;
+}

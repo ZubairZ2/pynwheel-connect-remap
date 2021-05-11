@@ -95,6 +95,7 @@ class FloorplateAmenitiesController < ApplicationController
   end
 
   def plot_amenities
+
     @floor = params[:floor] if params[:floor].present?
     add_breadcrumb "Floorplates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Amenities", plot_amenities_community_floorplate_amenities_path(@community, @floorplate)
@@ -106,6 +107,7 @@ class FloorplateAmenitiesController < ApplicationController
     @all_locks              = all_locks(@community)
 
     @amenity_with_doors = []
+
     @amenities_doors        = @floorplate.amenities.includes(:doors)
 
     @amenities_doors.each do |amenity|    # following json is created same as with unit to reuse the unit's code.
