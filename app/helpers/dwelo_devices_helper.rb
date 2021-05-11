@@ -2,7 +2,7 @@ module DweloDevicesHelper
   def dwelo_client_credentials(community_dwelo_account)
     @dwelo_user = Dwelo.find_by(community_id: community_dwelo_account.community_id)
     if @dwelo_user.present?
-      auth_url = "https://api.dwelo.com/v3/oauth/access_token"
+      auth_url = base_url + "/v3/oauth/access_token"
       get_token_response = HTTParty.post(auth_url,
                                          body: {
                                              client_id: community_dwelo_account.client_id,
@@ -136,7 +136,8 @@ module DweloDevicesHelper
   end
 
   def base_url
-    "https://api.dwelo.com"
+    @community.dwelo.api_url
+    # "https://api.dwelo.com"
   end
 
 

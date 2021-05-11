@@ -1,5 +1,13 @@
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    API URL
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    - if @community.dwelo.present?
+      = f.text_field :api_url, :class=>"form-control" , value: @community.dwelo.api_url, :placeholder=>"API URL", :required => true
+    - else
+      = f.text_field :api_url, :class=>"form-control", :placeholder=>"API URL", :required => true
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Community ID
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     -if @community.dwelo.present?
