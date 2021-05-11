@@ -314,7 +314,7 @@ end
     end
   end
 
-  def send_email_tour_user subj, body, community_email, community
+  def send_email_tour_user subj, body, community_email
     begin
       emails = community_email.gsub(" ","").split(',')
       NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0]).deliver
