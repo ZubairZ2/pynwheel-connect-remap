@@ -185,8 +185,11 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community.save
       charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
       @tour_user.verified_by = params[:verfied_by_provider]
+      @tour_user.verified_at = params[:verified_at]
+      if @tour_user.verified_by.present? && (@tour_user.verified_at && @tour_user.verified_at > 30.days.ago)
+        @tour_user.update_attributes(is_verified: true)
+      end
 
-      
       unless @tour_user.email == "Removed at Consumer Request"
         #####
         @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact

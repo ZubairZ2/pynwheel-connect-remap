@@ -148,6 +148,19 @@ module CommunitiesHelper
     community.tour.verification_type == "authenteq" && community.tour.tour_setting.charge_user_for_id_verfication && community.tour.visual_id_verification && tour_user.strip_customer_id.blank?
   end
 
-  
+  def check_visual_id_verification(tour_user, community)
+    @tour_type = tour_user.tour_type
+    @verified_at = tour_user.verified_at
+    @is_verified = tour_user.is_verified
+    if @tour_type != "virtual_tour" and @verified_at.nil? and @is_verified == false
+      community.tour.visual_id_verification
+    elsif @tour_type != "virtual_tour" and (@verified_at and @verified_at > 30.days.ago) and @is_verified == true
+      false
+    elsif @tour_type != "virtual_tour" and @is_verified == true and (@verified_at and @verified_at < 30.days.ago)
+      community.tour.visual_id_verification
+    else
+      false
+    end
+  end
 
 end

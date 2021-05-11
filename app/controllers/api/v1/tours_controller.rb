@@ -217,7 +217,7 @@ iPhone Users:
     if tu.blank?
       tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false)
     else
-      tu.update_attributes(name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false)
+      tu.update_attributes(name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false, is_verified: false, verified_at: nil)
     end
 
     begin
