@@ -362,7 +362,8 @@
 
       function onlyNumbers() {
         let pNum = $("#user_phone_number_field").val();
-        $("#user_phone_number_field").val(pNum.replace("+", ""));        
+        if(pNum)
+          $("#user_phone_number_field").val(pNum.replace("+", ""));        
       }
 
       $(document).ready(function(){
@@ -381,7 +382,7 @@
           }
           else
           {
-            // $('#schedule_btn').removeClass('hidden');
+            $('#schedule_btn').removeClass('hidden');
           }
           document.getElementById('user_time_zone').value = jstz.determine().name();
           // -new Date().getTimezoneOffset()/60;
