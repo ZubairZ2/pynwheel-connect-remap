@@ -338,7 +338,8 @@ class RemoteLockService < BaseService
     end
 
     def base_url
-        community.dwelo.api_url
+        community = @edge_state_user.community.dwelo
+        community.present? ? community.dwelo.api_url : "https://api.remotelock.com"
         # "https://api.remotelock.com"
     end
 end
