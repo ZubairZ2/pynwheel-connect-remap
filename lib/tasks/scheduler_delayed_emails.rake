@@ -2,7 +2,7 @@ namespace :delayed_email_notifications do
 	include Rails.application.routes.url_helpers
 	# default_url_options[:host] = 'http://localhost:3000'
 	default_url_options[:host] = 'https://pynwheelconnect.com' 
-	# default_url_options[:host] = 'https://pynwheelapp.com' if Rails.env.production?
+	# default_url_options[:host] = 'https://pynwheelconnect.com' if Rails.env.production?
 
 	desc "This delayed email task is called every day by the Heroku scheduler add-on"
 
