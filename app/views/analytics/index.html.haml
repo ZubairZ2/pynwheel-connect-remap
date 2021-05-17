@@ -25,26 +25,26 @@
         .row
           .col-xl-4.col-lg-4
             %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Communities
-            = select_tag 'communities', options_for_select(communities_list(current_user), community_id),:class=>"form-control filter_select2", :include_blank => 'Select any community'
+            = select_tag 'communities', options_for_select(communities_list(current_user), community_id), { :class=>"form-control filter_select2", :include_blank => 'Select any community', :style => "width: 100%" }
           .col-xl-4.col-lg-4
             %h4 Product Type
-            = select_tag 'product_type', options_for_select(product_type, product_type_selected),:class=>"form-control filter_select2"
+            = select_tag 'product_type', options_for_select(product_type, product_type_selected), { :class=>"form-control filter_select2", :style => "width: 100%" }
           .col-xl-4.col-lg-4
             %h4 TimeFrame
-            = text_field_tag 'timeframe', nil, class: 'date_range_filter'
+            = text_field_tag 'timeframe', nil, { class: 'date_range_filter', :style => "width: 100%" }
         - unless current_user.is_comm_admin? || current_user.is_community_manager?
           .row
             - if current_user.is_super_admin? || current_user.is_dwelo_admin? || current_user.is_company_admin?
               .col-xl-4.col-lg-4
                 %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Companies
-                = select_tag 'companies', options_for_select(companies_list(current_user), company_id),:class=>"form-control filter_select2", :include_blank => 'Select any company'
+                = select_tag 'companies', options_for_select(companies_list(current_user), company_id),{ :class=>"form-control filter_select2", :include_blank => 'Select any company', :style => "width: 100%" }
               .col-xl-4.col-lg-4
                 %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Regions
-                = select_tag 'regions', options_for_select(regions_list(current_user), region_id),:class=>"form-control filter_select2", :include_blank => 'Select any region'
+                = select_tag 'regions', options_for_select(regions_list(current_user), region_id),{:class=>"form-control filter_select2", :include_blank => 'Select any region', :style => "width: 100%" }
             - if current_user.is_super_admin?
               .col-xl-4.col-lg-4
                 %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Admin Type
-                = select_tag 'admin_type', options_for_select(admin_type, admin_type_selected),:class=>"form-control filter_select2", :include_blank => 'Select admin type'
+                = select_tag 'admin_type', options_for_select(admin_type, admin_type_selected),{:class=>"form-control filter_select2", :include_blank => 'Select admin type', :style => "width: 100%" }
 
     - if @product_type == "all" || @product_type == "maps"
       .box.box-info.add-plan.mt-20

@@ -1,6 +1,8 @@
 $(document).ready(function() {
   if ($(".filter_select2").length > 0){
-    $('.filter_select2').select2();
+    $('.filter_select2').select2({
+      width: 'resolve'
+    });
     default_method();
     $('#no-sidemenu .breadcrumb').css('display', 'block')
     $('#no-sidemenu .breadcrumb').css('margin', '0px')
