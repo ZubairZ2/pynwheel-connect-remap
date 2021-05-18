@@ -67,6 +67,13 @@ class PsiSwapService < BaseService
       if unit.count > 1
         unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],building: u["Units"]["Unit"]["BuildingName"].present? ? u["Units"]["Unit"]["BuildingName"].gsub("Building ", "") : "")
       end
+
+      puts "******************psi swap*******************"*20
+      puts unit.inspect
+      puts "*************************************"*20
+
+
+
       if unit.present?
         unit = unit.first
         unit.provider = "psi_new"
