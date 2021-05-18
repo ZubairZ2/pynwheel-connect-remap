@@ -7,7 +7,7 @@ class AnalyticsController < ApplicationController
     @days_count = return_total_days(start_date, end_date) > 0 ? return_total_days(start_date, end_date) : 1
     @maps_records = TrackSession.where.not(end_datetime: nil).where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @metro_records = TrackSession.where.not(end_datetime: nil).where(track_session_type: "metro").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
-    @self_tour_records = TourHistory.where.not(left: nil).where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
+    @self_tour_records = TourHistory.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
     # For Webpage
