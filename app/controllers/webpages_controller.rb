@@ -1,5 +1,5 @@
 class WebpagesController < ActionController::Base
-  include Error::ErrorHandler
+  #include Error::ErrorHandler
   before_action :set_community, except: [:update_session]
   after_action :maintain_session, except: [:update_session]
   protect_from_forgery :except => [:update_session]
