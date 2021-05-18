@@ -1,5 +1,5 @@
 class CommunityGroupsController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   def index
     @community_groups = alphabetical_sort(CommunityGroup.where(company_id: current_company.id))
   end

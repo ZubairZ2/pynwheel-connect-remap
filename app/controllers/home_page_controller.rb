@@ -1,5 +1,5 @@
 class HomePageController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   add_breadcrumb "Home", :root_path
   before_action :check_community
   add_breadcrumb "Home Page", :community_home_page_index_path

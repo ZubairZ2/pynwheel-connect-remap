@@ -1,5 +1,5 @@
 class TourUsersController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   before_action :check_community
   before_action :breadCrumb
   skip_before_action :load_tour_users_chats, only: [:lock_ploting]

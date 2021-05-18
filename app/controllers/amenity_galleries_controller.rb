@@ -1,5 +1,5 @@
 class AmenityGalleriesController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   def edit
     @community = Community.find params[:community_id]
     @amenity = Amenity.find params[:amenity_id]

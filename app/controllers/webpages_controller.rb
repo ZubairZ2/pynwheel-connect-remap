@@ -1,5 +1,5 @@
 class WebpagesController < ActionController::Base
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   before_action :set_community
 
   def index
