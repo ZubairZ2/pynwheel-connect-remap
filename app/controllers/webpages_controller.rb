@@ -1,5 +1,5 @@
 class WebpagesController < ActionController::Base
-  #include Error::ErrorHandler
+  include Error::ErrorHandler
   before_action :set_community, except: [:update_session]
   after_action :maintain_session, except: [:update_session]
   protect_from_forgery :except => [:update_session]
@@ -171,7 +171,7 @@ class WebpagesController < ActionController::Base
   def update_session
     track_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
     track_session.update_column(:end_datetime, session[:last_active_datetime].to_datetime)
-    #reset_session
+    reset_session
     session[:last_active_datetime] = nil
     puts " ---------------------- Track Session Completed --------------------------------"
   end
