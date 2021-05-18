@@ -149,12 +149,12 @@
   var amenity_type = "floorplan"
   function floorplan_plotting_goBack()
   {
-     if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
+    if (window.history.length)
+    {
+    window.location.reload();
+    }
+    else
+    {
+    window.history.back();
+    }
   }
