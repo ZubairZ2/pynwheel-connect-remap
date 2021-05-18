@@ -230,7 +230,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
   private
   def base_url
-    Rails.env.development? ? "localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/") 
+    Rails.env.development? ? "localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelconnect.com/") 
   end
   def convert_epoch_to_datetime epoch_str
     Time.strptime(epoch_str, '%s')

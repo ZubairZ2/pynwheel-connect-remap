@@ -36,7 +36,7 @@ class WebpagesController < ActionController::Base
   end
   def get_scheduler_link
     community_code = get_community_code @community
-    base_url =  Rails.env.development? ? "http://localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/")
+    base_url =  Rails.env.development? ? "http://localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelconnect.com/")
     return "#{base_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
   end
 
@@ -70,7 +70,13 @@ class WebpagesController < ActionController::Base
     minimum_square_feet = @units_with_floorplan_info.min_by{|k| k[:square_feet] }[:square_feet]
     @square_feet = []
     square_feet_range = minimum_square_feet.to_i..maximum_square_feet.to_i
-    square_feet_range_hash = square_feet_range.each_slice((square_feet_range.last/4 > 0 ? square_feet_range.last/4 : 1)).with_index.with_object({}) { |(a,i),h| h[a.first.to_i.to_s+'-'+maximum_square_feet.to_f.ceil.to_s]=a.first }
+    square_feet_range_hash = {}
+    slice = square_feet_range.last/4 > 0 ? square_feet_range.last/4 : 1
+    starting_value = minimum_square_feet
+    while starting_value <= maximum_square_feet
+      square_feet_range_hash[starting_value.to_i.to_s+'-'+maximum_square_feet.to_f.ceil.to_s] = starting_value.to_i
+      starting_value += slice
+    end
     square_feet_range_hash = square_feet_range_hash.invert
     square_feet_range_hash.each do |v|
       @square_feet << v

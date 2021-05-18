@@ -56,7 +56,7 @@ class TourHistory < ApplicationRecord
       if self.left and !self.is_left
         self.update_columns(is_left: true)
         @mail_content = ["tour_has_ended", "#{self.tour_user.name.capitalize} has completed a tour of #{community.name}"] #get_alert_message('tour_has_ended')
-        url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
+        url = Rails.env.production? ? "https://pynwheelconnect.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
         # @mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}" + "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
 
         touruser = self.tour_user
@@ -69,7 +69,7 @@ class TourHistory < ApplicationRecord
           end
         end 
 
-        tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}"
+        tour_user_url = Rails.env.production? ? "https://pynwheelconnect.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}"
         @complete_tour_content = ["#{community.name} has been visited", "#{touruser.name.capitalize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.capitalize} Visitor Details</a> "]
         @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         tour_user_remotelock_data(community)
@@ -314,7 +314,7 @@ class TourHistory < ApplicationRecord
     end
   end
 
-  def send_email_tour_user subj, body, community_email, community
+  def send_email_tour_user subj, body, community_email
     begin
       emails = community_email.gsub(" ","").split(',')
       NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0],community,true).deliver
