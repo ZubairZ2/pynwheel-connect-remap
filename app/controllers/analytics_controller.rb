@@ -8,6 +8,7 @@ class AnalyticsController < ApplicationController
     @maps_records = TrackSession.where.not(end_datetime: nil).where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @metro_records = TrackSession.where.not(end_datetime: nil).where(track_session_type: "metro").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records = TourHistory.where.not(left: nil).where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
+    @self_tour_records_all = TourHistory.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
     # For Webpage
@@ -46,7 +47,6 @@ class AnalyticsController < ApplicationController
       apply_clicks_track_session(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
       see_availability_session(start_date, @days_count, @self_tour_records)
       tour_site_or_tour_state_session(start_date, @days_count, @self_tour_records, :tour_site)
-      tour_site_or_tour_state_session(start_date, @days_count, @self_tour_records, :tour_state)
       tour_type_session(start_date, @days_count, @self_tour_records) 
       price_opened_track_session(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
       opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :camera_opened_counter) 
@@ -56,6 +56,9 @@ class AnalyticsController < ApplicationController
       @schedule_records = SchedualTour.where(is_tour_completed: false).where('tour_date > ? AND tour_date < ?',start_date.beginning_of_day, DateTime.now)
       @days_count_for_schedule_records = return_total_days(start_date, Date.today) > 0 ? return_total_days(start_date, end_date) : 1
       no_shows(start_date, @days_count_for_schedule_records, @schedule_records)
+    end
+    if @self_tour_records_all.any? && (@product_type == "all" || @product_type == "self_tour")
+      tour_site_or_tour_state_session(start_date, @days_count, @self_tour_records_all, :tour_state)
     end
     @start_date = start_date
     @end_date = end_date
