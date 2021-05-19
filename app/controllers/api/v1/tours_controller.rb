@@ -392,10 +392,6 @@ iPhone Users:
           tu = TourUser.find(params[:tour_user_id]) 
           customer_id =  create_customer(tu.email, response[:id]).id
           tu.update(strip_customer_id: customer_id, card_last_digits: response[:card][:last4])
-          res = charge_customer(tu, 50, "Escrow Payment", 'usd')
-
-          sleep 2
-          pay_back = refund_customer(tu, res[:id])
 
           render :json => { :success => true, :message => "Tour User Card Information Saved Successfully" }
         rescue Stripe::CardError => e
