@@ -226,4 +226,29 @@ def make_bar_chart(session_each_day_labels, session_each_day_counts, label, back
     end
     return str
   end
+
+  def get_community_time_zone(community)
+    tz = Ziptz.new
+    timezone = nil
+
+    if community.latitude.present? and community.longitude.present?
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and community.zip.present?
+      timezone = tz.time_zone_name(community.zip)
+    end
+
+    return timezone
+  rescue
+    return "UTC"
+  end
+
+  def return_community_datetime(datetime, community_id)
+    community = Community.find community_id  
+    time_zone = get_community_time_zone(community)
+    return (Time.zone.parse(datetime.to_s).in_time_zone(time_zone).to_datetime)
+  end
+
 end
