@@ -2,6 +2,7 @@ class WebpagesController < ActionController::Base
   include Error::ErrorHandler
   before_action :set_community, except: [:update_session]
   after_action :maintain_session, except: [:update_session]
+  before_action :set_timezone, except: [:update_session]
   protect_from_forgery :except => [:update_session]
   def index
     @floorplans = []
@@ -170,7 +171,7 @@ class WebpagesController < ActionController::Base
 
   def update_session
     track_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
-    track_session.update_column(:end_datetime, session[:last_active_datetime].to_datetime)
+    track_session.update_column(:end_datetime, return_community_datetime(session[:last_active_datetime]))
     reset_session
     session[:last_active_datetime] = nil
     puts " ---------------------- Track Session Completed --------------------------------"
@@ -194,7 +195,7 @@ class WebpagesController < ActionController::Base
   def return_last_maps_session
     # every time you close browser new session id will create
     if session[:last_active_datetime].nil?
-      session[:last_active_datetime] = DateTime.now
+      session[:last_active_datetime] = fetch_datetime
       session_nil = true
     end
     # Make a new session if not found or session limit expire otherwise retrurn last session 
@@ -202,7 +203,7 @@ class WebpagesController < ActionController::Base
       session_nil = false
       if TrackSession.where(session_id: cookies[:webpages_session_id]).any? && TrackSession.where(session_id: cookies[:webpages_session_id]).last.end_datetime.nil?
         last_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
-        last_date_time = cookies[:coo_last_active_datetime].present? ? cookies[:coo_last_active_datetime].to_datetime + 1.minutes : last_session.start_datetime + 10.minutes
+        last_date_time = cookies[:coo_last_active_datetime].present? ? return_community_datetime(cookies[:coo_last_active_datetime]) + 1.minutes : return_community_datetime(last_session.start_datetime.to_s) + 10.minutes
         last_session.update_column(:end_datetime, last_date_time)
         track_session = return_new_session 
       else
@@ -210,10 +211,10 @@ class WebpagesController < ActionController::Base
       end
     elsif TrackSession.where(session_id: cookies[:webpages_session_id]).last.end_datetime.present? 
         track_session = return_new_session 
-    elsif session_datetime_not_in_limit?(session[:last_active_datetime].to_datetime)
+    elsif session_datetime_not_in_limit?(return_community_datetime(session[:last_active_datetime]))
       if TrackSession.where(session_id: cookies[:webpages_session_id]).last.end_datetime.nil?
         last_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
-        last_session.update_column(:end_datetime, (session[:last_active_datetime].to_datetime + 10.minutes) )
+        last_session.update_column(:end_datetime, (return_community_datetime(session[:last_active_datetime]) + 10.minutes) )
         track_session = return_new_session 
       else
         track_session = return_new_session
@@ -221,13 +222,13 @@ class WebpagesController < ActionController::Base
     else
       track_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
     end
-    session[:last_active_datetime] = DateTime.now
-    cookies.permanent[:coo_last_active_datetime] = DateTime.now
+    session[:last_active_datetime] = fetch_datetime
+    cookies.permanent[:coo_last_active_datetime] = fetch_datetime
     track_session
   end
 
   def return_new_session
-    TrackSession.new(start_datetime: (DateTime.now), track_session_type: "maps", community_id: @community.id,session_id: cookies[:webpages_session_id])
+    TrackSession.new(start_datetime: (fetch_datetime), track_session_type: "maps", community_id: @community.id, community_time_zone: @timezone,session_id: cookies[:webpages_session_id])
   end
 
   def manage_session_info(session)
@@ -249,8 +250,37 @@ class WebpagesController < ActionController::Base
   end
 
   def session_datetime_not_in_limit?(session_datetime)
-   current_datetime = DateTime.now
+   current_datetime = fetch_datetime
    (current_datetime - session_datetime) > 10.minutes # return true to make a new record
   end
   
+  def get_community_time_zone(community)
+    tz = Ziptz.new
+    timezone = nil
+
+    if community.latitude.present? and community.longitude.present?
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and community.zip.present?
+      timezone = tz.time_zone_name(community.zip)
+    end
+
+    return timezone
+  rescue
+    return "UTC"
+  end
+
+  def set_timezone
+    @timezone = get_community_time_zone(@community)
+  end
+
+  def fetch_datetime
+    Time.zone.now.utc.in_time_zone(@timezone)
+  end
+
+  def return_community_datetime(datetime)
+    Time.zone.parse(datetime).in_time_zone(@timezone).to_datetime
+  end
 end

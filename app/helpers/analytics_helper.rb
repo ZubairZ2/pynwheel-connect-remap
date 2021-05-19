@@ -226,4 +226,9 @@ def make_bar_chart(session_each_day_labels, session_each_day_counts, label, back
     end
     return str
   end
+  
+  def return_community_datetime(datetime, community_time_zone)
+    return (Time.zone.parse(datetime.to_s).in_time_zone(community_time_zone).to_datetime)
+  end
+
 end
