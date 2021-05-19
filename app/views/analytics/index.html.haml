@@ -22,22 +22,17 @@
           Filters
 
       .box-body
-        .row
-          .col-xl-4.col-lg-4
-            %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Communities
-            = select_tag 'communities', options_for_select(communities_list(current_user), community_id), { :class=>"form-control filter_select2", :include_blank => 'Select any community', :style => "width: 100%" }
-          .col-xl-4.col-lg-4
-            %h4 Product Type
-            = select_tag 'product_type', options_for_select(product_type, product_type_selected), { :class=>"form-control filter_select2", :style => "width: 100%" }
-          .col-xl-4.col-lg-4
-            %h4 TimeFrame
-            = text_field_tag 'timeframe', nil, { class: 'date_range_filter', :style => "width: 100%" }
         - unless current_user.is_comm_admin? || current_user.is_community_manager?
           .row
             - if current_user.is_super_admin? || current_user.is_dwelo_admin? || current_user.is_company_admin?
-              .col-xl-4.col-lg-4
-                %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Companies
-                = select_tag 'companies', options_for_select(companies_list(current_user), company_id),{ :class=>"form-control filter_select2", :include_blank => 'Select any company', :style => "width: 100%" }
+              - unless current_user.is_company_admin?
+                .col-xl-4.col-lg-4
+                  %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Companies
+                  = select_tag 'companies', options_for_select(companies_list(current_user), company_id),{ :class=>"form-control filter_select2", :include_blank => 'Select any company', :style => "width: 100%" }
+              - if current_user.is_company_admin?
+                .col-xl-4.col-lg-4
+                  %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Communities
+                  = select_tag 'communities', options_for_select(communities_list(current_user), community_id), { :class=>"form-control filter_select2", :include_blank => 'Select any community', :style => "width: 100%" }
               .col-xl-4.col-lg-4
                 %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Regions
                 = select_tag 'regions', options_for_select(regions_list(current_user), region_id),{:class=>"form-control filter_select2", :include_blank => 'Select any region', :style => "width: 100%" }
@@ -45,6 +40,22 @@
               .col-xl-4.col-lg-4
                 %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Admin Type
                 = select_tag 'admin_type', options_for_select(admin_type, admin_type_selected),{:class=>"form-control filter_select2", :include_blank => 'Select admin type', :style => "width: 100%" }
+            - if current_user.is_dwelo_admin? || current_user.is_company_admin?
+              .col-xl-4.col-lg-4
+                %h4 TimeFrame
+                = text_field_tag 'timeframe', nil, { class: 'date_range_filter', :style => "width: 100%" }
+        .row
+          - unless current_user.is_company_admin?
+            .col-xl-4.col-lg-4
+              %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Communities
+              = select_tag 'communities', options_for_select(communities_list(current_user), community_id), { :class=>"form-control filter_select2", :include_blank => 'Select any community', :style => "width: 100%" }
+          .col-xl-4.col-lg-4
+            %h4 Product Type
+            = select_tag 'product_type', options_for_select(product_type, product_type_selected), { :class=>"form-control filter_select2", :style => "width: 100%" }
+          - unless current_user.is_dwelo_admin? || current_user.is_company_admin?
+            .col-xl-4.col-lg-4
+              %h4 TimeFrame
+              = text_field_tag 'timeframe', nil, { class: 'date_range_filter', :style => "width: 100%" }
 
     - if @product_type == "all" || @product_type == "maps"
       .box.box-info.add-plan.mt-20
@@ -145,18 +156,18 @@
 
             .row.mt-80
               .col-lg-12.h-500
-                %p.chart_heading Favourite Saved
+                %p.chart_heading Favorite Saved
                 .col-lg-2.numbers_div
                   .center_it
                     .count_int= @total_number_of_favourite_saved_maps
-                    .count_text= 'Total number of favourite saved' 
+                    .count_text= 'Total number of favorite saved' 
                     .pie_description
                       %span.dot.favourite_saved_with
-                      %span Session with favourite saved
+                      %span Session with favorite saved
                       %span= @percentage_session_with_favourite_saved_maps
                     .pie_description
                       %span.dot.favourite_saved_without
-                      %span Session without favourite saved
+                      %span Session without favorite saved
                       %span= @percentage_session_without_favourite_saved_maps
                 .col-lg-5.pie_width
                   = pie_chart @pie_favourite_saved_data_labels_maps, @pie_favourite_saved_data_options_maps
@@ -165,18 +176,18 @@
 
             .row.mt-80
               .col-lg-12.h-500
-                %p.chart_heading Favourite Mailed
+                %p.chart_heading Favorite Mailed
                 .col-lg-2.numbers_div
                   .center_it
                     .count_int= @total_number_of_favourite_sent_maps
-                    .count_text= 'Total number of times favourite emailed' 
+                    .count_text= 'Total number of times favorite emailed' 
                     .pie_description
                       %span.dot.favourite_sent_with
-                      %span Session with favourite mailed
+                      %span Session with favorite mailed
                       %span= @percentage_session_with_favourite_sent_maps
                     .pie_description
                       %span.dot.favourite_sent_without
-                      %span Session without favourite mailed
+                      %span Session without favorite mailed
                       %span= @percentage_session_without_favourite_sent_maps
                 .col-lg-5.pie_width
                   = pie_chart @pie_favourite_sent_data_labels_maps, @pie_favourite_sent_data_options_maps
@@ -559,18 +570,18 @@
 
             .row.mt-80
               .col-lg-12.h-500
-                %p.chart_heading Favourite Saved
+                %p.chart_heading Favorite Saved
                 .col-lg-2.numbers_div
                   .center_it
                     .count_int= @total_number_of_favourite_saved_metro
-                    .count_text= 'Total number of favourite saved' 
+                    .count_text= 'Total number of favorite saved' 
                     .pie_description
                       %span.dot.favourite_saved_with
-                      %span Session with favourite saved
+                      %span Session with favorite saved
                       %span= @percentage_session_with_favourite_saved_metro
                     .pie_description
                       %span.dot.favourite_saved_without
-                      %span Session without favourite saved
+                      %span Session without favorite saved
                       %span= @percentage_session_without_favourite_saved_metro
                 .col-lg-5.pie_width
                   = pie_chart @pie_favourite_saved_data_labels_metro, @pie_favourite_saved_data_options_metro
@@ -579,18 +590,18 @@
 
             .row.mt-80
               .col-lg-12.h-500
-                %p.chart_heading Favourite Mailed
+                %p.chart_heading Favorite Mailed
                 .col-lg-2.numbers_div
                   .center_it
                     .count_int= @total_number_of_favourite_sent_metro
-                    .count_text= 'Total number of times favourite emailed' 
+                    .count_text= 'Total number of times favorite emailed' 
                     .pie_description
                       %span.dot.favourite_sent_with
-                      %span Session with favourite mailed
+                      %span Session with favorite mailed
                       %span= @percentage_session_with_favourite_sent_metro
                     .pie_description
                       %span.dot.favourite_sent_without
-                      %span Session without favourite mailed
+                      %span Session without favorite mailed
                       %span= @percentage_session_without_favourite_sent_metro
                 .col-lg-5.pie_width
                   = pie_chart @pie_favourite_sent_data_labels_metro, @pie_favourite_sent_data_options_metro
