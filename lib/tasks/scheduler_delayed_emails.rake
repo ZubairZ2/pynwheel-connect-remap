@@ -128,7 +128,7 @@ namespace :delayed_email_notifications do
 
 		end
 	end
-  	def send_email_tour_user subj, body, th, comm_email
+  	def send_email_tour_user subj, body, th, comm_email, community
 		begin
 			emails = comm_email.gsub(" ","").split(',')
 			NotificationMailer.tour_history_mail(subj.humanize, body, th.tour_user.email,emails[0]).deliver
