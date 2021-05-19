@@ -82,9 +82,17 @@ class PsiStaticService < BaseService
       vacateDate = ""
 
       unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s).first
+      
       unless unit.present?
         unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first_or_initialize
       end
+      
+
+      puts "******************psi static*******************"*20
+      puts unit.inspect
+      puts "*************************************"*20
+
+
       unit.property_id = property_id
       unit.unit_type = u["Units"]["Unit"]["UnitType"]
       unless unit.name_is_updated.present? && unit.name_is_updated
