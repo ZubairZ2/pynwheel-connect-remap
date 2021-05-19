@@ -254,9 +254,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @tour_user = TourUser.find_by(id: params[:tour_user_id])
       delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
       te = tour_stops_ids(@tour_user, @community)
-      removing_tour_stops = delete_array.present? ? delete_array + te : [] + te
-      @community.deleted_ids = removing_tour_stops
-      removing_stops_arr = removing_tour_stops.present? ? (fetch_removing_stops_sub_location(removing_tour_stops, @community)) : []
+      @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
       @community.save
       @tours = Tour.where(id: params[:tour_id])
       session["check_lock_access"+@tour_user.id.to_s] = 0
@@ -300,7 +298,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       else
         @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
       end
-      check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref], removing_stops_arr)
+      check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
     else
         render :json=> {:success=>false, :message => "Invalid Token"}
     end
@@ -604,7 +602,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     locks_thread.to_s
   end
   
-  def check_zerv_user_existance_again(community, tour_user, thread_ref, removing_stops_arr)
+  def check_zerv_user_existance_again(community, tour_user, thread_ref)
     if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and community.zerv.present? and tour_user.tour_type != "virtual_tour"
       puts "-----------------------------------------     main thread halted    ---------------------------------------------------"
       begin
@@ -625,9 +623,6 @@ class Api::V1::CommunitiesController < ActionController::Base
             ZervServices::GetUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true)
           end
 
-          if removing_stops_arr.present?
-            ZervServices::RemoveStopsAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, removing_stops_arr: removing_stops_arr)
-          end
         end
       rescue => exception
         puts exception
