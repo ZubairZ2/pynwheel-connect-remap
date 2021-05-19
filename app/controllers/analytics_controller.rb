@@ -164,7 +164,7 @@ class AnalyticsController < ApplicationController
 
     def collect_session_each_day_data_in_hours(total_records, start_attr_name, for_device_type)
       sessions_each_day_hourly_hash = return_empty_hash_hourly
-      records_start_date_hours = total_records.pluck(start_attr_name, :community_id).map {|dt| return_community_datetime(dt.first, dt.last).strftime("%H").to_i }
+      records_start_date_hours = total_records.pluck(start_attr_name, :community_time_zone).map {|dt| return_community_datetime(dt.first, dt.last).strftime("%H").to_i }
       uniq_hours = records_start_date_hours.uniq
       max_count = 0
       max_hour = 0

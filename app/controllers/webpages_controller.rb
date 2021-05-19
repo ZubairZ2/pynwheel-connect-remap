@@ -211,7 +211,7 @@ class WebpagesController < ActionController::Base
   end
 
   def return_new_session
-    TrackSession.new(start_datetime: (fetch_datetime), track_session_type: "maps", community_id: @community.id,session_id: cookies[:webpages_session_id])
+    TrackSession.new(start_datetime: (fetch_datetime), track_session_type: "maps", community_id: @community.id, community_time_zone: @timezone,session_id: cookies[:webpages_session_id])
   end
 
   def manage_session_info(session)
