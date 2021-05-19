@@ -387,7 +387,13 @@ iPhone Users:
                                               cvc: params[:cvc].to_s,
                                             },
                                           })
-          TourUser.find(params[:tour_user_id]).update(strip_customer_id: response[:id], card_last_digits: response[:card][:last4])
+          
+                                
+          tu = TourUser.find(params[:tour_user_id]) 
+          
+          tu.update(strip_customer_id: response[:id], card_last_digits: response[:card][:last4])
+          create_customer(tu.email, tu.strip_customer_id)
+
           render :json => { :success => true, :message => "Tour User Card Information Saved Successfully" }
         rescue Stripe::CardError => e
           render :json => { :success => false, :message => "#{e.error.message}" }
