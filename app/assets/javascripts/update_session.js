@@ -173,7 +173,7 @@ $(document).ready(function () {
           if (load_check && need_reload) {
               $.ajax({ type: 'POST', cache: false, url: update_session_url  });
               window.localStorage.removeItem("run_only_one_time");
-              sleep(500)
+              sleep(800)
           }
       }
   });

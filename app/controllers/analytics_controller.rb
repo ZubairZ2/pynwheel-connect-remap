@@ -8,8 +8,10 @@ class AnalyticsController < ApplicationController
     communities_ids = fetch_communities(current_user).ids
     track_sessions = TrackSession.where(community_id: communities_ids)
     tour_histories = TourHistory.where(community_id: communities_ids)
-    @maps_records = track_sessions.where.not(end_datetime: nil).where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
-    @metro_records = track_sessions.where.not(end_datetime: nil).where(track_session_type: "metro").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
+    @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
+    @metro_records = track_sessions.where(track_session_type: "metro").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
+    @pesent_end_dattime_maps_records = @maps_records.where.not(end_datetime: nil)
+    @pesent_end_dattime_metro_records = @metro_records.where.not(end_datetime: nil)
     @self_tour_records = tour_histories.where.not(left: nil).where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     apply_filters(params)
@@ -17,7 +19,7 @@ class AnalyticsController < ApplicationController
     # For Webpage
     if @maps_records.any? && (@product_type == "all" || @product_type == "maps")
       collect_session_each_day_data(start_date, @days_count, @maps_records, :start_datetime, "maps")
-      collect_session_each_day_data_in_minutes(start_date, @days_count, @maps_records, :start_datetime, :end_datetime, "maps")
+      collect_session_each_day_data_in_minutes(start_date, @days_count, @pesent_end_dattime_maps_records, :start_datetime, :end_datetime, "maps")
       collect_session_each_day_data_in_hours(@maps_records, :start_datetime, "maps")
       bounce_rate_on_pages(@maps_records, :visited_pages ,"maps")
       events_per_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
@@ -29,7 +31,7 @@ class AnalyticsController < ApplicationController
     # For Metro 
     if @metro_records.any? && (@product_type == "all" || @product_type == "touch")
       collect_session_each_day_data(start_date, @days_count, @metro_records, :start_datetime, "metro")
-      collect_session_each_day_data_in_minutes(start_date, @days_count, @metro_records, :start_datetime, :end_datetime, "metro")
+      collect_session_each_day_data_in_minutes(start_date, @days_count, @pesent_end_dattime_metro_records, :start_datetime, :end_datetime, "metro")
       collect_session_each_day_data_in_hours(@metro_records, :start_datetime, "metro")
       bounce_rate_on_pages(@metro_records, :visited_pages ,"metro")
       pages_per_session(start_date, @days_count, @metro_records)

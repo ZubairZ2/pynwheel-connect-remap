@@ -172,7 +172,6 @@ class WebpagesController < ActionController::Base
   def update_session
     track_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
     track_session.update_column(:end_datetime, return_community_datetime(session[:last_active_datetime]))
-    reset_session
     session[:last_active_datetime] = nil
     puts " ---------------------- Track Session Completed --------------------------------"
   end
