@@ -591,7 +591,7 @@ class CommunitiesController < ApplicationController
         @tour.max_self_tour_users = params[:max_self_tour_users]
         @tour.max_guided_tour_users = params[:max_guided_tour_users]   
         @tour_setting.do_limit_max_tour = params[:do_limit_max_tour]   
-        @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication] if params[:charge_user_for_id_verfication] .present?
+        # @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication] if params[:charge_user_for_id_verfication] .present?
         @tour_setting.limit_max_tour_type = params[:limit_max_tour_type]   
         @tour_setting.limit_max_tour = params[:limit_max_tour]
         @tour_setting.length_stay_limit = params[:length_stay_limit].to_i
@@ -612,11 +612,17 @@ class CommunitiesController < ApplicationController
       @tour_setting.save
 
     else
+      @tour_setting = @community.tour.tour_setting
+      @tour_setting.enable_header_footer = params[:enable_header_footer].present? ? true : false
+      @tour_setting.email_header_color = params[:email_header_color] if params[:email_header_color].present?
+      @tour_setting.email_footer_color = params[:email_footer_color] if params[:email_footer_color].present?
+      @tour_setting.save
+      
       @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
-      @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
-      @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?
-      @community.one_hour_email_text = params[:community][:one_hour_email_text] if params[:community][:one_hour_email_text].present?
-      @community.thank_you_message = params[:community][:thank_you_message] if params[:community][:thank_you_message].present?
+      @community.email_text = params[:community][:email_text]
+      @community.one_day_email_text = params[:community][:one_day_email_text] 
+      @community.one_hour_email_text = params[:community][:one_hour_email_text]
+      @community.thank_you_message = params[:community][:thank_you_message]
       @community.arrive_too_early_alert = params[:community][:arrive_too_early_alert] if params[:community][:arrive_too_early_alert].present?
       @community.arrive_too_late_alert = params[:community][:arrive_too_late_alert] if params[:community][:arrive_too_late_alert].present?
       @community.unscheduled_alert = params[:community][:unscheduled_alert] if params[:community][:unscheduled_alert].present?

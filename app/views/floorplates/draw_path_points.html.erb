@@ -89,7 +89,7 @@
           <% elsif @community.theme_name == 'modernist' %>
             <% fontsize = @community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size : 30 %>
           <% elsif @community.theme_name == 'futurist' %>
-            <% fontsize = @community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size : 30 %>
+            <% fontsize = (@community.design.present? && @community.design.futurist_property_map_size.present?) ? @community.design.futurist_property_map_size : 30 %>
           <% elsif @community.theme_name == 'expressionist' %>
             <% fontsize = @community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size : 30 %>
           <% elsif @community.theme_name == 'panther' %>

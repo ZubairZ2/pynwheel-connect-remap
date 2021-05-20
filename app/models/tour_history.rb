@@ -19,7 +19,7 @@ class TourHistory < ApplicationRecord
 
   belongs_to :tour_user
   has_many :lock_histories, dependent: :destroy
-	include DweloDevicesHelper
+  include DweloDevicesHelper
 
   after_create :send_arrival_notifications
   after_update :send_update_notifications
@@ -29,9 +29,9 @@ class TourHistory < ApplicationRecord
 
   def send_arrival_notifications
     community = (Tour.find_by_id self.tour_id).community if self.tour_id.present?
-  	
+  	 verification_text = self.verified_by.present? ? "<br>They have successfully passed the ID verification process." : ""
     if community.present?
-      send_email_sms_or_both(["Visitor Has Arrived", "A Pynwheel Self Tour has begun for: \n #{self.tour_user.name} \n #{self.tour_user.email}"] , community)
+      send_email_sms_or_both(["A tour has begun", "#{self.tour_user.name.capitalize} has begun a tour of #{community.name}" + verification_text] , community)
     end
   end
 
@@ -233,7 +233,7 @@ class TourHistory < ApplicationRecord
 			end
 		end
 	end
-  
+
   def send_email_sms_or_both mail_content, community
     if self.history != true
       if community.alert_contact == "email" or community.alert_contact == "phone"
@@ -241,7 +241,7 @@ class TourHistory < ApplicationRecord
           send_email_without_humanize mail_content[0], mail_content[1], community
           send_sms mail_content[1]
         else
-          send_email mail_content[0], mail_content[1], community
+          send_email mail_content[0], mail_content[1],community
           send_sms mail_content[1]
         end
       else
@@ -257,28 +257,29 @@ class TourHistory < ApplicationRecord
   end
 
   def send_email_sms_or_both_to_touruser thank_you_msg, community
+    content = (community.tour.tour_setting.enable_header_footer ? (thank_you_msg.gsub("\n", "<br>").html_safe) :  "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + (thank_you_msg.gsub("\n", "<br>").html_safe))
   	if community.alert_contact == "email"
-  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe, community.email
+      send_email_tour_user "Thank you for visiting #{community.name}", content, community.email, community
   	elsif community.alert_contact == "phone"
   		send_sms_tour_user thank_you_ms
   	else
-  		send_email_tour_user "Thank you for visiting #{community.name}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg.gsub("\n", "<br>").html_safe, community.email
+  		send_email_tour_user "Thank you for visiting #{community.name}", content, community.email, community
   		send_sms_tour_user thank_you_msg
   	end
   end
 
   def send_sms message_body
-	# begin
-	# 	DelayedSchedulerTextJob.perform_async(message_body, community.phone) if community.phone.present?
-	# rescue
-	# end
+  # begin
+  #   DelayedSchedulerTextJob.perform_async(message_body, community.phone) if community.phone.present?
+  # rescue
+  # end
   end
 
   def send_email subj, body, community
     begin
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(subj.humanize, body, email).deliver
+        NotificationMailer.tour_history_mail(subj.humanize, body, email,"info@pynwheel.com",community,false).deliver
       end
       # NotificationMailer.tour_history_mail(subj.humanize, body, community.email).deliver
     rescue
@@ -290,7 +291,7 @@ class TourHistory < ApplicationRecord
     begin
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(subj.humanize, body, email).deliver
+        NotificationMailer.tour_history_mail(subj.humanize, body, email,"info@pynwheel.com",community,false).deliver
       end
     rescue
 
@@ -300,7 +301,7 @@ class TourHistory < ApplicationRecord
   def send_email_to_user_without_humanize subj, body , community_email=nil
     begin
       emails = community_email.gsub(" ","").split(',')
-      NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, email[0]).deliver
+      NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, email[0],community,false).deliver
     rescue
 
     end
@@ -313,28 +314,28 @@ class TourHistory < ApplicationRecord
     end
   end
 
-  def send_email_tour_user subj, body, community_email
+  def send_email_tour_user subj, body, community_email, community
     begin
       emails = community_email.gsub(" ","").split(',')
-      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0]).deliver
+      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0],community,true).deliver
     rescue
     end
   end
 
   def time_difference
-  	((Time.zone.now - self.arrived) / 1.minute).round
+    ((Time.zone.now - self.arrived) / 1.minute).round
   end
 
   def get_alert_message key
-		message_data = AlertMessage.where(message_key: key).pluck(:message_key, :message_body).flatten  	
+    message_data = AlertMessage.where(message_key: key).pluck(:message_key, :message_body).flatten    
   end
 
   def plural count, str
-  	ActionController::Base.helpers.pluralize(count, str)
+    ActionController::Base.helpers.pluralize(count, str)
   end
 
   def time_distance
-  	ActionController::Base.helpers.distance_of_time_in_words self.arrived, self.left
+    ActionController::Base.helpers.distance_of_time_in_words self.arrived, self.left
   end
 
   def active_user_exists(event, guest_id)
@@ -349,13 +350,13 @@ class TourHistory < ApplicationRecord
     return (event["type"] == "access_person_synced_event" and event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded" and event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == guest_id)
   end
   
-	def dwelo_active_user_exists(event,guest_id)
-		return (event["event_type"] == "app_unlock"  and  event["access_person_id"] == guest_id)
+  def dwelo_active_user_exists(event,guest_id)
+    return (event["event_type"] == "app_unlock"  and  event["access_person_id"] == guest_id)
   end
   
-	def avail_stops_name_of_community
-		# stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
-		# allowed_stops = TourStop.where(id: stops_arr.ids).pluck(:stop_type, :stop_id)
+  def avail_stops_name_of_community
+    # stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+    # allowed_stops = TourStop.where(id: stops_arr.ids).pluck(:stop_type, :stop_id)
 
         tour_stops = []
         # allowed_stops.each do |stop|
@@ -371,35 +372,35 @@ class TourHistory < ApplicationRecord
         #     amentiy = stop[0].classify.constantize.find_by_id stop[1]
         #     tour_stops << amentiy.name if amentiy.present?
         #   end
-		# end
-		return tour_stops
-	end
+    # end
+    return tour_stops
+  end
 
-	def stop_marketing_names_visited_by_user
+  def stop_marketing_names_visited_by_user
     sleep 2
-		visited_stops = []
+    visited_stops = []
 
-		current_tour = VisitedStop.where(tour_key:  self.tour_user.tour_key).order("id DESC").first
-		tour_key = current_tour.tour_key if current_tour.present?
+    current_tour = VisitedStop.where(tour_key:  self.tour_user.tour_key).order("id DESC").first
+    tour_key = current_tour.tour_key if current_tour.present?
 
-		if tour_key.present?
-			tour_stop_ids = VisitedStop.where(tour_key:  tour_key).pluck(:tour_stop_id)
-			unit_stops = TourStop.where(id: tour_stop_ids, stop_type: "unit").pluck(:stop_id)
+    if tour_key.present?
+      tour_stop_ids = VisitedStop.where(tour_key:  tour_key).pluck(:tour_stop_id)
+      unit_stops = TourStop.where(id: tour_stop_ids, stop_type: "unit").pluck(:stop_id)
 
       puts "unit_stops"
       puts unit_stops
 
-			unit_stops.each do |stop_id|
-				unit = Unit.find_by_id stop_id
-				marketing_name = unit.marketing_name
-				visited_stops << marketing_name if unit.present?
+      unit_stops.each do |stop_id|
+        unit = Unit.find_by_id stop_id
+        marketing_name = unit.marketing_name
+        visited_stops << marketing_name if unit.present?
         puts "marketing_name"
         puts marketing_name
-			end
-		end
+      end
+    end
 
-		puts "visited_stops"
-		puts visited_stops
-		return visited_stops
-	end
+    puts "visited_stops"
+    puts visited_stops
+    return visited_stops
+  end
 end

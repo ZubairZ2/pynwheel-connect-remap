@@ -106,7 +106,7 @@ class DwelosController < ApplicationController
   end
 
   def dwelo_params
-    params.require(:dwelo).permit(:client_id, :client_secret, :default_community_id)
+    params.require(:dwelo).permit(:client_id, :client_secret, :default_community_id,:api_url)
   end
   def set_dwelo
     @dwelo = current_community.dwelo

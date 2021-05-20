@@ -32,7 +32,7 @@
 }
 .row .pie_width .chartjs-render-monitor, .row .pie_width .chartjs-size-monitor{
   width: 330px !important;
-  margin-left: 70px;
+  margin-left: 35px;
 }
 .align-right{
  float: right;
@@ -74,8 +74,8 @@
  background-color: rgba(255, 204, 203, 0.8);
   border: 2px solid rgba(255, 204, 203, 1);  
 }
-.empty_other::before {
+.empty_other::after {
   content: "*";
-  color: blue;
-  padding-right: 2px;
+  color: red;
+  padding-left: 2px;
 }

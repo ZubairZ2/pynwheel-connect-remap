@@ -12,9 +12,14 @@
             .col-lg-9.col-lg-offset-1
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  API URL
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :api_url, :class=>"form-control dwelo_api_url", :placeholder=>"API URL", :required => true
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Client ID
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_field :client_id, :class=>"form-control dwelo_client_id", :placeholder=>"Client ID", :required => true
+                  = f.text_field :client_id, :class=>"form-control dwelo_client_id", :placeholder=>"Client ID", :required => true    
 
               .form-group#unit_virtual_tour_button_label_field
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

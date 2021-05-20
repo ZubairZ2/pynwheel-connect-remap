@@ -11,6 +11,8 @@ class ApplicationController < ActionController::Base
   helper_method :alphabetical_sort
   helper_method :show_chat_support
   before_action :load_tour_users_chats
+  # before_filter :redirect_to_pynwheelconnect
+  
   def current_community
   	if params[:community_id].present?
       session[:community_id] = params[:community_id] 
@@ -170,4 +172,13 @@ class ApplicationController < ActionController::Base
     devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:region_id,:role,:community_ids=>[]])
     devise_parameter_sanitizer.permit(:accept_invitation, keys: [:first_name, :last_name, :avatar])
   end
+
+  # TODO: Redirection from pynwheelapp to pynwheelconnect
+  # def redirect_to_pynwheelconnect
+  #   if Rails.env.production? and request.host_with_port == "pynwheelapp.com"
+  #     redirect_to "https://pynwheelconnect.com/", :status => 301
+  #     return false
+  #   end
+  # end
+
 end

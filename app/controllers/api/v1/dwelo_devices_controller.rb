@@ -62,7 +62,7 @@ class Api::V1::DweloDevicesController < ActionController::Base
       request_body = { "access_person_id": guest_id, "lock_id": params[:lock_id], "command": params[:command] }
       puts "--------------------------- commands request ----------------------------"
       puts request_body
-
+      @community = dwelo_community_account.community
       url = base_url + "/v4/integrations/pynwheel/devices/commands/"
       response = HTTParty.post(url,
                                body: {
@@ -89,7 +89,8 @@ class Api::V1::DweloDevicesController < ActionController::Base
   end
 
   def base_url
-    "https://api.dwelo.com"
+    @community.dwelo.api_url
+    # "https://api.dwelo.com"
   end
 
   private

@@ -283,7 +283,6 @@
     draw_image_canvas(null);
   }, 2000);
 
-  
   function draw_image_canvas(img_src)
   {
     canvas = document.getElementById("myCanvas");
@@ -343,6 +342,8 @@
       return (waypoints);
   }
 
+ 
+
 
  
 
@@ -382,8 +383,8 @@
     if ($('#msg_history_a').children().length == 0){
     
     var loadAdminChat, loadAdminChatHelper;
-    
     loadAdminChatHelper = function(chat) {
+      
         if(chat.name == "Support Team"){
             $('#msg_history_a').append(`
                 <div class="outgoing_msg_a">
@@ -589,6 +590,7 @@
   
   function show_plot_accordingly(stops,left)
   {
+    
       vs = 0;
       for(var i=0 ; i < stops.length ; i++)
           {
@@ -600,16 +602,17 @@
               });
               
               if(stops[i][2] != 'tour'){
-                data_array[vs] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': stops[i][0].event_time.split('T')[1].split('.')[0] , 'departure_time': (stops[i+1] == null ? stops[i][0].event_time.split('T')[1].split('.')[0] : stops[i+1][0].event_time.split('T')[1].split('.')[0]) ,'lock_access_time':  stops[i][0].event_date,'stop_pin': stops[i][0].stop_pin}]
+                
+                data_array[vs] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': moment.utc(stops[i][0].event_time).format("hh:mm A"), 'departure_time': (stops[i+1] == null ? moment.utc(stops[i][0].event_time).format("hh:mm A") : moment.utc(stops[i+1][0].event_time).format("hh:mm A")) ,'lock_access_time':  stops[i][0].event_date,'stop_pin': stops[i][0].stop_pin}]
 
-                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot-70) / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" style="z-index: 99" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
+                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot-70) / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" style="z-index: 99" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
                 vs++;
               }
               else
               {
                 // data_array[i] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': stops[i][0].event_time.split('T')[1].split('.')[0] , 'departure_time': stops[i][0].event_time.split('T')[1].split('.')[0] ,'lock_access_time':  stops[i][0].event_date }]
 
-                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="372" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot -30)/ img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="start-point propertyDetailName" style="z-index: 99" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
+                $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="Starting Point" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot -30)/ img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="start-point propertyDetailName" style="z-index: 99" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
                 vs++;
               }
             }
@@ -663,12 +666,12 @@
               if(points[t-2] != undefined && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y )
               { 
                 $(".popover").popover('hide');
-                debugger;
                 if (data_array[vertices_count] != undefined)
                 {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
                                   html: true,
+                                  trigger: "hover",
                                   placement: 'top',
-                                  template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name + (data_array[vertices_count][1].stop_pin == '' ? "" : ('<br><b>Access Code:</b>'+data_array[vertices_count][1].stop_pin)) +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> '+ lock_access_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
+                                  template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                                 }).popover('show');}
                   vertices_count++;
                   if(data_array[vertices_count - 1] == undefined)
@@ -693,8 +696,9 @@
               if (data_array[vertices_count] != undefined)
               {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
                             html: true,
+                            trigger: "hover",
                             placement: 'top',
-                            template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name + (data_array[vertices_count][1].stop_pin == '' ? "" : ('<br><b>Access Code:</b>'+data_array[vertices_count][1].stop_pin)) +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Locks Access Time:</b> '+ lock_access_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
+                            template: '<div class="popover" style="left: -43px !important; width: 250px;" ><div class="arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                           }).popover('show');}
               already_watched.push([selected_floor[0],selected_building[0]]);            
             }

@@ -137,7 +137,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       end
     end
   end
-  
+
   def lincoln_list_communities
     @allow_usage, @redirect_url = get_version_access params 
     if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
@@ -161,7 +161,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def do_verfication verfied_by_provider, community
     if (verfied_by_provider == "authenteq") && community.tour.tour_setting.present? && community.tour.tour_setting.charge_user_for_id_verfication
-      false
+      true
     else
       false
     end
@@ -185,7 +185,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community.save
       charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
       @tour_user.verified_by = params[:verfied_by_provider]
-      @tour_user.save
+
       
       unless @tour_user.email == "Removed at Consumer Request"
         #####
@@ -202,7 +202,8 @@ class Api::V1::CommunitiesController < ActionController::Base
         # in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
         # is_tour_virtual = check_community_type(in_visiting_hours, @tours, @community, @tour_user)
         lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
-      
+        @tour_user.lock_access_time = current_time
+        @tour_user.save
       else
         render :json=> {:success=>false, :message => "Access Denied"}, :status=>500
       end
@@ -253,9 +254,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @tour_user = TourUser.find_by(id: params[:tour_user_id])
       delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
       te = tour_stops_ids(@tour_user, @community)
-      removing_tour_stops = delete_array.present? ? delete_array + te : [] + te
-      @community.deleted_ids = removing_tour_stops
-      removing_stops_arr = removing_tour_stops.present? ? (fetch_removing_stops_sub_location(removing_tour_stops, @community)) : []
+      @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
       @community.save
       @tours = Tour.where(id: params[:tour_id])
       session["check_lock_access"+@tour_user.id.to_s] = 0
@@ -299,7 +298,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       else
         @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
       end
-      check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref], removing_stops_arr)
+      check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
     else
         render :json=> {:success=>false, :message => "Invalid Token"}
     end
@@ -362,6 +361,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       # @tours = @tours.map{|h| h}[-4..-1].to_h
     end
   end
+
   def tour_user_data
     data = Hash.new
     access = grant_access (decoded(params[:token])) rescue false
@@ -379,7 +379,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       render :json=> {data: data, :status=>false, :message => "Invalid Token", code: 401}
     end
   end
-  
+
   def tour_configrations
     #################### Remember this call is being called twice for one of the usecase in mobile app #######################
     puts params
@@ -539,6 +539,12 @@ class Api::V1::CommunitiesController < ActionController::Base
       charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
     end
   end
+  def tour_user_arrival_email(tour_user, community)
+    emails = community.email.gsub(" ","").split(',')
+    emails.each do |email|
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email,"info@pynwheel.com",community,false).deliver
+    end
+  end
   def check_lock_access
     puts params
     access = grant_access (decoded(params[:token])) rescue false
@@ -596,7 +602,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     locks_thread.to_s
   end
   
-  def check_zerv_user_existance_again(community, tour_user, thread_ref, removing_stops_arr)
+  def check_zerv_user_existance_again(community, tour_user, thread_ref)
     if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and community.zerv.present? and tour_user.tour_type != "virtual_tour"
       puts "-----------------------------------------     main thread halted    ---------------------------------------------------"
       begin
@@ -617,9 +623,6 @@ class Api::V1::CommunitiesController < ActionController::Base
             ZervServices::GetUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true)
           end
 
-          if removing_stops_arr.present?
-            ZervServices::RemoveStopsAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, removing_stops_arr: removing_stops_arr)
-          end
         end
       rescue => exception
         puts exception

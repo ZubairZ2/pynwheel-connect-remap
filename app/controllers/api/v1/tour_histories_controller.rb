@@ -13,6 +13,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
         tour_history.tour_state = "completed" if params[:left].present?
         tour_history.tour_type = params[:tour_session_type] if params[:tour_session_type].present?
         tour_history.community_id = params[:community_id]
+        tour_history.community_time_zone = get_community_time_zone(set_community)
         if  params[:tour_site].present?
           if params[:tour_site] == "self_tour"
             tour_history.tour_site = "onsite"
@@ -25,7 +26,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
         if params[:time_zone].present?
           tour_history.my_time_zone = params[:time_zone].to_s rescue nil
         end
-        save_visitedStops params
+        save_visitedStops params  if params[:tour_stop_id].present?
         
         tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
         tour_history.active_app = params[:active_app] if params[:active_app].present?
@@ -173,7 +174,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email).deliver
+        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email,community,false).deliver
       end
 
     end
@@ -182,7 +183,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
     if(tu.arrival_email_sent and lat_long.present? and geo_distance(lat_long[:lat],lat_long[:lng],community.latitude, community.longitude, 1)  )
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.capitalize}  has left #{community.name}", email).deliver
+        NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.capitalize}  has left #{community.name}", email,community,false).deliver
         tu.update_column 'arrival_email_sent' , false 
       end
     end
@@ -242,4 +243,23 @@ class Api::V1::TourHistoriesController < ActionController::Base
   def set_community
     @community ||= Community.find_by_id params[:community_id] if params[:community_id].present?
   end
+
+  def get_community_time_zone(community)
+    tz = Ziptz.new
+    timezone = nil
+
+    if community.latitude.present? and community.longitude.present?
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and community.zip.present?
+      timezone = tz.time_zone_name(community.zip)
+    end
+
+    return timezone
+  rescue
+    return "UTC"
+  end
+
 end

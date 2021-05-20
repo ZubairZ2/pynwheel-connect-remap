@@ -186,19 +186,19 @@
                   = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
                   %label.label-primary{:for => "visual_id_verification"}
                   %span.pl-15 Yes
-            / .form-group
-            /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
 
-            /     Charge User for ID Verfication
-            /     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "2Popover","data-content" => " "}
-            /       %span#propertyDetailNameText
-            /         When set to “Yes” users will be charged $2.00 each time their ID is verified. When set to “No” the property will be charged each time the user’s ID is verified.
-            /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            /     .TriSea-technologies-Switch
-            /       %span.pr-15 No
-            /       = check_box_tag :charge_user_for_id_verfication, true, @community.tour.tour_setting.charge_user_for_id_verfication  , class: "charge_user_for_id_verfication"
-            /       %label.label-primary{:for => "charge_user_for_id_verfication"}
-            /       %span.pl-15 Yes    
+                Charge User for ID Verfication
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "2Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    When set to “Yes” users will be charged $2.00 each time their ID is verified. When set to “No” the property will be charged each time the user’s ID is verified.
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :charge_user_for_id_verfication, true, @community.tour.tour_setting.charge_user_for_id_verfication  , class: "charge_user_for_id_verfication"
+                  %label.label-primary{:for => "charge_user_for_id_verfication"}
+                  %span.pl-15 Yes    
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Enable auto zoom
@@ -838,6 +838,37 @@
                           Select how you would like your prospects to receive their notifications. We recommend selecting 'both'
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = collection_radio_buttons(:community, :alert_contact, Community.alert_contacts, :first, :first, {}, {class: "btn"})
+                
+                .col-lg-9.col-lg-offset-1
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Enable Header & Footer
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = check_box_tag :enable_header_footer, true, @community.tour.tour_setting.enable_header_footer, class: "enable_header_footer"
+                        %label.label-primary{:for => "enable_header_footer"}
+                        %span.pl-15 Yes 
+                
+                .col-lg-9.col-lg-offset-1
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Notification Email Header Color
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .input-group.colorpicker-style.hex-format-colorpicker
+                        .input-group-addon
+                          %i
+                          = text_field_tag :email_header_color,"" , class: "form-control email_header_color-field",autocomplete: true,:value=>@community.tour.tour_setting.email_header_color
+
+                .col-lg-9.col-lg-offset-1
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Notification Email Footer Color
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .input-group.colorpicker-style.hex-format-colorpicker
+                        .input-group-addon
+                          %i
+                          = text_field_tag :email_footer_color,"" , class: "form-control email_footer_color-field",autocomplete: true,:value=>@community.tour.tour_setting.email_footer_color          
                 - if !@community.is_salesforce_community? && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
                     .form-group
