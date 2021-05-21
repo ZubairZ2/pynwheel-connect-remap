@@ -362,6 +362,10 @@ class Community < ApplicationRecord
     # ImportPsiDataJob.perform_async credential.attributes.to_json
   end
 
+  def clean_data_psi
+    CleanPsiDataJob.perform_async credential.attributes.to_json
+  end
+
   def import_zaremba_provider
     ImportZarembaStaticDataJob.perform_async credential.attributes.to_json
     # ImportZarembaDataJob.perform_async credential.attributes.to_json

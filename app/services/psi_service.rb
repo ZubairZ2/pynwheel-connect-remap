@@ -149,20 +149,21 @@ class PsiService < BaseService
     units.each do |u|
       vacateDate = ""
 
-      unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
+      unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
       
       unless unit.present?
-        unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)#.first_or_initialize
+        unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)#.first_or_initialize
       end
 
       unless unit.present?
-        unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
+        unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
       end
 
       if unit.present?
         # unit.property_id = property_id
         # unit.unit_type = u["Units"]["Unit"]["UnitType"]
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
+        unit.provider = "psi"
         #
         # unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
 
@@ -216,18 +217,19 @@ class PsiService < BaseService
         @unit_record << unit.provider_unit_id
         unit.save(validate: false)
       else
-        unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s).first
+        unit = Unit.where(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s).first
        
         unless unit.present?
-          unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first
+          unit = Unit.where(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first
         end
 
         unless unit.present?
-          unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s).first_or_initialize
+          unit = Unit.where(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s).first_or_initialize
         end
 
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.property_id = property_id
+        unit.provider = "psi"
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
         unless unit.name_is_updated.present? && unit.name_is_updated
           unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
@@ -316,7 +318,7 @@ class PsiService < BaseService
 
   def save_psi_floorplans(floorplans,property_id)
     floorplans.each do |f|
-      floorplan = Floorplan.find_by(provider: "psi",community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"])#.first_or_initialize
+      floorplan = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"])#.first_or_initialize
       if floorplan.present?
         # floorplan.property_id = property_id
         # floorplan.name = f["Name"]
@@ -324,6 +326,7 @@ class PsiService < BaseService
         # floorplan.units_available = f["DisplayedUnitsAvailable"]
         # floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
         floorplan.availability_url = f["FloorplanAvailabilityURL"] if f["FloorplanAvailabilityURL"].present?
+        floorplan.provider = "psi"
 
 
         # room_types = f["Room"]
@@ -356,9 +359,10 @@ class PsiService < BaseService
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
         end
       else
-        floorplan = Floorplan.where(provider: "psi",community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
+        floorplan = Floorplan.where(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
 
         floorplan.property_id = property_id
+        floorplan.provider = "psi"
 
         unless floorplan.name_is_updated.present? && floorplan.name_is_updated
           floorplan.name = f["Name"]
