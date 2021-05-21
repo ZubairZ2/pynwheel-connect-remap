@@ -80,21 +80,25 @@ class PsiStaticService < BaseService
   def save_psi_units(units,property_id)
     units.each do |u|
       vacateDate = ""
-
-      unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s).first
+      # binding.pry
+      unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"]).first
       
       unless unit.present?
-        unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first_or_initialize
+        unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first
       end
-      
 
+      unless unit.present?
+        unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s).first_or_initialize
+      end
+      # binding.pry
       puts "******************psi static*******************"*20
       puts unit.inspect
       puts "*************************************"*20
 
-
+      unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
       unit.property_id = property_id
       unit.unit_type = u["Units"]["Unit"]["UnitType"]
+
       unless unit.name_is_updated.present? && unit.name_is_updated
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
       end
@@ -321,6 +325,14 @@ class PsiStaticService < BaseService
                     unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                   end
 
+                  unless unit.present? # filter by unitId + unitSpaceId
+                    unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
+                  end
+                  
+                  puts "**************"*20
+                  puts "psi static UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
+                  puts "**************"*20
+
                   if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                     unit.availability = 'Unoccupied'
                     unit.available = true
@@ -432,6 +444,15 @@ class PsiStaticService < BaseService
                       unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
                         unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                       end
+
+                      unless unit.present? # filter by unitId + unitSpaceId
+                        unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
+                      end
+                      
+                      puts "**************"*20
+                      puts "psi static UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
+                      puts "**************"*20
+
                       if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                         unit.availability = 'Unoccupied'
                         unit.available = true
