@@ -216,6 +216,7 @@ class TourHistory < ApplicationRecord
 					page = page + 1
 				end
 				else
+          @community = community
 					access_token = dwelo_client_credentials(community.dwelo)
 					page = 1
 					responce = RemoteLockService.new(community).get_dwelo_events(access_token,as_guests_data.guest_id)

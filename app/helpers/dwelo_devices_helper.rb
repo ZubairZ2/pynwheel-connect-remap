@@ -202,7 +202,7 @@ module DweloDevicesHelper
       tour_user = TourUser.find params[:tour_user_id]
       tour_user.update_column 'dwelo_status' , 'in progress'
       providers_account = Dwelo.find_by(community_id: params[:id]) rescue nil
-
+      @community = community
       access_token = dwelo_client_credentials(providers_account)
       prev_data = tour_user.as_guests.find_by(community_id: params[:id])
 

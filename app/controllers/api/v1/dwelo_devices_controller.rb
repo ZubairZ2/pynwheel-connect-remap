@@ -27,7 +27,7 @@ class Api::V1::DweloDevicesController < ActionController::Base
 
   def update_dwelo_access_guest
     if @dwelo_user.present?
-      # dwelo_client_credentials
+      # dwelo_client_credentials -> before access this actionn set community first
       token_type = "Bearer"
       auth_header = token_type + " " + @token
       url = base_url + "/v4/integrations/pynwheel/access_persons/"
@@ -53,6 +53,7 @@ class Api::V1::DweloDevicesController < ActionController::Base
 
       dwelo_community_account= Dwelo.find_by(community_id: params[:community_id])
       token_type = "Bearer"
+      @community = dwelo_community_account.community
       dwelo_client_credentials(dwelo_community_account)
       auth_header = token_type + " " + @token
       tour_user = TourUser.find_by_id params[:tour_user_id]
