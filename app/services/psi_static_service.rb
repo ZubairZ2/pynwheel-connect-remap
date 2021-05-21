@@ -81,14 +81,14 @@ class PsiStaticService < BaseService
     units.each do |u|
       vacateDate = ""
       # binding.pry
-      unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"]).first
+      unit = Unit.where(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"]).first
       
       unless unit.present?
-        unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first
+        unit = Unit.where(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first
       end
 
       unless unit.present?
-        unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s).first_or_initialize
+        unit = Unit.where(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s).first_or_initialize
       end
       # binding.pry
       puts "******************psi static*******************"*20
@@ -97,6 +97,7 @@ class PsiStaticService < BaseService
 
       unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
       unit.property_id = property_id
+      unit.provider = "psi"
       unit.unit_type = u["Units"]["Unit"]["UnitType"]
 
       unless unit.name_is_updated.present? && unit.name_is_updated
@@ -172,7 +173,7 @@ class PsiStaticService < BaseService
 
   def save_psi_floorplans(floorplans,property_id)
     floorplans.each do |f|
-      floorplan = Floorplan.where(provider: "psi",community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
+      floorplan = Floorplan.where(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
 
       floorplan.property_id = property_id
 
@@ -189,6 +190,7 @@ class PsiStaticService < BaseService
       floorplan.units_available = f["DisplayedUnitsAvailable"]
       floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
       floorplan.availability_url = f["FloorplanAvailabilityURL"]
+      floorplan.provider = "psi"
 
       room_types = f["Room"]
       room_types.each do |rt|

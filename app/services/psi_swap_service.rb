@@ -35,8 +35,8 @@ class PsiSwapService < BaseService
         if response["response"]["code"] == 200
           units = []
           floorplans = []
-          Unit.where(community_id: credentials.community_id, provider: "psi_new").destroy_all
-          Floorplan.where(community_id: credentials.community_id, provider: "psi_new").delete_all
+          # Unit.where(community_id: credentials.community_id, provider: "psi_new").destroy_all
+          # Floorplan.where(community_id: credentials.community_id, provider: "psi_new").delete_all
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
             pro["ILS_Unit"].each do |ils|
               units << ils
@@ -70,14 +70,14 @@ class PsiSwapService < BaseService
       #   unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],building: u["Units"]["Unit"]["BuildingName"].present? ? u["Units"]["Unit"]["BuildingName"].gsub("Building ", "") : "")
       # end
 
-      unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
+      unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
       
       unless unit.present?
-        unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)#.first_or_initialize
+        unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)#.first_or_initialize
       end
 
       unless unit.present?
-        unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
+        unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
       end
       
       puts "******************psi swap*******************"*20
