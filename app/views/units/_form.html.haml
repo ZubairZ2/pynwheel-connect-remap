@@ -23,7 +23,7 @@
         = f.select :availability, [['No', 'Occupied'], ['Yes', 'Unoccupied']],{},{ :class=>"form-control"}
         %small Availability (Manual Override Required)
       .col-sm-6.col-lg-4.col-md-3.col-xs-12
-        = f.text_field :provider_unit_id, :class=>"form-control validate[required]", :placeholder=>"Provider Unit ID",:maxlength=>"7"
+        = f.text_field :provider_unit_id, :class=>"form-control validate[required]", :placeholder=>"Provider Unit ID"
         %small Provider Unit ID  
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

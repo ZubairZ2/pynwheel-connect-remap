@@ -150,8 +150,13 @@ class PsiService < BaseService
       vacateDate = ""
 
       unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
+      
       unless unit.present?
         unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"])#.first_or_initialize
+      end
+
+      unless unit.present?
+        unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"])#.first_or_initialize
       end
 
       if unit.present?
@@ -160,6 +165,15 @@ class PsiService < BaseService
         # unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
         #
         # unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
+        unless unit.provider_unit_id == u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"]
+          
+          puts "************"*20
+          puts "Unit Property Id is set from #{unit.provider_unit_id}  to  #{u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"]}" 
+          puts "************"*20
+
+          unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"]
+        end
+
         if u["Units"]["Unit"]["MarketRent"].present?
           unit.market_rent = u["Units"]["Unit"]["MarketRent"]
         end
@@ -208,10 +222,17 @@ class PsiService < BaseService
         @unit_record << unit.provider_unit_id
         unit.save(validate: false)
       else
-        unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s).first
-        unless unit.present?
-          unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first_or_initialize
-        end
+        # unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s).first
+       
+        # unless unit.present?
+        #   unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first_or_initialize
+        # end
+
+        # unless unit.present?
+        # end
+
+        unit = Unit.where(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"]).first_or_initialize
+
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
         unless unit.name_is_updated.present? && unit.name_is_updated
@@ -499,6 +520,14 @@ class PsiService < BaseService
                       unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                     end
 
+                    unless unit.present? # filter by unitId + unitSpaceId
+                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us["@attributes"]["Id"].to_s || us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
+                    end
+
+                    puts "**************"*20
+                    puts "Updating UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
+                    puts "**************"*20
+
                     unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                       if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                         unit.availability = 'Unoccupied' if !unit.sold
@@ -614,6 +643,15 @@ class PsiService < BaseService
                         unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                         end
+
+                        unless unit.present? # filter by unitId + unitSpaceId
+                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us["@attributes"]["Id"].to_s || us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
+                        end
+                        
+                        puts "**************"*20
+                        puts "Updating UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
+                        puts "**************"*20
+
                         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                           if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                             unit.availability = 'Unoccupied' if !unit.sold
