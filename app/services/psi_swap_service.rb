@@ -60,24 +60,32 @@ class PsiSwapService < BaseService
 
       vacateDate = ""
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"])
-      if unit.count > 1
-        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],floorplan_id: Floorplan.find_by(name: u["Units"]["Unit"]["UnitType"]).provider_floorplan_id)
-      end
-      if unit.count > 1
-        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],building: u["Units"]["Unit"]["BuildingName"].present? ? u["Units"]["Unit"]["BuildingName"].gsub("Building ", "") : "")
+      # unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"])
+      # if unit.count > 1
+      #   unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],floorplan_id: Floorplan.find_by(name: u["Units"]["Unit"]["UnitType"], community_id: credentials.community_id).provider_floorplan_id)
+      # end
+      # if unit.count > 1
+      #   unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],building: u["Units"]["Unit"]["BuildingName"].present? ? u["Units"]["Unit"]["BuildingName"].gsub("Building ", "") : "")
+      # end
+
+      unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
+      
+      unless unit.present?
+        unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"])#.first_or_initialize
       end
 
+      unless unit.present?
+        unit = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"])#.first_or_initialize
+      end
+      
       puts "******************psi swap*******************"*20
       puts unit.inspect
       puts "*************************************"*20
 
-
-
       if unit.present?
         unit = unit.first
         unit.provider = "psi_new"
-        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-" + u["Units"]["Unit"]["MarketingName"]
+        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"]
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
         # unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
@@ -121,10 +129,16 @@ class PsiSwapService < BaseService
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
       else
-        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s+ "-" + u["Units"]["Unit"]["MarketingName"])
+        dup = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
+      
+        unless unit.present?
+          dup = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"])#.first_or_initialize
+        end       
+
         if dup.present?
           dup.destroy
         end
+        
         # unit = Unit.where(community_id: credentials.community_id).first
         unit = Unit.new
         unit.community_id = credentials.community_id
@@ -132,7 +146,7 @@ class PsiSwapService < BaseService
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
-        unit.provider_unit_id =  u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-" + u["Units"]["Unit"]["MarketingName"]
+        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"]
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
         # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["Units"]["Unit"]["MarketRent"].present?
@@ -384,6 +398,14 @@ class PsiSwapService < BaseService
                       unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                     end
 
+                    unless unit.present? # filter by unitId + unitSpaceId
+                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
+                    end
+                    
+                    puts "**************"*20
+                    puts "psi swap UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
+                    puts "**************"*20
+
                     if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                       unit.availability = 'Unoccupied'
                       unit.available = true
@@ -489,6 +511,15 @@ class PsiSwapService < BaseService
                         unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                         end
+
+                        unless unit.present? # filter by unitId + unitSpaceId
+                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
+                        end
+                        
+                        puts "**************"*20
+                        puts "psi swap UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
+                        puts "**************"*20
+
                         if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                           unit.availability = 'Unoccupied'
                           unit.available = true
