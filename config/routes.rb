@@ -495,6 +495,7 @@ Rails.application.routes.draw do
           get :authenteq
           post :login
           get :list_communities
+          get :list_communities_v1
           get :portico_list_communities
           post :portico_list_communities
           post :lincoln_list_communities
