@@ -98,6 +98,10 @@ class Api::V1::CommunitiesController < ActionController::Base
     @communities = Community.where(touchscreen_app: true, is_sitemap: true).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company)
   end
 
+  def list_communities_v1
+    @communities = Community.where(touchscreen_app: true).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company)
+  end
+
   def portico_list_communities
     puts params
     @allow_usage, @redirect_url = get_version_access params
