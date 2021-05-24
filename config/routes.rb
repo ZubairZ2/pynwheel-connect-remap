@@ -148,6 +148,7 @@ Rails.application.routes.draw do
     delete :delete_imported_data
     get :update_imported_data
     get :import
+    get :clean_psi_units_data
     get :experimental_import
     get :credentials
     get :settings_page
