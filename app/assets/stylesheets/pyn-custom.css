@@ -22,7 +22,9 @@ textarea {
 .main-sidebar {
     padding-top: 110px;
 }
-
+.clean-data-btn {
+    display: block;
+}
 .add-user-button {
     float: right;
 }
