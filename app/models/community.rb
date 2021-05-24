@@ -240,6 +240,13 @@ class Community < ApplicationRecord
     DeleteCommunityJob.perform_async self
   end
 
+  def clean_psi_data_provider
+    case data_provider
+      when "psi"
+        clean_data_psi
+    end
+  end
+
   def data_is_imported
     case data_provider
       when "psi"
@@ -360,6 +367,10 @@ class Community < ApplicationRecord
     #psi_service.perform
     ImportPsiStaticDataJob.perform_async credential.attributes.to_json
     # ImportPsiDataJob.perform_async credential.attributes.to_json
+  end
+
+  def clean_data_psi
+    CleanPsiDataJob.perform_async credential.attributes.to_json
   end
 
   def import_zaremba_provider
