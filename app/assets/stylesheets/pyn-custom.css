@@ -23,7 +23,7 @@ textarea {
     padding-top: 110px;
 }
 .clean-data-btn {
-    display: block;
+    display: none;
 }
 .add-user-button {
     float: right;
