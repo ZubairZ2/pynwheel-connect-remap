@@ -13,9 +13,24 @@ $(document).ready(function () {
 
 });
 
-function onEditButtonClick(tour_id) {
+function onEditButtonClick(tour_id,tour_user_id) {
   stops_list = $(`#customize-tour-stops-${tour_id}`).data("tourStops");
-  console.log(stops_list);
+  $("#edit-modal-data").empty();
+  $.ajax({
+    type: "GET",
+    url: "/community_custom_tour",
+    data: {
+      scheduled_tour_id: tour_id,
+      tour_user_id: tour_user_id
+      },
+    success: function (data) {
+      console.log("sccuess");
+      $("#edit-modal-data").prepend(data);
+      $('#customTourModal').modal("show");
+    },
+    error: function () {console.log("error");
+    }
+  });
 }
 
 function handleTourStopsVisibility(stop_id, tour_user_id) {
