@@ -1,5 +1,5 @@
 class LatchAccountsController < ApplicationController
-    include Error::ErrorHandler
+    # include Error::ErrorHandler
     before_action :set_user
 
     def new

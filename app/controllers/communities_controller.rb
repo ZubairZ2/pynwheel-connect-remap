@@ -1,5 +1,5 @@
 class CommunitiesController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   include DweloDevicesHelper
   include CommunitiesHelper
   include FeedbacksHelper

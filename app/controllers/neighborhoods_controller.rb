@@ -1,5 +1,5 @@
 class NeighborhoodsController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
 	add_breadcrumb "Home", :root_path
 	add_breadcrumb "Neighborhood Settings"
   before_action :check_community

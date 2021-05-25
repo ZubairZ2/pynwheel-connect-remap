@@ -1,5 +1,5 @@
 class SitemapAmenitiesController < ApplicationController
-	include Error::ErrorHandler
+	# include Error::ErrorHandler
 	add_breadcrumb "Home", :root_path
 	before_action :authenticate_user!
 	before_action :check_community

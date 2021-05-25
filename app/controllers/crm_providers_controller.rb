@@ -1,5 +1,5 @@
 class CrmProvidersController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   def update
 
     @crm_provider = CrmCredential.find(params[:id])

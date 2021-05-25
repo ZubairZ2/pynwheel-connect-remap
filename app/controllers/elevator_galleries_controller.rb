@@ -1,5 +1,5 @@
 class ElevatorGalleriesController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   def edit
     @community = Community.find params[:community_id]
     @elevator = Elevator.find params[:elevator_id]

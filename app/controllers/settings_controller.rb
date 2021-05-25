@@ -1,5 +1,5 @@
 	class SettingsController < ApplicationController
-	include Error::ErrorHandler
+	# include Error::ErrorHandler
 	add_breadcrumb "Home", :root_path
 	before_action :check_community
 	before_action :set_community

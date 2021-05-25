@@ -1,5 +1,4 @@
 class WebpagesController < ActionController::Base
-  include Error::ErrorHandler
   before_action :set_community, except: [:update_session]
   after_action :maintain_session, except: [:update_session]
   before_action :set_timezone, except: [:update_session]

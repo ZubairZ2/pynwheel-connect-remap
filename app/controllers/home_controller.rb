@@ -1,5 +1,5 @@
 class HomeController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   before_action :check_community
   def index
   	if current_user.is_super_admin?
