@@ -51,18 +51,19 @@
         "paging": true,
         "info": true,
         "sAjaxSource": $('#miyazaki').data('source'),
-        "processing": true,
+        "bProcessing": true,
         oLanguage: {
-          sProcessing: "Processing data. Please wait...",
+          sProcessing: '<div class="divLoading" ></div>',
         },
         "bServerSide": true,
         "bDeferRender": true,
         "columnReorder": true,
-        "sSearch": true        
+        "sSearch": true,
+        "lengthMenu": [ 5, 10, 25, 50, 100 ],
+        "pageLength": 10        
       }
     );
     $('.dataTables_length').addClass('bs-select');
-    //$('div.dataTables_processing').hide();  To hide the processing css
   });
   if(window.location.href.includes('userSearch'))
   {

@@ -43,7 +43,7 @@
 }
 
 div.dataTables_processing {
-    position: absolute;
+    position: unset !important;
     top: 44%;
     left: 91%;
     width: 18%;
@@ -54,16 +54,8 @@ div.dataTables_processing {
     padding-bottom: 20px;
     text-align: center;
     font-size: 1.2em;
-    background-color: white;
+    background-color: none !important;
 } 
-
-.panel-default {
-    border-color: none !important;
-}
-
-div.dataTables_wrapper div.dataTables_processing {
-    top: 33px;
-}
 
 .animate-element {
     animation: shadow-pulse 0.5s infinite;
