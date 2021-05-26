@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   get '/error', to: 'error_logs#generate_error', as: 'error_logs_generate'
   get '/error_page', to: 'error_logs#error_page', as: 'error_page'
   post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
+  get :community_custom_tour, to: 'schedual_tours#community_custom_tour'
 
   get 'community_groups/index'
 

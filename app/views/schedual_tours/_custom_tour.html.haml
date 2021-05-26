@@ -1,7 +1,4 @@
-%a.btn.btn-success.custom-tour-btn{:onclick => "onEditButtonClick(#{tour.id})", "data-target" => "#customTourModal#{tour.id}", "data-toggle" => "modal", :href => "#"}
-  %i.fa.fa-edit.icon_size
-
-.modal.fade{:id => "customTourModal#{tour.id}", :class => "customTourModal", "aria-hidden" => "true", "aria-labelledby" => "customTourModal#{tour_user.id}", :role => "dialog", :tabindex => "-1"}
+.modal.fade{:id => "customTourModal", :class => "customTourModal", "aria-hidden" => "true", "aria-labelledby" => "customTourModal#{tour_user.id}", :role => "dialog", :tabindex => "-1"}
   .modal-dialog.modal-md
     .modal-content
       .modal-header
@@ -28,7 +25,7 @@
 
       .modal-footer
         - if tour.is_tour_completed
-          %a.btn.btn-success.pull-right{:href => schedule_tour_of_user(@community, @community_code, tour_user.id)} Schedule Another Tour
+          %a.btn.btn-success.pull-right{:href => schedule_tour_of_user(community, community_code, tour_user.id)} Schedule Another Tour
 
         - else
           - if is_tour_in_future(community, tour)
@@ -39,4 +36,4 @@
             %button.btn.btn-warning{:type => "button", :onclick => "resetToStandardTour(#{community.id}, #{tour_user.id})"} Reset to Standard Tour
 
 = render :partial => 'customize_tour_stops', :locals => {tour_user: tour_user, tour: tour, community: community, community_code: community_code, community_tour_stops: community_tour_stops}
-%div{ :id => "customize-tour-stops-#{tour.id}", data: { tour_stops: get_visible_tour_stops(@community, tour) } }
+%div{ :id => "customize-tour-stops-#{tour.id}", data: { tour_stops: get_visible_tour_stops(community, tour) } }

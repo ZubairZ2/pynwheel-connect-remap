@@ -75,6 +75,7 @@ gem 'execjs'
 gem 'therubyracer'
 gem 'carrierwave', '~> 1.0'
 gem 'jquery-datatables-rails', '~> 3.4.0'
+gem 'will_paginate'
 gem "breadcrumbs_on_rails"
 gem 'carrierwave-base64'
 gem "fog-aws"
