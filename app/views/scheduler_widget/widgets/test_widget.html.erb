@@ -976,6 +976,8 @@
       jQuery(function ($) {
         var show_error, stripeResponseHandler;
         $("#new_tour_user").submit(function (event) {
+          $('#confirm_reservation').attr('disabled', true);
+          $('#confirm_reservation').css("opacity", "0.5");
           if (parseInt($('#desired_bedroom').val()) < 0 || parseInt($('#desired_bedroom').val()) > 10)
           {
             alert("Invalid Number of Berdrooms");
@@ -983,9 +985,12 @@
           }
           var $form;
           $form = $(this);
+          // debugger
           $form.find("input[type=submit]").prop("disabled", true);
           Stripe.card.createToken($form, stripeResponseHandler);
+          
           // $('#confirm_reservation').attr('disabled','disabled');
+          // debugger
           return false;
           
         });
