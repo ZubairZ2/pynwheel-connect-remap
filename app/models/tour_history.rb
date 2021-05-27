@@ -85,16 +85,18 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both(@complete_tour_content, community)
         send_email_sms_or_both_to_touruser(@thank_you_content, community)
         # community.deleted_ids = []
-        puts "************"*100
-        puts "community.credential.present?"
-        puts community.credential.present?
-        puts "************"*100
-        puts community.crm_credential.present?
-        puts "************"*100
-        puts community.crm_credential.crm_provider
-        puts "************"*100
-
+     
         if community.credential.present? and community.crm_credential.present? and community.crm_credential.crm_provider == "salesforce"
+
+          puts "************"*100
+          puts "community.credential.present?"
+          puts community.credential.present?
+          puts "************"*100
+          puts community.crm_credential.present?
+          puts "************"*100
+          puts community.crm_credential.crm_provider.present?
+          puts "************"*100
+
           current_tour = VisitedStop.where(tour_user_id: tour_user.id, tour_id: self.tour_id).last
           puts "current_tour"
           puts current_tour
@@ -174,7 +176,8 @@ class TourHistory < ApplicationRecord
 
     available_stops = avail_stops_name_of_community
     visited_stops = stop_marketing_names_visited_by_user
-    data_provider = community.use_crm_credentials? ? community.crm_credential.crm_provider : community.data_provider
+    data_provider = (community.use_crm_credentials? && community.crm_credential.present? && community.crm_credential.crm_provider.present?) ? community.crm_credential.crm_provider : community.data_provider
+    
     if data_provider == "realpagesvc"
       RealPageGuestCardIntegrationJob.perform_async(community.credential.attributes.to_json, self.tour_user, tour_time, end_time, tour_status, available_stops, visited_stops,community)
     elsif data_provider == "psi"
