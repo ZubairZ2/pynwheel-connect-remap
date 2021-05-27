@@ -57,6 +57,7 @@ private
     community = Community.find @community if @community.present?
     scheduled_tours.map do |scheduled_tour|
       @tour_user = scheduled_tour.tour_user
+      visible_tour_stops = get_visible_tour_stops(community, scheduled_tour)
       [
         ind = ind + 1,
         get_scheduled_tour_html_date_time(scheduled_tour,community),
@@ -64,7 +65,7 @@ private
         @tour_user.email,
         @tour_user.phone_number,
         '<div style="display: flex;">'+
-          '<a class="btn btn-success custom-tour-btn" onclick="onEditButtonClick('+"#{scheduled_tour.id}"+','+"#{@tour_user.id}"+')"'+'>'+
+          '<a class="btn btn-success custom-tour-btn" id="edit-custom-tour-'+"#{scheduled_tour.id}"+'" onclick="onEditButtonClick('+"#{visible_tour_stops}"+','+"#{scheduled_tour.id}"+','+"#{@tour_user.id}"+')"'+'>'+
             '<i class="fa fa-edit icon_size"></i>'+
           '</a>'+
           '<a class="btn btn-danger" data-href="/communities/'+"#{@community}"+'/scheduled_tours/'+"#{scheduled_tour.id}"+'?delete_type=page" data-name="Tour" data-target="#confirm-delete" data-toggle="modal" href="javascrip::;"''>'+
@@ -83,7 +84,7 @@ private
     scheduled_tours = SchedualTour.where(community_id: @community).where.not(tour_user_id: nil).desc_created_at rescue ""
     scheduled_tours = scheduled_tours.page(page).per_page(per_page)
     if params[:sSearch].present?
-      scheduled_tours = scheduled_tours.joins(:tour_user).where("tour_users.email like :search or tour_users.name like :search or tour_users.phone_number like :search", search: "%#{params[:sSearch]}%")
+      scheduled_tours = scheduled_tours.joins(:tour_user).where("tour_users.email like :search or lower(tour_users.name) like :search or tour_users.phone_number like :search", search: "%#{params[:sSearch]}%")
     end
     scheduled_tours
   end

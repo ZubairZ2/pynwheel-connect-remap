@@ -52,17 +52,21 @@
         "info": true,
         "sAjaxSource": $('#miyazaki').data('source'),
         "bProcessing": true,
-        oLanguage: {
-          sProcessing: '<div class="divLoading" ></div>',
+        "sSearch": true,
+        "oLanguage": {
+          "sProcessing": '<div class="divLoading" ></div>'
         },
         "bServerSide": true,
         "bDeferRender": true,
         "columnReorder": true,
-        "sSearch": true,
         "lengthMenu": [ 5, 10, 25, 50, 100 ],
-        "pageLength": 10        
+        "pageLength": 10       
       }
     );
+      
+      $('.input-sm').on('keyup',function(){
+        $(".dataTables_processing").hide();
+      });
     $('.dataTables_length').addClass('bs-select');
   });
   if(window.location.href.includes('userSearch'))
