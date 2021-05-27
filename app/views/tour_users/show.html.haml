@@ -106,7 +106,7 @@
                           %br
                           .alert-div2{:style => "margin-top: -10px"}
                             = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                            #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.lengthy_stay.present? && alert.arrived.present? ? ((((end_time - alert.arrived) / 3600) - ((end_time - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
+                            #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) /   ).to_i.to_s + " hour " + ((end_time.present? && alert.lengthy_stay.present? && alert.arrived.present? ? ((((end_time - alert.arrived) / 3600) - ((end_time - alert.arrived) / 3600).round ) * 60) : 0)).round.to_s + " Minutes"}
                           %br
                           .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
                             - if alert.tour_status.present? && alert.created_at > "2021-03-04".to_date && alert.tour_status == "virtual_tour"
