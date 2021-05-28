@@ -3983,7 +3983,7 @@ div.mydiv {
 .pyn-toolTip {
     position: relative;
     display: inline-block;
-    z-index: 10000;
+    z-index: 1000;
 }
 
 .propertyDetailName #propertyDetailNameText {
