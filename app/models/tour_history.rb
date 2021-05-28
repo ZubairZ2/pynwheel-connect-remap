@@ -140,7 +140,7 @@ class TourHistory < ApplicationRecord
   def is_tour_on_time(scheduled_tour, community, timezone = nil)
     tour = community.tour
 
-    if tour.grace_period.present?
+    if  tour.only_scheduled_tour && tour.grace_period.present?
       if community.present? && community.latitude.present? && community.longitude.present?
         timezone = get_time_zone(community)
       end
@@ -160,7 +160,7 @@ class TourHistory < ApplicationRecord
         false
       end
     else
-      false
+      true
     end
   end
 
