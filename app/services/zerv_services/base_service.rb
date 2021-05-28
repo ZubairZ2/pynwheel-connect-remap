@@ -9,15 +9,18 @@ module ZervServices
         end
         
         def get_id_token
-            token  = Rails.cache.fetch(:id_token, expires_in: 20.minutes.from_now) do
-                result = generate_id_token
-                result[:error].nil? ? result[:id_token] : nil
-            end
+            # token  = Rails.cache.fetch(:id_token, expires_in: 20.minutes.from_now) do
+            #     result = generate_id_token
+            #     result[:error].nil? ? result[:id_token] : nil
+            # end
 
-            if token.nil? or token.blank? or !Rails.cache.exist?(:id_token)
-                result = generate_id_token
-                token = result[:error].nil? ? result[:id_token] : nil
-            end
+            # if token.nil? or token.blank? or !Rails.cache.exist?(:id_token)
+            #     result = generate_id_token
+            #     token = result[:error].nil? ? result[:id_token] : nil
+            # end
+
+            result = generate_id_token
+            token = result[:error].nil? ? result[:id_token] : nil
 
             return token 
         end
