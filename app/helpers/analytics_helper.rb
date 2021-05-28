@@ -151,7 +151,8 @@ def make_bar_chart(session_each_day_labels, session_each_day_counts, label, back
   end
 
   def product_type
-      [ ["Maps","maps"], ["Self Tour", "self_tour"], ["Touch", "touch"], ["All", "all"] ]
+      #[ ["Maps","maps"], ["Self Tour", "self_tour"], ["Touch", "touch"], ["All", "all"] ]
+      [ ["Self Tour", "self_tour"]]
   end
 
   def admin_type

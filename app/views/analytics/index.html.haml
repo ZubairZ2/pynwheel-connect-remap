@@ -7,7 +7,7 @@
   - community_id =  defined?(@community_id).nil? ? '' : @community_id
   - company_id = defined?(@company_id).nil? ? '' : @company_id
   - region_id = defined?(@region_id).nil? ? '' : @region_id
-  - product_type_selected =  defined?(@product_type).nil? ? 'all' : @product_type
+  - product_type_selected =  defined?(@product_type).nil? ? 'self_tour' : @product_type
   - admin_type_selected = defined?(@admin_type).nil? ? '' : @admin_type
   = hidden_field_tag "start_date", @start_date
   = hidden_field_tag "end_date", @end_date
@@ -57,7 +57,7 @@
               %h4 TimeFrame
               = text_field_tag 'timeframe', nil, { class: 'date_range_filter', :style => "width: 100%" }
 
-    - if @product_type == "all" || @product_type == "maps"
+    - if false && @product_type == "all" || @product_type == "maps"
       .box.box-info.add-plan.mt-20
         .box-header
           %h3.box-title
@@ -471,7 +471,7 @@
           - else
             %h3 There is no record found on selected date range
 
-    - if @product_type == "all" || @product_type == "touch"
+    - if false && @product_type == "all" || @product_type == "touch"
       .box.box-info.add-plan.mt-20
         .box-header
           %h3.box-title
