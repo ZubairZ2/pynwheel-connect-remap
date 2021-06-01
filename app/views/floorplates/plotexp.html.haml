@@ -254,7 +254,7 @@
     {
       $('[data-toggle="plotUnitOnFloorplatePopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
@@ -263,7 +263,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplateManageAmenitiesPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding"  style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding"  style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -272,7 +272,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="floorplateGridOverlayPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -283,10 +283,11 @@
         $('[data-toggle="floorplateSelectPlotToUnitsPopover"]').popover({
         placement: 'left',
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">You can select one or multiple units to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
       showHideOverlayGrid();
     });
+    
     $(document).on("click", "#sitempaDisplayHomepagePopoverClose" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');

@@ -184,12 +184,13 @@
         %button.btn.btn-success{:class =>"publish_changes_btn4 publish_changes_btn", :type => "button"} Next
       .modal_next_button5.publish-changes-screen-btn.hidden
         %button.btn.btn-success{"data-dismiss" => "modal",:class =>"publish_changes_btn5 publish_changes_btn", :type => "button"} OK
-
+    
+-# document.getElementById("community_name").scrollIntoView( {behavior: "smooth" })
 :javascript
   $(".welcome_prompt_btn2").click(function(){
     $('[data-toggle="propertyDetailNamePopover1"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Name will change the name of the property on the "Favorites" page.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the Name will change the name of the property on the "Favorites" page.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
 
     #{current_user.welcome_prompt = true}

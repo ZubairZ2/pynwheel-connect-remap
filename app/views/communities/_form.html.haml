@@ -259,9 +259,10 @@
     $(document).on("click", "#propertyDetailNameId" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="propertyDetailAddressPopover"]').popover({
+
+      $('[data-toggle="propertyDetailAddressPopover"]:first').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Address will change how it appears on the eBrochure, and will change the lat/long of the property on the "Neighborhood" page.</div><div class="popover-footer"><a id="propertyDetailAddressId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the Address will change how it appears on the eBrochure, and will change the lat/long of the property on the "Neighborhood" page.</div><div class="popover-footer"><a id="propertyDetailAddressId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -271,7 +272,7 @@
       
       $('[data-toggle="propertyDetailEmailPopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the email address will change the "from" email address for the eBrochure.</div><div class="popover-footer"><a id="propertyDetailEmailId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the email address will change the "from" email address for the eBrochure.</div><div class="popover-footer"><a id="propertyDetailEmailId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -280,7 +281,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="propertyDetailWebsitePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the website address will change how it appears on the eBrochure.</div><div class="popover-footer"><a id="propertyDetailWebsiteId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the website address will change how it appears on the eBrochure.</div><div class="popover-footer"><a id="propertyDetailWebsiteId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 

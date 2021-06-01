@@ -4837,3 +4837,28 @@ input:checked+.slider:before {
     padding: 20px;
     font-weight: 600;
 }
+
+.pyn-popover {
+    top: -25px !important;
+    width: max-content;
+}
+
+.pyn-popover-arrow {
+    top: 35px !important
+}
+
+.pyn-popover-arrow::after {
+    border-left-color: #000000 !important;
+}
+
+.plotexp-uploading-popover {
+    top: 50% !important;
+}
+
+.plotexp-uploading-popover-arrow {
+    top: 13.44% !important
+}
+
+.plotexp-uploading-popover-arrow::after {
+    border-left-color: #000000 !important;
+}

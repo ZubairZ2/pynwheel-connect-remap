@@ -296,7 +296,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="animationPopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing Animation will change the movement of the menu buttons on the home page.</div><div class="popover-footer"><a id="animationPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing Animation will change the movement of the menu buttons on the home page.</div><div class="popover-footer"><a id="animationPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -305,7 +305,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="slideShowImagePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Adding files will add images to the home page slide show. You can drag and drop the images below to rearrange them.</div><div class="popover-footer"><a id="slideShowImagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Adding files will add images to the home page slide show. You can drag and drop the images below to rearrange them.</div><div class="popover-footer"><a id="slideShowImagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
     $(document).on("click", "#slideShowImagePopoverClose" , function(){
