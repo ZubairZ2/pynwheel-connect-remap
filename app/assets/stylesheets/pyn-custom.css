@@ -4837,3 +4837,32 @@ input:checked+.slider:before {
     padding: 20px;
     font-weight: 600;
 }
+
+
+/* .hint-unit-blink {
+    animation: blink 2s steps(5, start) infinite;
+    -webkit-animation: blink 1s steps(5, start) infinite;
+}
+@keyframes hint-unit-blink  {
+    to {
+        visibility: hidden;
+    }
+}
+@-webkit-keyframes hint-unit-blink  {
+    to {
+        visibility: hidden;
+    }
+} */
+
+@keyframes hint-unit-blink {
+    0% { opacity: 1;}
+    50% { opacity: 0.5;}
+    100% { opacity: 0;}
+}
+.hint-unit-blink {
+  -webkit-animation: hint-unit-blink 1.5s linear infinite;
+  -moz-animation: hint-unit-blink 1.5s linear infinite;
+  -ms-animation: hint-unit-blink 1.5s linear infinite;
+  -o-animation: hint-unit-blink 1.5s linear infinite;
+  animation: hint-unit-blink 1.5s linear infinite;
+}

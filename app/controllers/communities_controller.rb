@@ -533,12 +533,17 @@ class CommunitiesController < ApplicationController
   end
 
   def auto_plot_units
-    units = @community.units.where(floorplate_id: nil)
-    aws_ocr_detected_units = get_aws_ocr_detected_units(@community)
-    dimensions = get_image_dimensions(aws_ocr_detected_units, @community)
-    set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
+    if !Rails.env.development?
+      units = @community.units.where(floorplate_id: nil)
+      aws_ocr_detected_units = get_aws_ocr_detected_units(@community)
+      dimensions = get_image_dimensions(aws_ocr_detected_units, @community)
+      # set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
 
-    redirect_to plotexp_community_sitemaps_path(@community), notice: "Auto Plotting is Done"
+      render :json => { data: aws_ocr_detected_units, dimensions: dimensions }, :status => 200
+    else
+      render :json => { data: [], dimensions: {} }, :status => 405
+    end
+      # redirect_to plotexp_community_sitemaps_path(@community), notice: "Auto Plotting is Enabled"
   end
 
   def add_plots
@@ -776,8 +781,10 @@ class CommunitiesController < ApplicationController
   end
 
   def s3_img_url community
-    # community.sitemap.image.url if community.sitemap.image.url.present?
-    "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1127/1575971020-floorplate_image.png"
+    community.sitemap.image.url if community.sitemap.image.url.present?
+    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1127/1575971020-floorplate_image.png"
+
+    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/sitemap/image/959/1618944046-Site_map__Converted_-01.png"
   end
 
   def show_chat_modal(tour_user_id, tour_id)

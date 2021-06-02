@@ -200,7 +200,7 @@ function saveSiteMapUnit(id, dx, dy) {
 
             $('#' + data.unit.provider_unit_id + '-selectable').remove();
             $('#' + data.unit.provider_unit_id + '-selection').remove();
-
+            $(".hint-unit-blink").remove();
         });
 }
 

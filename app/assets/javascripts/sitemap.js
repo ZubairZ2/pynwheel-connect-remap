@@ -1,4 +1,7 @@
 $(document).ready(function () {
+  var imageOCRResponse = [];
+  var ocrImageDimensions;
+
   if ($('.is-sitemap')[0]) {
     selected = [];
     var temp = [];
@@ -44,6 +47,8 @@ $(document).ready(function () {
       unit_provider_id = unit_provider_id.replace("-selectable", "")
       console.log(unit_provider_id);
       selected.push([unit_provider_id, $(this).children('span').text()]);
+      $(".hint-unit-blink").remove();
+      displayHints();
       plotMode();
     });
 
@@ -118,6 +123,59 @@ $(document).ready(function () {
 
   }
 });
+
+function  enableAutoPlotting(communityId) {
+  console.log("Enable Automate Plotting", communityId);
+  $.ajax({
+      url: `/communities/${community_id}/auto_plot_units`,
+      type: "GET"
+  }).done(function(resp){
+    console.log("resp[onse: ", resp);
+    imageOCRResponse = resp.data;
+    ocrImageDimensions = resp.dimensions;
+    alert("Auto Plotting has enabled");
+    $("#autoPlotting").html("Enabled Plotting");
+  }).fail(function() {
+    alert( "In development environment automate plotting is not allowed" );
+  });
+}
+
+function displayHints() {
+  // debugger;
+
+  if(imageOCRResponse && imageOCRResponse.length > 0 ) {
+    selected.forEach(selected_units => {
+      imageOCRResponse.forEach(ocr_u => {
+        if(ocr_u.text && ocr_u.text.length > 2) {
+          if(textFilter(selected_units[1], ocr_u.text)) {
+            console.log(selected_units[1])
+            console.log(ocr_u)
+            console.log("Left :   ", ocrImageDimensions.width * ocr_u.left)
+            console.log("Top  :   ", ocrImageDimensions.height * ocr_u.top)
+
+            let unit_left = ocrImageDimensions.width * ocr_u.left;
+            let unit_top = ocrImageDimensions.height * ocr_u.top;
+
+            $('#map').append('<i class="fa fa-circle-thin hint-unit-blink" style="color: #d37474; left:' + unit_left + 'px; top:  '+ unit_top + 'px; position:absolute; transform: scale(3);"></i>')
+
+          }
+        }
+      });
+    });
+  }
+}
+
+function textFilter(selectedUnit, ocrDetectedUnit) {
+  u_parts = ocrDetectedUnit.split("-");
+  let u_flag = false
+  u_parts.forEach((u_text) =>{
+    if(selectedUnit.includes(u_text)) {
+      u_flag = true
+    }
+  });
+
+  return u_flag;
+}
 
 function saveSiteMapImageOrSvg() {
   var siteMapImageDropzone = new Dropzone("#sitemap-image-upload-holder", {url: "/communities/" + community_id + "/sitemaps/" + sitemap_id + "/save_sitemap_image"});

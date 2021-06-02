@@ -23,6 +23,12 @@ class AwsTextract < BaseService
               }
             })
 
+
+    puts "-----------------"*10
+    puts resp.inspect
+    puts "-----------------"*10
+
+
     if resp.present? && resp.blocks.present?
       resp.blocks.map {|block| {text: block.text, width: block.geometry.bounding_box.width, height: block.geometry.bounding_box.height, top: block.geometry.bounding_box.top, left: block.geometry.bounding_box.left, polygone: block.geometry.polygon}}
     else
