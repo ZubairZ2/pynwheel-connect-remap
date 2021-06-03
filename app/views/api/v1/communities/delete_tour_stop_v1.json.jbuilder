@@ -202,7 +202,7 @@ json.tours @tours do |tour|
 
                   if (add_mdu) and !(@community.deleted_ids.include? add_stop.id)
                     if (add_stop.is_a?(Tour)) || add_stop.stop_type === "elevator" || add_stop.stop_type === "building_starting_point"
-                      stops_arr << add_startop
+                      stops_arr << add_stop
                     else
                       if scheduled_tour_stops.present?
                         stop_ids = scheduled_tour_stops.pluck(:id)
