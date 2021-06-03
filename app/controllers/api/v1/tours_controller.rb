@@ -211,7 +211,7 @@ iPhone Users:
 
   def tour_user_login
     ph_nm = params[:phone_number]
-    phone_number = ph_nm[0] == "1" ? "+" + ph_nm : ((ph_nm[0] != "+" and ph_nm[0] != "1") ? ("+1" + ph_nm) : ph_nm)
+    phone_number = ph_nm[0] == "1" ? "+" + ph_nm : ((ph_nm[0] != "+" and ph_nm[0] != "1") ? ("+1" + ph_nm) : ph_nm) if ph_nm.present?
     tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
     if tu.blank?
       tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false)
