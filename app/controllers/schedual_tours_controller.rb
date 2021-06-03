@@ -1,13 +1,19 @@
 class SchedualToursController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   before_action :set_schedual_tour, only: [:show, :edit, :update, :destroy]
   skip_before_action :authenticate_user!
   include StripeServices
+  include SchedualToursHelper
 
   # GET /schedual_tours
   # GET /schedual_tours.json
   def index
     @schedual_tours = SchedualTour.where(community_id: @community.id).where.not(tour_user_id: nil).order! 'created_at DESC' rescue ""
+    community = params['community'] if params['community'].present?
+    respond_to do |format|
+      format.html
+      format.json { render json: SchedualToursDatatable.new(view_context,community) }
+    end
   end
 
   # GET /schedual_tours/1
@@ -26,6 +32,15 @@ class SchedualToursController < ApplicationController
 
   def change_tour_time
     
+  end
+
+  def community_custom_tour
+    tour_user = TourUser.find params['tour_user_id'] if params['tour_user_id'].present?
+    scheduled_tour = SchedualTour.find params['scheduled_tour_id'] if params['scheduled_tour_id'].present?
+    community = scheduled_tour.community
+    @community_tour_stops = get_user_tour_stops(community)
+    community_code = (JWT.encode ({"community_id" => community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256') if community.present?
+    render partial: 'schedual_tours/custom_tour', :locals => {tour_user: tour_user, tour: scheduled_tour, community: community, community_code: community_code, community_tour_stops:  @community_tour_stops }
   end
   
   def create_tour_user_from

@@ -22,7 +22,9 @@ textarea {
 .main-sidebar {
     padding-top: 110px;
 }
-
+.clean-data-btn {
+    display: none;
+}
 .add-user-button {
     float: right;
 }
@@ -517,7 +519,7 @@ textarea {
 
 .reshedule-notification {
     color: red;
-    display: none;
+    display: none !important;
 }
 
 .expired_tour_text {
@@ -3981,7 +3983,7 @@ div.mydiv {
 .pyn-toolTip {
     position: relative;
     display: inline-block;
-    z-index: 10000;
+    z-index: 1000;
 }
 
 .propertyDetailName #propertyDetailNameText {
@@ -4834,4 +4836,29 @@ input:checked+.slider:before {
     background: #e6e6e6;
     padding: 20px;
     font-weight: 600;
+}
+
+.pyn-popover {
+    top: -25px !important;
+    width: max-content;
+}
+
+.pyn-popover-arrow {
+    top: 35px !important
+}
+
+.pyn-popover-arrow::after {
+    border-left-color: #000000 !important;
+}
+
+.plotexp-uploading-popover {
+    top: 50% !important;
+}
+
+.plotexp-uploading-popover-arrow {
+    top: 13.44% !important
+}
+
+.plotexp-uploading-popover-arrow::after {
+    border-left-color: #000000 !important;
 }

@@ -13,16 +13,33 @@ $(document).ready(function () {
 
 });
 
-function onEditButtonClick(tour_id) {
-  stops_list = $(`#customize-tour-stops-${tour_id}`).data("tourStops");
-  console.log(stops_list);
+function onEditButtonClick(visible_tour_stops,tour_id,tour_user_id) {
+  // stops_list = $(`#customize-tour-stops-${tour_id}`).data("tourStops");
+  stops_list = visible_tour_stops
+  $(`#edit-custom-tour-${tour_id}`).addClass('disabled');
+  $("#edit-modal-data").empty();
+  $.ajax({
+    type: "GET",
+    url: "/community_custom_tour",
+    data: {
+      scheduled_tour_id: tour_id,
+      tour_user_id: tour_user_id
+      },
+    success: function (data) {
+      console.log("sccuess");
+      $("#edit-modal-data").prepend(data);
+      $('#customTourModal').modal("show");
+      $(`#edit-custom-tour-${tour_id}`).removeClass('disabled');
+    },
+    error: function () {console.log("error");
+    }
+  });
 }
 
 function handleTourStopsVisibility(stop_id, tour_user_id) {
   let selector = $(`.stop_eye_slash${stop_id}${tour_user_id}`);
 
   console.log(stops_list.length);
-  
     if(selector && selector[0] && selector[0].classList.contains("fa-eye")) {
      
       if(stops_list.length > 1) {

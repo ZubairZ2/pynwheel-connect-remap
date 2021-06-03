@@ -1,5 +1,5 @@
 class CommunitiesController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   include DweloDevicesHelper
   include CommunitiesHelper
   include FeedbacksHelper
@@ -308,6 +308,24 @@ class CommunitiesController < ApplicationController
       redirect_to community_settings_path(:community_id=>@community.id)
     end
   end
+
+  def clean_psi_units_data
+    Thread.current[:errors] = []
+    @community = Community.find params[:community_id]
+
+    if @community.credentials_are_present? && @community.check_credentials
+      if @community.clean_psi_data_provider and Thread.current[:errors].empty?
+        flash[:notice] = "Good job! You have successfully Clean Units data."
+        redirect_to community_settings_path(:community_id=>@community.id)
+      else
+        flash[:error] = Thread.current[:errors].join(',')
+        redirect_to community_settings_path(:community_id=>@community.id)
+      end
+    else
+      flash[:error] = "Please enter valid credentials in settings before clean data."
+      redirect_to community_settings_path(:community_id=>@community.id)
+    end
+  end 
 
   def experimental_import
     @community = Community.find params[:community_id]

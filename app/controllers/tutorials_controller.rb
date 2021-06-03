@@ -1,5 +1,5 @@
 class TutorialsController < ApplicationController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   def index
     @tutorials = get_all_tutorials(  (@community.touchscreen_app.present? ? (@community.touchscreen_app) : false) , (@community.show_map.present? ? (true) : true) ,(@community.self_tour.present? ? (@community.self_tour) : false)  )
     # @tutorials = Tutorial.where('pynwheel_touch = ? OR pynwheel_maps = ? OR self_tour = ?', (@community.touchscreen_app.present? ? (@community.touchscreen_app) : false) , (@community.show_map.present? ? (@community.show_map) : false) ,(@community.self_tour.present? ? (@community.self_tour) : false))

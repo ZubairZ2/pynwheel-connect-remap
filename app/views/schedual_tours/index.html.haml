@@ -1,5 +1,4 @@
 - content_for :title, "Schedule Tours - Pynwheel"
-- community_tour_stops = get_user_tour_stops(@community, @tour_user)
 .divLoading.hidden
 %section
   .content
@@ -21,8 +20,7 @@
         .row
           .col-md-12#outer_div
             .box.box-widget.panel-box.add-plan.pt-30
-              
-              %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units.schedule_tour_table.scheduled-visitors-detailed-table
+              %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units.schedule_tour_table.scheduled-visitors-detailed-table.scheduled-tours-table{"data-source" => schedual_tours_url(community:@community,community_code:@community_code,format: "json")}
                 %thead
                   %tr
                     %th{:style => "width: 55px;"} Sr #
@@ -33,41 +31,8 @@
                     %th Actions
               
                 %tbody
-                  - ind = 0
-                  - @schedual_tours.each_with_index  do |tour, index|
-                    - @tour_user = tour.tour_user
-                    - if @tour_user.present?
-                      .row
-                        %tr
-                          %td
-                            = ind = ind + 1
-                          %td
-                            = scheduled_tour_date_time(tour)
-                            - if tour.is_tour_completed
-                              %i.fa.fa-check-square.icon_size.customizeTourToolTip
-                                %span#customizeTourToolTipText
-                                  Tour has completed
-                            - else
-                              - if is_tour_in_future(@community, tour)
-                                - if is_tour_customized(tour)
-                                  %i.fa.fa-info-circle.icon_size.customizeTourToolTip
-                                    %span#customizeTourToolTipText
-                                      Customized Tour
-                              - else
-                                %i.fa.fa-exclamation-triangle.icon_size.expiredTourToolTip
-                                  %span#expiredTourToolTipText
-                                    Tour has expired
-                                
-                          %td
-                            = tour_user_name(@tour_user) 
-                          %td
-                            = @tour_user.email
-                          %td
-                            = @tour_user.phone_number
-                          %td{:style => "display: flex;"}
-                            = render :partial => 'custom_tour', :locals => {tour_user: @tour_user, tour: tour, community: @community, community_code: @community_code, community_tour_stops: community_tour_stops}
-                            %a.btn.btn-danger{"data-name"=>"Tour","data-href" => "/communities/#{@community.id}/scheduled_tours/#{tour.id}?delete_type=page", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
-                              %i.fa.fa-trash.icon_size
+
+%div{ :id => "edit-modal-data" }
 
 .row
   .col-md-12{:style => "position: absolute; bottom: 51px;"}
@@ -81,7 +46,27 @@
 
 :javascript
   $(document).ready(function () {
-    $('#miyazaki').DataTable();
+    $('#miyazaki.scheduled-tours-table').DataTable(
+      {
+        "paging": true,
+        "info": true,
+        "sAjaxSource": $('#miyazaki').data('source'),
+        "bProcessing": true,
+        "sSearch": true,
+        "oLanguage": {
+          "sProcessing": '<div class="divLoading" ></div>'
+        },
+        "bServerSide": true,
+        "bDeferRender": true,
+        "columnReorder": true,
+        "lengthMenu": [ 5, 10, 25, 50, 100 ],
+        "pageLength": 10       
+      }
+    );
+      
+      $('.input-sm').on('keyup',function(){
+        $(".dataTables_processing").hide();
+      });
     $('.dataTables_length').addClass('bs-select');
   });
   if(window.location.href.includes('userSearch'))

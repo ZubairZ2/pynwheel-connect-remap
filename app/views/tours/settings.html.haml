@@ -492,7 +492,7 @@
                             .checkbox
                               = check_box_tag :marketing_source_required, true, @community.tour.marketing_source_required
                               %label Lead source
-                .div_checklist{:class => "#{(@community.credential.present? and @community.crm_credential.crm_provider.present? and @community.crm_credential.crm_provider == "salesforce") ? '' : ( (@community.scheduler_widget.present? and @community.scheduler_widget == true) ? '' : 'hidden')}"}
+                .div_checklist{:class => "#{(@community.credential.present? and  @community.crm_credential.present? and @community.crm_credential.crm_provider.present? and @community.crm_credential.crm_provider == "salesforce") ? '' : ( (@community.scheduler_widget.present? and @community.scheduler_widget == true) ? '' : 'hidden')}"}
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                       Only allow scheduled tours
@@ -1492,16 +1492,16 @@
   {
     $('[data-toggle="1Popover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: fit-content; top -18px;"><div class="arrow"></div><div class="popover-body popover-padding">When this is set to "on" there will be a "Start Tour" button in your Pynwheel Touch app. When touched, the user will enter their cell phone number or scan a QR code and receive a link to download / open the Self Tour app.</div><div class="popover-footer"><a id="1PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content; top -18px;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">When this is set to "on" there will be a "Start Tour" button in your Pynwheel Touch app. When touched, the user will enter their cell phone number or scan a QR code and receive a link to download / open the Self Tour app.</div><div class="popover-footer"><a id="1PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
     $(document).on("click", "#1PopoverId" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="2Popover"]').popover({
+        $('[data-toggle="2Popover"]:first').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">When this is switched to "yes" the app will request that the in-person visitors upload an image of their ID and their face so that we can check the validity of the ID and match their identity. There is a cost associated with this service.</div><div class="popover-footer"><a id="2PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">When this is switched to "yes" the app will request that the in-person visitors upload an image of their ID and their face so that we can check the validity of the ID and match their identity. There is a cost associated with this service.</div><div class="popover-footer"><a id="2PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1510,7 +1510,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="3Popover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">When this is switched to "yes" the app will include a camera button that the prospect can press to take photos on tour. </div><div class="popover-footer"><a id="3PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">When this is switched to "yes" the app will include a camera button that the prospect can press to take photos on tour. </div><div class="popover-footer"><a id="3PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1519,9 +1519,9 @@
         $('html, body').animate({ scrollTop: 300 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="4Popover"]').popover({
+        $('[data-toggle="4Popover"]:first').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">If you plan on using the Pynwheel Scheduler widget to allow users to schedule Self Tours on your website, switch this to "Yes". Tou can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.</div><div class="popover-footer"><a id="4PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">If you plan on using the Pynwheel Scheduler widget to allow users to schedule Self Tours on your website, switch this to "Yes". Tou can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.</div><div class="popover-footer"><a id="4PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1531,7 +1531,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="5Popover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Unscheduled and early or late arrived guests before or after the scheduled time will get proper customizable messages.</div><div class="popover-footer"><a id="5PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Unscheduled and early or late arrived guests before or after the scheduled time will get proper customizable messages.</div><div class="popover-footer"><a id="5PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1541,7 +1541,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="6Popover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: fit-content; top -31px;"><div class="arrow"></div><div class="popover-body popover-padding">Selecting this option will automate which vacant units that appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.</div><div class="popover-footer"><a id="6PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content; top -31px;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Selecting this option will automate which vacant units that appear in the tour. One vacant unit per available floor plan will appear in the list each day. You can hide or unhide units in the list below.</div><div class="popover-footer"><a id="6PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1551,7 +1551,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="7Popover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. </div><div class="popover-footer"><a id="7PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. </div><div class="popover-footer"><a id="7PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1561,7 +1561,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="8Popover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Choose the time increments for scheduled tours. </div><div class="popover-footer"><a id="8PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Choose the time increments for scheduled tours. </div><div class="popover-footer"><a id="8PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1571,7 +1571,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="9Popover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.</div><div class="popover-footer"><a id="9PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.</div><div class="popover-footer"><a id="9PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1581,7 +1581,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="10Popover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: fit-content;"><div class="arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>Thank you for scheduling your self-guided tour! We look forward to having you at the property on (date) at (time). When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive. (Links to app stores).</div><div class="popover-footer"><a id="10PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>Thank you for scheduling your self-guided tour! We look forward to having you at the property on (date) at (time). When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive. (Links to app stores).</div><div class="popover-footer"><a id="10PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1591,7 +1591,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="11Popover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: fit-content;"><div class="arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>We look forward to having you visit our property at <time> tomorrow for your self-guided tour. Download Pynwheel Self Tour (links to app stores). (Link to reschedule appointment).</div><div class="popover-footer"><a id="11PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>We look forward to having you visit our property at <time> tomorrow for your self-guided tour. Download Pynwheel Self Tour (links to app stores). (Link to reschedule appointment).</div><div class="popover-footer"><a id="11PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1601,7 +1601,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="12Popover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: fit-content; "><div class="arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 hour prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>Your self-guided tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Self Tour to start your tour.</div><div class="popover-footer"><a id="12PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content; "><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 hour prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>Your self-guided tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Self Tour to start your tour.</div><div class="popover-footer"><a id="12PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1611,7 +1611,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="13Popover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: fit-content; ""><div class="arrow"></div><div class="popover-body popover-padding">This message will be sent to guest after tour will end.</div><div class="popover-footer"><a id="13PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content; ""><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This message will be sent to guest after tour will end.</div><div class="popover-footer"><a id="13PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 

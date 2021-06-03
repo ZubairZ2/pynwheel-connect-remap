@@ -1,5 +1,5 @@
 class InvitationsController < Devise::InvitationsController
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
   # before_action :check_community
    def new
      #authorize! :invite,current_user		

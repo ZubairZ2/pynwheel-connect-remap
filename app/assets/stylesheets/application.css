@@ -42,6 +42,21 @@
     }
 }
 
+div.dataTables_processing {
+    position: unset !important;
+    top: 44%;
+    left: 91%;
+    width: 18%;
+    height: 60px;
+    margin-left: -50%;
+    margin-top: -25px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    text-align: center;
+    font-size: 1.2em;
+    background-color: none !important;
+} 
+
 .animate-element {
     animation: shadow-pulse 0.5s infinite;
 }

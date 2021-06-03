@@ -204,6 +204,7 @@ $(document).ready(function(){
   imageSitemapAmenityDragNdrop()
   imageElevatorDragNdrop()
   imageElevatorGalleryDragNdrop()
+  imageUnitAmenityDragNdrop()
 
   $('#images-loop-type-radio').click(function(){
     if ($(this).is(':checked')){
@@ -738,7 +739,7 @@ function saveAnimation(value){
       }
     }
   }
-function imageFloorplanAmenityDragNdrop(){
+function imageUnitAmenityDragNdrop(){
     var amenity_image_upload_holder = document.getElementById('unit-amenity-image--upload-holder');
     if (amenity_image_upload_holder){
         amenity_image_upload_holder.ondrop = function (e) {

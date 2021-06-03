@@ -1,10 +1,12 @@
 module SchedualToursHelper
-  def get_user_tour_stops (community, tour_user)
+  def get_user_tour_stops (community)
     if community.present? && community.tour.present?
-      unit_ids = community.tour.tour_stops.where(stop_type: "unit").pluck(:stop_id) 
+      tour_stops = community.tour.tour_stops
+      unit_ids = tour_stops.where(stop_type: "unit").pluck(:stop_id) 
       non_available_stops = unit_ids.present? ? Unit.where(id: unit_ids, available: false).ids : []
-      
-      community.tour.tour_stops.where.not(stop_id: non_available_stops).order(:sort)
+      tour_stops.where.not(stop_id: non_available_stops).order(:sort)
+      # unit_ids = TourStop.joins(:tour).where("tour_stops.stop_type =? AND tours.community_id =?", "unit", community.id).pluck(:stop_id)
+      # TourStop.includes(:tour).where("tours.community_id  =? AND stop_id !=?", community.id, non_available_stops).references(:tours).order(:sort)
     else
       []
     end
@@ -89,11 +91,12 @@ module SchedualToursHelper
   end
 
     def get_visible_tour_stops(community, tour)
+    tour_stops = community.tour.tour_stops
     if tour.present? && tour.stops_list.present?
-      community.tour.tour_stops.where(id: tour.stops_list).pluck(:id)
+      tour_stops.where(id: tour.stops_list).pluck(:id)
     else
-      stop_ids = community.tour.tour_stops.where(display_stop: true).where.not(stop_type: "building_starting_point").where.not(stop_type: "elevator").pluck(:id)
-      unit_stops_ids = community.tour.tour_stops.where(id: stop_ids, stop_type: "unit").pluck(:stop_id)
+      stop_ids = tour_stops.where(display_stop: true).where.not(stop_type: "building_starting_point").where.not(stop_type: "elevator").pluck(:id)
+      unit_stops_ids = tour_stops.where(id: stop_ids, stop_type: "unit").pluck(:stop_id)
       ids_list = Unit.where(id: unit_stops_ids, available: false).pluck(:id)
 
       stop_ids - TourStop.where(stop_id: ids_list).pluck(:id)

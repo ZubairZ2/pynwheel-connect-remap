@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   get '/error', to: 'error_logs#generate_error', as: 'error_logs_generate'
   get '/error_page', to: 'error_logs#error_page', as: 'error_page'
   post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
+  get :community_custom_tour, to: 'schedual_tours#community_custom_tour'
 
   get 'community_groups/index'
 
@@ -148,6 +149,7 @@ Rails.application.routes.draw do
     delete :delete_imported_data
     get :update_imported_data
     get :import
+    get :clean_psi_units_data
     get :experimental_import
     get :credentials
     get :settings_page
@@ -495,6 +497,7 @@ Rails.application.routes.draw do
           get :authenteq
           post :login
           get :list_communities
+          get :list_communities_v1
           get :portico_list_communities
           post :portico_list_communities
           post :lincoln_list_communities
