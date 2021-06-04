@@ -242,15 +242,16 @@
             %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapGridOverlayPopover","data-content" => " "}
               %span#propertyDetailNameText{:style => "font-weight: normal;"}
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
+
+          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"enableAutoPlotting(#{@community.id});"}
+            %span#autoPlotting Enable Plotting
+            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "automatePlotting","data-content" => " "}
+              %span#propertyDetailNameText{:style => "font-weight: normal;"}
+                Enable automate plotting
+
           - if current_user.is_super_admin?
             %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
 
-            %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"enableAutoPlotting(#{@community.id});"}
-              %span#autoPlotting Enable Plotting
-              %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "automatePlotting","data-content" => " "}
-                %span#propertyDetailNameText{:style => "font-weight: normal;"}
-                  Enable automate plotting
-            -# = link_to "Auto Plot <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Plot units automatically on the map</span></i>".html_safe , "/communities/#{@community.id}/auto_plot_units" , :class=>"btn btn-success loader_class"
       / /.box-header
       / form start
       %form.form-horizontal

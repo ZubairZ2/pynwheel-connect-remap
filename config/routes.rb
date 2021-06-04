@@ -89,7 +89,9 @@ Rails.application.routes.draw do
       post :add_plots
       post :add_plots_on_floorplate
       delete :remove_plots_from_floorplate
-      get :auto_plot_units
+      get :sitemap_auto_plot_units
+      get :floorplate_auto_plot_units
+
     end
     collection do
       post :make_cordinate

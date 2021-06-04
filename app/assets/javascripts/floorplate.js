@@ -1,4 +1,7 @@
 $(document).ready(function () {
+    var imageOCRResponse = [];
+    var ocrImageDimensions;
+
     if ($('.is-floorplate')[0]) {
         selected = [];
         var temp = [];
@@ -44,6 +47,7 @@ $(document).ready(function () {
             // for (i=0; i<selected.length; i++) {
             //   $("#selected-units").append('<li class="s-unit" data-id='+i+' data-provider-unit-id='+selected[i][0]+'>' + selected[i][1] + '</li>');
             // }
+            displayHints();
             plotMode();
         });
 
@@ -158,6 +162,26 @@ $(document).ready(function () {
         // });
     }
 });
+
+function  enableAutoPlottingFloorplateUnits(communityId, floorplateId) {
+    console.log("Enable Automate Plotting Floorplate units", communityId, floorplateId);
+
+    $.ajax({
+        url: `/communities/${community_id}/floorplate_auto_plot_units`,
+        type: "GET",
+        data: {
+            floorplate_id: floorplateId
+        }
+    }).done(function(resp){
+      console.log("resp[onse: ", resp);
+      imageOCRResponse = resp.data;
+      ocrImageDimensions = resp.dimensions;
+      alert("Auto Plotting has enabled");
+    //   $("#autoPlotting").html("Enabled Plotting");
+    }).fail(function() {
+      alert( "In development environment automate plotting is not allowed" );
+    });
+  }
 
 function addMarkerOnFloorplate() {
     $('#add-marker-heading').html('Add marker at x:' + $('#horizontal_position').val() + ' y:' + $('#vertical_position').val());

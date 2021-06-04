@@ -127,7 +127,7 @@ $(document).ready(function () {
 function  enableAutoPlotting(communityId) {
   console.log("Enable Automate Plotting", communityId);
   $.ajax({
-      url: `/communities/${community_id}/auto_plot_units`,
+      url: `/communities/${community_id}/sitemap_auto_plot_units`,
       type: "GET"
   }).done(function(resp){
     console.log("resp[onse: ", resp);
@@ -141,8 +141,6 @@ function  enableAutoPlotting(communityId) {
 }
 
 function displayHints() {
-  // debugger;
-
   if(imageOCRResponse && imageOCRResponse.length > 0 ) {
     selected.forEach(selected_units => {
       imageOCRResponse.forEach(ocr_u => {
@@ -157,7 +155,6 @@ function displayHints() {
             let unit_top = ocrImageDimensions.height * ocr_u.top;
 
             $('#map').append('<i class="fa fa-circle-thin hint-unit-blink" style="color: #d37474; left:' + unit_left + 'px; top:  '+ unit_top + 'px; position:absolute; transform: scale(3);"></i>')
-
           }
         }
       });
