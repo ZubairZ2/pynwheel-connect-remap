@@ -139,7 +139,7 @@ function  suggestSitemapUnitsPlotting(communityId) {
     imageOCRResponse = resp.data;
     ocrImageDimensions = resp.dimensions;
     alert("Auto Plotting has enabled");
-    $("#autoPlotting").html("Enabled Plotting");
+    // $("#autoPlotting").html("Enabled Plotting");
   }).fail(function() {
     alert( "Automate plotting is not allowed in development environment" );
   });

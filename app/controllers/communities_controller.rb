@@ -533,11 +533,19 @@ class CommunitiesController < ApplicationController
   end
 
   def suggest_sitemap_units
+    aws_ocr_detected_units = []
     if !Rails.env.development?
       sitemap = @community.sitemap if @community.sitemap.present?
 
+
       if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
-        aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
+        if sitemap.map_ocr_data.present? 
+          aws_ocr_detected_units = sitemap.map_ocr_data
+        else
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
+          sitemap.update(map_ocr_data: aws_ocr_detected_units)
+        end        
+        
         dimensions = s3_img_dimensions(sitemap_image_url(sitemap))
       end
 
@@ -549,11 +557,19 @@ class CommunitiesController < ApplicationController
   end
 
   def suggest_floorplate_units
+    aws_ocr_detected_units = []
+
     if !Rails.env.development?
       floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
 
       if floorplate.present? && floorplate.image.present? && floorplate.image.url.present?
-        aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
+        if floorplate.map_ocr_data.present? 
+          aws_ocr_detected_units = floorplate.map_ocr_data
+        else
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
+          floorplate.update(map_ocr_data: aws_ocr_detected_units)
+        end
+
         dimensions = s3_img_dimensions(floorplate_image_url(floorplate))
       end
 
@@ -565,12 +581,21 @@ class CommunitiesController < ApplicationController
   end
 
   def sitemap_auto_plot_units
+    aws_ocr_detected_units = []
+
     if !Rails.env.development?
       sitemap = @community.sitemap if @community.sitemap.present?
 
       if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
         units = @community.units.where(floorplate_id: nil)
-        aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
+        
+        if sitemap.map_ocr_data.present? 
+          aws_ocr_detected_units = sitemap.map_ocr_data
+        else
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
+          sitemap.update(map_ocr_data: aws_ocr_detected_units)
+        end
+
         dimensions = s3_img_dimensions(sitemap_image_url(sitemap))
         set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
       else
@@ -586,12 +611,20 @@ class CommunitiesController < ApplicationController
   end
 
   def floorplate_auto_plot_units
+    aws_ocr_detected_units = []
+
     if !Rails.env.development?
       floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
       
       if floorplate.present? && floorplate.image.present? && floorplate.image.url.present?
+        if floorplate.map_ocr_data.present? 
+          aws_ocr_detected_units = floorplate.map_ocr_data
+        else
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
+          floorplate.update(map_ocr_data: aws_ocr_detected_units)
+        end
+
         units = floorplate.fetch_units
-        aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
         dimensions = s3_img_dimensions(floorplate_image_url(floorplate))
         set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
       else
