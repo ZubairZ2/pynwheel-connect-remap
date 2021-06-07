@@ -1,0 +1,89 @@
+<style type="text/css">
+  .align_items {
+    text-align: center;
+    border-radius: 4%;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);    
+    padding: 33px;
+    background: #fff;
+  }
+  .align_items:hover {
+   cursor: pointer;
+   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 1);
+  }
+  .card-style {
+    width: 50%;
+    border-radius: 50%;
+  }
+  .text-style {
+    color: #555555;
+    font-size: 14px;
+    font-family: Poppins !important;
+  }
+  .title-style {
+    color: #555555;
+    font-size: 16px;
+    font-family: Poppins !important;
+  }
+  .card-main {
+    margin-bottom: -16%;
+    display: flex;
+  }
+  .card-col {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  @media only screen and (max-width: 760px) {
+    .card-main {
+      margin-bottom: 3% !important;
+      display: block;
+    }
+  }
+
+</style>
+
+<% data = [
+  {
+    key: 1,
+    image: "instruction-1.png",
+    title: "Install App and Follow Directions",
+    text: "Directions to the property will be texted to you about one hour before your tour. Install the app before you go.",
+    background: "#e2f5ff"
+  },
+  {
+    key: 2,
+    image: "instruction-2.png",
+    title: "Start Tour After Identity Verification",
+    text: "When you arrive at the property, open the app to start the tour. Follow the on-scren instructions to verify your identity with a driver's license, ID card,  or passport.",
+    background: "#efffe7"
+  },
+  {
+    key: 3,
+    image: "instruction-3.png",
+    title: "Access Locked Areas and Navigate",
+    text: "The app will open locked doors for you, and navigation will help you get from one stop to the next.",
+    background: "#ffebe6"
+  },
+  {
+    key: 4,
+    image: "instruction-4.png",
+    title: "Apply for a Lease or Start Chat",
+    text: "Find the home you want? Apply for a lease or talk to property staff directly via live chat.",
+    background: "#fcf0ff"
+  }
+] %>
+
+<div class="container col-md-12 mt-10 card-main">
+  <% data.each do |i| %> 
+    <div class="col-md-3 card-col">
+      <div class="card align_items mt-10 h-100">
+        <p style="color: #000;"><b><%= i[:key] %></b></p>
+        <%=image_tag("#{i[:image]}", class: "card-style", style: "background: #{i[:background]};", alt: "instruction card")%>
+        <div class="card-body flex-fill">
+          <p class="card-title title-style mt-10"><b><%= i[:title]%></b></p>
+          <p class="card-text text-style"><%=i[:text]%></p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

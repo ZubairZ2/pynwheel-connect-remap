@@ -86,8 +86,20 @@ class SchedulerWidget::WidgetsController < ApplicationController
       message[1] = '(guided visiting hours for ' +  day_obj.day + ' are from ' + day_hash[day_obj.day] +'). The last tour must be scheduled ' + cutt_of +' before visiting hours end.'
       @error_message << message
     end
+    # binding.pry
+    community = Community.find params[:community_id]
+    app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
+    android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
     flash[:success] = params[:message] if params[:message].present?
-    render :test_widget, layout: false
+    render :test_widget, locals: {ios_link: app_link, android_link: android_link}, layout: false
+  end
+
+  def test_widget_confirmation
+    community = Community.find params[:community_id]
+    app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
+    android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"  
+    flash[:success] = params[:message] if params[:message].present?
+    render :test_widget_confirmation, locals: {ios_link: app_link, android_link: android_link}, layout: false
   end
 
   def change_tour_time_widget

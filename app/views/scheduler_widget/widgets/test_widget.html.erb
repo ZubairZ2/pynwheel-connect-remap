@@ -1,4 +1,5 @@
 <style type="text/css">
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
   .form-group input, .form-control input, .form-group select {
     border-color: #8c9192 !important;
   }
@@ -62,6 +63,38 @@
     margin-bottom: 15px;
     width: 100%;
   }
+  .how_it_works {
+    background: #008fd3;
+    text-align: center;
+    color: #fff;
+  }
+  .how_it_works_p {
+    font-size: 18px;
+    font-family: Poppins !important;
+  }
+  .how_it_works h2 {
+    font-size: 32px;
+    font-family: Poppins !important;
+  }
+  .confirmation-text {
+    padding: 2% 0 0;
+  }
+  .btn_confirmed {
+    width: 100%;
+    border: none;
+    background: #008fd3;
+    text-align: center;
+    color: #fff;
+    font-size: 19px;
+    cursor: pointer;
+    padding: 7px 19px;
+  }
+  @media only screen and (max-width: 760px) {
+    .how_it_works_p{
+      font-size: 17px;
+      font-family: Poppins !important;
+    }
+  }
   @media only screen and (max-width: 560px) {
     .Pyn_Modal{
         background: #fff;
@@ -103,6 +136,8 @@
     <%= javascript_include_tag 'bootstrap-datetimepicker' %>
     <%= favicon_link_tag 'logo-small.png' %>
     <%= render '/font_awesome_v5' %>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
   </head>
   
   <body>
@@ -332,22 +367,62 @@
       </div>
     </div>
 
-    <div class="modal fade" id="scheduleMyTourSuccess" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-      aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <section>
-          <div class="Pyn_Modal">
-            <p style="font-weight: normal; font-size: 20px;"><%= flash[:success].html_safe if flash[:success].present?  %></p>
-            <div class="clearfix"></div>
-            <% if user_signed_in? %>
-              <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">Ok</button>
-            <% else %>
-              <button class="btn_popup" id="close">Ok</button>
-            <% end %>
-          </div>
-        </section>
+    <%# TODO:: Confirmation modal - Remove it later once page is done and verified%>
+    <% if false %>
+      <div class="modal fade" id="scheduleMyTourSuccess" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <section>
+            <div class="Pyn_Modal">
+              <p style="font-weight: normal; font-size: 20px;"><%= flash[:success].html_safe if flash[:success].present?  %></p>
+              <div class="clearfix"></div>
+              <% if user_signed_in? %>
+                <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">OkKKKKKKKKK</button>
+              <% else %>
+                <button class="btn_popup" id="close">Ok</button>
+              <% end %>
+            </div>
+          </section>
+        </div>
       </div>
-    </div>
+    <% end %>
+    <% if flash[:success].present? %>
+      <div id="scheduleMyTourSuccess" tabindex="-1" aria-hidden="true">
+        <%# <div class="container" role="document"> %>
+          <section>
+            <div class="container confirmation-text">
+              <p>
+                <%= flash[:success].html_safe if flash[:success].present? %>
+              </p>
+            </div>
+          </section>
+          <section >
+            <%= render 'shared/download_apps', :obj => {:ios_link => ios_link, :android_link => android_link } %>
+            <section class="container">
+              <% if true %>
+                <div style="float: right;">
+                  <% if user_signed_in? %>
+                    <button class="btn_confirmed" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">Continue ❯</button>
+                  <% else %>
+                    <a class="btn_confirmed" id="close">Next ❯</a>
+                  <% end %>
+                </div>
+              <% end %>
+            <%# </section> %>
+          </section>
+          <section class="mt-15">
+            <div class="container how_it_works">
+              <h2 class="mt-40 mb-20"><b>How It Works</b></h2>
+              <p class="how_it_works_p">Be at the property on the day your tour is scheduled within <b>10</b> minutes of your scheduled time</p>
+              <div>
+                  <%= render 'shared/instruction_card' %>
+              </div>
+            </div>
+          </section>
+        <%# </div> %>
+      </div>
+    <% end %>
+
 
     <script type="text/javascript">
       var show_self_tour_option = false;
@@ -367,6 +442,7 @@
       }
 
       $(document).ready(function(){
+        
         onlyNumbers();
 
         $("#user_phone_number_field").change(function() {
@@ -382,7 +458,7 @@
           }
           else
           {
-            $('#schedule_btn').removeClass('hidden');
+            $("#schedule_btn").removeClass('hidden');
           }
           document.getElementById('user_time_zone').value = jstz.determine().name();
           // -new Date().getTimezoneOffset()/60;
@@ -395,8 +471,9 @@
       if(success){
         $("#modalLoginForm").modal('hide');
         $('.divLoading').addClass('hidden')
-        $("#scheduleMyTourSuccess").modal({backdrop: 'static', keyboard: false})
-        $("html, body").animate({ scrollTop: 0 }, 600);
+        $("#scheduleMyTourSuccess").show();
+        // $("html, body").animate({ scrollTop: 0 }, 600);
+        $("#schedule_btn").hide();
       }
       else
       {
@@ -949,7 +1026,7 @@
         // });
 
         $("#close").on('click', function(){
-          $("#scheduleMyTourSuccess").modal('hide')
+          $("#scheduleMyTourSuccess").hide()
           $("#scheduleMyTour").modal({backdrop: 'static', keyboard: false})
 
           // window.location.reload();
