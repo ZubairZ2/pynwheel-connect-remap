@@ -64,7 +64,12 @@ class SitemapsController < ApplicationController
     unless @community.units.size > 0
       flash[:error] = "Please import unit data first"
     end
+    
     @units = @community.units.where(floorplate_id: nil).order(:building, :unit_type)
+    @dimensions = @sitemap.is_ocr_enabled ? s3_img_dimensions(sitemap_image_url(@sitemap)) : {}
+    @map_ocr_data = @sitemap.is_ocr_enabled ? @sitemap.map_ocr_data : []
+
+
     # get member(:plotexp) do
     #   authorize! :plot, Sitemap
     #   @map = @sitemap
@@ -123,6 +128,23 @@ class SitemapsController < ApplicationController
   end
     
   private
+
+  def s3_img_dimensions url
+    img = MiniMagick::Image.open(url)
+
+    {
+      width: img[:width],
+      height: img[:height],
+    }
+  end
+
+  def sitemap_image_url sitemap
+    if !Rails.env.development?
+      sitemap.image.url if sitemap.image.url.present?
+    else
+      "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1127/1575971020-floorplate_image.png"
+    end
+  end
 
   def set_community
     @community = Community.find(params[:community_id])

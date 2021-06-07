@@ -534,9 +534,9 @@ class CommunitiesController < ApplicationController
 
   def suggest_sitemap_units
     aws_ocr_detected_units = []
-    if !Rails.env.development?
+    if Rails.env.development?
       sitemap = @community.sitemap if @community.sitemap.present?
-
+      sitemap.update(is_ocr_enabled: params[:is_ocr_enabled])
 
       if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
         if sitemap.map_ocr_data.present? 
@@ -559,8 +559,9 @@ class CommunitiesController < ApplicationController
   def suggest_floorplate_units
     aws_ocr_detected_units = []
 
-    if !Rails.env.development?
+    if Rails.env.development?
       floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
+      floorplate.update(is_ocr_enabled: params[:is_ocr_enabled])
 
       if floorplate.present? && floorplate.image.present? && floorplate.image.url.present?
         if floorplate.map_ocr_data.present? 
@@ -583,7 +584,7 @@ class CommunitiesController < ApplicationController
   def sitemap_auto_plot_units
     aws_ocr_detected_units = []
 
-    if !Rails.env.development?
+    if Rails.env.development?
       sitemap = @community.sitemap if @community.sitemap.present?
 
       if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
@@ -613,7 +614,7 @@ class CommunitiesController < ApplicationController
   def floorplate_auto_plot_units
     aws_ocr_detected_units = []
 
-    if !Rails.env.development?
+    if Rails.env.development?
       floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
       
       if floorplate.present? && floorplate.image.present? && floorplate.image.url.present?

@@ -631,12 +631,19 @@ module DweloDevicesHelper
   end
 
   def sitemap_image_url sitemap
-    sitemap.image.url if sitemap.image.url.present?
-    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1127/1575971020-floorplate_image.png"
+    if !Rails.env.development?
+      sitemap.image.url if sitemap.image.url.present?
+    else
+      "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1127/1575971020-floorplate_image.png"
+    end
   end
 
   def floorplate_image_url floorplate
-    floorplate.image_url if floorplate.image.url.present?
+    if !Rails.env.development?
+      floorplate.image_url if floorplate.image.url.present?
+    else
+      "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
+    end
     # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
     # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1148/1577209294-floorplates_2.png"
   end

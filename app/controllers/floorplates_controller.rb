@@ -167,6 +167,10 @@ class FloorplatesController < ApplicationController
       flash[:error] = "Please import unit data first"
     end
     @community_units = @floorplate.fetch_units
+    
+    @map_ocr_data = @floorplate.is_ocr_enabled ? @floorplate.map_ocr_data : []
+    @dimensions = @floorplate.is_ocr_enabled ? s3_img_dimensions(floorplate_image_url(@floorplate)) : {}
+    
     @test_units = @community_units.to_json
     add_breadcrumb "Floor plates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community, @floorplate)
@@ -203,6 +207,25 @@ class FloorplatesController < ApplicationController
   end
 
   private
+
+  def s3_img_dimensions url
+    img = MiniMagick::Image.open(url)
+
+    {
+      width: img[:width],
+      height: img[:height],
+    }
+  end
+
+  def floorplate_image_url floorplate
+    if !Rails.env.development?
+      floorplate.image_url if floorplate.image.url.present?
+    else
+      "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
+    end
+    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
+    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1148/1577209294-floorplates_2.png"
+  end
 
   def floorplate_params
     params.require(:floorplate).permit!

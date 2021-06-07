@@ -3,6 +3,11 @@ var ocrImageDimensions;
 
 $(document).ready(function () {
     if ($('.is-floorplate')[0]) {
+        imageOCRResponse = $("#ocrData").data("ocrData");
+        ocrImageDimensions = $("#ocrData").data("imageDimensions");
+
+        console.log(imageOCRResponse);
+
         selected = [];
         var temp = [];
         dx = 0;
@@ -169,14 +174,15 @@ $(document).ready(function () {
     }
 });
 
-function  suggestFloorplateUnitsPlotting(communityId, floorplateId) {
+function  suggestFloorplateUnitsPlotting(communityId, floorplateId, isOcrEnabled) {
     console.log("Enable Automate Plotting Floorplate units", communityId, floorplateId);
 
     $.ajax({
         url: `/communities/${community_id}/suggest_floorplate_units`,
         type: "GET",
         data: {
-            floorplate_id: floorplateId
+            floorplate_id: floorplateId,
+            is_ocr_enabled: isOcrEnabled
         }
     }).done(function(resp){
       console.log("resp[onse: ", resp);

@@ -78,8 +78,12 @@
               %span#propertyDetailNameText{:style => "font-weight: normal;"}
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
           
-          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"suggestFloorplateUnitsPlotting(#{@community.id}, #{@floorplate.id});"}
-            %span#autoPlotting Enable Suggestions
+          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"suggestFloorplateUnitsPlotting(#{@community.id}, #{@floorplate.id}, #{!@floorplate.is_ocr_enabled});"}
+            - if !@floorplate.is_ocr_enabled
+              %span#autoPlotting Enable Suggestions
+            - else 
+              %span#autoPlotting Disable Suggestions
+
             %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "automatePlotting","data-content" => " "}
               %span#propertyDetailNameText{:style => "font-weight: normal;"}
                 Enabling suggestions will highlight possible matches on the map when units are selected from the list. You still have to click on the map to plot the marker for each unit/unit group.
@@ -206,6 +210,8 @@
         .modal-footer
           = submit_tag "Add",:class=>"btn btn-primary" 
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+
+#ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
 
 :javascript
   $(document).ready(function () {

@@ -8,6 +8,8 @@ $(document).ready(function () {
     dx = 0;
     dy = 0;
     $("#map").css('cursor', 'default');
+    imageOCRResponse = $("#ocrData").data("ocrData");
+    ocrImageDimensions = $("#ocrData").data("imageDimensions");
 
     doDraggable();
 
@@ -129,11 +131,14 @@ $(document).ready(function () {
   }
 });
 
-function  suggestSitemapUnitsPlotting(communityId) {
+function  suggestSitemapUnitsPlotting(communityId, isOcrEnabled) {
   console.log("Enable Automate Plotting", communityId);
   $.ajax({
-      url: `/communities/${community_id}/suggest_sitemap_units`,
-      type: "GET"
+    url: `/communities/${community_id}/suggest_sitemap_units`,
+    type: "GET",
+    data: {
+      is_ocr_enabled: isOcrEnabled
+    }
   }).done(function(resp){
     console.log("resp[onse: ", resp);
     imageOCRResponse = resp.data;
