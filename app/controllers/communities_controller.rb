@@ -5,7 +5,7 @@ class CommunitiesController < ApplicationController
   include FeedbacksHelper
   #load_and_authorize_resource
   before_action :check_community
-  before_action :set_community , only: [:edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units]
+  before_action :set_community , only: [:edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page,:logs]
   add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page,:logs]
@@ -532,28 +532,67 @@ class CommunitiesController < ApplicationController
     redirect_to plotexp_community_sitemaps_path(@community), notice: "All plots have been deleted successfully."
   end
 
-  def sitemap_auto_plot_units
+  def suggest_sitemap_units
     if Rails.env.development?
-      aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(sitemap_image_url(@community))
-      dimensions = s3_img_dimensions(sitemap_image_url(@community))
+      sitemap = @community.sitemap if @community.sitemap.present?
+
+      if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
+        aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
+        dimensions = s3_img_dimensions(sitemap_image_url(sitemap))
+      end
 
       render :json => { data: aws_ocr_detected_units, dimensions: dimensions }, :status => 200
     else
       render :json => { data: [], dimensions: {} }, :status => 405
     end
+  end
+
+  def suggest_floorplate_units
+    if Rails.env.development?
+      floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
+
+      if floorplate.present? && floorplate.image.present? && floorplate.image.url.present?
+        aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
+        dimensions = s3_img_dimensions(floorplate_image_url(floorplate))
+      end
+
+      render :json => { data: aws_ocr_detected_units, dimensions: dimensions }, :status => 200
+    else
+      render :json => { data: [], dimensions: {} }, :status => 405
+    end
+  end
+
+  def sitemap_auto_plot_units
+    sitemap = @community.sitemap if @community.sitemap.present?
+    if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
+      units = @community.units.where(floorplate_id: nil)
+      aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
+      dimensions = s3_img_dimensions(sitemap_image_url(sitemap))
+      set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
+    else
+      redirect_to plotexp_community_sitemaps_path(@community), error: "Something went wrong please check if sitemap has image"
+    end
+
+    redirect_to plotexp_community_sitemaps_path(@community), notice: "Auto plotting is done on the sitemap successfully"
   end
 
   def floorplate_auto_plot_units
-    if Rails.env.development?
-      floorplate = Floorplate.find params[:floorplate_id]
+    floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
+    
+    if floorplate.present? && floorplate.image.present? && floorplate.image.url.present?
+      units = floorplate.fetch_units
       aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
       dimensions = s3_img_dimensions(floorplate_image_url(floorplate))
+      set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
 
-      render :json => { data: aws_ocr_detected_units, dimensions: dimensions }, :status => 200
     else
-      render :json => { data: [], dimensions: {} }, :status => 405
+
+      redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "Something went wrong please check if floorplate has image"
     end
+    redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "Auto plotting is completed on the floorplate successfully"
+
   end
+
 
   def add_plots
     units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
@@ -694,6 +733,7 @@ class CommunitiesController < ApplicationController
       redirect_back(fallback_location: root_path)
     end
   end
+
   def save_apartment_settings
     @community = Community.find params[:community_id]
     @community.show_apartment = params[:show_apartment].present? ? params[:show_apartment] : false
@@ -717,7 +757,6 @@ class CommunitiesController < ApplicationController
       flash[:error] = @community.errors.full_messages.join(',')
       redirect_back(fallback_location: root_path)
     end
-    
   end
 
   def desings_for_new_community(current_community)
@@ -730,27 +769,7 @@ class CommunitiesController < ApplicationController
     expressionist = design.filter_panel ||  design.create_filter_panel 
   end
 
-  private
-
-  def s3_img_dimensions url
-    img = MiniMagick::Image.open(url)
-
-    {
-      width: img[:width],
-      height: img[:height],
-    }
-  end
-
-  def sitemap_image_url community
-    community.sitemap.image.url if community.sitemap.image.url.present?
-    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1127/1575971020-floorplate_image.png"
-  end
-
-  def floorplate_image_url floorplate
-    floorplate.image_url if floorplate.image.url.present?
-    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
-    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1148/1577209294-floorplates_2.png"
-  end
+private
 
   def show_chat_modal(tour_user_id, tour_id)
     @chatroom = Chatroom.find_by(tour_user_id: tour_user_id, tour_id: tour_id)

@@ -1,7 +1,7 @@
-$(document).ready(function () {
-    var imageOCRResponse = [];
-    var ocrImageDimensions;
+var imageOCRResponse = [];
+var ocrImageDimensions;
 
+$(document).ready(function () {
     if ($('.is-floorplate')[0]) {
         selected = [];
         var temp = [];
@@ -47,7 +47,10 @@ $(document).ready(function () {
             // for (i=0; i<selected.length; i++) {
             //   $("#selected-units").append('<li class="s-unit" data-id='+i+' data-provider-unit-id='+selected[i][0]+'>' + selected[i][1] + '</li>');
             // }
-            displayHints();
+
+            if(imageOCRResponse.length > 0)
+                displayHints();
+            
             plotMode();
         });
 
@@ -71,7 +74,10 @@ $(document).ready(function () {
 
         $('.select-units-on-page .ms-elem-selection').click(function () {
             console.log($(this).attr('id'));
-            removeUnitFromSelectedArray($(this).attr('id').split('-')[0]);
+            s_id  = $(this).attr('id').split('-');
+            s_id = s_id[0] + "-" + s_id[1];
+
+            removeUnitFromSelectedArray(s_id);
         });
 
         // $(document).on("click", ".marker" , function() {
@@ -163,11 +169,11 @@ $(document).ready(function () {
     }
 });
 
-function  enableAutoPlottingFloorplateUnits(communityId, floorplateId) {
+function  suggestFloorplateUnitsPlotting(communityId, floorplateId) {
     console.log("Enable Automate Plotting Floorplate units", communityId, floorplateId);
 
     $.ajax({
-        url: `/communities/${community_id}/floorplate_auto_plot_units`,
+        url: `/communities/${community_id}/suggest_floorplate_units`,
         type: "GET",
         data: {
             floorplate_id: floorplateId
@@ -181,7 +187,23 @@ function  enableAutoPlottingFloorplateUnits(communityId, floorplateId) {
     }).fail(function() {
       alert( "In development environment automate plotting is not allowed" );
     });
-  }
+}
+
+function  autoPlotFloorplateUnits(communityId, floorplateId) {
+    console.log("Enable Automate Plotting Floorplate units", communityId, floorplateId);
+
+    $.ajax({
+        url: `/communities/${community_id}/floorplate_auto_plot_units`,
+        type: "GET",
+        data: {
+            floorplate_id: floorplateId
+        }
+    }).done(function(resp){
+        window.location.reload();
+    }).fail(function() {
+      alert( "In development environment automate plotting is not allowed" );
+    });
+}
 
 function addMarkerOnFloorplate() {
     $('#add-marker-heading').html('Add marker at x:' + $('#horizontal_position').val() + ' y:' + $('#vertical_position').val());

@@ -1,7 +1,7 @@
-$(document).ready(function () {
-  var imageOCRResponse = [];
-  var ocrImageDimensions;
+var imageOCRResponse = [];
+var ocrImageDimensions;
 
+$(document).ready(function () { 
   if ($('.is-sitemap')[0]) {
     selected = [];
     var temp = [];
@@ -47,8 +47,10 @@ $(document).ready(function () {
       unit_provider_id = unit_provider_id.replace("-selectable", "")
       console.log(unit_provider_id);
       selected.push([unit_provider_id, $(this).children('span').text()]);
-      $(".hint-unit-blink").remove();
-      displayHints();
+
+      if(imageOCRResponse.length > 0)
+        displayHints();
+
       plotMode();
     });
 
@@ -72,7 +74,10 @@ $(document).ready(function () {
 
     $('.select-units-on-page .ms-elem-selection').click(function () {
       console.log($(this).attr('id'));
-      removeUnitFromSelectedArray($(this).attr('id').split('-')[0]);
+      s_id  = $(this).attr('id').split('-');
+      s_id = s_id[0] + "-" + s_id[1];
+     
+      removeUnitFromSelectedArray(s_id);
     });
 
 
@@ -124,10 +129,10 @@ $(document).ready(function () {
   }
 });
 
-function  enableAutoPlotting(communityId) {
+function  suggestSitemapUnitsPlotting(communityId) {
   console.log("Enable Automate Plotting", communityId);
   $.ajax({
-      url: `/communities/${community_id}/sitemap_auto_plot_units`,
+      url: `/communities/${community_id}/suggest_sitemap_units`,
       type: "GET"
   }).done(function(resp){
     console.log("resp[onse: ", resp);
@@ -140,8 +145,21 @@ function  enableAutoPlotting(communityId) {
   });
 }
 
+function  autoPlotSitemapUnits(communityId) {
+  console.log("Enable Automate Plotting", communityId);
+  $.ajax({
+      url: `/communities/${community_id}/sitemap_auto_plot_units`,
+      type: "GET"
+  }).done(function(resp){
+    // window.location.reload();
+  }).fail(function() {
+    alert( "In development environment automate plotting is not allowed" );
+  });
+}
+
 function displayHints() {
-  if(imageOCRResponse && imageOCRResponse.length > 0 ) {
+  console.log(imageOCRResponse);
+  if(imageOCRResponse.length > 0 ) {
     selected.forEach(selected_units => {
       imageOCRResponse.forEach(ocr_u => {
         if(ocr_u.text && ocr_u.text.length > 2) {
@@ -153,8 +171,9 @@ function displayHints() {
 
             let unit_left = ocrImageDimensions.width * ocr_u.left;
             let unit_top = ocrImageDimensions.height * ocr_u.top;
-
-            $('#map').append('<i class="fa fa-circle-thin hint-unit-blink" style="color: #d37474; left:' + unit_left + 'px; top:  '+ unit_top + 'px; position:absolute; transform: scale(3);"></i>')
+            let circleTag = `suggested-circle-${selected_units[0]}`;
+            console.log("Suggested unit", selected_units)
+            $('#map').append(`<i class="fa fa-circle-thin hint-unit-blink ${circleTag}" style="color: #d37474; left:${unit_left}px; top:${unit_top}px; position:absolute; transform: scale(3);"></i>`)
           }
         }
       });
