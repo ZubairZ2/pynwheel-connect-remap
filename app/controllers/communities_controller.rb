@@ -533,7 +533,7 @@ class CommunitiesController < ApplicationController
   end
 
   def suggest_sitemap_units
-    if Rails.env.development?
+    if !Rails.env.development?
       sitemap = @community.sitemap if @community.sitemap.present?
 
       if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
@@ -543,12 +543,13 @@ class CommunitiesController < ApplicationController
 
       render :json => { data: aws_ocr_detected_units, dimensions: dimensions }, :status => 200
     else
+
       render :json => { data: [], dimensions: {} }, :status => 405
     end
   end
 
   def suggest_floorplate_units
-    if Rails.env.development?
+    if !Rails.env.development?
       floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
 
       if floorplate.present? && floorplate.image.present? && floorplate.image.url.present?
@@ -558,39 +559,51 @@ class CommunitiesController < ApplicationController
 
       render :json => { data: aws_ocr_detected_units, dimensions: dimensions }, :status => 200
     else
+
       render :json => { data: [], dimensions: {} }, :status => 405
     end
   end
 
   def sitemap_auto_plot_units
-    sitemap = @community.sitemap if @community.sitemap.present?
-    if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
-      units = @community.units.where(floorplate_id: nil)
-      aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
-      dimensions = s3_img_dimensions(sitemap_image_url(sitemap))
-      set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
-    else
-      redirect_to plotexp_community_sitemaps_path(@community), error: "Something went wrong please check if sitemap has image"
-    end
+    if !Rails.env.development?
+      sitemap = @community.sitemap if @community.sitemap.present?
 
-    redirect_to plotexp_community_sitemaps_path(@community), notice: "Auto plotting is done on the sitemap successfully"
+      if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
+        units = @community.units.where(floorplate_id: nil)
+        aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
+        dimensions = s3_img_dimensions(sitemap_image_url(sitemap))
+        set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
+      else
+
+        redirect_to plotexp_community_sitemaps_path(@community), alert: "Something went wrong please check if sitemap has image"
+      end
+
+      redirect_to plotexp_community_sitemaps_path(@community), notice: "Auto plotting is done on the sitemap successfully"
+    else
+
+      redirect_to plotexp_community_sitemaps_path(@community), alert: "Automate plotting is not allowed in development environment"
+    end
   end
 
   def floorplate_auto_plot_units
-    floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
-    
-    if floorplate.present? && floorplate.image.present? && floorplate.image.url.present?
-      units = floorplate.fetch_units
-      aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
-      dimensions = s3_img_dimensions(floorplate_image_url(floorplate))
-      set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
+    if !Rails.env.development?
+      floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
+      
+      if floorplate.present? && floorplate.image.present? && floorplate.image.url.present?
+        units = floorplate.fetch_units
+        aws_ocr_detected_units =  AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
+        dimensions = s3_img_dimensions(floorplate_image_url(floorplate))
+        set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
+      else
 
+        redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), alert: "Something went wrong please check floorplate image"
+      end
+
+      redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "Auto plotting is completed on the floorplate successfully"
     else
 
-      redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "Something went wrong please check if floorplate has image"
+      redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), alert: "Automate plotting is not allowed in development environment"
     end
-    redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "Auto plotting is completed on the floorplate successfully"
-
   end
 
 

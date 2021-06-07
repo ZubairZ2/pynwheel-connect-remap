@@ -185,7 +185,7 @@ function  suggestFloorplateUnitsPlotting(communityId, floorplateId) {
       alert("Auto Plotting has enabled");
     //   $("#autoPlotting").html("Enabled Plotting");
     }).fail(function() {
-      alert( "In development environment automate plotting is not allowed" );
+      alert( "Automate plotting is not allowed in development environment" );
     });
 }
 
@@ -198,11 +198,7 @@ function  autoPlotFloorplateUnits(communityId, floorplateId) {
         data: {
             floorplate_id: floorplateId
         }
-    }).done(function(resp){
-        window.location.reload();
-    }).fail(function() {
-      alert( "In development environment automate plotting is not allowed" );
-    });
+    })
 }
 
 function addMarkerOnFloorplate() {

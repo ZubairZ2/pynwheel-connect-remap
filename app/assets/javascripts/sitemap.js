@@ -141,7 +141,7 @@ function  suggestSitemapUnitsPlotting(communityId) {
     alert("Auto Plotting has enabled");
     $("#autoPlotting").html("Enabled Plotting");
   }).fail(function() {
-    alert( "In development environment automate plotting is not allowed" );
+    alert( "Automate plotting is not allowed in development environment" );
   });
 }
 
@@ -150,11 +150,7 @@ function  autoPlotSitemapUnits(communityId) {
   $.ajax({
       url: `/communities/${community_id}/sitemap_auto_plot_units`,
       type: "GET"
-  }).done(function(resp){
-    // window.location.reload();
-  }).fail(function() {
-    alert( "In development environment automate plotting is not allowed" );
-  });
+  })
 }
 
 function displayHints() {
