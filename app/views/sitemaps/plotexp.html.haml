@@ -244,10 +244,10 @@
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
 
           %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"enableAutoPlotting(#{@community.id});"}
-            %span#autoPlotting Enable Plotting
+            %span#autoPlotting Enable Suggestions
             %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "automatePlotting","data-content" => " "}
               %span#propertyDetailNameText{:style => "font-weight: normal;"}
-                Enable automate plotting
+                Enabling suggestions will highlight possible matches on the map when units are selected from the list. You still have to click on the map to plot the marker for each unit/unit group.
 
           - if current_user.is_super_admin?
             %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
