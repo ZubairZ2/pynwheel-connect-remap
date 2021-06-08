@@ -691,13 +691,13 @@ class Api::V1::CommunitiesController < ActionController::Base
             com = Community.find params[:id]
             com.neighbourhood_counter_mail_200
             @community.limit_200_hit = true
-            NeighbourhoodMailer.email_counter_200("muhammad.umer@intagleo.com","umersani47@gmail.com","","Testing api calls 200").deliver
+            NeighbourhoodMailer.email_counter_200("salahudin@pynwheel.com","salahudin@intagleo.com","","Testing api calls 200").deliver
           end
           if @community.neighborhood_request_counter > 39 && @community.neighborhood_request_counter < 41 && !@community.limit_400_hit
             com = Community.find params[:id]
             com.neighbourhood_counter_mail_400
             @community.limit_400_hit = true
-            NeighbourhoodMailer.email_counter_400("test@gmail.com","umersani47@gmail.com","","Testing api calls 400").deliver
+            NeighbourhoodMailer.email_counter_400("salahudin@pynwheel.com","salahudin@intagleo.com","","Testing api calls 400").deliver
           end
         rescue => ex
 
