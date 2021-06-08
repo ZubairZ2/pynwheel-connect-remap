@@ -170,7 +170,7 @@ class WebpagesController < ActionController::Base
 
   def update_session
     track_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
-    track_session.update_column(:end_datetime, return_community_datetime(session[:last_active_datetime]))
+    track_session.update_column(:end_datetime, return_community_datetime(session[:last_active_datetime])) if track_session.present?
     session[:last_active_datetime] = nil
     puts " ---------------------- Track Session Completed --------------------------------"
   end
@@ -279,6 +279,6 @@ class WebpagesController < ActionController::Base
   end
 
   def return_community_datetime(datetime)
-    Time.zone.parse(datetime).in_time_zone(@timezone).to_datetime
+    Time.zone.parse(datetime).in_time_zone(@timezone).to_datetime if datetime.present? && @timezone.present?
   end
 end
