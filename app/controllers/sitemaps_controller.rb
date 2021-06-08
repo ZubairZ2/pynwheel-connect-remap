@@ -67,7 +67,7 @@ class SitemapsController < ApplicationController
     @units                  =   @community.units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door)
     @all_locks              =   all_locks(@community)
     @current_locks_provider =   existing_locks_provider(@community)
-    @hallways               =   @sitemap.hallways
+    @hallways               =   @sitemap.hallways.order("id ASC")
     @access_points          =   @sitemap.access_points     # @sitemap.access_points.select('DISTINCT ON (x_plot, y_plot) *')
     @unit_with_door         =   @units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.door.present? ? unit.door : {} }}}
 
@@ -86,7 +86,7 @@ class SitemapsController < ApplicationController
     @sitemap = @community.sitemap
     @amenities = @community.amenities
     @current_locks_provider =   existing_locks_provider(@community)
-    @hallways = @sitemap.hallways
+    @hallways = @sitemap.hallways.order("id ASC")
     @all_locks = all_locks(@community)
 
     if @sitemap.image.blank? 

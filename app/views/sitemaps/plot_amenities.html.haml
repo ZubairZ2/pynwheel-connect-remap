@@ -102,7 +102,7 @@
                     %object{:data => "your.svg", :type => "image/svg+xml"}
                     = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
                   - else
-                    = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"
+                    = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg",name:"viewArea", id:"viewArea",draggable:"false"
 
                   - coordinates_array = []
                   - @sitemap.amenities.each do |amenity|
@@ -236,6 +236,6 @@
   hallways_coordinates = #{raw @hallways.to_json}
   $( document ).ready(function() {
     draw_initial_hallways(hallways_coordinates)
-    draw_line(hallways_coordinates);
+    //draw_line(hallways_coordinates);
   });
   

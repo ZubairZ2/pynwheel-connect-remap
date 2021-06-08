@@ -278,7 +278,7 @@
                     %object{:data => "your.svg", :type => "image/svg+xml"}
                       = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
                   - else
-                    = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img"
+                    = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img",name:"viewArea", id:"viewArea",draggable:"false"
                   
                   - community_units = @units.sort_by{|u| u.marketing_name}
                   - units_by_plotted_doors_order = community_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
@@ -506,7 +506,7 @@
   hallways_coordinates = #{raw @hallways.to_json}
   $( document ).ready(function() {
     draw_initial_hallways(hallways_coordinates)
-    draw_line(hallways_coordinates);
+    //draw_line(hallways_coordinates);
   });
 
   function sitemap_goBack()
