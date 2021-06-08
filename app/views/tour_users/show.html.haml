@@ -573,8 +573,17 @@
                 {
                   if(Array.isArray(selected_floor[0]))
                     selected_floor = selected_floor[0]
+                  
+                  let current_floor;
+                  let current_building = selected_building.includes(String(data.stops[s][1].building));
 
-                  if(( (selected_floor.includes(String(data.stops[s][1].floor)) || selected_floor.includes(String(data.stops[s][1].starting_floor))) && selected_building.includes( String(data.stops[s][1].building) ) ))
+                  if(data.stops[s][1].floor == undefined && data.stops[s][2] == "tour") {
+                    current_floor = selected_floor.includes(String(data.stops[s][1].starting_floor));
+                  } else {
+                    current_floor = selected_floor.includes(String(data.stops[s][1].floor));
+                  }
+
+                  if(current_floor && current_building)
                   { 
                     data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
                     final_stops.push(data.stops[s]);
