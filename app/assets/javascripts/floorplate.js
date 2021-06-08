@@ -174,39 +174,6 @@ $(document).ready(function () {
     }
 });
 
-function  suggestFloorplateUnitsPlotting(communityId, floorplateId, isOcrEnabled) {
-    console.log("Enable Automate Plotting Floorplate units", communityId, floorplateId);
-
-    $.ajax({
-        url: `/communities/${community_id}/suggest_floorplate_units`,
-        type: "GET",
-        data: {
-            floorplate_id: floorplateId,
-            is_ocr_enabled: isOcrEnabled
-        }
-    }).done(function(resp){
-      console.log("resp[onse: ", resp);
-      imageOCRResponse = resp.data;
-      ocrImageDimensions = resp.dimensions;
-      alert("Auto Plotting has enabled");
-    //   $("#autoPlotting").html("Enabled Plotting");
-    }).fail(function() {
-      alert( "Automate plotting is not allowed in development environment" );
-    });
-}
-
-function  autoPlotFloorplateUnits(communityId, floorplateId) {
-    console.log("Enable Automate Plotting Floorplate units", communityId, floorplateId);
-
-    $.ajax({
-        url: `/communities/${community_id}/floorplate_auto_plot_units`,
-        type: "GET",
-        data: {
-            floorplate_id: floorplateId
-        }
-    })
-}
-
 function addMarkerOnFloorplate() {
     $('#add-marker-heading').html('Add marker at x:' + $('#horizontal_position').val() + ' y:' + $('#vertical_position').val());
     $('#add_horizontal_position').val($('#horizontal_position').val());

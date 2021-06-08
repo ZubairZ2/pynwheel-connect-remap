@@ -2407,6 +2407,11 @@ overflow-y: hidden;*/
     width: 100%;
 }
 
+.enable-suggestions-btn {
+    background-color: #e48c00 !important;
+    border-color: #e48c00 !important;
+}
+
 .slider-box {}
 
 .slider-box .slider-handle {

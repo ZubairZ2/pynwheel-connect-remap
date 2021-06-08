@@ -131,33 +131,6 @@ $(document).ready(function () {
   }
 });
 
-function  suggestSitemapUnitsPlotting(communityId, isOcrEnabled) {
-  console.log("Enable Automate Plotting", communityId);
-  $.ajax({
-    url: `/communities/${community_id}/suggest_sitemap_units`,
-    type: "GET",
-    data: {
-      is_ocr_enabled: isOcrEnabled
-    }
-  }).done(function(resp){
-    console.log("resp[onse: ", resp);
-    imageOCRResponse = resp.data;
-    ocrImageDimensions = resp.dimensions;
-    alert("Auto Plotting has enabled");
-    // $("#autoPlotting").html("Enabled Plotting");
-  }).fail(function() {
-    alert( "Automate plotting is not allowed in development environment" );
-  });
-}
-
-function  autoPlotSitemapUnits(communityId) {
-  console.log("Enable Automate Plotting", communityId);
-  $.ajax({
-      url: `/communities/${community_id}/sitemap_auto_plot_units`,
-      type: "GET"
-  })
-}
-
 function displayHints() {
   console.log(imageOCRResponse);
   if(imageOCRResponse.length > 0 ) {

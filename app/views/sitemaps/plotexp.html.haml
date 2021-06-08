@@ -243,15 +243,10 @@
               %span#propertyDetailNameText{:style => "font-weight: normal;"}
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
 
-          %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"suggestSitemapUnitsPlotting(#{@community.id}, #{!@sitemap.is_ocr_enabled});"}
-            - if !@sitemap.is_ocr_enabled
-              %span#autoPlotting Enable Suggestions
-            - else 
-              %span#autoPlotting Disable Suggestions
-
-            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "automatePlotting","data-content" => " "}
-              %span#propertyDetailNameText{:style => "font-weight: normal;"}
-                Enabling suggestions will highlight possible matches on the map when units are selected from the list. You still have to click on the map to plot the marker for each unit/unit group.
+          - if !@sitemap.is_ocr_enabled
+            = link_to "Enable Suggestions <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Enabling suggestions will highlight possible matches on the map when units are selected from the list. You still have to click on the map to plot the marker for each unit/unit group.</span></i>".html_safe , "/communities/#{@community.id}/suggest_sitemap_units?is_ocr_enabled=#{!@sitemap.is_ocr_enabled}" , :class=>"btn btn-success loader_class"
+          - else 
+            = link_to "Disable Suggestions <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Enabling suggestions will highlight possible matches on the map when units are selected from the list. You still have to click on the map to plot the marker for each unit/unit group.</span></i>".html_safe , "/communities/#{@community.id}/suggest_sitemap_units?is_ocr_enabled=#{!@sitemap.is_ocr_enabled}" , :class=>"btn btn-success loader_class enable-suggestions-btn"
 
           - if current_user.is_super_admin?
             = link_to "Auto Plot <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Auto-plot plots all possible matches on the map. You still have to cross check once if plotting is done accurately.</span></i>".html_safe , "/communities/#{@community.id}/sitemap_auto_plot_units" , :class=>"btn btn-success loader_class"
