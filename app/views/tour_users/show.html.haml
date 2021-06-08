@@ -571,26 +571,30 @@
                 debugger;
                 for(var s = 0; s < data.stops.length; s++)
                 {
-                  if(Array.isArray(selected_floor[0]))
-                    selected_floor = selected_floor[0]
-                  
-                  let current_floor;
-                  let current_building = selected_building.includes(String(data.stops[s][1].building));
+                  current_stop = data.stops[s]
+                  if(current_stop != undefined && current_stop[0] != "" && current_stop[0] != null && current_stop[1] != null current_stop[1] != "") {
 
-                  if(data.stops[s][1].floor == undefined && data.stops[s][2] == "tour") {
-                    current_floor = selected_floor.includes(String(data.stops[s][1].starting_floor));
-                  } else {
-                    current_floor = selected_floor.includes(String(data.stops[s][1].floor));
-                  }
+                    if(Array.isArray(selected_floor[0]))
+                      selected_floor = selected_floor[0]
+                    
+                    let current_floor;
+                    let current_building = selected_building.includes(String(data.stops[s][1].building));
 
-                  if(current_floor && current_building)
-                  { 
-                    data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
-                    final_stops.push(data.stops[s]);
+                    if(data.stops[s][1].floor == undefined && data.stops[s][2] == "tour") {
+                      current_floor = selected_floor.includes(String(data.stops[s][1].starting_floor));
+                    } else {
+                      current_floor = selected_floor.includes(String(data.stops[s][1].floor));
+                    }
+
+                    if(current_floor && current_building)
+                    { 
+                      data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
+                      final_stops.push(data.stops[s]);
+                    }
                   }
+                  sleep(000);
+                  show_plot_accordingly(final_stops, data.left);
                 }
-                sleep(000);
-                show_plot_accordingly(final_stops, data.left);
               });
             }
           
