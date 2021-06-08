@@ -158,8 +158,12 @@ class TourUsersController < ApplicationController
         floors = buildings = nil
       else
         floor_image = @community.floorplates.map{|x| [x.floors,x.image.url]}
-        floors = stops.map{|x| x[1].floor }.uniq.sort
-        buildings = stops.map{|x| x[1].building }.uniq
+
+        floors = stops.map{|x| x[1] }.compact.uniq.sort
+        floors = floors.map{|x| x.floor }.compact.uniq.sort
+
+        buildings = stops.map{|x| x[1] }.compact.uniq
+        buildings = buildings.map{|x| x.building }.compact.uniq
       end
       
       stops.unshift(['',current_community.tour,"tour"])
