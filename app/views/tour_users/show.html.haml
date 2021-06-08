@@ -571,6 +571,9 @@
                 debugger;
                 for(var s = 0; s < data.stops.length; s++)
                 {
+                  if(Array.isArray(selected_floor[0]))
+                    selected_floor = selected_floor[0]
+
                   if(( (selected_floor.includes(String(data.stops[s][1].floor)) || selected_floor.includes(String(data.stops[s][1].starting_floor))) && selected_building.includes( String(data.stops[s][1].building) ) ))
                   { 
                     data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
@@ -601,6 +604,7 @@
       vs = 0;
       for(var i=0 ; i < stops.length ; i++)
           {
+            debugger
             if(stops[i][1] != null)
             { 
               vertices.push({
@@ -625,6 +629,7 @@
             }
           }
           
+          debugger;
 
           draw_a_line(vertices, data_array);
   }
@@ -652,6 +657,7 @@
 
   function draw_a_line(vertices, data_array)
   {
+    debugger
     ctx.lineWidth = 5;
           ctx.strokeStyle = "blue";
           // calculate incremental points along the path
