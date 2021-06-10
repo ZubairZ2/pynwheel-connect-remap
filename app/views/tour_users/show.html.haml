@@ -556,12 +556,13 @@
                 selected_floor = $('.selected_floor').text();
                 selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
                 selected_building = (first_building != "null" ? (selected_building == first_building ? [selected_building, "", null] : [selected_building]) : ["null", ""])
-                
+                debugger
                 for(var f=0; f< data.floor_image.length; f++)
                 {
                   if(data.floor_image[f][0].includes(parseInt($('.selected_floor').text())))
                     img_ = data.floor_image[f][1]
                 }
+                debugger
                   sleep(2000);
                   draw_image_canvas(img_);
                 
@@ -690,7 +691,7 @@
                 $(".popover").popover('hide');
                 if (data_array[vertices_count] != undefined) {
                   debugger;
-                  $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:first').popover({
+                  $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
                                   html: true,
                                   trigger: "hover",
                                   placement: 'top',
@@ -717,7 +718,7 @@
               
               $(".popover").popover('hide');
               if (data_array[vertices_count] != undefined){ 
-                $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:first').popover({
+                $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
                             html: true,
                             trigger: "hover",
                             placement: 'top',
