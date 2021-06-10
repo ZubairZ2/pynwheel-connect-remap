@@ -47,7 +47,7 @@ module ZervServices
         def current_community_zerv_locks(locks)
             community = @zerv.community
             location_name = (community.company.name + ' - ' + community.name).downcase.parameterize.gsub("-", "").gsub("_", "")
-            locks["listGetDevices"] = locks["listGetDevices"].map{|lock| lock if lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name}.compact
+            locks["listGetDevices"] = locks["listGetDevices"].map{|lock| lock if lock["locationName"].present? && lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name}.compact
             if locks["listGetDevices"].length == 0
               locks["listGetDevices"] = "No locks are presnet"
             end
