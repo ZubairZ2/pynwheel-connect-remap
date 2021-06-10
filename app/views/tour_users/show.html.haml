@@ -499,7 +499,7 @@
           first_floor = null;
           lock_access_time = data.lock_access_time;
           debugger;
-          if(data.stops[0][2] == "tour" && data.stops.length == 1)
+          if(data.stops[0] && data.stops[0][2] == "tour" && data.stops.length == 1)
           {
             selected_floor = selected_building = [];
           }
@@ -558,7 +558,6 @@
                 selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
                 selected_building = (first_building != "null" ? (selected_building == first_building ? [selected_building, "", null] : [selected_building]) : ["null", ""])
                 debugger
-                
                 for(var f=0; f< data.floor_image.length; f++)
                 {
                   debugger
@@ -566,6 +565,7 @@
                   if(data.floor_image[f][0].includes(parseInt($('.selected_floor').text())))
                     img_ = data.floor_image[f][1]
                 }
+                debugger
                   sleep(2000);
                   draw_image_canvas(img_);
                 debugger;
@@ -573,30 +573,30 @@
                 {
                   current_stop = data.stops[s];
 
-                  if(current_stop != undefined && current_stop[0] != "" && current_stop[0] != null && current_stop[1] != null && current_stop[1] != "") {
+                  if(Array.isArray(selected_floor[0]))
+                    selected_floor = selected_floor[0]
+                  
+                  let current_floor;
+                  let current_building;  
 
-                    if(Array.isArray(selected_floor[0]))
-                      selected_floor = selected_floor[0]
-                    
-                    let current_floor;
-                    let current_building = selected_building.includes(String(data.stops[s][1].building));
+                  if (data.stops[s] && data.stops[s][1] && data.stops[s][1].building)
+                    current_building = selected_building.includes(String(data.stops[s][1].building));
 
-                    if(data.stops[s][1].floor == undefined && data.stops[s][2] == "tour") {
-                      current_floor = selected_floor.includes(String(data.stops[s][1].starting_floor));
-                    } else {
+                  if(data.stops[s] && data.stops[s][2] == "tour")
+                    current_floor = selected_floor.includes(String(data.stops[s][1].starting_floor));
+                  else
+                    if (data.stops[s] && data.stops[s][1] && data.stops[s][1].floor)
                       current_floor = selected_floor.includes(String(data.stops[s][1].floor));
-                    }
 
-                    if(current_floor && current_building){ 
-                      data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
-                      final_stops.push(data.stops[s]);
-                    }
-                  
-                    sleep(2000);
-                    show_plot_accordingly(final_stops, data.left);
-                  
-                  }
+                  if(current_floor || current_building){ 
+                    data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
+                    final_stops.push(data.stops[s]);
+                    //binding.pry
+                    //show_plot_accordingly(final_stops, data.left);
+                  }                
                 }
+                 sleep(2000);
+                 show_plot_accordingly(final_stops, data.left);
               });
             }
           
@@ -677,11 +677,11 @@
           // extend the line from start to finish with animation
 
           animate(points);
-          
+            debugger
            function animate() {
             if(already_displayed)
-            { 
-                  requestAnimationFrame(animate);
+            {
+              requestAnimationFrame(animate);
             }
             else
             {
@@ -689,12 +689,13 @@
               if(points[t-2] != undefined && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y )
               { 
                 $(".popover").popover('hide');
-                if (data_array[vertices_count] != undefined)
-                {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
+                if (data_array[vertices_count] != undefined) {
+                  debugger;
+                  $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
                                   html: true,
                                   trigger: "hover",
                                   placement: 'top',
-                                  template: '<div class="popover pyn-popover" style="left: -43px !important; width: 250px;" ><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
+                                  template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                                 }).popover('show');}
                   vertices_count++;
                   if(data_array[vertices_count - 1] == undefined)
@@ -716,12 +717,12 @@
             {
               
               $(".popover").popover('hide');
-              if (data_array[vertices_count] != undefined)
-              {$('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]').popover({
+              if (data_array[vertices_count] != undefined){ 
+                $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
                             html: true,
                             trigger: "hover",
                             placement: 'top',
-                            template: '<div class="popover pyn-popover" style="left: -43px !important; width: 250px;" ><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
+                            template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                           }).popover('show');}
               already_watched.push([selected_floor[0],selected_building[0]]);            
             }
@@ -731,9 +732,11 @@
               ctx.beginPath();
               if(points.length > 1)
               {
-                ctx.moveTo(points[t - 1].x, points[t - 1].y);
-                ctx.lineTo(points[t].x, points[t].y);
-                ctx.stroke();
+                if(points[t] && points[t-1]) {
+                  ctx.moveTo(points[t - 1].x, points[t - 1].y);
+                  ctx.lineTo(points[t].x, points[t].y);
+                  ctx.stroke();
+                }
               }
               
               // increment "t" to get the next waypoint
