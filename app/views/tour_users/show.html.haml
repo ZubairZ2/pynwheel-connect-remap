@@ -585,11 +585,15 @@
                     if (data.stops[s] && data.stops[s][1] && data.stops[s][1].floor)
                       current_floor = selected_floor.includes(String(data.stops[s][1].floor));
 
-                  if(current_floor || current_building){ 
-                    data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
+                  if(data.stops[s] && data.stops[s][2] == "tour"){
                     final_stops.push(data.stops[s]);
-                    //binding.pry
-                    //show_plot_accordingly(final_stops, data.left);
+                  }else{
+                      if(current_floor || current_building){ 
+                      data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
+                      final_stops.push(data.stops[s]);
+                      //binding.pry
+                      //show_plot_accordingly(final_stops, data.left);
+                    }
                   }                
                 }
                  sleep(2000);
@@ -709,6 +713,7 @@
               }
               else
               {
+                debugger
                 requestAnimationFrame(animate);
               }
               
