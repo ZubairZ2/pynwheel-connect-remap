@@ -119,24 +119,24 @@ class Api::V1::CommunitiesController < ActionController::Base
       end
       if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
         touruser = TourUser.find_by_id params[:tour_user_id]
-        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
+        @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
       else
-        @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+        @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
       end
     else
       if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
         if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
           touruser = TourUser.find_by_id params[:tour_user_id]
-          @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
+          @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
         else
-          @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+          @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
         end
       else
         if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
           touruser = TourUser.find_by_id params[:tour_user_id]
-          @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
+          @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
         else
-          @communities = Community.select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
+          @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
         end
       end
     end
@@ -146,7 +146,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     @allow_usage, @redirect_url = get_version_access params 
     if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
       company = Company.where('lower(name) = ?', 'lincoln')
-      @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
+      @communities = Community.where(company_id: company.first.id).select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
     else
       begin
         secure_random = SecureRandom.hex
@@ -159,7 +159,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         @token = nil
       end
       company = Company.where('lower(name) = ?', 'lincoln')
-      @communities = Community.where(company_id: company.first.id).select(:id,:name,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
+      @communities = Community.where(company_id: company.first.id).select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
     end
   end
 
