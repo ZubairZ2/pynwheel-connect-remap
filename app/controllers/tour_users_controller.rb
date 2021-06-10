@@ -148,6 +148,9 @@ class TourUsersController < ApplicationController
   def visited_stops_data
     if(params[:tour_history_id].present?)
       tour_history = TourHistory.find params[:tour_history_id]
+      floors = []
+      buildings = []
+      
       # floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
       stops = VisitedStop.where(tour_key: tour_history.tour_key).order(:id).map{|x| 
       
@@ -158,16 +161,21 @@ class TourUsersController < ApplicationController
         floors = buildings = nil
       else
         floor_image = @community.floorplates.map{|x| [x.floors,x.image.url]}
+        stops.each do |f|
+          if f.present? && f[1].present?
+            if f[1].floor.present?
+              floors << f[1].floor
+            end
 
-        floors = stops.map{|x| x[1] }.compact.uniq.sort
-        floors = floors.map{|x| x.floor }.compact.uniq.sort
-
-        buildings = stops.map{|x| x[1] }.compact.uniq
-        buildings = buildings.map{|x| x.building }.compact.uniq
+            if f[1].building.present?
+              buildings <<  f[1].building
+            end
+          end
+        end
       end
       
       stops.unshift(['',current_community.tour,"tour"])
-      render json: { :stops => stops, :floors => floors, :buildings => buildings, :floor_image => floor_image, :lock_access_time => (tour_history.lock_access_time.strftime("%I:%M %p") rescue ""), :left => tour_history.left}, status: 200
+      render json: { :stops => stops, :floors => floors.compact.uniq.sort, :buildings => buildings.compact.uniq, :floor_image => floor_image, :lock_access_time => (tour_history.lock_access_time.strftime("%I:%M %p") rescue ""), :left => tour_history.left}, status: 200
     else
       render json: {}, status: 404
     end

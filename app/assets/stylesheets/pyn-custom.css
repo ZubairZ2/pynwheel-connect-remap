@@ -4862,3 +4862,16 @@ input:checked+.slider:before {
 .plotexp-uploading-popover-arrow::after {
     border-left-color: #000000 !important;
 }
+
+.visitors-hints-arrow {
+    top: 100px !important;
+}
+
+.visitors-hints-arrow:after {
+    border-top-color: #efefef !important;
+    border-left-color: transparent !important;
+}
+
+.visitor-popover {
+    top: -98px !important;
+}
