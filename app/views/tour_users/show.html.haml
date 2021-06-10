@@ -587,11 +587,12 @@
                   if(current_floor || current_building){ 
                     data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
                     final_stops.push(data.stops[s]);
-                    show_plot_accordingly(final_stops, data.left);
+                    //binding.pry
+                    //show_plot_accordingly(final_stops, data.left);
                   }                
                 }
-                sleep(000);
-                show_plot_accordingly(final_stops, data.left);
+                 sleep(2000);
+                 show_plot_accordingly(final_stops, data.left);
               });
             }
           
@@ -665,6 +666,7 @@
 
   function draw_a_line(vertices, data_array)
   {
+    debugger;
     ctx.lineWidth = 5;
           ctx.strokeStyle = "blue";
           // calculate incremental points along the path
@@ -674,7 +676,7 @@
           // extend the line from start to finish with animation
 
           animate(points);
-          
+            debugger
            function animate() {
             if(already_displayed)
             {
