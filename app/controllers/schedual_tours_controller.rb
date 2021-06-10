@@ -133,7 +133,7 @@ class SchedualToursController < ApplicationController
       render json: {message: "some errors occured"}, status: 'failed'
     end
     redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: community.id)
-    # redirect_to scheduler_widget_test_widget_confirmation_path(message: sent_notifications[:web_notification], community_id: community.id)
+    # redirect_to scheduler_widget_confirmation_instructions_path(message: sent_notifications[:web_notification], community_id: community.id)
   end
   # POST /schedual_tours
   # POST /schedual_tours.json
@@ -360,19 +360,52 @@ class SchedualToursController < ApplicationController
       
       app_link_web = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
       android_link_web = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
+
+      instruction_cards = "Card here"
       if community.tour.tour_setting.enable_header_footer
-        email_content = is_rescheduled ? "Thank you for rescheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download Self Tour app before you arrive: <br> iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}" : "Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}"
+        email_content = is_rescheduled ? "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Thank you for rescheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b>
+        on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of 
+        <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. 
+        When you go to the property, you will need <br/></p> </div> <ul><li style='font-size: 18px;font-family: Poppins !important;'>A photo ID</li> <li style='font-size: 18px;font-family: Poppins !important;'>Your mobile device with the Pynwheel Self Tour app installed.
+        </li></ul> <div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Please download Self Tour app before you arrive: <br> iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a>
+        <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a></p></div><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}" : 
+        "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'> Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b>
+        at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/></p></div> <ul><li style='font-size: 18px;font-family: Poppins !important;'>A photo ID</li>
+        <li style='font-size: 18px;font-family: Poppins !important;'>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>
+        <div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a>
+        <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a></p></div><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}"
       else
-        email_content = is_rescheduled ? "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/>Thank you for rescheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}" : "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/>Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}"
+        email_content = is_rescheduled ? "<div style='vertical-align:middle; text-align:center'>
+        <img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>
+        <br/><p class='mt-10' style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Thank you for rescheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on
+        <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of
+        <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. 
+        When you go to the property, you will need</p></div> <ul><li style='font-size: 18px;font-family: Poppins !important;'>A photo ID</li> <li style='font-size: 18px;font-family: Poppins !important;'>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>
+        <div style='font-size: 18px;font-family: Poppins !important;text-align:center'>Please download Self Tour app before you arrive: 
+        <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users:
+        <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>
+        <br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}" : 
+        "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' />
+        <br/><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on
+        <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. 
+        When you go to the property, you will </p></div> <br/> <ul><li style='font-size: 18px;font-family: Poppins !important;'>A photo ID</li> <li style='font-size: 18px;font-family: Poppins !important;'>Your mobile device with the Pynwheel Self Tour app installed.</li>
+        </ul>
+        <div style='font-size: 18px;font-family: Poppins !important;text-align:center'>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a>
+        <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>
+        <br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}<br/>"
       end
       community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Self Tour" : "Self Tour"
+      flash_message = "success"
       web_notification = is_rescheduled ? "<div style='vertical-align:middle; text-align:center'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /><br/><p class='mt-10' style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Thank you, <b>#{tu.name}</b>! Your reservation is rescheduled. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> <br/>at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions.</p><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'><b>Please download the Pynwheel Self Tour app before you arrive:</b></p></div>" : "<div style='vertical-align:middle; text-align:center'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /><br/><p class='mt-10' style='font-weight: normal; font-size: 18px; font-family: Poppins;'> Thank you, <b>#{tu.name}</b>! Your reservation is confirmed. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> <br/>at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. </p><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'><b>Please download the Pynwheel Self Tour app before you arrive:</b></p></div>"
+      confirmation_page_link = "#{root_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}"
+      is_rescheduled ? schedual_tour.update_attributes(reschedule_notification: web_notification) : schedual_tour.update_attributes(confirmation_notification: web_notification)
       sms_content = !is_rescheduled ? 
       "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. When you go to the property, you will need 
       - A photo ID
       - Your mobile device with the #{community_text} app installed 
       iPhone Users: Download #{community_text} from the App Store #{app_link}
       Android Users: Download #{community_text} from Google Play #{android_link} 
+      User Instructions: Please follow the instructions #{confirmation_page_link}
       
       #{community.email_text}" : 
       "Thank you for rescheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")} instead of #{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")} at #{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}. When you go to the property, you will need 
@@ -380,6 +413,7 @@ class SchedualToursController < ApplicationController
       - Your mobile device with the #{community_text} app installed 
       iPhone Users: Download #{community_text} from the App Store #{app_link}
       Android Users: Download #{community_text} from Google Play #{android_link}
+      User Instructions: Please follow the instructions #{confirmation_page_link}
       
       #{community.email_text}"
       # sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(#{community.name.humanize if community.present?}) on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions. #{community.email_text}"
@@ -459,7 +493,7 @@ class SchedualToursController < ApplicationController
       account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
       auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
       @client = Twilio::REST::Client.new(account_sid, auth_token)
-      
+      # binding.pry
       
       message = @client.messages
         .create( 

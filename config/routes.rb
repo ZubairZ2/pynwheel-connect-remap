@@ -33,7 +33,7 @@ Rails.application.routes.draw do
   namespace :scheduler_widget do
     get 'widget', to: 'widgets#widget'
     get 'test_widget', to: 'widgets#test_widget'
-    get 'test_widget_confirmation', to: 'widgets#test_widget_confirmation'
+    get 'confirmation_instructions', to: 'widgets#confirmation_instructions'
     get 'scheduler_widget_button', to: 'widgets#scheduler_widget_button'
 
     # get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time

@@ -75,7 +75,7 @@
 
 <div class="container col-md-12 mt-10 card-main">
   <% data.each do |i| %> 
-    <div class="col-md-3 card-col">
+    <div class="col-md-3 card-col" style="margin-right: <%=obj[:marginRight] if obj[:marginRight].present? %>">
       <div class="card align_items mt-10 h-100">
         <p style="color: #000;"><b><%= i[:key] %></b></p>
         <%=image_tag("#{i[:image]}", class: "card-style", style: "background: #{i[:background]};", alt: "instruction card")%>

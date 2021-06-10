@@ -90,7 +90,7 @@ module SchedualToursHelper
     timezone = time_zone.name
   end
 
-    def get_visible_tour_stops(community, tour)
+  def get_visible_tour_stops(community, tour)
     tour_stops = community.tour.tour_stops
     if tour.present? && tour.stops_list.present?
       tour_stops.where(id: tour.stops_list).pluck(:id)

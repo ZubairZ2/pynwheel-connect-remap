@@ -27,7 +27,7 @@
     .how_it_works_p{
       font-size: 17px;
       font-family: Poppins !important;
-  }
+    }
   }
 
 </style>
@@ -42,11 +42,7 @@
     <%= stylesheet_link_tag 'jquery.mCustomScrollbar.css' %>
     <%= stylesheet_link_tag 'slick.css' %>
     <%= stylesheet_link_tag 'bootstrap-datetimepicker' %>
-    <%= stylesheet_link_tag    'application', media: 'all' %>
-    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
-    <%= javascript_include_tag 'jquery.arrayUtilities' %>
-    <%= javascript_include_tag 'slick' %>
-    <%= javascript_include_tag 'moment' %>
+    <%= stylesheet_link_tag 'application', media: 'all' %>
     <%= favicon_link_tag 'logo-small.png' %>
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
@@ -54,27 +50,23 @@
   <body>
     <div class="divLoading hidden"></div>
     <div id="scheduleMyTourSuccess" tabindex="-1" aria-hidden="true">
-      <%# <div class="container" role="document"> %>
         <section>
           <div class="container confirmation-text">
-            <p>
-              <%= flash[:success].html_safe if flash[:success].present? %>
-            </p>
+            <% if true %>
+                <% if is_rescheduled == "true" %>
+                <p>
+                  <%= schedual_tour.reschedule_notification.html_safe if schedual_tour.reschedule_notification.present? %>
+                </p>
+                <%else%>
+                <p>
+                  <%= schedual_tour.confirmation_notification.html_safe if schedual_tour.confirmation_notification.present? %>
+                </p>
+                <%end%>
+            <%end%>
           </div>
         </section>
         <section class="clearfix">
           <%= render 'shared/download_apps', :obj => {:ios_link => ios_link, :android_link => android_link } %>
-          <section class="container">
-            <% if true %>
-              <div style="float: right;">
-                <% if user_signed_in? %>
-                  <a class="btn_popup" id="close">Continue</a>
-                <% else %>
-                  <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">OkKKKKKKKKK</button>
-                <% end %>
-              </div>
-            <% end %>
-          <%# </section> %>
         </section>
         <section class="mt-15">
           <div class="container how_it_works">
@@ -85,35 +77,6 @@
              </div>
           </div>
         </section>
-      <%# </div> %>
     </div>
-
-    <script type="text/javascript">
-      function redirectSheduledTourPage(url){
-        window.location.href = url
-      }
-      $(document).ready(function(){
-        $("#close").on('click', function(){
-        $("#scheduleMyTourSuccess").addClass('hidden');
-        $('#close').modal('test_widget.html.erb' + "#scheduleMyTour");
-
-          // window.location.reload();
-        });
-      });
-      // var success = "<%= flash[:success]  %>";
-      // <% flash[:success] = "" %>
-      // if(success){
-      //   $("#modalLoginForm").modal('hide');
-      //   $('.divLoading').addClass('hidden')
-      //   $("#scheduleMyTourSuccess").show()
-      //   $("html, body").animate({ scrollTop: 0 }, 600);
-      // }
-      // else
-      // {
-      //     $('.divLoading').addClass('hidden');
-      // }
-    </script>
-
   </body>
-
 </html>

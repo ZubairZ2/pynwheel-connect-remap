@@ -136,7 +136,6 @@
     <%= javascript_include_tag 'bootstrap-datetimepicker' %>
     <%= favicon_link_tag 'logo-small.png' %>
     <%= render '/font_awesome_v5' %>
-    <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
   </head>
   
@@ -388,9 +387,8 @@
     <% end %>
     <% if flash[:success].present? %>
       <div id="scheduleMyTourSuccess" tabindex="-1" aria-hidden="true">
-        <%# <div class="container" role="document"> %>
           <section>
-            <div class="container confirmation-text">
+            <div class="confirmation-text">
               <p>
                 <%= flash[:success].html_safe if flash[:success].present? %>
               </p>
@@ -399,16 +397,13 @@
           <section >
             <%= render 'shared/download_apps', :obj => {:ios_link => ios_link, :android_link => android_link } %>
             <section class="container">
-              <% if true %>
-                <div style="float: right;">
-                  <% if user_signed_in? %>
-                    <button class="btn_confirmed" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">Continue ❯</button>
-                  <% else %>
-                    <a class="btn_confirmed" id="close">Next ❯</a>
-                  <% end %>
-                </div>
-              <% end %>
-            <%# </section> %>
+              <div style="float: right;">
+                <% if user_signed_in? %>
+                  <button class="btn_confirmed" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">Continue ❯</button>
+                <% else %>
+                  <a class="btn_confirmed" id="close">Continue ❯</a>
+                <% end %>
+              </div>
           </section>
           <section class="mt-15">
             <div class="container how_it_works">
@@ -419,7 +414,6 @@
               </div>
             </div>
           </section>
-        <%# </div> %>
       </div>
     <% end %>
 
