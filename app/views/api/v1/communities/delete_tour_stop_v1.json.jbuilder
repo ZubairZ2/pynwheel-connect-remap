@@ -1327,6 +1327,8 @@ json.tours @tours do |tour|
     json.enable_auto_zoom (@community.tour.present?) ? @community.tour.enable_auto_zoom : false
     json.show_map @community.show_map
     json.mdu @community.mdu
+    json.pynwheel_access_username @community&.zerv&.username
+    json.pynwheel_access_password @community&.zerv&.password
   end
 
 
