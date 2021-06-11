@@ -3,7 +3,7 @@
     text-align: center;
     border-radius: 4%;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);    
-    padding: 33px;
+    padding: 23px;
     background: #fff;
   }
   .align_items:hover {
@@ -75,10 +75,10 @@
 
 <div class="container col-md-12 mt-10 card-main">
   <% data.each do |i| %> 
-    <div class="col-md-3 card-col" style="margin-right: <%=obj[:marginRight] if obj[:marginRight].present? %>">
+    <div class="col-md-3 card-col" style="margin-right: <%= obj[:marginRight] %>">
       <div class="card align_items mt-10 h-100">
         <p style="color: #000;"><b><%= i[:key] %></b></p>
-        <%=image_tag("#{i[:image]}", class: "card-style", style: "background: #{i[:background]};", alt: "instruction card")%>
+        <%= image_tag("#{i[:image]}", class: "card-style", style: "background: #{i[:background]};", alt: "instruction card")%>
         <div class="card-body flex-fill">
           <p class="card-title title-style mt-10"><b><%= i[:title]%></b></p>
           <p class="card-text text-style"><%=i[:text]%></p>

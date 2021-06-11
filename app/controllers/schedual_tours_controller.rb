@@ -361,19 +361,16 @@ class SchedualToursController < ApplicationController
       app_link_web = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
       android_link_web = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
 
-      instruction_cards = "Card here"
       if community.tour.tour_setting.enable_header_footer
         email_content = is_rescheduled ? "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Thank you for rescheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b>
         on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of 
         <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. 
         When you go to the property, you will need <br/></p> </div> <ul><li style='font-size: 18px;font-family: Poppins !important;'>A photo ID</li> <li style='font-size: 18px;font-family: Poppins !important;'>Your mobile device with the Pynwheel Self Tour app installed.
-        </li></ul> <div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Please download Self Tour app before you arrive: <br> iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a>
-        <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a></p></div><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}" : 
+        </li></ul> <div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Please download Self Tour app before you arrive:</div>" : 
         "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'> Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b>
         at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/></p></div> <ul><li style='font-size: 18px;font-family: Poppins !important;'>A photo ID</li>
         <li style='font-size: 18px;font-family: Poppins !important;'>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>
-        <div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a>
-        <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a></p></div><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}"
+        <div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Please download Self Tour app before you arrive:</div><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}"
       else
         email_content = is_rescheduled ? "<div style='vertical-align:middle; text-align:center'>
         <img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>

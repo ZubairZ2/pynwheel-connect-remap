@@ -79,15 +79,9 @@
   .confirmation-text {
     padding: 2% 0 0;
   }
-  .btn_confirmed {
-    width: 100%;
-    border: none;
-    background: #008fd3;
-    text-align: center;
-    color: #fff;
-    font-size: 19px;
+  .continue_link {
     cursor: pointer;
-    padding: 7px 19px;
+    font-size: 18px;
   }
   @media only screen and (max-width: 760px) {
     .how_it_works_p{
@@ -164,9 +158,9 @@
           <section class="container">
             <div style="float: right;">
               <% if user_signed_in? %>
-                <button class="btn_confirmed" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">Continue ❯</button>
+                <a onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')" class="continue_link">Continue <%= '<i class="fa fa-long-arrow-right" aria-hidden="true"></i>'.html_safe %></a>
               <% else %>
-                <a class="btn_confirmed" id="close">Continue ❯</a>
+                <a class="continue_link" id="close">Continue <%= '<i class="fa fa-long-arrow-right" aria-hidden="true"></i>'.html_safe %></a>
               <% end %>
             </div>
         </section>
@@ -175,7 +169,7 @@
               <h2 class="mt-40 mb-20"><b>How It Works</b></h2>
               <p class="how_it_works_p">Be at the property on the day your tour is scheduled within <b>10</b> minutes of your scheduled time</p>
               <div>
-                <%= render 'shared/instruction_card' %>
+                <%= render 'shared/instruction_card', obj: {marginRight: '0%'} %>
               </div>
             </div>
           </section>

@@ -375,10 +375,11 @@
                           -# %p{:style => "text-align:left;margin-top: 40px; color: #000" }
                             -# = schedual_tour.confirmation_notification.html_safe
                           .divLoading.hidden
-                          -# #scheduleMyTourSuccess{"aria-hidden" => "true", :tabindex => "-1"}
                           %section
                             .container.confirmation-text
                               = @email_body.html_safe 
+                          %section.clearfix
+                            = render 'shared/download_apps', obj: {ios_link: @app_link, android_link: @android_link }
                           %section.mt-15
                             %div.container.how_it_works
                               %h2.mt-60.mb-20.how_it_works_h2
