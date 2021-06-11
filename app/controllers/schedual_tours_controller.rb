@@ -380,16 +380,14 @@ class SchedualToursController < ApplicationController
         When you go to the property, you will need</p></div> <ul><li style='font-size: 18px;font-family: Poppins !important;'>A photo ID</li> <li style='font-size: 18px;font-family: Poppins !important;'>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>
         <div style='font-size: 18px;font-family: Poppins !important;text-align:center'>Please download Self Tour app before you arrive: 
         <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users:
-        <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>
-        <br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}" : 
+        <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>" : 
         "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' />
         <br/><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on
         <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. 
         When you go to the property, you will </p></div> <br/> <ul><li style='font-size: 18px;font-family: Poppins !important;'>A photo ID</li> <li style='font-size: 18px;font-family: Poppins !important;'>Your mobile device with the Pynwheel Self Tour app installed.</li>
         </ul>
         <div style='font-size: 18px;font-family: Poppins !important;text-align:center'>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a>
-        <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>
-        <br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}<br/>"
+        <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div><br/>"
       end
       community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Self Tour" : "Self Tour"
       flash_message = "success"
