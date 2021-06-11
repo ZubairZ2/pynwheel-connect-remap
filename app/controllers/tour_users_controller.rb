@@ -172,10 +172,13 @@ class TourUsersController < ApplicationController
             end
           end
         end
+
+        floors = floors.compact.uniq.sort
+        buildings = compact.uniq
       end
       
       stops.unshift(['',current_community.tour,"tour"])
-      render json: { :stops => stops, :floors => floors.compact.uniq.sort, :buildings => buildings.compact.uniq, :floor_image => floor_image, :lock_access_time => (tour_history.lock_access_time.strftime("%I:%M %p") rescue ""), :left => tour_history.left}, status: 200
+      render json: { :stops => stops, :floors => floors, :buildings => buildings, :floor_image => floor_image, :lock_access_time => (tour_history.lock_access_time.strftime("%I:%M %p") rescue ""), :left => tour_history.left}, status: 200
     else
       render json: {}, status: 404
     end
