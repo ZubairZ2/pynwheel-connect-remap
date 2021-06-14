@@ -75,6 +75,7 @@ class TourUsersController < ApplicationController
  end
 
   def lock_ploting
+    binding.pry
     community_id = params[:community_id]
     tour_user_id = params[:tour_user_id]
     tour_history_id = params[:tour_history_id]
@@ -150,25 +151,42 @@ class TourUsersController < ApplicationController
       tour_history = TourHistory.find params[:tour_history_id]
       floors = []
       buildings = []
+      stops = []
       
       # floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
-      stops = VisitedStop.where(tour_key: tour_history.tour_key).order(:id).map{|x| 
+      # stops = VisitedStop.where(tour_key: tour_history.tour_key).order(:id).map{|x| 
       
-        (x.stop_type == "amenity") ? ([x, (Amenity.find_by_id (TourStop.find x.tour_stop_id).stop_id), 'amenity'] rescue next): ([x, (Unit.find_by_id (TourStop.find x.tour_stop_id).stop_id) , 'unit'] rescue next)
-      }
+      #   (x.stop_type == "amenity") ? ([x, (Amenity.find_by_id (TourStop.find x.tour_stop_id).stop_id), 'amenity'] rescue next): ([x, (Unit.find_by_id (TourStop.find x.tour_stop_id).stop_id) , 'unit'] rescue next)
+      # }
+
+      visitod_stops = VisitedStop.where(tour_key: tour_history.tour_key).order(:id)
+      
+      visitod_stops.each do |x|
+        tour_stop = TourStop.find_by_id x.tour_stop_id if x.tour_stop_id.present?
+        if tour_stop.present? && tour_stop.stop_id.present?
+          v_s = tour_stop.stop_type.classify.constantize.find_by_id tour_stop.stop_id
+          
+          if v_s.present?
+            stops << [x, v_s, tour_stop.stop_type]
+          end 
+        end
+      end
+
       if @community.is_sitemap
         floor_image = @community.floorplates.map{|x| [x.floors,x.image.url]}
         floors = buildings = nil
       else
         floor_image = @community.floorplates.map{|x| [x.floors,x.image.url]}
         stops.each do |f|
-          if f.present? && f[1].present?
-            if f[1].floor.present?
-              floors << f[1].floor
-            end
+          if f[2].present? && (f[2] == "unit" || f[2] == "amenity")
+            if f.present? && f[1].present?
+              if f[1].floor.present?
+                floors << f[1].floor
+              end
 
-            if f[1].building.present?
-              buildings <<  f[1].building
+              if f[1].building.present?
+                buildings <<  f[1].building
+              end
             end
           end
         end
@@ -178,7 +196,9 @@ class TourUsersController < ApplicationController
       end
       
       stops.unshift(['',current_community.tour,"tour"])
-      render json: { :stops => stops, :floors => floors, :buildings => buildings, :floor_image => floor_image, :lock_access_time => (tour_history.lock_access_time.strftime("%I:%M %p") rescue ""), :left => tour_history.left}, status: 200
+      tour_starting_point = @community.tour
+      
+      render json: {:tour_starting_point => tour_starting_point,  :stops => stops, :floors => floors, :buildings => buildings, :floor_image => floor_image, :lock_access_time => (tour_history.lock_access_time.strftime("%I:%M %p") rescue ""), :left => tour_history.left}, status: 200
     else
       render json: {}, status: 404
     end
