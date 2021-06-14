@@ -8,7 +8,7 @@ def check_unit_occupied add_stop
   end
 end
 i = 0
-description_limit = 70
+description_limit = 90
 is_zerv_lock_present = false
 
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
