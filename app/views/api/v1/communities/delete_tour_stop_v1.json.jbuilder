@@ -840,7 +840,7 @@ json.tours @tours do |tour|
 
       unit_directional_text = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
 
-      if unit_directional_text.size < description_limit
+      if unit_directional_text.size <= description_limit
         show_directional_text = false
       else
         show_directional_text = true
@@ -886,7 +886,7 @@ json.tours @tours do |tour|
       end
       unit_stop_description = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
 
-      if unit_stop_description.size < description_limit
+      if unit_stop_description.size <= description_limit
         show_long_description = false
       else
         show_long_description = true
@@ -945,7 +945,7 @@ json.tours @tours do |tour|
           json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
           unit_amenity_stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
 
-          if unit_amenity_stop_description.size < description_limit
+          if unit_amenity_stop_description.size <= description_limit
             json.show_long_description false
           json.stop_description unit_amenity_stop_description
           else
@@ -957,7 +957,7 @@ json.tours @tours do |tour|
           json.long_stop_description styling_start + unit_amenity.description.gsub('red','') + styling_end  rescue ""
 
           unit_amenity_directional_text = ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
-          if unit_amenity_directional_text.size < description_limit
+          if unit_amenity_directional_text.size <= description_limit
             json.show_long_directional_text false
           json.directional_text unit_amenity_directional_text
           else
@@ -971,14 +971,14 @@ json.tours @tours do |tour|
           if unit_amenity.amenity_galleries.count == 0
             stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
 
-            if stop_description.size < description_limit
+            if stop_description.size <= description_limit
               show_long_description = false
             else
               show_long_description = true
             end
             directional_text = ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
 
-            if directional_text.size < description_limit
+            if directional_text.size <= description_limit
               show_directional_text = false
             else
               show_directional_text = true
@@ -1000,7 +1000,7 @@ json.tours @tours do |tour|
               json.image ag.image.url
               stop_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
 
-              if stop_description.size < description_limit
+              if stop_description.size <= description_limit
                 json.show_long_description false
                 json.description stop_description
               else
@@ -1012,7 +1012,7 @@ json.tours @tours do |tour|
 
               stop_description = ActionView::Base.full_sanitizer.sanitize(ag.directional_text.present? ? ag.directional_text : "")
 
-              if stop_description.size < description_limit
+              if stop_description.size <= description_limit
                 json.show_long_directional_text false
                 json.directional_text stop_description
               else
@@ -1098,7 +1098,7 @@ json.tours @tours do |tour|
       end
       if current_floor.present?
         floor_image = @community.floorplates.map{|x| x if x.floors.include?(current_floor)}.compact.last.image rescue nil
-        floor_image = (elevator.floorplate.image.present? ? elevator.floorplate : nil) if elevator.floorplate.present? if floor_image.nil?
+        floor_image = elevator.floorplate.image rescue nil
         json.floorplate_image floor_image.image.url  rescue ""
         json.image_width floor_image.width  rescue 0
         json.image_height floor_image.height rescue 0
@@ -1154,7 +1154,7 @@ json.tours @tours do |tour|
       json.image amenity.image.present? ? amenity.image.url : "no image"
       stop_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
 
-      if stop_description.size < description_limit
+      if stop_description.size <= description_limit
         json.show_long_description false
         json.stop_description stop_description
       else
@@ -1167,7 +1167,7 @@ json.tours @tours do |tour|
       json.name amenity.name
       directional_text = ActionView::Base.full_sanitizer.sanitize(amenity.directional_text.present? ? amenity.directional_text : "")
 
-      if directional_text.size < description_limit
+      if directional_text.size <= description_limit
         json.show_long_directional_text false
       json.directional_text directional_text
       else
@@ -1187,14 +1187,14 @@ json.tours @tours do |tour|
       if amenity.amenity_galleries.count == 0
          stop_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
 
-        if stop_description.size < description_limit
+        if stop_description.size <= description_limit
           show_long_description = false
         else
           show_long_description = true
         end
         directional_text = ActionView::Base.full_sanitizer.sanitize(amenity.directional_text.present? ? amenity.directional_text : "")
 
-        if directional_text.size < description_limit
+        if directional_text.size <= description_limit
           show_directional_text = false
         else
           show_directional_text = true
@@ -1215,7 +1215,7 @@ json.tours @tours do |tour|
           json.image ag.image.url
           stop_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
 
-          if stop_description.size < description_limit
+          if stop_description.size <= description_limit
             json.show_long_description false
             json.description stop_description
           else
@@ -1227,7 +1227,7 @@ json.tours @tours do |tour|
 
           stop_description = ActionView::Base.full_sanitizer.sanitize(ag.directional_text.present? ? ag.directional_text : "")
 
-          if stop_description.size < description_limit
+          if stop_description.size <= description_limit
             json.show_long_directional_text false
             json.directional_text stop_description
           else
