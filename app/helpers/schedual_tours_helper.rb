@@ -85,9 +85,15 @@ module SchedualToursHelper
 
   end
 
-  def get_time_zone(community)
-    time_zone = Timezone.lookup(community.latitude, community.longitude)
-    timezone = time_zone.name
+  def get_time_zone community
+    if community.present? && community.latitude.present? && community.longitude.present?
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
+    else
+      timezone = nil
+    end
+
+    timezone
   end
 
     def get_visible_tour_stops(community, tour)

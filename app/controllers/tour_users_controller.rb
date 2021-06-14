@@ -174,7 +174,7 @@ class TourUsersController < ApplicationController
         end
 
         floors = floors.compact.uniq.sort
-        buildings = compact.uniq
+        buildings = buildings.compact.uniq
       end
       
       stops.unshift(['',current_community.tour,"tour"])
