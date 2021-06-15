@@ -139,8 +139,8 @@
                         - elsif @alerts.last.history == true
                           Removed at Consumer Request
                       - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                        - if @alerts.last.history == false
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - if @alerts.present? && @alerts.last.history == false
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] if  f.arrived.present? } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
                         - elsif @alerts.last.history == true
                           Removed at Consumer Request
 
@@ -498,7 +498,9 @@
           first_building = null;
           first_floor = null;
           lock_access_time = data.lock_access_time;
-          debugger;
+          tourStartingPoint = true;
+          lastVisitedStop = null;
+          //debugger;
           if(data.stops[0] && data.stops[0][2] == "tour" && data.stops.length == 1)
           {
             selected_floor = selected_building = [];
@@ -511,14 +513,14 @@
 
           else
             {
-              debugger;
+              //debugger;
               for(var i=0; i<data.buildings.length; i++)
               {
                 if(data.buildings[i] != "" && data.buildings[i] != null){
                   $('#building_label').removeClass('hidden');
                   if(first_building == null)
                     first_building = data.buildings[i];
-                  $('#building_buttons').append('<a class="btn-default btns building_btn '+ (first_building == data.buildings[i] ? 'selected_building' : '') +'" id="building_'+ data.buildings[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_building == data.buildings[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.buildings[i] +'</a>')
+                  $('#building_buttons').append('<a class="btn-default btns building_btn '+ (first_building == data.buildings[i] ? 'selected_building' : '') +'" id="building_'+ data.buildings[i] +'" style="cursor: pointer; display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_building == data.buildings[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.buildings[i] +'</a>')
                 }
               }
               for(var i=0; i<data.floors.length; i++)
@@ -527,7 +529,7 @@
                   first_floor = data.floors[i];
                 $('#floor_label').removeClass('hidden');
                 if(String(data.floors[i]) != "" && String(data.floors[i]) != null)
-                  $('#floor_buttons').append('<a class="btn-default btns floor_btn '+ (first_floor == data.floors[i] ? 'selected_floor' : '') +'" id="floor_'+ data.floors[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_floor == data.floors[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.floors[i] +'</a>')
+                  $('#floor_buttons').append('<a class="btn-default btns floor_btn '+ (first_floor == data.floors[i] ? 'selected_floor' : '') +'" id="floor_'+ data.floors[i] +'" style="cursor: pointer; display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_floor == data.floors[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.floors[i] +'</a>')
               }
               setTimeout(function(){
                 $('.selected_floor').click();
@@ -556,74 +558,90 @@
                 selected_building = $('.selected_building').text();
                 selected_floor = $('.selected_floor').text();
                 selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
-                
-                if(Array.isArray(selected_floor[0]))
-                    selected_floor = selected_floor[0]
-
                 selected_building = (first_building != "null" ? (selected_building == first_building ? [selected_building, "", null] : [selected_building]) : ["null", ""])
-                debugger
+
+                //debugger
+                if(Array.isArray(selected_floor[0]))
+                  selected_floor = selected_floor[0]
+               
+               if(Array.isArray(selected_building[0]))
+                  selected_building = selected_building[0]
+               
+                //debugger
                 for(var f=0; f< data.floor_image.length; f++)
                 {
-                  debugger
+                  //debugger
 
                   if(data.floor_image[f][0].includes(parseInt($('.selected_floor').text())))
                     img_ = data.floor_image[f][1]
                 }
-                debugger
+
+                //debugger
+                  
                   sleep(2000);
                   draw_image_canvas(img_);
-                debugger;
 
-                let current_floor;
-                let current_building;
-                
-                final_stops.push(data.stops[0]);
+                //debugger;
+                if(selected_building[0] === data.buildings[0] && parseInt(selected_floor[0]) === data.floors[0]) { 
+                  tourStartingPoint = true
+                }
 
-                for(var s = 0; s < data.stops.length; s++) {
-                  current_building = null;
+                // Add tour starint point only one time 
+                if(tourStartingPoint && data && data.stops && data.stops[0]) {
+                  tourStartingPoint = false;
+                  final_stops.push(data.stops[0]);
+                } else {
+                  if(lastVisitedStop) {
+                    final_stops.push(lastVisitedStop);
+                  }
+                }
 
-                  if (data.stops[s] && data.stops[s][1] && data.stops[s][1].building)
-                    current_building = selected_building.includes(String(data.stops[s][1].building));
-
-                  if(data.stops[s] && data.stops[s][2] == "building_starting_point" && current_building) {
-                    final_stops.push(data.stops[s]);
-                    break;
+                if(parseInt(selected_floor[0]) === data.floors[0]) {
+                  for(var s = 0; s < data.stops.length; s++) {
+                    let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
+                    if(data.stops[s] && data.stops[s][2] == "building_starting_point" && currentBuilding) {
+                      final_stops.push(data.stops[s]);
+                      break;
+                    }
                   }
                 }
 
                 for(var s = 0; s < data.stops.length; s++) {
                   current_stop = data.stops[s];
                   
-                  current_floor = null;
-                  current_building = null;  
+                  let currentFloor = getCurrentFloor(data.stops[s], selected_floor);
+                  let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
 
-                  if(data.stops[s] && (data.stops[s][2] == "unit" || data.stops[s][2] == "amenity")) {
-                    if (data.stops[s] && data.stops[s][1] && data.stops[s][1].building)
-                      current_building = selected_building.includes(String(data.stops[s][1].building));
-                    
-                    if (data.stops[s] && data.stops[s][1] && data.stops[s][1].floor)
-                      current_floor = selected_floor.includes(String(data.stops[s][1].floor));
-
-                    if(current_floor && current_building){ 
-                      data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
-                      final_stops.push(data.stops[s]);
-                    }
-                  }                
+                  if(currentFloor && currentBuilding && data.stops[s] && (data.stops[s][2] === "unit" || data.stops[s][2] === "amenity")) { 
+                    data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
+                    final_stops.push(data.stops[s]);
+                  }
                 }
 
                 for(var s = 0; s < data.stops.length; s++) {
-                  current_building = null;
-                
-                  if (data.stops[s] && data.stops[s][1] && data.stops[s][1].building)
-                    current_building = selected_building.includes(String(data.stops[s][1].building));
-                    
-                  if(data.stops[s] && data.stops[s][2] == "elevator" && current_building) {
+                  let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
+                  //debugger
+                  if(data.stops[s] && data.stops[s][2] === "elevator" && currentBuilding) {
+                    lastVisitedStop = data.stops[s]
                     final_stops.push(data.stops[s]);
                     break;
                   }
                 }
-                 sleep(2000);
-                 show_plot_accordingly(final_stops, data.left);
+
+                if(parseInt(selected_floor[0]) === data.floors[data.floors.length -1]) {
+                  for(var s = 0; s < data.stops.length; s++) {
+                    let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
+                    if(data.stops[s] && data.stops[s][2] == "building_starting_point" && currentBuilding) {
+                      final_stops.push(data.stops[s]);
+                      lastVisitedStop = data.stops[s];
+                      break;
+                    }
+                  }
+                }
+
+                //debugger
+                sleep(2000);
+                show_plot_accordingly(final_stops, data.left);
               });
             }
           
@@ -639,11 +657,24 @@
     });
   }
   
+  function getCurrentFloor(stop, selected_floor, current_floor = null) {
+    if (stop && stop[1] && stop[1].floor)
+      current_floor = selected_floor.includes(String(stop[1].floor));
+
+    return current_floor
+  }
+
+  function getCurrentBuilding(stop, selected_building, current_building = null) {
+    if (stop && stop[1] && stop[1].building)
+      current_building = selected_building.includes(String(stop[1].building));
+
+    return current_building
+  }
   
   function show_plot_accordingly(stops,left) {
     vs = 0;
     for(var i=0 ; i < stops.length ; i++){
-      debugger
+      //debugger
       if(stops[i][1] != null) { 
         vertices.push({
           x: ((stops[i][1].x_plot / img.width)*width),
@@ -666,7 +697,7 @@
       }
     }
         
-        debugger;
+        //debugger;
 
     draw_a_line(vertices, data_array);
   }
@@ -694,7 +725,7 @@
 
   function draw_a_line(vertices, data_array)
   {
-    debugger
+    //debugger
     ctx.lineWidth = 5;
           ctx.strokeStyle = "blue";
           // calculate incremental points along the path
@@ -704,7 +735,7 @@
           // extend the line from start to finish with animation
 
           animate(points);
-            debugger
+            //debugger
            function animate() {
             if(already_displayed)
             {
@@ -713,11 +744,12 @@
             else
             {
             if (t < points.length - 1) {
-              if(points[t-2] != undefined && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y )
+              console.log("data_array[vertices_count][1].name : ", data_array);
+              if(points[t-2] != undefined &&  vertices[vertices_count] && points[t-2] && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y )
               { 
                 $(".popover").popover('hide');
                 if (data_array[vertices_count] != undefined) {
-                  debugger;
+                  //debugger;
                   $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
                                   html: true,
                                   trigger: "hover",
@@ -736,7 +768,7 @@
               }
               else
               {
-                debugger
+                //debugger
                 requestAnimationFrame(animate);
               }
               
