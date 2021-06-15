@@ -539,7 +539,6 @@
                 $(".popover").popover('hide');
                 $('.fa-map-marker').hide();
                 $('.start-point').hide();
-    
                 final_stops = [];
                 if(this.id.includes("building"))
                 {
@@ -623,14 +622,16 @@
                 }
 
                 if(parseInt(selected_floor[0]) === data.floors[data.floors.length -1]) {
-                  for(var s = 0; s < data.stops.length; s++) {
+                  /*for(var s = 0; s < data.stops.length; s++) {
                     let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
                     if(data.stops[s] && data.stops[s][2] == "building_starting_point" && currentBuilding) {
                       final_stops.push(data.stops[s]);
                       lastVisitedStop = data.stops[s];
                       break;
                     }
-                  }
+                  }*/
+                  final_stops.push(data.stops[0]);
+                  lastVisitedStop = data.stops[0];
                 }
 
                 //debugger
@@ -723,9 +724,10 @@
     ctx.lineWidth = 5;
           ctx.strokeStyle = "blue";
           // calculate incremental points along the path
-          already_displayed = isItemInArray(already_watched,[selected_floor[0],selected_building[0]])
-          already_displayed ? ( points = vertices) :  points = calcWaypoints(vertices)
-          
+          already_displayed = false; 
+          // already_displayed =isItemInArray(already_watched,[selected_floor[0],selected_building[0]])
+          //already_displayed ? ( points = vertices) :  points = calcWaypoints(vertices)
+          points = calcWaypoints(vertices);
           // extend the line from start to finish with animation
 
           animate(points);
@@ -737,12 +739,11 @@
             }
             else
             {
-            if (t < points.length - 1) {
+            if (t <= points.length - 1) {
               if(points[t-2] != undefined &&  vertices[vertices_count] && points[t-2] && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y )
               { 
                 $(".popover").popover('hide');
                 if (data_array[vertices_count] != undefined) {
-                  //debugger;
                   $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
                                   html: true,
                                   trigger: "hover",
@@ -768,7 +769,7 @@
             }
             else
             {
-              
+              debugger;
               $(".popover").popover('hide');
               if (data_array[vertices_count] != undefined){ 
                 $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
@@ -777,7 +778,7 @@
                             placement: 'top',
                             template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "height: 115px;color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                           }).popover('show');}
-              already_watched.push([selected_floor[0],selected_building[0]]);            
+              //already_watched.push([selected_floor[0],selected_building[0]]);            
             }
           }
               // draw a line segment from the last waypoint
