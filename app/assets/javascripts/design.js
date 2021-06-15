@@ -27,7 +27,7 @@ $(document).ready(function () {
                 }
             },
         change: function() {
-            $('.edit_amenity').submit();
+            $('.amenity_edit_field').change();
         }
         }
         });
@@ -60,7 +60,7 @@ $(document).ready(function () {
 
                 },
                 change: function() {
-                    $('.edit_amenity').submit();
+                    $('.amenity_edit_field').change();
                 }
             }
         });

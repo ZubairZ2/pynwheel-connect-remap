@@ -305,7 +305,7 @@
         $('#manual_access_code').addClass('hide_it')
       }
     }
-
+    setTimeout(function(){ $('.lock_provider_input').change(); }, 500);
     $('.lock_provider_input').change(function(){
       if (locks_input){
         var lock = $(locks_input)[0];
