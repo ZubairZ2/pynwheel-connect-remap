@@ -290,16 +290,22 @@
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
     img = document.getElementById("floorplane_img");
+    
     if(img_src != null)
       img.src = img_src
+
+    
+
+    
     width = $('#parent-div').width()
     height = ( width / img.width) * img.height;
     ctx.canvas.height = height;
     ctx.canvas.width = width;
-    ctx.drawImage(img, 0, 0, width, height);
     
-
-
+    img.onload = function(){
+      ctx.drawImage(img, 0, 0, width, height);
+    }
+    
     ctx.lineCap = "round";
 
     // variable to hold how many frames have elapsed in the animation
@@ -343,15 +349,6 @@
 
       return (waypoints);
   }
-
- 
-
-
- 
-
-
-
-
 
   $('[data-toggle="popover-hover"]').popover({
       html: true,
@@ -480,9 +477,7 @@
           },
         url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/visited_stops_data?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
         success: function(data){
-          delete_image_canvas();
-          draw_image_canvas(null);
-          
+          delete_image_canvas();          
           $('#building_label').addClass('hidden');
           $('#floor_label').addClass('hidden');
           $(".popover").popover('hide');
@@ -490,9 +485,9 @@
           $('.start-point').hide();
           $('.building_btn').hide();
           $('.floor_btn').hide();
+
           already_watched = [];
           vertices_count = 0;
-
 
           data_array = [];
           first_building = null;
@@ -500,7 +495,7 @@
           lock_access_time = data.lock_access_time;
           tourStartingPoint = true;
           lastVisitedStop = null;
-          //debugger;
+          debugger;
           if(data.stops[0] && data.stops[0][2] == "tour" && data.stops.length == 1)
           {
             selected_floor = selected_building = [];
@@ -513,7 +508,7 @@
 
           else
             {
-              //debugger;
+              debugger;
               for(var i=0; i<data.buildings.length; i++)
               {
                 if(data.buildings[i] != "" && data.buildings[i] != null){
@@ -537,7 +532,6 @@
               
               $('.btns').click(function(){
                 vertices_count = 0;
-                delete_image_canvas();
                 $(".popover").popover('hide');
                 $('.fa-map-marker').hide();
                 $('.start-point').hide();
@@ -560,28 +554,24 @@
                 selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
                 selected_building = (first_building != "null" ? (selected_building == first_building ? [selected_building, "", null] : [selected_building]) : ["null", ""])
 
-                //debugger
+                debugger
                 if(Array.isArray(selected_floor[0]))
                   selected_floor = selected_floor[0]
                
                if(Array.isArray(selected_building[0]))
                   selected_building = selected_building[0]
                
-                //debugger
                 for(var f=0; f< data.floor_image.length; f++)
                 {
-                  //debugger
+                  debugger
 
                   if(data.floor_image[f][0].includes(parseInt($('.selected_floor').text())))
                     img_ = data.floor_image[f][1]
                 }
 
-                //debugger
-                  
-                  sleep(2000);
-                  draw_image_canvas(img_);
+                sleep(2000);
+                draw_image_canvas(img_);
 
-                //debugger;
                 if(selected_building[0] === data.buildings[0] && parseInt(selected_floor[0]) === data.floors[0]) { 
                   tourStartingPoint = true
                 }
@@ -620,7 +610,7 @@
 
                 for(var s = 0; s < data.stops.length; s++) {
                   let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
-                  //debugger
+                  debugger
                   if(data.stops[s] && data.stops[s][2] === "elevator" && currentBuilding) {
                     lastVisitedStop = data.stops[s]
                     final_stops.push(data.stops[s]);
@@ -629,6 +619,7 @@
                 }
 
                 if(parseInt(selected_floor[0]) === data.floors[data.floors.length -1]) {
+
                   for(var s = 0; s < data.stops.length; s++) {
                     let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
                     if(data.stops[s] && data.stops[s][2] == "building_starting_point" && currentBuilding) {
@@ -637,9 +628,12 @@
                       break;
                     }
                   }
+
+                  //final_stops.push(data.stops[0]);
+                  //lastVisitedStop = data.stops[0];
                 }
 
-                //debugger
+                debugger
                 sleep(2000);
                 show_plot_accordingly(final_stops, data.left);
               });
@@ -674,7 +668,7 @@
   function show_plot_accordingly(stops,left) {
     vs = 0;
     for(var i=0 ; i < stops.length ; i++){
-      //debugger
+      debugger
       if(stops[i][1] != null) { 
         vertices.push({
           x: ((stops[i][1].x_plot / img.width)*width),
@@ -697,7 +691,7 @@
       }
     }
         
-        //debugger;
+        debugger;
 
     draw_a_line(vertices, data_array);
   }
@@ -725,7 +719,7 @@
 
   function draw_a_line(vertices, data_array)
   {
-    //debugger
+    debugger
     ctx.lineWidth = 5;
           ctx.strokeStyle = "blue";
           // calculate incremental points along the path
@@ -735,7 +729,7 @@
           // extend the line from start to finish with animation
 
           animate(points);
-            //debugger
+            debugger
            function animate() {
             if(already_displayed)
             {
@@ -749,12 +743,12 @@
               { 
                 $(".popover").popover('hide');
                 if (data_array[vertices_count] != undefined) {
-                  //debugger;
+                  debugger;
                   $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
                                   html: true,
                                   trigger: "hover",
                                   placement: 'top',
-                                  template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
+                                  template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "height: 115px;color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                                 }).popover('show');}
                   vertices_count++;
                   if(data_array[vertices_count - 1] == undefined)
@@ -768,7 +762,7 @@
               }
               else
               {
-                //debugger
+                debugger
                 requestAnimationFrame(animate);
               }
               
@@ -782,7 +776,7 @@
                             html: true,
                             trigger: "hover",
                             placement: 'top',
-                            template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
+                            template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "height: 115px;color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                           }).popover('show');}
               already_watched.push([selected_floor[0],selected_building[0]]);            
             }
