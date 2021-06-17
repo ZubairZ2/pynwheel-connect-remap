@@ -546,6 +546,7 @@
                 final_stops = [];
                 vertices_count = 0;
                 data_array = [];
+                visited_units_amenities_count = 0;
                 
                 if(this.id.includes("building"))
                 {
@@ -618,6 +619,7 @@
                   if(currentFloor && currentBuilding && data.stops[s] && (data.stops[s][2] === "unit" || data.stops[s][2] === "amenity")) { 
                     data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
                     final_stops.push(data.stops[s]);
+                    visited_units_amenities_count = visited_units_amenities_count + 1;
                   }
                 }
 
@@ -656,9 +658,11 @@
                   lastVisitedStop = data.stops[0];
                 }
 
-                //debugger
-                sleep(2000);
-                show_plot_accordingly(final_stops, data.left);
+               if(visited_units_amenities_count > 0) {
+                  //debugger
+                  sleep(2000);
+                  show_plot_accordingly(final_stops, data.left);
+                }
               });
             }
           
