@@ -622,43 +622,42 @@
                     visited_units_amenities_count = visited_units_amenities_count + 1;
                   }
                 }
-
-                for(var s = 0; s < data.stops.length; s++) {
-                  let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
-                  debugger
-                  if(data.stops[s] && !data.stops[s][4] && data.stops[s][2] === "elevator" && currentBuilding) {
-                    debugger
-                    lastVisitedStop = data.stops[s];
-                    lastVisitedStopIndex = s;
-                    let finalStop = [];
-                    
-                    finalStop.push(data.stops[s][0]);
-                    finalStop.push(data.stops[s][1]);
-                    finalStop.push(data.stops[s][2]);
-                    finalStop.push([]);
-                    finalStop.push(data.stops[s][4]);
-
-                    final_stops.push(finalStop);
-                    //final_stops.push(data.stops[s]);
-
-                    break;
-                  }
-                }
-
-                if(parseInt(selected_floor[0]) === data.floors[data.floors.length -1]) {
-                  /*for(var s = 0; s < data.stops.length; s++) {
+                if(visited_units_amenities_count > 0) {
+                  for(var s = 0; s < data.stops.length; s++) {
                     let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
-                    if(data.stops[s] && data.stops[s][2] == "building_starting_point" && currentBuilding) {
-                      final_stops.push(data.stops[s]);
+                    debugger
+                    if(data.stops[s] && !data.stops[s][4] && data.stops[s][2] === "elevator" && currentBuilding) {
+                      debugger
                       lastVisitedStop = data.stops[s];
+                      lastVisitedStopIndex = s;
+                      let finalStop = [];
+                      
+                      finalStop.push(data.stops[s][0]);
+                      finalStop.push(data.stops[s][1]);
+                      finalStop.push(data.stops[s][2]);
+                      finalStop.push([]);
+                      finalStop.push(data.stops[s][4]);
+
+                      final_stops.push(finalStop);
+                      //final_stops.push(data.stops[s]);
+
                       break;
                     }
-                  }*/
-                  final_stops.push(data.stops[0]);
-                  lastVisitedStop = data.stops[0];
-                }
+                  }
 
-               if(visited_units_amenities_count > 0) {
+                  if(parseInt(selected_floor[0]) === data.floors[data.floors.length -1]) {
+                    /*for(var s = 0; s < data.stops.length; s++) {
+                      let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
+                      if(data.stops[s] && data.stops[s][2] == "building_starting_point" && currentBuilding) {
+                        final_stops.push(data.stops[s]);
+                        lastVisitedStop = data.stops[s];
+                        break;
+                      }
+                    }*/
+                    final_stops.push(data.stops[0]);
+                    lastVisitedStop = data.stops[0];
+                  }
+
                   //debugger
                   sleep(2000);
                   show_plot_accordingly(final_stops, data.left);
