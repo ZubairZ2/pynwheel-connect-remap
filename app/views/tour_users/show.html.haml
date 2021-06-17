@@ -557,7 +557,7 @@
                   
                   $('.floor_btn').each(function( index, item ) { item.style.background = "" ; $('#'+item.id).removeClass('selected_floor'); });
                   let firstFloor = $('.floor_btn:first');
-                  firstFloor.style.background = "green";
+                  firstFloor[0].style.background = "green";
                   firstFloor.addClass('selected_floor');
                 }
                 else
@@ -588,7 +588,8 @@
 
                 sleep(2000);
                 draw_image_canvas(img_);
-
+                sleep(2000);
+                
                 if(selected_building[0] === data.buildings[0] && parseInt(selected_floor[0]) === data.floors[0]) { 
                   tourStartingPoint = true
                 }
