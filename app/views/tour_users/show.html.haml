@@ -581,9 +581,6 @@
                     img_ = data.floor_image[f][1]
                 }
 
-                draw_image_canvas(img_);
-                sleep(2000);
-
                 if(selected_building[0] === data.buildings[0] && parseInt(selected_floor[0]) === data.floors[0]) { 
                   tourStartingPoint = true
                 }
@@ -636,6 +633,9 @@
                   if(nextElevatorStop[2] == "elevator") {
                     final_stops.push([nextElevatorStop[0], nextElevatorStop[1], nextElevatorStop[2], []])
                   }
+
+                  sleep(2000);
+                  draw_image_canvas(img_);
 
                   sleep(2000);
                   show_plot_accordingly(final_stops, data.left);
