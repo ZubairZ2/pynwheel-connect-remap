@@ -6,6 +6,8 @@ json.phone_number @tour_user.phone_number
 json.email @tour_user.email
 json.visual_id_verification @in_visiting_hours == true ? (@community.present? ? @community.tour.visual_id_verification : true) : false
 json.virtual_tour @in_visiting_hours == true ? true : false   # seding reverse value due to last name of json field i.e 'ontime'
+json.latest_message_id @latest_message_id 
+json.chat_control (@community.chat_control and @community.is_chat_available) ? @community.chat_control : false
 
 
 # @tours.each do |tour|
