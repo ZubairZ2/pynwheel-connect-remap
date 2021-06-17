@@ -554,6 +554,11 @@
                   $('.building_btn').each(function( index, item ) { item.style.background = ""; $('#'+item.id).removeClass('selected_building');});
                   this.style.background = "green";
                   $('#'+this.id).addClass('selected_building');
+                  
+                  $('.floor_btn').each(function( index, item ) { item.style.background = "" ; $('#'+item.id).removeClass('selected_floor'); });
+                  let firstFloor = $('.floor_btn:first');
+                  firstFloor.style.background = "green";
+                  firstFloor.addClass('selected_floor');
                 }
                 else
                 {
@@ -580,6 +585,9 @@
                   if(data.floor_image[f][0].includes(parseInt($('.selected_floor').text())))
                     img_ = data.floor_image[f][1]
                 }
+
+                sleep(2000);
+                draw_image_canvas(img_);
 
                 if(selected_building[0] === data.buildings[0] && parseInt(selected_floor[0]) === data.floors[0]) { 
                   tourStartingPoint = true
@@ -633,9 +641,6 @@
                   if(nextElevatorStop[2] == "elevator") {
                     final_stops.push([nextElevatorStop[0], nextElevatorStop[1], nextElevatorStop[2], []])
                   }
-
-                  sleep(2000);
-                  draw_image_canvas(img_);
 
                   sleep(2000);
                   show_plot_accordingly(final_stops, data.left);
