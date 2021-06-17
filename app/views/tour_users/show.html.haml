@@ -675,14 +675,14 @@
   }
   
   function getCurrentFloor(stop, selected_floor, current_floor = null) {
-    if (stop && stop[1] && stop[1].floor)
+    if (!(stop[1].floor == null))
       current_floor = selected_floor.includes(String(stop[1].floor));
 
     return current_floor
   }
 
   function getCurrentBuilding(stop, selected_building, current_building = null) {
-    if (stop && stop[1] && stop[1].building)
+    if (!(stop[1].building == "" || stop[1].building == null))
       current_building = selected_building.includes(String(stop[1].building));
 
     return current_building
