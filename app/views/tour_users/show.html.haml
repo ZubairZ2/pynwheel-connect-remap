@@ -636,10 +636,10 @@
                   if(nextElevatorStop[2] == "elevator") {
                     final_stops.push([nextElevatorStop[0], nextElevatorStop[1], nextElevatorStop[2], []])
                   }
+
+                  sleep(2000);
+                  show_plot_accordingly(final_stops, data.left);
                 }
-                
-                sleep(2000);
-                show_plot_accordingly(final_stops, data.left);
 
                 //if(visited_units_amenities_count > 0) {
                   /*for(var s = 0; s < data.stops.length; s++) {
@@ -678,8 +678,8 @@
                   //}
 
                   //debugger
-                  sleep(2000);
-                  show_plot_accordingly(final_stops, data.left);
+                  //sleep(2000);
+                  //show_plot_accordingly(final_stops, data.left);
                 //}
               });
             }
