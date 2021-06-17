@@ -500,6 +500,7 @@
           lock_access_time = data.lock_access_time;
           tourStartingPoint = true;
           lastVisitedStop = null;
+          lastVisitedStopindex = null;
           //debugger;
           if(data.stops[0] && data.stops[0][2] == "tour" && data.stops.length == 1)
           {
@@ -590,8 +591,9 @@
                   tourStartingPoint = false;
                   final_stops.push(data.stops[0]);
                 } else {
-                  if(lastVisitedStop) {
+                  if(lastVisitedStop && lastVisitedStopindex) {
                     final_stops.push(lastVisitedStop);
+                     data.stops[lastVisitedStopindex][4] = true;
                   }
                 }
 
