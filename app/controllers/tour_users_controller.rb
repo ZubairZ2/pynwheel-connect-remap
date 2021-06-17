@@ -154,7 +154,7 @@ class TourUsersController < ApplicationController
       stops = []
 
       visitod_stops = VisitedStop.where(tour_key: tour_history.tour_key).order(:id)
-      
+      tour =  @community.tour
       puts "--------------------"*20
       puts "---------------------------------------- visitod_stops ----------------------------------------"
       puts visitod_stops.inspect
@@ -162,6 +162,7 @@ class TourUsersController < ApplicationController
 
 
       visitod_stops.each_with_index do |x, index|
+        points = []
         tour_stop = TourStop.find_by_id x.tour_stop_id if x.tour_stop_id.present?
         puts "--------------------"*20
         puts "---------------------------------------- tour_stop ----------------------------------------"
