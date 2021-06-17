@@ -178,7 +178,7 @@ class TourUsersController < ApplicationController
               points << {x_plot: tour.x_plot, y_plot: tour.y_plot}
               points = inserTourPoints(tour_stop, points)
 
-              stops << ['', tour, 'tour', points]
+              stops << ['', tour, 'tour', points, false]
               points = []
             end
             
@@ -190,7 +190,7 @@ class TourUsersController < ApplicationController
               points = insertMiddlePoints(current_stop, prev_stop, points)
             end
       
-            stops << [x, v_s, tour_stop.stop_type, points]
+            stops << [x, v_s, tour_stop.stop_type, points, false]
             points = []
           end 
         end

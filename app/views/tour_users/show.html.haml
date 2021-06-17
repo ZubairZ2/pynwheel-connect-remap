@@ -620,9 +620,20 @@
                 for(var s = 0; s < data.stops.length; s++) {
                   let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
                   //debugger
-                  if(data.stops[s] && data.stops[s][2] === "elevator" && currentBuilding) {
-                    lastVisitedStop = data.stops[s]
-                    final_stops.push(data.stops[s]);
+                  if(data.stops[s] && !data.stops[s][4] && data.stops[s][2] === "elevator" && currentBuilding) {
+                    lastVisitedStop = data.stops[s];
+                    lastVisitedStopIndex = s;
+                    let finalStop = [];
+                    
+                    finalStop.push(data.stops[s][0]);
+                    finalStop.push(data.stops[s][1]);
+                    finalStop.push(data.stops[s][2]);
+                    finalStop.push([]);
+                    finalStop.push(data.stops[s][4]);
+
+                    final_stops.push(finalStop);
+                    //final_stops.push(data.stops[s]);
+
                     break;
                   }
                 }
