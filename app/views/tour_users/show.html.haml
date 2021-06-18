@@ -635,11 +635,11 @@
                   prevElevatorStop = data.stops[indexesArr[0] - 1];
                   nextElevatorStop = data.stops[indexesArr[indexesArr.length - 1] + 1];
 
-                  if(prevElevatorStop[2] == "elevator") {
+                  if(prevElevatorStop && prevElevatorStop[2] == "elevator") {
                     final_stops.unshift(prevElevatorStop);
                   }
 
-                  if(nextElevatorStop[2] == "elevator") {
+                  if(nextElevatorStop && nextElevatorStop[2] == "elevator") {
                     final_stops.push([nextElevatorStop[0], nextElevatorStop[1], nextElevatorStop[2], []])
                   }
 
