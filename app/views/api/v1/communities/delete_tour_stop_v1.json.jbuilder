@@ -108,6 +108,7 @@ json.tours @tours do |tour|
       min_floor = @floor_list.include?(1) ? 1 : @floor_list[0]
       @building_list << "" if @building_list == []
       @building_list.each do |building|
+        available_units_count = @community.units.where(building: building, available: true).count
         @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list
         @floor_list_loop.each do |floor|
           begin
@@ -192,7 +193,6 @@ json.tours @tours do |tour|
                 #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
                 # end
                 add_stop = TourStop.find_by_id(s_id)
-
                 if add_stop.present?
                   add_stop.floor = floor
                   add_stop.building = building
@@ -203,7 +203,10 @@ json.tours @tours do |tour|
 
                   if (add_mdu) and !(@community.deleted_ids.include? add_stop.id)
                     if (add_stop.is_a?(Tour)) || add_stop.stop_type === "elevator" || add_stop.stop_type === "building_starting_point"
-                      stops_arr << add_stop
+                      if available_units_count > 0
+                        stops_arr << add_stop
+                      end
+
                     else
                       if scheduled_tour_stops.present?
                         stop_ids = scheduled_tour_stops.pluck(:id)
@@ -266,6 +269,7 @@ json.tours @tours do |tour|
           # rescue => ex
           # end
       end
+
       stop_count = stops_arr.compact.count
 
       second_last = stops_arr.compact[stop_count - 3]
