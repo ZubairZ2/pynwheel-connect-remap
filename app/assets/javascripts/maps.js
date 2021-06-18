@@ -379,46 +379,39 @@ function plotting_hallways(thisObj) {
         $('.hallways_marker').draggable('disable')
     }
 }
-
-
-function automate_path() {
-    hallways_coordinates.forEach((point, index) => {
-        hallways_coordinates[index].next_points.forEach((element, i) => {
-            delayed(1000, function (i, j) {
-                return function () {
-                    let obj = hallways_coordinates.find(o => o.id == element);
-                    x1 = point.x_plot + 8
-                    y1 = point.y_plot + 8
-                    x2 = obj.x_plot + 8
-                    y2 = obj.y_plot + 8
-                    $(".line").remove();
-                    $(".plot-image").line(x1, y1, x2, y2, {
-                        zindex: 99,
-                        color: '#FF0000',
-                        stroke: "5",
-                        style: "solid",
-                        class: "line"
-                    });
-                    points_on_line(x1 - 8, y1 - 8, x2 - 8, y2 - 8);
-                };
-            }(index, i));
-        });
+function draw_lines_between_hallways(){
+  hallways_coordinates.forEach((point, index) => {
+    hallways_coordinates[index].next_points.forEach((element, i) => {
+        delayed(100, function (i, j) {
+            return function () {
+                let obj = hallways_coordinates.find(o => o.id == element);
+                x1 = point.x_plot + 8
+                y1 = point.y_plot + 8
+                x2 = obj.x_plot + 8
+                y2 = obj.y_plot + 8
+                $(".line").remove();
+                $(".plot-image").line(x1, y1, x2, y2, {
+                    zindex: 99,
+                    color: '#FF0000',
+                    stroke: "5",
+                    style: "solid",
+                    class: "line"
+                });
+                points_on_line(x1 - 8, y1 - 8, x2 - 8, y2 - 8);
+            };
+        }(index, i));
     });
-    setTimeout(function () {
-        draw_initial_hallways();
-        draw_lines_between_door_and_hallways();
-        draw_start_point_line();
-    }, hallways_coordinates.length * 1200);
-    algo_unit_data = [];
-    algo_amenity_data = [];
-    $(".line_hello").remove();
-    for (var i = 0; i < hallways_coordinates.length; i++) {
+  });
+}
+function get_unit_data(){
+  algo_unit_data = [];
+  for (var i = 0; i < hallways_coordinates.length; i++) {
         for (var j = 0; j < units_info.length; j++) {
-            if (!$.isEmptyObject(units_info[j].unit_info.door)) {
+            if (!$.isEmptyObject(units_info[j].unit_info.door)) { // if unit have door
                 var a = hallways_coordinates[i].x_plot - units_info[j].unit_info.door.x_plot;
                 var b = hallways_coordinates[i].y_plot - units_info[j].unit_info.door.y_plot;
                 var c = Math.sqrt(a * a + b * b);
-                if (i > 0) {
+                if (i > 0) { // Now every time loop on remaining hallways pomits and update distance info 
                     index = algo_unit_data.findIndex(x => x['door_id'] == units_info[j].unit_info.door.id);
                     if (algo_unit_data[index].distance > c) {
                         algo_unit_data[index].hallway_id = hallways_coordinates[i].id;
@@ -426,7 +419,7 @@ function automate_path() {
                         algo_unit_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
                         algo_unit_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
                     }
-                } else {
+                } else { // run only first time of i loop to store all door in array
                     var obj = new Object();
                     obj.hallway_id = hallways_coordinates[i].id;
                     obj.hallway_x_plot = hallways_coordinates[i].x_plot;
@@ -466,9 +459,12 @@ function automate_path() {
             }
         }
     }
-    for (var i = 0; i < hallways_coordinates.length; i++) {
+}
+function get_amenity_data(){
+  algo_amenity_data = [];
+  for (var i = 0; i < hallways_coordinates.length; i++) {
         for (var j = 0; j < amenities_info.length; j++) {
-            if (!$.isEmptyObject(amenities_info[j].amenity_info.door)) {
+            if (!$.isEmptyObject(amenities_info[j].amenity_info.door)) { // if amenity have 1 or more doors
                 for (var k = 0; k < amenities_info[j].amenity_info.door.length; k++) {
                     var a = hallways_coordinates[i].x_plot - amenities_info[j].amenity_info.door[k].x_plot;
                     var b = hallways_coordinates[i].y_plot - amenities_info[j].amenity_info.door[k].y_plot;
@@ -522,7 +518,10 @@ function automate_path() {
 
         }
     }
-    for (var i = 0; i < hallways_coordinates.length; i++) {
+}
+function get_starting_point_data(){
+  start_point_data = {};
+  for (var i = 0; i < hallways_coordinates.length; i++) {
         var a = hallways_coordinates[i].x_plot - building_starting_point.x_plot;
         var b = hallways_coordinates[i].y_plot - building_starting_point.y_plot;
         var c = Math.sqrt(a * a + b * b);
@@ -542,9 +541,11 @@ function automate_path() {
             start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
             start_point_data['distance'] = c;
         }
-    }
-    algo_access_point_data = [];
-    for (var z = 0; z < access_points.length; z++) {
+  }
+}
+function get_access_point_data(){
+  algo_access_point_data = [];
+  for (var z = 0; z < access_points.length; z++) {
         hallways_coordinates.forEach((first_hallway, index) => {
             hallways_coordinates[index].next_points.forEach((element, i) => {
                 let second_hallway = hallways_coordinates.find(o => o.id == element);
@@ -583,6 +584,22 @@ function automate_path() {
             });
         });
     }
+}
+function get_stops_data(){
+  get_unit_data()
+  get_amenity_data()
+  get_starting_point_data()
+  get_access_point_data() 
+}
+function automate_path() {
+    draw_lines_between_hallways()
+    $(".line_hello").remove(); // remove already drown lines between hallways point and unit, amenities, access points
+    get_stops_data()
+    setTimeout(function () {
+        draw_initial_hallways();
+        draw_lines_between_door_and_hallways();
+        draw_start_point_line();
+    }, hallways_coordinates.length * 120);
 }
 
 function draw_start_point_line() {
@@ -706,51 +723,124 @@ var delayed = (function () {
     };
 }());
 
-function run_algo() {
-    console.log("Hello");
-    // var new_data = [];
-    // hallways_coordinates.forEach((point, index) => {
-    //     var new_point = new Object();
-    //     new_point.id = point.id;
-    //     new_point.x_plot = point.x_plot;
-    //     new_point.y_plot = point.y_plot;
-    //     new_point.selected = point.selected;
-    //     new_point.parent_id = point.parent_id;
-    //     new_point.parent_type = point.parent_type;
-    //     new_point.next_points = point.next_points;
-    //     new_point.next_points_distance = [];
-    //     hallways_coordinates[index].next_points.forEach((element, i) => {
-    //         let obj = hallways_coordinates.find(o => o.id == element);
-    //         var id = obj.id.toString();
-    //         var a = point.x_plot - obj.x_plot;
-    //         var b = point.y_plot - obj.y_plot;
-    //         var c = Math.sqrt(a * a + b * b);
-    //         temp = {[id]: c};
-    //         new_point.next_points_distance.push(temp);
-    //     });
-    //     new_data.push(new_point);
-    // });
-    var new_data = {};
-    hallways_coordinates.forEach((point, index) => {
-        var new_point = new Object();
-        new_point.id = point.id;
-        new_point.x_plot = point.x_plot;
-        new_point.y_plot = point.y_plot;
-        new_point.selected = point.selected;
-        new_point.parent_id = point.parent_id;
-        new_point.parent_type = point.parent_type;
-        new_point.next_points = point.next_points;
-        new_point.next_points_distance = [];
-        hallways_coordinates[index].next_points.forEach((element, i) => {
-            let obj = hallways_coordinates.find(o => o.id == element);
-            var id = obj.id.toString();
-            var a = point.x_plot - obj.x_plot;
-            var b = point.y_plot - obj.y_plot;
-            var c = Math.sqrt(a * a + b * b);
-            temp = {[id]: c};
-            new_point.next_points_distance.push(temp);
-        });
-        new_data.push(new_point);
+function fetch_hallways_coordinates_with_distance(hallways_coordinates){
+  var new_hallways_coordinates = {};
+  hallways_coordinates.forEach((point, index) => {
+      var new_point = new Object();
+      new_point.id = point.id;
+      new_point.x_plot = point.x_plot;
+      new_point.y_plot = point.y_plot;
+      new_point.selected = point.selected;
+      new_point.parent_id = point.parent_id;
+      new_point.parent_type = point.parent_type;
+      new_point.next_points = point.next_points;
+      new_point.next_points_distance = [];
+      hallways_coordinates[index].next_points.forEach((element, i) => {
+          let obj = hallways_coordinates.find(o => o.id == element);
+          var id = obj.id.toString();
+          var a = point.x_plot - obj.x_plot;
+          var b = point.y_plot - obj.y_plot;
+          var c = Math.sqrt(a * a + b * b);
+          temp = {[id]: c};
+          new_point.next_points_distance.push(temp);
+      });
+      new_hallways_coordinates[point.id] = new_point;
+  });
+  return new_hallways_coordinates
+}
+function make_hallways_id_to_uniq_id(new_hallways_coordinates){
+  hallways_id_to_uniq_id = {}
+  Object.keys(new_hallways_coordinates).forEach((element, i) => {
+    hallways_id_to_uniq_id[element] = (i + 1)
+  });
+  return hallways_id_to_uniq_id;
+}
+
+function make_hallways_data_for_dijakstra(new_hallways_coordinates, hallways_id_to_uniq_id){
+  hallways_dijkstra_data = {}
+  for (const key in new_hallways_coordinates) {
+    var obj = new Object();
+    new_hallways_coordinates[key]["next_points_distance"].forEach((attached_points_obj, index) => {
+      obj[hallways_id_to_uniq_id[Object.keys(attached_points_obj)[0]]] = Object.values(attached_points_obj)[0]
     });
-    debugger;
+    hallways_dijkstra_data[hallways_id_to_uniq_id[key]] = obj  
+  }
+  return hallways_dijkstra_data
+}
+function make_unit_data_according_to_door_id(algo_unit_data){
+  unit_data = {}
+  Object.keys(algo_unit_data).forEach((element, i) => {
+    unit_data[algo_unit_data[element]['door_id']] = algo_unit_data[element]
+  });
+  return unit_data
+}
+function make_amenity_data_according_to_door_id(algo_amenity_data){
+  amenity_data = {}
+  Object.keys(algo_amenity_data).forEach((element, i) => {
+    amenity_data[algo_amenity_data[element]['door_id']] = algo_amenity_data[element]
+  });
+  return amenity_data
+}
+function make_unit_id_to_uniq_id(starting_index, unit_data){
+  unit_id_to_uniq_id = {}
+  Object.keys(unit_data).forEach((element, i) => {
+    unit_id_to_uniq_id[element] = starting_index++ 
+  })
+  return unit_id_to_uniq_id
+}
+function make_amenity_id_to_uniq_id(starting_index, amenity_data){
+  amenity_id_to_uniq_id = {}
+  Object.keys(amenity_data).forEach((element, i) => {
+    amenity_id_to_uniq_id[element] = starting_index++ 
+  })
+  return amenity_id_to_uniq_id
+}
+function make_unit_data_for_dijakstra(unit_data, unit_id_to_uniq_id, hallways_id_to_uniq_id, stops){
+  unit_dijkstra_data = {}
+  for (const key in unit_data) {
+    var obj = new Object();
+    obj[hallways_id_to_uniq_id[unit_data[key]['hallway_id']]] = unit_data[key]['distance']  
+    unit_dijkstra_data[unit_id_to_uniq_id[key]] = obj
+    var obj2 = new Object();
+    obj2[unit_id_to_uniq_id[key]] = unit_data[key]['distance']  
+    stops[hallways_id_to_uniq_id[unit_data[key]['hallway_id']]] = Object.assign(stops[hallways_id_to_uniq_id[unit_data[key]['hallway_id']]], obj2)
+  }
+  return unit_dijkstra_data
+}
+function make_amenity_data_for_dijakstra(amenity_data, amenity_id_to_uniq_id, hallways_id_to_uniq_id, stops){
+  amenity_dijkstra_data = {}
+  for (const key in amenity_data) {
+    var obj = new Object();
+    obj[hallways_id_to_uniq_id[amenity_data[key]['hallway_id']]] = amenity_data[key]['distance']  
+    amenity_dijkstra_data[amenity_id_to_uniq_id[key]] = obj
+    var obj2 = new Object();
+    obj2[amenity_id_to_uniq_id[key]] = amenity_data[key]['distance']  
+    stops[hallways_id_to_uniq_id[amenity_data[key]['hallway_id']]] = Object.assign(stops[hallways_id_to_uniq_id[amenity_data[key]['hallway_id']]], obj2)
+  }
+  return amenity_dijkstra_data 
+}
+function run_algo() {
+    get_stops_data()
+    //algo_access_point_data -> this functionality i think we should implement from mobile side 
+    stops = {}
+    new_hallways_coordinates = fetch_hallways_coordinates_with_distance(hallways_coordinates)
+    hallways_id_to_uniq_id = make_hallways_id_to_uniq_id(new_hallways_coordinates)
+    hallways_dijkstra_data = make_hallways_data_for_dijakstra(new_hallways_coordinates, hallways_id_to_uniq_id)
+    var starting_point = new Object();
+    starting_point[hallways_id_to_uniq_id[start_point_data['hallway_id']]] = start_point_data['distance']
+    stops[0] = starting_point
+    stops = Object.assign(stops, hallways_dijkstra_data);
+    unit_starting_index = Object.keys(stops).length
+    unit_data = make_unit_data_according_to_door_id(algo_unit_data)
+    unit_id_to_uniq_id = make_unit_id_to_uniq_id(unit_starting_index, unit_data)
+    unit_dijkstra_data = make_unit_data_for_dijakstra(unit_data, unit_id_to_uniq_id, hallways_id_to_uniq_id, stops)
+    stops = Object.assign(stops, unit_dijkstra_data);
+    amenity_starting_index = Object.keys(stops).length
+    amenity_data = make_amenity_data_according_to_door_id(algo_amenity_data)
+    amenity_id_to_uniq_id = make_amenity_id_to_uniq_id(amenity_starting_index, amenity_data)
+    amenity_dijkstra_data = make_amenity_data_for_dijakstra(amenity_data, amenity_id_to_uniq_id, hallways_id_to_uniq_id, stops)
+    stops = Object.assign(stops, amenity_dijkstra_data);
+    // Data format which is required to dijkstra is complete here
+    
+    debugger
 }
