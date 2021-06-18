@@ -108,7 +108,12 @@ json.tours @tours do |tour|
       min_floor = @floor_list.include?(1) ? 1 : @floor_list[0]
       @building_list << "" if @building_list == []
       @building_list.each do |building|
-        available_units_count = @community.units.where(building: building, available: true).count
+
+        # If no availble units or amenity in the building do not add elevator or staarting point in stops
+        visible_stops_ids = @community.tour.tour_stops.where(stop_type: ["unit", "amenity"], display_stop: true).pluck(:stop_id)
+        available_units_count = @community.units.where(id: visible_stops_ids, building: building, available: true).count
+        available_amenities_count = @community.amenities.where(id: visible_stops_ids, building: building,breezway_lock_visible: true).count
+
         @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list
         @floor_list_loop.each do |floor|
           begin
@@ -203,7 +208,7 @@ json.tours @tours do |tour|
 
                   if (add_mdu) and !(@community.deleted_ids.include? add_stop.id)
                     if (add_stop.is_a?(Tour)) || add_stop.stop_type === "elevator" || add_stop.stop_type === "building_starting_point"
-                      if available_units_count > 0
+                      if available_units_count > 0 || available_amenities_count > 0
                         stops_arr << add_stop
                       end
 
