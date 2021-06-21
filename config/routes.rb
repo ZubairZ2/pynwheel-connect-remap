@@ -470,6 +470,7 @@ Rails.application.routes.draw do
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
       put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
+      post :salesforce_tour_webhook, to: 'salesforce_webhooks#salesforce_tour_webhook'
       post :save_data, to: 'dwelo_devices#load_data'
       post :device_lock_unlock, to: 'dwelo_devices#device_lock_or_unlock'
       resources :communities, only: :index do
