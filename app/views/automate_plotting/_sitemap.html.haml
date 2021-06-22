@@ -20,7 +20,8 @@
               Add Access point in hallways that are not associated with any specific unit or amenity
       - if @community.self_tour and @community.auto_wayfinding
         %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo()'}Run Algo
+        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(false)'}Run Algo
+        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(true)'}Run Algo With Animation
   = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
   %form.form-horizontal
     .box-body.map-body-top
@@ -149,10 +150,12 @@
     // event.preventDefault();
   }
 
-
-  // check each variable is needed here or not after implementation 
-  var units_info = #{@unit_with_door.to_json.html_safe}
-  var access_points = #{@access_points.to_json.html_safe}
+  var units_info = #{@unit_with_door.to_json.html_safe};
+  var amenities_info = #{@amenity_with_doors.to_json.html_safe};
+  var access_points = #{@access_points.to_json.html_safe};
+  var building_starting_point = {x_plot: #{@community.tour.x_plot.to_json.html_safe}, y_plot: #{@community.tour.y_plot.to_json.html_safe} };
+  var planned_to_visit_units_and_doors_ids = #{@planned_to_visit_units_and_doors_ids}
+  var planned_to_visit_amenities_and_doors_ids = #{@planned_to_visit_amenities_and_doors_ids}
 
   var left_margin = #{raw @left_margin}
   var right_margin = #{raw @right_margin}
@@ -166,9 +169,10 @@
   var addmode = false;
   var adddoorsmode = false;
   var accesspointplot = false;
-  
   var sm_id = '#{@sitemap.id}';
-  hallways_coordinates = #{raw @hallways.to_json}
+  
+  hallways_coordinates = #{raw @hallways.present? ? @hallways.to_json : []}
+
   $( document ).ready(function() {
     draw_initial_hallways(hallways_coordinates)
   });

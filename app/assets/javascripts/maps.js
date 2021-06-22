@@ -411,7 +411,7 @@ function get_unit_data(){
                 var a = hallways_coordinates[i].x_plot - units_info[j].unit_info.door.x_plot;
                 var b = hallways_coordinates[i].y_plot - units_info[j].unit_info.door.y_plot;
                 var c = Math.sqrt(a * a + b * b);
-                if (i > 0) { // Now every time loop on remaining hallways pomits and update distance info 
+                if (i > 0) { // Now every time loop on remaining hallways points and update distance info 
                     index = algo_unit_data.findIndex(x => x['door_id'] == units_info[j].unit_info.door.id);
                     if (algo_unit_data[index].distance > c) {
                         algo_unit_data[index].hallway_id = hallways_coordinates[i].id;
@@ -429,6 +429,7 @@ function get_unit_data(){
                     obj.door_y_plot = units_info[j].unit_info.door.y_plot;
                     obj.distance = c;
                     obj.is_door = true;
+                    obj.point_type = "unit";
                     algo_unit_data.push(obj);
                 }
 
@@ -454,6 +455,7 @@ function get_unit_data(){
                     obj.door_y_plot = units_info[j].unit_info.unit.y_plot;
                     obj.distance = c;
                     obj.is_door = false;
+                    obj.point_type = "unit";
                     algo_unit_data.push(obj);
                 }
             }
@@ -487,6 +489,7 @@ function get_amenity_data(){
                         obj.door_y_plot = amenities_info[j].amenity_info.door[k].y_plot;
                         obj.distance = c;
                         obj.is_door = true;
+                        obj.point_type = "amenity";
                         algo_amenity_data.push(obj);
                     }
                 }
@@ -512,6 +515,7 @@ function get_amenity_data(){
                     obj.door_y_plot = amenities_info[j].amenity_info.amenity.y_plot;
                     obj.distance = c;
                     obj.is_door = false;
+                    obj.point_type = "amenity";
                     algo_amenity_data.push(obj);
                 }
             }
@@ -531,6 +535,7 @@ function get_starting_point_data(){
             start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
             start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
             start_point_data['distance'] = c;
+            start_point_data['point_type'] = "building_starting_point";
             start_point_data['building_starting_x_plot'] = building_starting_point.x_plot;
             start_point_data['building_starting_y_plot'] = building_starting_point.y_plot;
         }
@@ -568,6 +573,7 @@ function get_access_point_data(){
                     obj.access_point_id = access_points[z].id;
                     obj.access_point_x_plot = access_points[z].x_plot;
                     obj.access_point_y_plot = access_points[z].y_plot;
+                    obj.point_type = "access_point"
                     algo_access_point_data.push(obj);
                 } else {
                     if (d1 < algo_access_point_data[z]['h1_access_point'] && d2 < algo_access_point_data[z]['h2_access_point']) {
@@ -761,9 +767,20 @@ function make_hallways_data_for_dijakstra(new_hallways_coordinates, hallways_id_
   for (const key in new_hallways_coordinates) {
     var obj = new Object();
     new_hallways_coordinates[key]["next_points_distance"].forEach((attached_points_obj, index) => {
-      obj[hallways_id_to_uniq_id[Object.keys(attached_points_obj)[0]]] = Object.values(attached_points_obj)[0]
+      var temp_obj = new Object();
+      obj_key = Object.keys(attached_points_obj)[0]
+      obj[hallways_id_to_uniq_id[obj_key]] = Object.values(attached_points_obj)[0]
+      obj_distance = Object.values(attached_points_obj)[0]
+      temp_obj[hallways_id_to_uniq_id[key]] = obj_distance
+      if (hallways_dijkstra_data[hallways_id_to_uniq_id[obj_key]]) // if already object exist
+        hallways_dijkstra_data[hallways_id_to_uniq_id[obj_key]] = Object.assign(hallways_dijkstra_data[hallways_id_to_uniq_id[obj_key]], temp_obj)
+      else
+        hallways_dijkstra_data[hallways_id_to_uniq_id[obj_key]] = temp_obj
     });
-    hallways_dijkstra_data[hallways_id_to_uniq_id[key]] = obj  
+    if (hallways_dijkstra_data[hallways_id_to_uniq_id[key]]) // if already object exist
+      hallways_dijkstra_data[hallways_id_to_uniq_id[key]] = Object.assign(hallways_dijkstra_data[hallways_id_to_uniq_id[key]], obj)
+    else
+      hallways_dijkstra_data[hallways_id_to_uniq_id[key]] = obj  
   }
   return hallways_dijkstra_data
 }
@@ -819,7 +836,104 @@ function make_amenity_data_for_dijakstra(amenity_data, amenity_id_to_uniq_id, ha
   }
   return amenity_dijkstra_data 
 }
-function run_algo() {
+
+function fetch_from_uniq_unit_arr(unit_id_to_uniq_id, planned_to_visit_units_and_doors_ids){
+  unit_visited_ids = []
+  planned_to_visit_units_and_doors_ids.forEach((element, i) => {
+    unit_visited_ids.push(unit_id_to_uniq_id[element])
+  })
+  return unit_visited_ids;
+}
+function fetch_from_uniq_amenity_arr(amenity_id_to_uniq_id, planned_to_visit_amenities_and_doors_ids){
+  amenity_visited_ids = []
+  planned_to_visit_amenities_and_doors_ids.forEach((element, i) => {
+    amenity_visited_ids.push(amenity_id_to_uniq_id[element])
+  })
+  return amenity_visited_ids;
+}
+function convert_values_into_keys(id_to_uniq_id){
+  uniq_id_org_id = {}
+  keys_arr = Object.keys(id_to_uniq_id)
+  values_arr = Object.values(id_to_uniq_id)
+  keys_arr.forEach((element, i) => {
+    uniq_id_org_id[values_arr[i]] = element
+  });
+  return uniq_id_org_id
+}
+function fetch_path_object(path_uniq_ids_arr, hallways_id_to_uniq_id, unit_id_to_uniq_id, amenity_id_to_uniq_id, start_point_data, new_hallways_coordinates, unit_data, amenity_data, unit_starting_index, amenity_starting_index){
+  path_object_in_order = {}
+  hallways_uniq_id_to_org_id = convert_values_into_keys(hallways_id_to_uniq_id)
+  unit_uniq_id_to_org_id = convert_values_into_keys(unit_id_to_uniq_id)
+  amenity_uniq_id_to_org_id = convert_values_into_keys(amenity_id_to_uniq_id)
+  path_uniq_ids_arr.forEach((element, i) => {
+    if (element == 0 ) // for starting point
+      path_object_in_order[i] = start_point_data
+    else if (element < unit_starting_index) // then its hallways points
+      path_object_in_order[i] = new_hallways_coordinates[hallways_uniq_id_to_org_id[element]]
+    else if (element < amenity_starting_index) // then its units points
+      path_object_in_order[i] = unit_data[unit_uniq_id_to_org_id[element]]
+    else // concider remaining all amenities points
+      path_object_in_order[i] = amenity_data[amenity_uniq_id_to_org_id[element]]
+  });
+  return path_object_in_order
+}
+function return_x_y_values(shortest_path_obj){
+  // check why i assign 17 and 8 here
+  if (shortest_path_obj['point_type'] == undefined) // then its hallways
+    return [shortest_path_obj["x_plot"] + 8, shortest_path_obj["y_plot"] + 8, 'hallways_point']
+  else if (shortest_path_obj['point_type'] == 'unit')
+    return [shortest_path_obj["door_x_plot"] + 8, shortest_path_obj["door_y_plot"] + 8, 'unit']
+  else if (shortest_path_obj['point_type'] == 'amenity')
+    return [shortest_path_obj["door_x_plot"] + 8, shortest_path_obj["door_y_plot"] + 8, 'amenity']
+  else if (shortest_path_obj['point_type'] == 'building_starting_point')
+    return [shortest_path_obj["building_starting_x_plot"] + 17, shortest_path_obj["building_starting_y_plot"] + 17, 'building_starting_point']
+}
+function draw_shortest_path(path_object_in_order){
+
+  for (var i = 0; i < (Object.keys(path_object_in_order).length - 1); i++) {
+        x0_y0_and_type = return_x_y_values(path_object_in_order[i])
+        x1_y1_and_type = return_x_y_values(path_object_in_order[i+1])
+        x0 = x0_y0_and_type[0]
+        y0 = x0_y0_and_type[1]
+        x1 = x1_y1_and_type[0]
+        y1 = x1_y1_and_type[1]
+
+        $(".plot-image").line(x0, y0, x1, y1, {
+            zindex: 99,
+            color: '#ffa500',
+            stroke: "5",
+            style: "solid",
+            class: "line_hello"
+        });
+    }
+}
+function draw_shortest_path_with_animation(path_object_in_order){
+  
+  for (var i = 0; i < (Object.keys(path_object_in_order).length - 1); i++) {
+      delayed(400, function (i) {
+        return function () {
+          x0_y0_and_type = return_x_y_values(path_object_in_order[i])
+          x1_y1_and_type = return_x_y_values(path_object_in_order[i+1])
+          x0 = x0_y0_and_type[0]
+          y0 = x0_y0_and_type[1]
+          x1 = x1_y1_and_type[0]
+          y1 = x1_y1_and_type[1]
+
+          $(".plot-image").line(x0, y0, x1, y1, {
+              zindex: 99,
+              color: '#ffa500',
+              stroke: "5",
+              style: "solid",
+              class: "line_hello"
+          });
+        };
+      }(i));
+    }
+}
+
+function run_algo(with_animation) {
+    $(".line").remove();
+    $(".line_hello").remove();
     get_stops_data()
     //algo_access_point_data -> this functionality i think we should implement from mobile side 
     stops = {}
@@ -841,6 +955,162 @@ function run_algo() {
     amenity_dijkstra_data = make_amenity_data_for_dijakstra(amenity_data, amenity_id_to_uniq_id, hallways_id_to_uniq_id, stops)
     stops = Object.assign(stops, amenity_dijkstra_data);
     // Data format which is required to dijkstra is complete here
-    
-    debugger
+    unit_visited_ids = fetch_from_uniq_unit_arr(unit_id_to_uniq_id, planned_to_visit_units_and_doors_ids)
+    amenity_visited_ids = fetch_from_uniq_amenity_arr(amenity_id_to_uniq_id, planned_to_visit_amenities_and_doors_ids)
+  
+    graph = new Graph(stops);
+    all_visited_ids = [0].concat(unit_visited_ids).concat(amenity_visited_ids)
+    path_uniq_ids_arr = graph.findShortestPath(all_visited_ids); // i think its working in order like we are giving (From first index to next and next other next)
+    path_uniq_ids_arr = path_uniq_ids_arr.map(Number)
+    path_object_in_order = fetch_path_object(path_uniq_ids_arr, hallways_id_to_uniq_id, unit_id_to_uniq_id, amenity_id_to_uniq_id, start_point_data, new_hallways_coordinates, unit_data, amenity_data, unit_starting_index, amenity_starting_index)// after implement check it, wither its in right format or not 
+    if (with_animation)
+      draw_shortest_path_with_animation(path_object_in_order)
+    else
+      draw_shortest_path(path_object_in_order)
+
 }
+
+var Graph = (function (undefined) {
+
+  var extractKeys = function (obj) {
+    var keys = [], key;
+    for (key in obj) {
+        Object.prototype.hasOwnProperty.call(obj,key) && keys.push(key);
+    }
+    return keys;
+  }
+
+  var sorter = function (a, b) {
+    return parseFloat (a) - parseFloat (b);
+  }
+
+  var findPaths = function (map, start, end, infinity) {
+    infinity = infinity || Infinity;
+
+    var costs = {},
+        open = {'0': [start]},
+        predecessors = {},
+        keys;
+
+    var addToOpen = function (cost, vertex) {
+      var key = "" + cost;
+      if (!open[key]) open[key] = [];
+      open[key].push(vertex);
+    }
+
+    costs[start] = 0;
+
+    while (open) {
+      if(!(keys = extractKeys(open)).length) break;
+
+      keys.sort(sorter);
+
+      var key = keys[0],
+          bucket = open[key],
+          node = bucket.shift(),
+          currentCost = parseFloat(key),
+          adjacentNodes = map[node] || {};
+
+      if (!bucket.length) delete open[key];
+
+      for (var vertex in adjacentNodes) {
+          if (Object.prototype.hasOwnProperty.call(adjacentNodes, vertex)) {
+          var cost = adjacentNodes[vertex],
+              totalCost = cost + currentCost,
+              vertexCost = costs[vertex];
+
+          if ((vertexCost === undefined) || (vertexCost > totalCost)) {
+            costs[vertex] = totalCost;
+            addToOpen(totalCost, vertex);
+            predecessors[vertex] = node;
+          }
+        }
+      }
+    }
+
+    if (costs[end] === undefined) {
+      return null;
+    } else {
+      return predecessors;
+    }
+
+  }
+
+  var extractShortest = function (predecessors, end) {
+    var nodes = [],
+        u = end;
+
+    while (u !== undefined) {
+      nodes.push(u);
+      u = predecessors[u];
+    }
+
+    nodes.reverse();
+    return nodes;
+  }
+
+  var findShortestPath = function (map, nodes) {
+    var start = nodes.shift(),
+        end,
+        predecessors,
+        path = [],
+        shortest;
+
+    while (nodes.length) {
+      end = nodes.shift();
+      predecessors = findPaths(map, start, end);
+
+      if (predecessors) {
+        shortest = extractShortest(predecessors, end);
+        if (nodes.length) {
+          path.push.apply(path, shortest.slice(0, -1));
+        } else {
+          return path.concat(shortest);
+        }
+      } else {
+        return null;
+      }
+
+      start = end;
+    }
+  }
+
+  var toArray = function (list, offset) {
+    try {
+      return Array.prototype.slice.call(list, offset);
+    } catch (e) {
+      var a = [];
+      for (var i = offset || 0, l = list.length; i < l; ++i) {
+        a.push(list[i]);
+      }
+      return a;
+    }
+  }
+
+  var Graph = function (map) {
+    this.map = map;
+  }
+
+  Graph.prototype.findShortestPath = function (start, end) {
+    if (Object.prototype.toString.call(start) === '[object Array]') {
+      return findShortestPath(this.map, start);
+    } else if (arguments.length === 2) {
+      return findShortestPath(this.map, [start, end]);
+    } else {
+      return findShortestPath(this.map, toArray(arguments));
+    }
+  }
+
+  Graph.findShortestPath = function (map, start, end) {
+    if (Object.prototype.toString.call(start) === '[object Array]') {
+      return findShortestPath(map, start);
+    } else if (arguments.length === 3) {
+      return findShortestPath(map, [start, end]);
+    } else {
+      return findShortestPath(map, toArray(arguments, 1));
+    }
+  }
+
+  return Graph;
+
+})();
