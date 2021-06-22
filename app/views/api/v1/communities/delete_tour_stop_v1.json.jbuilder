@@ -906,7 +906,7 @@ json.tours @tours do |tour|
       else
         availability_url = (unit.availability_url.present? ? unit.availability_url : u.floorplan.availability_url rescue "")
       end
-      stop_dat = {"floorplan" => (Floorplan.find_by(id: unit.floorplan.id).name rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
+      stop_dat = {"floorplan" => (Floorplan.find_by(id: unit.floorplan.id).name rescue ""),"floorplan_full_name" => (Floorplan.find_by(id: unit.floorplan.id).name + "- #{(floorplan.bedrooms.present? ? (floorplan.bedrooms.to_i.to_s + " BR") : "") } / #{(floorplan.bathrooms.present? ? (floorplan.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       unit_amenities_hit = true
