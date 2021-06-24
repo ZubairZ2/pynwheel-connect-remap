@@ -585,7 +585,6 @@
                 selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
                 selected_building = (first_building != "null" ? (selected_building == first_building ? [selected_building, "", null] : [selected_building]) : ["null", ""])
 
-                //debugger
                 if(Array.isArray(selected_floor[0]))
                   selected_floor = selected_floor[0]
                
@@ -594,15 +593,12 @@
                
                 for(var f=0; f< data.floor_image.length; f++)
                 {
-                  //debugger
-
                   if(data.floor_image[f][0].includes(parseInt($('.selected_floor').text())))
                     img_ = data.floor_image[f][1]
                 }
 
-                sleep(2000);
                 draw_image_canvas(img_);
-                sleep(2000);
+                sleep(3000);
                 
                 if(selected_building[0] === data.buildings[0] && parseInt(selected_floor[0]) === data.floors[0]) { 
                   tourStartingPoint = true
@@ -612,12 +608,6 @@
                 if(tourStartingPoint && data && data.stops && data.stops[0]) {
                   tourStartingPoint = false;
                   final_stops.push(data.stops[0]);
-                } else {
-                  /*if(lastVisitedStop && lastVisitedStopIndex) {
-                    final_stops.push(lastVisitedStop);
-                    data.stops[lastVisitedStopIndex][4] = true;
-                    debugger;
-                  }*/
                 }
 
                 if(selected_building[0] === data.buildings[0] && parseInt(selected_floor[0]) === data.floors[0]) {
@@ -631,7 +621,6 @@
                 }
 
                 for(var s = 0; s < data.stops.length; s++) {
-                  //debugger;
                   current_stop = data.stops[s];
                   
                   let currentFloor = getCurrentFloor(data.stops[s], selected_floor);
@@ -641,7 +630,6 @@
                     data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
                     final_stops.push(data.stops[s]);
                     indexesArr.push(s);
-                    //visited_units_amenities_count = visited_units_amenities_count + 1;
                   }
                 }
 
@@ -657,58 +645,11 @@
                     final_stops.push([nextElevatorStop[0], nextElevatorStop[1], nextElevatorStop[2], []])
                   }
 
-                  sleep(2000);
+                  sleep(3000);
                   show_plot_accordingly(final_stops, data.left);
                 }
-
-                //if(visited_units_amenities_count > 0) {
-                  /*for(var s = 0; s < data.stops.length; s++) {
-                    let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
-                    debugger
-                    if(data.stops[s] && !data.stops[s][4] && data.stops[s][2] === "elevator" && currentBuilding) {
-                      debugger
-                      lastVisitedStop = data.stops[s];
-                      lastVisitedStopIndex = s;
-                      let finalStop = [];
-                      
-                      finalStop.push(data.stops[s][0]);
-                      finalStop.push(data.stops[s][1]);
-                      finalStop.push(data.stops[s][2]);
-                      finalStop.push([]);
-                      finalStop.push(data.stops[s][4]);
-
-                      final_stops.push(finalStop);
-                      //final_stops.push(data.stops[s]);
-
-                      break;
-                    }
-                  }*/
-
-                  //if(parseInt(selected_floor[0]) === data.floors[data.floors.length -1]) {
-                    /*for(var s = 0; s < data.stops.length; s++) {
-                      let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
-                      if(data.stops[s] && data.stops[s][2] == "building_starting_point" && currentBuilding) {
-                        final_stops.push(data.stops[s]);
-                        lastVisitedStop = data.stops[s];
-                        break;
-                      }
-                    }*/
-                   // final_stops.push(data.stops[0]);
-                    //lastVisitedStop = data.stops[0];
-                  //}
-
-                  //debugger
-                  //sleep(2000);
-                  //show_plot_accordingly(final_stops, data.left);
-                //}
               });
             }
-          
-          
-          //$(".asdasd").children('i').remove()
-          //$("#unlock_history").children('h5').remove()
-          // data.existing_stops.flat().forEach(draw_stop)
-          //data.lock_histories.flat().forEach(draw_history)
         },
         fail: function(data){
           console.log(data)
