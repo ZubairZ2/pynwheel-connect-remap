@@ -501,6 +501,12 @@
           tourStartingPoint = true;
           lastVisitedStop = null;
           lastVisitedStopIndex = null;
+
+          buildingsArray = [];
+          floorsArray = [];
+          buildingIndex = 999999;
+          floorIndex = 999999;
+
           //debugger;
           if(data.stops[0] && data.stops[0][2] == "tour" && data.stops.length == 1)
           {
@@ -515,6 +521,12 @@
           else
             {
               //debugger;
+
+              buildingsArray = data.buildings;
+              floorsArray = data.floors;
+
+              buildingIndex = 0;
+              floorIndex = 0;
 
               for(var i=0; i<data.buildings.length; i++)
               {
@@ -533,10 +545,12 @@
                 if(String(data.floors[i]) != "" && String(data.floors[i]) != null)
                   $('#floor_buttons').append('<a class="btn-default btns floor_btn '+ (first_floor == data.floors[i] ? 'selected_floor' : '') +'" id="floor_'+ data.floors[i] +'" style="cursor: pointer; display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_floor == data.floors[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.floors[i] +'</a>')
               }
+
               setTimeout(function(){
                 $('.selected_floor').click();
               }, 1000);
-              debugger;
+
+              //debugger;
               $('.btns').click(function(){
                 vertices_count = 0;
                 delete_image_canvas();
@@ -617,7 +631,7 @@
                 }
 
                 for(var s = 0; s < data.stops.length; s++) {
-                  debugger;
+                  //debugger;
                   current_stop = data.stops[s];
                   
                   let currentFloor = getCurrentFloor(data.stops[s], selected_floor);
@@ -726,7 +740,7 @@
           y:  ((stops[i][1].y_plot / img.height)*height)
         });
 
-        debugger;
+        //debugger;
 
         console.log("Middle Points: ", stops[i][3]);
         
@@ -777,6 +791,7 @@
         change_image()
         plot_data()
   });
+
   $("#tour_histories_dates").change(function () {
         plot_data()
   })
@@ -790,7 +805,7 @@
           already_displayed = false; 
           // already_displayed =isItemInArray(already_watched,[selected_floor[0],selected_building[0]])
           //already_displayed ? ( points = vertices) :  points = calcWaypoints(vertices)
-          debugger;
+          //debugger;
           points = calcWaypoints(visitedPoints);
           // extend the line from start to finish with animation
 
@@ -833,7 +848,7 @@
             }
             else
             {
-              debugger;
+              //debugger;
               $(".popover").popover('hide');
               if (data_array[vertices_count] != undefined){ 
                 $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
@@ -842,7 +857,10 @@
                             placement: 'top',
                             template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "height: 115px;color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
                           }).popover('show');}
-              //already_watched.push([selected_floor[0],selected_building[0]]);            
+              //already_watched.push([selected_floor[0],selected_building[0]]);
+              
+              automateUserTracking();            
+
             }
           }
               // draw a line segment from the last waypoint
@@ -861,6 +879,36 @@
               t++;
 
       }
+  }
+
+  function automateUserTracking(){
+    console.log("buildingIndex: ", buildingIndex);
+    console.log("buildingsArray[buildingIndex]: ", buildingsArray[buildingIndex]);
+
+    console.log("floorIndex: ", floorIndex);
+    console.log("floorsArray[floorIndex]: ", floorsArray[floorIndex]);
+
+    if(buildingIndex < buildingsArray.length) {
+      if(floorIndex < floorsArray.length) {
+        
+
+        if(floorIndex === (floorsArray.length -1)) {
+          setTimeout(function() {
+            $(`#building_${buildingsArray[buildingIndex]}`).click();
+          }, 1000);
+
+          buildingIndex = buildingIndex + 1;
+          floorIndex = 0;
+
+        } else {
+          setTimeout(function() {
+            $(`#floor_${floorsArray[floorIndex]}`).click();
+          }, 1000);
+
+          floorIndex = floorIndex + 1;
+        }
+      }
+    }
   }
   function isItemInArray(array, item) {
     for (var i = 0; i < array.length; i++) {
