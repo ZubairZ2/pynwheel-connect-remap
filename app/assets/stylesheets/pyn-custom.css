@@ -3198,6 +3198,12 @@ div.mydiv {
     height: 100%;
 }
 
+#floor_label, #building_label{
+    margin-top: 15px;
+    margin-bottom: -10px;
+    margin-left: 7px;
+}
+
 #container .grid-graph {
     background-size: 30px 30px;
     background-image: linear-gradient(to right, grey 1px, transparent 1px), linear-gradient(to bottom, grey 1px, transparent 1px);

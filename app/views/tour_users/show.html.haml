@@ -637,11 +637,11 @@
                   prevElevatorStop = data.stops[indexesArr[0] - 1];
                   nextElevatorStop = data.stops[indexesArr[indexesArr.length - 1] + 1];
 
-                  if(prevElevatorStop && prevElevatorStop[2] == "elevator") {
+                  if(prevElevatorStop && prevElevatorStop[2] == "elevator" || prevElevatorStop[2] == "building_starting_point") {
                     final_stops.unshift(prevElevatorStop);
                   }
 
-                  if(nextElevatorStop && nextElevatorStop[2] == "elevator") {
+                  if(nextElevatorStop && nextElevatorStop[2] == "elevator" || nextElevatorStop[2] == "building_starting_point") {
                     final_stops.push([nextElevatorStop[0], nextElevatorStop[1], nextElevatorStop[2], []])
                   }
 
