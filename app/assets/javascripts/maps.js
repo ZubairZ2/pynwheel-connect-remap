@@ -8,6 +8,7 @@ var algo_amenity_data = [];
 var algo_access_point_data = [];
 var start_point_data = {};
 var tmp_id = 0;
+var cntrlIsPressed = false;
 $(window).on('load', function () {
     /**
      * map controls
@@ -204,6 +205,56 @@ function update_hallwaypoint(current_id, x_plot, y_plot) {
         }
     });
 }
+function connect_leaf_point(current_id, previous_id){
+  if ($(".mapLoading").hasClass("hidden")) $(".mapLoading").removeClass("hidden")
+    $.ajax({
+        url: '/connect_leaf_point',
+        type: 'Post',
+        data: {
+            'floor_plate_id': typeof fp_id !== 'undefined' ? fp_id : null,
+            'sitemap_id': typeof sm_id !== 'undefined' ? sm_id : null,
+            'current_id': current_id,
+            'previous_id': previous_id,
+        },
+        success: function (data) {
+            debugger
+            hallways_coordinates = data;
+            draw_initial_hallways();
+            $(".mapLoading").addClass("hidden");
+        }
+    });
+}
+
+function save_selected_point(previous_id, current_id){
+  $.ajax({
+        url: '/save_selected_point',
+        type: 'Post',
+        data: {
+            'floor_plate_id': typeof fp_id !== 'undefined' ? fp_id : null,
+            'sitemap_id': typeof sm_id !== 'undefined' ? sm_id : null,
+            'current_id': current_id,
+            'previous_id': previous_id,
+        },
+        success: function (data) {
+          hallways_coordinates.forEach((element, index) => {
+            if (element.id == current_id) {
+                hallways_coordinates[index].selected = true;
+            } else {
+                hallways_coordinates[index].selected = false;
+            }
+          });
+        }
+    }); 
+}
+
+$(document).keydown(function(event){
+    if(event.which=="17")
+        cntrlIsPressed = true;
+});
+
+$(document).keyup(function(){
+    cntrlIsPressed = false;
+});
 
 function icon_click(thiObj) {
     $(".fa-dot-circle").css('color', '#008fd4');
@@ -212,13 +263,12 @@ function icon_click(thiObj) {
     thiObj.children().css('color', '#f7296a');
     thiObj.children().addClass('selected_point');
     current_id = $(".selected_point").attr('id');
-    hallways_coordinates.forEach((element, index) => {
-        if (element.id == current_id) {
-            hallways_coordinates[index].selected = true;
-        } else {
-            hallways_coordinates[index].selected = false;
-        }
-    });
+    if ($('#hallway_btn').html() === "Stop Plotting Hallways" && cntrlIsPressed){
+      connect_leaf_point(current_id, previous_id)
+    }
+    else{
+      save_selected_point(previous_id, current_id)
+    }
 }
 
 function bind_markers() {
@@ -265,16 +315,17 @@ function draw_initial_hallways() {
     $(".line").remove();
     $(".fa-dot-circle").remove();
     for (var i = 0; i < hallways_coordinates.length; i++) {
-        $(".fa-dot-circle").css('color', '#008fd4');
+        selected_color = hallways_coordinates[i].selected ? '#f7296a' : '#008fd4'
+        classes = hallways_coordinates[i].selected ? 'fas fa-dot-circle fa-lg selected_point' : 'fas fa-dot-circle fa-lg'
         tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker' onclick='icon_click($(this))' title='id:" + hallways_coordinates[i].id + ' np:' + hallways_coordinates[i].next_points + "'   style='left:" + (hallways_coordinates[i].x_plot) + "px; top:" + (hallways_coordinates[i].y_plot) + "px; z-index:100; position:absolute;'>"
-        tag += "<i id='" + hallways_coordinates[i].id + "' class='fas fa-dot-circle fa-lg selected_point'  style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100; color: #f7296a ' ></i>";
+        tag += "<i id='" + hallways_coordinates[i].id + "' class='"+ classes + "' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100; color: "+ selected_color + " ' ></i>";
         tag += "</a>"
         $('#map').append(tag);
         bind_markers();
         icon_drag();
     }
     $(".line").remove();
-    for (var i = 0; i < hallways_coordinates.length - 1; i++) {
+    for (var i = 0; i < hallways_coordinates.length; i++) {
         hallways_coordinates[i].next_points.forEach((id, index) => {
             for (var j = 0; j < hallways_coordinates.length; j++) {
                 if (id == hallways_coordinates[j].id) {
@@ -878,7 +929,7 @@ function fetch_path_object(path_uniq_ids_arr, hallways_id_to_uniq_id, unit_id_to
   return path_object_in_order
 }
 function return_x_y_values(shortest_path_obj){
-  // check why i assign 17 and 8 here
+  // check is there any need to add 17 or 8 in x, y
   if (shortest_path_obj['point_type'] == undefined) // then its hallways
     return [shortest_path_obj["x_plot"] + 8, shortest_path_obj["y_plot"] + 8, 'hallways_point']
   else if (shortest_path_obj['point_type'] == 'unit')
@@ -886,7 +937,7 @@ function return_x_y_values(shortest_path_obj){
   else if (shortest_path_obj['point_type'] == 'amenity')
     return [shortest_path_obj["door_x_plot"] + 8, shortest_path_obj["door_y_plot"] + 8, 'amenity']
   else if (shortest_path_obj['point_type'] == 'building_starting_point')
-    return [shortest_path_obj["building_starting_x_plot"] + 17, shortest_path_obj["building_starting_y_plot"] + 17, 'building_starting_point']
+    return [shortest_path_obj["building_starting_x_plot"] + 8, shortest_path_obj["building_starting_y_plot"] + 8, 'building_starting_point']
 }
 function draw_shortest_path(path_object_in_order){
 

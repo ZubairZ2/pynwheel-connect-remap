@@ -477,6 +477,8 @@ Rails.application.routes.draw do
   post :save_hallways_point, to: 'hallways#point_save'
   post :update_hallways_point, to: 'hallways#update_point'
   post :delete_hallways_point, to: 'hallways#remove_point'
+  post :connect_leaf_point, to: 'hallways#connect_leaf_point'
+  post :save_selected_point, to: 'hallways#save_selected_point'
 
   #### Automate Plotting Controller Routes ####
   resources :automate_plotting
