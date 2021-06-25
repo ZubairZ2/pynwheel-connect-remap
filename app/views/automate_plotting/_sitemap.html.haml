@@ -154,9 +154,9 @@
   var amenities_info = #{@amenity_with_doors.to_json.html_safe};
   var access_points = #{@access_points.to_json.html_safe};
   var building_starting_point = {x_plot: #{@community.tour.x_plot.to_json.html_safe}, y_plot: #{@community.tour.y_plot.to_json.html_safe} };
-  var planned_to_visit_units_and_doors_ids = #{@planned_to_visit_units_and_doors_ids}
-  var planned_to_visit_amenities_and_doors_ids = #{@planned_to_visit_amenities_and_doors_ids}
-
+  var planned_to_visit_units_and_doors_ids = #{@planned_to_visit_units_and_doors_ids};
+  var planned_to_visit_amenities_and_doors_ids = #{@planned_to_visit_amenities_and_doors_ids};
+  var precedence_arr = #{raw @precedence_arr};
   var left_margin = #{raw @left_margin}
   var right_margin = #{raw @right_margin}
   var community_id = #{params[:community_id]};

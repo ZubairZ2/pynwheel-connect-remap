@@ -5,7 +5,8 @@ class AutomatePlottingController < ApplicationController
     @current_locks_provider = existing_locks_provider(@community)
     @all_locks = all_locks(@community)
     tour = @community.tour
-    tour_stops = tour&.tour_stops
+    tour_stops = tour&.tour_stops.visible.order('sort ASC')
+    @precedence_arr = tour_stops.pluck(:stop_id, :stop_type) # due to sortable gem its sorted so we fetch in a line 
     @planned_to_visit_units_and_doors_ids     = []
     @planned_to_visit_amenities_and_doors_ids = []
     if @community.is_sitemap
@@ -19,6 +20,7 @@ class AutomatePlottingController < ApplicationController
         if planned_to_visit_units_ids.include?(unit.id) && unit.door.present?
           planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
           @planned_to_visit_units_and_doors_ids << unit.door.id
+          update_precedence('unit', unit.id, unit.door.id)
         elsif planned_to_visit_units_ids.include?(unit.id)
           @planned_to_visit_units_and_doors_ids << unit.id
         end 
@@ -30,6 +32,7 @@ class AutomatePlottingController < ApplicationController
         if planned_to_visit_amenities_ids.include?(amenity.id) && amenity.doors.present?
           planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
           @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
+          update_precedence('amenity', amenity.id, amenity.doors.first.id)
         elsif planned_to_visit_amenities_ids.include?(amenity.id)
           @planned_to_visit_amenities_and_doors_ids << amenity.id
         end
@@ -61,4 +64,14 @@ class AutomatePlottingController < ApplicationController
       add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community, @floorplate)
     end
   end
+  private
+
+    def update_precedence(stop_type, stop_id, door_id)
+      @precedence_arr.each_with_index do |arr,index|
+        if arr[1] == stop_type && arr[0] == stop_id
+          @precedence_arr[index] = [door_id, stop_type]
+          break
+        end
+      end
+    end
 end

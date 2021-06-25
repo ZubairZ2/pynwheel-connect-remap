@@ -887,11 +887,19 @@ function make_amenity_data_for_dijakstra(amenity_data, amenity_id_to_uniq_id, ha
   }
   return amenity_dijkstra_data 
 }
-
+function update_precedence_arr(stop_type, door_id, uniq_id){
+  precedence_arr.forEach((p_arr, i) => {
+    if(p_arr[1] == stop_type && p_arr[0] == door_id){
+      precedence_arr[i] = [uniq_id, stop_type];
+      return;
+    }
+  });
+}
 function fetch_from_uniq_unit_arr(unit_id_to_uniq_id, planned_to_visit_units_and_doors_ids){
   unit_visited_ids = []
   planned_to_visit_units_and_doors_ids.forEach((element, i) => {
     unit_visited_ids.push(unit_id_to_uniq_id[element])
+    update_precedence_arr("unit", element, unit_id_to_uniq_id[element])
   })
   return unit_visited_ids;
 }
@@ -899,6 +907,7 @@ function fetch_from_uniq_amenity_arr(amenity_id_to_uniq_id, planned_to_visit_ame
   amenity_visited_ids = []
   planned_to_visit_amenities_and_doors_ids.forEach((element, i) => {
     amenity_visited_ids.push(amenity_id_to_uniq_id[element])
+    update_precedence_arr("amenity", element, amenity_id_to_uniq_id[element])
   })
   return amenity_visited_ids;
 }
@@ -1008,10 +1017,10 @@ function run_algo(with_animation) {
     // Data format which is required to dijkstra is complete here
     unit_visited_ids = fetch_from_uniq_unit_arr(unit_id_to_uniq_id, planned_to_visit_units_and_doors_ids)
     amenity_visited_ids = fetch_from_uniq_amenity_arr(amenity_id_to_uniq_id, planned_to_visit_amenities_and_doors_ids)
-  
+    precedence_visited_ids = [0]; for (p = 0 ; p < precedence_arr.length ; ++p) precedence_visited_ids.push(precedence_arr[p][0])  
     graph = new Graph(stops);
-    all_visited_ids = [0].concat(unit_visited_ids).concat(amenity_visited_ids)
-    path_uniq_ids_arr = graph.findShortestPath(all_visited_ids); // i think its working in order like we are giving (From first index to next and next other next)
+    //all_visited_ids = [0].concat(unit_visited_ids).concat(amenity_visited_ids)
+    path_uniq_ids_arr = graph.findShortestPath(precedence_visited_ids); // i think its working in order like we are giving (From first index to next and next other next)
     path_uniq_ids_arr = path_uniq_ids_arr.map(Number)
     path_object_in_order = fetch_path_object(path_uniq_ids_arr, hallways_id_to_uniq_id, unit_id_to_uniq_id, amenity_id_to_uniq_id, start_point_data, new_hallways_coordinates, unit_data, amenity_data, unit_starting_index, amenity_starting_index)// after implement check it, wither its in right format or not 
     if (with_animation)
