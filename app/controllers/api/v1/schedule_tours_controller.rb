@@ -1,6 +1,6 @@
 class Api::V1::ScheduleToursController < ActionController::Base
   before_action :authenticate_token!, except: [:authorize_vendor]
-  before_action :find_community, only: [:tour_types]
+  before_action :find_community, only: [:tour_types, :tour_dates]
 
   def authorize_vendor
     @api_access_key = authorize_params[:api_access_key]
@@ -23,7 +23,7 @@ class Api::V1::ScheduleToursController < ActionController::Base
   def tour_types
     @tour_types ||= []
     tour_setting = @community.tour&.tour_setting
-    binding.pry
+    # binding.pry
     @tour_types << {title: "Self Tour"} if tour_setting&.allow_self_tour
     @tour_types << {title: "Guided Tour"} if tour_setting&.allow_guided_tour
     @tour_types << {title: "Virtual Tour"} if tour_setting&.allow_virtual_tour
@@ -34,14 +34,37 @@ class Api::V1::ScheduleToursController < ActionController::Base
     end
   end
 
-  def tour_dates
-    @self_opening_hours = @community.opening_hours.order(:sort).all
-    @community_opening_hours = community.guided_opening_hours.order(:sort).all
+  def tour_dates    
+    # @self_opening_hours = @community.opening_hours.order(:sort).all
+    @community_opening_hours = @community.guided_opening_hours.order(:sort).all
+    self_tour_week_days = (@community.tour.tour_setting.allow_self_tour && @community.opening_hours.present?) ? @community.opening_hours.order(:sort).pluck(:day) : []
+    binding.pry
+    @tour_dates ||=[]
+    # 1.day..30.days.each do |a|
+      self_tour_week_days.each do |x|
+        date_from  = Date.parse(x)
+        @tour_dates << date_of_next(x)
+      end
+    end/
+    # binding.pry
+    if @tour_dates.present?
+      render :tour_dates
+    else
+      render json: { is_success: true, error_code: 400, message: "No Date is available to schedule tour", data: nil }
+    end
+
+
 
   end
   
   private
 
+  def date_of_next(day)
+    date  = Date.parse(day)
+    delta = date > Date.today ? 0 : 7
+    date + delta
+  end
+  
   def find_community
     # community_id = JsonWebToken.decode(params[:property_code])
     @community = Community.joins(:tour).where('tours.only_scheduled_tour = ?',true).self_tour_enabled_only.find(params[:id])
