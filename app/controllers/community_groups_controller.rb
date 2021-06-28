@@ -5,7 +5,7 @@ class CommunityGroupsController < ApplicationController
   end
   def new
     @community_group = CommunityGroup.new
-    @all_regions = current_company.regions.all.order(:name).collect {|p| [ p.name, p.id ] }
+    @all_regions = current_company.regions.all.order(:name).collect {|p| [ p.name, p.id ] } rescue []
   end
   def create
     @community_group = CommunityGroup.new(community_group_params)
@@ -26,7 +26,7 @@ class CommunityGroupsController < ApplicationController
     @community_group = CommunityGroup.find params[:id]
     @community_group.group_design.present? ? nil : @community_group.create_group_design
     @company = Company.find @community_group.company_id
-    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] }
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
   end
   def update
     # params[:community_group][:background_image]

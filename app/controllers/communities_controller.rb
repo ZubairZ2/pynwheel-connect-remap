@@ -34,7 +34,7 @@ class CommunitiesController < ApplicationController
   def new
     add_breadcrumb "Add Community", new_company_community_path(current_company)
     @community = current_company.communities.new 
-    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] }
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
     @com_id = 0
   end
 
@@ -67,7 +67,7 @@ class CommunitiesController < ApplicationController
   def edit
     @com_id = current_community.id
     @chatroom = params[:tour_user_id].present? ? show_chat_modal(params[:tour_user_id],current_community.tour.id) : Chatroom.new
-    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] }
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
@@ -78,7 +78,7 @@ class CommunitiesController < ApplicationController
     add_breadcrumb "Communities", company_communities_path(current_company)
     add_breadcrumb "Settings"
     @community = Community.find params[:community_id]
-    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] }
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
     # if params[:default_community_id].present?
     #   dwelo_account =Dwelo.find_by(community_id: @community.id) rescue nil
     #   unless dwelo_account.present?
