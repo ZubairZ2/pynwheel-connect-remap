@@ -1,6 +1,6 @@
 class Api::V1::ScheduleToursController < ActionController::Base
   before_action :authenticate_token!, except: [:authorize_vendor]
-  before_action :find_community, only: [:tour_types, :tour_dates]
+  before_action :find_community, only: [:tour_types, :tour_dates, :time_slots]
 
   def authorize_vendor
     @api_access_key = authorize_params[:api_access_key]
@@ -34,27 +34,59 @@ class Api::V1::ScheduleToursController < ActionController::Base
     end
   end
 
-  def tour_dates    
-    # @self_opening_hours = @community.opening_hours.order(:sort).all
-    @community_opening_hours = @community.guided_opening_hours.order(:sort).all
-    self_tour_week_days = (@community.tour.tour_setting.allow_self_tour && @community.opening_hours.present?) ? @community.opening_hours.order(:sort).pluck(:day) : []
-    binding.pry
-    @tour_dates ||=[]
-    # 1.day..30.days.each do |a|
-      self_tour_week_days.each do |x|
-        date_from  = Date.parse(x)
-        @tour_dates << date_of_next(x)
-      end
-    end/
+  def time_slots
+    @stepping = @community.tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
+    @tour_type = params['tour_type']
     # binding.pry
-    if @tour_dates.present?
-      render :tour_dates
+    @tour_date = params['tour_date']
+    @requested_day = DateTime.strptime(@tour_date, "%d/%m/%Y").strftime("%A")
+    @available_time_slots = SchedulerWidgetService.new(@community,@stepping,@tour_type,@requested_day,@tour_date).time_slots_for_appartments
+    if @available_time_slots.present? and Date.parse(tour_date) >= Date.today
+      render :time_slots
     else
-      render json: { is_success: true, error_code: 400, message: "No Date is available to schedule tour", data: nil }
+      render json: { is_success: true, error_code: 400, message: "No time slot for this tour type on given date", data: nil }
     end
+  end
 
-
-
+  def tour_dates
+    tour_setting = @community.tour&.tour_setting
+    allow_self_tour = tour_setting&.allow_self_tour
+    allow_guided_tour = tour_setting&.allow_guided_tour
+    allow_virtual_tour = tour_setting&.allow_virtual_tour
+    tour_type = params['tour_type'] if params['tour_type'].present?
+    self_tour = tour_type == "self_tour" && allow_self_tour
+    guided_tour = tour_type == "guided_tour" && allow_guided_tour
+    virtual_tour = tour_type == "virtual_tour" && allow_virtual_tour
+    if self_tour or guided_tour or virtual_tour
+      if self_tour
+        # binding.pry
+        week_days = (allow_self_tour && @community.opening_hours.present?) ? @community.opening_hours.where('closing_time > ?', DateTime.now.to_s(:time)).order(:sort).pluck(:day) : []
+      elsif guided_tour
+        week_days = (allow_guided_tour && @community.guided_opening_hours.present?) ? @community.guided_opening_hours.where('closing_time > ?', DateTime.now.to_s(:time)).order(:sort).pluck(:day) : []
+      end
+      start_date = virtual_tour ? Date.today : week_days[0].present? ? Date.parse(week_days[0]) : ""
+      # month_dates = (start_date..start_date+30.days) if start_date.present?
+      month_dates = (start_date..(start_date+1.month)) if start_date.present?
+      @tour_dates ||=[]
+      @available_dates ||=[]
+      month_dates.each {|m| @tour_dates << m}
+      if virtual_tour
+        @tour_dates.each{|vt| @available_dates << vt.strftime("%d/%m/%Y") }
+      else
+        @tour_dates.each do |td|
+          week_days.each do |week_day|
+            @available_dates << td.strftime("%d/%m/%Y") if week_day == td.strftime("%A") #&& Date.parse(week_day) >= Date.today
+          end
+        end
+      end
+      if @tour_dates.present?
+        render :tour_dates
+      else
+        render json: { is_success: true, error_code: 400, message: "No Date is available to schedule tour", data: nil }
+      end
+    else
+      render json: { is_success: true, error_code: 400, message: "Tour type does not match to allowed tours", data: nil }
+    end  
   end
   
   private

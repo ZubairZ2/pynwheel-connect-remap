@@ -770,4 +770,5 @@ class Community < ApplicationRecord
       self.update_column(:is_chat_available, false)
     end
   end
+
 end

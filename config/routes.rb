@@ -473,6 +473,7 @@ Rails.application.routes.draw do
       get :communities, to: 'schedule_tours#communities'
       get '/communities/:id/tour_types', to: 'schedule_tours#tour_types'
       get '/communities/:id/tour_dates', to: 'schedule_tours#tour_dates'
+      get '/communities/:id/time_slots', to: 'schedule_tours#time_slots'
       put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
       post :salesforce_tour_webhook, to: 'salesforce_webhooks#salesforce_tour_webhook'
       post :save_data, to: 'dwelo_devices#load_data'
