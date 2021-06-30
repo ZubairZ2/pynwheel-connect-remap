@@ -16,9 +16,9 @@ class ApplicationController < ActionController::Base
   def current_community
   	if params[:community_id].present?
       session[:community_id] = params[:community_id] 
-	  	@community ||= Community.find params[:community_id]
+	  	@community ||= Community.find_by_id params[:community_id]
 	  elsif controller_name =='communities' && params[:id].present?
-		  @community ||= Community.find params[:id] 
+		  @community ||= Community.find_by_id params[:id] 
 	  end  	
   end
   def community_code

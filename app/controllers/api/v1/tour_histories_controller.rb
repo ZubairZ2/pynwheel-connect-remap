@@ -163,13 +163,15 @@ class Api::V1::TourHistoriesController < ActionController::Base
     stay_time = time_difference(lengthy_stay, tour_history.arrived)
     
     if stay_time > community.tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == false && tour_history.tour_status == "self_tour"
-      stop = TourStop.find stop_id
+      stop = TourStop.find_by_id stop_id
+      at_stop = stop.present? ? stop.name : community.name
+      
       # contact_user = (tu.phone_number.present? ? ("<br><br><b>Want to check in with them? " + tu.phone_number) + "<b>" : (community.chat_control ? ("#{tu.phone_number.present? ? "<br>Or" : ""}<br><br><b>Want to check in with them?  <a href='" + base_url+"companies/#{community.company.id}/communities/#{community.id}/edit?tour_user_id=#{tu.id}" + "'>Open Chat</a>" ) : "")
       phone_number = tu.phone_number.last(10).gsub(/^(\d{3})(\d+)(\d{4})$/, '\1-\2-\3') rescue ""
       phone_number_text = phone_number.present? ? ("<br><br><b>Want to check in with them? " + "<a href='tel:" + phone_number + "'> " + phone_number + " <a>" + "<b>") : ""
       contact_user = (phone_number_text + (community.chat_control ? ("#{tu.phone_number.present? ? "<br><br>Or" : ""}<br><br><b>Want to check in with them?  <a href='" + base_url+"companies/#{community.company.id}/communities/#{community.id}/edit?tour_user_id=#{tu.id}" + "'>Open Chat</a>" ) : ""))
 
-      @mail_content = ["lengthy_stay", "#{tu.name.titleize} has been on a Self Tour at #{community.name} for #{stay_time} minutes. They are currently at #{stop.name}.#{contact_user}</b>"] #get_alert_message('lengthy_stay')
+      @mail_content = ["lengthy_stay", "#{tu.name.titleize} has been on a Self Tour at #{community.name} for #{stay_time} minutes. They are currently at #{at_stop}. #{contact_user}</b>"] #get_alert_message('lengthy_stay')
       tour_history.update_column 'lengthy_stay_email_sent',true
 
       emails = community.email.gsub(" ","").split(',')
