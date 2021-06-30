@@ -97,9 +97,6 @@ class Community < ApplicationRecord
   has_many :building_starting_point, dependent: :destroy
   has_many :tutorials, dependent: :destroy
   has_many :elevators, dependent: :destroy
-
-  has_many :user_customized_tours, dependent: :destroy
-  has_many :tour_users, through: :user_customized_tours
   
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy
