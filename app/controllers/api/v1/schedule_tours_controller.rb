@@ -1,6 +1,6 @@
 class Api::V1::ScheduleToursController < ActionController::Base
   before_action :authenticate_token!, except: [:authorize_vendor]
-  before_action :find_community, only: [:tour_types, :tour_dates, :time_slots]
+  before_action :find_community, only: [:tour_types, :tour_dates, :time_slots, :schedule_tour]
 
   def authorize_vendor
     @api_access_key = authorize_params[:api_access_key]
@@ -23,28 +23,13 @@ class Api::V1::ScheduleToursController < ActionController::Base
   def tour_types
     @tour_types ||= []
     tour_setting = @community.tour&.tour_setting
-    # binding.pry
-    @tour_types << {title: "Self Tour"} if tour_setting&.allow_self_tour
-    @tour_types << {title: "Guided Tour"} if tour_setting&.allow_guided_tour
-    @tour_types << {title: "Virtual Tour"} if tour_setting&.allow_virtual_tour
+    @tour_types << "self_tour" if tour_setting&.allow_self_tour
+    @tour_types << "guided_tour" if tour_setting&.allow_guided_tour
+    @tour_types << "virtual_tour" if tour_setting&.allow_virtual_tour
     if @tour_types.present?
      render :tour_types
     else
       render json: { is_success: true, error_code: 400, message: "No Tour has been allowed for this community", data: nil }
-    end
-  end
-
-  def time_slots
-    @stepping = @community.tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
-    @tour_type = params['tour_type']
-    # binding.pry
-    @tour_date = params['tour_date']
-    @requested_day = DateTime.strptime(@tour_date, "%d/%m/%Y").strftime("%A")
-    @available_time_slots = SchedulerWidgetService.new(@community,@stepping,@tour_type,@requested_day,@tour_date).time_slots_for_appartments
-    if @available_time_slots.present? and Date.parse(tour_date) >= Date.today
-      render :time_slots
-    else
-      render json: { is_success: true, error_code: 400, message: "No time slot for this tour type on given date", data: nil }
     end
   end
 
@@ -88,6 +73,24 @@ class Api::V1::ScheduleToursController < ActionController::Base
       render json: { is_success: true, error_code: 400, message: "Tour type does not match to allowed tours", data: nil }
     end  
   end
+
+  def time_slots
+    @stepping = @community.tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
+    @tour_type = params['tour_type']
+    # binding.pry
+    @tour_date = params['tour_date']
+    @requested_day = DateTime.strptime(@tour_date, "%d/%m/%Y").strftime("%A")
+    @available_time_slots = SchedulerWidgetService.new(@community,@stepping,@tour_type,@requested_day,@tour_date).time_slots_for_appartments
+    if @available_time_slots.present?
+      render :time_slots
+    else
+      render json: { is_success: true, error_code: 400, message: "No time slot for this tour type on given date", data: nil }
+    end
+  end
+
+  def schedule_tour
+    #To be implemented
+  end
   
   private
 
@@ -99,13 +102,17 @@ class Api::V1::ScheduleToursController < ActionController::Base
   
   def find_community
     # community_id = JsonWebToken.decode(params[:property_code])
-    @community = Community.joins(:tour).where('tours.only_scheduled_tour = ?',true).self_tour_enabled_only.find(params[:id])
+    @community = Community.joins(:tour).where('tours.only_scheduled_tour = ?',true).self_tour_enabled_only.find(params[:property_id])
   rescue ActiveRecord::RecordNotFound
     render json: { is_success: false, error_code: 400, message: "Community not found.", data: nil }, status: :not_found
   end
 
   def authorize_params
     params.permit(:api_access_key)
+  end
+
+  def schedule_tour_params
+    params.permit(:property_id, :first_name, :last_name, :email, :phone_number, :desired_bedroom, :desired_move_in_date, :tour_type, :tour_date, :tour_time)
   end
   
   def authenticate_token!
@@ -120,7 +127,7 @@ class Api::V1::ScheduleToursController < ActionController::Base
   end
 
   def vender_api_access_key
-    ENV['APPARTMENTS.COM_API_KEY_ACCESS']
+    ENV['APPARTMENTS_API_KEY_ACCESS']
   end
 
 end
