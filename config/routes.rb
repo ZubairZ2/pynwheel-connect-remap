@@ -469,6 +469,12 @@ Rails.application.routes.draw do
 
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
+      post :authorize, to: 'schedule_tours#authorize_vendor'
+      get :properties, to: 'schedule_tours#communities'
+      get '/properties/:property_id/tour_types', to: 'schedule_tours#tour_types'
+      get '/properties/:property_id/tour_dates', to: 'schedule_tours#tour_dates'
+      get '/properties/:property_id/time_slots', to: 'schedule_tours#time_slots'
+      post '/schedule_tour', to: 'schedule_tours#schedule_tour'
       put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
       post :salesforce_tour_webhook, to: 'salesforce_webhooks#salesforce_tour_webhook'
       post :save_data, to: 'dwelo_devices#load_data'
@@ -504,6 +510,9 @@ Rails.application.routes.draw do
           post :update_version
         end
       end
+
+
+
       resources :tours,only: :index do
         collection do
           post :tour_user_login
