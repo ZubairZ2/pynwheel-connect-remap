@@ -125,6 +125,16 @@ class Api::V1::ScheduleToursController < ActionController::Base
       rescue Exception => e
         puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} ---"
       end
+      # binding.pry
+      desired_move_in_date = params[:desired_move_in_date].to_datetime.strftime("%m/%d/%y") if params[:desired_move_in_date].present?
+      if desired_move_in_date.present?
+        date = desired_move_in_date.split('/')
+        date[0],date[1] = date[1],date[0]
+        date = date.join('-').to_date
+        desired_move_in_date = date
+      else
+        desired_move_in_date = ""
+      end
 
       timezone = get_community_time_zone(@community) rescue "UTC"
       # new_tour = SchedualTour.find(params[:sched_tour_id])
@@ -167,14 +177,6 @@ class Api::V1::ScheduleToursController < ActionController::Base
           puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace} ---"
         end
 
-        if params[:desired_move_in_date].present?
-          date = params[:desired_move_in_date].split('/')
-          date[0],date[1] = date[1],date[0]
-          date = date.join('-').to_date
-          desired_move_in_date = date
-        else
-          desired_move_in_date = ""
-        end
       end
       @schedule_tour = schedual_tour
       if @schedule_tour.present?
@@ -208,7 +210,8 @@ class Api::V1::ScheduleToursController < ActionController::Base
   
   def find_community
     # community_id = JsonWebToken.decode(params[:property_code])
-    @community = Community.joins(:tour).where('tours.only_scheduled_tour = ?',true).self_tour_enabled_only.find(params[:property_id])
+    @community = Community.where(scheduler_widget: true).self_tour_enabled_only.find(params[:property_id])
+    
   rescue ActiveRecord::RecordNotFound
     render json: { is_success: false, error_code: 404, message: "Property not found.", data: {} }, status: :not_found
   end
