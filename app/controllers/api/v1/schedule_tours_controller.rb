@@ -210,8 +210,7 @@ class Api::V1::ScheduleToursController < ActionController::Base
   
   def find_community
     # community_id = JsonWebToken.decode(params[:property_code])
-    @community = Community.where(scheduler_widget: true).self_tour_enabled_only.find(params[:property_id])
-    
+    @community = Community.joins(:tour).where('tours.only_scheduled_tour = ?',true).self_tour_enabled_only.find(params[:property_id])
   rescue ActiveRecord::RecordNotFound
     render json: { is_success: false, error_code: 404, message: "Property not found.", data: {} }, status: :not_found
   end
