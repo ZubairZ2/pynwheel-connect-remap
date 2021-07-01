@@ -93,15 +93,16 @@ class Api::V1::ScheduleToursController < ActionController::Base
 
     @tu = TourUser.where(email: params[:email].downcase)
     @tu = @tu.last if @tu.present?
+    desired_bedroom = params[:desired_bedroom] if params[:desired_bedroom].present?
 
     f_name = params[:first_name].present? ? params[:first_name] : ""
     l_name = params[:last_name].present? ? params[:last_name] : ""
-    @tu = TourUser.new name: (f_name + " " + l_name), first_name: params[:first_name], last_name: params[:last_name], email: params[:email].downcase, phone_number: phone_number, desired_bedroom: params[:desired_bedroom] unless @tu.present?
+    @tu = TourUser.new name: (f_name + " " + l_name), first_name: params[:first_name], last_name: params[:last_name], email: params[:email].downcase, phone_number: phone_number, desired_bedroom: desired_bedroom unless @tu.present?
     @tu.name = (f_name + " " + l_name)
     @tu.first_name = f_name
     @tu.last_name = l_name
     @tu.phone_number = phone_number if phone_number.present?
-    @tu.desired_bedroom = params[:desired_bedroom]
+    @tu.desired_bedroom = params[:desired_bedroom] if params[:desired_bedroom].present?
     @tu.card_last_digits = params[:credit_card_number].last 4 if params[:credit_card_number].present?
     credit_card_number = params[:credit_card_number] if params[:credit_card_number].present?
     exp_month = params[:exp_month] if params[:exp_month].present?
@@ -153,7 +154,7 @@ class Api::V1::ScheduleToursController < ActionController::Base
         
         is_rescheduled = false
         
-        schedual_tour.update_attributes(tour_date: new_tour.tour_date, tour_time: new_tour.tour_time, tour_user_id: @tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: params[:desired_move_in_date], desired_bedroom: params[:desired_bedroom] , created_by: "Appartments.com")
+        schedual_tour.update_attributes(tour_date: new_tour.tour_date, tour_time: new_tour.tour_time, tour_user_id: @tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: params[:desired_move_in_date], desired_bedroom: desired_bedroom , created_by: "Appartments.com")
 
         if previous_tour[:is_rescheduled]
           is_rescheduled = true
