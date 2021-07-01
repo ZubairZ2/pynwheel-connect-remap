@@ -36,6 +36,11 @@ class TourUser < ApplicationRecord
   has_one :feedbacks
   
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :first_name, presence: true
+  validates :last_name, presence: true
+  validates :email, presence: true
+  validates :phone_number, presence: true
+  validates :desired_bedroom, :numericality => { greater_than_or_equal_to: 0, less_than: 10 } 
 
   after_update :crop_user_image
 

@@ -29,10 +29,10 @@ class MaxDateScheduledTourService < BaseService
       if max_date <  tour_date
         max_date  = tour_date
         scheduled_tour = tour
-      end
+      end if (max_date && tour_date).present?
     end
 
-    if @flag
+    if @flag && max_date.present?
       max_date > Time.now.in_time_zone(timezone) ? scheduled_tour : nil
     else
       scheduled_tour
@@ -40,7 +40,7 @@ class MaxDateScheduledTourService < BaseService
   end
 
   def scheduled_tour_date_time(tour, timezone)
-    tour.present? ? (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) : ""
+    tour.present? ? (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) : "" if (tour.tour_date && tour.tour_time).present?
   end
 
   def get_time_zone

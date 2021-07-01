@@ -64,6 +64,7 @@ private
         tour_user_name(@tour_user),
         @tour_user.email,
         @tour_user.phone_number,
+        scheduled_tour.created_by,
         '<div style="display: flex;">'+
           '<a class="btn btn-success custom-tour-btn" id="edit-custom-tour-'+"#{scheduled_tour.id}"+'" onclick="onEditButtonClick('+"#{visible_tour_stops}"+','+"#{scheduled_tour.id}"+','+"#{@tour_user.id}"+')"'+'>'+
             '<i class="fa fa-edit icon_size"></i>'+

@@ -7,7 +7,7 @@ class Api::V1::ScheduleToursController < ActionController::Base
     if @api_access_key == vender_api_access_key
       render :authorize_vendor
     else
-      render json: { is_success: true, error_code: 400, message: "Your access key is invalid, please contact to support", data: nil }
+      render json: { is_success: false, error_code: 404, message: "Access key is invalid, please contact to support", data: {} }
     end
   end
 
@@ -16,7 +16,7 @@ class Api::V1::ScheduleToursController < ActionController::Base
     if @communities.present?
       render :communities
     else
-      render json: { is_success: true, error_code: 400, message: "No Communities were not", data: nil }
+      render json: { is_success: false, error_code: 404, message: "No Communities were not", data: {} }
     end
   end
 
@@ -29,7 +29,7 @@ class Api::V1::ScheduleToursController < ActionController::Base
     if @tour_types.present?
      render :tour_types
     else
-      render json: { is_success: true, error_code: 400, message: "No Tour has been allowed for this community", data: nil }
+      render json: { is_success: false, error_code: 404, message: "No Tour has been allowed for this community", data: {} }
     end
   end
 
@@ -67,10 +67,10 @@ class Api::V1::ScheduleToursController < ActionController::Base
       if @tour_dates.present?
         render :tour_dates
       else
-        render json: { is_success: true, error_code: 400, message: "No Date is available to schedule tour", data: nil }
+        render json: { is_success: false, error_code: 404, message: "No Date is available to schedule tour", data: {} }
       end
     else
-      render json: { is_success: true, error_code: 400, message: "Tour type does not match to allowed tours", data: nil }
+      render json: { is_success: false, error_code: 400, message: "Tour type does not match to allowed tours", data: {} }
     end  
   end
 
@@ -80,31 +80,136 @@ class Api::V1::ScheduleToursController < ActionController::Base
     # binding.pry
     @tour_date = params['tour_date']
     @requested_day = DateTime.strptime(@tour_date, "%d/%m/%Y").strftime("%A")
-    @available_time_slots = SchedulerWidgetService.new(@community,@stepping,@tour_type,@requested_day,@tour_date).time_slots_for_appartments
+    @available_time_slots = SchedulerWidgetService.new(@community).time_slots_for_appartments(@stepping,@tour_type,@requested_day,@tour_date)
     if @available_time_slots.present?
       render :time_slots
     else
-      render json: { is_success: true, error_code: 400, message: "No time slot for this tour type on given date", data: nil }
+      render json: { is_success: false, error_code: 404, message: "No time slot for this tour type on given date", data: {} }
     end
   end
 
   def schedule_tour
-    #To be implemented
+    phone_number = make_phone
+
+    @tu = TourUser.where(email: params[:email].downcase)
+    @tu = @tu.last if @tu.present?
+
+    f_name = params[:first_name].present? ? params[:first_name] : ""
+    l_name = params[:last_name].present? ? params[:last_name] : ""
+    @tu = TourUser.new name: (f_name + " " + l_name), first_name: params[:first_name], last_name: params[:last_name], email: params[:email].downcase, phone_number: phone_number, desired_bedroom: params[:desired_bedroom] unless @tu.present?
+    @tu.name = (f_name + " " + l_name)
+    @tu.first_name = f_name
+    @tu.last_name = l_name
+    @tu.phone_number = phone_number if phone_number.present?
+    @tu.desired_bedroom = params[:desired_bedroom]
+    @tu.card_last_digits = params[:credit_card_number].last 4 if params[:credit_card_number].present?
+    credit_card_number = params[:credit_card_number] if params[:credit_card_number].present?
+    exp_month = params[:exp_month] if params[:exp_month].present?
+    exp_year = params[:exp_year] if params[:exp_year].present?
+    card_verification = params[:card_verification] if params[:card_verification].present?
+    
+    if @tu.save
+      begin
+        if(@tu.strip_customer_id.present?)
+          res = charge_customer(@tu, 50, "Escrow Payment", 'usd')
+        else
+          # @tu.update_column 'strip_customer_id', create_customer(@tu.email, params[:tour_user][:card_token]).id
+          SchedulerWidgetService.new(@community).save_tour_user_card_info(@tu.id,credit_card_number,exp_month,exp_year,card_verification)
+          res = charge_customer(@tu, 50, "Escrow Payment", 'usd')
+        end
+
+        sleep 2
+        pay_back = refund_customer(@tu, res[:id])
+               
+      rescue Exception => e
+        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} ---"
+      end
+
+      timezone = get_community_time_zone(@community) rescue "UTC"
+      # new_tour = SchedualTour.find(params[:sched_tour_id])
+      tour_type = params[:tour_type] if params[:tour_type].present?
+      tour_date = params[:tour_date] if params[:tour_date].present?
+      tour_time = params[:tour_time] if params[:tour_time].present?
+      new_tour = SchedualTour.new(community_id: params[:property_id], user_time_zone: timezone, tour_type: tour_type, tour_date: tour_date, tour_time: tour_time)
+      if new_tour.save
+        schedual_tour = MaxDateScheduledTourService.new(@tu, @community, true).get_scheduled_tour
+
+        unless schedual_tour.present?
+          scheduled_tours = @community.schedual_tours.where(tour_user_id: @tu.id)
+          
+          if scheduled_tours.present?
+            new_tour.update(stops_list: scheduled_tours.last.stops_list)
+          end
+        end
+
+        
+        schedual_tour = (schedual_tour.present? && !schedual_tour.is_tour_completed) ? schedual_tour : new_tour
+
+        previous_tour = {
+          tour_date: schedual_tour.tour_date,
+          tour_time: schedual_tour.tour_time,
+          is_rescheduled: schedual_tour.tour_user_id.present?
+        }
+        
+        is_rescheduled = false
+        
+        schedual_tour.update_attributes(tour_date: new_tour.tour_date, tour_time: new_tour.tour_time, tour_user_id: @tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: params[:desired_move_in_date], desired_bedroom: params[:desired_bedroom] , created_by: "Appartments.com")
+
+        if previous_tour[:is_rescheduled]
+          is_rescheduled = true
+          new_tour.delete
+        end
+        
+        begin
+          sent_notifications = SchedulerWidgetService.new(@community).send_email_and_other_notifications(schedual_tour, previous_tour, is_rescheduled)
+        rescue Exception => e
+          puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace} ---"
+        end
+
+        if params[:desired_move_in_date].present?
+          date = params[:desired_move_in_date].split('/')
+          date[0],date[1] = date[1],date[0]
+          date = date.join('-').to_date
+          desired_move_in_date = date
+        else
+          desired_move_in_date = ""
+        end
+      end
+      @schedule_tour = schedual_tour
+      if @schedule_tour.present?
+        render :schedule_tours
+      else
+        render json: { is_success: false, error_code: 1000, message: new_tour&.errors&.full_messages&.first.present? ? new_tour.errors.full_messages.first : "Invalid Client Credentials, Please verify and try again" , data: {} }
+      end
+    else
+      render json: { is_success: false, error_code: 1000, message: @tu&.errors&.full_messages&.first.present? ? @tu.errors.full_messages.first :  "Invalid Client Credentials, Please verify and try again" , data: {} }
+    end
   end
   
   private
 
-  def date_of_next(day)
-    date  = Date.parse(day)
-    delta = date > Date.today ? 0 : 7
-    date + delta
+  def make_phone
+    begin
+      user_phone = params[:phone_number].sub(/^[0]+/,'')
+      user_phone = trim_leading('\+', user_phone) if user_phone.starts_with? '+'
+
+      c = ISO3166::Country.new(params[:country_code])
+      if user_phone.starts_with? c.country_code
+        user_phone = "+#{user_phone}"
+      else
+        user_phone = "+#{c.country_code}#{user_phone}"
+      end
+      user_phone
+    rescue => ex
+      ""
+    end
   end
   
   def find_community
     # community_id = JsonWebToken.decode(params[:property_code])
     @community = Community.joins(:tour).where('tours.only_scheduled_tour = ?',true).self_tour_enabled_only.find(params[:property_id])
   rescue ActiveRecord::RecordNotFound
-    render json: { is_success: false, error_code: 400, message: "Community not found.", data: nil }, status: :not_found
+    render json: { is_success: false, error_code: 404, message: "Property not found.", data: {} }, status: :not_found
   end
 
   def authorize_params
@@ -112,14 +217,14 @@ class Api::V1::ScheduleToursController < ActionController::Base
   end
 
   def schedule_tour_params
-    params.permit(:property_id, :first_name, :last_name, :email, :phone_number, :desired_bedroom, :desired_move_in_date, :tour_type, :tour_date, :tour_time)
+    params.permit(:property_id, :first_name, :last_name, :email, :phone_number, :desired_bedroom, :desired_move_in_date, :tour_type, :tour_date, :tour_time, :credit_card_required)
   end
   
   def authenticate_token!
     payload = JsonWebToken.decode(auth_token)
-    render json: {is_success: false, error_code: 400, message: "Invalid auth token", data: nil } if vender_api_access_key != payload["sub"] 
+    render json: {is_success: false, error_code: 400, message: "Auth token is missing or invalid", data: {} } if vender_api_access_key != payload["sub"] 
     rescue JWT::DecodeError
-      render json: {is_success: false, error_code: 400, message: "Invalid auth token", data: nil }
+      render json: {is_success: false, error_code: 400, message: "Auth token is missing or invalid", data: {} }
   end
 
   def auth_token
@@ -128,6 +233,24 @@ class Api::V1::ScheduleToursController < ActionController::Base
 
   def vender_api_access_key
     ENV['APPARTMENTS_API_KEY_ACCESS']
+  end
+
+  def get_community_time_zone(community)
+    tz = Ziptz.new
+    timezone = nil
+
+    if community.latitude.present? and community.longitude.present?
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and community.zip.present?
+      timezone = tz.time_zone_name(community.zip)
+    end
+
+      return timezone
+    rescue
+      return "UTC"
   end
 
 end
