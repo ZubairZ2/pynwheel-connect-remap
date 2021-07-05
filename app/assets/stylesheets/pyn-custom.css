@@ -22,11 +22,14 @@ textarea {
 .main-sidebar {
     padding-top: 110px;
 }
+
 .clean-data-btn {
     display: none;
 }
+
 .add-user-button {
     float: right;
+    margin-left: 10px;
 }
 
 .red-required-star {
@@ -184,7 +187,7 @@ textarea {
     color: red;
     margin-right: 10px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 30px;
 }
 
 .slow .toggle-group {
@@ -210,7 +213,22 @@ textarea {
     color: #2b90d4;
     margin-right: 10px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 30px;
+}
+
+.pynwheel-manage-accesses {
+    margin-bottom: 12px;
+}
+
+#pynwheel-access-user-type {
+    padding: 5px;
+    width: 100%;
+    border: 1px solid #d2d6de;
+    background-color: white;
+}
+
+#pynwheelAccessUsersData {
+    display: none;
 }
 
 .skin-blue .wrapper,
@@ -3979,7 +3997,7 @@ div.mydiv {
     font-size: 13px !important;
 }
 
-.propertyDetailName, 
+.propertyDetailName,
 .pyn-toolTip {
     position: relative;
     display: inline-block;
@@ -4039,12 +4057,10 @@ div.mydiv {
     visibility: visible;
 }
 
-
 .active-inactive-tooltip-text {
     width: 118px !important;
     left: -5% !important;
 }
-
 
 .propertyDetailName #propertyDetailNameText::after {
     content: "";
@@ -4827,7 +4843,7 @@ input:checked+.slider:before {
 }
 
 .slider.round:before {
-  border-radius: 50%;
+    border-radius: 50%;
 }
 
 .pynwheel-access-credentials {

@@ -74,6 +74,7 @@ class Community < ApplicationRecord
   belongs_to :community_group
   belongs_to :region
 
+  has_many :pynwheel_access_users
   has_many :community_users, dependent: :destroy
   has_many :users ,through: :community_users, dependent: :destroy
   has_many :units, dependent: :destroy
@@ -110,6 +111,7 @@ class Community < ApplicationRecord
   has_one :dwelo, dependent: :destroy
   has_one :latch, dependent: :destroy
   has_one :zerv, dependent: :destroy
+
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
@@ -408,6 +410,12 @@ class Community < ApplicationRecord
     # ImportYardi2DataJob.perform_async credential.attributes.to_json
   end
 
+  def import_yardi_users_data
+    puts "--------"*50
+    puts "Import yardi users data"
+    ImportYardiUsersDataJob.perform_async credential.attributes.to_json
+  end
+
   def swap_yardi2_data
     ImportYardi2SwapDataJob.perform_async credential.attributes.to_json
   end
@@ -460,6 +468,23 @@ class Community < ApplicationRecord
 
   def credentials_are_present?
     credential.present?
+  end
+
+  def pynwheel_access_users_data
+
+    case self.data_provider
+      when "psi"
+        puts "------------- PSI -------------"
+      when "yardirentcafe"
+        puts "--------- yardirentcafe -------"
+      when "realpagesvc"
+        puts "--------- realpagesvc -------"
+      when "yardi"
+        puts "--------- yardi -------"
+        import_yardi_users_data
+      when "resman"
+        puts "--------- resman -------"
+    end
   end
 
   def connect_to_provider

@@ -1,0 +1,72 @@
+%form.pynwheel-access-user-info{:id => "pynwheelAccessUserForm"}
+  .row
+    .col-lg-4.col-md-4.col-sm-12
+      .form-group
+        %label{:for => "pynwheelAccessUserFirstName"} First Name 
+        %span.red-required-star *
+        %input#pynwheelAccessUserFirstName.form-control{:placeholder => "Enter first name", :type => "text"}
+        %span.red-required-star.first-name-required.required-field First name is required
+    .col-lg-4.col-md-4.col-sm-12
+      .form-group
+        %label{:for => "pynwheelAccessUserSecondName"} Last Name
+        %span.red-required-star *
+        %input#pynwheelAccessUserSecondName.form-control{:placeholder => "Enter last name", :type => "text"}
+        %span.red-required-star.second-name-required.required-field Last name is required
+
+    .col-lg-4.col-md-4.col-sm-12
+      .form-group
+        %label{:for => "pynwheelAccessUserType"} User Type
+        %span.red-required-star *
+        %select#pynwheel-access-user-type
+          %option{value: ""} Select user type
+          %option{value: "resident"} Resident
+          %option{value: "staff"} Staff
+        %span.red-required-star.user-type-required.required-field User type is required
+
+
+  .row
+    .col-lg-6.col-md-6.col-sm-12
+      .pynwheel-access-user-phone.form-group
+        %label{:for => "pynwheelAccessUserPhone"} Phone Number
+        %span.red-required-star *
+        %br
+        %input#pynwheelAccessUserPhone.form-control{:type => "tel", :placeholder=>"Enter phone number", class: "form-control phoneNumber validate[required,custom[onlyNumber]", :onkeypress => "return onlyNumberKey(event)", :maxlength => 15 , :required => 'required' }
+        %span.red-required-star.phone-number-required.required-field Phone number is required
+      
+    .col-lg-6.col-md-6.col-sm-12
+      .form-group
+        %label{:for => "pynwheelAccessUserEmail"} Email Address
+        %span.red-required-star *
+        %input#pynwheelAccessUserEmail.form-control{"aria-describedby" => "emailHelp", :placeholder => "Enter email", :type => "email"}
+        %span.red-required-star.email-valid.required-field Email formate is not valid
+        %span.red-required-star.email-required.required-field Email is required
+    
+  .row
+    .col-lg-6.col-md-6.col-sm-12
+      .form-group
+        %label{:for => "pynwheelAccessUserMoveInDate"} Move In Date
+        -# %span.red-required-star *
+        = text_field_tag "", "", :id => "pynwheelUserMoveInDate", :class=>"form-control datepicker", :placeholder=>"Move in date", :autocomplete=>"off"
+        -# %span.red-required-star.move-in-date.required-field Move in date is required
+
+    .col-lg-6.col-md-6.col-sm-12
+      .form-group
+        %label{:for => "pynwheelAccessUserMoveOutDate"} Move Out Date
+        -# %span.red-required-star *
+        = text_field_tag "", "", :id => "pynwheelUserMoveOutDate", :class=>"form-control datepicker", :placeholder=>"Move out date", :autocomplete=>"off"
+        -# %span.red-required-star.move-out-date.required-field Move out date is required
+        
+  .row
+    .col-lg-6.col-md-6.col-sm-12
+      .form-group
+        %label{:for => "pynwheelAccessUserLeaseInDate"} Lease In Date
+        -# %span.red-required-star *
+        = text_field_tag "", "", :id => "pynwheelUserLeaseInDate", :class=>"form-control datepicker", :placeholder=>"Lease In date", :autocomplete=>"off"
+        -# %span.red-required-star.lease-in-date.required-field Lease in date is required
+
+    .col-lg-6.col-md-6.col-sm-12
+      .form-group
+        %label{:for => "pynwheelAccessUserLeaseOutInDate"} Lease Out Date
+        -# %span.red-required-star *
+        = text_field_tag "", "", :id => "pynwheelUserLeaseOutDate", :class=>"form-control datepicker", :placeholder=>"Lease out date", :autocomplete=>"off"
+        -# %span.red-required-star.lease-out-date.required-field Lease out date is required

@@ -149,6 +149,7 @@ Rails.application.routes.draw do
     delete :delete_imported_data
     get :update_imported_data
     get :import
+    get :import_pynwheel_access_users_data
     get :clean_psi_units_data
     get :experimental_import
     get :credentials
@@ -397,6 +398,9 @@ Rails.application.routes.draw do
         put :update_homepage_icon
         delete :delete_homepage_icon
       end
+    end
+
+    resources :pynwheel_access_users, only: [:index, :create, :update, :destroy] do
     end
 
     resources :pynwheel_accesses, only: [:index] do
