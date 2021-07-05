@@ -1363,7 +1363,7 @@ json.apartments do
       json.provider_unit_id unit.provider_unit_id
       json.id unit.id
       json.floorplan_name floorplan.present? ? floorplan.name : nil
-      json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
+      json.bedrooms floorplan.present? ? floorplan.bedrooms.to_i.to_s : 0
       json.display_virtual_tour_button_label true #unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
       json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
       if @community.credential.present? and @community.credential.apply_now == "separate_link"
@@ -1505,7 +1505,7 @@ json.apartments do
     json.rent floorplan.market_rent
     json.units_available floorplan.units_available
     json.unit_count floorplan.unit_count
-    json.bedrooms floorplan.bedrooms
+    json.bedrooms floorplan.bedrooms.to_i.to_s
     json.bathrooms floorplan.bathrooms
     json.square_feet floorplan.square_feet
     json.description floorplan.description
