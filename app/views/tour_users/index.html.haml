@@ -34,6 +34,8 @@
                     %th Phone
                     %th
                     %th Visitor Details
+                    - if @community.tour.visual_id_verification
+                      %th Verified
                     - if (current_user.is_super_admin?)
                       %th Action
 
@@ -116,6 +118,16 @@
                         %td.col-lg-2
                           .visitor_list
                             = link_to 'Visitor Details' , community_tour_user_path(@community,user),:class=>"btn btn-default black-button loader_class"
+                        - if @community.tour.visual_id_verification
+                          %td.col-lg-3
+                            - if user.verified_at.present? && (user.is_authentiq_verified or user.is_checkpoint_verified)
+                              .visitor_list
+                                #{(user.verified_at.in_time_zone(time_zone)).strftime("%Y-%m-%d %-I:%M %P")}
+                                - if (current_user.is_super_admin? && user.verified_at.present? && (user.is_authentiq_verified or user.is_checkpoint_verified))
+                                  %a{"data-name"=>"id verification","data-href" => "/communities/#{@community.id}/tour_users/#{user.id}?verified_at=true", "data-target" => "#confirm-reset-verification", "data-toggle" => "modal", "class" => "btn btn-default black-button", "style" => "float: right;"}
+                                    Reset
+                            - else
+                              Never Verified
                         - if (current_user.is_super_admin?)
                           %td
                             %a.text-danger{"data-name"=>"visitor","data-href" => "/communities/#{@community.id}/tour_users/#{user.id}", "data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}

@@ -215,9 +215,9 @@ iPhone Users:
     phone_number = ph_nm[0] == "1" ? "+" + ph_nm : ((ph_nm[0] != "+" and ph_nm[0] != "1") ? ("+1" + ph_nm) : ph_nm)
     tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
     if tu.blank?
-      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false)
+      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false, is_authentiq_verified: false, is_checkpoint_verified: false, verified_at: nil)
     else
-      tu.update_attributes(name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false, is_verified: false, verified_at: nil)
+      tu.update_attributes(name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false, is_authentiq_verified: false, is_checkpoint_verified: false, verified_at: nil)
     end
 
     begin

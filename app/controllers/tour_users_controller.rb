@@ -176,18 +176,22 @@ class TourUsersController < ApplicationController
     if params[:delete_all].present?
       delete_tour_user_all_attributes(@tour_user, @community)
       redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
-    elsif  params[:image].present? or params[:name].present? or params[:email].present? or params[:phone_number].present? or params[:history].present?
+    elsif  params[:image].present? or params[:name].present? or params[:email].present? or params[:phone_number].present? or params[:history].present? or params[:verified_at].present?
       update_tour_user_attributes(@tour_user, @community)
-      redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
-    else
-      tour_histories = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @tour.id).includes(:lock_histories)
-      lock_histories_ids = tour_histories.all.map { |x| x.lock_histories.ids }.flatten
-      LockHistory.where(id: lock_histories_ids).delete_all
-
-      if @tour_user.chatrooms.find_by(tour_id: @tour.id).present?
-        @tour_user.chatrooms.find_by(tour_id: @tour.id).chats.delete_all
-        @tour_user.chatrooms.find_by(tour_id: @tour.id).delete
+      if params[:verified_at].present?
+        redirect_to community_tour_users_path(@community), :notice => "Id verification has been reset"
+      else
+        redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
       end
+    else
+    tour_histories = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @tour.id).includes(:lock_histories)
+    lock_histories_ids = tour_histories.all.map { |x| x.lock_histories.ids }.flatten
+    LockHistory.where(id: lock_histories_ids).delete_all
+
+    if @tour_user.chatrooms.find_by(tour_id: @tour.id).present?
+      @tour_user.chatrooms.find_by(tour_id: @tour.id).chats.delete_all
+      @tour_user.chatrooms.find_by(tour_id: @tour.id).delete
+    end
 
     @tour_user.as_guests.find_by(community_id: @community.id).delete if @tour_user.as_guests.find_by(community_id: @community.id).present?
     @tour_user.igloo_guests.where(community_id: @community.id).delete_all if @tour_user.igloo_guests.find_by(community_id: @community.id).present?
@@ -253,6 +257,10 @@ class TourUsersController < ApplicationController
         tour_history.history = true
         tour_history.save!
       end
+    end
+    if params[:verified_at] == "true"
+      tour_user.update_attributes(verified_at: nil, is_authentiq_verified: false) if community.tour.verification_type == "authenteq"
+      tour_user.update_attributes(verified_at: nil, is_checkpoint_verified: false) if community.tour.verification_type == "check_point_id"
     end
   end
 

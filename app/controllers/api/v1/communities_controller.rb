@@ -185,9 +185,15 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community.save
       charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
       @tour_user.verified_by = params[:verfied_by_provider]
-      @tour_user.verified_at = params[:verified_at]
-      if @tour_user.verified_by.present? && (@tour_user.verified_at && @tour_user.verified_at > 30.days.ago)
-        @tour_user.update_attributes(is_verified: true)
+      time_zone = get_time_zone @community
+      # (params[:verified_at].in_time_zone(time_zone)).strftime("%Y-%m-%d %-I:%M %P"))
+      if params[:verified_at].present? && @community.tour.visual_id_verification
+        @tour_user.update_attributes(verified_at: params[:verified_at].to_datetime)  if (@tour_user.verified_at.nil? && @community.tour.verification_type == "authenteq")  || (@tour_user.verified_at.nil? && @community.tour.verification_type == "check_point_id")   
+      end
+      verified_at = @tour_user.verified_at
+      if @tour_user.verified_by.present? && (verified_at && verified_at.in_time_zone(time_zone) > 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
+        @tour_user.update_attributes(is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
+        @tour_user.update_attributes(is_checkpoint_verified: true) if @community.tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
       end
 
       unless @tour_user.email == "Removed at Consumer Request"
