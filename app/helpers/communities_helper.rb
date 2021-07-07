@@ -161,7 +161,7 @@ module CommunitiesHelper
         elsif tour_type != "virtual_tour" and is_authentiq_verified and (verified_at and verified_at.in_time_zone(time_zone) > 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
           false
         elsif tour_type != "virtual_tour" and is_authentiq_verified and (verified_at and verified_at.in_time_zone(time_zone) < 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
-          tour_user.update_attributes(verified_at: nil)
+          tour_user.update_attributes(verified_at: nil, is_authentiq_verified: false)
           true
         else
           false
@@ -173,7 +173,7 @@ module CommunitiesHelper
           elsif tour_type != "virtual_tour" and is_checkpoint_verified and (verified_at and verified_at.in_time_zone(time_zone) > 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
             false
           elsif tour_type != "virtual_tour" and is_checkpoint_verified and (verified_at and verified_at.in_time_zone(time_zone) < 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
-            tour_user.update_attributes(verified_at: nil)
+            tour_user.update_attributes(verified_at: nil, is_checkpoint_verified: false)
             true
           else
             false
