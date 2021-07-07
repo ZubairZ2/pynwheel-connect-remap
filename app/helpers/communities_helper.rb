@@ -158,9 +158,9 @@ module CommunitiesHelper
       if community.tour.verification_type == "authenteq"
         if tour_type != "virtual_tour" and !is_authentiq_verified
           true
-        elsif tour_type != "virtual_tour" and is_authentiq_verified and (verified_at and verified_at.in_time_zone(time_zone) > 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
+        elsif tour_type != "virtual_tour" and is_authentiq_verified and (verified_at and verified_at.to_datetime > 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
           false
-        elsif tour_type != "virtual_tour" and is_authentiq_verified and (verified_at and verified_at.in_time_zone(time_zone) < 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
+        elsif tour_type != "virtual_tour" and is_authentiq_verified and (verified_at and verified_at.to_datetime < 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
           tour_user.update_attributes(verified_at: nil, is_authentiq_verified: false)
           true
         else
@@ -170,9 +170,9 @@ module CommunitiesHelper
         if community.tour.verification_type == "check_point_id"
           if tour_type != "virtual_tour" and !is_checkpoint_verified
             true
-          elsif tour_type != "virtual_tour" and is_checkpoint_verified and (verified_at and verified_at.in_time_zone(time_zone) > 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
+          elsif tour_type != "virtual_tour" and is_checkpoint_verified and (verified_at and verified_at.to_datetime > 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
             false
-          elsif tour_type != "virtual_tour" and is_checkpoint_verified and (verified_at and verified_at.in_time_zone(time_zone) < 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
+          elsif tour_type != "virtual_tour" and is_checkpoint_verified and (verified_at and verified_at.to_datetime < 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
             tour_user.update_attributes(verified_at: nil, is_checkpoint_verified: false)
             true
           else

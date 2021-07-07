@@ -191,7 +191,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         @tour_user.update_attributes(verified_at: params[:verified_at].to_datetime)  if (@tour_user.verified_at.nil? && @community.tour.verification_type == "authenteq")  || (@tour_user.verified_at.nil? && @community.tour.verification_type == "check_point_id")   
       end
       verified_at = @tour_user.verified_at
-      if @tour_user.verified_by.present? && (verified_at && verified_at.in_time_zone(time_zone) > 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
+      if @tour_user.verified_by.present? && (verified_at && verified_at.to_datetime > 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
         @tour_user.update_attributes(is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
         @tour_user.update_attributes(is_checkpoint_verified: true) if @community.tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
       end
