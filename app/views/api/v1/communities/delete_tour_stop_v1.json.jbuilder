@@ -860,7 +860,7 @@ json.tours @tours do |tour|
       json.show_long_directional_text show_directional_text
       json.long_directional_text styling_start + unit.stop_description.gsub('red','') + styling_end rescue ""      
       json.video_link_button_label unit.virtual_tour_button_label
-      json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
+      json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : unit.floorplan.present? ? unit.floorplan.virtual_tour_url : ""
       lease_pricing = []
       if unit.lease_pricing.present? && !unit.modal_unit
         str_split = unit.lease_pricing.split(';')
@@ -924,7 +924,7 @@ json.tours @tours do |tour|
           json.stop_description ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
           json.directional_text ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
           json.video_link_button_label unit.virtual_tour_button_label
-          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ""
+          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : unit.floorplan.present? ? unit.floorplan.virtual_tour_url : ""
           if unit_amenity.amenity_galleries.count == 0
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
             json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : ""), "directional_text" => ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")]
@@ -977,7 +977,7 @@ json.tours @tours do |tour|
 
           json.long_directional_text styling_start + unit_amenity.directional_text.gsub('red','') + styling_end  rescue ""
           json.video_link_button_label unit.virtual_tour_button_label
-          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ""
+          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : unit.floorplan.present? ? unit.floorplan.virtual_tour_url : ""
           if unit_amenity.amenity_galleries.count == 0
             stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
 
