@@ -714,6 +714,28 @@ class Community < ApplicationRecord
     end
   end
 
+  def unit_floorplate_image_url(community, tour, unit)
+    if community.is_sitemap
+      floorplate = tour.image.present? ? tour : (community.is_sitemap ? community.sitemap : community.floorplates.first) rescue nil
+    else
+      floorplate = (unit.floorplate.image.present? ? unit.floorplate : nil) if unit.floorplate.present?  rescue nil
+    end
+
+    floorplate.image.url rescue nil
+  end
+
+  def unit_floorplan_images(unit, images = [] )
+    if (unit.image.present? || unit.floorplan.image.present? rescue false)
+      images << {url: unit.image.present? ? unit.image.url : unit.floorplan.image.url }
+    end
+
+    if (unit.secondary_image.present? || unit.floorplan.secondary_image.present? rescue false)
+      images << {url: unit.secondary_image.present? ? unit.secondary_image.url : unit.floorplan.secondary_image.url }
+    end
+
+    images
+  end
+
   private
 
   def populate_favorites(items_objs,email_to)
