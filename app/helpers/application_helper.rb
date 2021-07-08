@@ -33,7 +33,7 @@ module ApplicationHelper
     end
   end
   def api_access
-    return false
+    ENV["API_ACCESS"] == "true" ? true : false
   end
   def make_link str
     start_index = str.index('{')
