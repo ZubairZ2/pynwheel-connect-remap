@@ -6,7 +6,7 @@ json.floorplans @floorplans do |floorplan|
 	json.availability_url floorplan.availability_url
 	json.thumbnail_image floorplan.image.present? ? floorplan.image.url : ""
 	floorplan_images = []
-	floorplan_images << (floorplan.image.present? ? floorplan.image.url : "")
-	floorplan_images << (floorplan.secondary_image.present? ? floorplan.secondary_image.url : "")
+	floorplan.image.present? ? (floorplan_images << {imageURL: floorplan.image.url}) : ""
+	floorplan.secondary_image.present? ? (floorplan_images << {imageURL: floorplan.secondary_image.url}) : ""
 	json.floorplan_images floorplan_images
 end
