@@ -335,7 +335,49 @@ iPhone Users:
       end
     end
   end
+  def floorplan_list
+    puts params
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      @community = Community.find params[:community_id]
+      @floorplans = @community.floorplans.order(:bedrooms)
+    end
+  end
+  def floorplan_units_v1
+    puts params
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or true
 
+      if params[:floorplan_id].present?
+        floorplan = Floorplan.find_by_id(params[:floorplan_id])
+        @community = Community.find params[:community_id]
+        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', floorplan.provider_floorplan_id,@community.id,true) if floorplan.present?
+        @units.each do |u|
+          if u.community.is_sitemap?
+            u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
+              image.url(:svg_for_metro) : u.community.sitemap.image.url rescue ""
+            @sitemap_image_url = u.sitemap_image_url
+
+          else
+            floorplate = Floorplate.find_by_id(u.floorplate_id)
+            floorplate_image = floorplate.image.url if floorplate.present?
+            u.sitemap_image_url = floorplate_image
+            @sitemap_image_url = floorplate_image
+          end
+          u.availability_url = u.availability_url.present? ? u.availability_url : (u.floorplan.availability_url.present? ? u.floorplan.availability_url : nil)
+        end
+        success = true
+        message = 'success'
+        floorplate_image = (@units.first.floorplate.present? ? @units.floorplate.image_url : "No Floorplate Image" rescue "")
+      else
+        success = false
+        message = 'Please provide unit_id'
+      end
+      unless params[:stringFormat].present? && params[:stringFormat] == "true"
+        render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
+      end
+    end
+  end
   def mis_match_verification
     puts params
     access = grant_access (decoded(params[:token])) rescue false
