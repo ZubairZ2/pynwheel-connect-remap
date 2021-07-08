@@ -317,6 +317,8 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community = Community.find params[:community_id] if params[:community_id].present?
       @tour_user = TourUser.find params[:tour_user_id]
       @tour = @community.tour
+      chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
+      @latest_message_id = Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
       
       stops_arr = []
       if @community.is_sitemap
