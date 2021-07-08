@@ -990,8 +990,28 @@ function draw_shortest_path_with_animation(path_object_in_order){
       }(i));
     }
 }
+function run_algo(with_animation, path_type){
+  community_id = $('#community_id').val()
+  $.ajax({
+    url: '/automate_plotting/shortest_path',
+    type: 'get',
+    data: {
+      'community_id': community_id,
+      'path_type': path_type 
+    },
+    success: function (data) {
+      $(".line").remove();
+      $(".line_hello").remove();
+      path_object = JSON.parse(data["path_object"])
+      if (with_animation)
+        draw_shortest_path_with_animation(path_object)
+      else
+        draw_shortest_path(path_object)
+    }
+  });
+}
 
-function run_algo(with_animation) {
+function run_algo1(with_animation) {
     $(".line").remove();
     $(".line_hello").remove();
     get_stops_data()
@@ -1022,7 +1042,7 @@ function run_algo(with_animation) {
     //all_visited_ids = [0].concat(unit_visited_ids).concat(amenity_visited_ids)
     path_uniq_ids_arr = graph.findShortestPath(precedence_visited_ids); // i think its working in order like we are giving (From first index to next and next other next)
     path_uniq_ids_arr = path_uniq_ids_arr.map(Number)
-    path_object_in_order = fetch_path_object(path_uniq_ids_arr, hallways_id_to_uniq_id, unit_id_to_uniq_id, amenity_id_to_uniq_id, start_point_data, new_hallways_coordinates, unit_data, amenity_data, unit_starting_index, amenity_starting_index)// after implement check it, wither its in right format or not 
+    path_object_in_order = fetch_path_object(path_uniq_ids_arr, hallways_id_to_uniq_id, unit_id_to_uniq_id, amenity_id_to_uniq_id, start_point_data, new_hallways_coordinates, unit_data, amenity_data, unit_starting_index, amenity_starting_index)
     if (with_animation)
       draw_shortest_path_with_animation(path_object_in_order)
     else

@@ -14,6 +14,7 @@
         %br
           %small.text-primary
             = @community.code
+        = hidden_field_tag 'community_id', @community.id
     %h4{:style => "color: grey;"}
       %p
         Select units to add a marker to the floorplate. If nothing appears in the list, then there are no additional units to add.

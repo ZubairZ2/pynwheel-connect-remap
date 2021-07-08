@@ -481,7 +481,11 @@ Rails.application.routes.draw do
   post :save_selected_point, to: 'hallways#save_selected_point'
 
   #### Automate Plotting Controller Routes ####
-  resources :automate_plotting
+  resources :automate_plotting, only: :index do
+    collection do
+      get :shortest_path
+    end
+  end
 
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
