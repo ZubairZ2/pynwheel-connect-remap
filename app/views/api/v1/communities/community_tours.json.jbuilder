@@ -67,13 +67,13 @@ json.tours @tours do |tour|
   end
 
 
-  stops_arr = @community.filter_final_stops(  .compact)
+  stops_arr = @community.filter_final_stops(stops_arr.compact)
 
   json.tour_stop stops_arr.compact.each do |stop|
     unless stop.stop_type == "elevator" || (stop.latitude.present? && (stop.latitude + stop.longitude) < 1) && @community.show_map
       
       if stop.stop_type == "unit"
-        u = Unit.find_by_id(stop.stop_id)
+        u = Unit.find_by_id stop.stop_id
         if u.present? && (u.available || u.modal_unit)
           json.name (u.building.present? ? (u.building + "-") : "") + u.marketing_name + ((u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "") rescue "")
           json.is_favorite favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
