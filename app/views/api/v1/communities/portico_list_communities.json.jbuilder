@@ -6,6 +6,8 @@ json.communities @communities do |community|
     json.id community.id
     # json.name community.name
     json.name (community.name.include?(CommunityConstants::DWELO_TAG) ? community.name.split(" ", 2)[1] : community.name) + (community.city.present? ? " - " + community.city : " - ")  + (community.state.present? ? + ", "  + community.state  : "")
+    json.email community.email.present? ? community.email : "" 
+    json.phone community.phone.present? ? community.phone : ""
     json.company_name (community.company.name.include?(CommunityConstants::DWELO_TAG) ? community.company.name.split(" ", 2)[1] : community.company.name)
     json.latitude community.latitude
     json.longitude community.longitude
