@@ -191,9 +191,9 @@ class TourUsersController < ApplicationController
     if params[:delete_all].present?
       delete_tour_user_all_attributes(@tour_user, @community)
       redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
-    elsif  params[:image].present? or params[:name].present? or params[:email].present? or params[:phone_number].present? or params[:history].present? or params[:verified_at].present?
+    elsif  params[:image].present? or params[:name].present? or params[:email].present? or params[:phone_number].present? or params[:history].present? or params[:authentiq_verified_at].present? or params[:checkpoint_verified_at].present?
       update_tour_user_attributes(@tour_user, @community)
-      if params[:verified_at].present?
+      if params[:authentiq_verified_at].present? or params[:checkpoint_verified_at].present?
         redirect_to community_tour_users_path(@community), :notice => "Id verification has been reset"
       else
         redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
@@ -273,9 +273,11 @@ class TourUsersController < ApplicationController
         tour_history.save!
       end
     end
-    if params[:verified_at] == "true"
-      tour_user.update_attributes(verified_at: nil, is_authentiq_verified: false) if community.tour.verification_type == "authenteq"
-      tour_user.update_attributes(verified_at: nil, is_checkpoint_verified: false) if community.tour.verification_type == "check_point_id"
+    if params[:authentiq_verified_at] == "true"
+      tour_user.update_attributes(authentiq_verified_at: nil, is_authentiq_verified: false) if community.tour.verification_type == "authenteq" #or ((Time.now.utc + 5.hours) < (user.verified_at + 10.minutes))
+    end
+    if params[:checkpoint_verified_at] == "true"
+      tour_user.update_attributes(checkpoint_verified_at: nil, is_checkpoint_verified: false) if community.tour.verification_type == "check_point_id" #or ((Time.now.utc + 5.hours) < (user.verified_at + 10.minutes))
     end
   end
 
