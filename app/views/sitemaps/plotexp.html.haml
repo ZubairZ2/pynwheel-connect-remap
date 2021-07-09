@@ -158,9 +158,7 @@
     -#      PROPERTY MAP PAGE (Garden Style Property)
     %h4{:style => "color: grey;"}
       %p
-        To change the image of the property map, upload a new image here.
-      %p
-        Images will appear at a size of 1412 x 932 px. Please note that images that are too small may appear pixelated.
+        To change the image of the property map, upload a new image here. Please note that images that are too small may appear pixelated.
     
     .box.box-widget.panel-box.alert-danger
       %h5{style: "margin-left: 15px; margin-top: 0px;"}
@@ -217,7 +215,7 @@
           - elsif @community.theme_name == 'modernist'
             - fontsize = @community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size : "30"
           - elsif @community.theme_name == 'futurist'
-            - fontsize = @community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size : "30"
+            - fontsize = @community.design.present? && @community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size : "30"
           - elsif @community.theme_name == 'expressionist'
             - fontsize = @community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size : "30"
           - elsif @community.theme_name == 'panther'
@@ -525,7 +523,7 @@
     {
       $('[data-toggle="sitemapPageNamePopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the Page Name will change the menu label for the interactive map and dynamic floor plan gallery page in the Pynwheel app.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
@@ -534,7 +532,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="siteShowPropertyMapPagePopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not this page appears in the Pynwheel app.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not this page appears in the Pynwheel app.</div><div class="popover-footer"><a id="siteShowPropertyMapPagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -543,7 +541,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapDisplayFloorplanGalleryPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the app.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching display floor plan gallery will change whether or not the dynamic floor plan gallery appears in the app.</div><div class="popover-footer"><a id="sitemapDisplayFloorplanGalleryPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -553,16 +551,17 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitempaDisplayHomepagePopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.</div><div class="popover-footer"><a id="sitempaDisplayHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
+
     $(document).on("click", "#sitempaDisplayHomepagePopoverClose" , function(){
         $('html, body').animate({ scrollTop: 400 });
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="sitemapDisplayPricePopover"]').popover({
+        $('[data-toggle="sitemapDisplayPricePopover"]:first').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not pricing is displayed on the interactive property map and in the floor plan gallery.</div><div class="popover-footer"><a id="sitemapDisplayPricePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not pricing is displayed on the interactive property map and in the floor plan gallery.</div><div class="popover-footer"><a id="sitemapDisplayPricePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -572,7 +571,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapUploadFilePopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Uploading a file will change the property map image that appears in the Pynwheel app. Careful! Do not change the file unless you are sure that it is the exact same dimensions as the one already loaded, or the markers will all be in the wrong position.</div><div class="popover-footer"><a id="sitemapUploadFilePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover plotexp-uploading-popover" style="width: max-content;"><div class="arrow plotexp-uploading-popover-arrow"></div><div class="popover-body popover-padding">Uploading a file will change the property map image that appears in the Pynwheel app. Careful! Do not change the file unless you are sure that it is the exact same dimensions as the one already loaded, or the markers will all be in the wrong position.</div><div class="popover-footer"><a id="sitemapUploadFilePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
     $(document).on("click", "#sitemapUploadFilePopoverClose" , function(){
@@ -581,7 +580,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="plotUnitOnSitemapPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="plotUnitOnSitemapPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.</div><div class="popover-footer"><a id="plotUnitOnSitemapPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -591,7 +590,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapManageAmenitiesPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="sitemapManageAmenitiesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: ;">Click on "Manage Amenities" to switch from plotting units to uploading and plotting amenity images.</div><div class="popover-footer"><a id="sitemapManageAmenitiesPopoverClose" href="" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
     $(document).on("click", "#sitemapManageAmenitiesPopoverClose" , function(){
@@ -600,7 +599,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapGridOverlayPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapGridOverlayPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Add a grid overlay to the map to make it easier to see if the markers are straight.</div><div class="popover-footer"><a id="sitemapGridOverlayPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -610,7 +609,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="sitemapSelectPlotToUnitsPopover"]').popover({
         html: true,
-        template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">You can select one or multiple amenity images to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitemapSelectPlotToUnitsPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">You can select one or multiple amenity images to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.</div><div class="popover-footer"><a id="sitemapSelectPlotToUnitsPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
       showHideOverlayGrid();
     });

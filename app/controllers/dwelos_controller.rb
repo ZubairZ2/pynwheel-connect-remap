@@ -1,4 +1,5 @@
 class DwelosController < ApplicationController
+  # include Error::ErrorHandler
   before_action :set_community
   before_action :check_community
   before_action :set_dwelo, only: [:map_dwelo_locks]
@@ -105,7 +106,7 @@ class DwelosController < ApplicationController
   end
 
   def dwelo_params
-    params.require(:dwelo).permit(:client_id, :client_secret, :default_community_id)
+    params.require(:dwelo).permit(:client_id, :client_secret, :default_community_id,:api_url)
   end
   def set_dwelo
     @dwelo = current_community.dwelo

@@ -1,4 +1,5 @@
 class ElevatorsController < ApplicationController
+  # include Error::ErrorHandler
   include AssignLocksHelper
   before_action :authenticate_user!
   before_action :check_community

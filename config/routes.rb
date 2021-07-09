@@ -6,8 +6,10 @@ Rails.application.routes.draw do
 
   mount ActionCable.server => '/cable'
   get 'tour_users/index'
-
+  get '/error', to: 'error_logs#generate_error', as: 'error_logs_generate'
+  get '/error_page', to: 'error_logs#error_page', as: 'error_page'
   post :create_tour_user_from, to: 'schedual_tours#create_tour_user_from'
+  get :community_custom_tour, to: 'schedual_tours#community_custom_tour'
 
   get 'community_groups/index'
 
@@ -25,6 +27,8 @@ Rails.application.routes.draw do
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
 
   get 'tours/index'
+  post 'tours/customize_tour', to: 'tours#customize_tour' 
+  delete 'tours/reset_to_standard_tour', to: 'tours#reset_to_standard_tour'
 
   namespace :scheduler_widget do
     get 'widget', to: 'widgets#widget'
@@ -39,6 +43,7 @@ Rails.application.routes.draw do
   devise_for :users, :controllers => { :invitations => 'invitations', sessions: 'users/sessions' }
   post 'users/:id/turn_on_chat', to: 'users#chat_service_available'
   post 'users/:id/turn_off_chat', to: 'users#chat_service_not_available'
+  post 'webpages/:id/update_session', to: 'webpages#update_session'
 
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   root to: "home#index"
@@ -46,12 +51,17 @@ Rails.application.routes.draw do
   resources :chats
   get 'listening_message', to: 'chats#listening_message'
   post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages'
+  resources :analytics, only: [:index]
   resources :companies do
     resources :communities
     resources :community_groups
+    resources :regions do
+      delete :remove_community, on: :member
+    end
     resources :employees, :controller => 'users' do
       get :profile
     end
+    get :get_regions ,on: :collection
   end
   resources :community_groups do
     member do
@@ -104,6 +114,8 @@ Rails.application.routes.draw do
         post :import_edgestate_locks
         post :map_edgestate_locks
         delete :remove_edgestate_locks
+        get :edgestate_code_grant_authorization
+        delete :remove_edgestate_auth_account
       end
     end
 
@@ -137,6 +149,7 @@ Rails.application.routes.draw do
     delete :delete_imported_data
     get :update_imported_data
     get :import
+    get :clean_psi_units_data
     get :experimental_import
     get :credentials
     get :settings_page
@@ -146,13 +159,14 @@ Rails.application.routes.draw do
     get :test_connection
     get :authenteq_report
     get :account_report
+    get :tour_feedback_report
     get :psi_pricing_test_connection
     get :psi_space_configuration_test_connection
     get :realpage_load_pricing_data
     get :show_realpage_pricing_data
     post :save_temporary_image
     delete :delete_temporary_image
-    resources :schedual_tours do
+    resources :schedual_tours, path: 'scheduled_tours' do
       post :update_tour_type
       # post :create_tour_user_from
       # member do
@@ -217,8 +231,9 @@ Rails.application.routes.draw do
       end
     end
     resources :tour_users do
-      get :lock_ploting
-      get :checkpoint_verification
+        get :lock_ploting
+        get :visited_stops_data
+        get :checkpoint_verification
     end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do
@@ -415,6 +430,15 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :pynwheel_accesses, only: [:index] do
+      collection do
+        delete :delete_pynwheel_access_user
+        get :get_pynwheel_user_accesses
+        post :create_or_update_pynwheel_access_user
+        post :active_or_inactive_user
+      end
+    end
+
     resources :favorite_settings, only: [:index, :create, :update] do
       resources :favorite_images
       resources :ebrochure_menu_buttons
@@ -444,6 +468,9 @@ Rails.application.routes.draw do
       collection do
         get :apply_now
         get :save_favorite
+        get :sent_favorite
+        get :price_opened
+        get :apply_now_count
         get :delete_favorite
         get :favorites
         get :favorites_share_link
@@ -489,7 +516,14 @@ Rails.application.routes.draw do
 
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
+      post :authorize, to: 'schedule_tours#authorize_vendor'
+      get :properties, to: 'schedule_tours#communities'
+      get '/properties/:property_id/tour_types', to: 'schedule_tours#tour_types'
+      get '/properties/:property_id/tour_dates', to: 'schedule_tours#tour_dates'
+      get '/properties/:property_id/time_slots', to: 'schedule_tours#time_slots'
+      post '/schedule_tour', to: 'schedule_tours#schedule_tour'
       put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
+      post :salesforce_tour_webhook, to: 'salesforce_webhooks#salesforce_tour_webhook'
       post :save_data, to: 'dwelo_devices#load_data'
       post :device_lock_unlock, to: 'dwelo_devices#device_lock_or_unlock'
       resources :communities, only: :index do
@@ -500,6 +534,7 @@ Rails.application.routes.draw do
           post :user_saved_tour
           get :tour_configrations
           get :tour_configrations_v1
+          post :check_lock_access
           get :tour_user_data
           get :ios_data
           get :minimum_data
@@ -522,10 +557,12 @@ Rails.application.routes.draw do
           post :update_version
         end
       end
+
       resources :tours, only: :index do
         collection do
           post :tour_user_login
           post :start_tour_auto_message
+          post :save_tour_user_card_info
         end
         member do
           post :tour_user_login
@@ -533,11 +570,14 @@ Rails.application.routes.draw do
           post :save_user_tour
           post :save_user_selfie
           post :save_user_id_card
+          post :feedback
         end
       end
       post :save_shared_tour, to: 'tours#save_shared_tour'
       post :checkpoint_verification_response, to: 'tours#checkpoint_verification_response'
       get '/get_floorplan_units', to: 'tours#floorplan_units'
+      get '/get_floorplan_list', to: 'tours#floorplan_list'
+      get '/get_floorplan_units_v1', to: 'tours#floorplan_units_v1'
       post '/mis_match_verification', to: 'tours#mis_match_verification'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
 

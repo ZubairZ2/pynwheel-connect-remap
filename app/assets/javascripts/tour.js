@@ -1,41 +1,106 @@
+var stops_list =[];
+
 $(document).ready(function () {
+  doDraggable();
 
-    doDraggable();
-
-    // $('.amenities-list').on('change', function(e) {
-    //   e.preventDefault();
-    //   console.log($(this).val());
-    //   $('.amenities-list :selected').each(function(){
-    //     if ($(this).val()!=""){
-    //       console.log('selecting dropdown values from sitemap');
-    //       console.log($.inArray($(this).val(), $.map(selected, function(v) { return v[0]; })) == -1);
-    //       if (selected.length == 0){
-    //         selected.push([ $(this).val(), $.trim($(this).text()) ]);
-    //       }
-    //       else if ($.inArray($(this).val(), $.map(selected, function(v) { return v[0]; })) == -1){
-    //         selected.push([ $(this).val(), $.trim($(this).text()) ]);
-    //       }
-    //     }
-    //     // add to selected list
-    //     $("#selected-units").empty();
-    //     for (i=0; i<selected.length; i++) {
-    //       $("#selected-units").append('<li class="s-unit" data-id='+i+' data-provider-unit-id='+selected[i][0]+'>' + selected[i][1] + '</li>');
-    //     }
-    //     $('#newmsg').hide();
-
-    //     // hide from unused list
-    //     $(this).css({"display": "none"});
-    //     plotMode();
-    //   });
-    // });
-
-
-    $('.plot_starting_point').click(function () {
-        console.log("We are extracting -selectable from unit_provider_id");
-        var unit_provider_id = $(this).attr('id');
-        console.log(unit_provider_id);
-        selected.push([unit_provider_id, $(this).children('span').text()]);
-        plotMode();
-    });
+  $('.plot_starting_point').click(function () {
+    console.log("We are extracting -selectable from unit_provider_id");
+    var unit_provider_id = $(this).attr('id');
+    console.log(unit_provider_id);
+    selected.push([unit_provider_id, $(this).children('span').text()]);
+    plotMode();
+  });
 
 });
+
+function onEditButtonClick(visible_tour_stops,tour_id,tour_user_id) {
+  // stops_list = $(`#customize-tour-stops-${tour_id}`).data("tourStops");
+  stops_list = visible_tour_stops
+  $(`#edit-custom-tour-${tour_id}`).addClass('disabled');
+  $("#edit-modal-data").empty();
+  $.ajax({
+    type: "GET",
+    url: "/community_custom_tour",
+    data: {
+      scheduled_tour_id: tour_id,
+      tour_user_id: tour_user_id
+      },
+    success: function (data) {
+      console.log("sccuess");
+      $("#edit-modal-data").prepend(data);
+      $('#customTourModal').modal("show");
+      $(`#edit-custom-tour-${tour_id}`).removeClass('disabled');
+    },
+    error: function () {console.log("error");
+    }
+  });
+}
+
+function handleTourStopsVisibility(stop_id, tour_user_id) {
+  let selector = $(`.stop_eye_slash${stop_id}${tour_user_id}`);
+
+  console.log(stops_list.length);
+    if(selector && selector[0] && selector[0].classList.contains("fa-eye")) {
+     
+      if(stops_list.length > 1) {
+      selector.removeClass("fa-eye");
+      selector.addClass("fa-eye-slash");
+      $(`#stopName${stop_id}`).addClass("add-line-on-stop");
+      index = stops_list.indexOf(stop_id)
+      stops_list.splice(index, 1);
+      console.log(stops_list);
+      } else {
+        alert("Atleast one stop should be visible");
+      }
+
+    } else if(selector && selector[0] && selector[0].classList.contains("fa-eye-slash")) {
+      selector.removeClass("fa-eye-slash");
+      selector.addClass("fa-eye");
+      $(`#stopName${stop_id}`).removeClass("add-line-on-stop");
+      stops_list.push(stop_id);
+      console.log(stops_list);
+    }
+}
+
+function CustomizeUserTour(community_id, tour_user_id) {
+  let url = "/tours/customize_tour";
+  console.log(stops_list);
+  $.ajax({
+    type: "POST",
+    url: url,
+    data: {
+      community_id: community_id,
+      tour_user_id: tour_user_id,
+      stops_list: stops_list
+    },
+    success: function() {
+      $(".customizeStopsModal .save-customized-stops").css("display", "block");
+      setTimeout(() => {
+        $(".customizeStopsModal .save-customized-stops").css("display", "none");
+
+        window.location.reload();
+      }, 3000)
+    }
+  });
+}
+
+
+function resetToStandardTour(community_id, tour_user_id) {
+  let url = "/tours/reset_to_standard_tour";
+  $.ajax({
+    type: "DELETE",
+    url: url,
+    data: {
+      community_id: community_id,
+      tour_user_id: tour_user_id
+    },
+    success: function() {
+      $(".customTourModal .set-standard-tour").css("display", "block");
+      setTimeout(() => {
+        $(".customTourModal .set-standard-tour").css("display", "none");
+
+        window.location.reload();
+      }, 3000)
+    }
+  });
+}

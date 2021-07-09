@@ -6,7 +6,7 @@ class RemoteLockService < BaseService
     
     def client_credentials
         if @edge_state_user.present?
-            auth_url = "https://pynwheel.remotelock.com/oauth/token"
+            auth_url = ENV['REMOTELOCK_AUTH_URL']
             response = HTTParty.post(auth_url,
                 body: {
                     client_id: @edge_state_user.client_id,
@@ -14,9 +14,38 @@ class RemoteLockService < BaseService
                     grant_type: "client_credentials"
                 },
                 headers: { 'Content-Type' => 'application/x-www-form-urlencoded' } )
-
             puts response["access_token"]
+            return response["access_token"]
+        end
+    end
 
+    def code_grant_authorization(code)
+        if code.present?
+            auth_url = ENV['REMOTELOCK_AUTH_URL']
+            body = {
+                code: code,
+                client_id: ENV['REMOTELOCK_CLIENT_ID'],
+                client_secret: ENV['REMOTELOCK_SECRET'],
+                redirect_uri: ENV['REMOTELOCK_REDIRECT_URI'],
+                grant_type: 'authorization_code'
+            }
+            response = HTTParty.post(auth_url, body: body, headers: { 'Content-Type' => 'application/x-www-form-urlencoded' })
+            puts response["access_token"]
+            return response
+        end
+    end
+
+    def get_access_token_after_refresh
+        if @edge_state_user.present?
+            auth_url = ENV['REMOTELOCK_AUTH_URL']
+            body = {
+                client_id: ENV['REMOTELOCK_CLIENT_ID'],
+                client_secret: ENV['REMOTELOCK_SECRET'],
+                refresh_token: @edge_state_user.refresh_token,
+                grant_type: 'refresh_token'
+            }
+            response = HTTParty.post(auth_url, body: body, headers: { 'Content-Type' => 'application/x-www-form-urlencoded' })
+            @edge_state_user.update_attributes(refresh_token: response['refresh_token']) if response['refresh_token'].present?
             return response["access_token"]
         end
     end
@@ -222,7 +251,7 @@ class RemoteLockService < BaseService
         if @dwelo_user.present?
             token_type = "Bearer"
             auth_header = token_type + " " + access_token rescue ''
-            url = "https://api.dwelo.com/v4/integrations/pynwheel/events/?access_person_id=" + guest_id
+            url = base_url + "/v4/integrations/pynwheel/events/?access_person_id=" + guest_id
             response = HTTParty.get(url,
                                     :headers => { 'Authorization' => auth_header} )
 
@@ -309,6 +338,7 @@ class RemoteLockService < BaseService
     end
 
     def base_url
+        # community.dwelo.api_url
         "https://api.remotelock.com"
     end
 end

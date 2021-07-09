@@ -209,8 +209,14 @@
             %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
   #select_remaining_floors_modal.modal.fade
 
+-# document.getElementById("community_name").scrollIntoView( {behavior: "smooth" })
 :javascript
   $(".welcome_prompt_btn2").click(function(){
+    $('[data-toggle="propertyDetailNamePopover1"]').popover({
+        html: true,
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the Name will change the name of the property on the "Favorites" page.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+
     #{current_user.welcome_prompt = true}
     #{current_user.save unless (params["controller"] == "home" && params["action"] == "index") || (params["controller"] == "users" && params["action"] == "profile")}
   });

@@ -1,7 +1,6 @@
 class Api::V1::DweloDevicesController < ActionController::Base
   # before_action :set_user, only: [:client_credentials, :get_all_deivces, :create_access_guest, :grant_access, :authorization_code]
   include DweloDevicesHelper
-
   def load_data
     dwelo_community_account = Dwelo.find(params[:dwelo_account_id]) rescue nil
     @community = dwelo_community_account.community
@@ -28,7 +27,7 @@ class Api::V1::DweloDevicesController < ActionController::Base
 
   def update_dwelo_access_guest
     if @dwelo_user.present?
-      # dwelo_client_credentials
+      # dwelo_client_credentials -> before access this actionn set community first
       token_type = "Bearer"
       auth_header = token_type + " " + @token
       url = base_url + "/v4/integrations/pynwheel/access_persons/"
@@ -54,6 +53,7 @@ class Api::V1::DweloDevicesController < ActionController::Base
 
       dwelo_community_account= Dwelo.find_by(community_id: params[:community_id])
       token_type = "Bearer"
+      @community = dwelo_community_account.community
       dwelo_client_credentials(dwelo_community_account)
       auth_header = token_type + " " + @token
       tour_user = TourUser.find_by_id params[:tour_user_id]
@@ -63,7 +63,7 @@ class Api::V1::DweloDevicesController < ActionController::Base
       request_body = { "access_person_id": guest_id, "lock_id": params[:lock_id], "command": params[:command] }
       puts "--------------------------- commands request ----------------------------"
       puts request_body
-
+      @community = dwelo_community_account.community
       url = base_url + "/v4/integrations/pynwheel/devices/commands/"
       response = HTTParty.post(url,
                                body: {
@@ -90,7 +90,8 @@ class Api::V1::DweloDevicesController < ActionController::Base
   end
 
   def base_url
-    "https://api.dwelo.com"
+    @community.dwelo.api_url
+    # "https://api.dwelo.com"
   end
 
   private

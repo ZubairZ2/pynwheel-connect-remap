@@ -1,9 +1,11 @@
 class CommunityGroupsController < ApplicationController
+  # include Error::ErrorHandler
   def index
     @community_groups = alphabetical_sort(CommunityGroup.where(company_id: current_company.id))
   end
   def new
     @community_group = CommunityGroup.new
+    @all_regions = current_company.regions.all.order(:name).collect {|p| [ p.name, p.id ] } rescue []
   end
   def create
     @community_group = CommunityGroup.new(community_group_params)
@@ -24,6 +26,7 @@ class CommunityGroupsController < ApplicationController
     @community_group = CommunityGroup.find params[:id]
     @community_group.group_design.present? ? nil : @community_group.create_group_design
     @company = Company.find @community_group.company_id
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
   end
   def update
     # params[:community_group][:background_image]
@@ -83,6 +86,7 @@ class CommunityGroupsController < ApplicationController
     unless @selected.present?
       @selected = Community.new
     end
+    @not_assigned_communities = @company.communities.where(region_id: [nil, @community_group.region_id]).collect{|c| [c.name,c.id]}
   end
   def remove_community
     @community_group = CommunityGroup.find params[:id]

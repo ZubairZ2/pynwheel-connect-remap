@@ -8,7 +8,8 @@ def check_unit_occupied add_stop
   end
 end
 i = 0
-description_limit = 70
+description_limit = ENV["DESCRIPTION_LIMIT"].to_i
+
 is_zerv_lock_present = false
 
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
@@ -87,18 +88,32 @@ json.tours @tours do |tour|
     have_stop_in_building = false
     first_floor_elev = nil
 
+    scheduled_tour_stops = @community.community_tour_available_stops(@tour_user)
+
     if @community.is_sitemap
-      unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit }.compact
-      stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      if scheduled_tour_stops.present?
+        stops_arr = @community.mdu ? scheduled_tour_stops : scheduled_tour_stops.where.not(stop_type: "unit").order(:sort)
+      else
+        unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit }.compact
+        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      end
+
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 2]
-      last_stop_id = stops_arr.compact[stop_count - 1].id
+      last_stop = stops_arr.compact[stop_count - 1]      
+      last_stop_id = last_stop.id if last_stop.present?
       last_stop_desc = stops_arr.compact[stop_count - 1]
     else
       temp_max_floor = nil
       min_floor = @floor_list.include?(1) ? 1 : @floor_list[0]
       @building_list << "" if @building_list == []
       @building_list.each do |building|
+
+        # If no availble units or amenity in the building do not add elevator or staarting point in stops
+        visible_stops_ids = @community.tour.tour_stops.where(stop_type: ["unit", "amenity"], display_stop: true).pluck(:stop_id)
+        available_units_count = @community.units.where(id: visible_stops_ids, building: building, available: true).count
+        available_amenities_count = @community.amenities.where(id: visible_stops_ids, building: building,breezway_lock_visible: true).count
+
         @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list
         @floor_list_loop.each do |floor|
           begin
@@ -183,16 +198,32 @@ json.tours @tours do |tour|
                 #   amenity_hit = ([floor, nil].includes? (ts_ck.stop_type.classify.constantize.find (ts_ck.stop_id)).floor ) rescue true
                 # end
                 add_stop = TourStop.find_by_id(s_id)
-
                 if add_stop.present?
                   add_stop.floor = floor
                   add_stop.building = building
                   next if (check_unit_occupied add_stop)
                   next if add_start and ((add_stop.stop_type == "unit") or (add_stop.stop_type == "amenity"))
-                  
+
                   add_mdu = @community.mdu ? true : !(add_stop.stop_type == "unit")
-                  if (add_stop.display_stop && add_mdu) and !(@community.deleted_ids.include? add_stop.id)
-                    stops_arr << add_stop 
+
+                  if (add_mdu) and !(@community.deleted_ids.include? add_stop.id)
+                    if (add_stop.is_a?(Tour)) || add_stop.stop_type === "elevator" || add_stop.stop_type === "building_starting_point"
+                      if available_units_count > 0 || available_amenities_count > 0
+                        stops_arr << add_stop
+                      end
+
+                    else
+                      if scheduled_tour_stops.present?
+                        stop_ids = scheduled_tour_stops.pluck(:id)
+
+                        if stop_ids.include?(s_id.to_i)
+                          stops_arr << add_stop 
+                        end
+                      else
+                        stops_arr << add_stop if add_stop.display_stop
+                      end
+                    end
+
                     if add_stop.stop_type == "amenity" || add_stop.stop_type == "unit"
                       last_stop_id = add_stop.id
                       have_stop_in_building = true
@@ -243,6 +274,7 @@ json.tours @tours do |tour|
           # rescue => ex
           # end
       end
+
       stop_count = stops_arr.compact.count
 
       second_last = stops_arr.compact[stop_count - 3]
@@ -810,6 +842,7 @@ json.tours @tours do |tour|
       current_floor = unit.floor
       json.image_list images
       json.name (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
+      json.floorplan_id unit.floorplan.id
       # json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
       floorplate_image = (unit.floorplate.image.present? ? unit.floorplate : nil) if unit.floorplate.present?  rescue nil
       json.floorplate_image floorplate_image.image.url  rescue ""
@@ -818,7 +851,7 @@ json.tours @tours do |tour|
 
       unit_directional_text = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
 
-      if unit_directional_text.size < description_limit
+      if unit_directional_text.size <= description_limit
         show_directional_text = false
       else
         show_directional_text = true
@@ -827,8 +860,8 @@ json.tours @tours do |tour|
       json.directional_text show_directional_text ? unit_directional_text[0..description_limit - 1] : unit_directional_text
       json.show_long_directional_text show_directional_text
       json.long_directional_text styling_start + unit.stop_description.gsub('red','') + styling_end rescue ""      
-      json.video_link_button_label unit.virtual_tour_button_label
-      json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ""
+      json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
+      json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : unit.floorplan.present? ? unit.floorplan.virtual_tour_url : ""
       lease_pricing = []
       if unit.lease_pricing.present? && !unit.modal_unit
         str_split = unit.lease_pricing.split(';')
@@ -864,7 +897,7 @@ json.tours @tours do |tour|
       end
       unit_stop_description = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
 
-      if unit_stop_description.size < description_limit
+      if unit_stop_description.size <= description_limit
         show_long_description = false
       else
         show_long_description = true
@@ -874,7 +907,8 @@ json.tours @tours do |tour|
       else
         availability_url = (unit.availability_url.present? ? unit.availability_url : u.floorplan.availability_url rescue "")
       end
-      stop_dat = {"floorplan" => (Floorplan.find_by(id: unit.floorplan.id).name rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
+      floorplan_for_name = Floorplan.find_by(id: unit.floorplan.id)
+      stop_dat = {"floorplan" => (floorplan_for_name.name rescue ""),"floorplan_full_name" => (floorplan_for_name.name + "- #{(floorplan_for_name.bedrooms.present? ? (floorplan_for_name.bedrooms.to_i.to_s + " BR") : "") } / #{(floorplan_for_name.bathrooms.present? ? (floorplan_for_name.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       unit_amenities_hit = true
@@ -891,8 +925,8 @@ json.tours @tours do |tour|
           json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
           json.stop_description ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
           json.directional_text ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
-          json.video_link_button_label unit.virtual_tour_button_label
-          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ""
+          json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
+          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : unit.floorplan.present? ? unit.floorplan.virtual_tour_url : ""
           if unit_amenity.amenity_galleries.count == 0
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
             json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : ""), "directional_text" => ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")]
@@ -923,7 +957,7 @@ json.tours @tours do |tour|
           json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
           unit_amenity_stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
 
-          if unit_amenity_stop_description.size < description_limit
+          if unit_amenity_stop_description.size <= description_limit
             json.show_long_description false
           json.stop_description unit_amenity_stop_description
           else
@@ -935,7 +969,7 @@ json.tours @tours do |tour|
           json.long_stop_description styling_start + unit_amenity.description.gsub('red','') + styling_end  rescue ""
 
           unit_amenity_directional_text = ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
-          if unit_amenity_directional_text.size < description_limit
+          if unit_amenity_directional_text.size <= description_limit
             json.show_long_directional_text false
           json.directional_text unit_amenity_directional_text
           else
@@ -944,19 +978,19 @@ json.tours @tours do |tour|
           end
 
           json.long_directional_text styling_start + unit_amenity.directional_text.gsub('red','') + styling_end  rescue ""
-          json.video_link_button_label unit.virtual_tour_button_label
-          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ""
+          json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
+          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : unit.floorplan.present? ? unit.floorplan.virtual_tour_url : ""
           if unit_amenity.amenity_galleries.count == 0
             stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
 
-            if stop_description.size < description_limit
+            if stop_description.size <= description_limit
               show_long_description = false
             else
               show_long_description = true
             end
             directional_text = ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
 
-            if directional_text.size < description_limit
+            if directional_text.size <= description_limit
               show_directional_text = false
             else
               show_directional_text = true
@@ -978,7 +1012,7 @@ json.tours @tours do |tour|
               json.image ag.image.url
               stop_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
 
-              if stop_description.size < description_limit
+              if stop_description.size <= description_limit
                 json.show_long_description false
                 json.description stop_description
               else
@@ -990,7 +1024,7 @@ json.tours @tours do |tour|
 
               stop_description = ActionView::Base.full_sanitizer.sanitize(ag.directional_text.present? ? ag.directional_text : "")
 
-              if stop_description.size < description_limit
+              if stop_description.size <= description_limit
                 json.show_long_directional_text false
                 json.directional_text stop_description
               else
@@ -1042,7 +1076,7 @@ json.tours @tours do |tour|
       json.directional_text elevator.directional_text
       json.video_link_button_label ""
       json.video_link ""
-      
+
       if new_stops_arr.compact[counter + 1].present?
         next_stop = new_stops_arr.compact[counter + 1]
         next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id rescue nil
@@ -1075,8 +1109,8 @@ json.tours @tours do |tour|
         elevator_stop_description = "Go to floor " + (plates_name[min_floor.to_s].present? ? plates_name[min_floor.to_s] : min_floor.to_s rescue min_floor.to_s)
       end
       if current_floor.present?
-        floor_image = @community.floorplates.map{|x| x if x.floors.include?(current_floor)}.compact.last.image rescue nil
-        floor_image = (elevator.floorplate.image.present? ? elevator.floorplate : nil) if elevator.floorplate.present? if floor_image.nil?
+        floor_image = @community.floorplates.map{|x| x if x.floors.include?(current_floor)}.compact.last rescue nil
+        floor_image = (floor_image || elevator.floorplate) rescue nil
         json.floorplate_image floor_image.image.url  rescue ""
         json.image_width floor_image.width  rescue 0
         json.image_height floor_image.height rescue 0
@@ -1132,7 +1166,7 @@ json.tours @tours do |tour|
       json.image amenity.image.present? ? amenity.image.url : "no image"
       stop_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
 
-      if stop_description.size < description_limit
+      if stop_description.size <= description_limit
         json.show_long_description false
         json.stop_description stop_description
       else
@@ -1145,7 +1179,7 @@ json.tours @tours do |tour|
       json.name amenity.name
       directional_text = ActionView::Base.full_sanitizer.sanitize(amenity.directional_text.present? ? amenity.directional_text : "")
 
-      if directional_text.size < description_limit
+      if directional_text.size <= description_limit
         json.show_long_directional_text false
       json.directional_text directional_text
       else
@@ -1165,14 +1199,14 @@ json.tours @tours do |tour|
       if amenity.amenity_galleries.count == 0
          stop_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
 
-        if stop_description.size < description_limit
+        if stop_description.size <= description_limit
           show_long_description = false
         else
           show_long_description = true
         end
         directional_text = ActionView::Base.full_sanitizer.sanitize(amenity.directional_text.present? ? amenity.directional_text : "")
 
-        if directional_text.size < description_limit
+        if directional_text.size <= description_limit
           show_directional_text = false
         else
           show_directional_text = true
@@ -1193,7 +1227,7 @@ json.tours @tours do |tour|
           json.image ag.image.url
           stop_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
 
-          if stop_description.size < description_limit
+          if stop_description.size <= description_limit
             json.show_long_description false
             json.description stop_description
           else
@@ -1205,7 +1239,7 @@ json.tours @tours do |tour|
 
           stop_description = ActionView::Base.full_sanitizer.sanitize(ag.directional_text.present? ? ag.directional_text : "")
 
-          if stop_description.size < description_limit
+          if stop_description.size <= description_limit
             json.show_long_directional_text false
             json.directional_text stop_description
           else
@@ -1305,6 +1339,8 @@ json.tours @tours do |tour|
     json.enable_auto_zoom (@community.tour.present?) ? @community.tour.enable_auto_zoom : false
     json.show_map @community.show_map
     json.mdu @community.mdu
+    json.pynwheel_access_username @community&.zerv&.username
+    json.pynwheel_access_password @community&.zerv&.password
   end
 
 

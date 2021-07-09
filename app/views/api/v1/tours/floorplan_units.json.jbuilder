@@ -54,7 +54,7 @@ json.data @units do |u|
         json.manual_override u.manual_override
         json.square_feet u.square_feet
         json.description u.description
-        json.bedrooms u.floorplan.bedrooms rescue 0
+        json.bedrooms u.floorplan.bedrooms.to_i.to_s rescue 0
         json.bathrooms u.floorplan.bathrooms rescue 0
         json.image (u.image.present? ? u.image.url : u.floorplan.image.url) rescue ""
         json.update_apply ((u.provider == "resman" || u.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false

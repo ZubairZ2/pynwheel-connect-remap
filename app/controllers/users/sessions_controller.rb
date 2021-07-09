@@ -1,4 +1,5 @@
 class Users::SessionsController < Devise::SessionsController
+    # include Error::ErrorHandler
     # before_action :configure_sign_in_params, only: [:create]
 
     # GET /resource/sign_in

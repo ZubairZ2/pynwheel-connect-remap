@@ -53,6 +53,10 @@ class Amenity < ApplicationRecord
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   # validate :url_validity
   # validate :image_size
+  AMENITY_TYPE = [["Select an amenity type",""],["Pool", "Pool"], ["Fitness Center","Fitness Center"],["Dog Park","Dog Park"],
+    ["Playground","Playground"],["Clubhouse / Resident Lounge","Clubhouse / Resident Lounge"],["Game Room","Game Room"],
+    ["Yoga Studio","Yoga Studio"],["Dog Wash","Dog Wash"],["Package Locker"],["Package Locker","Package Locker"],["Mail Room","Mail Room"],
+    ["Conference Room","Conference Room"],["Business Center","Business Center"],["Rooftop Lounge","Rooftop Lounge"]]
 
   def crop_amenity_image
     image.recreate_versions! if (crop_x.present?  && do_crop)

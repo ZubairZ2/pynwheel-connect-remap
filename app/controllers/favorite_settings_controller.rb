@@ -1,4 +1,5 @@
 class FavoriteSettingsController < ApplicationController
+  # include Error::ErrorHandler
 	add_breadcrumb "Home", :root_path
 	add_breadcrumb "Favorites Page"
   before_action :set_community

@@ -1,4 +1,5 @@
 class TourStopsController < ApplicationController
+  # include Error::ErrorHandler
   def resetTourStopPoint
     @community = Community.find params[:community_id]
     if params[:id].include?(':')

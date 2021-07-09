@@ -1,6 +1,8 @@
 class CommunitiesController < ApplicationController
+  # include Error::ErrorHandler
   include DweloDevicesHelper
   include CommunitiesHelper
+  include FeedbacksHelper
   #load_and_authorize_resource
   before_action :check_community
   before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
@@ -15,12 +17,16 @@ class CommunitiesController < ApplicationController
       if user_enable_communities_ids.present?
         user_enable_communities = Community.where(id: user_enable_communities_ids).pluck(:id, :name).to_json rescue nil
         render :json => {data: user_enable_communities}, :status => 200
+      else
+        render :json => {data: user_enable_communities.to_json}, :status => 200
       end
     end
     if current_user.is_super_admin?
       @communities = alphabetical_sort(current_company.communities)
-    elsif current_user.is_dwelo_admin?
+    elsif current_user.is_dwelo_admin? || current_user.is_company_admin?
       @communities = alphabetical_sort(current_company.communities) # Community.all.where(creator_id: User.all.map{|u| u.id if u.role == "Dwelo admin"}.compact)
+    elsif current_user.is_regional_admin?
+      @communities = alphabetical_sort(current_user.region.communities)
     else
       @communities = alphabetical_sort(current_user.communities)
     end
@@ -28,6 +34,7 @@ class CommunitiesController < ApplicationController
   def new
     add_breadcrumb "Add Community", new_company_community_path(current_company)
     @community = current_company.communities.new 
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
     @com_id = 0
   end
 
@@ -60,6 +67,7 @@ class CommunitiesController < ApplicationController
   def edit
     @com_id = current_community.id
     @chatroom = params[:tour_user_id].present? ? show_chat_modal(params[:tour_user_id],current_community.tour.id) : Chatroom.new
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
   def settings_page
@@ -70,6 +78,7 @@ class CommunitiesController < ApplicationController
     add_breadcrumb "Communities", company_communities_path(current_company)
     add_breadcrumb "Settings"
     @community = Community.find params[:community_id]
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
     # if params[:default_community_id].present?
     #   dwelo_account =Dwelo.find_by(community_id: @community.id) rescue nil
     #   unless dwelo_account.present?
@@ -275,10 +284,10 @@ class CommunitiesController < ApplicationController
   end
   def destroy
     idd = @community.id
-    design_id = @community.design.id
+    design_id = @community.design.id if @community.design.present?
     @community.delete_community
-    flash[:notice] = "Community will be deleted within few mintues."
     DeleteLogsOnDestroy.perform_async idd,design_id
+    flash[:notice] = "Community will be deleted within few mintues."
     redirect_to company_communities_path(current_company)
   end
 
@@ -299,6 +308,24 @@ class CommunitiesController < ApplicationController
       redirect_to community_settings_path(:community_id=>@community.id)
     end
   end
+
+  def clean_psi_units_data
+    Thread.current[:errors] = []
+    @community = Community.find params[:community_id]
+
+    if @community.credentials_are_present? && @community.check_credentials
+      if @community.clean_psi_data_provider and Thread.current[:errors].empty?
+        flash[:notice] = "Good job! You have successfully Clean Units data."
+        redirect_to community_settings_path(:community_id=>@community.id)
+      else
+        flash[:error] = Thread.current[:errors].join(',')
+        redirect_to community_settings_path(:community_id=>@community.id)
+      end
+    else
+      flash[:error] = "Please enter valid credentials in settings before clean data."
+      redirect_to community_settings_path(:community_id=>@community.id)
+    end
+  end 
 
   def experimental_import
     @community = Community.find params[:community_id]
@@ -378,6 +405,11 @@ class CommunitiesController < ApplicationController
     zip_data = write_authenteq_report(workbook)
     send_data(zip_data, :type => 'application/zip', :filename => "AuthenteqReport.zip")
   end
+  def tour_feedback_report
+    workbook = WriteXLSX.new("public/STFeedbackReport/STFeedbackReport.xlsx")
+    zip_data = write_feedback_report(workbook)
+    send_data(zip_data, :type => 'application/zip', :filename => "STFeedbackReport.zip")
+  end
   def realpage_load_pricing_data
     @community = Community.find params[:community_id]
     @community.connect_to_pricing(@community)
@@ -429,20 +461,39 @@ class CommunitiesController < ApplicationController
 
   def invitation_communities
     if params[:user_communities].present?
-      user = User.find params[:user]
-      result = user.communities.pluck(:name, :id).to_json
+      if params[:company_id].present?
+        result = Company.find(params[:company_id]).communities.pluck(:name, :id).to_json
+      elsif params[:region_id].present?
+        result = Region.find(params[:region_id]).communities.pluck(:name, :id).to_json
+      else
+        user = User.find params[:user] if params[:user].present?
+        result = user.present? ? user.communities.pluck(:name, :id).to_json : []
+      end
+
       render :json => {data: result}, :status => 200
-    else
+    elsif params['company'].present?
       company =  params['company']
       comp = Company.find_by(name: company )
-      result = comp.communities.pluck(:name,:id).to_json
+      result = params['region'].present? ? (comp.regions.where(id: params['region']).first.communities.pluck(:name,:id).to_json) :  (comp.communities.pluck(:name,:id).to_json) rescue [].json
       render :json => { data: result }, :status => 200
+    else
+      render :json => { data: [].to_json }, :status => 200
     end
 
   end
   def selected_communities
     user = User.find params['user'].to_i
-    result = user.communities.pluck(:name,:id).to_json
+    if params.has_key?('company_name')
+      company = Company.find_by_name(params[:company_name])
+      if params.has_key?('region_id') && company.regions.where(id: params["region_id"]).any?
+        region = Region.find params[:region_id]
+        result = region.communities.pluck(:name,:id).to_json
+      else
+        result = company.communities.pluck(:name,:id).to_json
+      end
+    else
+      result = user.communities.pluck(:name,:id).to_json
+    end
     render :json => { data: result }, :status => 200
 
   end
@@ -559,7 +610,7 @@ class CommunitiesController < ApplicationController
         @tour.max_self_tour_users = params[:max_self_tour_users]
         @tour.max_guided_tour_users = params[:max_guided_tour_users]   
         @tour_setting.do_limit_max_tour = params[:do_limit_max_tour]   
-        @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication] if params[:charge_user_for_id_verfication] .present?
+        # @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication] if params[:charge_user_for_id_verfication] .present?
         @tour_setting.limit_max_tour_type = params[:limit_max_tour_type]   
         @tour_setting.limit_max_tour = params[:limit_max_tour]
         @tour_setting.length_stay_limit = params[:length_stay_limit].to_i
@@ -580,11 +631,17 @@ class CommunitiesController < ApplicationController
       @tour_setting.save
 
     else
+      @tour_setting = @community.tour.tour_setting
+      @tour_setting.enable_header_footer = params[:enable_header_footer].present? ? true : false
+      @tour_setting.email_header_color = params[:email_header_color] if params[:email_header_color].present?
+      @tour_setting.email_footer_color = params[:email_footer_color] if params[:email_footer_color].present?
+      @tour_setting.save
+      
       @community.alert_contact = params[:community][:alert_contact] if params[:community][:alert_contact].present?
-      @community.email_text = params[:community][:email_text] if params[:community][:email_text].present?
-      @community.one_day_email_text = params[:community][:one_day_email_text] if params[:community][:one_day_email_text].present?
-      @community.one_hour_email_text = params[:community][:one_hour_email_text] if params[:community][:one_hour_email_text].present?
-      @community.thank_you_message = params[:community][:thank_you_message] if params[:community][:thank_you_message].present?
+      @community.email_text = params[:community][:email_text]
+      @community.one_day_email_text = params[:community][:one_day_email_text] 
+      @community.one_hour_email_text = params[:community][:one_hour_email_text]
+      @community.thank_you_message = params[:community][:thank_you_message]
       @community.arrive_too_early_alert = params[:community][:arrive_too_early_alert] if params[:community][:arrive_too_early_alert].present?
       @community.arrive_too_late_alert = params[:community][:arrive_too_late_alert] if params[:community][:arrive_too_late_alert].present?
       @community.unscheduled_alert = params[:community][:unscheduled_alert] if params[:community][:unscheduled_alert].present?
@@ -665,10 +722,10 @@ class CommunitiesController < ApplicationController
  
   def community_params
 
-    params.require(:community).permit(:name,:creator_id,:default_community_id ,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
+    params.require(:community).permit(:pynwheel_access,:name,:creator_id,:default_community_id, :region_id,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :auto_wayfinding, :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:enable_locks,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
-      :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:crm_credential_attributes=>[:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id, :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username, :salesforce_password, :salesforce_client_id, :salesforce_secret_id, :salesforce_grant_type],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
+      :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:crm_credential_attributes=>[:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id, :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username, :salesforce_password, :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :salesforce_grant_type],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,
         :futurist_property_map_marker_color, :expressionist_property_map_marker_color, :panther_property_map_marker_color, :futurist_amenity_map_marker_color,:expressionist__amenity_map_marker_color,
         :panther_amenity_map_marker_color,:futurist_property_map_size,:expressionist_property_map_size,:panther_property_map_size,:modernist_property_map_size, :futurist_amenity_map_size, :expressionist_amenity_map_size, :panther_amenity_map_size, :modernist_amenity_map_size,

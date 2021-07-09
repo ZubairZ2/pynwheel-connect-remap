@@ -10,7 +10,9 @@ module ZervServices
                     password: @zerv.password
                 }.to_json,
                 headers: { 'Content-Type' => 'application/json'})
-
+            puts url
+            puts "***"*50
+            puts response
         rescue HTTParty::Error => e
             OpenStruct.new({success?: false, error: e, payload: nil})
         else

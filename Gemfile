@@ -75,9 +75,12 @@ gem 'execjs'
 gem 'therubyracer'
 gem 'carrierwave', '~> 1.0'
 gem 'jquery-datatables-rails', '~> 3.4.0'
+gem 'will_paginate'
 gem "breadcrumbs_on_rails"
 gem 'carrierwave-base64'
 gem "fog-aws"
+gem 'aws-sdk', '~> 3'
+gem 'time_difference'
 #gem "fog"
 gem 'devise'
 gem 'devise_invitable'
@@ -101,6 +104,7 @@ gem 'stackprof', group: :development
 gem 'ox'
 gem 'puma_worker_killer'
 gem 'pry-nav'
+gem 'chartjs-ror'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

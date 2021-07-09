@@ -4,6 +4,14 @@ module ApplicationHelper
     ["index","new","create","update"]
   end
 
+  def sidemenu_communities_controllers
+    ["home", "companies", "community_groups", "regions", "group_design","analytics"]
+  end
+
+  def accounts_dropdown_menu
+    ["companies", "community_groups", "regions", "communities"]
+  end
+
   def flash_class(level)
     case level
     when 'notice' then "alert alert-success"
@@ -25,7 +33,26 @@ module ApplicationHelper
     end
   end
   def api_access
-    return true
+    ENV["API_ACCESS"] == "true" ? true : false
+  end
+  def make_link str
+    start_index = str.index('{')
+    end_index = str.index('}')
+    middle_index = str.index(',')
+    while start_index.present? and end_index.present? and middle_index.present? and start_index < middle_index and middle_index < end_index do
+        puts "res"
+        word = str[start_index..end_index] rescue nil
+        if word.present? && word.include?(',')
+            link, text = str[start_index+1..end_index-1].split(',')
+            link = "<a href=#{link} target='_blank'>#{text}</a>"
+            str = str.sub(word,link)
+        end
+        start_index = str.index('{')
+        end_index = str.index('}')
+        middle_index = str.index(',')
+    end
+    
+    str
   end
 
   def gables_theme_options
@@ -861,6 +888,10 @@ module ApplicationHelper
     ["25px","35px","45px","55px","65px"]
   end
 
+  def cards_formats
+    ["HID Prox 26-bit H10301", "HID Prox 33-bit D10202", "HID Prox 35-bit C1000", "HID Prox 37-bit H10304", "HID Prox 37-bit H10302"]
+  end
+
   def convert_float_to_integer(x)
     if x%1 == 0
       return x.to_i
@@ -1189,6 +1220,11 @@ module ApplicationHelper
       end
     end
 
+  end
+
+  def companies_hash
+    arr = Company.all.map { |c| [c.name , c.id] }
+    arr.to_h
   end
 
 end

@@ -15,8 +15,8 @@
       .box-header
         %h3.box-title
           VISITORS
+
     .row{:style => "margin-bottom: 70px;"}
-      / Start Panel left Side
       .col-lg-12.col-md-12
         .row
           .col-md-12#outer_div
@@ -24,33 +24,24 @@
               - if @tour_users.count == 0
                 %h3{:style => "text-align: center; font-weight: bolder"}
                   No Visitor To Display
-              %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units.tour_user_table
+              %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units.schedule_tour_table
                 %thead
                   %tr
+                    %th  Tour Date & Time
+                    %th Image
+                    %th Name
+                    %th Email
+                    %th Phone
                     %th
-                      Arrived
-                    %th
-                      Image
-                    %th
-                      Name
-                    %th
-                      Email
-                    %th
-                      Phone
-                    %th
-                    %th
-                      Visitor Details
+                    %th Visitor Details
+                    - if @community.tour.visual_id_verification
+                      %th ID Verification
                     - if (current_user.is_super_admin?)
-                      %th
-                        Action
+                      %th Action
 
-                -#%a{:href => "/communities/#{@community.id}/tour_users/#{user.id}", :style => "display:block"}
-                -#  .list-group-item#item_list{:style => "background: #{index%2 == 1 ? "#e8e8e8" : ""}", :onclick => "click_list(#{user.id})"}
-                    .row.row1
                 %tbody
                   - @tour_users.each_with_index  do |user,index|
                     .row
-
                       %tr
                         %td.col-lg-2
                           .visitor_list.custom_label_color
@@ -124,46 +115,24 @@
                             - else
                               Removed at Consumer Request
 
-
                         %td.col-lg-2
                           .visitor_list
                             = link_to 'Visitor Details' , community_tour_user_path(@community,user),:class=>"btn btn-default black-button loader_class"
+                        - if @community.tour.visual_id_verification
+                          %td.col-lg-2
+                            - if user.verified_at.present? && (user.is_authentiq_verified or user.is_checkpoint_verified)
+                              .visitor_list
+                                #{(user.verified_at).strftime("%Y-%m-%d") rescue nil} #{(user.verified_at).strftime("%I:%M %p") rescue nil}
+                                - if (current_user.is_super_admin? && user.verified_at.present? && (user.is_authentiq_verified or user.is_checkpoint_verified))
+                                  %a{"data-name"=>"id verification","data-href" => "/communities/#{@community.id}/tour_users/#{user.id}?verified_at=true", "data-target" => "#confirm-reset-verification", "data-toggle" => "modal", "class" => "btn btn-default black-button", "style" => "margin-top: 2%;"}
+                                    Reset
+                            - else
+                              Never Verified
                         - if (current_user.is_super_admin?)
                           %td
                             %a.text-danger{"data-name"=>"visitor","data-href" => "/communities/#{@community.id}/tour_users/#{user.id}", "data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
                               %i.fa.fa-trash.icon_size
 
-
--#.content-wrapper
--#  %section{:name => "visitors"}
--#    .clearfix
--#    .table-visitors
--#      .heading
--#        %h1 Visitors
--#      .visitors_inner_tables
--#        .table-responsive
--#          %table.table
--#            %tbody
--#              - if @tour_users.present?
--#                - @tour_users.each do |visitor|
--#                  %tr
--#                    - tours = visitor.tour_histories
--#                    %td= tours.present? ? Time.now : Time.now
--#                    %td
--#                      = image_tag visitor.image.url, :width => "75px",:height => "75px" if visitor.image.present?
--#                      = link_to visitor.name, community_tour_user_path(@community, visitor)
--#                    %td
--#                      %a.link{:href => "#"}= visitor.email
--#                    %td= image_tag visitor.id_card.present? ? visitor.id_card.url : ""
--#                    %td
--#                      = link_to image_tag("clock"), community_tour_user_path(@community, visitor)
--#                    %td= link_to image_tag("calender"), community_tour_user_path(@community, visitor)
--#                    %td= link_to image_tag("open"), community_tour_user_path(@community, visitor)
--#                    %td{:width => "20%"}
--#              - else
--#                %center
--#                  %h3 No visitor for this community.
--#
 .row
   .col-md-12{:style => "position: absolute; bottom: 51px;"}
     .box-footer.mt-30.pt-15
@@ -173,17 +142,21 @@
             .col-md-12.col-lg-12
               %button.btn-primary.done_btn.mb-20{:onclick => "visitor_index_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
-:javascript
-  if ("#{browser.device.iphone?}" == "true")
-  {
-    $(".user_id_image").css("transform", "transform: rotate(90deg);");
-  }
-  function click_list(id)
-  {
-  }
-  function visitor_index_goBack()
-  {
-      window.location.reload();
 
+:javascript
+  $(document).ready(function () {
+    $('#miyazaki').DataTable({
+      "order": [[ 0, "desc" ]]
+    });
+
+    $('.dataTables_length').addClass('bs-select');
+  });
+
+  if ("#{browser.device.iphone?}" == "true")
+    $(".user_id_image").css("transform", "transform: rotate(90deg);");
+
+  function visitor_index_goBack() {
+    window.location.reload();
   }
+
   $('[data-toggle="visitor_popover"]').popover();

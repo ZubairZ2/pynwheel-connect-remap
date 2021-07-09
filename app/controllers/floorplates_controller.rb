@@ -1,5 +1,6 @@
 class FloorplatesController < ApplicationController
   include AssignLocksHelper
+  # include Error::ErrorHandler
   add_breadcrumb "Home", :root_path
   before_action :authenticate_user!
   before_action :check_community

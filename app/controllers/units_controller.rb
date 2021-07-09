@@ -1,10 +1,12 @@
 class UnitsController < ApplicationController
+  # include Error::ErrorHandler
   include AssignLocksHelper
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
   before_action :set_unit, only: [:edit,:update,:destroy,:remove_pri_scnd_image]
   before_action :load_all_locks, only: [:new, :create, :edit, :update]
+
   def index
     #@units = @community.units.page(params[:page]).per(10)
     @community_info = Community.includes(:floorplans, :units).find(params[:community_id])
@@ -121,6 +123,10 @@ class UnitsController < ApplicationController
     @unit.image_bit = nil
     unit_previous_floorplan_amenities = @unit.amenities.where.not(floorplan_amenity_id: nil) rescue nil
 
+    if @community.enable_locks
+      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ((params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "") ? params[:dwelo_remote_lock] : ((params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ((params[:zerv_lock].present? or params[:zerv_lock] == "") ? params[:zerv_lock] : nil)))
+      assign_lock(@community, @unit, lock_id) unless lock_id.nil?
+    end
     respond_to do |format|
       ######## save item that updated
       if (params[:unit].present? and params[:unit][:availability].present? && params[:unit][:availability] == "Unoccupied")

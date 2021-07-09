@@ -7,6 +7,7 @@ Rails.application.config.assets.precompile += %w( slick.css bootstrap-datetimepi
 Rails.application.config.assets.precompile += %w( jquery.arrayUtilities.js )
 Rails.application.config.assets.precompile += %w( slick.js bootstrap-datetimepicker.js moment.js)
 Rails.application.config.assets.precompile += %w( jsTimezoneDetect.js )
+Rails.application.config.assets.precompile += %w( update_session.js )
 # Add additional assets to the asset load path
 # Rails.application.config.assets.paths << Emoji.images_path
 

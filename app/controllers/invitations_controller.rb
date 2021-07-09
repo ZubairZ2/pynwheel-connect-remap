@@ -1,4 +1,5 @@
 class InvitationsController < Devise::InvitationsController
+  # include Error::ErrorHandler
   # before_action :check_community
    def new
      #authorize! :invite,current_user		
@@ -8,8 +9,9 @@ class InvitationsController < Devise::InvitationsController
    def after_invite_path_for(resource)
      if params[:chat_community_ids].present?
        chat_enable_communities = params[:chat_community_ids]
-       user = User.find_by(email: params[:user][:email])
-       if chat_enable_communities.present?
+       user = User.find_by(email: params[:user][:email]) if params[:user].present? && params[:user][:email].present?
+
+       if chat_enable_communities.present? && user.present?
          chat_enable_communities.each do |community|
            if community.present?
              user_community = CommunityUser.find_by(community_id: community, user_id: user.id) rescue nil

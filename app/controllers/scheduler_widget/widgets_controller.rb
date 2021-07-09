@@ -17,7 +17,6 @@ class SchedulerWidget::WidgetsController < ApplicationController
     end
   end
   def scheduler_widget_button
-    
     @schedule_widget_setting= SchedulerWidgetSetting.find params[:id]
     @community_code = params[:community_code]
     @community = Community.find params[:community_id]
@@ -25,6 +24,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
   end
 
   def test_widget
+    @tour_user = params[:tour_user_id].present? ? TourUser.find_by_id(params[:tour_user_id]) : TourUser.new
     @community_id = params[:community_id]
     @community = Community.find params[:community_id]
     @credit_card_required =  @community.tour.credit_card_required

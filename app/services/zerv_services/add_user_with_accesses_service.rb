@@ -5,7 +5,9 @@ module ZervServices
             community = args[:community]
             tour_user = args[:tour_user]
             stop_list = args[:stop_list]
-            
+            @facilityId   = community.zerv.facility_id.blank? ? "0" : community.zerv.facility_id
+            @accessCode   = community.zerv.badge_id.blank? ? "1234" : community.zerv.badge_id
+            @cardFormat   = community.zerv.card_format.blank? ? "HID Prox 26-bit H10301" : community.zerv.card_format
             url = base_url + "/user/adduserwithtimezone"
             id_token = get_id_token
 
@@ -19,7 +21,7 @@ module ZervServices
                     access_point = attached_lock.mac_id rescue nil
                     if access_point.present?
                         list_add_user_access << time_access_object(community, tour_time)
-                        list_add_user_access.last.merge!({"accessCode": access_code,"accessPoint": access_point})
+                        list_add_user_access.last.merge!({"accessCode": @accessCode,"accessPoint": access_point})
                     end
                 end
             end
@@ -41,7 +43,9 @@ module ZervServices
             response = HTTParty.post(url,
                  body: body.to_json,
                 headers: { 'Authorization' => id_token, 'Content-Type' => 'application/json'})
-
+            puts url
+            puts "***"*50
+            puts response
         rescue HTTParty::Error => e
             OpenStruct.new({success?: false, error: e, payload: nil})
         else
@@ -109,7 +113,8 @@ module ZervServices
                 "accessStartDate": tour_time.strftime("%Y-%m-%d"),
                 "accessEndDate": (tour_time + 1.day).strftime("%Y-%m-%d"),
                 "credentialIdentifier": "1234",
-                "facilityId": nil,
+                "facilityId": @facilityId,
+                "cardFormat": @cardFormat,
                 "active": true,
                 "monAccess": false,
                 "tueAccess": false,

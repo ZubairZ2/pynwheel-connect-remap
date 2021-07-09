@@ -13,6 +13,7 @@
 //= require jquery.min
 //= require jquery-ui.min
 //= require jquery_ujs
+//= require intlTelInput
 //= require bootstrap.min
 //= require best_in_place
 //= require best_in_place.jquery-ui
@@ -40,7 +41,10 @@
 //= require unit-plotting
 //= require sitemap
 //= require tour
+//= require communities
+//= require regions
 //= require floorplate
+//= require chosen.jquery.min
 //= require ekko-lightbox
 //= require jquery.remotipart
 //= require jquery.mCustomScrollbar.concat.min
@@ -57,9 +61,13 @@
 //= require multiple_tabs
 //= require easy-loading
 //= require jquery.mousewheel.min
+//= require jquery.line
+//= require zoom-marker.min
 //= require pinch-zoom.umd
 //= require jquery.ui.touch-punch.min
-//= require jquery.line
+//= require pynwheel_access
+//= require Chart.min
+//= require analytics
 //made changes in jquery.multi-select according to our requirement in at library at line #488. Commented sanitize function
 // require_tree .
 //= require bootstrap-wysihtml5

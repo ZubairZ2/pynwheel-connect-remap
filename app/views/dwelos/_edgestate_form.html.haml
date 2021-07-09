@@ -1,0 +1,20 @@
+.box-body
+  .row
+    .col-lg-9.col-lg-offset-1
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+          Client ID
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=> @community.edge_state.present? ? @community.edge_state.client_id : ""
+      .form-group
+        %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+          Client Secret
+        .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> @community.edge_state.present? ? @community.edge_state.client_secret : ""
+        = f.hidden_field :community_id, :value=> current_community.id
+    / /.box-body
+.box-footer
+  - if current_community.edge_state.present? && current_community.edge_state.client_id.present? && current_community.edge_state.client_secret.present?
+    = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
+  - else
+    = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"

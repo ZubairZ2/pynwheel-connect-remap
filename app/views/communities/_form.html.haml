@@ -6,7 +6,7 @@
         %span#unit_manualoverride_text
           (Dwelo) will be added as default at the start of name. Changing the Name will change the name of the property on the "Favorites" page.
     - else
-      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailNamePopover","data-content" => " "}
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailNamePopover1","data-content" => " "}
         %span#propertyDetailNameText
           Changing the Name will change the name of the property on the "Favorites" page.
 
@@ -112,6 +112,14 @@
   .col-sm-12.col-lg-3.col-md-3.col-xs-12
     = f.radio_button :is_sitemap, false
     = f.label :is_sitemap, "Floorplates", :value => "false"
+
+- if @all_regions.any?
+  .form-group
+    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+      Region
+    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+      - region_id = @community.region_id.blank? ? "" : @community.region_id
+      = f.select(:region_id, options_for_select(@all_regions, region_id), {:include_blank => 'Select a region'}, { :class => 'form-control' })
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -247,29 +255,24 @@
       make_coord();
   }, 2000);
   });
-  if (!#{current_user.welcome_property_details_page})
-  {
-    $('[data-toggle="propertyDetailNamePopover"]').popover({
-        html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Name will change the name of the property on the "Favorites" page.</div><div class="popover-footer"><a id="propertyDetailNameId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-    }).popover('show');
-  }
 
     $(document).on("click", "#propertyDetailNameId" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="propertyDetailAddressPopover"]').popover({
+
+      $('[data-toggle="propertyDetailAddressPopover"]:first').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the Address will change how it appears on the eBrochure, and will change the lat/long of the property on the "Neighborhood" page.</div><div class="popover-footer"><a id="propertyDetailAddressId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the Address will change how it appears on the eBrochure, and will change the lat/long of the property on the "Neighborhood" page.</div><div class="popover-footer"><a id="propertyDetailAddressId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
     $(document).on("click", "#propertyDetailAddressId" , function(){
         $(this).parents(".popover").popover('hide');
         $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="propertyDetailEmailPopover"]').popover({
+      
+      $('[data-toggle="propertyDetailEmailPopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the email address will change the "from" email address for the eBrochure.</div><div class="popover-footer"><a id="propertyDetailEmailId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the email address will change the "from" email address for the eBrochure.</div><div class="popover-footer"><a id="propertyDetailEmailId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -278,7 +281,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="propertyDetailWebsitePopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Changing the website address will change how it appears on the eBrochure.</div><div class="popover-footer"><a id="propertyDetailWebsiteId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Changing the website address will change how it appears on the eBrochure.</div><div class="popover-footer"><a id="propertyDetailWebsiteId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 

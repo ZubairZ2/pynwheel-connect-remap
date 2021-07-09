@@ -16,6 +16,7 @@
 
 class VisitedStop < ApplicationRecord
   belongs_to :tour_user
+  belongs_to :tour
   mount_uploader :image, AvatarUploader
 
 

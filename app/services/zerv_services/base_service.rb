@@ -9,15 +9,18 @@ module ZervServices
         end
         
         def get_id_token
-            token  = Rails.cache.fetch(:id_token, expires_in: 20.minutes.from_now) do
-                result = generate_id_token
-                result[:error].nil? ? result[:id_token] : nil
-            end
+            # token  = Rails.cache.fetch(:id_token, expires_in: 20.minutes.from_now) do
+            #     result = generate_id_token
+            #     result[:error].nil? ? result[:id_token] : nil
+            # end
 
-            if token.nil? or token.blank? or !Rails.cache.exist?(:id_token)
-                result = generate_id_token
-                token = result[:error].nil? ? result[:id_token] : nil
-            end
+            # if token.nil? or token.blank? or !Rails.cache.exist?(:id_token)
+            #     result = generate_id_token
+            #     token = result[:error].nil? ? result[:id_token] : nil
+            # end
+
+            result = generate_id_token
+            token = result[:error].nil? ? result[:id_token] : nil
 
             return token 
         end
@@ -44,7 +47,7 @@ module ZervServices
         def current_community_zerv_locks(locks)
             community = @zerv.community
             location_name = (community.company.name + ' - ' + community.name).downcase.parameterize.gsub("-", "").gsub("_", "")
-            locks["listGetDevices"] = locks["listGetDevices"].map{|lock| lock if lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name}.compact
+            locks["listGetDevices"] = locks["listGetDevices"].map{|lock| lock if lock["locationName"].present? && lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name}.compact
             if locks["listGetDevices"].length == 0
               locks["listGetDevices"] = "No locks are presnet"
             end
@@ -70,7 +73,7 @@ module ZervServices
         end
 
         def base_url
-            "https://api.zervinc.net/v1/portal"
+            "https://accessapi.zervinc.net/v1/portal"
         end
 
         def check_response(community, tour_user, stop_list, response, errors)
@@ -95,6 +98,8 @@ module ZervServices
         end
 
         def create_zerv_guest__failure(community, tour_user, errors)
+            puts '--------------------------    Failure in creating Zerv User      ------------------------'
+            puts errors
             puts '--------------------------    Failure in creating Zerv User      ------------------------'
             ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
             ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active", res_errors: errors)

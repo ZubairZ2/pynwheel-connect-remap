@@ -1,6 +1,5 @@
 :css
   .popover {
-    left: 25px !important;
     }
 = javascript_include_tag 'moment'
 - content_for :title, "Visitor Details Page - Pynwheel"
@@ -26,12 +25,7 @@
             Remove all PII
         - unless @chatroom_id == 0
           = link_to("Chat logs", "url" , class: "btn btn-success", id: "chat-logs", style: "float:right; margin-right: 8px;", data: { toggle: "modal", target: "#ChatSupport_a" })
-        -#%span{:style => "float: right;"}
-        -#  #{Time.zone.now}
-        -#%span{:style => "float: right;"}
-        -#  = image_tag  image_url("unlock.png"), :style => "height: 20px; width: 20px;"
-        -#%span{:style => "float: right;"}
-        -#  #{Time.zone.now}
+
     #ChatSupport_a.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
       .container.container_a
         %h3.text-center Chat logs
@@ -112,7 +106,9 @@
                           %br
                           .alert-div2{:style => "margin-top: -10px"}
                             = image_tag  image_url("clock.png"), :style => "height: 20px; width: 20px;", "data-content" => "Time Duration", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"
-                            #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.lengthy_stay.present? && alert.arrived.present? ? ((((end_time - alert.arrived) / 3600) - ((end_time - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
+                            - if end_time.present? && alert.arrived.present?
+                              = TimeDifference.between(alert.arrived, end_time).humanize
+                            -# #{((end_time.present? && alert.arrived.present? ? (end_time - alert.arrived) : 0) / 3600).to_i.to_s + " hour " + ((end_time.present? && alert.lengthy_stay.present? && alert.arrived.present? ? ((((end_time - alert.arrived) / 3600) - ((end_time - alert.arrived) / 3600).to_i ) * 60) : 0)).to_i.to_s + " Minutes"}
                           %br
                           .alert-div3{:style => "margin-top: -10px; margin-bottom: 10px"}
                             - if alert.tour_status.present? && alert.created_at > "2021-03-04".to_date && alert.tour_status == "virtual_tour"
@@ -134,38 +130,50 @@
                       %span#propertyDetailNameText
                         This section will show you where the visitor went on their tour and when online controlled access points were unlocked (if applicable).
                   .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "margin-top: 10px;margin-left: 15px;margin-right: 15px;"}
-                    - unless @community.is_sitemap
-                      .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-left: 0px;"}
-                        = select :floorplates , :images , @community.floorplates.all.order("id ASC").collect{|f| [ f.name, f.id ] },{:prompt => 'Select the Floorplate'}, class: "form-control"
-                      .col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-right: 0;"}
-                        - begin
-                          - if @alerts.last.history == false
-                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                          - elsif @alerts.last.history == true
-                            Removed at Consumer Request
-                        - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                          - if @alerts.last.history == false
-                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                          - elsif @alerts.last.history == true
-                            Removed at Consumer Request
+                    //.col-sm-6.col-lg-6.col-md-3.col-xs-12{style: "padding-left: 0px;"}
+                    -#= select :floorplates , :images , @community.floorplates.all.order("id ASC").collect{|f| [ f.name, f.id ] },{:prompt => 'Select the Floorplate'}, class: "form-control"
+                    .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "padding-right: 0;"}
+                      - begin
+                        - if @alerts.last.history == false
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - elsif @alerts.last.history == true
+                          Removed at Consumer Request
+                      - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                        - if @alerts.last.history == false
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - elsif @alerts.last.history == true
+                          Removed at Consumer Request
 
-                    - else
-                      .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
-                        - begin
-                          - if @alerts.last.history == false
-                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                          - elsif @alerts.last.history == true
-                            Removed at Consumer Request
-                        - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                          - if @alerts.last.history == false
-                            = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
-                          - elsif @alerts.last.history == true
-                            Removed at Consumer Request
-                  .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "background: #efefef;margin: 30px;"}
+
+                    .col-sm-12.col-lg-12.col-md-12.col-xs-12.hidden#building_label
+                      %label
+                        Buildings
+                    .col-sm-12.col-lg-12.col-md-12.col-xs-12#building_buttons{style: "margin-top: 10px;"}
+                    .col-sm-12.col-lg-12.col-md-12.col-xs-12.hidden#floor_label
+                      %label
+                        Floors
+                    .col-sm-12.col-lg-12.col-md-12.col-xs-12#floor_buttons{style: "margin-top: 10px;"}
+
+                    / - else
+                    /   .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
+                    /     - begin
+                    /       - if @alerts.last.history == false
+                    /         = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| f.my_time_zone.present? ? [f.arrived.in_time_zone(f.my_time_zone).strftime("%m-%d-%Y %I:%M %p"), f.id ]  : [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                    /       - elsif @alerts.last.history == true
+                    /         Removed at Consumer Request
+                    /     - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
+                    /       - if @alerts.last.history == false
+                    /         = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                    /       - elsif @alerts.last.history == true
+                    /         Removed at Consumer Request
+                  .col-sm-12.col-lg-12.col-md-12.col-xs-12#parent-div{style: "background: #efefef;margin: 30px;"}
                     -# - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
                     -# - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
+                    .div#mapp
+                      = image_tag @sitemap.image, :class => "my_class hiddens", :id => "floorplane_img", :style => "height: 100%; width: 100%; display: none"
+                    %canvas#myCanvas{:height => "725", :style => "border:1px solid #d3d3d3;", :width => "725"}
 
-                    = image_tag @community.is_sitemap ? @community.sitemap.image : @community.floorplates.all.order("id ASC").first.image, :class => "my_class", :id => "floorplane_img", :style => "height: 100%; width: 100%;"
+                      
                     -# - if @existing_stops.present?
                       -# - @existing_stops.flatten.each_with_index do |stop, index|
                         -# - next if (stop.x_plot + stop.y_plot) < 1
@@ -213,7 +221,7 @@
                           - image_hit = true
                           - description_hit = true
                           - is_data_loaded = false
-                          %a.preview-image{:href=> @stop.image? ? @stop.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Stop Image"}
+                          %a.preview-image{:href=> @stop.image? ? @stop.image.url : asset_path("default.jpeg"),"placement"=>"right","data-toggle"=>"lightbox","data-title"=>"Stop Image"}
                             %img{:src => "/assets/checkbox.png", :style => "height:20px; width:20px;color:green; margin-left: 13px; color: green;", "data-placement" => "top", "data-img" => "#{@stop.image.url}", "data-toggle-placement"=>"right", "data-toggle" => "popover-hover"}
                           %strong{:style => "font-size: 16px; position: relative; margin-left: 5px;"}
                             #{@stop.name}
@@ -243,8 +251,6 @@
                               - is_data_loaded = true
                               - if description_hit
                                 .col-lg-12{:style => "margin-bottom: 5px;"}
-                                  -#%strong{:style => "font-size: 16px;"}
-                                    -##{@stop.name}
                               - description_hit = false
                               .col-lg-8.col-md-6.col-sm-12.col-xs-12.user_description
                                 %strong{:style => "font-size: 16px;"}
@@ -252,149 +258,8 @@
                                 %text{:style => "color: gray"}
                                 %br
                                 .user_note{:style => "background: ;"}
-                                  -##{stop_decription.description}
                                   = text_area_tag stop_decription.description,stop_decription.description,:class=>"form-control mb-20 ", :rows => "3", :readonly => true, :style => "background: white; margin-top: 10px;"
-                          / - unless is_data_loaded
                         %hr{:style => "border-top: 2px solid white; margin-left: -15px; margin-right: -15px;"}
-
-
-                    -#.col-lg-12{:style => "background: #efefef;  margin: 30px "}
-                    -#  .col-lg-12
-                    -#    Pool
-                    -#  .col-lg-2
-                    -#    Tour photo
-                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
-                    -#  .col-lg-2
-                    -#    User photo
-                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
-                    -#  .col-lg-8
-                    -#    User Notes
-                    -#    %br
-                    -#    jher gr grgr grag grgrgr grioghio grg r gr grugrbsg grugr grgrg
-                    -#.col-lg-12{:style => "background: #efefef;  margin: 30px"}
-                    -#  .col-lg-12
-                    -#    Pool
-                    -#  .col-lg-2
-                    -#    Tour photo
-                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
-                    -#  .col-lg-2
-                    -#    User photo
-                    -#    = image_tag  "default-user128x128.jpg", :class => "my_class", :style => "height: 50px; width: 50px;"
-                    -#  .col-lg-8
-                    -#    User Notes
-                    -#    %br
-                    -#    jher gr grgr grag grgrgr grioghio grg r gr grugrbsg grugr grgrg
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
--#%script{:crossorigin => "anonymous", :integrity => "sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n", :src => "https://code.jquery.com/jquery-3.4.1.slim.min.js"}
--#%script{:crossorigin => "anonymous", :integrity => "sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo", :src => "https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"}
--#%script{:crossorigin => "anonymous", :integrity => "sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6", :src => "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"}
-
--#
--#%head
--#  %title Hello, world!
--#%body
--#  .content
--#    .top-title
--#      .row
--#        .col-md-6
--#          %strong SUMMARY
--#          CYPHERS, JENNIFER
--#        .col-md-6
--#          .row
--#            .sm-txt.ml-auto
--#              10/18/19 2:40 PM
--#            .sm-txt
--#              10/19/19 4:39 PM
--#    / top-title ends
--#    .main-content
--#      .row
--#        .col-md-6
--#        .col-md-6
--#          %strong TOUR DETAILS
--#          Shady Acres
--#      .row.pt-2
--#        .col-md-6
--#          .grey-card
--#            .row.ml-0.mr-0
--#              .img-box
--#                %img{:alt => "", :src => "assets/pic1.jpg"}/
--#              .img-box-info
--#                %p.mb-0
--#                  %strong Cyphers, Jennifer
--#                %p.email.mb-0.small-text
--#                  %a{:href => ""} jennifer@pnywheel.com
--#                %p.number.mb-0.small-text 303.640.3652
--#              .id-card.mt-auto.mb-auto
--#                %img{:alt => "", :src => "id.jpg"}/
--#          / grey-card ends
--#          .row.ml-0.mr-0.mt-3.mb-3
--#            %strong Alerts
--#          .grey-card.p-1.small-text
--#            .row.pb-1
--#              .col-md-6
--#                10/10/19 2:38 PM
--#              .col-md-6
--#                10/10/19 2:38 PM
--#            .row.pb-1
--#              .col-md-6
--#                1 hour 25 minutes
--#              .col-md-6
--#                1 hour 25 minutes
--#            .row.pb-1
--#              .col-md-6
--#                10/19/19 4:03 PM
--#              .col-md-6
--#                10/19/19 4:03 PM
--#          / grey-card ends
--#          .row.ml-0.mr-0.mt-4.mb-3
--#            %strong Tour Tracking
--#            Shady Acres
--#          .grey-card.p-1
--#            .slider
--#              %img{:alt => "", :src => "slider.jpg"}/
--#          / grey-card ends
--#        .col-md-6
--#          .grey-card.p-1{:style => "height: 100%;"}
--#            .row.ml-0.mr-0
--#              %strong Pool
--#            .row.ml-0.mr-0
--#              .tpic Tour Photo
--#              .tpic User Photo
--#              .unotes User notes
--#            .row.ml-0.mr-0.pb-1
--#              .tpic
--#                %img{:alt => "", :src => "tpic.jpg"}/
--#              .tpic
--#                %img{:alt => "", :src => "upic.jpg"}/
--#              .unotes{:style => "background-color: #ffffff;"} Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
--#            .row.ml-0.mr-0
--#              %strong Courtyard
--#            .row.ml-0.mr-0
--#              .tpic Tour Photo
--#              .tpic User Photo
--#              .unotes User notes
--#            .row.ml-0.mr-0.pb-1
--#              .tpic
--#                %img{:alt => "", :src => "tpic.jpg"}/
--#              .tpic
--#                %img{:alt => "", :src => "upic.jpg"}/
--#              .unotes{:style => "background-color: #ffffff;"} N/A
--#            .row.ml-0.mr-0
--#              %strong Apartment B-104
--#            .row.ml-0.mr-0
--#              .tpic Tour Photo
--#              .tpic User Photo
--#              .unotes User notes
--#            .row.ml-0.mr-0.pb-1
--#              .tpic
--#                %img{:alt => "", :src => "tpic.jpg"}/
--#              .tpic
--#                %img{:alt => "", :src => "upic.jpg"}/
--#              .unotes{:style => "background-color: #ffffff;"} Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
 -#    / main-content ends
 .row
   .col-md-12{:style => "/*position: absolute; */ bottom: 51px;"}
@@ -406,6 +271,87 @@
               %button.btn-primary.done_btn.mb-20{:onclick => "visitor_show_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
 :javascript
+  var t;
+  var vertices;
+  var canvas;
+  var ctx;
+  var img;
+  var width;
+  var height;
+  var lock_access_time;
+  var vertices_count = 0;
+  var already_watched = [];
+  setTimeout(function(){
+    draw_image_canvas(null);
+  }, 2000);
+
+  function draw_image_canvas(img_src)
+  {
+    canvas = document.getElementById("myCanvas");
+    ctx = canvas.getContext("2d");
+    img = document.getElementById("floorplane_img");
+    if(img_src != null)
+      img.src = img_src
+    width = $('#parent-div').width()
+    height = ( width / img.width) * img.height;
+    ctx.canvas.height = height;
+    ctx.canvas.width = width;
+    ctx.drawImage(img, 0, 0, width, height);
+    
+
+
+    ctx.lineCap = "round";
+
+    // variable to hold how many frames have elapsed in the animation
+    t = 1;
+
+    // define the path to plot
+    vertices = [];
+  }
+  function delete_image_canvas()
+  {
+    var canvas = document.getElementById("myCanvas");
+    var context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  // draw the complete line
+
+
+
+  // set some style
+ 
+
+
+  // calc waypoints traveling along vertices
+  function calcWaypoints(vertices) {
+      var waypoints = [];
+      for (var i = 1; i < vertices.length; i++) {
+          var pt0 = vertices[i - 1];
+          var pt1 = vertices[i];
+          var dx = pt1.x - pt0.x;
+          var dy = pt1.y - pt0.y;
+          for (var j = 0; j < 100; j++) {
+              var x = pt0.x + dx * j / 100;
+              var y = pt0.y + dy * j / 100;
+              waypoints.push({
+                  x: x,
+                  y: y
+              });
+          }
+
+      }
+
+      return (waypoints);
+  }
+
+ 
+
+
+ 
+
+
+
+
 
   $('[data-toggle="popover-hover"]').popover({
       html: true,
@@ -439,8 +385,8 @@
     if ($('#msg_history_a').children().length == 0){
     
     var loadAdminChat, loadAdminChatHelper;
-    
     loadAdminChatHelper = function(chat) {
+      
         if(chat.name == "Support Team"){
             $('#msg_history_a').append(`
                 <div class="outgoing_msg_a">
@@ -524,39 +470,188 @@
       var floorplate_id = 0
     var community_id = #{ raw @community.id};
     var tour_user_id = #{ raw @tour_user.id};
-    
-    if((is_sitemap == false && tour_history_id != "" && floorplate_id != "") || (is_sitemap == true && tour_history_id != "")){
-      $.ajax({
-          type: 'GET',
-          dataType: 'json',
-          cache: false,
-          data:  {
-          dwelo_id
-            },
-          url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/lock_ploting?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
-          success: function(data){
-            $(".asdasd").children('i').remove()
-            $("#unlock_history").children('h5').remove()
-            // data.existing_stops.flat().forEach(draw_stop)
-            data.lock_histories.flat().forEach(draw_history)
+    data = null;
+    $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        cache: false,
+        data:  {
+        dwelo_id
           },
-          fail: function(data){
-            console.log(data)
+        url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/visited_stops_data?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
+        success: function(data){
+          delete_image_canvas();
+          draw_image_canvas(null);
+          
+          $('#building_label').addClass('hidden');
+          $('#floor_label').addClass('hidden');
+          $(".popover").popover('hide');
+          $('.fa-map-marker').hide();
+          $('.start-point').hide();
+          $('.building_btn').hide();
+          $('.floor_btn').hide();
+          already_watched = [];
+          vertices_count = 0;
+
+
+          data_array = [];
+          first_building = null;
+          first_floor = null;
+          lock_access_time = data.lock_access_time;
+          debugger;
+          if(data.stops[0] && data.stops[0][2] == "tour" && data.stops.length == 1)
+          {
+            selected_floor = selected_building = [];
           }
-      });
+          else if(data.floors == null && data.buildings == null && data.stop != [])
+          {
+            selected_floor = selected_building = [];
+            show_plot_accordingly(data.stops,data.left);
+          }
+
+          else
+            {
+              debugger;
+              for(var i=0; i<data.buildings.length; i++)
+              {
+                if(data.buildings[i] != "" && data.buildings[i] != null){
+                  $('#building_label').removeClass('hidden');
+                  if(first_building == null)
+                    first_building = data.buildings[i];
+                  $('#building_buttons').append('<a class="btn-default btns building_btn '+ (first_building == data.buildings[i] ? 'selected_building' : '') +'" id="building_'+ data.buildings[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_building == data.buildings[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.buildings[i] +'</a>')
+                }
+              }
+              for(var i=0; i<data.floors.length; i++)
+              {
+                if(first_floor == null)
+                  first_floor = data.floors[i];
+                $('#floor_label').removeClass('hidden');
+                if(String(data.floors[i]) != "" && String(data.floors[i]) != null)
+                  $('#floor_buttons').append('<a class="btn-default btns floor_btn '+ (first_floor == data.floors[i] ? 'selected_floor' : '') +'" id="floor_'+ data.floors[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_floor == data.floors[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.floors[i] +'</a>')
+              }
+              setTimeout(function(){
+                $('.selected_floor').click();
+              }, 1000);
+              
+              $('.btns').click(function(){
+                vertices_count = 0;
+                delete_image_canvas();
+                $(".popover").popover('hide');
+                $('.fa-map-marker').hide();
+                $('.start-point').hide();
+    
+                final_stops = [];
+                if(this.id.includes("building"))
+                {
+                  $('.building_btn').each(function( index, item ) { item.style.background = ""; $('#'+item.id).removeClass('selected_building');});
+                  this.style.background = "green";
+                  $('#'+this.id).addClass('selected_building');
+                }
+                else
+                {
+                  $('.floor_btn').each(function( index, item ) { item.style.background = "" ; $('#'+item.id).removeClass('selected_floor'); });
+                  this.style.background = "green";
+                  $('#'+this.id).addClass('selected_floor');
+                }
+                selected_building = $('.selected_building').text();
+                selected_floor = $('.selected_floor').text();
+                selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
+                selected_building = (first_building != "null" ? (selected_building == first_building ? [selected_building, "", null] : [selected_building]) : ["null", ""])
+                debugger
+                for(var f=0; f< data.floor_image.length; f++)
+                {
+                  debugger
+
+                  if(data.floor_image[f][0].includes(parseInt($('.selected_floor').text())))
+                    img_ = data.floor_image[f][1]
+                }
+                debugger
+                  sleep(2000);
+                  draw_image_canvas(img_);
+                debugger;
+                for(var s = 0; s < data.stops.length; s++)
+                {
+                  current_stop = data.stops[s];
+
+                  if(Array.isArray(selected_floor[0]))
+                    selected_floor = selected_floor[0]
+                  
+                  let current_floor;
+                  let current_building;  
+
+                  if (data.stops[s] && data.stops[s][1] && data.stops[s][1].building)
+                    current_building = selected_building.includes(String(data.stops[s][1].building));
+
+                  if(data.stops[s] && data.stops[s][2] == "tour")
+                    current_floor = selected_floor.includes(String(data.stops[s][1].starting_floor));
+                  else
+                    if (data.stops[s] && data.stops[s][1] && data.stops[s][1].floor)
+                      current_floor = selected_floor.includes(String(data.stops[s][1].floor));
+
+                  if(data.stops[s] && data.stops[s][2] == "tour"){
+                    final_stops.push(data.stops[s]);
+                  }else{
+                      if(current_floor || current_building){ 
+                      data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
+                      final_stops.push(data.stops[s]);
+                      //binding.pry
+                      //show_plot_accordingly(final_stops, data.left);
+                    }
+                  }                
+                }
+                 sleep(2000);
+                 show_plot_accordingly(final_stops, data.left);
+              });
+            }
+          
+          
+          //$(".asdasd").children('i').remove()
+          //$("#unlock_history").children('h5').remove()
+          // data.existing_stops.flat().forEach(draw_stop)
+          //data.lock_histories.flat().forEach(draw_history)
+        },
+        fail: function(data){
+          console.log(data)
+        }
+    });
+  }
+  
+  
+  function show_plot_accordingly(stops,left) {
+    vs = 0;
+    for(var i=0 ; i < stops.length ; i++){
+      debugger
+      if(stops[i][1] != null) { 
+        vertices.push({
+          x: ((stops[i][1].x_plot / img.width)*width),
+          y:  ((stops[i][1].y_plot / img.height)*height)
+        });
+        
+        if(stops[i][2] != 'tour'){
+          
+          data_array[vs] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': moment.utc(stops[i][0].event_time).format("hh:mm A"), 'departure_time': (stops[i+1] == null ? moment.utc(stops[i][0].event_time).format("hh:mm A") : moment.utc(stops[i+1][0].event_time).format("hh:mm A")) ,'lock_access_time':  stops[i][0].event_date,'stop_pin': stops[i][0].stop_pin}]
+
+          $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot-70) / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" style="z-index: 99" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
+          vs++;
+        }
+        else{
+          // data_array[i] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': stops[i][0].event_time.split('T')[1].split('.')[0] , 'departure_time': stops[i][0].event_time.split('T')[1].split('.')[0] ,'lock_access_time':  stops[i][0].event_date }]
+
+          $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="Starting Point" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot -30)/ img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="start-point propertyDetailName" style="z-index: 99" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
+          vs++;
+        }
+      }
     }
-    else{
-      $(".asdasd").children('i').remove()
-      $("#unlock_history").children('h5').remove()
-    }
+        
+        debugger;
+
+    draw_a_line(vertices, data_array);
   }
 
   function draw_stop(stop, index){
     if(stop.x_plot + stop.y_plot > 1){
       var left_margin =  #{ ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i }
       var right_margin = #{ ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i }
-
-   //   $(".asdasd").append(`<i class="fa fa-unlock-alt stops" id="stop_${stop.id}" style="font-size: 35px; position: absolute; top: ${stop.y_plot - right_margin + 6}px; left: ${stop.x_plot - left_margin + 3}px; height:25px; width: 25px; color: #d37474; margin-top: 3px; "></i>`)
     }
   }
 
@@ -573,3 +668,100 @@
   $("#tour_histories_dates").change(function () {
         plot_data()
   })
+
+  function draw_a_line(vertices, data_array)
+  {
+    debugger
+    ctx.lineWidth = 5;
+          ctx.strokeStyle = "blue";
+          // calculate incremental points along the path
+          already_displayed = isItemInArray(already_watched,[selected_floor[0],selected_building[0]])
+          already_displayed ? ( points = vertices) :  points = calcWaypoints(vertices)
+          
+          // extend the line from start to finish with animation
+
+          animate(points);
+            debugger
+           function animate() {
+            if(already_displayed)
+            {
+              requestAnimationFrame(animate);
+            }
+            else
+            {
+            if (t < points.length - 1) {
+              if(points[t-2] != undefined && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y )
+              { 
+                $(".popover").popover('hide');
+                if (data_array[vertices_count] != undefined) {
+                  debugger;
+                  $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
+                                  html: true,
+                                  trigger: "hover",
+                                  placement: 'top',
+                                  template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
+                                }).popover('show');}
+                  vertices_count++;
+                  if(data_array[vertices_count - 1] == undefined)
+                    wait_time = 1000;
+                  else
+                    wait_time = 5000;
+                  setTimeout(function(){
+                    requestAnimationFrame(animate);
+                  }, wait_time);
+                  
+              }
+              else
+              {
+                debugger
+                requestAnimationFrame(animate);
+              }
+              
+            }
+            else
+            {
+              
+              $(".popover").popover('hide');
+              if (data_array[vertices_count] != undefined){ 
+                $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
+                            html: true,
+                            trigger: "hover",
+                            placement: 'top',
+                            template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
+                          }).popover('show');}
+              already_watched.push([selected_floor[0],selected_building[0]]);            
+            }
+          }
+              // draw a line segment from the last waypoint
+              // to the current waypoint
+              ctx.beginPath();
+              if(points.length > 1)
+              {
+                if(points[t] && points[t-1]) {
+                  ctx.moveTo(points[t - 1].x, points[t - 1].y);
+                  ctx.lineTo(points[t].x, points[t].y);
+                  ctx.stroke();
+                }
+              }
+              
+              // increment "t" to get the next waypoint
+              t++;
+
+      }
+  }
+  function isItemInArray(array, item) {
+    for (var i = 0; i < array.length; i++) {
+      
+      if (array[i][0] == item[0] && array[i][1] == item[1]) {
+          return true;   // Found it
+      
+      }
+        // This if statement depends on the format of your array
+        
+    }
+    return false;   // Not found
+  }
+  function close_pop()
+  {
+    $(".popover").popover('hide');
+  }

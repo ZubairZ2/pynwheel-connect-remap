@@ -28,6 +28,16 @@
       .modal-footer
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
         %a.btn.btn-danger.btn-ok-visitor#delete_button-visitor{"data-method"=>"delete"} Delete
+#confirm-reset-verification.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#record-name-visitor
+        
+      .modal-body#record-message-visitor
+        
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+        %a.btn.btn-danger.btn-ok-visitor#delete_button-visitor{"data-method"=>"delete"} Reset
 #confirm-delete_amenity.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content

@@ -45,6 +45,14 @@ body{
 .email_wrap a:hover{
     background: #0080bf;
 }
+#myCanvas{
+  border: solid 1px blue;  
+  width: 100%;
+}
+#floorplane_img{
+  border: solid 1px blue;  
+  width: 100%;
+}
 @media only screen and (max-width: 1400px) and (min-width: 990px) {
     .email_wrap a {
         font-size: 1.6vw;

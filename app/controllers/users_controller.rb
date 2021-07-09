@@ -1,4 +1,5 @@
 class UsersController < ApplicationController
+  # include Error::ErrorHandler
   #load_and_authorize_resource
   before_action :check_community
   before_action :set_user, only: [:edit,:update]
@@ -6,9 +7,11 @@ class UsersController < ApplicationController
 
   def index
     if current_user.is_super_admin?
-      @users = User.where(role: ["Community admin","Community manager","Super admin","visitor_detail_page", "Dwelo admin", "Community assistant"])
+      @users = User.where(role: ["Community admin","Community manager","Super admin","visitor_detail_page", "Dwelo admin","Company admin","Regional admin","Community assistant"])
     elsif current_user.is_dwelo_admin?
-      @users = User.where('id IN (?) or role = ?', Community.where(creator_id: User.where(role: "Dwelo admin").ids).collect{|c| c.users.map(&:id)}.flatten, "Dwelo admin")
+      @users = User.where('id IN (?) or role IN (?)', Community.where(creator_id: User.where(role: ["Dwelo admin","Company admin","Regional admin"]).ids).collect{|c| c.users.map(&:id)}.flatten, ["Dwelo admin","Company admin","Regional admin"])
+    elsif current_user.is_company_admin? || current_user.is_regional_admin?
+      @users = User.where(id: current_user.id)
     else
       @users = User.find current_user.communities.collect{|c| c.users.map(&:id)}.flatten
     end
@@ -38,39 +41,60 @@ class UsersController < ApplicationController
     u = User.find(params[:id])
     data = u.communities.pluck(:id)
     chat_enable_communities = params[:enable_community_id].present? ? params[:enable_community_id] : [""] rescue nil
-    if @user.update(user_params)
-      data.each do |d|
-        if params[:user][:community_ids].present?
-          unless params[:user][:community_ids].map(&:to_i).include? d
-            community = CommunityUser.create(user_id: params[:id], community_id: d)
-            chat_enabled_communites.push(community)
-          end
-        end
-      end
-      if chat_enable_communities.present?
-        chat_enable_communities.each do |community|
-          if community.present?
-            user_community = CommunityUser.where(community_id: community, user_id: u.id)
-            unless user_community.present?
-              user_community = chat_enabled_communites.where(community_id: community, user_id: u.id)
-              user_community.each do |usercommunity|
-                usercommunity.update!(enable_community_id: usercommunity.community_id, chat_enable: true)
-              end
-            else
+    comp = Company.find_by params[:company_name]
+    com_to_dlt = (data & comp.communities.ids ) -  params[:user][:community_ids].map(&:to_i) rescue []
+    data = data - com_to_dlt
 
-              user_community.each do |comunity|
-                comunity.update!(enable_community_id: comunity.community_id, chat_enable: true)
-              end
-            end
-          end
+    user = User.find(params[:id])
+    if params[:user][:role] == 'Company admin'
+      if user.company_id.blank? || user.company.name != (Company.find_by_name params[:user][:company_name]).name
+        CommunityUser.where(user_id: params[:id].to_i, community_id: user.communities.pluck(:id)).destroy_all
+        user.update_column(:company_id, (Company.find_by_name params[:user][:company_name]).id)
+      end
+      user.update_column(:region_id, nil) 
+    elsif params[:user][:role] == 'Regional admin'
+      if user.company_id.blank? || user.company.name == (Company.find_by_name params[:user][:company_name]).name
+        if user.region_id.blank? || user.region.id != (params[:user][:region_id]).to_i
+          CommunityUser.where(user_id: params[:id].to_i, community_id: user.communities.pluck(:id)).destroy_all
+          user.update_column(:company_id, (Company.find_by_name params[:user][:company_name]).id)
+          user.update_column(:region_id, (params[:user][:region_id]).to_i) 
         end
-        flash[:notice] = alert_message
-        redirect_to redirect_path
       else
-        flash[:error] = @user.errors.full_messages.join(',')
-        render render_action
+        CommunityUser.where(user_id: params[:id].to_i, community_id: user.communities.pluck(:id)).destroy_all
+        user.update_column(:company_id, (Company.find_by_name params[:user][:company_name]).id)
+        user.update_column(:region_id, (params[:user][:region_id]).to_i) 
+      end
+    else
+      user.update_column(:company_id, nil) 
+      user.update_column(:region_id, nil) 
+    end
+
+    user_previous_communities_ids = user.communities.pluck(:id)
+    new_user_communities_ids = params[:user][:community_ids].present? ? ((params[:user][:community_ids].reject {|e| e.blank?}).map(&:to_i)) : []
+    if @user.update(user_params)
+      user_previous_communities_ids.each do |id|
+        if new_user_communities_ids.present? && !(new_user_communities_ids.include? id)
+          community = CommunityUser.create(user_id: params[:id], community_id: id) unless CommunityUser.where(user_id: params[:id], community_id: id).any?
+        end
       end
     end
+    current_user_communities_ids = user.communities.pluck(:id) # communities_ids of selected user
+    user_previous_chat_enabled_communities_ids = CommunityUser.where(user_id: params[:id], community_id: current_user_communities_ids, chat_enable: true).ids
+    chat_enable_communities = params[:enable_community_id].present? ? ((params[:enable_community_id].reject {|e| e.blank?}).map(&:to_i)) : [] 
+    view_chat_enable_communities_ids = CommunityUser.where(user_id: params[:id], community_id: chat_enable_communities).ids 
+    if chat_enable_communities.present? && !view_chat_enable_communities_ids.present? 
+      chat_enable_communities.each do |comm_id|
+        CommunityUser.create(user_id: params[:id], community_id: comm_id,chat_enable: true) unless CommunityUser.where(user_id: params[:id], community_id: comm_id,chat_enable: true).any?
+      end
+      view_chat_enable_communities_ids = CommunityUser.where(user_id: params[:id], community_id: chat_enable_communities).ids 
+    end
+    chat_communities_ids_for_add = view_chat_enable_communities_ids - user_previous_chat_enabled_communities_ids
+    chat_communities_ids_for_remove = user_previous_chat_enabled_communities_ids - view_chat_enable_communities_ids
+    CommunityUser.where(id: chat_communities_ids_for_add).update_all(chat_enable: true) if chat_communities_ids_for_add.present?
+    CommunityUser.where(id: chat_communities_ids_for_remove).update_all(chat_enable: false) if chat_communities_ids_for_remove.present?
+    flash[:notice] = alert_message
+    redirect_to redirect_path
+
   end
 
   def destroy
@@ -79,6 +103,7 @@ class UsersController < ApplicationController
     flash[:notice] = "User deleted successfully."
     redirect_to company_employees_path(current_company)
   end
+
   def alert_message
     params[:action_name].present? && params[:action_name] == "profile" ? "Profile is updated successfully" : "User is updated successfully"
   end

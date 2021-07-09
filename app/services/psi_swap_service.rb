@@ -35,6 +35,8 @@ class PsiSwapService < BaseService
         if response["response"]["code"] == 200
           units = []
           floorplans = []
+          # Unit.where(community_id: credentials.community_id, provider: "psi_new").destroy_all
+          # Floorplan.where(community_id: credentials.community_id, provider: "psi_new").delete_all
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
             pro["ILS_Unit"].each do |ils|
               units << ils
@@ -52,7 +54,7 @@ class PsiSwapService < BaseService
       end
     end
     fill_psi_pricing_details
-    rename_provider
+    # rename_provider
   end
 
   def save_psi_units(units,property_id)
@@ -60,20 +62,35 @@ class PsiSwapService < BaseService
 
       vacateDate = ""
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"])
-      if unit.count > 1
-        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],floorplan_id: Floorplan.find_by(name: u["Units"]["Unit"]["UnitType"]).provider_floorplan_id)
+      # unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"])
+      # if unit.count > 1
+      #   unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],floorplan_id: Floorplan.find_by(name: u["Units"]["Unit"]["UnitType"], community_id: credentials.community_id).provider_floorplan_id)
+      # end
+      # if unit.count > 1
+      #   unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],building: u["Units"]["Unit"]["BuildingName"].present? ? u["Units"]["Unit"]["BuildingName"].gsub("Building ", "") : "")
+      # end
+
+      unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
+      
+      unless unit.present?
+        unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)#.first_or_initialize
       end
-      if unit.count > 1
-        unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],building: u["Units"]["Unit"]["BuildingName"].present? ? u["Units"]["Unit"]["BuildingName"].gsub("Building ", "") : "")
+
+      unless unit.present?
+        unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
       end
+      
+      puts "******************psi swap*******************"*20
+      puts unit.inspect
+      puts "*************************************"*20
+
       if unit.present?
-        unit = unit.first
-        unit.provider = "psi_new"
-        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-" + u["Units"]["Unit"]["MarketingName"]
+        # unit = unit.first
+        unit.provider = "psi"
+        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
-        # unit.marketing_name = u["Units"]["Unit"]["MarketingName"].to_i
+        unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         if u["Units"]["Unit"]["MinSquareFeet"].present?
           if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
             unit.square_feet = u["Units"]["Unit"]["MinSquareFeet"].to_f
@@ -114,18 +131,28 @@ class PsiSwapService < BaseService
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
       else
-        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s+ "-" + u["Units"]["Unit"]["MarketingName"])
-        if dup.present?
-          dup.destroy
-        end
+        # dup = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
+      
+        # unless dup.present?
+        #   dup = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)#.first_or_initialize
+        # end
+  
+        # unless dup.present?
+        #   dup = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
+        # end     
+
+        # if dup.present?
+        #   dup.destroy
+        # end
+        
         # unit = Unit.where(community_id: credentials.community_id).first
         unit = Unit.new
         unit.community_id = credentials.community_id
-        unit.provider = "psi_new"
+        unit.provider = "psi"
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
-        unit.provider_unit_id =  u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-" + u["Units"]["Unit"]["MarketingName"]
+        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
         # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["Units"]["Unit"]["MarketRent"].present?
@@ -169,12 +196,12 @@ class PsiSwapService < BaseService
 
       end
     end
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      unless d.provider == "psi_new" || d.provider == "manually"
-        d.destroy
-      end
-    end
+    # Unit.where(community_id: credentials.community_id, provider: "psi_new").destroy_all
+    # unit.each do |d|
+    #   unless d.provider == "psi_new" || d.provider == "manually"
+    #     d.destroy
+    #   end
+    # end
 
   end
 
@@ -187,7 +214,7 @@ class PsiSwapService < BaseService
       end
       if floorplan.present?
         floorplan = floorplan.first
-        floorplan.provider = "psi_new"
+        floorplan.provider = "psi"
         floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
         floorplan.property_id = property_id
         floorplan.name = f["Name"]
@@ -227,16 +254,16 @@ class PsiSwapService < BaseService
         end
         floorplan.save
       else
-        dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"])
-        if dup.present?
-          dup.destroy
-        end
+        # dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"])
+        # if dup.present?
+        #   dup.destroy
+        # end
         # floorplan = Floorplan.where(community_id: credentials.community_id).first
         # c = Community.find(credentials.community_id)
         floorplan = Floorplan.new
         floorplan.community_id = credentials.community_id
         floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
-        floorplan.provider = "psi_new"
+        floorplan.provider = "psi"
         floorplan.property_id = property_id
         floorplan.name = f["Name"]
         floorplan.unit_count = f["UnitsAvailable"]
@@ -377,6 +404,14 @@ class PsiSwapService < BaseService
                       unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                     end
 
+                    unless unit.present? # filter by unitId + unitSpaceId
+                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
+                    end
+                    
+                    puts "**************"*20
+                    puts "psi swap UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
+                    puts "**************"*20
+
                     if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                       unit.availability = 'Unoccupied'
                       unit.available = true
@@ -482,6 +517,15 @@ class PsiSwapService < BaseService
                         unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                         end
+
+                        unless unit.present? # filter by unitId + unitSpaceId
+                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
+                        end
+                        
+                        puts "**************"*20
+                        puts "psi swap UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
+                        puts "**************"*20
+
                         if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                           unit.availability = 'Unoccupied'
                           unit.available = true
@@ -601,27 +645,31 @@ class PsiSwapService < BaseService
     community.update_attribute(:website,response['response']['result']["PhysicalProperty"]["Property"][0]["PropertyID"]["WebSite"])
   end
   def rename_provider
-    fp = Floorplan.where(community_id: credentials.community_id)
-    fp.each do |d|
-      unless d.provider == "psi_new"
-        d.destroy
-      end
-    end
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      if d.provider == "psi_new"
-        d.provider = "psi"
-        d.save
-      end
-    end
+    Floorplan.where(community_id: credentials.community_id, provider: "psi").delete_all
+    Floorplan.where(community_id: credentials.community_id, provider: "psi_new").update_all(provider: "psi")
+    # fp = Floorplan.where(community_id: credentials.community_id)
+    # fp.each do |d|
+    #   unless d.provider == "psi_new"
+    #     d.destroy
+    #   end
+    # end
+    Unit.where(community_id: credentials.community_id, provider: "psi").delete_all
+    Unit.where(community_id: credentials.community_id, provider: "psi_new").update_all(provider: "psi")
+    # unit = Unit.where(community_id: credentials.community_id)
+    # unit.each do |d|
+    #   if d.provider == "psi_new"
+    #     d.provider = "psi"
+    #     d.save
+    #   end
+    # end
 
-    fp = Floorplan.where(community_id: credentials.community_id)
-    fp.each do |d|
-      if d.provider == "psi_new"
-        d.provider = "psi"
-        d.save
-      end
-    end
+    # fp = Floorplan.where(community_id: credentials.community_id)
+    # fp.each do |d|
+    #   if d.provider == "psi_new"
+    #     d.provider = "psi"
+    #     d.save
+    #   end
+    # end
   end
 
 end

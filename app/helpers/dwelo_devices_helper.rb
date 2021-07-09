@@ -2,7 +2,7 @@ module DweloDevicesHelper
   def dwelo_client_credentials(community_dwelo_account)
     @dwelo_user = Dwelo.find_by(community_id: community_dwelo_account.community_id)
     if @dwelo_user.present?
-      auth_url = "https://api.dwelo.com/v3/oauth/access_token"
+      auth_url = base_url + "/v3/oauth/access_token"
       get_token_response = HTTParty.post(auth_url,
                                          body: {
                                              client_id: community_dwelo_account.client_id,
@@ -136,7 +136,8 @@ module DweloDevicesHelper
   end
 
   def base_url
-    "https://api.dwelo.com"
+    @community.dwelo.api_url
+    # "https://api.dwelo.com"
   end
 
 
@@ -197,9 +198,11 @@ module DweloDevicesHelper
 
   def dwelo_lock_access(params, community, current_time)
     Thread.new do
+      begin
       tour_user = TourUser.find params[:tour_user_id]
+      tour_user.update_column 'dwelo_status' , 'in progress'
       providers_account = Dwelo.find_by(community_id: params[:id]) rescue nil
-
+      @community = community
       access_token = dwelo_client_credentials(providers_account)
       prev_data = tour_user.as_guests.find_by(community_id: params[:id])
 
@@ -225,12 +228,20 @@ module DweloDevicesHelper
           grant_dwelo_user_access(access_token, tour_user_guest_id, lock[0])
         end
       end
+      tour_user.update_column 'dwelo_status' , 'complete'
+      rescue => ex
+        tour_user.update_column 'dwelo_status' , 'complete'
+        puts "--------- Dwelo error -------- ", ex
+      end
+
     end
   end
 
   def edgestate_lock_Access(params, community, current_time)
     Thread.new do
+      begin
       tour_user = TourUser.find params[:tour_user_id]
+      tour_user.update_column 'edge_state_status' , 'in progress'
       access_token = RemoteLockService.new(community).client_credentials
       prev_data = tour_user.as_guests.where(community_id: params[:id])
       # ----------- creating a guest for remote lock (type = locks) ----------------- #
@@ -255,11 +266,19 @@ module DweloDevicesHelper
         igloo_guest_ids.map{ |guest_id| RemoteLockService.new(community).delete_igloo_guests(access_token, guest_id) unless guest_id == ''}
         IglooGuest.where(guest_id: igloo_guest_ids).update_all(status: 'deleted')
       end
+      tour_user.update_column 'edge_state_status' , 'complete'
+      rescue => ex
+        tour_user.update_column 'edge_state_status' , 'complete'
+        puts "--------- EdgeState error -------- ", ex
+      end
+
     end
   end
 
   def create_latch_reservation(community, tour_user, start_time)
     Thread.new do
+      begin
+      tour_user.update_column 'latch_status' , 'in progress'
       end_time = start_time + 90.minutes
 
       stops_arr = community.tour.tour_stops.where(display_stop: true).order(:sort)
@@ -297,7 +316,6 @@ module DweloDevicesHelper
         lock_info = building_starting_point.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
-
       if locks_data.present?
         LatchGuest.where(tour_user_id: tour_user.id, community_id: community.id).update_all(status: "deleted")
         locks_data.each do |lock_info|
@@ -317,6 +335,12 @@ module DweloDevicesHelper
           end
         end
       end
+      tour_user.update_column 'latch_status' , 'complete'
+      rescue => ex
+        tour_user.update_column 'latch_status' , 'complete'
+        puts "--------- Latch error -------- ", ex
+      end
+      
     end
   end
 
@@ -370,16 +394,46 @@ module DweloDevicesHelper
   end
 
   def sf_nearest_time_tour(community, tour_user, current_time, timezone)
-    tours_exist = false; on_time_tour=nil; nearest_tour=nil; time_status=nil;
+    tours_exist = false; on_time_tour=nil; nearest_tour=nil; time_status=nil; salesforce_grace_period=10;
 
     response = SalesforceServices::GetBookingByNeighbor.call(community: community, tour_user: tour_user)
+    puts "\n\n"
+    puts "tour_user"
+    puts tour_user
+    puts "---"*50
+    puts "Response"
+    puts "---"*50
+    puts response.inspect
+    puts "---"*50
+    puts "current_time"
+    puts "---"*50
+    puts current_time
+    puts "---"*50
+    puts "timezone"
+    puts "---"*50
+    puts timezone
+    puts "---"*50
+    puts "community"
+    puts "---"*50
+    puts community.inspect
+    puts "---"*50
+    puts "response.payload"
+    puts "---"*50
+    puts response.payload.inspect
+    puts "\n\n"
+    
     if response.success? and response.payload.present?
-      today_scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and b["Status__c"] == "Scheduled" and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
+      if community.crm_credential.salesforce_property_id.present?
+        today_scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Id"] == @community.crm_credential.salesforce_property_id) and (b["Status__c"] == "Scheduled" || b["Status__c"] == "Confirmed" || b["Status__c"] == "Rescheduled") and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
+      else
+        today_scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Name"].downcase.parameterize.gsub("-", "").gsub("_", "") == @community.name.downcase.parameterize.gsub("-", "").gsub("_", "")) and (b["Status__c"] == "Scheduled" || b["Status__c"] == "Confirmed" || b["Status__c"] == "Rescheduled") and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
+      end
+
       if tours_exist = today_scheduled_tours.present?
-        on_time_tour = is_sf_tour_on_time(current_time, today_scheduled_tours, community.tour.grace_period, timezone)
+        on_time_tour = is_sf_tour_on_time(current_time, today_scheduled_tours, salesforce_grace_period, timezone)
         current_tour = on_time_tour
         unless on_time_tour.present?
-          time_status , nearest_tour = sf_tour_time_status(current_time, today_scheduled_tours, timezone)
+          time_status , nearest_tour = sf_tour_time_status(today_scheduled_tours, current_time, timezone)
           current_tour = nearest_tour
         end
         
@@ -521,4 +575,29 @@ module DweloDevicesHelper
     end
   end
 
+  def tour_stops_ids(tour_user, community)
+    scheduled_tour = MaxDateScheduledTourService.new(tour_user, community, false).get_scheduled_tour
+
+    if scheduled_tour.present? && scheduled_tour.stops_list.present?
+      community.tour.tour_stops.where(stop_type: ["amenity", "unit"]).pluck(:id) - scheduled_tour.stops_list
+    else
+      community.tour.tour_stops.where(display_stop: false).pluck(:id)
+    end
+  end
+
+  def allowed_stop_ids(tour_user, community)
+    scheduled_tour = MaxDateScheduledTourService.new(tour_user, community, false).get_scheduled_tour
+
+    if scheduled_tour.present? && scheduled_tour.stops_list.present?
+      community.tour.tour_stops.where(id: scheduled_tour.stops_list).pluck(:stop_id)
+    else
+      community.tour.tour_stops.where(display_stop: true).pluck(:stop_id)
+    end
+  end
+  def tour_user_arrival_email(tour_user, community)
+    emails = community.email.gsub(" ","").split(',')
+    emails.each do |email|
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email,"info@pynwheel.com").deliver
+    end
+  end
 end

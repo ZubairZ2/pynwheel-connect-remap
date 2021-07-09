@@ -42,7 +42,7 @@
               </i>
             </div>
             <div class="mt-10">
-              <% if @community.is_sitemap && (current_user.is_super_admin? || current_user.is_community_admin? ) %>
+              <% if @community.is_sitemap && current_user.is_admin? %>
                 <%= link_to "PLOT ELEVATOR", plot_elevators_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_elevators_btn" %>
               <% end %>
             </div>
@@ -71,7 +71,7 @@
   {
     $('[data-toggle="amenityAddFilesPopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Import property elevator photos or renderings here. After you import an image, you will be able to plot a marker on the Property Map. For example, add an image of the courtyard and then plot an elevator marker for the courtyard on the Property Map.</div><div class="popover-footer"><a id="amenityAddFilesPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Import property elevator photos or renderings here. After you import an image, you will be able to plot a marker on the Property Map. For example, add an image of the courtyard and then plot an elevator marker for the courtyard on the Property Map.</div><div class="popover-footer"><a id="amenityAddFilesPopoverClose" href="#" class="btn btn-info btn-sm">Close</a></div></div>'
     }).popover('show');
   }
 

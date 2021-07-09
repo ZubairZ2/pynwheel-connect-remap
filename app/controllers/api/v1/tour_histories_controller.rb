@@ -10,16 +10,36 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
         tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
         tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
+        tour_history.tour_state = "completed" if params[:left].present?
+        tour_history.tour_type = params[:tour_session_type] if params[:tour_session_type].present?
+        tour_history.community_id = params[:community_id]
+        tour_history.community_time_zone = get_community_time_zone(set_community)
+        if  params[:tour_site].present?
+          if params[:tour_site] == "self_tour"
+            tour_history.tour_site = "onsite"
+          elsif params[:tour_site] == "virtual_tour"
+            tour_history.tour_site = "offsite"
+          end
+        end
         tour_history.tour_id = params[:tour_id].to_i if params[:tour_id].present?
         tour_history.lengthy_stay = convert_epoch_to_datetime params[:lengthy_stay] if params[:lengthy_stay].present?
         if params[:time_zone].present?
           tour_history.my_time_zone = params[:time_zone].to_s rescue nil
         end
+        save_visitedStops params  if params[:tour_stop_id].present?
+        
         tour_history.abandoned_tour_at_stop = params[:abandoned_tour_at_stop] if params[:abandoned_tour_at_stop].present?
         tour_history.active_app = params[:active_app] if params[:active_app].present?
         tour_history.tour_user_id = params[:tour_user_id]
-        @tour = Tour.find params[:tour_id]
 
+        tour_history.see_availability_counter = params[:see_availability_counter].to_i if params[:see_availability_counter].present?
+        tour_history.apply_click_counter = params[:apply_clicks_counter].to_i if params[:apply_clicks_counter].present?
+        tour_history.price_opened_counter = params[:price_opened_counter].to_i if params[:price_opened_counter].present?
+        tour_history.notes_opened_counter = params[:notes_opened_counter].to_i if params[:notes_opened_counter].present?
+        tour_history.camera_opened_counter = params[:camera_opened_counter].to_i if params[:camera_opened_counter].present?
+        tour_history.visited_pages_counter = params[:visited_pages_counter].to_i if params[:visited_pages_counter].present?
+
+        @tour = Tour.find params[:tour_id]
         tu = TourUser.find params[:tour_user_id]
         tour_history.latitude = tu.latitude rescue nil
         tour_history.longitude = tu.longitude rescue nil
@@ -34,6 +54,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
           tour_history.longitude = tu.longitude
           tour_history.tour_key = tu.tour_key
           tour_history.tour_status = tu.tour_type
+          tour_history.lock_access_time = tu.lock_access_time
       
           tu.save
         rescue => ex
@@ -61,6 +82,37 @@ class Api::V1::TourHistoriesController < ActionController::Base
       end
     end
   end
+  def save_visitedStops params
+    arr = []
+    stops = params[:tour_stop_id].split(',')
+    begin
+      a1 = TourUser.find params[:tour_user_id].to_i
+      a2 = Tour.find params[:tour_id].to_i
+    rescue => ex
+    end
+    stops.each do |stop_id|
+      begin
+        s_id , dateTime, stop_type, stop_pin = stop_id.split('|')
+        a3 = TourStop.find s_id.to_i
+        _date = dateTime.present? ? DateTime.parse(dateTime).strftime('%a, %d %b %Y %H:%M:%S') : nil
+      rescue => ex
+      end
+      if a1.present? && a2.present? && a3.present?
+        unless (stop_id.to_i == params[:tour_id].to_i)
+          vs_ = VisitedStop.find_by(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, tour_key: params[:tour_key], event_date: _date, event_time: _date.to_s.split(" ").last,stop_type: stop_type)
+          vs = VisitedStop.create(tour_user_id: params[:tour_user_id].to_i,tour_stop_id: stop_id.to_i,tour_id: params[:tour_id].to_i, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false, event_date: _date, event_time: _date,stop_type: stop_type, stop_pin: ( (stop_pin).gsub("Use code ","").gsub(" to enter.","").gsub("# to enter.","") rescue "")) unless vs_.present?
+        end
+      end
+      if vs.present?
+        arr << true
+      else
+        arr << false
+      end
+    end
+    puts "------**"*50
+    puts "save_visitedStops"
+    puts arr
+  end
 
   def alerts_during_tour
     access = grant_access (decoded(params[:token])) rescue false
@@ -86,6 +138,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
         check_length_stay(params[:tour_history_id], params[:lengthy_stay], tour.community, tu, params[:current_stop_id]) if (params[:tour_history_id].present? and params[:lengthy_stay].present?)
         chat_control = (tour.community.chat_control and tour.community.is_chat_available) ? tour.community.chat_control : false
+        has_tour_user_left(tour.community, tu, params[:lat_langs].last) if params[:lat_langs].present?
         chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
         if chatroom.present?
           if params[:last_msg_id].present?
@@ -96,7 +149,6 @@ class Api::V1::TourHistoriesController < ActionController::Base
         else
           count = 0
         end
-
         render :json=> {:success=>true, :message => "success", :un_read_msgs_count=> count, :id_mismatch=> id_mismatch, chat_control: chat_control}
       else
         render :json=> {:success=>false, :message => "Please provide community_id, tour_id and tour_user_id"}
@@ -111,21 +163,35 @@ class Api::V1::TourHistoriesController < ActionController::Base
     stay_time = time_difference(lengthy_stay, tour_history.arrived)
     
     if stay_time > community.tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == false && tour_history.tour_status == "self_tour"
-      stop = TourStop.find stop_id
+      stop = TourStop.find_by_id stop_id
+      at_stop = stop.present? ? stop.name : community.name
+      
       # contact_user = (tu.phone_number.present? ? ("<br><br><b>Want to check in with them? " + tu.phone_number) + "<b>" : (community.chat_control ? ("#{tu.phone_number.present? ? "<br>Or" : ""}<br><br><b>Want to check in with them?  <a href='" + base_url+"companies/#{community.company.id}/communities/#{community.id}/edit?tour_user_id=#{tu.id}" + "'>Open Chat</a>" ) : "")
       phone_number = tu.phone_number.last(10).gsub(/^(\d{3})(\d+)(\d{4})$/, '\1-\2-\3') rescue ""
       phone_number_text = phone_number.present? ? ("<br><br><b>Want to check in with them? " + "<a href='tel:" + phone_number + "'> " + phone_number + " <a>" + "<b>") : ""
       contact_user = (phone_number_text + (community.chat_control ? ("#{tu.phone_number.present? ? "<br><br>Or" : ""}<br><br><b>Want to check in with them?  <a href='" + base_url+"companies/#{community.company.id}/communities/#{community.id}/edit?tour_user_id=#{tu.id}" + "'>Open Chat</a>" ) : ""))
 
-      @mail_content = ["lengthy_stay", "#{tu.name.titleize} has been on a Self Tour at #{community.name} for #{stay_time} minutes. They are currently at #{stop.name}.#{contact_user}</b>"] #get_alert_message('lengthy_stay')
+      @mail_content = ["lengthy_stay", "#{tu.name.titleize} has been on a Self Tour at #{community.name} for #{stay_time} minutes. They are currently at #{at_stop}. #{contact_user}</b>"] #get_alert_message('lengthy_stay')
       tour_history.update_column 'lengthy_stay_email_sent',true
 
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email).deliver
+        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email,community,false).deliver
       end
 
     end
+  end
+  def has_tour_user_left(community, tu, lat_long)
+    if(tu.arrival_email_sent and lat_long.present? and geo_distance(lat_long[:lat],lat_long[:lng],community.latitude, community.longitude, 1)  )
+      emails = community.email.gsub(" ","").split(',')
+      emails.each do |email|
+        NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.capitalize}  has left #{community.name}", email,community,false).deliver
+        tu.update_column 'arrival_email_sent' , false 
+      end
+    end
+  end
+  def geo_distance(lat1,long1,lat2,long2,limit)
+    return ((Geocoder::Calculations.distance_between([lat1,long1],[lat2,long2],options = {:units => :km}) > limit) rescue true)
   end
   def time_difference(lengthy_stay, arrival_time)
     ((lengthy_stay - arrival_time) / 1.minute).round
@@ -179,4 +245,23 @@ class Api::V1::TourHistoriesController < ActionController::Base
   def set_community
     @community ||= Community.find_by_id params[:community_id] if params[:community_id].present?
   end
+
+  def get_community_time_zone(community)
+    tz = Ziptz.new
+    timezone = nil
+
+    if community.latitude.present? and community.longitude.present?
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and community.zip.present?
+      timezone = tz.time_zone_name(community.zip)
+    end
+
+    return timezone
+  rescue
+    return "UTC"
+  end
+
 end

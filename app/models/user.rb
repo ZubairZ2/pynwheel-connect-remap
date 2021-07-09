@@ -58,13 +58,13 @@ class User < ApplicationRecord
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable, :timeoutable, :timeout_in => 8.hours
   #ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]  
-  ROLES = ["Community admin", "Community manager",["Pynwheel admin","Super admin"],["View Visitor Details","visitor_detail_page"], ["Dwelo admin","Dwelo admin"], ["Community Assistant (Self Tour)","Community assistant"]]
-  ROLES_DWELO_ADMIN = [["Community admin", "Community admin"],["Community manager","Community manager"],["View Visitor Details","visitor_detail_page"], ["Community Assistant (Self Tour)","Community assistant"]]
+  ROLES = ["Community admin", "Community manager",["Company admin","Company admin"] ,["Regional admin", "Regional admin"], ["Pynwheel admin","Super admin"],["View Visitor Details","visitor_detail_page"], ["Dwelo admin","Dwelo admin"], ["Community Assistant (Self Tour)","Community assistant"]]
+  ROLES_DWELO_ADMIN = [["Company admin","Company admin"] ,["Regional admin", "Regional admin"], ["Community admin", "Community admin"],["Community manager","Community manager"],["View Visitor Details","visitor_detail_page"], ["Community Assistant (Self Tour)","Community assistant"]]
   ROLES_ADMIN = [ "Community manager"]   
   belongs_to :company
+  belongs_to :region
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
-
   # before_validation :gen_uuid, on: :create
   # validates :uuid, presence: true, uniqueness: true
 
@@ -91,6 +91,10 @@ class User < ApplicationRecord
     (role == "Community admin") || (role == "Dwelo admin")
   end
 
+  def is_comm_admin?
+    role == "Community admin"
+  end
+
   def is_community_manager?
     role == "Community manager"
   end
@@ -106,6 +110,31 @@ class User < ApplicationRecord
   def is_community_assistant?
     role == "Community assistant"
   end
+
+  def return_last_cms_session
+    if !self.cms_sessions.any?
+      self.cms_sessions.build
+    elsif self.cms_sessions.start_datetime_in_limit?
+      last_session = self.cms_sessions.last
+      last_session.update_column(:end_datetime, (last_session.start_datetime + 10.minutes) )
+      self.cms_sessions.build
+    else
+      self.cms_sessions.last
+    end
+  end
+
+  def is_company_admin?
+    role == "Company admin"
+  end
+
+  def is_regional_admin?
+    role == "Regional admin"
+  end
+
+  def is_admin?
+    is_super_admin? || is_community_admin? ||  is_community_manager? || is_company_admin? || is_regional_admin?
+  end
+
   # def gen_uuid
   #   self.uuid = SecureRandom.uuid
   # end

@@ -49,18 +49,15 @@
           %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_amenity_Popover","data-content" => " "}
             %span#propertyDetailNameText
               Amenities are added on the "Amenities" page. Select an amenity from the list below to add it to the tour.
-        .imageselect.amenity-imageselect
-          .show-categories
-            = "- select amenity -"
-          %ul#imageselect1{:style => "display: none; z-index: 999;"}
-            - amenity_arr = []
-            - @amenities.each do |amenity|
-              - if !@community.show_map || !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
-                %li{"data-id" => "#{amenity.id.to_s+":amenity"}","data-name" => "#{amenity.name}"}
-                  %a
-                    = image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"
-                    %span.ml-5
-                      = amenity.name
+    
+        - amenity_arr = []
+        - select_tag_amenity = []
+        - @amenities.each do |amenity|
+          - if !@community.show_map || !@tour_amenity_array.include?(amenity.id) && (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 ) && (amenity.amenityable_type == "Sitemap" || amenity.amenityable_type == "Floorplate" )
+            - select_tag_amenity << ["<img src='#{image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"}' />".html_safe + amenity.name, amenity.id.to_s+":amenity"]
+              
+        = select_tag "tour_stop_ids", options_for_select(select_tag_amenity, ""), :class => 'chosen-select-amenity',:"data-placeholder" => "- select amenity -", :multiple => "multiple", :name => "amenity_data_selected", style: "width: 100%;"  
+        %input{:type => "submit", :id=> 'add_amenity_to_stop', :class => 'hidden', :style => "border-radius: 6px; margin-top: 6px;"}/     
 
       - if @community.mdu
         - units = @units.sort_by{|u| u.marketing_name}
@@ -70,20 +67,19 @@
             %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_unit_Popover","data-content" => " "}
               %span#propertyDetailNameText
                 Units are imported on the "Data" page and can be edited on the "Units" page. Select a unit from the list below to add it to the tour. If a unit is not on the list, it may be because it is not plotted on the map.
-          .imageselect.unit-imageselect
-            .show-categories
-              = "- select unit -"
-            %ul#imageselect2{:style => "display: none; z-index: 999;"}
-              - amenity_arr = []
-              - stop_list = @tour_stops.map{|x| x.stop_id}
-              - units.each do |unit|
-                - if (!@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0) ) || !@community.show_map #|| (unit.modal_unit && !stop_list.include?(unit.id))
-                  %li{"data-id" => "#{unit.id.to_s+":unit"}","data-name" => "#{unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name}"}
+          - amenity_arr = []
+          - select_tag_unit = []
+          - stop_list = @tour_stops.map{|x| x.stop_id}
+          
+          - units.each do |unit|
+            - if (!@tour_unit_array.include?(unit.id) && (unit.x_plot.to_i + unit.y_plot.to_i > 0) ) || !@community.show_map
+              - select_tag_unit << [unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name, unit.id.to_s+":unit"]
+          = select_tag "tour_stop_ids", options_for_select(select_tag_unit, ""), :class => 'chosen-select-unit',:"data-placeholder" => "- select unit -", :multiple => "multiple",:name => "unit_data_selected", style: "width: 100%;"
 
-                    %span.ml-5
-                      = unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name
-              -#- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
-              -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
+          %input{:type => "submit", :id=> 'add_unit_to_stop', :class => 'hidden', :style => "border-radius: 6px; margin-top: 6px;"}/      
+
+          -#- ts = TourStop.find_by(stop_type: "unit",stop_id: unit.id)
+          -#- amenity_arr.push([unit.id.to_s+":unit", ts.present? ? ts.latitude.to_i : 0,  ts.present? ? ts.longitude.to_i : 0, true, unit.marketing_name])
 
 
       -#.col-lg-4{:style => "margin-bottom: 10px;"}
@@ -131,24 +127,25 @@
                                   Click two road icons in sequence to draw a path on the map below between the two stops you have selected. 
                   - @building_starting_points.where(building: @building).each do |bsp1,index|
                     - stop = @tour_stops.find_by(stop_id: bsp1.id)
-                    %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
-                      - orderVar = orderVar + 1
-                      %td= orderVar
-                      %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
-                        = bsp1.name 
-                      %td
-                        = link_to draw_line_path(bsp1) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
-                          %i.fa.fa-road.icon_size.additionalPageAction
-                            %span#additionalPageActionText
-                              Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
-                        = link_to edit_community_building_starting_point_path(@community.id,bsp1) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
-                          %i.fa.fa-edit.icon_size.additionalPageAction
-                            %span#additionalPageActionText
-                              Click on the edit icon to edit the stop. Add photos, videos, and text. 
-                        %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
-                          %i.fa.fa-trash.icon_size.additionalPageAction
-                            %span#additionalPageActionText 
-                              Click on the trash can to delete a stop.  
+                    - if stop.present? && stop.stop_type.present? 
+                      %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
+                        - orderVar = orderVar + 1
+                        %td= orderVar
+                        %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
+                          = bsp1.name 
+                        %td
+                          = link_to draw_line_path(bsp1) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
+                            %i.fa.fa-road.icon_size.additionalPageAction
+                              %span#additionalPageActionText
+                                Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
+                          = link_to edit_community_building_starting_point_path(@community.id,bsp1) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
+                            %i.fa.fa-edit.icon_size.additionalPageAction
+                              %span#additionalPageActionText
+                                Click on the edit icon to edit the stop. Add photos, videos, and text. 
+                          %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
+                            %i.fa.fa-trash.icon_size.additionalPageAction
+                              %span#additionalPageActionText 
+                                Click on the trash can to delete a stop.  
                   - if @tour_stops.present?
                     - sortable_fetch(@tour_stops.order(:sort)) do |stop,index|
                       - if !@community.mdu && stop.stop_type == "unit"
@@ -416,6 +413,53 @@
               / End Panel left Side
         / /.content
 :javascript
+  $(".chosen-select-unit").chosen({
+    no_results_text: "Oops, nothing found!"
+  })
+  $(".chosen-select-amenity").chosen({
+    no_results_text: "Oops, nothing found!"
+  })
+  $(".chosen-select-unit").change(function(){
+    if($('select[name="unit_data_selected"]').val().length > 0)
+    {
+      $("#add_unit_to_stop").removeClass('hidden')
+    }
+    else
+    {
+      $("#add_unit_to_stop").addClass('hidden')
+    }
+  });
+  $(".chosen-select-amenity").change(function(){
+    if($('select[name="amenity_data_selected"]').val().length > 0)
+    {
+      $("#add_amenity_to_stop").removeClass('hidden')
+    }
+    else
+    {
+      $("#add_amenity_to_stop").addClass('hidden')
+    }
+  });
+  $("#add_unit_to_stop").click(function(){
+    data_to_add = $('select[name="unit_data_selected"]').val();
+    add_stop(data_to_add);
+  });
+  $("#add_amenity_to_stop").click(function(){
+    data_to_add = $('select[name="amenity_data_selected"]').val();
+    add_stop(data_to_add);
+  });
+  function add_stop(data_to_add)
+  {
+    $.ajax({
+      url: "/communities/#{@community.id}/tours/#{@community.tour.id}/ajaxplottourstoppoint",
+      type: "POST",
+      dataType: "script",
+      data: {
+          data_to_add: data_to_add
+      }
+    }).done(function (data) {
+      window.location.reload();
+    });
+  }
   function apply_time_to_all(monday_count, closing_time)
   {
     $("#add-btn").addClass("hidden");
@@ -1366,7 +1410,7 @@
   {
     $('[data-toggle="tourStopsLogoPopover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Drag and drop stops in the list below to rearrange them.</div><div class="popover-footer"><a id="tourStopsLogoPopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Drag and drop stops in the list below to rearrange them.</div><div class="popover-footer"><a id="tourStopsLogoPopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
@@ -1375,7 +1419,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="add_amenity_Popover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Amenities are added on the "Amenities" page. Select an amenity from the list below to add it to the tour.</div><div class="popover-footer"><a id="add_amenity_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Amenities are added on the "Amenities" page. Select an amenity from the list below to add it to the tour.</div><div class="popover-footer"><a id="add_amenity_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1384,7 +1428,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="add_unit_Popover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Units are imported on the "Data" page and can be edited on the "Units" page. Select a unit from the list below to add it to the tour. If a unit is not on the list, it may be because it is not plotted on the map.</div><div class="popover-footer"><a id="add_unit_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Units are imported on the "Data" page and can be edited on the "Units" page. Select a unit from the list below to add it to the tour. If a unit is not on the list, it may be because it is not plotted on the map.</div><div class="popover-footer"><a id="add_unit_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1394,7 +1438,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="add_starting_point_Popover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this button to mark the location on the map below where your visitors will start their tours. Fill in the information in the fields. Then click on "Plot Starting Point" and click on the map to add the location. Drag and drop the dot to relocate it. /div><div class="popover-footer"><a id="add_starting_point_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Use this button to mark the location on the map below where your visitors will start their tours. Fill in the information in the fields. Then click on "Plot Starting Point" and click on the map to add the location. Drag and drop the dot to relocate it. /div><div class="popover-footer"><a id="add_starting_point_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1403,7 +1447,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="building_entry_Popover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this button to add a building entrance. A red dot will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the entrance name, building number, floor number, and directional text.</div><div class="popover-footer"><a id="building_entry_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Use this button to add a building entrance. A red dot will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the entrance name, building number, floor number, and directional text.</div><div class="popover-footer"><a id="building_entry_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1412,7 +1456,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="add_elevator_Popover"]').popover({
         html: true,
-        template: '<div class="popover"><div class="arrow"></div><div class="popover-body popover-padding">Use this button to add an elevator. Three horizontal lines will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the elevator name, image, and the floors it services. </div><div class="popover-footer"><a id="add_elevator_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Use this button to add an elevator. Three horizontal lines will appear below in the upper left corner of the map when the page refreshes. Drag and drop it to the correct location on the map. Click on the "edit" icon in the list above to edit the elevator name, image, and the floors it services. </div><div class="popover-footer"><a id="add_elevator_PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 

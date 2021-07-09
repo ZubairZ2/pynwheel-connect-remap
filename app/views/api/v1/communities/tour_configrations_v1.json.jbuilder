@@ -6,7 +6,7 @@
             @community.scheduler_widget         = false
         end
 
-        json.visual_id_verification    @tour_user.tour_type != "virtual_tour" ? @community.tour.visual_id_verification : false # can't confirm here
+        json.visual_id_verification    check_visual_id_verification(@tour_user,@community) #@tour_user.tour_type != "virtual_tour" ? @community.tour.visual_id_verification : false # can't confirm here
         json.tour_type                 @tour_user.tour_type
         json.verification_type         @verfication_type
         json.with_in_radius            @within_one_km
@@ -14,7 +14,8 @@
         json.scheduler_widget_url      ""
         json.tour_alert                "Every thing is fine. Enjoy your tour"
         json.locks_thread_ref          @locks_thread
-
+        json.get_user_card_info        check_tour_user_card_info(@community,@tour_user)
+        json.tour_session_type         @tour_session_type
 
         if @in_visiting_hours
             unless @limit_exceeded

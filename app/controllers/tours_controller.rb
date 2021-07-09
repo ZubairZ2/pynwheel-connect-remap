@@ -1,4 +1,5 @@
 class ToursController < ApplicationController
+  # include Error::ErrorHandler
   include AssignLocksHelper
   include ToursHelper
   
@@ -271,7 +272,7 @@ class ToursController < ApplicationController
   end
 
   def sort_stops
-
+    
     if params[:sitemap] == "false"
       tour = Tour.find_by(community_id: params[:community_id])
       hash = {}
@@ -402,31 +403,33 @@ class ToursController < ApplicationController
     @tour_unit_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}
   end
   def ajaxplottourstoppoint
-    splitText = params[:tour_stop_id].split(':')
-    tour_stop = splitText[0].to_i
-    stop_type = splitText[1]
-    # ts = TourStop.find_by(stop_type: stop_type, stop_id: tour_stop)
-    # if ts.present?
-    #   ts.latitude = params[:x_plot]
-    #   ts.longitude = params[:y_plot]
-    #   ts.save
-    #   render json: {tour: ts}, status: 200
-    # else
-    if stop_type == "amenity"
-      st = Amenity.find tour_stop
-      st.floor = params[:floor].to_i unless @community.show_map
-      st.save
-      stName = st.name
-    elsif stop_type == "elevator"
-      st = Elevator.find tour_stop
-      stName = st.name
-    else
-      st = Unit.find tour_stop
-      stName = st.marketing_name
+    stops = params[:data_to_add].each do |stop|
+      splitText = stop.split(':')
+      tour_stop = splitText[0].to_i
+      stop_type = splitText[1]
+      # ts = TourStop.find_by(stop_type: stop_type, stop_id: tour_stop)
+      # if ts.present?
+      #   ts.latitude = params[:x_plot]
+      #   ts.longitude = params[:y_plot]
+      #   ts.save
+      #   render json: {tour: ts}, status: 200
+      # else
+      if stop_type == "amenity"
+        st = Amenity.find tour_stop
+        st.floor = params[:floor].to_i unless @community.show_map
+        st.save
+        stName = st.name
+      elsif stop_type == "elevator"
+        st = Elevator.find tour_stop
+        stName = st.name
+      else
+        st = Unit.find tour_stop
+        stName = st.marketing_name
+      end
+      ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: current_community.tour.id,name: stName)
+      PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{current_community.id}'")
     end
-    ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: current_community.tour.id,name: stName)
-    PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{current_community.id}'")
-    render json: {tour: ts,community: @community}, status: 200
+    render json: {community: @community}, status: 200
     # end
     # tour_stop = Tour.find params[:tour_stop_id]
     # if tour.present?
@@ -439,6 +442,7 @@ class ToursController < ApplicationController
     #   render json: {}, status: 404
     # end
   end
+
   def edit_amenity
     @community = Community.find params[:community_id]
     @amenity = Amenity.find params[:format]
@@ -673,15 +677,15 @@ class ToursController < ApplicationController
         name = tour_user.name || tour_user.email.split('@').first.humanize
 
         email_content = "The photo ID/selfie for #{name} visiting #{community.name} was marked as a mismatch.  Please click on the link below to view.<br><br> <a href='#{manual_selfie_match_url tour_user.id }?community=#{community.id}' target='_blank'> Visitor's ID page</a>"
-        DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
+        DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk',community,nil,nil,nil,nil,false)
         if community_email.present?
           emails = community_email.gsub(" ","").split(',')
           emails.each do |email|
-            DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, email)
+            DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, email,community,nil,nil,nil,nil,false)
           end
           # DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, community_email)
         else
-          DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com') unless params[:local_testing].present?
+          DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com',community,nil,nil,nil,nil,false) unless params[:local_testing].present?
         end
       end
     else
@@ -750,6 +754,24 @@ class ToursController < ApplicationController
     end
 
     render json: {match_status: tour_user.id_selfie_mismatch ||= nil, message: message, status: status }
+  end
+
+  def customize_tour
+    if params[:stops_list].present?
+      ids = params[:stops_list].map(&:to_i) - TourStop.where(id: params[:stops_list]).where(stop_type: ["elevator", "building_starting_point"]).pluck(:id)
+      community = Community.find_by_id params[:community_id] 
+      scheduled_tours = community.schedual_tours.where(tour_user_id: params[:tour_user_id]).update_all(stops_list: ids)
+      sleep(1)
+    end
+    
+    render json: {status: 200, message: "Record updated successfully" }
+  end
+
+  def reset_to_standard_tour
+    community = Community.find_by_id params[:community_id] 
+    scheduled_tours = community.schedual_tours.where(tour_user_id: params[:tour_user_id]).update_all(stops_list: [])
+    sleep(1)
+    render json: {status: 200, message: "Tour is set to the standard community tour" }
   end
 
   private

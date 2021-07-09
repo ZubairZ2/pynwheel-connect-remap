@@ -23,7 +23,7 @@
         = f.select :availability, [['No', 'Occupied'], ['Yes', 'Unoccupied']],{},{ :class=>"form-control"}
         %small Availability (Manual Override Required)
       .col-sm-6.col-lg-4.col-md-3.col-xs-12
-        = f.text_field :provider_unit_id, :class=>"form-control validate[required]", :placeholder=>"Provider Unit ID",:maxlength=>"7"
+        = f.text_field :provider_unit_id, :class=>"form-control validate[required]", :placeholder=>"Provider Unit ID"
         %small Provider Unit ID  
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -306,7 +306,7 @@
         $('#manual_access_code').addClass('hide_it')
       }
     }
-
+    setTimeout(function(){ $('.lock_provider_input').change(); }, 500);
     $('.lock_provider_input').change(function(){
       if (locks_input){
         var lock = $(locks_input)[0];
@@ -326,7 +326,7 @@
   $(".datepicker").datepicker({dateFormat: 'yy-mm-dd' });
   $(document).ready(function(){
       $('.wysihtml5').each(function(i, elem) {
-        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false},
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : true},
         events: {
                 change: function(){
                     var wysihtml5Editor = $('#unit_stop_description').data("wysihtml5").editor;

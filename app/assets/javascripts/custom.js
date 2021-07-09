@@ -216,6 +216,11 @@ $('#confirm-delete-visitor').on('show.bs.modal', function(e) {
     $(this).find('#record-name-visitor').html('Delete '+$(e.relatedTarget).data('name'));
     $(this).find('#record-message-visitor').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?' + ' This cannot be undone.');
 });
+$('#confirm-reset-verification').on('show.bs.modal', function(e) {
+    $(this).find('.btn-ok-visitor').attr('href', $(e.relatedTarget).data('href'));
+    $(this).find('#record-name-visitor').html('Reset '+$(e.relatedTarget).data('name'));
+    $(this).find('#record-message-visitor').html('Are you sure you want to reset this '+$(e.relatedTarget).data('name')+'?' + ' This cannot be undone.');
+});
 $('#confirm-delete_amenity').on('show.bs.modal', function(e) {
     $(this).find('.btn-ok-amenity').attr('href', $(e.relatedTarget).data('href')+'/remove_amenity');
 

@@ -1,4 +1,5 @@
 class ZervAccountsController < ApplicationController
+    # include Error::ErrorHandler
     before_action :set_zerv, except: [:new, :create]
 
     def new
@@ -50,7 +51,7 @@ class ZervAccountsController < ApplicationController
 
     private
       def zerv_params
-          params.require(:zerv).permit(:username, :password)
+          params.require(:zerv).permit(:username, :password, :facility_id, :badge_id, :card_format)
       end
 
       def set_zerv

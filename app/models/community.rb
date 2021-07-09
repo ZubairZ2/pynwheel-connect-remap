@@ -72,6 +72,7 @@ class Community < ApplicationRecord
 
   belongs_to :company
   belongs_to :community_group
+  belongs_to :region
 
   has_many :community_users, dependent: :destroy
   has_many :users ,through: :community_users, dependent: :destroy
@@ -152,6 +153,7 @@ class Community < ApplicationRecord
   enum alert_contact: [:email, :phone, :both]
   
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
+  scope :desc_created_at, -> { order(created_at: :desc) }
   amoeba do
     include_association :design
   end
@@ -238,6 +240,13 @@ class Community < ApplicationRecord
     DeleteCommunityJob.perform_async self
   end
 
+  def clean_psi_data_provider
+    case data_provider
+      when "psi"
+        clean_data_psi
+    end
+  end
+
   def data_is_imported
     case data_provider
       when "psi"
@@ -282,6 +291,10 @@ class Community < ApplicationRecord
     else
       (false)
     end
+  end
+
+  def is_salesforce_community?
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.salesforce_username.present?
   end
 
   def select_yardi_provider
@@ -354,6 +367,10 @@ class Community < ApplicationRecord
     #psi_service.perform
     ImportPsiStaticDataJob.perform_async credential.attributes.to_json
     # ImportPsiDataJob.perform_async credential.attributes.to_json
+  end
+
+  def clean_data_psi
+    CleanPsiDataJob.perform_async credential.attributes.to_json
   end
 
   def import_zaremba_provider
@@ -634,10 +651,10 @@ class Community < ApplicationRecord
     end
   end
   def neighbourhood_counter_mail_200
-    NeighbourhoodMailer.email_counter_200("umersani47@gmail.com","msds19063@itu.edu.pk","",self).deliver
+    NeighbourhoodMailer.email_counter_200("salahudin@pynwheel.com","salahudinali78@gmail.com","",self).deliver
   end
   def neighbourhood_counter_mail_400
-    NeighbourhoodMailer.email_counter_400("umersani47@gmail.com","muhammad.umer@intagleo.com","",self).deliver
+    NeighbourhoodMailer.email_counter_400("salahudin@pynwheel.com","salahudinali78@gmail.com","",self).deliver
   end
 
   def image_src
@@ -686,6 +703,39 @@ class Community < ApplicationRecord
       end
     end
     options
+  end
+
+
+  def community_tour_available_stops tour_user
+    scheduled_tour = MaxDateScheduledTourService.new(tour_user, self, false).get_scheduled_tour
+
+    if scheduled_tour.present? && scheduled_tour.stops_list.present?
+      self.tour.tour_stops.where(id: scheduled_tour.stops_list).order(:sort)
+    else
+      nil
+    end
+  end
+
+  def unit_floorplate_image_url(community, tour, unit)
+    if community.is_sitemap
+      floorplate = tour.image.present? ? tour : (community.is_sitemap ? community.sitemap : community.floorplates.first) rescue nil
+    else
+      floorplate = (unit.floorplate.image.present? ? unit.floorplate : nil) if unit.floorplate.present?  rescue nil
+    end
+
+    floorplate.image.url rescue nil
+  end
+
+  def unit_floorplan_images(unit, images = [] )
+    if (unit.image.present? || unit.floorplan.image.present? rescue false)
+      images << {url: unit.image.present? ? unit.image.url : unit.floorplan.image.url }
+    end
+
+    if (unit.secondary_image.present? || unit.floorplan.secondary_image.present? rescue false)
+      images << {url: unit.secondary_image.present? ? unit.secondary_image.url : unit.floorplan.secondary_image.url }
+    end
+
+    images
   end
 
   private
@@ -741,4 +791,5 @@ class Community < ApplicationRecord
       self.update_column(:is_chat_available, false)
     end
   end
+
 end
