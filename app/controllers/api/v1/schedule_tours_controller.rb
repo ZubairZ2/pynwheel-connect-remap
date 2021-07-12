@@ -44,7 +44,6 @@ class Api::V1::ScheduleToursController < ActionController::Base
     virtual_tour = tour_type == "virtual_tour" && allow_virtual_tour
     if self_tour or guided_tour or virtual_tour
       if self_tour
-        # binding.pry
         week_days = (allow_self_tour && @community.opening_hours.present?) ? @community.opening_hours.where('closing_time > ?', DateTime.now.to_s(:time)).order(:sort).pluck(:day) : []
       elsif guided_tour
         week_days = (allow_guided_tour && @community.guided_opening_hours.present?) ? @community.guided_opening_hours.where('closing_time > ?', DateTime.now.to_s(:time)).order(:sort).pluck(:day) : []

@@ -120,13 +120,13 @@
                             = link_to 'Visitor Details' , community_tour_user_path(@community,user),:class=>"btn btn-default black-button loader_class"
                         - if @community.tour.visual_id_verification
                           %td.col-lg-2
-                            - if (user.authentiq_verified_at.present? && ((Time.now.utc + 5.hours) < (user.authentiq_verified_at + 10.minutes))) && user.is_authentiq_verified && @community.tour.verification_type == "authenteq"
+                            - if (user.authentiq_verified_at.present? && ((Time.now.utc + 5.hours) < (user.authentiq_verified_at + 30.days))) && user.is_authentiq_verified && @community.tour.verification_type == "authenteq"
                               .visitor_list
                                 #{(user.authentiq_verified_at).strftime("%Y-%m-%d") rescue nil} #{(user.authentiq_verified_at).strftime("%I:%M %p") rescue nil}
                                 - if current_user.is_super_admin?
                                   %a{"data-name"=>"id verification","data-href" => "/communities/#{@community.id}/tour_users/#{user.id}?authentiq_verified_at=true", "data-target" => "#confirm-reset-verification", "data-toggle" => "modal", "class" => "btn btn-default black-button", "style" => "margin-top: 2%;"}
                                     Reset
-                            - elsif (user.checkpoint_verified_at.present? && ((Time.now.utc + 5.hours) < (user.checkpoint_verified_at + 10.minutes))) && user.is_checkpoint_verified && @community.tour.verification_type == "check_point_id"
+                            - elsif (user.checkpoint_verified_at.present? && ((Time.now.utc + 5.hours) < (user.checkpoint_verified_at + 30.days))) && user.is_checkpoint_verified && @community.tour.verification_type == "check_point_id"
                               .visitor_list
                                 #{(user.checkpoint_verified_at).strftime("%Y-%m-%d") rescue nil} #{(user.checkpoint_verified_at).strftime("%I:%M %p") rescue nil}
                                 - if current_user.is_super_admin?

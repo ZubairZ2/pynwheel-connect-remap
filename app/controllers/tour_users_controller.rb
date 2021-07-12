@@ -274,10 +274,10 @@ class TourUsersController < ApplicationController
       end
     end
     if params[:authentiq_verified_at] == "true"
-      tour_user.update_attributes(authentiq_verified_at: nil, is_authentiq_verified: false) if community.tour.verification_type == "authenteq" #or ((Time.now.utc + 5.hours) < (user.verified_at + 10.minutes))
+      tour_user.update_attributes(authentiq_verified_at: nil, is_authentiq_verified: false) if community.tour.verification_type == "authenteq"
     end
     if params[:checkpoint_verified_at] == "true"
-      tour_user.update_attributes(checkpoint_verified_at: nil, is_checkpoint_verified: false) if community.tour.verification_type == "check_point_id" #or ((Time.now.utc + 5.hours) < (user.verified_at + 10.minutes))
+      tour_user.update_attributes(checkpoint_verified_at: nil, is_checkpoint_verified: false) if community.tour.verification_type == "check_point_id"
     end
   end
 
