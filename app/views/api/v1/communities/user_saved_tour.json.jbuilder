@@ -57,7 +57,7 @@ json.tours tours do |tour|
         json.floorplan_image @community.unit_floorplan_images(unit)
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
         json.video_link_button_label  unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
-        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : unit.floorplan.present? ? unit.floorplan.virtual_tour_url : ""
+        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""
         lease_pricing = []
         if unit.lease_pricing.present?
           str_split = unit.lease_pricing.split(';')
@@ -132,7 +132,7 @@ json.tours tours do |tour|
 
           json.directional_text unit_amenity.directional_text
           json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
-          json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : unit.floorplan.present? ? unit.floorplan.virtual_tour_url : ""
+          json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""
 
             # unit_amenity.description = nil
             @unit_gallery_arr << unit_amenity
