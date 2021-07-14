@@ -53,7 +53,7 @@ class YardiUsersDataService < BaseService
       first_name = get_first_name(res)
       last_name = get_last_name(res)
       email = get_email(res)
-      phone_number = get_personal_phone_number(res) || get_other_phone_number(res)
+      phone_number = "+1#{get_personal_phone_number(res) || get_other_phone_number(res)}"
       user_type = get_status(res)
       move_in_date = get_move_in_date(res)
       move_out_date = get_move_out_date(res)
