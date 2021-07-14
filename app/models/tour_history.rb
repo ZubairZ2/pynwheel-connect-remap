@@ -85,7 +85,10 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both(@complete_tour_content, community)
         send_email_sms_or_both_to_touruser(@thank_you_content, community)
         # community.deleted_ids = []
-        put_logs "Tour Successfyly Completed"
+
+        puts "----------------"*50
+        puts "Tour Successfyly Completed"
+        puts "----------------"*50
         
         if community.credential.present? and community.crm_credential.present? and community.crm_credential.crm_provider == "salesforce"
           save_salesforce_feedback_data(community, touruser)
@@ -114,7 +117,9 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both_to_touruser(@thank_you_content, community)
         touruser = self.tour_user
 
-        put_logs "Tour Successfyly Abandoned"
+        puts "----------------"*50
+        puts "Tour Successfyly Abandoned"
+        puts "----------------"*50
 
         if community.credential.present? and community.crm_credential.present? and community.crm_credential.crm_provider == "salesforce"
           save_salesforce_feedback_data(community, touruser)
@@ -138,22 +143,6 @@ class TourHistory < ApplicationRecord
       Prospect.where(community_id: community.id, tour_user_id: tour_user.id, crm_provider: "salesforce", sf_status: "active").update_all(tour_key: current_tour.tour_key)
       community.send_feedback_to_salesforce(tour_user, self)
     end
-  end
-
-  def put_logs status
-    puts "************"*20
-    puts status
-    puts "************"*20
-    puts "community.credential.present?"
-    puts community.credential.present?
-    puts "************"*20
-    puts "community.crm_credential.present?"
-    puts community.crm_credential.present?
-    puts "************"*20
-    puts "community.crm_credential.crm_provider"
-    puts community.crm_credential.crm_provider
-    puts "************"*20
-
   end
 
   def is_tour_on_time(scheduled_tour, community, timezone = nil)
