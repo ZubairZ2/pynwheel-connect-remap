@@ -219,9 +219,11 @@ json.tours tours do |tour|
           json.directional_text ag.directional_text
         end
       end
+
       user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id).where.not(image: nil)
       gallery_arr = []
       gallery_arr_v1 = []
+      
       user_gallery.each do |ud|
         obj = {}
         obj[:id] = ud.id
@@ -231,11 +233,15 @@ json.tours tours do |tour|
         gallery_arr_v1 << obj
         # json.image ud.image.url
       end
+
       json.user_gallery gallery_arr
       json.user_gallery_v1 gallery_arr_v1
       user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id).where.not(description: nil)
+      user_notes = user_notes.present? ? user_notes.order(:created_at).compact : []
+
       description_arr = []
       description_arr_v1 = []
+
       user_notes.each do |un|
         obj = {}
         obj[:id] = un.id
@@ -245,8 +251,10 @@ json.tours tours do |tour|
         description_arr_v1 << obj
         # json.description un.description
       end
+
       json.notes description_arr
       json.notes_v1 description_arr_v1
+
     end
   end
 
