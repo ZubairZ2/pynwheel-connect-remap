@@ -515,7 +515,12 @@ Rails.application.routes.draw do
         end
       end
 
-
+      resources :pynwheel_access_users do
+        collection do
+          post :generate_otp
+          post :verify_otp
+        end
+      end
 
       resources :tours,only: :index do
         collection do
