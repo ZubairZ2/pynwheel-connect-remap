@@ -335,14 +335,17 @@ iPhone Users:
       end
     end
   end
+
   def floorplan_list
-    puts params
     access = grant_access (decoded(params[:token])) rescue false
+    
     if api_access or access == true
       @community = Community.find params[:community_id]
-      @floorplans = @community.floorplans.order(:bedrooms)
+      floorplan_ids = @community.units.where(available: true).pluck(:floorplan_id).uniq
+      @floorplans = @community.floorplans.where(id: floorplan_ids).order(:bedrooms)
     end
   end
+
   def floorplan_units_v1
     puts params
     access = grant_access (decoded(params[:token])) rescue false
