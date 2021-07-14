@@ -341,8 +341,14 @@ iPhone Users:
     
     if api_access or access == true
       @community = Community.find params[:community_id]
-      floorplan_ids = @community.units.where(available: true).pluck(:floorplan_id).uniq
-      @floorplans = @community.floorplans.where(id: floorplan_ids).order(:bedrooms)
+      units = @community.units.where(available: true)
+      floorplans = []
+      
+      units.each do |u|
+        floorplans << u.floorplan
+      end
+
+      @floorplans = floorplans.present? ? floorplans.uniq.compact.sort_by { |f| f.bedrooms } : []
     end
   end
 
