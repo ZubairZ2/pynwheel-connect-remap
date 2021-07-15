@@ -1,6 +1,6 @@
 module ShortestPath
   include DijkstraAlgo
-
+  extend self
   def return_path(community_id, path_type)
     fetch_related_data(community_id)
     stops = {}
@@ -41,19 +41,75 @@ module ShortestPath
     path_object_in_order = fetch_path_object(path_uniq_ids_arr, hallways_id_to_uniq_id, unit_id_to_uniq_id, amenity_id_to_uniq_id, start_point_data, new_hallways_coordinates, unit_data, amenity_data, unit_starting_index, amenity_starting_index)
     return path_object_in_order
   end
+  def return_path_for_mobile(new_stops_arr, community_id, path_type)
+    fetch_related_data_according_to_mobile(new_stops_arr, community_id)
+    stops = {}
+    algo_unit_data = get_unit_data()
+    algo_amenity_data = get_amenity_data()
+    start_point_data = get_starting_point_data()
+    algo_access_point_data = get_access_point_data()
+    new_hallways_coordinates = fetch_hallways_coordinates_with_distance()
+    hallways_id_to_uniq_id = make_hallways_id_to_uniq_id(new_hallways_coordinates)
+    hallways_dijkstra_data = make_hallways_data_for_dijakstra(new_hallways_coordinates, hallways_id_to_uniq_id)
+    starting_point = {}
+    starting_point[hallways_id_to_uniq_id[start_point_data['hallway_id']]] = start_point_data['distance']
+    hallways_id_to_uniq_id[start_point_data['hallway_id']]
+    stops[0] = starting_point
+    stops[hallways_id_to_uniq_id[start_point_data['hallway_id']]] = {0 => start_point_data['distance']}
+    stops.deep_merge!(hallways_dijkstra_data).sort
+    unit_starting_index = stops.keys.size
+    unit_data = make_unit_data_according_to_door_id(algo_unit_data)
+    unit_id_to_uniq_id = make_unit_id_to_uniq_id(unit_starting_index, unit_data)
+    unit_dijkstra_data = make_unit_data_for_dijakstra(unit_data, unit_id_to_uniq_id, hallways_id_to_uniq_id, stops)
+    stops.merge!(unit_dijkstra_data).sort
+    amenity_starting_index = stops.keys.size
+    amenity_data = make_amenity_data_according_to_door_id(algo_amenity_data)
+    amenity_id_to_uniq_id = make_amenity_id_to_uniq_id(amenity_starting_index, amenity_data)
+    amenity_dijkstra_data = make_amenity_data_for_dijakstra(amenity_data, amenity_id_to_uniq_id, hallways_id_to_uniq_id, stops)
+    stops.merge!(amenity_dijkstra_data).sort
+    unit_visited_ids = fetch_from_uniq_unit_arr(unit_id_to_uniq_id)
+    amenity_visited_ids = fetch_from_uniq_amenity_arr(amenity_id_to_uniq_id)
+    precedence_visited_ids = []; @precedence_arr.each {|arr| precedence_visited_ids.push(arr[0]) }
+    precedence_visited_ids.push(0)
+    @gr = Graph.new
+    add_nodes_edges_and_its_cost(stops)
+    source = 0 ; destination_arr = precedence_visited_ids
+    if path_type == "actual shortest"
+      @gr.shortest_paths_without_sorting(source, destination_arr)
+    elsif path_type == "sorting"
+      @gr.shortest_paths_with_sorting(source, destination_arr) #shortest path with sorting
+    end
+    path_uniq_ids_arr = merge_path_two_d_arr_for_web(@gr.complete_path)
+    path_object_in_order = fetch_path_object(path_uniq_ids_arr, hallways_id_to_uniq_id, unit_id_to_uniq_id, amenity_id_to_uniq_id, start_point_data, new_hallways_coordinates, unit_data, amenity_data, unit_starting_index, amenity_starting_index)
+    mobile_path = fetch_paths_arr(path_object_in_order)
+    mobile_path
+  end
+  def return_path_points_to_mobile(mobile_path, source_type, dest_type, source_id, dest_id)
+    path_points = []
+    mobile_path.each do |path|
+      if (path[0] == source_type && path[1] == dest_type && path[2] == source_id && path[3] == dest_id)
+        path_points = path[4]
+        break
+      end
+    end
+    path_points
+  end
   private
     def update_precedence(stop_type, stop_id, door_id)
       @precedence_arr.each_with_index do |arr,index|
         if arr[1] == stop_type && arr[0] == stop_id
           @precedence_arr[index] = [door_id, stop_type]
+          @stops_id_hash[@stops_id_hash.keys()[@stops_id_hash.values().find_index(stop_id)]] = door_id
           break
         end
       end
     end
     def fetch_related_data(community_id)
+      @stops_id_hash = {}
       @community = Community.find community_id
       tour = @community.tour
       tour_stops = tour&.tour_stops.visible.order('sort ASC')
+      tour_stops.each {|tour_stop| @stops_id_hash[tour_stop.id] = tour_stop.stop_id}
       @precedence_arr = tour_stops.pluck(:stop_id, :stop_type) # due to sortable gem its sorted so we fetch in a line 
       @planned_to_visit_units_and_doors_ids     = []
       @planned_to_visit_amenities_and_doors_ids = []
@@ -90,6 +146,72 @@ module ShortestPath
       else
 
       end
+    end
+    def fetch_related_data_according_to_mobile(new_stops_arr, community_id)
+      @planned_to_visit_units_and_doors_ids     = []
+      @planned_to_visit_amenities_and_doors_ids = []
+      @community = Community.find community_id
+      if @community.is_sitemap
+        tour_stops_ids = new_stops_arr[1..(new_stops_arr.length - 2)].pluck(:id)
+        tour_stops = TourStop.where(id: tour_stops_ids).order(:sort)
+        @stops_id_hash = {}
+        @precedence_arr = tour_stops.pluck(:stop_id, :stop_type)
+        tour_stops.each {|tour_stop| @stops_id_hash[tour_stop.id] = tour_stop.stop_id}
+        @sitemap = @community.sitemap
+        @hallways = @sitemap.hallways.order("id ASC")
+        @access_points = @sitemap.access_points
+        planned_to_visit_units_ids     = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
+        planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
+        @community_units = @community.units.are_ploted_units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
+        @unit_with_door = @community_units.map do |unit| 
+          if planned_to_visit_units_ids.include?(unit.id) && unit.door.present?
+            planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
+            @planned_to_visit_units_and_doors_ids << unit.door.id
+            update_precedence('unit', unit.id, unit.door.id)
+          elsif planned_to_visit_units_ids.include?(unit.id)
+            @planned_to_visit_units_and_doors_ids << unit.id
+          end 
+          { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
+        end 
+
+        @amenities_doors = @sitemap.amenities.includes(:doors)
+        @amenity_with_doors = @amenities_doors.map do |amenity| 
+          if planned_to_visit_amenities_ids.include?(amenity.id) && amenity.doors.present?
+            planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
+            @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
+            update_precedence('amenity', amenity.id, amenity.doors.first.id)
+          elsif planned_to_visit_amenities_ids.include?(amenity.id)
+            @planned_to_visit_amenities_and_doors_ids << amenity.id
+          end
+          { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } 
+        end
+        @building_starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
+      else
+
+      end
+    end
+    def fetch_paths_arr(path_object_in_order)
+      stops_id_hash_reverse = convert_values_into_keys(@stops_id_hash)
+      len = path_object_in_order.keys().length - 1
+      path = []
+      source_type = "Tour"
+      source_id = 0
+      path_points = []
+      tour_stop_type_arr = ["unit", "amenity"]
+      path_object_in_order.keys()[1..len].each do |key|
+        if path_object_in_order[key].has_key?("point_type")
+          path_points << {"x_plot" => path_object_in_order[key]["door_x_plot"].to_f, "y_plot" => path_object_in_order[key]["door_y_plot"].to_f} if path_object_in_order[key].has_key?("is_door") && path_object_in_order[key]["is_door"]
+          dest_type = tour_stop_type_arr.include?(path_object_in_order[key]["point_type"]) ? "TourStop" : "Tour"
+          dest_id = path_object_in_order[key].has_key?("door_id") ? stops_id_hash_reverse[path_object_in_order[key]["door_id"]] : 0
+          path << [source_type, dest_type, source_id, dest_id, path_points]
+          source_type = dest_type
+          source_id = dest_id
+          path_points = []
+        else
+          path_points << {"x_plot" => path_object_in_order[key]["x_plot"], "y_plot" => path_object_in_order[key]["y_plot"]}
+        end
+      end
+      path
     end
     def get_unit_data()
       algo_unit_data = []

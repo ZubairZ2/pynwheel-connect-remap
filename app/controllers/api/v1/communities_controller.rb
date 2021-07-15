@@ -6,6 +6,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   include ToursHelper
   include TourStopsHelper
   include StripeServices
+  include ShortestPath
   require 'securerandom'
   @@counter = 0
 
@@ -256,6 +257,68 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def delete_tour_stop_v1
+    puts params
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      @community = Community.find params[:id] if params[:id].present?
+      @tour_user = TourUser.find_by(id: params[:tour_user_id]) if params[:tour_user_id].present?
+
+      if @community.present? && @tour_user.present?
+        delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
+        te = tour_stops_ids(@tour_user, @community)
+        @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
+        @community.save
+        @tours = Tour.where(id: params[:tour_id])
+        session["check_lock_access"+@tour_user.id.to_s] = 0
+        current_time = current_community_time(@community, params)
+
+        @building_list = @floor_list = []
+
+        @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+        @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+        @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+        @community.tour.building_order.present? ? (@building_list =  @community.tour.building_order) : ""
+        
+        @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+
+        chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
+        @chat_count = Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
+        @floor_list_temp = (@floor_list - [@tours.last.starting_floor]).unshift(@tours.last.starting_floor) if @tours.last.starting_floor.present? rescue nil
+        @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}
+        chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
+        @chat_count = Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
+        # @floor_list = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if x.building.present?}.compact.flatten!
+        # non_building_floor = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if !x.building.present?}.compact.flatten!
+        # @floor_list = (@floor_list.present? ? @floor_list : []) + (non_building_floor.present? ? non_building_floor : [])
+
+        edge_state = EdgeState.find_by(community_id: params[:id])
+        # @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
+
+        if @community.enable_locks and @community.multiple_locks_provider.include?("EdgeState") and edge_state.present? and @tour_user.tour_type != "virtual_tour"
+          Thread.new do
+            access_token = RemoteLockService.new(@community).client_credentials
+            allowed_stops = allowed_stop_ids(@tour_user, @community)
+            allowed_stops << @community.tour.id
+            locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
+            if locks.present?
+              tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
+              locks.each do |lock|
+                RemoteLockService.new(@community).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
+              end
+            end
+          end
+        else
+          @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
+        end
+        check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
+      else
+        render :json=> {:success=>false, :message => "Community or tour user not found"}
+      end
+    else
+        render :json=> {:success=>false, :message => "Invalid Token"}
+    end
+  end
+  def delete_tour_stop_v2
     puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true

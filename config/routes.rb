@@ -546,6 +546,7 @@ Rails.application.routes.draw do
           get :update_unit_floorplan_data
           delete :delete_tour_stop
           delete :delete_tour_stop_v1
+          delete :delete_tour_stop_v2
         end
         collection do
           get :authenteq

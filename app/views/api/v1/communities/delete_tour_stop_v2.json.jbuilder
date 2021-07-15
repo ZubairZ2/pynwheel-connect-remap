@@ -1,4 +1,3 @@
-
 def check_unit_occupied add_stop
   if add_stop.present? && add_stop.stop_type == "unit"
     u = Unit.find add_stop.stop_id
@@ -450,6 +449,10 @@ json.tours @tours do |tour|
   skip_1_path = false
 
   # ///////////////////////////////////////////////////////////////////// Stop data //////////////////////////////////////////////////////
+  #use_helper_method("a","b")
+  
+  mobile_path = ShortestPath.return_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+
   json.tour_stop new_stops_arr.compact do |stop|
 
     begin
@@ -547,29 +550,22 @@ json.tours @tours do |tour|
       @existing_path_points = []
       begin
         if counter == 0
-
-
-          # path = Path.where(map_path_to_id: nil, map_path_from_id: new_stops_arr[i+1].stop_id).first
+          @existing_path_points = []
+        else
+          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, "TourStop", "Tour", new_stops_arr[i-1].id, 0)
+          @existing_path_points = path_points if path_points.present?
+          # path = Path.where(map_path_to_id: nil, map_path_from_id: new_stops_arr[i-1].stop_id).first
           # if path.blank?
-          #   path = Path.where(map_path_to_id:  new_stops_arr[i+1].stop_id, map_path_from_id: nil).first
+          #   path = Path.where(map_path_to_id:  new_stops_arr[i-1].stop_id, map_path_from_id: nil).first
           #   @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
           # else
           #   @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
           # end
-          @existing_path_points = []
-        else
-          path = Path.where(map_path_to_id: nil, map_path_from_id: new_stops_arr[i-1].stop_id).first
-          if path.blank?
-            path = Path.where(map_path_to_id:  new_stops_arr[i-1].stop_id, map_path_from_id: nil).first
-            @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
-          else
-            @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
-          end
         end
       rescue => ex
         @existing_path_points = []
       end
-      json.path_points @existing_path_points[0].present? ? @existing_path_points[0] : @existing_path_points
+      json.path_points @existing_path_points
       json.stop_description ((new_stops_arr.size - 1) == counter ? "Your Tour Has Ended" : "Starting point")
       counter = counter + 1
       i += 1
@@ -1263,42 +1259,47 @@ json.tours @tours do |tour|
     @existing_path_points = []
     
     if @community.show_map
-
-      if new_stops_arr[i-1].present? and new_stops_arr[i-1].is_a? Tour
-        @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
-        path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
-        if path.blank?
-          path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
-          @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
-        else
-          @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
-        end
+      from_type = (new_stops_arr[i-1].is_a? Tour) ? "Tour" : "TourStop"
+      to_type = (new_stops_arr[i].is_a? Tour) ? "Tour" : "TourStop"
+      from_id = (new_stops_arr[i-1].is_a? Tour) ? 0 : new_stops_arr[i - 1].id
+      to_id = (new_stops_arr[i].is_a? Tour) ? 0 : new_stops_arr[i].id
+      path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
+      @existing_path_points = path_points if path_points.present?
+      # if new_stops_arr[i-1].present? and new_stops_arr[i-1].is_a? Tour
+      #   @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
+      #   path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
+      #   if path.blank?
+      #     path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
+      #     @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+      #   else
+      #     @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+      #   end
          
-      else
-        unless skip_1_path
-          path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
-          if path.blank?
-            path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
-            @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
-          else
-            @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
-          end
-        else
-          path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-2].stop_id).first
-          if path.blank?
-            path = Path.where(map_path_to_id: new_stops_arr[i-2].stop_id, map_path_from_id: stop.stop_id).first
-            @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
-          else
-            @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
-          end
-        end
+      # else
+      #   unless skip_1_path
+      #     path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
+      #     if path.blank?
+      #       path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
+      #       @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+      #     else
+      #       @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+      #     end
+      #   else
+      #     path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-2].stop_id).first
+      #     if path.blank?
+      #       path = Path.where(map_path_to_id: new_stops_arr[i-2].stop_id, map_path_from_id: stop.stop_id).first
+      #       @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+      #     else
+      #       @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+      #     end
+      #   end
         
-        # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
-      end
+      #   # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
+      # end
       skip_1_path = skip_1
     end  
 
-    @existing_path_points.flatten!
+    #@existing_path_points.flatten!
     json.path_points @existing_path_points
 
     i+=1
