@@ -201,6 +201,14 @@ module ShortestPath
       path_object_in_order.keys()[1..len].each do |key|
         if path_object_in_order[key].has_key?("point_type")
           path_points << {"x_plot" => path_object_in_order[key]["door_x_plot"].to_f, "y_plot" => path_object_in_order[key]["door_y_plot"].to_f} if path_object_in_order[key].has_key?("is_door") && path_object_in_order[key]["is_door"]
+          if path_object_in_order[key].has_key?("is_door") && path_object_in_order[key]["is_door"]
+            door = Door.find path_object_in_order[key]["door_id"]
+            stop = door.attached_with
+            path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+          elsif path_object_in_order[key].has_key?("is_door") && !path_object_in_order[key]["is_door"]
+            stop = path_object_in_order[key]["point_type"].classify.constantize.find path_object_in_order[key]["door_id"]
+            path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+          end
           dest_type = tour_stop_type_arr.include?(path_object_in_order[key]["point_type"]) ? "TourStop" : "Tour"
           dest_id = path_object_in_order[key].has_key?("door_id") ? stops_id_hash_reverse[path_object_in_order[key]["door_id"]] : 0
           path << [source_type, dest_type, source_id, dest_id, path_points]
