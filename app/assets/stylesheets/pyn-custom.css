@@ -29,6 +29,16 @@ textarea {
     float: right;
 }
 
+.tracking_btns {
+    pointer-events: none;
+    background-color: #ddd;
+}
+
+.floor_unit_visibility {
+    color: red;
+    display: none;
+}
+
 .red-required-star {
     color: #dd4b39;
 }
