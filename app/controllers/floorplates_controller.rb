@@ -92,6 +92,9 @@ class FloorplatesController < ApplicationController
     else
       @floorplate.width = (image.width rescue 0)
       @floorplate.height = (image.height rescue 0)
+      @floorplate.map_ocr_data = nil
+      @floorplate.is_ocr_enabled = false
+      
       if params[:floorplate][:manual_override] == "true"
         if @floorplate.update(floorplate_params)
           flash[:notice] = "Floorplate updated successfully."
