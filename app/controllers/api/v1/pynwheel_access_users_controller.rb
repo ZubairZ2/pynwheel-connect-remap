@@ -16,14 +16,18 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   def verify_otp
     if @pynwheel_access_user.present?
-      if @pynwheel_access_user.pin_code == params[:pin_code]
-        verify_user(true)
+      unless @pynwheel_access_user.is_verified
+        if @pynwheel_access_user.pin_code == params[:pin_code]
+          verify_user(true)
 
-        render json: {message: "Pynwheel access user is verified successfully", success_code: 200}
+          render json: {message: "Pynwheel access user is verified successfully", success_code: 200}
+        else
+          verify_user(false)
+
+          render json: {message: "OTP is wrong or expired", success_code: 404}
+        end
       else
-        verify_user(false)
-
-        render json: {message: "OTP is wrong or expired", success_code: 404}
+        render json: {message: "Pynwheel access user is already verified ", success_code: 200}        
       end
     else
       render json: {message: "Pynwheel access user not found", success_code: 404}
