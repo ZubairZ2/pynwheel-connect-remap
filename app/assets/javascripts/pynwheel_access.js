@@ -21,9 +21,9 @@ var defaultCardFormate;
 
 
 $(document).ready(function() {
-  $('#pyn-miyazaki').dataTable({
-    "searching": true
-  });
+  // $('#pyn-miyazaki').dataTable({
+  //   "searching": true
+  // });
 
   var input = document.querySelector("#pynwheelAccessUserPhone");
     
