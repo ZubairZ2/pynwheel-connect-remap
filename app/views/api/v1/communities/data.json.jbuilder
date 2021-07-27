@@ -1305,6 +1305,8 @@ json.apartments do
     image_url = @community.sitemap.image.url.present? ? @community.sitemap.image.url : @community.sitemap.image.url
     begin
       json.sitemap Rails.env.development? ? local_assets_base_url+image_url : image_url
+      json.sitemap_width @community.sitemap.image.width
+      json.sitemap_height @community.sitemap.image.height
     rescue
 
     end
@@ -1565,6 +1567,8 @@ json.apartments do
       json.name floorplate.name
       json.floor_name floorplate.floor_name_added ? floorplate.floor_name : floor
       json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
+      json.width floorplate.image.width
+      json.height floorplate.image.height
       json.floorplate_amenities floorplate.amenities do |amenity|
         if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
           json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
