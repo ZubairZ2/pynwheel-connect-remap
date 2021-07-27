@@ -69,6 +69,10 @@ class Floorplate < ApplicationRecord
     units = Unit.where(community_id: community_id,floor: self.floors)
   end
 
+  def fetch_units_for_sepcific_floor(floor)
+    Unit.where(community_id: community_id,floor: floor)
+  end
+
   def community_floors
     floorplates = community.floorplates.select{|f| f.id != self.id}
     floorplates.map{|f| f.floors}.flatten.sort

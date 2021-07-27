@@ -55,7 +55,7 @@ class AutomatePlottingController < ApplicationController
       @hallways = @floorplate.hallways.order("id ASC")
       @access_points = @floorplate.access_points # @floorplate.access_points.select('DISTINCT ON (x_plot, y_plot) *')
 
-      @community_units = @floorplate.fetch_units.includes(:door)
+      @community_units = @floorplate.fetch_units_for_sepcific_floor(@floor).includes(:door)
       @unit_with_door = @community_units.map { |unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } } }
 
       @amenities_doors = @floorplate.amenities.includes(:doors)
