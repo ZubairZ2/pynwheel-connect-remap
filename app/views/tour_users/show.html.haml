@@ -831,10 +831,11 @@
           }
 
           automateUserTracking();
-          debugger;
 
-          if(is_community_sitemap)
-           enableButtons();
+          if(is_community_sitemap) {
+            enableButtons();
+            setTimeout(function(){$('.popover').popover('hide')}, 5000);
+          }
           
           if(!automateTracking)
             enableButtons();
