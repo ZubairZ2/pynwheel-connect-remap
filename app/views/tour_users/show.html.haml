@@ -799,7 +799,7 @@
                               html: true,
                               trigger: "hover",
                               placement: 'top',
-                              template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "height: 115px;color: black;background: #efefef;"><div style="float: right"></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time + '<br><b>Door Unlock Time:</b> '+ (data_array[vertices_count][1].is_lock_present ? data_array[vertices_count][1].arrival_time : "N/A") +'<br></div></div>'
+                              template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "height: 115px;color: black;background: #efefef;"><div style="float: right"></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time + '<br><b>Door Unlock Time:</b> '+ (data_array[vertices_count][1].is_lock_present ? data_array[vertices_count][1].arrival_time : "N/A") + '<br></div></div>'
                             }).popover('show');
             }
             
@@ -826,7 +826,7 @@
                         html: true,
                         trigger: "hover",
                         placement: 'top',
-                        template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "height: 115px;color: black;background: #efefef;"><div style="float: right"></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
+                        template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "height: 115px;color: black;background: #efefef;"><div style="float: right"></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ (data_array[vertices_count][1].is_lock_present ? data_array[vertices_count][1].arrival_time : "N/A") +'<br></div></div>'
                       }).popover('show');
           }
 
