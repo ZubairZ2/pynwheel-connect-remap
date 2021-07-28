@@ -288,6 +288,7 @@
   var vertices_count = 0;
   var already_watched = [];
   var automateTracking = true;
+  var is_community_sitemap = false;
 
   setTimeout(function(){
     draw_image_canvas(null);
@@ -463,6 +464,8 @@
   function plot_data(){
     t = 1;
     var is_sitemap = #{ @community.is_sitemap};
+    is_community_sitemap = is_sitemap;
+
     var tour_history_id = $('#tour_histories_dates :selected').val()
     $("#tour_histories_dates").attr("disabled", true);
     var dwelo_id;
@@ -472,10 +475,12 @@
     else{
       dwelo_id = false
     }
+
     if (is_sitemap == false)
       var floorplate_id = $('#floorplates_images :selected').val()
     else
       var floorplate_id = 0
+
     var community_id = #{ raw @community.id};
     var tour_user_id = #{ raw @tour_user.id};
     data = null;
@@ -518,7 +523,6 @@
           buildingIndex = 999999;
           floorIndex = 999999;
 
-          //debugger;
           if(data.stops[0] && data.stops[0][2] == "tour" && data.stops.length == 1) {
             selected_floor = selected_building = [];
           }
@@ -667,6 +671,9 @@
               } else {
                 $(".floor_unit_visibility").show()
                 automateUserTracking();
+
+                if(is_community_sitemap)
+                  enableButtons();
 
                 if(!automateTracking)
                   enableButtons();
@@ -824,6 +831,10 @@
           }
 
           automateUserTracking();
+          debugger;
+
+          if(is_community_sitemap)
+           enableButtons();
           
           if(!automateTracking)
             enableButtons();
