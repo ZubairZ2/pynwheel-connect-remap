@@ -488,6 +488,7 @@
           },
         url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/visited_stops_data?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
         success: function(data){
+          //debugger;
           delete_image_canvas();
           draw_image_canvas(null);     
           $('#building_label').addClass('hidden');
@@ -584,6 +585,11 @@
                 this.style.background = "green";
                 $('#'+this.id).addClass('selected_floor');
               }
+              //debugger;
+              selected_building = $('.selected_building').text();
+              selected_floor = $('.selected_floor').text();
+              selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
+              selected_building = (first_building != "null" ? (selected_building == first_building ? [selected_building, "", null] : [selected_building]) : ["null", ""])
 
               selected_building = $('.selected_building').text();
               selected_floor = $('.selected_floor').text();
@@ -799,7 +805,6 @@
             setTimeout(function(){
               requestAnimationFrame(animate);
             }, wait_time);
-
           }
           else {
             requestAnimationFrame(animate);
