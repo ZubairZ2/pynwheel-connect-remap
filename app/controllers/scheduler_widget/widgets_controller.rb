@@ -27,6 +27,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @tour_user = params[:tour_user_id].present? ? TourUser.find_by_id(params[:tour_user_id]) : TourUser.new
     @community_id = params[:community_id]
     @community = Community.find params[:community_id]
+    @scheduler_widget_setting = @community.tour.scheduler_widget_setting
     @credit_card_required =  @community.tour.credit_card_required
     @bedroom_list = @community.floorplans.map{|x| x.bedrooms.to_i}.uniq
     @marketing_source_required = @community.tour.marketing_source_required

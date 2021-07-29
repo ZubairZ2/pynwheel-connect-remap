@@ -108,7 +108,7 @@
   <body>
     <div class="divLoading hidden"></div>
 
-    <%= link_to("Schedule a Visit", "url",id: "schedule_btn" , class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#scheduleMyTour", backdrop: "static"}) %>
+    <%= link_to("#{@scheduler_widget_setting.btn_text}", "url",id: "schedule_btn", style: "width: #{@scheduler_widget_setting.btn_width}; height: #{@scheduler_widget_setting.btn_height}; font-size: #{@scheduler_widget_setting.btn_font_size}; background-color: #{@scheduler_widget_setting.btn_color}; border-color: #{@scheduler_widget_setting.btn_color}; font-family: #{@scheduler_widget_setting.btn_font}; align-items: center; display: inline-grid; margin: 10px; padding: 0px;",class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#scheduleMyTour", backdrop: "static"}) %>
 
     <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
       <div class="modal-dialog" role="document">
