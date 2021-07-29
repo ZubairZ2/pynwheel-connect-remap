@@ -35,7 +35,7 @@
         Changing the Email Bcc address will change the email address that receives a copy of each eBrochure.
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :email_bcc, :class=>"form-control validate[custom[email]] favorite_setting_field", :placeholder=>"Email Bcc" ,:maxlength=>"150", :onchange => "function1()"
+    = f.text_field :email_bcc, :class=>"form-control favorite_setting_field", :placeholder=>"Email Bcc" 
 .form-group#email_body_div
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.auto_save
     Email Body
@@ -45,8 +45,6 @@
     %span#saved_text
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_area :email_body, :rows => 20, :cols => 100,:id => "email_body_class",:class=>"email_body_class wysihtml5",:value=>f.object.email_body.present? ? f.object.email_body.gsub("<community_name>",@community.name).gsub("\n","<br>") : ""
-
-
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -73,46 +71,39 @@
       = f.check_box :handicap_accessible_logo, :class=>"favorite_setting_field"
       %label.label-primary{:for => "favorite_setting_handicap_accessible_logo"}
       %span.pl-15 Yes
-    -#.row
-    -#  .col-sm-6.col-lg-6.col-md-4.col-xs-12
-    -#    .checkbox
-    -#      = f.check_box :handicap_accessible_logo
-    -#      %label Handicap accessible logo
+
 %button.btn-primary.done_btn{:onclick => "favorite_goBack()"}
   DONE
 :javascript
-  function favorite_goBack()
-  {
+  function favorite_goBack() {
     $('#favorite-settings-form').submit();
     window.location.reload();
   }
-  $('.favorite_setting_field').change(function(){
+
+  $('.favorite_setting_field').change(function() {
     $('#favorite-settings-form').submit();
   });
-  // $('#tinymce_ifr').bind("DOMSubtreeModified",function() {
-  //   alert("fefef");
-  // });
-  $(document).ready(function(){
-      $('.wysihtml5').each(function(i, elem) {
-        $(elem).wysihtml5({'toolbar': {'image': false,'link' : false},
-        events: {
-        change: function() {
-            $('#favorite-settings-form').submit();
-        }
-        }
-        });
-      });
 
-  });
-  $("#email_body_div").change(function() {
-  alert("vdvd");
-    $.ajax({
-        url: "/communities/#{@community.id}/favorite_settings/#{@favorite.id}",
-        type: "PUT",
-        dataType: "script",
-        data: {
-            ajax_call: true,
-            email_body: "ththt"
+  $(document).ready(function() {
+    $('.wysihtml5').each(function(i, elem) {
+      $(elem).wysihtml5({'toolbar': {'image': false,'link' : false},
+        events: {
+          change: function() {
+            $('#favorite-settings-form').submit();
+          }
         }
+      });
+    });
+  });
+
+  $("#email_body_div").change(function() {
+    $.ajax({
+      url: "/communities/#{@community.id}/favorite_settings/#{@favorite.id}",
+      type: "PUT",
+      dataType: "script",
+      data: {
+        ajax_call: true,
+        email_body: "ththt"
+      }
     })
-        });
+  });
