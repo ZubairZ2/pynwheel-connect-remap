@@ -80,9 +80,9 @@ $(document).ready(function () {
         $('.select-units-on-page .ms-elem-selection').click(function () {
             console.log($(this).attr('id'));
             s_id  = $(this).attr('id').split('-');
-            s_id = s_id[0] + "-" + s_id[1];
+            // s_id = s_id[0] + "-" + s_id[1];
 
-            removeUnitFromSelectedArray(s_id);
+            removeUnitFromSelectedArray(s_id[0]);
         });
 
         // $(document).on("click", ".marker" , function() {

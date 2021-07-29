@@ -77,9 +77,9 @@ $(document).ready(function () {
     $('.select-units-on-page .ms-elem-selection').click(function () {
       console.log($(this).attr('id'));
       s_id  = $(this).attr('id').split('-');
-      s_id = s_id[0] + "-" + s_id[1];
+      // s_id = s_id[0] + "-" + s_id[1];
      
-      removeUnitFromSelectedArray(s_id);
+      removeUnitFromSelectedArray(s_id[0]);
     });
 
 
@@ -143,8 +143,8 @@ function displayHints() {
             console.log("Left :   ", ocrImageDimensions.width * ocr_u.left)
             console.log("Top  :   ", ocrImageDimensions.height * ocr_u.top)
 
-            let unit_left = ocrImageDimensions.width * ocr_u.left;
-            let unit_top = ocrImageDimensions.height * ocr_u.top;
+            let unit_left = (ocrImageDimensions.width * ocr_u.left) + 10;
+            let unit_top = (ocrImageDimensions.height * ocr_u.top);
             let circleTag = `suggested-circle-${selected_units[0]}`;
             console.log("Suggested unit", selected_units)
             $('#map').append(`<i class="fa fa-circle-thin hint-unit-blink ${circleTag}" style="color: #d37474; left:${unit_left}px; top:${unit_top}px; position:absolute; transform: scale(3);"></i>`)
