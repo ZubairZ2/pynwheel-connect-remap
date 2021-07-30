@@ -76,10 +76,10 @@ $(document).ready(function () {
 
     $('.select-units-on-page .ms-elem-selection').click(function () {
       console.log($(this).attr('id'));
-      s_id  = $(this).attr('id').split('-');
+      s_id  = $(this).attr('id').replace("-selection","");
       // s_id = s_id[0] + "-" + s_id[1];
      
-      removeUnitFromSelectedArray(s_id[0]);
+      removeUnitFromSelectedArray(s_id);
     });
 
 
@@ -134,7 +134,10 @@ $(document).ready(function () {
 function displayHints() {
   console.log(imageOCRResponse);
   if(imageOCRResponse.length > 0 ) {
+    let  html = "";
+
     selected.forEach(selected_units => {
+      $(".fa-circle-thin").remove(".hint-unit-blink");
       imageOCRResponse.forEach(ocr_u => {
         if(ocr_u.text && ocr_u.text.length > 2) {
           if(textFilter(selected_units[1], ocr_u.text)) {
@@ -147,11 +150,13 @@ function displayHints() {
             let unit_top = (ocrImageDimensions.height * ocr_u.top);
             let circleTag = `suggested-circle-${selected_units[0]}`;
             console.log("Suggested unit", selected_units)
-            $('#map').append(`<i class="fa fa-circle-thin hint-unit-blink ${circleTag}" style="color: #d37474; left:${unit_left}px; top:${unit_top}px; position:absolute; transform: scale(3);"></i>`)
+            html += `<i class="fa fa-circle-thin hint-unit-blink ${circleTag}" style="color: #d37474; left:${unit_left}px; top:${unit_top}px; position:absolute; transform: scale(3);"></i>`
           }
         }
       });
     });
+
+    $('#map').append(html);
   }
 }
 

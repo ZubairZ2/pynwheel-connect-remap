@@ -79,10 +79,10 @@ $(document).ready(function () {
 
         $('.select-units-on-page .ms-elem-selection').click(function () {
             console.log($(this).attr('id'));
-            s_id  = $(this).attr('id').split('-');
+            s_id  = $(this).attr('id').replace("-selection","");
             // s_id = s_id[0] + "-" + s_id[1];
 
-            removeUnitFromSelectedArray(s_id[0]);
+            removeUnitFromSelectedArray(s_id);
         });
 
         // $(document).on("click", ".marker" , function() {
