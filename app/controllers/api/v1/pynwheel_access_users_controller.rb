@@ -1,5 +1,19 @@
 class Api::V1::PynwheelAccessUsersController < ActionController::Base
-  before_action :get_pynwheel_access_user, only: [:generate_otp, :verify_otp]
+  before_action :get_pynwheel_access_user_by_phone_number, only: [:generate_otp, :verify_otp]
+  before_action :get_pynwheel_access_user_by_id, only: [:pynwheel_access_user_authentication]
+
+
+  def pynwheel_access_user_authentication
+    if @pynwheel_access_user.present?
+      if @pynwheel_access_user.is_verified
+        render json: {message: "Varified User", success_code: 200, status: true}
+      else
+        render json: {message: "Non Varified User", success_code: 404, status: false}
+      end
+    else
+      render json: {message: "Pynwheel access user not found", success_code: 404, status: false}
+    end
+  end
 
   def generate_otp
     if @pynwheel_access_user.present?
@@ -32,6 +46,10 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   private
 
+  def get_pynwheel_access_user_by_id
+    @pynwheel_access_user = PynwheelAccessUser.find_by_id(params[:user_id])
+  end
+
   def verify_user flag
     @pynwheel_access_user.update(is_verified: flag)
   end
@@ -42,7 +60,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     TwilioSmsService.new().send_sms(message_body, to_phone_number)
   end
 
-  def get_pynwheel_access_user
+  def get_pynwheel_access_user_by_phone_number
     @pynwheel_access_user = PynwheelAccessUser.where(phone_number: params[:phone_number]).first
   end
 

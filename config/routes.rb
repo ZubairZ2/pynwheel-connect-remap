@@ -517,6 +517,7 @@ Rails.application.routes.draw do
 
       resources :pynwheel_access_users do
         collection do
+          get :pynwheel_access_user_authentication
           post :generate_otp
           post :verify_otp
         end
