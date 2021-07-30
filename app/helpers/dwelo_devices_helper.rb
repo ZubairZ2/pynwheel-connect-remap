@@ -602,7 +602,7 @@ module DweloDevicesHelper
   end
 
 
-  def set_unit_markers_on_map(units, detected_units, img_dimensions)
+  def set_sitemap_markers_on_map(units, detected_units, img_dimensions)
     units = units.where(x_plot: [0, "0", nil], y_plot: [0, "0", nil])
 
     if units.present?
@@ -614,6 +614,25 @@ module DweloDevicesHelper
               x_position = detected_unit[:left] * img_dimensions[:width]
               y_position = detected_unit[:top] * img_dimensions[:height]
               unit.update(x_plot: x_position, y_plot: y_position)
+            end
+          end
+        end
+      end
+    end
+  end
+
+  def set_floorplate_markers_on_map(units, detected_units, img_dimensions, floorplate_id)
+    units = units.where(x_plot: [0, "0", nil], y_plot: [0, "0", nil])
+
+    if units.present?
+      detected_units.each do |detected_unit|
+        if detected_unit[:text].present? && detected_unit[:text].length > 2
+
+          units.each do |unit|  
+            if(unit[:marketing_name].include?(detected_unit[:text]))
+              x_position = detected_unit[:left] * img_dimensions[:width]
+              y_position = detected_unit[:top] * img_dimensions[:height]
+              unit.update(x_plot: x_position, y_plot: y_position, floorplate_id: floorplate_id)
             end
           end
         end

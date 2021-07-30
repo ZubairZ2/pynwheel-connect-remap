@@ -586,7 +586,7 @@ class CommunitiesController < ApplicationController
         end
 
         dimensions = s3_img_dimensions(sitemap_image_url(sitemap))
-        set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
+        set_sitemap_markers_on_map(units, aws_ocr_detected_units, dimensions)
       else
 
         redirect_to plotexp_community_sitemaps_path(@community), alert: "Something went wrong please check sitemap image"
@@ -615,7 +615,7 @@ class CommunitiesController < ApplicationController
 
         units = floorplate.fetch_units
         dimensions = s3_img_dimensions(floorplate_image_url(floorplate))
-        set_unit_markers_on_map(units, aws_ocr_detected_units, dimensions)
+        set_floorplate_markers_on_map(units, aws_ocr_detected_units, dimensions, floorplate.id)
       else
 
         redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), alert: "Something went wrong please check floorplate image"
