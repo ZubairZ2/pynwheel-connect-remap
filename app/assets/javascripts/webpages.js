@@ -234,10 +234,24 @@ $(window).bind('load', function () {
       var in_browser_width = 0;
       var actual_height = 0;
       var actual_width = 0;
+      var extra_width = 0;
+      var extra_hieght = 0;
       in_browser_height = parseFloat($('.floorplate-image').parent().height());
       in_browser_width = parseFloat($('.floorplate-image').parent().width());
       actual_height = parseInt($('.floorplate-image').data("height"));
       actual_width = parseInt($('.floorplate-image').data("width"));
+      var propertyMapImg = document.getElementById('property-map-image'); 
+      
+      //or however you get a handle to the IMG
+      // debugger
+      // if( actual_height > in_browser_height && actual_width > in_browser_width){
+      //   actual_width = propertyMapImg.clientWidth;
+      //   actual_height = propertyMapImg.clientHeight;
+      //   // extra_width = actual_width - in_browser_width
+      //   // extra_hieght = actual_height - in_browser_height
+      //   // actual_width = actual_width - extra_width
+      //   // actual_height = actual_height - extra_hieght
+      // }
       if (actual_width < in_browser_width)
         var width_ratio = 1;
       else
@@ -251,10 +265,71 @@ $(window).bind('load', function () {
       $('.marker').each(function () {
         var x_plot = parseFloat($(this).data('unit-x-plot'));
         var y_plot = parseFloat($(this).data('unit-y-plot'));
-        current_left = x_plot / width_ratio;
-        current_top = y_plot / height_ratio;
-        $(this).css({"left": current_left, "top": current_top});
+        // current_left = x_plot / width_ratio;
+        // current_top = y_plot / height_ratio;
+        // var img_width = (in_browser_height / actual_height) * actual_width
+        // current_left = (x_plot / actual_width * img_width) + 10;
+        // current_top = (y_plot / actual_height * in_browser_height);
+        // debugger
+        // if(actual_width > 1412) {
+        //   // current_left = (x_plot * (in_browser_width - 35)) / actual_width;
+        //   // current_top = (y_plot * (in_browser_height - 65)) / actual_height;
+
+        //   current_left = (x_plot / width_ratio) - 6;
+        //   current_top = (y_plot / height_ratio) - 20;
+
+        // }
+        // else {
+        //   current_left = x_plot / width_ratio;
+        //   current_top = y_plot / height_ratio;
+        // }
+        if(actual_width > in_browser_width && actual_height > in_browser_height) {
+          var current_font_size = 17;
+          var current_margin_left = -1;
+        }
+          current_left = x_plot / width_ratio;
+          current_top = y_plot / height_ratio;
+        // current_left = (x_plot * in_browser_width) / actual_width;
+        // current_top = (y_plot * in_browser_height) / actual_height;
+        // current_left = getXForStop(x_plot, actual_width, in_browser_width);
+        // current_top = calculateYForStop(y_plot, actual_height, in_browser_height,false);
+        // $(this).css({"left": current_left-4, "top": current_top-14});
+        $(this).css({"left": current_left, "top": current_top, "margin-left": current_margin_left, "font-size": current_font_size});
       });
+
+      function getXForStop(x, imageWidth, imageContanierWidth) {
+        var x1 = 1;
+        if (imageWidth !== 1) {
+          x1 = (x * 100) / imageWidth;
+          let x2 = (x1 / 100) * imageContanierWidth;
+          x1 = x2;
+          if (false) {
+            // x1 = x1 - 17;
+          } else {
+            x1 = x1 - 10;
+          }
+          //x1 = x1 - (19 / 2) //19 is marker width
+          x1 = x1 + 1.5;
+        }
+        return x1;
+      }
+
+      function calculateYForStop(y,imageHeight,imageContanierHeight,isForNextStop) {
+        var y1 = 1;
+        if (imageHeight !== 1) {
+          y1 = (y * 100) / imageHeight;
+          let y2 = (y1 / 100) * imageContanierHeight;
+          y1 = y2;
+          if (isForNextStop) {
+            // y1 = y1 - 20;
+          } else {
+            y1 = y1 - 15;
+          }
+          //y1 = y1 - 13 //25 is marker Height
+        }
+      
+        return y1;
+      }
 
 
       $('.sitemap-amenity-marker').each(function () {
@@ -1075,7 +1150,7 @@ function setUnitAttributes(element) {
   setModalAttributes(element);
 }
 
-
+  // for floorplates
 function adjustMarkerPosition(marker) {
   /*adjusting markers according to screen size*/
   var in_browser_height = 0;
