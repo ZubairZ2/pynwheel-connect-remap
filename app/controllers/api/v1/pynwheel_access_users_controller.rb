@@ -1,6 +1,7 @@
 class Api::V1::PynwheelAccessUsersController < ActionController::Base
   before_action :get_pynwheel_access_user_by_phone_number, only: [:generate_otp, :verify_otp]
   before_action :get_pynwheel_access_user_by_id, only: [:pynwheel_access_user_authentication]
+  before_action :is_authorized, only: [:resident_accesses_list, :resident_accesses_history]
 
   def pynwheel_access_user_authentication
     if @pynwheel_access_user.present?
@@ -14,8 +15,20 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     end
   end
 
-  def resident_accesses
-    payload = decode_jwt_token(params[:access_token])
+  def resident_accesses_list
+    if is_authorized
+      # render json: {message: "Resident's list access granted", success_code: 200, status: true}
+    else
+      render json: {message: "Access denied", success_code: 401, status: false}
+    end
+  end
+
+  def resident_accesses_history
+    if is_authorized
+      # render json: {message: "Resident's history access granted", success_code: 200, status: true}
+    else
+      render json: {message: "Access denied", success_code: 200, status: true}
+    end
   end
 
   def generate_otp
@@ -24,9 +37,9 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
       sms_otp_to_mobile()
       ExpireOtpJob.perform_in(900, @pynwheel_access_user)
   
-      render json: {message: "OTP is generated successfully and sent to user", success_code: 200}
+      render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true}
     else
-      render json: {message: "Pynwheel access user not found", success_code: 404}
+      render json: {message: "Pynwheel access user not found", success_code: 404, status: false}
     end
 
   end
@@ -36,18 +49,30 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
       if @pynwheel_access_user.pin_code == params[:pin_code]
         verify_user(true)
 
-        render json: {message: "Pynwheel access user is verified successfully", success_code: 200, user_data: @pynwheel_access_user}
+        render json: {message: "Pynwheel access user is verified successfully", success_code: 200, status: true, user_data: @pynwheel_access_user}
       else
         verify_user(false)
 
-        render json: {message: "OTP is wrong or expired", success_code: 404}
+        render json: {message: "OTP is wrong or expired", success_code: 404, status: false}
       end
     else
-      render json: {message: "Pynwheel access user not found", success_code: 404}
+      render json: {message: "Pynwheel access user not found", success_code: 404, status: false}
     end
   end
 
   private
+
+  def is_authorized
+    grant_pynwheel_user_access(decode_jwt_token(params[:access_token])) rescue false
+  end
+
+  def grant_pynwheel_user_access payload
+    begin
+      PynwheelAccessUser.find_by_id(payload[0]["id"])
+    rescue => ex
+      false
+    end
+  end
 
   def encode_jwt_token user
     payload = {id: user.id, phone_number: user.phone_number}

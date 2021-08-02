@@ -518,7 +518,8 @@ Rails.application.routes.draw do
       resources :pynwheel_access_users do
         collection do
           get :pynwheel_access_user_authentication
-          get :resident_accesses
+          get :resident_accesses_list
+          get :resident_accesses_history
           post :generate_otp
           post :verify_otp
         end
