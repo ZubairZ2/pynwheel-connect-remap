@@ -2,17 +2,20 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   before_action :get_pynwheel_access_user_by_phone_number, only: [:generate_otp, :verify_otp]
   before_action :get_pynwheel_access_user_by_id, only: [:pynwheel_access_user_authentication]
 
-
   def pynwheel_access_user_authentication
     if @pynwheel_access_user.present?
       if @pynwheel_access_user.is_verified
-        render json: {message: "Varified User", success_code: 200, status: true}
+        render json: {message: "Varified User", success_code: 200, status: true, access_token: encode_jwt_token(@pynwheel_access_user)}
       else
         render json: {message: "Non Varified User", success_code: 404, status: false}
       end
     else
       render json: {message: "Pynwheel access user not found", success_code: 404, status: false}
     end
+  end
+
+  def resident_accesses
+    payload = decode_jwt_token(params[:access_token])
   end
 
   def generate_otp
@@ -45,6 +48,19 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   private
+
+  def encode_jwt_token user
+    payload = {id: user.id, phone_number: user.phone_number}
+    get_encoded_token(payload)
+  end
+
+  def get_encoded_token payload
+    JWT.encode payload, ENV['RESIDENT_APP_SECRET_KEY'], 'HS256'
+  end
+
+  def decode_jwt_token token
+    JWT.decode token, ENV['RESIDENT_APP_SECRET_KEY'], true, { algorithm: 'HS256' } rescue nil
+  end
 
   def get_pynwheel_access_user_by_id
     @pynwheel_access_user = PynwheelAccessUser.find_by_id(params[:user_id])
