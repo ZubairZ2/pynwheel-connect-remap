@@ -287,6 +287,10 @@ $(window).bind('load', function () {
             current_left = x_plot / width_ratio - 1;
             current_top = y_plot / height_ratio - 6;
           }
+          if(actual_width < 2824){
+            current_left = x_plot / width_ratio;
+            current_top = y_plot / height_ratio;
+          }
         }
         else {
           current_left = x_plot / width_ratio;
@@ -1138,8 +1142,31 @@ function adjustMarkerPosition(marker) {
 
   var x_plot = parseFloat($(marker).data('unit-x-plot'));
   var y_plot = parseFloat($(marker).data('unit-y-plot'));
-  var current_left = x_plot / width_ratio;
-  var current_top = y_plot / height_ratio;
+  
+  if(actual_width > in_browser_width && actual_height > in_browser_height) {
+    if(actual_width >= 5884){
+      current_left = x_plot / width_ratio - 6;
+      current_top = y_plot / height_ratio - 20;
+    }
+    if(actual_width >= 2824 && actual_width < 5884 ){
+      current_left = x_plot / width_ratio - 4;
+      current_top = y_plot / height_ratio - 13;
+    }
+    if(actual_width < 2824 && actual_width > 1568){
+      current_left = x_plot / width_ratio - 1;
+      current_top = y_plot / height_ratio - 6;
+    }
+    if(actual_width < 2824){
+      current_left = x_plot / width_ratio;
+      current_top = y_plot / height_ratio;
+    }
+  }
+  else {
+    current_left = x_plot / width_ratio;
+    current_top = y_plot / height_ratio;
+  }
+  // var current_left = x_plot / width_ratio;
+  // var current_top = y_plot / height_ratio;
   $(marker).css({"left": current_left, "top": current_top});
 }
 
