@@ -1,6 +1,7 @@
 class YardiUsersDataService < BaseService
   def perform
     property_ids = credentials.property_id.split(',') rescue []
+
     property_ids.each do |property_id|
       begin
         url = credentials.url
@@ -18,6 +19,7 @@ class YardiUsersDataService < BaseService
         property_id = property_id
         interface_entity = credentials.interface_entity
         license_key = YARDI_LICENSE_KEY
+
         response = HTTParty.post(
             url,
             :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
@@ -38,9 +40,8 @@ class YardiUsersDataService < BaseService
 
         result = Ox.load(response.body, mode: :hash)
         resident_data = result[:"soap:Envelope"][1][:"soap:Body"][:GetResidentsResponse][1][:GetResidentsResult][:"MITS-ResidentData"][1][:PropertyResidents][1][:Residents][:Resident]
-        if resident_data.present?
-          import_resident_data(resident_data)
-        end
+        
+        import_resident_data(resident_data) if resident_data.present?
       
       rescue => e
         e.message
@@ -48,42 +49,53 @@ class YardiUsersDataService < BaseService
     end
   end
 
+  private
+
   def import_resident_data residents
     residents.each do |res|
-      first_name = get_first_name(res)
-      last_name = get_last_name(res)
-      email = get_email(res)
-      phone_number = "+1#{get_personal_phone_number(res) || get_other_phone_number(res)}"
-      user_type = get_status(res)
-      move_in_date = get_move_in_date(res)
-      move_out_date = get_move_out_date(res)
-      lease_in_date = get_lease_in_date(res)
-      lease_out_date = get_lease_out_date(res)
+      user = user_data(res)
 
-      if email.present? && phone_number.present?
-        pynwheel_access_user = PynwheelAccessUser.where(email: email, phone_number: phone_number)
+      if user[:email].present? && user[:phone_number].present?
+        pynwheel_access_user = PynwheelAccessUser.where(email: user[:email], phone_number: user[:phone_number])
 
         unless pynwheel_access_user.present?
-          if first_name.present? && last_name.present? && email.present? && user_type.present? && (move_in_date.present? || lease_in_date.present?) && (move_out_date.present? || lease_out_date.present?)
+          if is_required_fields_present(user)
             PynwheelAccessUser.create(
-              name: "#{first_name} #{last_name}",
+              name: "#{user[:first_name]} #{user[:last_name]}",
               community_id: credentials.community_id,
-              first_name: first_name,
-              last_name: last_name,
-              email: email,
-              phone_number: phone_number,
-              user_type: user_type,
-              move_in_date: date_formate(move_in_date),
-              move_out_date: date_formate(move_out_date),
-              lease_in_date: date_formate(lease_in_date),
-              lease_out_date: date_formate(lease_out_date)  
+              first_name: user[:first_name],
+              last_name: user[:last_name],
+              email: user[:email],
+              phone_number: user[:phone_number],
+              user_type: user[:user_type],
+              move_in_date: date_formate(user[:move_in_date]),
+              move_out_date: date_formate(user[:move_out_date]),
+              lease_in_date: date_formate(user[:lease_in_date]),
+              lease_out_date: date_formate(user[:lease_out_date])  
             )
           end
         end
-        
       end
-
     end
+
+  end
+
+  def is_required_fields_present user
+    (user[:first_name].present? && user[:last_name].present? && user[:email].present? && user[:user_type].present? && user[:phone_number].present?)
+  end
+
+  def user_data user
+    {
+      first_name: get_first_name(user),
+      last_name: get_last_name(user),
+      email: get_email(user),
+      phone_number: "+1#{get_personal_phone_number(user) || get_other_phone_number(user)}",
+      user_type: get_status(user),
+      move_in_date: get_move_in_date(user),
+      move_out_date: get_move_out_date(user),
+      lease_in_date: get_lease_in_date(user),
+      lease_out_date: get_lease_out_date(user) 
+    }
   end
 
   def date_formate date
