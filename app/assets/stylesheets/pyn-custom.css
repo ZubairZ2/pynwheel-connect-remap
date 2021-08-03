@@ -1839,6 +1839,7 @@ ul.images-tabs li a span {
       height: 100%;
       max-height: 932px;*/
     display: inline-block;
+    /* transform: matrix(1, 0, 0, 1, 0, 0) !important; */
 }
 
 .map-block {
@@ -1847,7 +1848,9 @@ ul.images-tabs li a span {
     overflow: scroll;
 }
 
-.map-block img {}
+/* .map-block img {
+    max-width: 100%;
+} */
 
 ul.amenities-list {
     margin: 0;
@@ -2188,8 +2191,12 @@ overflow-y: hidden;*/
     border: 3px solid #fff;
 }
 
+.plot-image-sitemap {
+    transform: matrix(1, 0, 0, 1, 0, 0) !important;
+}
 .image-map img {
     max-width: 100%;
+    /* height: auto; */ 
 }
 
 .building-plan {
@@ -2455,7 +2462,7 @@ overflow-y: hidden;*/
 .right-side {
     margin-left: 331px;
     position: absolute;
-    /*    width: calc(98.3% - 305px);*/
+    /* width: calc(98% - 107px); */
     height: 100%;
 }
 

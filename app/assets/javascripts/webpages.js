@@ -234,10 +234,32 @@ $(window).bind('load', function () {
       var in_browser_width = 0;
       var actual_height = 0;
       var actual_width = 0;
+      var extra_width = 0;
+      var extra_hieght = 0;
       in_browser_height = parseFloat($('.floorplate-image').parent().height());
       in_browser_width = parseFloat($('.floorplate-image').parent().width());
       actual_height = parseInt($('.floorplate-image').data("height"));
       actual_width = parseInt($('.floorplate-image').data("width"));
+
+      // var propertyMapImg = document.getElementById('property-map-image');
+      // if(actual_width > in_browser_width && actual_height > in_browser_height) {
+      //   actual_width = propertyMapImg.clientWidth;
+      //   actual_height = propertyMapImg.clientHeight;
+      // }
+      // setTimeout(function(){ 
+      //   // debugger
+      //   actual_width = propertyMapImg.clientWidth;
+      //   actual_height = propertyMapImg.clientHeight; 
+      // }, 3000);
+      
+      // if( actual_height > in_browser_height && actual_width > in_browser_width){
+      //   actual_width = propertyMapImg.clientWidth;
+      //   actual_height = propertyMapImg.clientHeight;
+      //   // extra_width = actual_width - in_browser_width
+      //   // extra_hieght = actual_height - in_browser_height
+      //   // actual_width = actual_width - extra_width
+      //   // actual_height = actual_height - extra_hieght
+      // }
       if (actual_width < in_browser_width)
         var width_ratio = 1;
       else
@@ -247,15 +269,32 @@ $(window).bind('load', function () {
       else
         var height_ratio = actual_height / in_browser_height;
 
-
       $('.marker').each(function () {
         var x_plot = parseFloat($(this).data('unit-x-plot'));
         var y_plot = parseFloat($(this).data('unit-y-plot'));
-        current_left = x_plot / width_ratio;
-        current_top = y_plot / height_ratio;
+
+        //TODO::Fix it dynamically. It is temporary fix right now
+        if(actual_width > in_browser_width && actual_height > in_browser_height) {
+          if(actual_width >= 5884){
+            current_left = x_plot / width_ratio - 6;
+            current_top = y_plot / height_ratio - 20;
+          }
+          if(actual_width >= 2824 && actual_width < 5884 ){
+            current_left = x_plot / width_ratio - 4;
+            current_top = y_plot / height_ratio - 13;
+          }
+          if(actual_width < 2824 && actual_width > 1568){
+            current_left = x_plot / width_ratio - 1;
+            current_top = y_plot / height_ratio - 6;
+          }
+        }
+        else {
+          current_left = x_plot / width_ratio;
+          current_top = y_plot / height_ratio;
+        }
+        // $(this).css({"left": current_left-4, "top": current_top-14});
         $(this).css({"left": current_left, "top": current_top});
       });
-
 
       $('.sitemap-amenity-marker').each(function () {
         var x_plot = parseFloat($(this).data('amenity-x-plot'));
@@ -1075,7 +1114,7 @@ function setUnitAttributes(element) {
   setModalAttributes(element);
 }
 
-
+  // for floorplates
 function adjustMarkerPosition(marker) {
   /*adjusting markers according to screen size*/
   var in_browser_height = 0;
