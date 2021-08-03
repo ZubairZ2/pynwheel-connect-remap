@@ -6,7 +6,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   def pynwheel_access_user_authentication
     if @pynwheel_access_user.present?
       if @pynwheel_access_user.is_verified
-        render json: {message: "Varified User", success_code: 200, status: true, access_token: encode_jwt_token(@pynwheel_access_user)}
+        @access_token = encode_jwt_token(@pynwheel_access_user)
       else
         render json: {message: "Non Varified User", success_code: 404, status: false}
       end
@@ -49,11 +49,9 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     if @pynwheel_access_user.present?
       if @pynwheel_access_user.pin_code == params[:pin_code]
         verify_user(true)
-
-        render json: {message: "Pynwheel access user is verified successfully", success_code: 200, status: true, access_token: encode_jwt_token(@pynwheel_access_user), user_data: @pynwheel_access_user}
+        @access_token = encode_jwt_token(@pynwheel_access_user)
       else
         verify_user(false)
-
         render json: {message: "OTP is wrong or expired", success_code: 404, status: false}
       end
     else
