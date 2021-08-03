@@ -35,6 +35,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     if @pynwheel_access_user.present?
       @pynwheel_access_user.update(pin_code: random_otp)
       sms_otp_to_mobile()
+      # execute job after 15 minutes(900 seconds) to expire the OTP
       ExpireOtpJob.perform_in(900, @pynwheel_access_user)
   
       render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true}
@@ -68,7 +69,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   def grant_pynwheel_user_access payload
     begin
-      PynwheelAccessUser.find_by_id(payload[0]["id"])
+      ( payload[0]["id"].present? &&  params[:user_id].present? &&  PynwheelAccessUser.find_by_id(payload[0]["id"].to_i) && (payload[0]["id"].to_i == params[:user_id].to_i) )
     rescue => ex
       false
     end
