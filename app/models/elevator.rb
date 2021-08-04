@@ -58,4 +58,42 @@ class Elevator < ApplicationRecord
     end
     
   end
+
+  def self.fetch_elevator_according_to_floor(floors_ids, elevators_ids)
+    elevator_floors = {}
+    elevators_to_floors = {}
+    elevators = where(id: elevators_ids).where(building: "") # For no building means for only one building floor
+    elevators.each {|elevator| elevators_to_floors[elevator.id] = elevator.floors }
+    elevators_to_floors.each do |elevator, ele_floors|
+      ele_floors.each do |floor|
+        if elevator_floors.has_key?(floor)
+          elevator_floors[floor] << elevator
+        else
+          elevator_floors[floor] = [elevator]
+        end
+      end
+    end
+    uncoverd_floors = floors_ids - elevator_floors.keys
+    uncoverd_floors.each {|floor| elevator_floors[floor] = [] }
+    elevator_floors
+  end
+
+  def max_floor
+    # empty string means there is no floor 
+    max_floor = ""
+    if floors.present?
+      max_floor = floors.last
+    end
+    max_floor
+  end
+
+  def min_floor
+    # empty string means there is no floor 
+    min_floor = ""
+    if floors.present?
+      min_floor = floors.first
+    end
+    min_floor
+  end
+
 end

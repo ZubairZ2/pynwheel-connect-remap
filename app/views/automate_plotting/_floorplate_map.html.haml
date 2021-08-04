@@ -28,7 +28,7 @@
                 Add Access point in hallways that are not associated with any specific unit or amenity- if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
       - if @community.self_tour and @community.auto_wayfinding
         %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo()'}Run Algo
+        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting')"}Run Algo
   = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
   %form.form-horizontal
     .box-body.map-body-top
@@ -104,6 +104,9 @@
 
                   - else
                     - puts "duplicated.........."
+              
+              - @elevators.each do |elevator|    
+                %i.fa.fa-reorder.stops.stop{:id => "elevator_#{elevator.id}", :style => "font-size: 25px; position: absolute; top: #{elevator.y_plot}px; left: #{elevator.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
               - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
                 - coordinates_array = []

@@ -60,14 +60,19 @@ class AutomatePlottingController < ApplicationController
 
       @amenities_doors = @floorplate.amenities.includes(:doors)
       @amenity_with_doors = @amenities_doors.map { |amenity| { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } }
-
+      @elevators = @floorplate.fetch_elevators(@floor)
       add_breadcrumb "Floor plates", community_floorplates_path(current_community)
       add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community, @floorplate)
     end
   end
 
   def shortest_path
-    path_object_in_order = return_path(params[:community_id], params[:path_type])
+    community = Community.find params[:community_id]
+    if community.is_sitemap
+      path_object_in_order = return_path_for_sitemap(params[:community_id], params[:path_type])
+    else
+      path_object_in_order = return_path_for_floorplate(params[:community_id], params[:path_type])
+    end
     render :json => {path_object: path_object_in_order.to_json}, :status => 200
   end
 
