@@ -42,8 +42,9 @@ module ShortestPath
     return path_object_in_order
   end
   def return_path_for_floorplate(community_id, path_type)
-    algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, starting_point = {}, {}, {}, {}, {}, {}, {}
-    start_point_data, stops, unit_starting_index, unit_data, amenity_data, unit_id_to_uniq_id, amenity_starting_index, amenity_id_to_uniq_id, elevator_starting_index, elevator_data, elevator_id_to_uniq_id = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+    # initialize hashes to store data for making path
+    floors_graph, precedence_visited_ids_by_floor, algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, starting_point = {}, {}, {}, {}, {}, {}, {}, {}, {}
+    start_point_data, @stops, unit_starting_index, unit_data, amenity_data, unit_id_to_uniq_id, amenity_starting_index, amenity_id_to_uniq_id, elevator_starting_index, elevator_data, elevator_id_to_uniq_id = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
     fetch_related_data_for_floorplate(community_id)
     starting_floor = @floors_ids.first # For now starting point is always on first in future we will change it to any floor selected from db
     start_point_data = get_starting_point_data(@floorplate_hallways[@floor_to_floorplate_id[starting_floor]].dup)
@@ -58,31 +59,47 @@ module ShortestPath
       # Merge starting point
       if floor == starting_floor
         starting_point[hallways_id_to_uniq_id[floor][start_point_data['hallway_id']]] = start_point_data['distance']
-        stops[floor] = {0 => starting_point}
+        @stops[floor] = {0 => starting_point}
       end
       # Merge Hallways
-      stops[floor] = stops[floor].present? ? stops[floor].merge(hallways_dijkstra_data[floor]) : hallways_dijkstra_data[floor]
+      @stops[floor] = @stops[floor].present? ? @stops[floor].merge(hallways_dijkstra_data[floor]) : hallways_dijkstra_data[floor]
       # Merge Unit Data
-      unit_starting_index[floor] = stops[floor].keys.size
+      unit_starting_index[floor] = @stops[floor].keys.size
       unit_data[floor] = make_unit_data_according_to_door_id(algo_unit_data[floor])
       unit_id_to_uniq_id[floor] = make_unit_id_to_uniq_id(unit_starting_index[floor], unit_data[floor])
-      unit_dijkstra_data = make_unit_data_for_dijakstra(unit_data[floor], unit_id_to_uniq_id[floor], hallways_id_to_uniq_id[floor], stops[floor])
-      stops[floor].merge!(unit_dijkstra_data)
+      unit_dijkstra_data = make_unit_data_for_dijakstra(unit_data[floor], unit_id_to_uniq_id[floor], hallways_id_to_uniq_id[floor], @stops[floor])
+      @stops[floor].merge!(unit_dijkstra_data)
       # Merge Amenity Data
-      amenity_starting_index[floor] = stops[floor].keys.size
+      amenity_starting_index[floor] = @stops[floor].keys.size
       amenity_data[floor] = make_amenity_data_according_to_door_id(algo_amenity_data[floor])
       amenity_id_to_uniq_id[floor] = make_amenity_id_to_uniq_id(amenity_starting_index[floor], amenity_data[floor])
-      amenity_dijkstra_data = make_amenity_data_for_dijakstra(amenity_data[floor], amenity_id_to_uniq_id[floor], hallways_id_to_uniq_id[floor], stops[floor])
-      stops[floor].merge!(amenity_dijkstra_data)
+      amenity_dijkstra_data = make_amenity_data_for_dijakstra(amenity_data[floor], amenity_id_to_uniq_id[floor], hallways_id_to_uniq_id[floor], @stops[floor])
+      @stops[floor].merge!(amenity_dijkstra_data)
       # Merge Elevator Data
-      elevator_starting_index[floor] = stops[floor].keys.size
+      elevator_starting_index[floor] = @stops[floor].keys.size
       elevator_data[floor] = make_elevator_data_according_to_elevator_id(algo_elevator_data[floor])
       elevator_id_to_uniq_id[floor] = make_elevator_id_to_uniq_id(elevator_starting_index[floor], elevator_data[floor])
-      elevator_dijkstra_data = make_elevator_data_for_dijakstra(elevator_data[floor], elevator_id_to_uniq_id[floor], hallways_id_to_uniq_id[floor], stops[floor])
-      stops[floor].merge!(elevator_dijkstra_data)
+      elevator_dijkstra_data = make_elevator_data_for_dijakstra(elevator_data[floor], elevator_id_to_uniq_id[floor], hallways_id_to_uniq_id[floor], @stops[floor])
+      @stops[floor].merge!(elevator_dijkstra_data)
       #Update @precedence_according_to_floors array like stops id key 
-      # please continue
-      #update_precedence_unit_arr_for_floor(unit_id_to_uniq_id, floor)
+      update_precedence_unit_arr_for_floor(unit_id_to_uniq_id[floor], floor)
+      update_precedence_amenity_arr_for_floor(amenity_id_to_uniq_id[floor], floor)
+    end
+    floor_to_elevator_uniq_ids = get_elevator_uniq_ids(elevator_id_to_uniq_id)
+    uniq_id_to_elevator_by_floor = get_uniq_id_to_elevator(elevator_id_to_uniq_id)
+    precedence_visited_ids_by_floor = get_floor_by_floor_precedence_of_unit_and_amnity()
+    floors_graph = get_floor_by_floor_graph()
+    complete_path = {}
+    @floors_ids.each do |floor|
+      if (floor == @floors_ids.first); source = 0; else; source = floors_graph[floor - 1].source; end
+      destination_arr = precedence_visited_ids_by_floor[floor]
+      elevator_arr = floor_to_elevator_uniq_ids[floor]
+      if path_type == "actual shortest"
+        #@gr.shortest_paths_without_sorting(source, destination_arr)
+      elsif path_type == "sorting"
+        floors_graph[floor].shortest_paths_with_sorting_in_floor(source, destination_arr, elevator_arr) #shortest path with sorting
+        complete_path[floor] = floors_graph[floor].complete_path
+      end
     end
     binding.pry
     return []
@@ -742,6 +759,11 @@ module ShortestPath
         update_precedence_arr_for_floor("unit", element, unit_id_to_uniq_id[element], floor)
       end
     end
+    def update_precedence_amenity_arr_for_floor(amenity_id_to_uniq_id, floor)
+      @planned_to_visit_amenities_and_doors_ids.each_with_index do |element, i|
+        update_precedence_arr_for_floor("amenity", element, amenity_id_to_uniq_id[element], floor)
+      end
+    end
     def update_precedence_amenity_arr(amenity_id_to_uniq_id)
       amenity_visited_ids = []
       @planned_to_visit_amenities_and_doors_ids.each_with_index do |element, i|
@@ -772,6 +794,51 @@ module ShortestPath
           @gr.add_edge(start_key, key, h[key])
         end
       end
+    end
+    def get_floor_by_floor_precedence_of_unit_and_amnity
+      precedence_hash = {}
+      @floors_ids.each do |floor|
+        arr = []
+        @precedence_according_to_floors[floor].each {|p_arr| arr.push(p_arr[0]) }
+        precedence_hash[floor] = arr
+      end
+      precedence_hash
+    end
+    def get_elevator_uniq_ids(elevator_id_to_uniq_id)
+      elevator_uniq_ids = {}
+      @floors_ids.each do |floor|
+        elevator_uniq_ids[floor] = elevator_id_to_uniq_id[floor].values
+      end
+      elevator_uniq_ids
+    end
+    def get_uniq_id_to_elevator(elevator_id_to_uniq_id)
+      uniq_id_to_elevator = {}
+      @floors_ids.each do |floor|
+        elevator_id_to_uniq_id[floor].each do |key, value|
+          if uniq_id_to_elevator.has_key?(floor)
+            uniq_id_to_elevator[floor] = uniq_id_to_elevator[floor].merge({value => key})
+          else
+            uniq_id_to_elevator[floor] = {value => key}
+          end
+        end
+      end
+      uniq_id_to_elevator
+    end
+    def get_floor_by_floor_graph
+      floors_graph = {}
+      @floors_ids.each do |floor|
+        floors_graph[floor] = add_floor_graph(@stops[floor])
+      end
+      floors_graph
+    end
+    def add_floor_graph(stops)
+      graph = Graph.new
+      stops.each do |start_key, h|
+        h.keys.each do |key|
+          graph.add_edge(start_key, key, h[key])
+        end
+      end
+      graph
     end
     def merge_path_two_d_arr_for_web(complete_path)
       complete_arr = complete_path[0]

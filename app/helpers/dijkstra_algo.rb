@@ -1,7 +1,7 @@
 module DijkstraAlgo
 	#ruby 2.3.1 recomended
 	class Graph
-  	attr_reader :graph, :nodes, :previous, :distance, :complete_path #getter methods
+  	attr_reader :graph, :nodes, :previous, :distance, :complete_path, :source #getter methods
     INFINITY = 1 << 64
   
     def initialize
@@ -146,7 +146,33 @@ module DijkstraAlgo
           @source = dest
         end
         @graph_paths
+    end
+
+    def shortest_paths_with_sorting_in_floor(source, destination_arr, elevator_arr)
+      @complete_path = []
+      @source = source
+      destination_arr.each do |dest|
+        @graph_paths=[]
+        dijkstra @source
+        @path=[]
+        find_path dest # traverse back to every node from selected node
+        actual_distance=if @distance[dest] != INFINITY
+                        @distance[dest]
+                        else
+                        "no path"
+                        end
+        @graph_paths<< "Target(#{dest})  #{@path.join("-->")} : #{actual_distance}"
+        @complete_path << @path
+        @source = dest
       end
+      @graph_paths
+      @graph_paths = []
+      dijkstra @source
+      @path=[]
+      min_distance_node = return_minimum_distance_node(elevator_arr)
+      find_path min_distance_node # traverse back to every node from selected node
+      @complete_path << @path
+    end
   
     # print result
   
