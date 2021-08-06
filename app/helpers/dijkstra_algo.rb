@@ -172,6 +172,7 @@ module DijkstraAlgo
       min_distance_node = return_minimum_distance_node(elevator_arr)
       find_path min_distance_node # traverse back to every node from selected node
       @complete_path << @path
+      @source = min_distance_node
     end
   
     # print result

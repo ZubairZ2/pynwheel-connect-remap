@@ -44,7 +44,7 @@ module ShortestPath
   def return_path_for_floorplate(community_id, path_type)
     # initialize hashes to store data for making path
     floors_graph, precedence_visited_ids_by_floor, algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, starting_point = {}, {}, {}, {}, {}, {}, {}, {}, {}
-    start_point_data, @stops, unit_starting_index, unit_data, amenity_data, unit_id_to_uniq_id, amenity_starting_index, amenity_id_to_uniq_id, elevator_starting_index, elevator_data, elevator_id_to_uniq_id = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+    start_point_data, @stops, unit_starting_index, unit_data, amenity_data, unit_id_to_uniq_id, amenity_starting_index, amenity_id_to_uniq_id, elevator_starting_index, @elevator_data, elevator_id_to_uniq_id = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
     fetch_related_data_for_floorplate(community_id)
     starting_floor = @floors_ids.first # For now starting point is always on first in future we will change it to any floor selected from db
     start_point_data = get_starting_point_data(@floorplate_hallways[@floor_to_floorplate_id[starting_floor]].dup)
@@ -77,9 +77,9 @@ module ShortestPath
       @stops[floor].merge!(amenity_dijkstra_data)
       # Merge Elevator Data
       elevator_starting_index[floor] = @stops[floor].keys.size
-      elevator_data[floor] = make_elevator_data_according_to_elevator_id(algo_elevator_data[floor])
-      elevator_id_to_uniq_id[floor] = make_elevator_id_to_uniq_id(elevator_starting_index[floor], elevator_data[floor])
-      elevator_dijkstra_data = make_elevator_data_for_dijakstra(elevator_data[floor], elevator_id_to_uniq_id[floor], hallways_id_to_uniq_id[floor], @stops[floor])
+      @elevator_data[floor] = make_elevator_data_according_to_elevator_id(algo_elevator_data[floor])
+      elevator_id_to_uniq_id[floor] = make_elevator_id_to_uniq_id(elevator_starting_index[floor], @elevator_data[floor])
+      elevator_dijkstra_data = make_elevator_data_for_dijakstra(@elevator_data[floor], elevator_id_to_uniq_id[floor], hallways_id_to_uniq_id[floor], @stops[floor])
       @stops[floor].merge!(elevator_dijkstra_data)
       #Update @precedence_according_to_floors array like stops id key 
       update_precedence_unit_arr_for_floor(unit_id_to_uniq_id[floor], floor)
@@ -91,9 +91,13 @@ module ShortestPath
     floors_graph = get_floor_by_floor_graph()
     complete_path = {}
     @floors_ids.each do |floor|
-      if (floor == @floors_ids.first); source = 0; else; source = floors_graph[floor - 1].source; end
+      if (floor == @floors_ids.first); source = 0; else; source = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor - 1][floors_graph[floor - 1].source]]; end
       destination_arr = precedence_visited_ids_by_floor[floor]
-      elevator_arr = floor_to_elevator_uniq_ids[floor]
+      unless (floor == @floors_ids.last)
+        elevator_arr = elevators_which_have_next_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
+      else
+        elevator_arr = elevators_which_have_previous_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
+      end
       if path_type == "actual shortest"
         #@gr.shortest_paths_without_sorting(source, destination_arr)
       elsif path_type == "sorting"
@@ -823,6 +827,24 @@ module ShortestPath
         end
       end
       uniq_id_to_elevator
+    end
+    def elevators_which_have_next_floor(elevator_arr, uniq_id_to_elevator_hash, floor)
+      have_next_floor_elevator = []
+      elevator_arr.each do |ele|
+        if @elevator_data[floor][uniq_id_to_elevator_hash[ele]]["max_floor"].present? && @elevator_data[floor][uniq_id_to_elevator_hash[ele]]["max_floor"] > floor
+          have_next_floor_elevator << ele 
+        end
+      end
+      have_next_floor_elevator
+    end
+    def elevators_which_have_previous_floor(elevator_arr, uniq_id_to_elevator_hash, floor)
+      have_previous_floor_elevator = []
+      elevator_arr.each do |ele|
+        if @elevator_data[floor][uniq_id_to_elevator_hash[ele]]["min_floor"].present? && @elevator_data[floor][uniq_id_to_elevator_hash[ele]]["min_floor"] < floor
+          have_previous_floor_elevator << ele 
+        end
+      end
+      have_previous_floor_elevator
     end
     def get_floor_by_floor_graph
       floors_graph = {}
