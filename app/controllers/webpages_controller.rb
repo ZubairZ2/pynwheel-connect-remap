@@ -47,6 +47,7 @@ class WebpagesController < ActionController::Base
         floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
         
         struct = {
+          id: unit.id,
           marketing_name: unit.marketing_name,
           market_rent: unit.effective_rent,
           bedrooms: floorplan.bedrooms,
