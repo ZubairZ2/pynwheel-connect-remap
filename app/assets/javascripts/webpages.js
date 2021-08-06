@@ -309,8 +309,8 @@ $(window).bind('load', function () {
             current_top = y_plot / height_ratio - 20;
           }
           if(actual_width >= 2824 && actual_width < 5884 ){
-            current_left = x_plot / width_ratio - 14;
-            current_top = y_plot / height_ratio + 3;
+            current_left = x_plot / width_ratio - 4;
+            current_top = y_plot / height_ratio - 6;
           }
           if(actual_width < 2824 && actual_width > 1568){
             current_left = x_plot / width_ratio - 1;
@@ -1221,7 +1221,7 @@ function adjustAmenitiesPosition() {
       }
       if(actual_width >= 2824 && actual_width < 5884 ){
         current_left = x_plot / width_ratio - 4;
-        current_top = y_plot / height_ratio - 13;
+        current_top = y_plot / height_ratio - 6;
       }
       if(actual_width < 2824 && actual_width > 1568){
         current_left = x_plot / width_ratio - 1;
