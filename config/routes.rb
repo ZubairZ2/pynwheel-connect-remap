@@ -401,16 +401,23 @@ Rails.application.routes.draw do
     end
 
     resources :pynwheel_access_users, only: [:index, :create, :update, :destroy] do
-    end
-
-    resources :pynwheel_accesses, only: [:index] do
-      collection do
-        delete :delete_pynwheel_access_user
-        get :get_pynwheel_user_accesses
-        post :create_or_update_pynwheel_access_user
-        post :active_or_inactive_user
+      member do
+        get :accesses
+        post :grant_units_access
+        post :grant_amenities_access
+        delete :remove_unit_access
+        delete :remove_amenity_access
       end
     end
+
+    # resources :pynwheel_accesses, only: [:index] do
+    #   collection do
+    #     delete :delete_pynwheel_access_user
+    #     get :get_pynwheel_user_accesses
+    #     post :create_or_update_pynwheel_access_user
+    #     post :active_or_inactive_user
+    #   end
+    # end
 
     resources :favorite_settings, only: [:index, :create, :update] do
       resources :favorite_images

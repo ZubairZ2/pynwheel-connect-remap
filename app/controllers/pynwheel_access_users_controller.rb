@@ -1,6 +1,6 @@
 class PynwheelAccessUsersController < ApplicationController
   before_action :set_community
-  before_action :set_pynwheel_access_user, only: [:destroy, :update]
+  before_action :set_pynwheel_access_user, only: [:destroy, :update, :accesses]
 
   def index
     if @community.pynwheel_access
@@ -14,6 +14,7 @@ class PynwheelAccessUsersController < ApplicationController
     pynwheel_access_user = PynwheelAccessUser.new(pynwheel_access_user_params)
     
     if pynwheel_access_user.save!
+      create_user_on_zerv(pynwheel_access_user);
       flash[:notice] = "Pynwheel access user is created successfully"
     else
       flash[:alert] = "Can not create pynwheel access user"
@@ -30,10 +31,70 @@ class PynwheelAccessUsersController < ApplicationController
 
   def destroy
     @pynwheel_access_user.destroy
+    destroy_user_on_zerv(@pynwheel_access_user)
     flash[:notice] = "Pynwheel access user is deleted successfully"
   end
 
+  def accesses
+    if @community.present? && @pynwheel_access_user.present?
+      @amenities = @community.amenities
+      @units = @community.units
+    end
+  end
+
+  def grant_units_access
+
+  end
+
+  def grant_amenities_access
+
+  end
+
+  def remove_unit_access
+    
+  end
+
+  def remove_amenity_access
+
+  end
+
   private
+
+  def create_user_on_zerv user
+    PynwheelAccessService.new().create_pynwheel_access_user(zerv_user_data(user), get_zerv_token(user))
+  end
+
+  def update_user_on_zerv
+  end
+
+  def destroy_user_on_zerv user
+    PynwheelAccessService.new().pynwheel_access_delete_user(user[:phone_number][1..-1], get_zerv_token(user))
+  end
+
+  def zerv_user_data user
+    {
+      firstName: user[:first_name],
+      lastName: user[:last_name],
+      phoneNumber: user[:phone_number],
+      email: user[:email],
+      image: nil,
+      listAddUserAccess: zerv_user_access(user)
+    }
+  end
+
+  def zerv_user_access user
+    []
+  end
+
+  def get_zerv_token user
+    response = PynwheelAccessService.new().pynwheel_access_login(user.community)
+
+    if response["payload"]["code"] == "200" && response["payload"]["status"] == "success"
+      response["payload"]["idToken"]
+    else
+      nil
+    end
+  end
 
   def set_pynwheel_access_user
     @pynwheel_access_user ||= @community.pynwheel_access_users.where(id: params[:id]).first

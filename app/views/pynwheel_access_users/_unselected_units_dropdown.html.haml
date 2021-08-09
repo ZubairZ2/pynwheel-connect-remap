@@ -1,0 +1,18 @@
+- if community.mdu
+  - units = units.sort_by{|u| u.marketing_name}
+  .col-lg-6{:style => "margin-bottom: 10px;"}
+    %h5.mt-40.mb-20
+      Units
+      %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "add_unit_Popover","data-content" => " "}
+        %span#propertyDetailNameText
+          Units are imported on the "Data" page and can be edited on the "Units" page. Select a unit from the list below to add it to the Resident access list. If a unit is not on the list, it may be because it is not plotted on the map.
+    
+    - amenity_arr = []
+    - select_tag_unit = []
+    
+    - units.each do |unit|
+      - if ((unit.x_plot.to_i + unit.y_plot.to_i > 0))
+        - select_tag_unit << [unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name, unit.id]
+    = select_tag "unit_accesses", options_for_select(select_tag_unit, ""), :class => 'chosen-select-unit',:"data-placeholder" => "- select unit -", :multiple => "multiple",:name => "unit_data_selected", style: "width: 100%;"
+
+    %input{:value => "Add units to access list", :type => "submit", :id=> 'add_units_access', :class => 'btn btn-success hidden', :style => "margin-top: 10px;"}/    

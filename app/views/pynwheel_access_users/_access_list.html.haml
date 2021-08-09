@@ -1,0 +1,35 @@
+.row
+  .col-md-12#outer_div
+    .box.box-widget.panel-box.add-plan
+      %table#access-miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units
+        %thead
+          %tr
+            %th{:width => "79"} Sr #
+            %th Name
+            %th type
+            %th{:width => "150"} Actions
+        %tbody
+          %tr
+            %td
+              = "1"
+            %td
+              = "Unit 123"
+            %td
+              = "Unit"
+            %td
+              %a.text-danger{"data-name"=>"Tour Stop", "data-target" => "#confirm-delete", "data-toggle" => "modal"}
+                %i.fa.fa-trash.pynwheel_access_user_action_icon_size.additionalPageAction
+                  %span#additionalPageActionText 
+                    Access of this unit/amenity will be removed.
+
+              %a.text-success{"data-name"=>"Tour Stop", "data-toggle" => "modal"}
+                %i.fa.fa-pencil-square-o.pynwheel_access_user_action_icon_size.additionalPageAction
+                  %span#additionalPageActionText 
+                    Edit unit/amenity
+
+              %a.text-default{"data-name"=>"Tour Stop", "data-target" => "#pynwheelAccessTimeModal", "data-toggle" => "modal"}
+                %i.fa.fa-clock-o.pynwheel_access_user_action_icon_size.additionalPageAction
+                  %span#additionalPageActionText 
+                    Update time accesses for the unit/amenity
+
+= render :partial=>'access_timer', :locals => {community: community}

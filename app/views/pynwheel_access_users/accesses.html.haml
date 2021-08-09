@@ -1,0 +1,12 @@
+- content_for :title, "Pynwheel User - Accesses"
+.divLoading.hidden
+%section
+  .box.box-info.add-plan.mt-20#logo_header
+    .box-header
+      %h3.box-title #{@pynwheel_access_user.name} - Accesses
+
+  .content
+    .row  
+      = render :partial=>'unselected_amenities_dropdown', :locals => {amenities: @amenities, community: @community}
+      = render :partial=>'unselected_units_dropdown', :locals => {units: @units, community: @community}
+    = render :partial=>'access_list', :locals => {community: @community}

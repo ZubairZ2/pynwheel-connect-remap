@@ -78,6 +78,102 @@ class YardiUsersDataService < BaseService
       end
     end
 
+    # community_residents()
+  end
+
+  def get_current_community
+    Community.find_by_id credentials.community_id
+  end
+
+  def community_residents
+    community = get_current_community()
+    pynwheel_access_users = community.pynwheel_access_users
+    token = get_token(community)
+
+    puts "-----------"*50
+    puts "----------------  access token ---------------------------"
+    puts token
+    puts "-----------"*50    
+
+    zerv_users = token.present? ? (get_existing_zerv_users(token)) : []
+    create_community_residents_on_zerv_portal(pynwheel_access_users, zerv_users, token)
+  end
+
+  def create_community_residents_on_zerv_portal pynwheel_access_users, zerv_users, token
+    pynwheel_access_users.each do |user|
+      # if condition if want to destroy
+      # unless condition if want to create
+
+      unless is_user_already_present_on_zerv(zerv_users, user.phone_number)
+        create_resident_on_zerv(user, token)
+        # delete_user_on_zerv(user, token)
+      end
+    end
+  end
+
+  def get_existing_zerv_users token
+    if token.present?
+      response = PynwheelAccessService.new().pynwheel_access_get_users(token)
+
+      if response["payload"]["code"] == "200" && response["payload"]["status"] == "success"
+        response["payload"]["listUsers"]
+      else
+        []
+      end
+    end
+  end
+
+  def delete_user_on_zerv user, token
+    phone_number = user.phone_number[1..-1]
+    response = PynwheelAccessService.new().pynwheel_access_delete_user(phone_number, token)
+    if response["payload"]["code"] == "200" && response["payload"]["status"] == "success"
+      puts "Pynwheel access user deleted successfully"
+      true
+    else
+      puts "Could not delete pynwheeel access user"
+      false
+    end
+  end
+
+  def create_resident_on_zerv user, token
+    response = PynwheelAccessService.new().create_pynwheel_access_user(zerv_user_data(user), token)
+
+    if response["payload"]["code"] == "200" && response["payload"]["status"] == "success"
+      puts "---------- User Created on Zerv ----------------"
+      true
+    else
+      puts "-------------- Failed to Create user on Zerv ---------------"
+      false
+    end
+  end
+
+  def zerv_user_data user
+    {
+      firstName: user[:first_name],
+      lastName: user[:last_name],
+      phoneNumber: user[:phone_number],
+      email: user[:email],
+      image: nil,
+      listAddUserAccess: zerv_user_access(user)
+    }
+  end
+
+  def zerv_user_access user
+    []
+  end
+  
+  def is_user_already_present_on_zerv zerv_users, phone_number
+    zerv_users.select{|user| user["phoneNumber"] == phone_number}.first
+  end
+
+  def get_token community
+    response = PynwheelAccessService.new().pynwheel_access_login(community)
+
+    if response["payload"]["code"] == "200" && response["payload"]["status"] == "success"
+      response["payload"]["idToken"]
+    else
+      nil
+    end
   end
 
   def is_required_fields_present user

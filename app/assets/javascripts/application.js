@@ -71,6 +71,8 @@
 // require_tree .
 //= require bootstrap-wysihtml5
 //= require bootstrap-wysihtml5/locales
+//= require accesses
+
 $(document).ready(function() {
     new Clipboard('.clipboard-btn');
 });

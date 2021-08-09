@@ -8,5 +8,8 @@
         = "Manage pynwheel user accesses"
 
       .modal-footer
+        %button.btn.btn-default.new-access-btn{:type => "button", :onclick => "addNewPynwheelAccessAddress()"} 
+          %i.fa.fa-plus{"aria-hidden" => "true"} 
+          Add New Access
         %button.btn.btn-default{:type => "button", :onclick => "closeManageAccessesModal()"} Cancel
         %button.btn.btn-primary.pynwheel-access-modal-button{:type => "button", :onclick => "managePynwheelUserAccesses()"} Update access

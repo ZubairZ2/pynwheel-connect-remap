@@ -47,12 +47,6 @@ textarea {
     color: #555;
 }
 
-.pynwheel-access-time-modal {
-    min-height: 670px;
-    top: -30px;
-    left: -15px;
-}
-
 .pynwheel-access-datefield {
     display: inline-flex;
 }
@@ -97,8 +91,12 @@ textarea {
     border-radius: 4px;
 }
 
+.pynwheel-access-time-block input[type=checkbox], input[type=radio] {
+    margin: 4px 5px 0 !important;  
+}
+
 .day-time-entry {
-    padding-top: 10px;
+    padding-top: 30px;
 }
 
 .custom-select {
@@ -599,6 +597,11 @@ textarea {
     border-radius: 3px;
 }
 
+.pynwheel_access_user_action_icon_size {
+    font-size: x-large;
+    padding: 5px;
+    cursor: pointer;
+}
 
 /****Table Style***/
 

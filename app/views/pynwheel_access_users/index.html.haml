@@ -69,7 +69,7 @@
                         
                         %i.fa.fa-trash-o.pynwheel-access-delete{"aria-hidden" => "true", :onclick => "showDeleteUserModal(#{user.id})"}
                         
-                        %button.btn.btn-success.pynwheel-manage-accesses{:type => "button", :onclick =>"manageAccessesModal(#{user.to_json})"} Manage Accesses
+                        %a{href: "/communities/#{@community.id}/pynwheel_access_users/#{user[:id]}/accesses", type:  "button",class: "btn btn-success pynwheel-manage-accesses"} Manage Accesses
 
   #pynwheelAccessUsersData{ data: {community: @community.to_json} }
 
