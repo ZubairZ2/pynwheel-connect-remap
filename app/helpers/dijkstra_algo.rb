@@ -1,7 +1,7 @@
 module DijkstraAlgo
 	#ruby 2.3.1 recomended
 	class Graph
-  	attr_reader :graph, :nodes, :previous, :distance, :complete_path, :source #getter methods
+  	attr_reader :graph, :nodes, :previous, :distance, :complete_path, :source, :elevator_path #getter methods
     INFINITY = 1 << 64
   
     def initialize
@@ -172,6 +172,18 @@ module DijkstraAlgo
       min_distance_node = return_minimum_distance_node(elevator_arr)
       find_path min_distance_node # traverse back to every node from selected node
       @complete_path << @path
+      @source = min_distance_node
+    end
+
+    def traverse_back(source, elevator_arr)
+      @elevator_path = []
+      @graph_paths = []
+      @source = source
+      dijkstra @source
+      @path=[]
+      min_distance_node = return_minimum_distance_node(elevator_arr)
+      find_path min_distance_node
+      @elevator_path << @path
       @source = min_distance_node
     end
   
