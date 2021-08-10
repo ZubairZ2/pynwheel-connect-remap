@@ -9,27 +9,57 @@
             %th type
             %th{:width => "150"} Actions
         %tbody
-          %tr
-            %td
-              = "1"
-            %td
-              = "Unit 123"
-            %td
-              = "Unit"
-            %td
-              %a.text-danger{"data-name"=>"Tour Stop", "data-target" => "#confirm-delete", "data-toggle" => "modal"}
-                %i.fa.fa-trash.pynwheel_access_user_action_icon_size.additionalPageAction
-                  %span#additionalPageActionText 
-                    Access of this unit/amenity will be removed.
+          - order_number = 0
+          - units.each do |unit|
+            %tr
+              %td
+                = order_number = order_number + 1
+              %td
+                = unit.marketing_name
+              %td
+                = "Unit"
+              %td
+                %a.text-danger{"data-name"=>"Access Point", "data-target" => "#removePynwheelAccessModal", "data-toggle" => "modal"}
+                  %i.fa.fa-trash.pynwheel_access_user_action_icon_size.additionalPageAction
+                    %span#additionalPageActionText 
+                      Access of this unit/amenity will be removed.
 
-              %a.text-success{"data-name"=>"Tour Stop", "data-toggle" => "modal"}
-                %i.fa.fa-pencil-square-o.pynwheel_access_user_action_icon_size.additionalPageAction
-                  %span#additionalPageActionText 
-                    Edit unit/amenity
+                %a.text-success{"data-name"=>"Tour Stop", "data-toggle" => "modal"}
+                  %i.fa.fa-pencil-square-o.pynwheel_access_user_action_icon_size.additionalPageAction
+                    %span#additionalPageActionText 
+                      Edit unit/amenity
 
-              %a.text-default{"data-name"=>"Tour Stop", "data-target" => "#pynwheelAccessTimeModal", "data-toggle" => "modal"}
-                %i.fa.fa-clock-o.pynwheel_access_user_action_icon_size.additionalPageAction
-                  %span#additionalPageActionText 
-                    Update time accesses for the unit/amenity
+                %a.text-default{"data-name"=>"Tour Stop", "data-target" => "#pynwheelAccessTimeModal", "data-toggle" => "modal"}
+                  %i.fa.fa-clock-o.pynwheel_access_user_action_icon_size.additionalPageAction
+                    %span#additionalPageActionText 
+                      Update time accesses for the unit/amenity
 
-= render :partial=>'access_timer', :locals => {community: community}
+            = render :partial=>'access_timer', :locals => {community: community, access_point: unit}
+            = render :partial=>'remove_user_access_modal', :locals => {community: community, access_point: unit}
+
+          - amenities.each do |amenity|
+            %tr
+              %td
+                = order_number = order_number + 1
+              %td
+                = amenity.name
+              %td
+                = "Amenity"
+              %td
+                %a.text-danger{"data-name"=>"Access Point", "data-target" => "#removePynwheelAccessModal", "data-toggle" => "modal"}
+                  %i.fa.fa-trash.pynwheel_access_user_action_icon_size.additionalPageAction
+                    %span#additionalPageActionText 
+                      Access of this unit/amenity will be removed.
+
+                %a.text-success{"data-name"=>"Tour Stop", "data-toggle" => "modal"}
+                  %i.fa.fa-pencil-square-o.pynwheel_access_user_action_icon_size.additionalPageAction
+                    %span#additionalPageActionText 
+                      Edit unit/amenity
+
+                %a.text-default{"data-name"=>"Tour Stop", "data-target" => "#pynwheelAccessTimeModal", "data-toggle" => "modal"}
+                  %i.fa.fa-clock-o.pynwheel_access_user_action_icon_size.additionalPageAction
+                    %span#additionalPageActionText 
+                      Update time accesses for the unit/amenity
+
+            = render :partial=>'access_timer', :locals => {community: community, access_point: amenity}
+            = render :partial=>'remove_user_access_modal', :locals => {community: community, access_point: amenity}

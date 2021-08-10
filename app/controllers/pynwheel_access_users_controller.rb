@@ -14,7 +14,7 @@ class PynwheelAccessUsersController < ApplicationController
     pynwheel_access_user = PynwheelAccessUser.new(pynwheel_access_user_params)
     
     if pynwheel_access_user.save!
-      create_user_on_zerv(pynwheel_access_user);
+      # create_user_on_zerv(pynwheel_access_user);
       flash[:notice] = "Pynwheel access user is created successfully"
     else
       flash[:alert] = "Can not create pynwheel access user"
@@ -31,14 +31,16 @@ class PynwheelAccessUsersController < ApplicationController
 
   def destroy
     @pynwheel_access_user.destroy
-    destroy_user_on_zerv(@pynwheel_access_user)
+    # destroy_user_on_zerv(@pynwheel_access_user)
     flash[:notice] = "Pynwheel access user is deleted successfully"
   end
 
   def accesses
     if @community.present? && @pynwheel_access_user.present?
-      @amenities = @community.amenities
-      @units = @community.units
+      @accessible_amenities = user_accessible_amenities( user_accessable_points("amenity") )
+      @accessible_units = user_accessible_units( user_accessable_points("unit") )
+      @un_accessible_amenities = @community.amenities - @accessible_amenities
+      @un_accessible_units = @community.units - @accessible_units
     end
   end
 
@@ -55,10 +57,22 @@ class PynwheelAccessUsersController < ApplicationController
   end
 
   def remove_amenity_access
-
+    
   end
 
   private
+
+  def user_accessible_amenities ids
+    @community.amenities.where(id: ids)
+  end
+
+  def user_accessible_units ids
+    @community.units.where(id: ids)
+  end
+
+  def user_accessable_points type
+    @pynwheel_access_user.resident_access_points.where(access_point_type: type).pluck(:access_point_id)
+  end
 
   def create_user_on_zerv user
     PynwheelAccessService.new().create_pynwheel_access_user(zerv_user_data(user), get_zerv_token(user))
