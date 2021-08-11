@@ -2,7 +2,6 @@
   .box-header
     %h3.box-title
       Plot
-
       = render 'decide_styling'
       %span= @floorplate.name + " Units"
 
@@ -12,14 +11,14 @@
 
     - begin
       %h3 Select a Floor
-      - @floorplates.sort.each do |f|
+      - @floors.sort.each do |f|
         %a.btn-default{:href => "/automate_plotting?community_id="+@community.id.to_s+"&floorNo="+ "#{f}", :style => "display: inline-block;width: 33px;height: 25px;background: #{@floor.present? ? (@floor.to_i == f ? "#49d849;" : "#e0e0e0;") : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
     - rescue
       - puts "rescued"
     .btn-btn-danger.mt-10
       - if @community.self_tour and @community.auto_wayfinding
         %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
-      - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
+      - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
         = link_to community_floorplate_select_many_floors_path(@community, @floorplate), remote: true do
           %button.btn.btn-success
             Add Access Point
@@ -27,7 +26,7 @@
               %span#propertyDetailNameText{:style => "font-weight: normal;"}
                 Add Access point in hallways that are not associated with any specific unit or amenity- if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
       - if @community.self_tour and @community.auto_wayfinding
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
+        //%button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
         %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting')"}Run Algo
   = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
   %form.form-horizontal
@@ -108,7 +107,7 @@
               - @elevators.each do |elevator|    
                 %i.fa.fa-reorder.stops.stop{:id => "elevator_#{elevator.id}", :style => "font-size: 25px; position: absolute; top: #{elevator.y_plot}px; left: #{elevator.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
-              - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
+              - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
                 - coordinates_array = []
 
                 - @access_points.each do |access_point|
@@ -165,7 +164,7 @@
   var multi_floors;
   var units_info = #{@unit_with_door.to_json.html_safe}
   var amenities_info = #{@amenity_with_doors.to_json.html_safe}
-  var access_points = #{@access_points.to_json.html_safe}
+  // var access_points = #{@access_points.to_json.html_safe}
   var building_starting_point = {x_plot: #{@community.tour.x_plot.to_json.html_safe}, y_plot: #{@community.tour.y_plot.to_json.html_safe} };
 
   var left_margin = #{raw @left_margin}

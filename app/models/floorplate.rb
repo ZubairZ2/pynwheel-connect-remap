@@ -69,10 +69,6 @@ class Floorplate < ApplicationRecord
     units = Unit.where(community_id: community_id,floor: self.floors)
   end
 
-  def fetch_units_for_sepcific_floor(floor)
-    Unit.where(community_id: community_id,floor: floor)
-  end
-
   def fetch_elevators(floor)
     elevators = Elevator.where(community_id: community_id, building: "")
     elevators = elevators.map {|elevator| elevator if elevator.floors.include?(floor) }.compact

@@ -12,14 +12,15 @@
     .btn-btn-danger.mt-10
       - if @community.self_tour and @community.auto_wayfinding
         %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
-      - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
+      - # Access points is hiding for now we will use it in future
+      - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
         %button.btn.btn-success{onclick: 'start_access_point_plot(event)'}
           Add Access Point
           %i.propertyDetailName.fa.fa-question-circle
             %span#propertyDetailNameText{:style => "font-weight: normal;"}
               Add Access point in hallways that are not associated with any specific unit or amenity
       - if @community.self_tour and @community.auto_wayfinding
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
+        // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
         %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(false, "actual shortest")'}Run Algo
         %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(true, "actual shortest")'}Run Algo With Animation
         %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(false, "sorting")'}Run Algo With Sorting
@@ -98,7 +99,8 @@
                   - else
                     - puts "duplicated.........."
 
-              - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
+              - # Access points is hiding for now we will use it in future
+              - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
                 - coordinates_array = []
 
                 - @access_points.each do |access_point|
@@ -154,11 +156,8 @@
 
   var units_info = #{@unit_with_door.to_json.html_safe};
   var amenities_info = #{@amenity_with_doors.to_json.html_safe};
-  var access_points = #{@access_points.to_json.html_safe};
+  // var access_points = #{@access_points.to_json.html_safe};
   var building_starting_point = {x_plot: #{@community.tour.x_plot.to_json.html_safe}, y_plot: #{@community.tour.y_plot.to_json.html_safe} };
-  / var planned_to_visit_units_and_doors_ids = #{@planned_to_visit_units_and_doors_ids};
-  / var planned_to_visit_amenities_and_doors_ids = #{@planned_to_visit_amenities_and_doors_ids};
-  / var precedence_arr = #{raw @precedence_arr};
   var left_margin = #{raw @left_margin}
   var right_margin = #{raw @right_margin}
   var community_id = #{params[:community_id]};

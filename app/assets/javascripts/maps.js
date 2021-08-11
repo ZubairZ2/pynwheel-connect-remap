@@ -160,7 +160,7 @@ function add_hallwaypoint(new_point, previous_point) {
         },
         success: function (data) {
             hallways_coordinates = data;
-            draw_initial_hallways();
+            draw_initial_hallways(hallways_coordinates);
             $(".mapLoading").addClass("hidden");
         }
     });
@@ -180,7 +180,7 @@ function remove_hallwaypoint(current_id, previous_id) {
         },
         success: function (data) {
             hallways_coordinates = data;
-            draw_initial_hallways();
+            draw_initial_hallways(hallways_coordinates);
             $(".mapLoading").addClass("hidden");
         }
     });
@@ -200,7 +200,7 @@ function update_hallwaypoint(current_id, x_plot, y_plot) {
         },
         success: function (data) {
             hallways_coordinates = data;
-            draw_initial_hallways();
+            draw_initial_hallways(hallways_coordinates);
             $(".mapLoading").addClass("hidden");
         }
     });
@@ -217,9 +217,8 @@ function connect_leaf_point(current_id, previous_id){
             'previous_id': previous_id,
         },
         success: function (data) {
-            debugger
             hallways_coordinates = data;
-            draw_initial_hallways();
+            draw_initial_hallways(hallways_coordinates);
             $(".mapLoading").addClass("hidden");
         }
     });
@@ -306,7 +305,7 @@ function bind_markers() {
 }
 
 
-function draw_initial_hallways() {
+function draw_initial_hallways(hallways_coordinates, map = 'map') {
     marker_color = $('#marker_color').html();
     camera_margin = $('#camera-margin').html();
     marker_font_size = ($('#font_size').html());
@@ -314,13 +313,14 @@ function draw_initial_hallways() {
     right_margin = parseInt($('#right_margin').html());
     $(".line").remove();
     $(".fa-dot-circle").remove();
+    map_id = "#" + map
     for (var i = 0; i < hallways_coordinates.length; i++) {
         selected_color = hallways_coordinates[i].selected ? '#f7296a' : '#008fd4'
         classes = hallways_coordinates[i].selected ? 'fas fa-dot-circle fa-lg selected_point' : 'fas fa-dot-circle fa-lg'
         tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker' onclick='icon_click($(this))' title='id:" + hallways_coordinates[i].id + ' np:' + hallways_coordinates[i].next_points + "'   style='left:" + (hallways_coordinates[i].x_plot) + "px; top:" + (hallways_coordinates[i].y_plot) + "px; z-index:100; position:absolute;'>"
         tag += "<i id='" + hallways_coordinates[i].id + "' class='"+ classes + "' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100; color: "+ selected_color + " ' ></i>";
         tag += "</a>"
-        $('#map').append(tag);
+        $(map_id).append(tag);
         bind_markers();
         icon_drag();
     }
@@ -653,7 +653,7 @@ function automate_path() {
     $(".line_hello").remove(); // remove already drown lines between hallways point and unit, amenities, access points
     get_stops_data()
     setTimeout(function () {
-        draw_initial_hallways();
+        draw_initial_hallways(hallways_coordinates);
         draw_lines_between_door_and_hallways();
         draw_start_point_line();
     }, hallways_coordinates.length * 120);

@@ -1,0 +1,90 @@
+%form.form-horizontal{:id => "floor_" + floor.to_s}
+  .box-body.map-body-top
+    .row
+      .col-lg-12#container.p-0
+        .buttons{:style=>"position: absolute; right: 20px; top: 5px;z-index:999;"}
+          %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls
+            %i.fa.fa-plus
+          %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls
+            %i.fa.fa-minus
+          %a.btn.btn-sm.btn-primary.reset.zoom-controls
+            %i.fa.fa-refresh
+        .mapLoading.hidden
+        .map-block{:style=>"position: relative;"}
+          .plot-image{id: "map_" + floor.to_s }
+            .grid-graph.hidden
+            - floorplate = @floor_to_floorplate[floor]
+            = hidden_field_tag 'fp_id', floorplate.id
+            - if floorplate.image? and floorplate.image.content_type == "image/svg+xml"
+              .svg_image_style{:style =>  "width: #{floorplate.width}px; height: #{floorplate.height}px;"}
+                = image_tag  floorplate.image.url
+            - else
+              = image_tag floorplate.image? ? floorplate.image.url : "default.jpeg" ,name:"viewArea", id:"viewArea",draggable:"false"
+              - if @community.tour.x_plot.to_i + @community.tour.y_plot.to_i > 0
+                = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.tour.x_plot}px; top:#{@community.tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.tour.id}/resetStartingPoint"
+            - community_units = @community_units[floor]
+            - units_by_plotted_doors_order = community_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
+            - coordinates_array = []
+            - units_by_plotted_doors_order.each do |unit|
+              - if unit.x_plot.to_i + unit.y_plot.to_i > 0
+                - unless coordinates_array.include?([unit.x_plot - @left_margin ,unit.y_plot - @right_margin])
+
+                  - coordinates_array.push([unit.x_plot - @left_margin ,unit.y_plot - @right_margin])
+                  - unit_door_exists = unit.door.present? ? true : false
+                  - left = unit.x_plot - @left_margin
+                  - right = unit.y_plot - @right_margin
+
+                  %p{class: "marker", style: "left:#{unit.x_plot - @left_margin }px; top:#{unit.y_plot - @right_margin}px; position:absolute"}
+                    = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{@fontsize}px", title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
+                      %i{class: "fas fa-map-marker-alt", style: "color: #{@marker_color};"}
+
+                    - if !unit_door_exists and @community.self_tour and @community.auto_wayfinding
+                      = link_to "javascript:void(0);", { id: "plus_#{unit.provider_unit_id}", style: "margin-left: -6px;", title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}} do
+                        %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{@fontsize/2}px;" }
+                      - unit_door_exists = false
+
+                  - if unit_door_exists and @community.self_tour and @community.auto_wayfinding
+                    - unit_door = unit.door
+                    = link_to "javascript:void(0);", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{@door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "unit_door"}} do
+                      %i{class: "fa fa-sign-in fa-xs", style: "color: #{@door_marker_color};"}
+
+                - else
+                  - puts "duplicated.........."
+                .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}", :id=>"h-#{unit.provider_unit_id}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}","data-unit-form-url"=>"/communities/#{current_community.id}/units/#{unit.id}/adjust_position"}
+            - coordinates_array = []
+            - amenities_include_doors = @amenities_doors[floor]
+            - amenities_include_doors.each do |amenity|
+              - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
+                - unless coordinates_array.include?([amenity.x_plot, amenity.y_plot])
+
+                  - coordinates_array.push([amenity.x_plot, amenity.y_plot])
+
+                  %p{class: "marker", style: "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute"}
+                    = link_to "javascript:void(0);", :id => "m_#{amenity.id}", :title => amenity.name, data: {toggle: "tooltip", name: "plot", target: "#confirm-delete", plotted_category: "amenity"} do
+                      %i{class: "custom-icon", style: "height:#{@fontsize}px; width: #{@fontsize}px; border: 2px solid  #{@marker_color};"}
+                        %i{class: "fas fa-camera-retro", style: "font-size:#{@camera_font_size}px; color: #{@marker_color}; margin-top: #{@camera_margin}px;"}
+
+                    - if @community.self_tour and @community.auto_wayfinding
+                      = link_to "javascript:void(0);", { id: "plus_#{amenity.id}", title:  "Click to plot this amenity door", data: {toggle: "tooltip", plotted_category: "create_amenity_door"}} do
+                        %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{@fontsize/1.8}px;" }
+
+                  - if @community.self_tour and @community.auto_wayfinding
+                    - amenity.doors.each do |door|
+                      = link_to "javascript:void(0);", { id: "amenity_#{amenity.id}__door_#{door.id}", class: "marker", style: "left:#{door.x_plot}px; top:#{door.y_plot}px; position:absolute; font-size: #{@door_fontsize}px", title: "#{door.name}", data: {door_id: "#{door.id}", toggle: "tooltip", toggle: "modal", target: "#amenity-door-detail-modal", plotted_category: "amenity_door"}} do
+                        %i{class: "fa fa-sign-in fa-xs", style: "color: #{@door_marker_color};"}
+
+                - else
+                  - puts "duplicated.........."
+            
+            - @elevators[floor].each do |elevator|    
+              %i.fa.fa-reorder.stops.stop{:id => "elevator_#{elevator.id}", :style => "font-size: 25px; position: absolute; top: #{elevator.y_plot}px; left: #{elevator.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+
+            - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
+              - coordinates_array = []
+
+              - @access_points.each do |access_point|
+                - unless coordinates_array.include?([access_point.x_plot, access_point.y_plot])
+                  - coordinates_array.push([access_point.x_plot, access_point.y_plot])
+                  = link_to open_access_point_modal_community_floorplate_access_point_path(@community, @floorplate, access_point, x_plot: access_point.x_plot, y_plot: access_point.y_plot, plotted_id: access_point.id, locks_present_hash: @current_locks_provider.to_json), { id: "access_point_#{access_point.id}", class: "marker", style: "left:#{access_point.x_plot}px; top:#{access_point.y_plot}px; position:absolute; font-size: #{@door_fontsize/2}px", title: "#{access_point.name}", data: {door_id: "#{access_point.id}", toggle: "tooltip", remote: true, plotted_category: "access_point"}} do
+                    %i{class: "fa fa-lock", style: "color: #66bf60"}
+                    
