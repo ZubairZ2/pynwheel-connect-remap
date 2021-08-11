@@ -34,9 +34,6 @@
     - unless @community_info.locked
       = hidden_field_tag :maps_community_id, @community_info.id
       %section.is-webpage
-        .header
-          %a.logo{:href => "#default"}
-            %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => "",:style => "width: 200px; text-align: center;"}
         %a#clickme{:href => "#", :style => "position: sticky; top: 5px;"} Select Filter
         .left-side.mydiv
           .select-list{:class => @community.has_floorplates? ? "" : "adjust-width"}
@@ -154,7 +151,7 @@
                           %li
                             = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "1245", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor, "data-toggle"=>"tooltip", "data-title"=>"0 matches", "data-placement"=>"top"
                               
-        .buttons.hidden{:style=>"position: absolute; right: 10px; top: 5px;z-index:999;"}
+        .buttons{:style=>"position: absolute; right: 10px; top: 5px;z-index:999;"}
           %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls{:href => "#"}
             %i.fa.fa-plus
           %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls{:href => "#"}
@@ -401,10 +398,10 @@
         %b#popover-price
 
 :javascript
-  //$(window).on('resize', function() {
-    //$(".divLoading").removeClass("hidden");
-    //window.location.reload();
-  //});
+  $(window).on('resize', function() {
+    $(".divLoading").removeClass("hidden");
+    window.location.reload();
+  });
   function iOSversion() {
 
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)

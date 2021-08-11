@@ -2454,13 +2454,15 @@ overflow-y: hidden;*/
 }
 
 .left-side {
-    float: left;
+    /* float: left; */
+    float: right;
     padding-left: 15px;
     letter-spacing: 1px;
 }
 
 .right-side {
-    margin-left: 331px;
+    /* margin-left: 331px; */ 
+    margin-right: 331px;
     position: absolute;
     /* width: calc(98% - 107px); */
     height: 100%;
@@ -2625,11 +2627,11 @@ a#favoriteclickme {
 
 div.mydiv {
     width: 331px;
-    position: absolute;
-    /*left:-331px;*/
-    height: 100%;
+    /* position: absolute; */
+    /* left: -331px; */
+    /* height: 100%; */
     background: #303a3c;
-    z-index: 90;
+    z-index: 90;    
 }
 
 .plane-details {
@@ -4882,3 +4884,20 @@ input:checked+.slider:before {
 .visitor-popover {
     top: -98px !important;
 }
+
+.header {
+    overflow: hidden;
+    background-color: #e7e9e9;
+    padding: 10px 10px;
+  }
+  
+  /* Style the header links */
+  .header a {
+    float: left;
+    text-align: center;
+    padding: 12px;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 25px;
+    border-radius: 4px;
+  }
