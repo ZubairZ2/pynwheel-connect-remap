@@ -101,7 +101,7 @@ json.tours tours do |tour|
         json.update_apply ((unit.provider == "resman" || unit.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
         json.provider unit.provider
 
-        stop_dat = {"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
+        stop_dat = {"floorplan" => unit.floorplan_id, "floorplan_id" => unit.floorplan.id, "floorplan_full_name" => unit.floorplan.name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
         
         json.stop_data stop_dat
         @unit_gallery_arr = []
