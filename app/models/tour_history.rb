@@ -53,7 +53,7 @@ class TourHistory < ApplicationRecord
       #   send_email_sms_or_both @mail_content
       # end
 
-      if self.left and !self.is_left
+      if self.left.present? and !self.is_left
         self.update_columns(is_left: true)
         @mail_content = ["tour_has_ended", "#{self.tour_user.name.capitalize} has completed a tour of #{community.name}"] #get_alert_message('tour_has_ended')
         url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
@@ -107,7 +107,8 @@ class TourHistory < ApplicationRecord
         @mail_content = ["abandoned_tour_at_stop", "A tour was abandoned before it was completed at "] #get_alert_message('abandoned_tour_at_stop')
         @mail_content[1] = "#{@mail_content.last} stop #{(TourStop.find self.abandoned_tour_at_stop.to_i).name rescue "Not Found"}."
         if self.tour_user_id == 1445
-          @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "abandoned Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+          mmm = self.abandoned_tour_at_stop.present? ? self.abandoned_tour_at_stop.to_s : "not_present"
+          @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : (mmm + "abandoned Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour.")
         else
           @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         end
