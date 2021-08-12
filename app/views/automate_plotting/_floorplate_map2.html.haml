@@ -103,9 +103,14 @@
   
   $( document ).ready(function() {
     for (var i = 0; i < floors.length; i++) {
-      fp_id = floor_to_floorplate_id[floors[i]]
-      map = "map_" + floors[i]
-      hallways_coordinates = hallways[floors[i]]
-      draw_initial_hallways(hallways_coordinates, map)
+      delayed(400, function (i) {
+        return function () {
+          console.log("j times:", i)
+          fp_id = floor_to_floorplate_id[floors[i]]
+          map = "map_" + floors[i]
+          hallways_coordinates = hallways[floors[i]]
+          draw_initial_hallways(hallways_coordinates, map)
+        };
+      }(i));      
     }
   });

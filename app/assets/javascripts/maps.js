@@ -311,9 +311,9 @@ function draw_initial_hallways(hallways_coordinates, map = 'map') {
     marker_font_size = ($('#font_size').html());
     left_margin = parseInt($('#left_margin').html());
     right_margin = parseInt($('#right_margin').html());
-    $(".line").remove();
-    $(".fa-dot-circle").remove();
     map_id = "#" + map
+    $(map_id +" "+ ".line").remove();
+    $(map_id +" "+ ".fa-dot-circle").remove();
     for (var i = 0; i < hallways_coordinates.length; i++) {
         selected_color = hallways_coordinates[i].selected ? '#f7296a' : '#008fd4'
         classes = hallways_coordinates[i].selected ? 'fas fa-dot-circle fa-lg selected_point' : 'fas fa-dot-circle fa-lg'
@@ -322,9 +322,9 @@ function draw_initial_hallways(hallways_coordinates, map = 'map') {
         tag += "</a>"
         $(map_id).append(tag);
         bind_markers();
-        icon_drag();
+        icon_drag(map_id);
     }
-    $(".line").remove();
+    // $(".line").remove();
     for (var i = 0; i < hallways_coordinates.length; i++) {
         hallways_coordinates[i].next_points.forEach((id, index) => {
             for (var j = 0; j < hallways_coordinates.length; j++) {
@@ -347,7 +347,7 @@ function draw_initial_hallways(hallways_coordinates, map = 'map') {
 }
 
 
-function icon_drag() {
+function icon_drag(map_id) {
     var current_dx, current_dy;
 
     $('.hallways_marker').draggable({
@@ -362,17 +362,17 @@ function icon_drag() {
             ui.position.top = (ui.position.top * scaleFactor) - (transform.y * scaleFactor);
             ui.position.left = (ui.position.left * scaleFactor) - (transform.x * scaleFactor);
 
-            current_dx = (event.pageY - $('#map').offset().top) / transform.scale - parseInt($(event.target).css('top'));
-            current_dy = (event.pageX - $('#map').offset().left) / transform.scale - parseInt($(event.target).css('left'));
+            current_dx = (event.pageY - $(map_id).offset().top) / transform.scale - parseInt($(event.target).css('top'));
+            current_dy = (event.pageX - $(map_id).offset().left) / transform.scale - parseInt($(event.target).css('left'));
             current_dx = Math.round(ui.position.left)
             current_dy = Math.round(ui.position.top)
         },
         // when dragging stops
         drag: function (event, ui) {
-            var canvasTop = $('#map').offset().top;
-            var canvasLeft = $('#map').offset().left;
-            var canvasHeight = $('#map').height();
-            var canvasWidth = $('#map').width();
+            var canvasTop = $(map_id).offset().top;
+            var canvasLeft = $(map_id).offset().left;
+            var canvasHeight = $(map_id).height();
+            var canvasWidth = $(map_id).width();
 
 
             var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
