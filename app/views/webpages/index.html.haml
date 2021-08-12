@@ -35,8 +35,9 @@
       = hidden_field_tag :maps_community_id, @community_info.id
       %section.is-webpage
         .header
-          %a.logo{:href => "#default"}
-            %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => "",:style => "width: 200px; text-align: center;"}
+          - if @community.community_logo
+            %a.logo{:href => "#default"}
+              %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => "",:style => "width: 200px; text-align: center;"}
         %a#clickme{:href => "#", :style => "position: sticky; top: 5px;"} Select Filter
         .left-side.mydiv
           .select-list{:class => @community.has_floorplates? ? "" : "adjust-width"}
