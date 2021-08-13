@@ -64,6 +64,7 @@
 //= require zoom-marker
 //= require pinch-zoom.umd
 //= require jquery.ui.touch-punch.min
+//= require accesses
 //= require pynwheel_access_users
 //= require Chart.min
 //= require analytics
@@ -71,7 +72,6 @@
 // require_tree .
 //= require bootstrap-wysihtml5
 //= require bootstrap-wysihtml5/locales
-//= require accesses
 
 $(document).ready(function() {
     new Clipboard('.clipboard-btn');

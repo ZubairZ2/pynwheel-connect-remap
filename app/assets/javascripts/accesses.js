@@ -1,10 +1,10 @@
 var access_point_id;
 var access_point_type;
 var pynwheel_access_user;
-var community;
+var curr_community;
 
 $(document).ready(function() {
-  community = $("#userAccessesData").data("community");
+  curr_community = $("#userAccessesData").data("community");
   pynwheel_access_user = $("#userAccessesData").data("pynwheelAccessUser");
 
   $('#access-miyazaki').dataTable({
@@ -51,7 +51,7 @@ $(document).ready(function() {
 
 function add_stop(access_points) {
   $.ajax({
-    url: `/communities/${community.id}/pynwheel_access_users/${pynwheel_access_user.id}/grant_pynwheel_user_access`,
+    url: `/communities/${curr_community.id}/pynwheel_access_users/${pynwheel_access_user.id}/grant_pynwheel_user_access`,
     type: "POST",
     dataType: "script",
     data: {
@@ -69,7 +69,7 @@ function displayAccessWarningModal(stop_id, stop_type) {
 
 function removePynwheelUserAccess() {
   $.ajax({
-    url: `/communities/${community.id}/pynwheel_access_users/${pynwheel_access_user.id}/remove_pynwheel_user_access`,
+    url: `/communities/${curr_community.id}/pynwheel_access_users/${pynwheel_access_user.id}/remove_pynwheel_user_access`,
     type: "Delete",
     data: {access_point_id: access_point_id, access_point_type: access_point_type}
   }).done(function() { window.location.reload(); });
