@@ -454,200 +454,200 @@ function plotting_hallways(thisObj) {
 //     });
 //   });
 // }
-function get_unit_data(){
-  algo_unit_data = [];
-  for (var i = 0; i < hallways_coordinates.length; i++) {
-        for (var j = 0; j < units_info.length; j++) {
-            if (!$.isEmptyObject(units_info[j].unit_info.door)) { // if unit have door
-                var a = hallways_coordinates[i].x_plot - units_info[j].unit_info.door.x_plot;
-                var b = hallways_coordinates[i].y_plot - units_info[j].unit_info.door.y_plot;
-                var c = Math.sqrt(a * a + b * b);
-                if (i > 0) { // Now every time loop on remaining hallways points and update distance info 
-                    index = algo_unit_data.findIndex(x => x['door_id'] == units_info[j].unit_info.door.id);
-                    if (algo_unit_data[index].distance > c) {
-                        algo_unit_data[index].hallway_id = hallways_coordinates[i].id;
-                        algo_unit_data[index].distance = c;
-                        algo_unit_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
-                        algo_unit_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
-                    }
-                } else { // run only first time of i loop to store all door in array
-                    var obj = new Object();
-                    obj.hallway_id = hallways_coordinates[i].id;
-                    obj.hallway_x_plot = hallways_coordinates[i].x_plot;
-                    obj.hallway_y_plot = hallways_coordinates[i].y_plot;
-                    obj.door_id = units_info[j].unit_info.door.id;
-                    obj.door_x_plot = units_info[j].unit_info.door.x_plot;
-                    obj.door_y_plot = units_info[j].unit_info.door.y_plot;
-                    obj.distance = c;
-                    obj.is_door = true;
-                    obj.point_type = "unit";
-                    algo_unit_data.push(obj);
-                }
+// function get_unit_data(){
+//   algo_unit_data = [];
+//   for (var i = 0; i < hallways_coordinates.length; i++) {
+//         for (var j = 0; j < units_info.length; j++) {
+//             if (!$.isEmptyObject(units_info[j].unit_info.door)) { // if unit have door
+//                 var a = hallways_coordinates[i].x_plot - units_info[j].unit_info.door.x_plot;
+//                 var b = hallways_coordinates[i].y_plot - units_info[j].unit_info.door.y_plot;
+//                 var c = Math.sqrt(a * a + b * b);
+//                 if (i > 0) { // Now every time loop on remaining hallways points and update distance info 
+//                     index = algo_unit_data.findIndex(x => x['door_id'] == units_info[j].unit_info.door.id);
+//                     if (algo_unit_data[index].distance > c) {
+//                         algo_unit_data[index].hallway_id = hallways_coordinates[i].id;
+//                         algo_unit_data[index].distance = c;
+//                         algo_unit_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
+//                         algo_unit_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
+//                     }
+//                 } else { // run only first time of i loop to store all door in array
+//                     var obj = new Object();
+//                     obj.hallway_id = hallways_coordinates[i].id;
+//                     obj.hallway_x_plot = hallways_coordinates[i].x_plot;
+//                     obj.hallway_y_plot = hallways_coordinates[i].y_plot;
+//                     obj.door_id = units_info[j].unit_info.door.id;
+//                     obj.door_x_plot = units_info[j].unit_info.door.x_plot;
+//                     obj.door_y_plot = units_info[j].unit_info.door.y_plot;
+//                     obj.distance = c;
+//                     obj.is_door = true;
+//                     obj.point_type = "unit";
+//                     algo_unit_data.push(obj);
+//                 }
 
-            } else {
-                var a = hallways_coordinates[i].x_plot - units_info[j].unit_info.unit.x_plot;
-                var b = hallways_coordinates[i].y_plot - units_info[j].unit_info.unit.y_plot;
-                var c = Math.sqrt(a * a + b * b);
-                if (i > 0) {
-                    index = algo_unit_data.findIndex(x => x['door_id'] == units_info[j].unit_info.unit.id);
-                    if (algo_unit_data[index].distance > c) {
-                        algo_unit_data[index].hallway_id = hallways_coordinates[i].id;
-                        algo_unit_data[index].distance = c;
-                        algo_unit_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
-                        algo_unit_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
-                    }
-                } else {
-                    var obj = new Object();
-                    obj.hallway_id = hallways_coordinates[i].id;
-                    obj.hallway_x_plot = hallways_coordinates[i].x_plot;
-                    obj.hallway_y_plot = hallways_coordinates[i].y_plot;
-                    obj.door_id = units_info[j].unit_info.unit.id;
-                    obj.door_x_plot = units_info[j].unit_info.unit.x_plot;
-                    obj.door_y_plot = units_info[j].unit_info.unit.y_plot;
-                    obj.distance = c;
-                    obj.is_door = false;
-                    obj.point_type = "unit";
-                    algo_unit_data.push(obj);
-                }
-            }
-        }
-    }
-}
-function get_amenity_data(){
-  algo_amenity_data = [];
-  for (var i = 0; i < hallways_coordinates.length; i++) {
-        for (var j = 0; j < amenities_info.length; j++) {
-            if (!$.isEmptyObject(amenities_info[j].amenity_info.door)) { // if amenity have 1 or more doors
-                for (var k = 0; k < amenities_info[j].amenity_info.door.length; k++) {
-                    var a = hallways_coordinates[i].x_plot - amenities_info[j].amenity_info.door[k].x_plot;
-                    var b = hallways_coordinates[i].y_plot - amenities_info[j].amenity_info.door[k].y_plot;
-                    var c = Math.sqrt(a * a + b * b);
-                    if (i > 0) {
-                        index = algo_amenity_data.findIndex(x => x['door_id'] == amenities_info[j].amenity_info.door[k].id);
-                        if (algo_amenity_data[index].distance > c) {
-                            algo_amenity_data[index].hallway_id = hallways_coordinates[i].id;
-                            algo_amenity_data[index].distance = c;
-                            algo_amenity_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
-                            algo_amenity_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
-                        }
-                    } else {
-                        var obj = new Object();
-                        obj.hallway_id = hallways_coordinates[i].id;
-                        obj.hallway_x_plot = hallways_coordinates[i].x_plot;
-                        obj.hallway_y_plot = hallways_coordinates[i].y_plot;
-                        obj.door_id = amenities_info[j].amenity_info.door[k].id;
-                        obj.door_x_plot = amenities_info[j].amenity_info.door[k].x_plot;
-                        obj.door_y_plot = amenities_info[j].amenity_info.door[k].y_plot;
-                        obj.distance = c;
-                        obj.is_door = true;
-                        obj.point_type = "amenity";
-                        algo_amenity_data.push(obj);
-                    }
-                }
-            } else {
-                var a = hallways_coordinates[i].x_plot - amenities_info[j].amenity_info.amenity.x_plot;
-                var b = hallways_coordinates[i].y_plot - amenities_info[j].amenity_info.amenity.y_plot;
-                var c = Math.sqrt(a * a + b * b);
-                if (i > 0) {
-                    index = algo_amenity_data.findIndex(x => x['door_id'] == amenities_info[j].amenity_info.amenity.id);
-                    if (algo_amenity_data[index].distance > c) {
-                        algo_amenity_data[index].hallway_id = hallways_coordinates[i].id;
-                        algo_amenity_data[index].distance = c;
-                        algo_amenity_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
-                        algo_amenity_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
-                    }
-                } else {
-                    var obj = new Object();
-                    obj.hallway_id = hallways_coordinates[i].id;
-                    obj.hallway_x_plot = hallways_coordinates[i].x_plot;
-                    obj.hallway_y_plot = hallways_coordinates[i].y_plot;
-                    obj.door_id = amenities_info[j].amenity_info.amenity.id;
-                    obj.door_x_plot = amenities_info[j].amenity_info.amenity.x_plot;
-                    obj.door_y_plot = amenities_info[j].amenity_info.amenity.y_plot;
-                    obj.distance = c;
-                    obj.is_door = false;
-                    obj.point_type = "amenity";
-                    algo_amenity_data.push(obj);
-                }
-            }
+//             } else {
+//                 var a = hallways_coordinates[i].x_plot - units_info[j].unit_info.unit.x_plot;
+//                 var b = hallways_coordinates[i].y_plot - units_info[j].unit_info.unit.y_plot;
+//                 var c = Math.sqrt(a * a + b * b);
+//                 if (i > 0) {
+//                     index = algo_unit_data.findIndex(x => x['door_id'] == units_info[j].unit_info.unit.id);
+//                     if (algo_unit_data[index].distance > c) {
+//                         algo_unit_data[index].hallway_id = hallways_coordinates[i].id;
+//                         algo_unit_data[index].distance = c;
+//                         algo_unit_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
+//                         algo_unit_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
+//                     }
+//                 } else {
+//                     var obj = new Object();
+//                     obj.hallway_id = hallways_coordinates[i].id;
+//                     obj.hallway_x_plot = hallways_coordinates[i].x_plot;
+//                     obj.hallway_y_plot = hallways_coordinates[i].y_plot;
+//                     obj.door_id = units_info[j].unit_info.unit.id;
+//                     obj.door_x_plot = units_info[j].unit_info.unit.x_plot;
+//                     obj.door_y_plot = units_info[j].unit_info.unit.y_plot;
+//                     obj.distance = c;
+//                     obj.is_door = false;
+//                     obj.point_type = "unit";
+//                     algo_unit_data.push(obj);
+//                 }
+//             }
+//         }
+//     }
+// }
+// function get_amenity_data(){
+//   algo_amenity_data = [];
+//   for (var i = 0; i < hallways_coordinates.length; i++) {
+//         for (var j = 0; j < amenities_info.length; j++) {
+//             if (!$.isEmptyObject(amenities_info[j].amenity_info.door)) { // if amenity have 1 or more doors
+//                 for (var k = 0; k < amenities_info[j].amenity_info.door.length; k++) {
+//                     var a = hallways_coordinates[i].x_plot - amenities_info[j].amenity_info.door[k].x_plot;
+//                     var b = hallways_coordinates[i].y_plot - amenities_info[j].amenity_info.door[k].y_plot;
+//                     var c = Math.sqrt(a * a + b * b);
+//                     if (i > 0) {
+//                         index = algo_amenity_data.findIndex(x => x['door_id'] == amenities_info[j].amenity_info.door[k].id);
+//                         if (algo_amenity_data[index].distance > c) {
+//                             algo_amenity_data[index].hallway_id = hallways_coordinates[i].id;
+//                             algo_amenity_data[index].distance = c;
+//                             algo_amenity_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
+//                             algo_amenity_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
+//                         }
+//                     } else {
+//                         var obj = new Object();
+//                         obj.hallway_id = hallways_coordinates[i].id;
+//                         obj.hallway_x_plot = hallways_coordinates[i].x_plot;
+//                         obj.hallway_y_plot = hallways_coordinates[i].y_plot;
+//                         obj.door_id = amenities_info[j].amenity_info.door[k].id;
+//                         obj.door_x_plot = amenities_info[j].amenity_info.door[k].x_plot;
+//                         obj.door_y_plot = amenities_info[j].amenity_info.door[k].y_plot;
+//                         obj.distance = c;
+//                         obj.is_door = true;
+//                         obj.point_type = "amenity";
+//                         algo_amenity_data.push(obj);
+//                     }
+//                 }
+//             } else {
+//                 var a = hallways_coordinates[i].x_plot - amenities_info[j].amenity_info.amenity.x_plot;
+//                 var b = hallways_coordinates[i].y_plot - amenities_info[j].amenity_info.amenity.y_plot;
+//                 var c = Math.sqrt(a * a + b * b);
+//                 if (i > 0) {
+//                     index = algo_amenity_data.findIndex(x => x['door_id'] == amenities_info[j].amenity_info.amenity.id);
+//                     if (algo_amenity_data[index].distance > c) {
+//                         algo_amenity_data[index].hallway_id = hallways_coordinates[i].id;
+//                         algo_amenity_data[index].distance = c;
+//                         algo_amenity_data[index].hallway_x_plot = hallways_coordinates[i].x_plot;
+//                         algo_amenity_data[index].hallway_y_plot = hallways_coordinates[i].y_plot;
+//                     }
+//                 } else {
+//                     var obj = new Object();
+//                     obj.hallway_id = hallways_coordinates[i].id;
+//                     obj.hallway_x_plot = hallways_coordinates[i].x_plot;
+//                     obj.hallway_y_plot = hallways_coordinates[i].y_plot;
+//                     obj.door_id = amenities_info[j].amenity_info.amenity.id;
+//                     obj.door_x_plot = amenities_info[j].amenity_info.amenity.x_plot;
+//                     obj.door_y_plot = amenities_info[j].amenity_info.amenity.y_plot;
+//                     obj.distance = c;
+//                     obj.is_door = false;
+//                     obj.point_type = "amenity";
+//                     algo_amenity_data.push(obj);
+//                 }
+//             }
 
-        }
-    }
-}
-function get_starting_point_data(){
-  start_point_data = {};
-  for (var i = 0; i < hallways_coordinates.length; i++) {
-        var a = hallways_coordinates[i].x_plot - building_starting_point.x_plot;
-        var b = hallways_coordinates[i].y_plot - building_starting_point.y_plot;
-        var c = Math.sqrt(a * a + b * b);
-        if ($.isEmptyObject(start_point_data)) {
-            start_point_data['hallway_id'] = hallways_coordinates[i].id;
-            start_point_data['hallway_x_plot'] = hallways_coordinates[i].x_plot;
-            start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
-            start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
-            start_point_data['distance'] = c;
-            start_point_data['point_type'] = "building_starting_point";
-            start_point_data['building_starting_x_plot'] = building_starting_point.x_plot;
-            start_point_data['building_starting_y_plot'] = building_starting_point.y_plot;
-        }
-        if (c < start_point_data['distance']) {
-            start_point_data['hallway_id'] = hallways_coordinates[i].id;
-            start_point_data['hallway_x_plot'] = hallways_coordinates[i].x_plot;
-            start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
-            start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
-            start_point_data['distance'] = c;
-        }
-  }
-}
-function get_access_point_data(){
-  algo_access_point_data = [];
-  for (var z = 0; z < access_points.length; z++) {
-        hallways_coordinates.forEach((first_hallway, index) => {
-            hallways_coordinates[index].next_points.forEach((element, i) => {
-                let second_hallway = hallways_coordinates.find(o => o.id == element);
-                var a1 = first_hallway.x_plot - access_points[z].x_plot;
-                var b1 = first_hallway.y_plot - access_points[z].y_plot;
-                var d1 = Math.sqrt(a1 * a1 + b1 * b1);
-                var a2 = second_hallway.x_plot - access_points[z].x_plot;
-                var b2 = second_hallway.y_plot - access_points[z].y_plot;
-                var d2 = Math.sqrt(a2 * a2 + b2 * b2);
-                if (z == algo_access_point_data.length) {
-                    var obj = new Object();
-                    obj.hallway_id_1 = first_hallway.id;
-                    obj.hallway_x_plot_1 = first_hallway.x_plot;
-                    obj.hallway_y_plot_1 = first_hallway.y_plot;
-                    obj.h1_access_point = d1;
-                    obj.hallway_id_2 = second_hallway.id;
-                    obj.hallway_x_plot_2 = second_hallway.x_plot;
-                    obj.hallway_y_plot_2 = second_hallway.y_plot;
-                    obj.h2_access_point = d2;
-                    obj.access_point_id = access_points[z].id;
-                    obj.access_point_x_plot = access_points[z].x_plot;
-                    obj.access_point_y_plot = access_points[z].y_plot;
-                    obj.point_type = "access_point"
-                    algo_access_point_data.push(obj);
-                } else {
-                    if (d1 < algo_access_point_data[z]['h1_access_point'] && d2 < algo_access_point_data[z]['h2_access_point']) {
-                        algo_access_point_data[z]['hallway_id_1'] = first_hallway.id;
-                        algo_access_point_data[z]['hallway_x_plot_1'] = first_hallway.x_plot;
-                        algo_access_point_data[z]['hallway_y_plot_1'] = first_hallway.y_plot;
-                        algo_access_point_data[z]['h1_access_point'] = d1;
-                        algo_access_point_data[z]['hallway_id_2'] = second_hallway.id;
-                        algo_access_point_data[z]['hallway_x_plot_2'] = second_hallway.x_plot;
-                        algo_access_point_data[z]['hallway_y_plot_2'] = second_hallway.y_plot;
-                        algo_access_point_data[z]['h2_access_point'] = d2;
-                    }
-                }
-            });
-        });
-    }
-}
-function get_stops_data(){
-  get_unit_data()
-  get_amenity_data()
-  get_starting_point_data()
-  get_access_point_data() 
-}
+//         }
+//     }
+// }
+// function get_starting_point_data(){
+//   start_point_data = {};
+//   for (var i = 0; i < hallways_coordinates.length; i++) {
+//         var a = hallways_coordinates[i].x_plot - building_starting_point.x_plot;
+//         var b = hallways_coordinates[i].y_plot - building_starting_point.y_plot;
+//         var c = Math.sqrt(a * a + b * b);
+//         if ($.isEmptyObject(start_point_data)) {
+//             start_point_data['hallway_id'] = hallways_coordinates[i].id;
+//             start_point_data['hallway_x_plot'] = hallways_coordinates[i].x_plot;
+//             start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
+//             start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
+//             start_point_data['distance'] = c;
+//             start_point_data['point_type'] = "building_starting_point";
+//             start_point_data['building_starting_x_plot'] = building_starting_point.x_plot;
+//             start_point_data['building_starting_y_plot'] = building_starting_point.y_plot;
+//         }
+//         if (c < start_point_data['distance']) {
+//             start_point_data['hallway_id'] = hallways_coordinates[i].id;
+//             start_point_data['hallway_x_plot'] = hallways_coordinates[i].x_plot;
+//             start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
+//             start_point_data['hallway_y_plot'] = hallways_coordinates[i].y_plot;
+//             start_point_data['distance'] = c;
+//         }
+//   }
+// }
+// function get_access_point_data(){
+//   algo_access_point_data = [];
+//   for (var z = 0; z < access_points.length; z++) {
+//         hallways_coordinates.forEach((first_hallway, index) => {
+//             hallways_coordinates[index].next_points.forEach((element, i) => {
+//                 let second_hallway = hallways_coordinates.find(o => o.id == element);
+//                 var a1 = first_hallway.x_plot - access_points[z].x_plot;
+//                 var b1 = first_hallway.y_plot - access_points[z].y_plot;
+//                 var d1 = Math.sqrt(a1 * a1 + b1 * b1);
+//                 var a2 = second_hallway.x_plot - access_points[z].x_plot;
+//                 var b2 = second_hallway.y_plot - access_points[z].y_plot;
+//                 var d2 = Math.sqrt(a2 * a2 + b2 * b2);
+//                 if (z == algo_access_point_data.length) {
+//                     var obj = new Object();
+//                     obj.hallway_id_1 = first_hallway.id;
+//                     obj.hallway_x_plot_1 = first_hallway.x_plot;
+//                     obj.hallway_y_plot_1 = first_hallway.y_plot;
+//                     obj.h1_access_point = d1;
+//                     obj.hallway_id_2 = second_hallway.id;
+//                     obj.hallway_x_plot_2 = second_hallway.x_plot;
+//                     obj.hallway_y_plot_2 = second_hallway.y_plot;
+//                     obj.h2_access_point = d2;
+//                     obj.access_point_id = access_points[z].id;
+//                     obj.access_point_x_plot = access_points[z].x_plot;
+//                     obj.access_point_y_plot = access_points[z].y_plot;
+//                     obj.point_type = "access_point"
+//                     algo_access_point_data.push(obj);
+//                 } else {
+//                     if (d1 < algo_access_point_data[z]['h1_access_point'] && d2 < algo_access_point_data[z]['h2_access_point']) {
+//                         algo_access_point_data[z]['hallway_id_1'] = first_hallway.id;
+//                         algo_access_point_data[z]['hallway_x_plot_1'] = first_hallway.x_plot;
+//                         algo_access_point_data[z]['hallway_y_plot_1'] = first_hallway.y_plot;
+//                         algo_access_point_data[z]['h1_access_point'] = d1;
+//                         algo_access_point_data[z]['hallway_id_2'] = second_hallway.id;
+//                         algo_access_point_data[z]['hallway_x_plot_2'] = second_hallway.x_plot;
+//                         algo_access_point_data[z]['hallway_y_plot_2'] = second_hallway.y_plot;
+//                         algo_access_point_data[z]['h2_access_point'] = d2;
+//                     }
+//                 }
+//             });
+//         });
+//     }
+// }
+// function get_stops_data(){
+//   get_unit_data()
+//   get_amenity_data()
+//   get_starting_point_data()
+//   get_access_point_data() 
+// }
 // function automate_path() {
 //     draw_lines_between_hallways()
 //     $(".line_hello").remove(); // remove already drown lines between hallways point and unit, amenities, access points
