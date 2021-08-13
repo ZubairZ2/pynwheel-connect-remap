@@ -77,7 +77,15 @@
             %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateGridOverlayPopover","data-content" => " "}
               %span#propertyDetailNameText{:style => "font-weight: normal;"}
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
+          
+          - if !@floorplate.is_ocr_enabled
+            = link_to "Enable Suggestions <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Enabling suggestions will highlight possible matches on the map when units are selected from the list. You still have to click on the map to plot the marker for each unit/unit group.</span></i>".html_safe , "/communities/#{@community.id}/suggest_floorplate_units?floorplate_id=#{@floorplate.id}&&is_ocr_enabled=#{!@floorplate.is_ocr_enabled}" , :class=>"btn btn-success loader_class"
+          - else 
+            = link_to "Disable Suggestions <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Enabling suggestions will highlight possible matches on the map when units are selected from the list. You still have to click on the map to plot the marker for each unit/unit group.</span></i>".html_safe , "/communities/#{@community.id}/suggest_floorplate_units?floorplate_id=#{@floorplate.id}&&is_ocr_enabled=#{!@floorplate.is_ocr_enabled}" , :class=>"btn btn-success loader_class enable-suggestions-btn"
+          
           - if current_user.is_super_admin?
+            = link_to "Auto Plot <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Use Auto-plotting to add markers only when unit names in list and on map match exactly. All markers will be automatically added to the map.</span></i>".html_safe , "/communities/#{@community.id}/floorplate_auto_plot_units?floorplate_id=#{params[:floorplate_id]}", :class=>"btn btn-success loader_class"
+
             %a.btn.btn-danger{"data-name" => "floorplate's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
       / /.box-header
       / form start
@@ -197,6 +205,8 @@
         .modal-footer
           = submit_tag "Add",:class=>"btn btn-primary" 
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+
+#ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
 
 :javascript
   $(document).ready(function () {

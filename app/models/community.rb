@@ -560,25 +560,13 @@ class Community < ApplicationRecord
   end
 
   def delete_plots
-    self.units.where(floorplate_id: nil).each do |unit|
-      #unit.update_attributes(x_plot: 0, y_plot: 0) # effective rent validation fails for 0
-      unit.x_plot = 0
-      unit.y_plot = 0
-      unit.save(validate: false)
-    end
-    true
+    self.units.where(floorplate_id: nil).update_all(x_plot: 0, y_plot: 0)
   end
 
   def delete_plots_from_floorplate(floorplate_id)
     floorplate = Floorplate.find floorplate_id
     units = Unit.where(community_id: id,floor: floorplate.floors)
-    units.each do |unit|
-      unit.x_plot = 0
-      unit.y_plot = 0
-      unit.floorplate_id = nil
-      unit.save(validate: false)
-    end
-    true
+    units.update_all(x_plot: 0, y_plot: 0)
   end
 
   def set_default_theme

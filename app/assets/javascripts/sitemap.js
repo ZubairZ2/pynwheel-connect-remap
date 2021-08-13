@@ -1,10 +1,15 @@
-$(document).ready(function () {
+var imageOCRResponse = [];
+var ocrImageDimensions;
+
+$(document).ready(function () { 
   if ($('.is-sitemap')[0]) {
     selected = [];
     var temp = [];
     dx = 0;
     dy = 0;
     $("#map").css('cursor', 'default');
+    imageOCRResponse = $("#ocrData").data("ocrData");
+    ocrImageDimensions = $("#ocrData").data("imageDimensions");
 
     doDraggable();
 
@@ -44,6 +49,10 @@ $(document).ready(function () {
       unit_provider_id = unit_provider_id.replace("-selectable", "")
       console.log(unit_provider_id);
       selected.push([unit_provider_id, $(this).children('span').text()]);
+
+      if(imageOCRResponse.length > 0)
+        displayHints();
+
       plotMode();
     });
 
@@ -67,7 +76,10 @@ $(document).ready(function () {
 
     $('.select-units-on-page .ms-elem-selection').click(function () {
       console.log($(this).attr('id'));
-      removeUnitFromSelectedArray($(this).attr('id').split('-')[0]);
+      s_id  = $(this).attr('id').replace("-selection","");
+      // s_id = s_id[0] + "-" + s_id[1];
+     
+      removeUnitFromSelectedArray(s_id);
     });
 
 
@@ -118,6 +130,47 @@ $(document).ready(function () {
 
   }
 });
+
+function displayHints() {
+  console.log(imageOCRResponse);
+  if(imageOCRResponse.length > 0 ) {
+    let  html = "";
+
+    selected.forEach(selected_units => {
+      $(".fa-circle-thin").remove(".hint-unit-blink");
+      imageOCRResponse.forEach(ocr_u => {
+        if(ocr_u.text && ocr_u.text.length > 2) {
+          if(textFilter(selected_units[1], ocr_u.text)) {
+            console.log(selected_units[1])
+            console.log(ocr_u)
+            console.log("Left :   ", ocrImageDimensions.width * ocr_u.left)
+            console.log("Top  :   ", ocrImageDimensions.height * ocr_u.top)
+
+            let unit_left = (ocrImageDimensions.width * ocr_u.left) + 10;
+            let unit_top = (ocrImageDimensions.height * ocr_u.top);
+            let circleTag = `suggested-circle-${selected_units[0]}`;
+            console.log("Suggested unit", selected_units)
+            html += `<i class="fa fa-circle-thin hint-unit-blink ${circleTag}" style="color: #d37474; left:${unit_left}px; top:${unit_top}px; position:absolute; transform: scale(3);"></i>`
+          }
+        }
+      });
+    });
+
+    $('#map').append(html);
+  }
+}
+
+function textFilter(selectedUnit, ocrDetectedUnit) {
+  u_parts = ocrDetectedUnit.split("-");
+  let u_flag = false
+  u_parts.forEach((u_text) =>{
+    if(selectedUnit.includes(u_text)) {
+      u_flag = true
+    }
+  });
+
+  return u_flag;
+}
 
 function saveSiteMapImageOrSvg() {
   var siteMapImageDropzone = new Dropzone("#sitemap-image-upload-holder", {url: "/communities/" + community_id + "/sitemaps/" + sitemap_id + "/save_sitemap_image"});

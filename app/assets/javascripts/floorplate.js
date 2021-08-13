@@ -1,5 +1,13 @@
+var imageOCRResponse = [];
+var ocrImageDimensions;
+
 $(document).ready(function () {
     if ($('.is-floorplate')[0]) {
+        imageOCRResponse = $("#ocrData").data("ocrData");
+        ocrImageDimensions = $("#ocrData").data("imageDimensions");
+
+        console.log(imageOCRResponse);
+
         selected = [];
         var temp = [];
         dx = 0;
@@ -44,6 +52,10 @@ $(document).ready(function () {
             // for (i=0; i<selected.length; i++) {
             //   $("#selected-units").append('<li class="s-unit" data-id='+i+' data-provider-unit-id='+selected[i][0]+'>' + selected[i][1] + '</li>');
             // }
+
+            if(imageOCRResponse.length > 0)
+                displayHints();
+            
             plotMode();
         });
 
@@ -67,7 +79,10 @@ $(document).ready(function () {
 
         $('.select-units-on-page .ms-elem-selection').click(function () {
             console.log($(this).attr('id'));
-            removeUnitFromSelectedArray($(this).attr('id').split('-')[0]);
+            s_id  = $(this).attr('id').replace("-selection","");
+            // s_id = s_id[0] + "-" + s_id[1];
+
+            removeUnitFromSelectedArray(s_id);
         });
 
         // $(document).on("click", ".marker" , function() {
