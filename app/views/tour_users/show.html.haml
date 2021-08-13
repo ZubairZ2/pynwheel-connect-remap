@@ -1,6 +1,8 @@
 :css
   .popover {
-    }
+    pointer-events: none;
+  }
+
 = javascript_include_tag 'moment'
 - content_for :title, "Visitor Details Page - Pynwheel"
 / Main content
@@ -139,8 +141,8 @@
                         - elsif @alerts.last.history == true
                           Removed at Consumer Request
                       - rescue => ex # in case mobile side send timezone that is not interprable by ActiveSupport Timezone
-                        - if @alerts.last.history == false
-                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
+                        - if @alerts.present? && @alerts.last.history == false
+                          = select :tour_histories , :dates , @alerts.order("id DESC").collect{|f| [ f.arrived.strftime("%m-%d-%Y %I:%M %p"), f.id ] if  f.arrived.present? } ,{:prompt => 'Select the tour data & time'}, class: "form-control"
                         - elsif @alerts.last.history == true
                           Removed at Consumer Request
 
@@ -153,6 +155,9 @@
                       %label
                         Floors
                     .col-sm-12.col-lg-12.col-md-12.col-xs-12#floor_buttons{style: "margin-top: 10px;"}
+                    .col-sm-12.col-lg-12.col-md-12.col-xs-12{style: "margin-top: 10px;"}
+                      %span.floor_unit_visibility
+                        No unit/amenity available to visit on this floor
 
                     / - else
                     /   .col-sm-12.col-lg-12.col-md-6.col-xs-12{style: "padding-right: 0;"}
@@ -273,6 +278,7 @@
 :javascript
   var t;
   var vertices;
+  var visitedPoints = [];
   var canvas;
   var ctx;
   var img;
@@ -281,25 +287,36 @@
   var lock_access_time;
   var vertices_count = 0;
   var already_watched = [];
+  var automateTracking = true;
+  var is_community_sitemap = false;
+
   setTimeout(function(){
     draw_image_canvas(null);
   }, 2000);
 
   function draw_image_canvas(img_src)
   {
+    console.log(img_src);
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
     img = document.getElementById("floorplane_img");
+    //debugger;
     if(img_src != null)
       img.src = img_src
+
     width = $('#parent-div').width()
     height = ( width / img.width) * img.height;
     ctx.canvas.height = height;
     ctx.canvas.width = width;
-    ctx.drawImage(img, 0, 0, width, height);
     
-
-
+    if(img_src != null) {
+      img.onload = function(){
+        ctx.drawImage(img, 0, 0, width, height);
+      }
+    } else {
+      ctx.drawImage(img, 0, 0, width, height);
+    }
+        
     ctx.lineCap = "round";
 
     // variable to hold how many frames have elapsed in the animation
@@ -307,13 +324,14 @@
 
     // define the path to plot
     vertices = [];
+    visitedPoints = [];
   }
-  function delete_image_canvas()
-  {
+  
+  function delete_image_canvas() {
     var canvas = document.getElementById("myCanvas");
     var context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
-    }
+  }
   // draw the complete line
 
 
@@ -330,7 +348,7 @@
           var pt1 = vertices[i];
           var dx = pt1.x - pt0.x;
           var dy = pt1.y - pt0.y;
-          for (var j = 0; j < 100; j++) {
+          for (var j = 0; j < 100; j = j+5) {
               var x = pt0.x + dx * j / 100;
               var y = pt0.y + dy * j / 100;
               waypoints.push({
@@ -344,77 +362,65 @@
       return (waypoints);
   }
 
- 
-
-
- 
-
-
-
-
-
   $('[data-toggle="popover-hover"]').popover({
-      html: true,
-      trigger: 'hover',
-      placement: 'bottom',
-      content: function () { return '<img style="height: 100px; max-height:100px; max-width:100px;" src="' + $(this).data('img') + '" />'; }
-    });
+    html: true,
+    trigger: 'hover',
+    placement: 'bottom',
+    content: function () { return '<img style="height: 100px; max-height:100px; max-width:100px;" src="' + $(this).data('img') + '" />'; }
+  });
+
   function show_imagee(stop){
-        $(".abc").removeClass("hide_image");
-          }
-          
-   if ("#{browser.device.iphone?}" == "true")
-   {
-     $(".user_id_image1").css("transform", "transform: rotate(90deg);");
-     $(".user_id_image2").css("transform", "transform: rotate(90deg);");
-   }
-   function visitor_show_goBack()
-  {
-    if (window.history.length == 1)
-     {
-      window.location.reload();
-     }
-     else
-     {
-      window.history.back();
-     }
+    $(".abc").removeClass("hide_image");
   }
+          
+  if ("#{browser.device.iphone?}" == "true") {
+    $(".user_id_image1").css("transform", "transform: rotate(90deg);");
+    $(".user_id_image2").css("transform", "transform: rotate(90deg);");
+  }
+
+  function visitor_show_goBack() {
+    if (window.history.length == 1)
+      window.location.reload();
+    else
+      window.history.back();
+  }
+
   $('[data-toggle="visitor_popover"]').popover();
   
-  $('#chat-logs').on('click', function(){
+  $('#chat-logs').on('click', function() {
     if ($('#msg_history_a').children().length == 0){
     
     var loadAdminChat, loadAdminChatHelper;
+
     loadAdminChatHelper = function(chat) {
-      
-        if(chat.name == "Support Team"){
-            $('#msg_history_a').append(`
-                <div class="outgoing_msg_a">
-                    <div class="sent_msg_a">
-                        <p>${chat.message}</p>
-                        <span class="time_date_a"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
-                    </div>
-                </div>
-            `)
-        }
-        else {
-            $('#msg_history_a').append(`
-                <div class="incoming_msg_a">
-                    <div class="incoming_msg_img_a"> <img id="img_id_a" src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
-                    <div class="received_msg_a">
-                        <div class="received_withd_msg_a">
-                            <p>${chat.message}</p>
-                            <span class="time_date_a"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
-                        </div>
-                    </div>
-                </div>
-            `)
-        }
+      if(chat.name == "Support Team"){
+          $('#msg_history_a').append(`
+              <div class="outgoing_msg_a">
+                  <div class="sent_msg_a">
+                      <p>${chat.message}</p>
+                      <span class="time_date_a"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
+                  </div>
+              </div>
+          `)
+      }
+      else {
+          $('#msg_history_a').append(`
+              <div class="incoming_msg_a">
+                  <div class="incoming_msg_img_a"> <img id="img_id_a" src=${chat.tour_user.image} alt=${chat.tour_user.name}> </div>
+                  <div class="received_msg_a">
+                      <div class="received_withd_msg_a">
+                          <p>${chat.message}</p>
+                          <span class="time_date_a"> ${moment(chat.client_date).format("h:mm A | MMM D")} </span>
+                      </div>
+                  </div>
+              </div>
+          `)
+      }
     };
 
     loadAdminChat = function(chatArray) {
       for (var item in chatArray) {
-          loadAdminChatHelper(chatArray[item])
+        loadAdminChatHelper(chatArray[item])
       }
     };
     
@@ -434,6 +440,7 @@
     }
     }
   });
+
   function change_image(){
     if($('#floorplates_images :selected').text() != "Select the Floorplate"){
       var floorplate_id = $('#floorplates_images :selected').val()
@@ -455,8 +462,12 @@
   }
 
   function plot_data(){
+    t = 1;
     var is_sitemap = #{ @community.is_sitemap};
+    is_community_sitemap = is_sitemap;
+
     var tour_history_id = $('#tour_histories_dates :selected').val()
+    $("#tour_histories_dates").attr("disabled", true);
     var dwelo_id;
     if(#{@community.dwelo.present?}){
      dwelo_id = "present"
@@ -464,10 +475,12 @@
     else{
       dwelo_id = false
     }
+
     if (is_sitemap == false)
       var floorplate_id = $('#floorplates_images :selected').val()
     else
       var floorplate_id = 0
+
     var community_id = #{ raw @community.id};
     var tour_user_id = #{ raw @tour_user.id};
     data = null;
@@ -480,27 +493,37 @@
           },
         url: '/communities/' + community_id + '/tour_users/' + tour_user_id + '/visited_stops_data?tour_history_id=' + tour_history_id + '&floorplate_id=' + floorplate_id,
         success: function(data){
+          //debugger;
           delete_image_canvas();
-          draw_image_canvas(null);
-          
+          draw_image_canvas(null);     
           $('#building_label').addClass('hidden');
           $('#floor_label').addClass('hidden');
-          $(".popover").popover('hide');
+          close_pop();
           $('.fa-map-marker').hide();
           $('.start-point').hide();
           $('.building_btn').hide();
           $('.floor_btn').hide();
+          $('#floor_buttons').empty();
+          $('#building_buttons').empty();
+          
           already_watched = [];
           vertices_count = 0;
-
 
           data_array = [];
           first_building = null;
           first_floor = null;
           lock_access_time = data.lock_access_time;
-          debugger;
-          if(data.stops[0] && data.stops[0][2] == "tour" && data.stops.length == 1)
-          {
+          tourStartingPoint = true;
+          lastVisitedStop = null;
+          lastVisitedStopIndex = null;
+          automateTracking = true;
+
+          buildingsArray = [];
+          floorsArray = [];
+          buildingIndex = 999999;
+          floorIndex = 999999;
+
+          if(data.stops[0] && data.stops[0][2] == "tour" && data.stops.length == 1) {
             selected_floor = selected_building = [];
           }
           else if(data.floors == null && data.buildings == null && data.stop != [])
@@ -508,107 +531,155 @@
             selected_floor = selected_building = [];
             show_plot_accordingly(data.stops,data.left);
           }
+          else {
+            buildingsArray = data.buildings;
+            floorsArray = data.floors;
 
-          else
-            {
-              debugger;
-              for(var i=0; i<data.buildings.length; i++)
-              {
-                if(data.buildings[i] != "" && data.buildings[i] != null){
-                  $('#building_label').removeClass('hidden');
-                  if(first_building == null)
-                    first_building = data.buildings[i];
-                  $('#building_buttons').append('<a class="btn-default btns building_btn '+ (first_building == data.buildings[i] ? 'selected_building' : '') +'" id="building_'+ data.buildings[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_building == data.buildings[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.buildings[i] +'</a>')
-                }
+            buildingIndex = 0;
+            floorIndex = 0;
+
+            for(var i=0; i<data.buildings.length; i++) {
+              if(data.buildings[i] != "" && data.buildings[i] != null){
+                $('#building_label').removeClass('hidden');
+                if(first_building == null)
+                  first_building = data.buildings[i];
+                $('#building_buttons').append('<a class="btn-default btns tracking_btns building_btn '+ (first_building == data.buildings[i] ? 'selected_building' : '') +'" id="building_'+ data.buildings[i] +'" style="cursor:pointer; display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_building == data.buildings[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;" >'+ data.buildings[i] +'</a>')
               }
-              for(var i=0; i<data.floors.length; i++)
-              {
-                if(first_floor == null)
-                  first_floor = data.floors[i];
-                $('#floor_label').removeClass('hidden');
-                if(String(data.floors[i]) != "" && String(data.floors[i]) != null)
-                  $('#floor_buttons').append('<a class="btn-default btns floor_btn '+ (first_floor == data.floors[i] ? 'selected_floor' : '') +'" id="floor_'+ data.floors[i] +'" style="display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_floor == data.floors[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.floors[i] +'</a>')
-              }
-              setTimeout(function(){
-                $('.selected_floor').click();
-              }, 1000);
-              
-              $('.btns').click(function(){
-                vertices_count = 0;
-                delete_image_canvas();
-                $(".popover").popover('hide');
-                $('.fa-map-marker').hide();
-                $('.start-point').hide();
-    
-                final_stops = [];
-                if(this.id.includes("building"))
-                {
-                  $('.building_btn').each(function( index, item ) { item.style.background = ""; $('#'+item.id).removeClass('selected_building');});
-                  this.style.background = "green";
-                  $('#'+this.id).addClass('selected_building');
-                }
-                else
-                {
-                  $('.floor_btn').each(function( index, item ) { item.style.background = "" ; $('#'+item.id).removeClass('selected_floor'); });
-                  this.style.background = "green";
-                  $('#'+this.id).addClass('selected_floor');
-                }
-                selected_building = $('.selected_building').text();
-                selected_floor = $('.selected_floor').text();
-                selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
-                selected_building = (first_building != "null" ? (selected_building == first_building ? [selected_building, "", null] : [selected_building]) : ["null", ""])
-                debugger
-                for(var f=0; f< data.floor_image.length; f++)
-                {
-                  debugger
-
-                  if(data.floor_image[f][0].includes(parseInt($('.selected_floor').text())))
-                    img_ = data.floor_image[f][1]
-                }
-                debugger
-                  sleep(2000);
-                  draw_image_canvas(img_);
-                debugger;
-                for(var s = 0; s < data.stops.length; s++)
-                {
-                  current_stop = data.stops[s];
-
-                  if(Array.isArray(selected_floor[0]))
-                    selected_floor = selected_floor[0]
-                  
-                  let current_floor;
-                  let current_building;  
-
-                  if (data.stops[s] && data.stops[s][1] && data.stops[s][1].building)
-                    current_building = selected_building.includes(String(data.stops[s][1].building));
-
-                  if(data.stops[s] && data.stops[s][2] == "tour")
-                    current_floor = selected_floor.includes(String(data.stops[s][1].starting_floor));
-                  else
-                    if (data.stops[s] && data.stops[s][1] && data.stops[s][1].floor)
-                      current_floor = selected_floor.includes(String(data.stops[s][1].floor));
-
-                  if(data.stops[s] && data.stops[s][2] == "tour"){
-                    final_stops.push(data.stops[s]);
-                  }else{
-                      if(current_floor || current_building){ 
-                      data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
-                      final_stops.push(data.stops[s]);
-                      //binding.pry
-                      //show_plot_accordingly(final_stops, data.left);
-                    }
-                  }                
-                }
-                 sleep(2000);
-                 show_plot_accordingly(final_stops, data.left);
-              });
             }
-          
-          
-          //$(".asdasd").children('i').remove()
-          //$("#unlock_history").children('h5').remove()
-          // data.existing_stops.flat().forEach(draw_stop)
-          //data.lock_histories.flat().forEach(draw_history)
+
+            for(var i=0; i<data.floors.length; i++) {
+              if(first_floor == null)
+                first_floor = data.floors[i];
+              $('#floor_label').removeClass('hidden');
+              if(String(data.floors[i]) != "" && String(data.floors[i]) != null)
+                $('#floor_buttons').append('<a class="btn-default btns tracking_btns floor_btn '+ (first_floor == data.floors[i] ? 'selected_floor' : '') +'" id="floor_'+ data.floors[i] +'" style="cursor:pointer; display: inline-block; width: auto; min-width: 33px; height: 25px;background: '+ (first_floor == data.floors[i] ? 'green' : '') +'; padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;">'+ data.floors[i] +'</a>')
+            }
+
+            setTimeout(function(){
+              $('.selected_floor').click();
+            }, 1000);
+
+            //debugger;
+            $('.btns').click(function(){
+              vertices_count = 0;
+              delete_image_canvas();
+              close_pop();
+              $('.fa-map-marker').hide();
+              $('.start-point').hide();
+              $(".floor_unit_visibility").hide()
+
+              final_stops = [];
+              vertices_count = 0;
+              data_array = [];
+              visited_units_amenities_count = 0;
+              indexesArr = [];
+              diableButtons();
+              if(this.id.includes("building")) {
+                $('.building_btn').each(function( index, item ) { item.style.background = ""; $('#'+item.id).removeClass('selected_building');});
+                this.style.background = "green";
+                $('#'+this.id).addClass('selected_building');
+                
+                $('.floor_btn').each(function( index, item ) { item.style.background = "" ; $('#'+item.id).removeClass('selected_floor'); });
+                let firstFloor = $('.floor_btn:first');
+                firstFloor[0].style.background = "green";
+                firstFloor.addClass('selected_floor');
+              }
+              else {
+                $('.floor_btn').each(function( index, item ) { item.style.background = "" ; $('#'+item.id).removeClass('selected_floor'); });
+                this.style.background = "green";
+                $('#'+this.id).addClass('selected_floor');
+              }
+              //debugger;
+              selected_building = $('.selected_building').text();
+              selected_floor = $('.selected_floor').text();
+              selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
+              selected_building = (first_building != "null" ? (selected_building == first_building ? [selected_building, "", null] : [selected_building]) : ["null", ""])
+
+              selected_building = $('.selected_building').text();
+              selected_floor = $('.selected_floor').text();
+              selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
+              selected_building = (first_building != "null" ? (selected_building == first_building ? [selected_building, "", null] : [selected_building]) : ["null", ""])
+
+              if(Array.isArray(selected_floor[0]))
+                selected_floor =  selected_floor[0]
+              
+              if(Array.isArray(selected_building[0]))
+                selected_building = selected_building[0]
+              
+              buildingIndex = buildingsArray.indexOf(selected_building[0]);
+              floorIndex = floorsArray.indexOf(parseInt(selected_floor[0]));
+
+              for(var f=0; f< data.floor_image.length; f++) {
+                if(data.floor_image[f][0].includes(parseInt($('.selected_floor').text())))
+                  img_ = data.floor_image[f][1]
+              }
+
+              draw_image_canvas(img_);
+              sleep(3000);
+
+              if(selected_building[0] === data.buildings[0] && parseInt(selected_floor[0]) === data.floors[0]) { 
+                tourStartingPoint = true
+              }
+
+              // Add tour starint point only one time 
+              if(tourStartingPoint && data && data.stops && data.stops[0]) {
+                tourStartingPoint = false;
+                final_stops.push(data.stops[0]);
+              }
+
+             /* if(selected_building[0] === data.buildings[0] && parseInt(selected_floor[0]) === data.floors[0]) {
+                for(var s = 0; s < data.stops.length; s++) {
+                  let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
+                  if(data.stops[s] && data.stops[s][2] == "building_starting_point" && currentBuilding) {
+                    final_stops.push(data.stops[s]);
+                    break;
+                  }
+                }
+              }*/
+
+              for(var s = 0; s < data.stops.length; s++) {
+                current_stop = data.stops[s];
+                //debugger
+                let currentFloor = getCurrentFloor(data.stops[s], selected_floor);
+                let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
+
+                if(currentFloor && currentBuilding && data.stops[s] && (data.stops[s][2] === "unit" || data.stops[s][2] === "amenity")) { 
+                  data.stops[s][0].departure_time = data.stops[s+1] == undefined ? data.left : data.stops[s+1][0].event_time
+                  final_stops.push(data.stops[s]);
+                  indexesArr.push(s);
+                }
+              }
+
+              if(indexesArr.length > 0) {
+                prevStop = data.stops[indexesArr[0] - 1];
+                nextStop = data.stops[indexesArr[indexesArr.length - 1] + 1];
+
+                if(prevStop && prevStop[2] == "elevator" || prevStop[2] == "building_starting_point") {
+                  if(final_stops.length > 0 && final_stops[0][2] == "tour") {
+                    final_stops.splice(1, 0, prevStop)
+                  } else {
+                    final_stops.unshift(prevStop);
+                  }
+                }
+
+                if(nextStop && nextStop[2] == "elevator" || nextStop[2] == "building_starting_point") {
+                  final_stops.push([nextStop[0], nextStop[1], nextStop[2], []])
+                }
+
+                sleep(3000);
+                show_plot_accordingly(final_stops, data.left);
+              } else {
+                $(".floor_unit_visibility").show()
+                automateUserTracking();
+
+                if(is_community_sitemap)
+                  enableButtons();
+
+                if(!automateTracking)
+                  enableButtons();
+              }
+            });
+          }
         },
         fail: function(data){
           console.log(data)
@@ -616,22 +687,42 @@
     });
   }
   
+  function getCurrentFloor(stop, selected_floor, current_floor = null) {
+    if (!(stop[1].floor == null))
+      current_floor = selected_floor.includes(String(stop[1].floor));
+
+    return current_floor
+  }
+
+  function getCurrentBuilding(stop, selected_building, current_building = null) {
+    if (!(stop[1].building == "" || stop[1].building == null))
+      current_building = selected_building.includes(String(stop[1].building));
+
+    return current_building
+  }
   
   function show_plot_accordingly(stops,left) {
     vs = 0;
-    for(var i=0 ; i < stops.length ; i++){
-      debugger
+    for(var i=0 ; i < stops.length ; i++) {
       if(stops[i][1] != null) { 
         vertices.push({
           x: ((stops[i][1].x_plot / img.width)*width),
           y:  ((stops[i][1].y_plot / img.height)*height)
         });
+
+        stops[i][3].forEach((p) => {
+          visitedPoints.push({
+            x: ((p.x_plot / img.width)*width),
+            y:  ((p.y_plot / img.height)*height)
+          });
+        });
+
         
         if(stops[i][2] != 'tour'){
-          
-          data_array[vs] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': moment.utc(stops[i][0].event_time).format("hh:mm A"), 'departure_time': (stops[i+1] == null ? moment.utc(stops[i][0].event_time).format("hh:mm A") : moment.utc(stops[i+1][0].event_time).format("hh:mm A")) ,'lock_access_time':  stops[i][0].event_date,'stop_pin': stops[i][0].stop_pin}]
+          lockProvider = isLockPresent(stops[i][1].lock_provider)
+          data_array[vs] = [stops[i][1].id,{'name': (stops[i][1].name == undefined ? stops[i][1].marketing_name : stops[i][1].name ),'arrival_time': moment.utc(stops[i][0].event_time).format("hh:mm A"), 'departure_time': (stops[i+1] == null ? moment.utc(stops[i][0].event_time).format("hh:mm A") : moment.utc(stops[i+1][0].event_time).format("hh:mm A")) ,'lock_access_time':  stops[i][0].event_date,'stop_pin': stops[i][0].stop_pin, 'is_lock_present': lockProvider }]
 
-          $('#mapp').append('<a class="marker ui-draggable ui-draggable-handle" data-toggle="modal" title="" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot-70) / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" style="z-index: 99" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
+          $('#mapp').append('<a class="marker visitor-marker ui-draggable ui-draggable-handle" data-toggle="modal" title="" id="m_372" style="left:' + (((stops[i][1].x_plot+30) / img.width)*width) + 'px; top:  '+ (((stops[i][1].y_plot-70) / img.height)*height) + 'px; position:absolute; font-size: 25px" data-name="plot" data-target="#markers-modal" data-href="/communities/4/units/372/remove_plot_from_floorplate?floorplate_id=2995" data-horizontal="114" data-vertical="530" data-unit-form-url="/communities/4/units/515263/adjust_position" href="#"><i class="fa fa-map-marker propertyDetailName" style="z-index: 99" data-content=" " data-toggle="propertyDetailNamePopover'+vs+'" style="color: #cf492f; "></i></a>')
           vs++;
         }
         else{
@@ -642,11 +733,18 @@
         }
       }
     }
-        
-        debugger;
-
+    
     draw_a_line(vertices, data_array);
   }
+
+  function isLockPresent(lockProvider, isLock = false) {
+    if(lockProvider) {
+      isLock = true
+    }
+
+    return isLock;
+  }
+
 
   function draw_stop(stop, index){
     if(stop.x_plot + stop.y_plot > 1){
@@ -662,93 +760,159 @@
   }
 
   $("#floorplates_images").change(function () {
-        change_image()
-        plot_data()
+    change_image()
+    plot_data()
   });
+
   $("#tour_histories_dates").change(function () {
-        plot_data()
+    plot_data()
   })
 
-  function draw_a_line(vertices, data_array)
-  {
-    debugger
+  function draw_a_line(vertices, data_array) {
+
     ctx.lineWidth = 5;
-          ctx.strokeStyle = "blue";
-          // calculate incremental points along the path
-          already_displayed = isItemInArray(already_watched,[selected_floor[0],selected_building[0]])
-          already_displayed ? ( points = vertices) :  points = calcWaypoints(vertices)
-          
-          // extend the line from start to finish with animation
+    ctx.strokeStyle = "blue";
+    // calculate incremental points along the path
+    already_displayed = false; 
+    // already_displayed =isItemInArray(already_watched,[selected_floor[0],selected_building[0]])
+    //already_displayed ? ( points = vertices) :  points = calcWaypoints(vertices)
+    //debugger;
+    points = calcWaypoints(visitedPoints);
+    // extend the line from start to finish with animation
 
-          animate(points);
-            debugger
-           function animate() {
-            if(already_displayed)
-            {
-              requestAnimationFrame(animate);
-            }
-            else
-            {
-            if (t < points.length - 1) {
-              if(points[t-2] != undefined && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y )
-              { 
-                $(".popover").popover('hide');
-                if (data_array[vertices_count] != undefined) {
-                  debugger;
-                  $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
-                                  html: true,
-                                  trigger: "hover",
-                                  placement: 'top',
-                                  template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
-                                }).popover('show');}
-                  vertices_count++;
-                  if(data_array[vertices_count - 1] == undefined)
-                    wait_time = 1000;
-                  else
-                    wait_time = 5000;
-                  setTimeout(function(){
-                    requestAnimationFrame(animate);
-                  }, wait_time);
-                  
-              }
-              else
-              {
-                debugger
-                requestAnimationFrame(animate);
-              }
-              
-            }
-            else
-            {
-              
-              $(".popover").popover('hide');
-              if (data_array[vertices_count] != undefined){ 
-                $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
-                            html: true,
-                            trigger: "hover",
-                            placement: 'top',
-                            template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "color: black;background: #efefef;"><div style="float: right"><button onclick="close_pop()" type="button" style="background: tarnsparent; border: none;">x</button></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ data_array[vertices_count][1].arrival_time +'<br></div></div>'
-                          }).popover('show');}
-              already_watched.push([selected_floor[0],selected_building[0]]);            
-            }
-          }
-              // draw a line segment from the last waypoint
-              // to the current waypoint
-              ctx.beginPath();
-              if(points.length > 1)
-              {
-                if(points[t] && points[t-1]) {
-                  ctx.moveTo(points[t - 1].x, points[t - 1].y);
-                  ctx.lineTo(points[t].x, points[t].y);
-                  ctx.stroke();
-                }
-              }
-              
-              // increment "t" to get the next waypoint
-              t++;
+    animate(points);
 
+    function animate() {
+      if(already_displayed) {
+        requestAnimationFrame(animate);
       }
+      else {
+        if (t <= points.length - 1) {
+          
+          if(points[t-2] != undefined &&  vertices[vertices_count] && points[t-2] && vertices[vertices_count].x == points[t-2].x && vertices[vertices_count].y == points[t-2].y ) { 
+            //debugger;  
+            close_pop();
+            if (data_array[vertices_count] != undefined) {
+
+              $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
+                              boundary:'window',
+                              html: true,
+                              trigger: "hover",
+                              placement: 'top',
+                              template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "height: 115px;color: black;background: #efefef;"><div style="float: right"></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time + '<br><b>Door Unlock Time:</b> '+ (data_array[vertices_count][1].is_lock_present ? data_array[vertices_count][1].arrival_time : "N/A") + '<br></div></div>'
+                            }).popover('show');
+            }
+            
+            vertices_count++;
+            if(data_array[vertices_count - 1] == undefined)
+              wait_time = 1000;
+            else
+              wait_time = 5000;
+            
+            setTimeout(function(){
+              requestAnimationFrame(animate);
+            }, wait_time);
+          }
+          else {
+            requestAnimationFrame(animate);
+          }
+          
+        }
+        else {
+          close_pop();
+          if (data_array[vertices_count] != undefined) { 
+            $('[data-toggle="propertyDetailNamePopover'+vertices_count+'"]:last').popover({
+                        boundary: 'window',
+                        html: true,
+                        trigger: "hover",
+                        placement: 'top',
+                        template: '<div class="popover pyn-popover visitor-popover" style="left: -43px !important; width: 250px; " ><div class="arrow visitors-hints-arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style = "height: 115px;color: black;background: #efefef;"><div style="float: right"></div><b>Stop Name:</b>'+data_array[vertices_count][1].name +'<br><b>Arrival Time:</b> '+ data_array[vertices_count][1].arrival_time +' <br><b>Departure Time:</b> '+ data_array[vertices_count][1].departure_time +'<br><b>Door Unlock Time:</b> '+ (data_array[vertices_count][1].is_lock_present ? data_array[vertices_count][1].arrival_time : "N/A") +'<br></div></div>'
+                      }).popover('show');
+          }
+
+          automateUserTracking();
+
+          if(is_community_sitemap) {
+            enableButtons();
+            setTimeout(function(){$('.popover').popover('hide')}, 5000);
+          }
+          
+          if(!automateTracking) {
+            enableButtons();
+            setTimeout(function(){$('.popover').popover('hide')}, 5000);
+          }
+        }
+      }
+
+      // draw a line segment from the last waypoint
+      // to the current waypoint
+    
+      if(points.length > 1) {
+        if(points[t] && points[t-1]) {
+          ctx.beginPath();
+          ctx.moveTo(points[t - 1].x, points[t - 1].y);
+          ctx.lineTo(points[t].x, points[t].y);
+          ctx.stroke();
+        }
+      }
+      
+      // increment "t" to get the next waypoint
+      t++;
+
+    }
   }
+
+  function diableButtons() {
+    disableAnimationBtns();
+    $("#tour_histories_dates").attr("disabled", true);
+  }
+
+  function enableButtons() {
+    enableAnimationBtns();
+    $("#tour_histories_dates").attr("disabled", false); 
+  }
+
+  function automateUserTracking() {
+    if(buildingIndex < buildingsArray.length && automateTracking) {
+      if(floorIndex < floorsArray.length) {
+        
+
+        if(floorIndex === (floorsArray.length -1)) {
+          setTimeout(function() {
+            $(`#building_${buildingsArray[buildingIndex]}`).click();
+          }, 1000);
+
+          buildingIndex = buildingIndex + 1;
+
+          // Check if animation is completed
+          if(buildingIndex > (buildingsArray.length - 1)) {
+            enableAnimationBtns();
+            $("#tour_histories_dates").attr("disabled", false);
+            automateTracking = false;
+            setTimeout(function(){$('.popover').popover('hide')}, 5000);
+          }
+
+          floorIndex = 0;
+
+        } else {
+          setTimeout(function() {
+            $(`#floor_${floorsArray[floorIndex]}`).click();
+          }, 1000);
+
+          floorIndex = floorIndex + 1;
+        }
+      }
+    }
+  }
+
+  function enableAnimationBtns() {
+    $(".btns").removeClass("tracking_btns");
+  }
+
+  function disableAnimationBtns() {
+    $(".btns").addClass("tracking_btns");
+  }
+
   function isItemInArray(array, item) {
     for (var i = 0; i < array.length; i++) {
       
@@ -761,7 +925,7 @@
     }
     return false;   // Not found
   }
-  function close_pop()
-  {
+
+  function close_pop() {
     $(".popover").popover('hide');
   }

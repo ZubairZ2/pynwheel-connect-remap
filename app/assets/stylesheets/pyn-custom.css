@@ -29,6 +29,16 @@ textarea {
     float: right;
 }
 
+.tracking_btns {
+    pointer-events: none;
+    background-color: #ddd;
+}
+
+.floor_unit_visibility {
+    color: red;
+    display: none;
+}
+
 .red-required-star {
     color: #dd4b39;
 }
@@ -3210,6 +3220,12 @@ div.mydiv {
     height: 100%;
 }
 
+#floor_label, #building_label{
+    margin-top: 15px;
+    margin-bottom: -10px;
+    margin-left: 7px;
+}
+
 #container .grid-graph {
     background-size: 30px 30px;
     background-image: linear-gradient(to right, grey 1px, transparent 1px), linear-gradient(to bottom, grey 1px, transparent 1px);
@@ -4876,7 +4892,7 @@ input:checked+.slider:before {
 }
 
 .visitors-hints-arrow {
-    top: 100px !important;
+    top: 116px !important;
 }
 
 .visitors-hints-arrow:after {
