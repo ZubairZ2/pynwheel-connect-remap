@@ -405,8 +405,7 @@ Rails.application.routes.draw do
         get :accesses
         post :grant_units_access
         post :grant_amenities_access
-        delete :remove_unit_access
-        delete :remove_amenity_access
+        delete :remove_pynwheel_user_access
       end
     end
 

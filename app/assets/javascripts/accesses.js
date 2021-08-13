@@ -1,3 +1,8 @@
+var community_id;
+var pynwheel_access_user_id;
+var access_point_id;
+var access_point_type;
+
 $(document).ready(function() {
   $('#access-miyazaki').dataTable({
     "searching": true
@@ -44,4 +49,21 @@ $(document).ready(function() {
 
 function add_stop(data_to_add) {
   debugger;
+}
+
+function displayAccessWarningModal(c_id, user_id, stop_id, stop_type) {
+  debugger
+  community_id = c_id;
+  pynwheel_access_user_id = user_id;
+  access_point_id = stop_id;
+  access_point_type = stop_type;
+}
+
+function removePynwheelUserAccess() {
+  debugger;
+  $.ajax({
+    url: `/communities/${community_id}/pynwheel_access_users/${pynwheel_access_user_id}/remove_pynwheel_user_access`,
+    type: "Delete",
+    data: {access_point_id: access_point_id, access_point_type: access_point_type}
+  }).done(function() { window.location.reload(); });
 }

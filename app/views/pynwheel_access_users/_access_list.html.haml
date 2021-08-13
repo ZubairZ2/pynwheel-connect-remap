@@ -19,23 +19,23 @@
               %td
                 = "Unit"
               %td
-                %a.text-danger{"data-name"=>"Access Point", "data-target" => "#removePynwheelAccessModal", "data-toggle" => "modal"}
+                %a.text-danger{"data-name"=>"Access Point", "data-target" => "#removePynwheelAccessModal", "data-toggle" => "modal", "onclick" => "displayAccessWarningModal(#{community.id}, #{user.id}, #{unit.id}, 'unit')"}
                   %i.fa.fa-trash.pynwheel_access_user_action_icon_size.additionalPageAction
                     %span#additionalPageActionText 
-                      Access of this unit/amenity will be removed.
+                      Click on trash icon to remove the access of this unit.
 
-                %a.text-success{"data-name"=>"Tour Stop", "data-toggle" => "modal"}
+                %a.text-success{"data-name"=>"Tour Stop", "data-toggle" => "modal", "href" => "/communities/#{community.id}/units/#{unit.id}/edit"}
                   %i.fa.fa-pencil-square-o.pynwheel_access_user_action_icon_size.additionalPageAction
                     %span#additionalPageActionText 
-                      Edit unit/amenity
+                      Click on the edit icon to edit the Unit. Add photos, videos, and text. 
 
                 %a.text-default{"data-name"=>"Tour Stop", "data-target" => "#pynwheelAccessTimeModal", "data-toggle" => "modal"}
                   %i.fa.fa-clock-o.pynwheel_access_user_action_icon_size.additionalPageAction
                     %span#additionalPageActionText 
-                      Update time accesses for the unit/amenity
+                      Click on the clock icon to manage the pynwheel user access times.
 
             = render :partial=>'access_timer', :locals => {community: community, access_point: unit}
-            = render :partial=>'remove_user_access_modal', :locals => {community: community, access_point: unit}
+            = render :partial=>'remove_user_access_modal', :locals => {community: community, access_point: unit, user: user}
 
           - amenities.each do |amenity|
             %tr
@@ -46,20 +46,20 @@
               %td
                 = "Amenity"
               %td
-                %a.text-danger{"data-name"=>"Access Point", "data-target" => "#removePynwheelAccessModal", "data-toggle" => "modal"}
+                %a.text-danger{"data-name"=>"Access Point", "data-target" => "#removePynwheelAccessModal", "data-toggle" => "modal", "onclick" => "displayAccessWarningModal(#{community.id}, #{user.id}, #{amenity.id}, 'amenity')"}
                   %i.fa.fa-trash.pynwheel_access_user_action_icon_size.additionalPageAction
                     %span#additionalPageActionText 
-                      Access of this unit/amenity will be removed.
+                      Click on trash icon to remove the access of this amenity.
 
-                %a.text-success{"data-name"=>"Tour Stop", "data-toggle" => "modal"}
+                %a.text-success{"data-name"=>"Tour Stop", "data-toggle" => "modal", "href" => "/communities/#{community.id}/amenities/#{amenity.id}/edit"}
                   %i.fa.fa-pencil-square-o.pynwheel_access_user_action_icon_size.additionalPageAction
                     %span#additionalPageActionText 
-                      Edit unit/amenity
+                      Click on the edit icon to edit the amenity. Add photos, videos, and text. 
 
                 %a.text-default{"data-name"=>"Tour Stop", "data-target" => "#pynwheelAccessTimeModal", "data-toggle" => "modal"}
                   %i.fa.fa-clock-o.pynwheel_access_user_action_icon_size.additionalPageAction
                     %span#additionalPageActionText 
-                      Update time accesses for the unit/amenity
+                      Click on the clock icon to manage the pynwheel user access times.
 
             = render :partial=>'access_timer', :locals => {community: community, access_point: amenity}
-            = render :partial=>'remove_user_access_modal', :locals => {community: community, access_point: amenity}
+            = render :partial=>'remove_user_access_modal', :locals => {community: community, access_point: amenity, user: user}

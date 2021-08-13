@@ -1,6 +1,6 @@
 class PynwheelAccessUsersController < ApplicationController
   before_action :set_community
-  before_action :set_pynwheel_access_user, only: [:destroy, :update, :accesses]
+  before_action :set_pynwheel_access_user, only: [:destroy, :update, :accesses, :remove_pynwheel_user_access]
 
   def index
     if @community.pynwheel_access
@@ -52,12 +52,9 @@ class PynwheelAccessUsersController < ApplicationController
 
   end
 
-  def remove_unit_access
-    
-  end
-
-  def remove_amenity_access
-    
+  def remove_pynwheel_user_access
+    @pynwheel_access_user.resident_access_points.where(access_point_type: params[:access_point_type], access_point_id: params[:access_point_id]).delete_all
+    flash[:notice] = "Pynwheel user access is removed successfully"
   end
 
   private
