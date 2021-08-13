@@ -7,6 +7,9 @@
 
   .content
     .row  
-      = render :partial=>'unselected_amenities_dropdown', :locals => {amenities: @un_accessible_amenities, community: @community}
-      = render :partial=>'unselected_units_dropdown', :locals => {units: @un_accessible_units, community: @community}
+      = render :partial=>'unselected_amenities_dropdown', :locals => {amenities: @un_accessible_amenities, community: @community, user: @pynwheel_access_user}
+      = render :partial=>'unselected_units_dropdown', :locals => {units: @un_accessible_units, community: @community, user: @pynwheel_access_user}
     = render :partial=>'access_list', :locals => {community: @community, units: @accessible_units, amenities: @accessible_amenities, user: @pynwheel_access_user}
+
+
+#userAccessesData{ data: {community: @community.to_json, pynwheel_access_user: @pynwheel_access_user.to_json} }

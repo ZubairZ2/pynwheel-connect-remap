@@ -19,7 +19,7 @@
               %td
                 = "Unit"
               %td
-                %a.text-danger{"data-name"=>"Access Point", "data-target" => "#removePynwheelAccessModal", "data-toggle" => "modal", "onclick" => "displayAccessWarningModal(#{community.id}, #{user.id}, #{unit.id}, 'unit')"}
+                %a.text-danger{"data-name"=>"Access Point", "data-target" => "#removePynwheelAccessModal", "data-toggle" => "modal", "onclick" => "displayAccessWarningModal(#{unit.id}, 'unit')"}
                   %i.fa.fa-trash.pynwheel_access_user_action_icon_size.additionalPageAction
                     %span#additionalPageActionText 
                       Click on trash icon to remove the access of this unit.
@@ -46,7 +46,7 @@
               %td
                 = "Amenity"
               %td
-                %a.text-danger{"data-name"=>"Access Point", "data-target" => "#removePynwheelAccessModal", "data-toggle" => "modal", "onclick" => "displayAccessWarningModal(#{community.id}, #{user.id}, #{amenity.id}, 'amenity')"}
+                %a.text-danger{"data-name"=>"Access Point", "data-target" => "#removePynwheelAccessModal", "data-toggle" => "modal", "onclick" => "displayAccessWarningModal(#{amenity.id}, 'amenity')"}
                   %i.fa.fa-trash.pynwheel_access_user_action_icon_size.additionalPageAction
                     %span#additionalPageActionText 
                       Click on trash icon to remove the access of this amenity.

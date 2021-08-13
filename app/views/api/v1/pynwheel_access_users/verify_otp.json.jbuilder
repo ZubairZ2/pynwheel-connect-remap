@@ -1,6 +1,13 @@
 json.status true
 json.success_code 200
 json.message "Pynwheel access user is verified successfully"
+json.is_zerv_lock @zerv_present
+
+json.zerv_credentials {
+  json.username @zerv_present ? @pynwheel_access_user&.community&.zerv&.username : nil
+  json.password @zerv_present ? @pynwheel_access_user&.community&.zerv&.password : nil
+}
+
 json.user_data {
   json.access_token @access_token
   json.id @pynwheel_access_user.id

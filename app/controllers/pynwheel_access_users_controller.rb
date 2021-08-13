@@ -1,6 +1,6 @@
 class PynwheelAccessUsersController < ApplicationController
   before_action :set_community
-  before_action :set_pynwheel_access_user, only: [:destroy, :update, :accesses, :remove_pynwheel_user_access]
+  before_action :set_pynwheel_access_user, only: [:destroy, :update, :accesses, :remove_pynwheel_user_access, :grant_pynwheel_user_access]
 
   def index
     if @community.pynwheel_access
@@ -44,12 +44,16 @@ class PynwheelAccessUsersController < ApplicationController
     end
   end
 
-  def grant_units_access
+  def grant_pynwheel_user_access
+    payload = []
 
-  end
+    params[:access_points].each do |access_point|
+      access_point = access_point.split(":")
+      payload << {access_point_id: access_point[0], access_point_type: access_point[1]} 
+    end
 
-  def grant_amenities_access
-
+    @pynwheel_access_user.resident_access_points.create(payload)
+    flash[:notice] = "Access granted to the pynwheel user successfully"
   end
 
   def remove_pynwheel_user_access

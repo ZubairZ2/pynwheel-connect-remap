@@ -6,6 +6,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   def pynwheel_access_user_authentication
     if @pynwheel_access_user.present?
       if @pynwheel_access_user.is_verified
+        @zerv_present = is_zerv_present
         @access_token = encode_jwt_token(@pynwheel_access_user)
       else
         render json: {message: "Non Varified User", success_code: 404, status: false}
@@ -33,21 +34,26 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   def generate_otp
     if @pynwheel_access_user.present?
-      @pynwheel_access_user.update(pin_code: random_otp)
-      sms_otp_to_mobile()
-      # execute job after 15 minutes(900 seconds) to expire the OTP
-      ExpireOtpJob.perform_in(900, @pynwheel_access_user)
-  
-      render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true}
+      if is_zerv_present
+        render json: {message: "Pynwheel access user with zerv lock", success_code: 200, status: true, is_zerv_lock: true, zerv_credentials: {username: @pynwheel_access_user&.community&.zerv&.username, password: @pynwheel_access_user&.community&.zerv&.password}}
+      else
+        @pynwheel_access_user.update(pin_code: random_otp)
+        sms_otp_to_mobile()
+        # execute job after 15 minutes(900 seconds) to expire the OTP
+        ExpireOtpJob.perform_in(900, @pynwheel_access_user)
+    
+        render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true, is_zerv_lock: false, zerv_credentials: {}}
+      end
     else
-      render json: {message: "Pynwheel access user not found", success_code: 404, status: false}
+      render json: {message: "Pynwheel access user not found", success_code: 404, status: false, is_zerv_lock: false, zerv_credentials: {}}
     end
 
   end
 
   def verify_otp
     if @pynwheel_access_user.present?
-      if @pynwheel_access_user.pin_code == params[:pin_code]
+      if @pynwheel_access_user.pin_code == params[:pin_code] || params[:is_zerv_lock] 
+        @zerv_present = is_zerv_present
         verify_user(true)
         @access_token = encode_jwt_token(@pynwheel_access_user)
       else
@@ -60,6 +66,22 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   private
+
+  def is_zerv_present
+    available_stops = @pynwheel_access_user.resident_access_points.pluck(:access_point_type, :access_point_id)
+    zerv_is_present = false
+
+    available_stops.each do |stop|
+      if (stop[0].classify.constantize.find_by_id stop[1]).lock_provider == "Zerv"
+        zerv_is_present = true
+        break
+      end
+    end
+
+    zerv_is_present
+  end
+
+
 
   def is_authorized
     grant_pynwheel_user_access(decode_jwt_token(params[:access_token])) rescue false
