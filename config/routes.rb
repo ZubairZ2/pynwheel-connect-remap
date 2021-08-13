@@ -403,9 +403,8 @@ Rails.application.routes.draw do
     resources :pynwheel_access_users, only: [:index, :create, :update, :destroy] do
       member do
         get :accesses
-        post :grant_units_access
-        post :grant_amenities_access
         delete :remove_pynwheel_user_access
+        post :grant_pynwheel_user_access
       end
     end
 

@@ -9,7 +9,7 @@
   - select_tag_amenity = []
   - amenities.each do |amenity|
     - if (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 )
-      - select_tag_amenity << ["<img src='#{image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"}' />".html_safe + amenity.name, amenity.id]
+      - select_tag_amenity << ["<img src='#{image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"}' />".html_safe + amenity.name, "#{amenity.id}:amenity"]
         
   = select_tag "amenity_accesses", options_for_select(select_tag_amenity, ""), :class => 'chosen-select-amenity',:"data-placeholder" => "- select amenity -", :multiple => "multiple", :name => "amenity_data_selected", style: "width: 100%;"  
   %input{:value => "Add amenities to access list", :type => "submit", :id=> 'add_amenities_access', :class => 'btn btn-success hidden', :style => "margin-top: 10px;"}/    

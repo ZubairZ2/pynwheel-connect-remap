@@ -1,9 +1,12 @@
-var community_id;
-var pynwheel_access_user_id;
 var access_point_id;
 var access_point_type;
+var pynwheel_access_user;
+var community;
 
 $(document).ready(function() {
+  community = $("#userAccessesData").data("community");
+  pynwheel_access_user = $("#userAccessesData").data("pynwheelAccessUser");
+
   $('#access-miyazaki').dataTable({
     "searching": true
   });
@@ -35,34 +38,38 @@ $(document).ready(function() {
   });
 
   $("#add_units_access").click(function(){
-    data_to_add = $('select[name="unit_data_selected"]').val();
-    debugger;
-    add_stop(data_to_add);
+    access_points = $('select[name="unit_data_selected"]').val();
+    add_stop(access_points);
   });
+
   $("#add_amenities_access").click(function(){
-    data_to_add = $('select[name="amenity_data_selected"]').val();
-    debugger;
-    add_stop(data_to_add);
+    access_points = $('select[name="amenity_data_selected"]').val();
+    add_stop(access_points);
   });
   
 });
 
-function add_stop(data_to_add) {
-  debugger;
+function add_stop(access_points) {
+  $.ajax({
+    url: `/communities/${community.id}/pynwheel_access_users/${pynwheel_access_user.id}/grant_pynwheel_user_access`,
+    type: "POST",
+    dataType: "script",
+    data: {
+      access_points: access_points
+    }
+  }).done(function (data) {
+    window.location.reload();
+  });
 }
 
-function displayAccessWarningModal(c_id, user_id, stop_id, stop_type) {
-  debugger
-  community_id = c_id;
-  pynwheel_access_user_id = user_id;
+function displayAccessWarningModal(stop_id, stop_type) {
   access_point_id = stop_id;
   access_point_type = stop_type;
 }
 
 function removePynwheelUserAccess() {
-  debugger;
   $.ajax({
-    url: `/communities/${community_id}/pynwheel_access_users/${pynwheel_access_user_id}/remove_pynwheel_user_access`,
+    url: `/communities/${community.id}/pynwheel_access_users/${pynwheel_access_user.id}/remove_pynwheel_user_access`,
     type: "Delete",
     data: {access_point_id: access_point_id, access_point_type: access_point_type}
   }).done(function() { window.location.reload(); });
