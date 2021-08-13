@@ -333,7 +333,7 @@ function draw_initial_hallways(hallways_coordinates, map = 'map') {
                     y1 = hallways_coordinates[i].y_plot + 8
                     x2 = hallways_coordinates[j].x_plot + 8
                     y2 = hallways_coordinates[j].y_plot + 8
-                    x = $(".plot-image").line(x1, y1, x2, y2, {
+                    x = $(map_id).line(x1, y1, x2, y2, {
                         zindex: 99,
                         color: '#000000',
                         stroke: "1",
@@ -430,30 +430,30 @@ function plotting_hallways(thisObj) {
         $('.hallways_marker').draggable('disable')
     }
 }
-function draw_lines_between_hallways(){
-  hallways_coordinates.forEach((point, index) => {
-    hallways_coordinates[index].next_points.forEach((element, i) => {
-        delayed(100, function (i, j) {
-            return function () {
-                let obj = hallways_coordinates.find(o => o.id == element);
-                x1 = point.x_plot + 8
-                y1 = point.y_plot + 8
-                x2 = obj.x_plot + 8
-                y2 = obj.y_plot + 8
-                $(".line").remove();
-                $(".plot-image").line(x1, y1, x2, y2, {
-                    zindex: 99,
-                    color: '#FF0000',
-                    stroke: "5",
-                    style: "solid",
-                    class: "line"
-                });
-                points_on_line(x1 - 8, y1 - 8, x2 - 8, y2 - 8);
-            };
-        }(index, i));
-    });
-  });
-}
+// function draw_lines_between_hallways(){
+//   hallways_coordinates.forEach((point, index) => {
+//     hallways_coordinates[index].next_points.forEach((element, i) => {
+//         delayed(100, function (i, j) {
+//             return function () {
+//                 let obj = hallways_coordinates.find(o => o.id == element);
+//                 x1 = point.x_plot + 8
+//                 y1 = point.y_plot + 8
+//                 x2 = obj.x_plot + 8
+//                 y2 = obj.y_plot + 8
+//                 $(".line").remove();
+//                 $(".plot-image").line(x1, y1, x2, y2, {
+//                     zindex: 99,
+//                     color: '#FF0000',
+//                     stroke: "5",
+//                     style: "solid",
+//                     class: "line"
+//                 });
+//                 points_on_line(x1 - 8, y1 - 8, x2 - 8, y2 - 8);
+//             };
+//         }(index, i));
+//     });
+//   });
+// }
 function get_unit_data(){
   algo_unit_data = [];
   for (var i = 0; i < hallways_coordinates.length; i++) {
@@ -648,16 +648,16 @@ function get_stops_data(){
   get_starting_point_data()
   get_access_point_data() 
 }
-function automate_path() {
-    draw_lines_between_hallways()
-    $(".line_hello").remove(); // remove already drown lines between hallways point and unit, amenities, access points
-    get_stops_data()
-    setTimeout(function () {
-        draw_initial_hallways(hallways_coordinates);
-        draw_lines_between_door_and_hallways();
-        draw_start_point_line();
-    }, hallways_coordinates.length * 120);
-}
+// function automate_path() {
+//     draw_lines_between_hallways()
+//     $(".line_hello").remove(); // remove already drown lines between hallways point and unit, amenities, access points
+//     get_stops_data()
+//     setTimeout(function () {
+//         draw_initial_hallways(hallways_coordinates);
+//         draw_lines_between_door_and_hallways();
+//         draw_start_point_line();
+//     }, hallways_coordinates.length * 120);
+// }
 
 function draw_start_point_line() {
     $(".start_line").remove();
@@ -674,67 +674,67 @@ function draw_start_point_line() {
     });
 }
 
-function draw_lines_between_door_and_hallways() {
+// function draw_lines_between_door_and_hallways() {
 
-    for (var i = 0; i < algo_unit_data.length; i++) {
-        x0 = algo_unit_data[i].door_x_plot + 17
-        y0 = algo_unit_data[i].door_y_plot + 17
-        x1 = algo_unit_data[i].hallway_x_plot + 8
-        y1 = algo_unit_data[i].hallway_y_plot + 8
+//     for (var i = 0; i < algo_unit_data.length; i++) {
+//         x0 = algo_unit_data[i].door_x_plot + 17
+//         y0 = algo_unit_data[i].door_y_plot + 17
+//         x1 = algo_unit_data[i].hallway_x_plot + 8
+//         y1 = algo_unit_data[i].hallway_y_plot + 8
 
-        $(".plot-image").line(x0, y0, x1, y1, {
-            zindex: 99,
-            color: '#008000',
-            stroke: "5",
-            style: "solid",
-            class: "line_hello"
-        });
-    }
+//         $(".plot-image").line(x0, y0, x1, y1, {
+//             zindex: 99,
+//             color: '#008000',
+//             stroke: "5",
+//             style: "solid",
+//             class: "line_hello"
+//         });
+//     }
 
-    for (var i = 0; i < algo_amenity_data.length; i++) {
-        x0 = algo_amenity_data[i].door_x_plot + 17
-        y0 = algo_amenity_data[i].door_y_plot + 17
-        x1 = algo_amenity_data[i].hallway_x_plot + 8
-        y1 = algo_amenity_data[i].hallway_y_plot + 8
+//     for (var i = 0; i < algo_amenity_data.length; i++) {
+//         x0 = algo_amenity_data[i].door_x_plot + 17
+//         y0 = algo_amenity_data[i].door_y_plot + 17
+//         x1 = algo_amenity_data[i].hallway_x_plot + 8
+//         y1 = algo_amenity_data[i].hallway_y_plot + 8
 
-        $(".plot-image").line(x0, y0, x1, y1, {
-            zindex: 99,
-            color: '#008000',
-            stroke: "5",
-            style: "solid",
-            class: "line_hello"
-        });
-    }
+//         $(".plot-image").line(x0, y0, x1, y1, {
+//             zindex: 99,
+//             color: '#008000',
+//             stroke: "5",
+//             style: "solid",
+//             class: "line_hello"
+//         });
+//     }
 
-    for (var i = 0; i < algo_access_point_data.length; i++) {
-        x0 = algo_access_point_data[i].hallway_x_plot_1 + 8
-        y0 = algo_access_point_data[i].hallway_y_plot_1 + 8
-        x1 = algo_access_point_data[i].access_point_x_plot + 8
-        y1 = algo_access_point_data[i].access_point_y_plot + 8
+//     for (var i = 0; i < algo_access_point_data.length; i++) {
+//         x0 = algo_access_point_data[i].hallway_x_plot_1 + 8
+//         y0 = algo_access_point_data[i].hallway_y_plot_1 + 8
+//         x1 = algo_access_point_data[i].access_point_x_plot + 8
+//         y1 = algo_access_point_data[i].access_point_y_plot + 8
 
-        $(".plot-image").line(x0, y0, x1, y1, {
-            zindex: 99,
-            color: '#FF0000',
-            stroke: "3",
-            style: "solid",
-            class: "line_hello"
-        });
+//         $(".plot-image").line(x0, y0, x1, y1, {
+//             zindex: 99,
+//             color: '#FF0000',
+//             stroke: "3",
+//             style: "solid",
+//             class: "line_hello"
+//         });
 
-        x0 = algo_access_point_data[i].hallway_x_plot_2 + 8
-        y0 = algo_access_point_data[i].hallway_y_plot_2 + 8
-        x1 = algo_access_point_data[i].access_point_x_plot + 8
-        y1 = algo_access_point_data[i].access_point_y_plot + 8
+//         x0 = algo_access_point_data[i].hallway_x_plot_2 + 8
+//         y0 = algo_access_point_data[i].hallway_y_plot_2 + 8
+//         x1 = algo_access_point_data[i].access_point_x_plot + 8
+//         y1 = algo_access_point_data[i].access_point_y_plot + 8
 
-        $(".plot-image").line(x0, y0, x1, y1, {
-            zindex: 99,
-            color: '#FF0000',
-            stroke: "3",
-            style: "solid",
-            class: "line_hello"
-        });
-    }
+//         $(".plot-image").line(x0, y0, x1, y1, {
+//             zindex: 99,
+//             color: '#FF0000',
+//             stroke: "3",
+//             style: "solid",
+//             class: "line_hello"
+//         });
+//     }
 
-}
+// }
 
 function points_on_line(x0, y0, x1, y1) {
     var dx = Math.abs(x1 - x0);
