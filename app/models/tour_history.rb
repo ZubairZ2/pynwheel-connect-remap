@@ -104,14 +104,9 @@ class TourHistory < ApplicationRecord
 
       if self.abandoned_tour_at_stop.present?
 
-        @mail_content = ["abandoned_tour_at_stop", "A tour was abandoned before it was completed at "] #get_alert_message('abandoned_tour_at_stop')
-        @mail_content[1] = "#{@mail_content.last} stop #{(TourStop.find self.abandoned_tour_at_stop.to_i).name rescue "Not Found"}."
-        if self.tour_user_id == 1445
-          mmm = self.abandoned_tour_at_stop.present? ? self.abandoned_tour_at_stop.to_s : "not_present"
-          @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : (mmm + "abandoned Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour.")
-        else
-          @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
-        end
+        # @mail_content = ["abandoned_tour_at_stop", "A tour was abandoned before it was completed at "] #get_alert_message('abandoned_tour_at_stop')
+        # @mail_content[1] = "#{@mail_content.last} stop #{(TourStop.find self.abandoned_tour_at_stop.to_i).name rescue "Not Found"}."
+        # @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
       #   touruser_remotelock_data
 
       #   # tour = (Tour.find_by_id self.tour_id)
@@ -122,8 +117,8 @@ class TourHistory < ApplicationRecord
       #   # email_content = "Events for #{self.tour_user.name} with tour id #{self.tour_user.id} are imported in pynwheel, while the tour history id is #{self.id} and the assigned pin is #{assigned_pin}" if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
       #   # DelayedSchedulerMailerJob.perform_async("Remote Lock Events", email_content, "humza4142@gmail.com","Lock History has been imported","check the database, its ran in callback","humza4142@gmail.com") if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
 
-        send_email_sms_or_both(@mail_content, community)
-        send_email_sms_or_both_to_touruser(@thank_you_content, community)
+        # send_email_sms_or_both(@mail_content, community)
+        # send_email_sms_or_both_to_touruser(@thank_you_content, community)
         touruser = self.tour_user
 
         puts "----------------"*50
