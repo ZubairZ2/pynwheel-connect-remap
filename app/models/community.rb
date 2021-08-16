@@ -284,7 +284,14 @@ class Community < ApplicationRecord
 
   end
   def use_crm_credentials?
-    if self.credential.present? &&self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
+    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
+      (true)
+    else
+      (false)
+    end
+  end
+  def use_yardi_as_lead?
+    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
       (true)
     else
       (false)
@@ -1386,7 +1393,7 @@ class Community < ApplicationRecord
   #  ["6/7/2021", "5:00:00", "6:00:00"],
   #  ["6/7/2021", "6:00:00", "7:00:00"]]
   # end
-  
+
   def populate_favorites(items_objs,email_to)
     fs = self.favorite_stop
     fs = self.favorite_stop.present? ? self.favorite_stop : FavoriteStop.create(community_id: self.id)

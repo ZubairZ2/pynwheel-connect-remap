@@ -160,6 +160,12 @@ class SchedualToursController < ApplicationController
     yardirentcafe_appointment_id = yardi_schedule_tour["Response"][0]["VoyProspectApptId"] rescue nil
     [yardirentcafe_prospect_id, yardirentcafe_appointment_id]
   end
+  def do_yardi_schedule_tour(schedual_tour,tu,desired_move_in_date)
+    yardi_schedule_tour = @community.yardi_schedule_tour(schedual_tour, tu, desired_move_in_date)
+    yardirentcafe_prospect_id = yardi_schedule_tour["Response"][0]["VoyProspectId"] rescue nil
+    yardirentcafe_appointment_id = yardi_schedule_tour["Response"][0]["VoyProspectApptId"] rescue nil
+    [yardirentcafe_prospect_id, yardirentcafe_appointment_id]
+  end
   # POST /schedual_tours
   # POST /schedual_tours.json
   def create
