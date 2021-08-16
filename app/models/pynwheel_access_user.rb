@@ -24,7 +24,7 @@ class PynwheelAccessUser < ApplicationRecord
   end
 
   def get_community_logo
-    (self.community.logo.present? ? self.community.logo.url : "/assets/logo-small.png")
+    (self.community.logo.present? ? self.community.logo.url : asset_url("pynwheel-default-logo.png"))
   end
 
   private
