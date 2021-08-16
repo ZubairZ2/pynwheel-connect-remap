@@ -4011,6 +4011,7 @@ div.mydiv {
 .pyn-toolTip {
     position: relative;
     display: inline-block;
+    white-space: initial;
     z-index: 1000;
 }
 
