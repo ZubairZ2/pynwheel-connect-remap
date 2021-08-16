@@ -6,7 +6,7 @@
       %meta{:content => "width=device-width, initial-scale=1.0", :name => "viewport"}/
       %meta{:content => "IE=edge,chrome=1", "http-equiv" => "X-UA-Compatible"}/
       %meta{:content => "telephone=no", :name => "format-detection"}/
-      %link{:href => "https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap", :rel => "stylesheet"}/
+      -# %link{:href => "https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap", :rel => "stylesheet"}/
       / disable auto telephone linking in iOS
       / %title Welcome
       :css
@@ -37,12 +37,12 @@
         }
         a{
           text-decoration:none !important;
-          border-bottom:1px solid;
+          border-bottom:0 !important;
         }
         h1,h3,h4,h5,h6{
           color:#5F5F5F;
           font-weight:normal;
-          font-family:Helvetica;
+          font-family:Helvetica, Arial, "Lucida Grande", sans-serif;
           font-size:20px;
           line-height:125%;
           text-align:Left;
@@ -141,7 +141,6 @@
         }
         .textContent,.textContentLast{
           color:#8B8B8B;
-          font-family:Helvetica;
           font-size:16px;
           line-height:125%;
           text-align:Left;
@@ -160,7 +159,6 @@
         }
         .buttonContent{
           color:#FFFFFF;
-          font-family:Helvetica;
           font-size:18px;
           font-weight:bold;
           line-height:100%;
@@ -234,34 +232,38 @@
           pointer-events:auto!important;
           cursor:default!important;
         }
-        .how_it_works{
-          background: #008fd3;
-          text-align: center;
-          color: #fff;
-          height: 300px;
+        .cardStyle{
+          -moz-box-shadow:    0 4px 8px 0 rgba(0, 0, 0, 0.5);
+          -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+          box-shadow:         0 4px 8px 0 rgba(0, 0, 0, 0.5);
+          border-style: solid;
+          border-color: #f4f4f4;
         }
-        .how_it_works_p{
-          font-size: 20px;
-          font-family: Poppins !important;
-        }
-        .how_it_works_h2{
-          font-size: 32px;
-          font-family: Poppins !important; 
-        }
-        .confirmation-text{
-          padding: 3% 0 0;
-        }
-        .btn_popup{
-          width: 100%;
-          border: none;
-          text-align: center;
-          color: #008fd3;
-          font-size: 19px;
-        }
-        @media only screen and (max-width: 760px) {
-          .how_it_works_p{
+        @media only screen and (max-device-width: 760px) {
+          .howItWorks{
+            height: 100% !important;
+          }
+          .cardMain{
+            display: block !important;
+          }
+          .downloadApp {
+            text-align: center !important;
+            padding: 3% 0 5% !important;
+          }
+          .appImage {
+            width: 31% !important;
+          }
+          .cardStyle {
+            border-style: unset !important;
+          }
+          .textStyle {
             font-size: 17px;
-            font-family: Poppins !important;
+            font-family:Helvetica, Arial, "Lucida Grande", sans-serif;
+          }
+        }
+        @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
+          .howItWorks{
+            margin-bottom: 50% !important;
           }
         }
         @media only screen and (max-width: 480px){
@@ -366,32 +368,55 @@
                                     %td.textContent{:align => "center", :style => "padding: 8px 20px; background-color: #{@community.tour.tour_setting.email_header_color}", :valign => "top"}
                                       %h1{:style => "margin-bottom:0px;text-align:center;"}
                                         %div{:style => "width: 350px;display: inline-block;overflow: hidden;"}
-                                          %img{:src => "#{@community.logo.url}", width: '350', :style => "max-width: 100%;height:auto;object-fit: contain;"}/ 
+                                          %img{:src => "#{@community.logo.url}", width: '150', :style => "max-width: 100%;height:auto;object-fit: contain;"}/ 
                 %tr
                   %td{:align => "center", :valign => "top"}
                     %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#000000;", :width => "100%"}
                       %tr
                         %td{:align => "", :valign => "top"}
-                          -# %p{:style => "text-align:left;margin-top: 40px; color: #000" }
-                            -# = schedual_tour.confirmation_notification.html_safe
                           .divLoading.hidden
                           %section
-                            .container.confirmation-text
+                            .container{:style => "padding: 1% 5% 0;"}
                               = @email_body.html_safe 
                           %section.clearfix
-                            = render 'shared/download_apps', obj: {ios_link: @app_link, android_link: @android_link }
+                            .container.h-100.downloadApp{:style => "text-align: center;padding: 1% 0 1%"}
+                              %a.appImage{:href => "#{@app_link}", :target => "_blank"}
+                                %img{:src => "#{root_url}assets/ios-store.png", width: '13%', :style => "margin-right: 20px", :class => "appImage"}/
+                              %a.appImage{:href => "#{@android_link}", :target => "_blank"}
+                                %img{:src => "#{root_url}assets/android-store.png", width: '13%', :class => "appImage"}/
+                            -# = render 'shared/download_apps', obj: {ios_link: @app_link, android_link: @android_link }
                           %section.mt-15
-                            %div.container.how_it_works
-                              %h2.mt-60.mb-20.how_it_works_h2
+                            %div.howItWorks{:style => "height: 375px; background: #008fd3;text-align: center; color: #fff; margin-bottom: 22%; padding-bottom: 3%;"}
+                              %h2.headingStyle{:style => "font-size: 32px; padding-top: 2%;"}
                                 %b How It Works
-                              %p.how_it_works_p
-                                Be at the property on the day your tour is scheduled within
-                                %b 10
-                                minutes of your scheduled time
-                              %tr
-                                %td
-                                  %div.card_bottom
-                                    = render 'shared/instruction_card', obj: {marginRight: '1%' }     
+                              - if @property_tour_type == "remote_tour"
+                                %p.textStyle{:style => "font-size: 18px;"}
+                                  = SchedulerWidgetConstants::REMOTE_TOUR_TITLE
+                              - elsif @property_tour_type == "unscheduled_self_tour"
+                                %p.textStyle{:style => "font-size: 18px;"}
+                                  = SchedulerWidgetConstants::UNSCHED_SELF_TOUR_TITLE
+                              - elsif @property_tour_type == "scheduled_tour" && @tour_type == "guided_tour"
+                                %p.textStyle{:style => "font-size: 18px;"}
+                                  Check-in at leasing center on the day your tour is scheduled within
+                                  %b 10
+                                  minutes of your scheduled time
+                              - else
+                                %p.textStyle{:style => "font-size: 18px;"}
+                                  Be at the property on the day your tour is scheduled within
+                                  %b 10
+                                  minutes of your scheduled time
+                              .container.cardMain{:style => "display: flex; margin-top: 3%;margin-left: 2%;margin-right: 1%;"}
+                                - @data.each do |i|
+                                  .col-md-3{:style => "display: flex; flex-wrap: wrap; margin-right: 1%"}
+                                    .card.cardStyle.mt-10.h-100{:style => "text-align: center;border-radius: 4%;margin-top: 10px;padding: 23px;background: #fff;"}
+                                      %p{:style => "color: #000;"}
+                                        %b= i[:key]
+                                      = image_tag("#{i[:image]}", class: "card-style", style: "width: 50%; border-radius: 50%; background: #{i[:background]};", alt: "instruction card")
+                                      .card-body.flex-fill
+                                        %p.card-title.mt-10{:style => "color: #555555;margin-top: 10px;font-size: 16px;"}
+                                          %b= (@property_tour_type == "unscheduled_self_tour" && !@id_verification && i[:key] == 2) || (@property_tour_type == "scheduled_tour" && @tour_type == "self_tour" && !@id_verification && i[:key] == 2) ? @unschedSelfTour[:title] : i[:title]
+                                        %p.card-text{:style => "color: #555555;font-size: 14px;line-height: 1.42857143;"}
+                                          = (@property_tour_type == "unscheduled_self_tour" && !@id_verification && i[:key] == 2) || (@property_tour_type == "scheduled_tour" && @tour_type == "self_tour" && !@id_verification && i[:key] == 2) ? @unschedSelfTour[:text] : i[:text]
               %table#emailFooter{:bgcolor => "#253339", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "70%"}
                 %tr
                   %td
@@ -440,4 +465,4 @@
                                                   %a{:href => "http://pynwheeltouchscreens.com/", :style => "color:#FFF; text-decoration:none;"} Pynwheel.com
                                                   All rights reserved.
 - else
-  = @email_body.html_safe                                                     
+  = @email_body.html_safe

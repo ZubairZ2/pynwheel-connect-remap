@@ -159,18 +159,12 @@
             <div style="float: right;">
               <% if user_signed_in? %>
                 <a onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')" class="continue_link">Continue <%= '<i class="fa fa-long-arrow-right" aria-hidden="true"></i>'.html_safe %></a>
-              <% else %>
-                <a class="continue_link" id="close">Continue <%= '<i class="fa fa-long-arrow-right" aria-hidden="true"></i>'.html_safe %></a>
               <% end %>
             </div>
         </section>
           <section class="mt-15">
             <div class="container how_it_works">
-              <h2 class="mt-40 mb-20"><b>How It Works</b></h2>
-              <p class="how_it_works_p">Be at the property on the day your tour is scheduled within <b>10</b> minutes of your scheduled time</p>
-              <div>
-                <%= render 'shared/instruction_card', obj: {marginRight: '0%'} %>
-              </div>
+                <%= render 'shared/instruction_card', :obj => {property_tour_type: property_tour_type,community_name: community_name,tour_type: tour_type} %>
             </div>
           </section>
       </div>
@@ -195,6 +189,7 @@
     <%end%>
 
     <script type="text/javascript">
+      $("#scheduleMyTourSuccess").hide();
       var success = "<%= flash[:success]  %>";
       var community_id = "<%= @community.id %>";
 

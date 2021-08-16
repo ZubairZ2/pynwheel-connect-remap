@@ -21,12 +21,23 @@ class SchedualToursDatatable
 private
 
   def scheduled_tour_icon_status(scheduled_tour,community)
-    if scheduled_tour.is_tour_completed
+    if scheduled_tour.is_tour_completed && !is_tour_customized(scheduled_tour)
       '<i class="fa fa-check-square icon_size customizeTourToolTip">
         <span id="customizeTourToolTipText">
-        Tour has completed
-      </span>
-    </i>'
+          Tour has completed
+        </span>
+      </i>'
+    elsif scheduled_tour.is_tour_completed && is_tour_customized(scheduled_tour)
+      '<i class="fa fa-info-circle icon_size customizeTourToolTip">
+        <span id="customizeTourToolTipText">
+          Customized Tour
+        </span>
+      </i>
+      <i class="fa fa-check-square icon_size customizeTourToolTip">
+        <span id="customizeTourToolTipText">
+          Tour has completed
+        </span>
+      </i>'
     else
       if is_tour_in_future(community,scheduled_tour)
         if is_tour_customized(scheduled_tour)
@@ -39,17 +50,32 @@ private
           ""
         end
       else
-        '<i class="fa fa-exclamation-triangle icon_size expiredTourToolTip">
-          <span id="expiredTourToolTipText">
-            Tour has expired
-          </span>
-        </i>'
+        if is_tour_customized(scheduled_tour)
+          '<i class="fa fa-info-circle icon_size customizeTourToolTip">
+            <span id="customizeTourToolTipText">
+              Customized Tour
+            </span>
+          </i>
+          <i class="fa fa-exclamation-triangle icon_size expiredTourToolTip">
+            <span id="expiredTourToolTipText">
+              Tour has expired
+            </span>
+          </i>'
+        else
+          '<i class="fa fa-exclamation-triangle icon_size expiredTourToolTip">
+            <span id="expiredTourToolTipText">
+              Tour has expired
+            </span>
+          </i>'
+        end
       end
     end
   end
 
   def get_scheduled_tour_html_date_time(scheduled_tour,community)
-    '<div>'+scheduled_tour_date_time(scheduled_tour)+''+scheduled_tour_icon_status(scheduled_tour,community) +'</div>' rescue ""
+    timezone = get_time_zone community
+    scheduler_date_time = scheduled_tour_date_time(scheduled_tour) ? scheduled_tour_date_time(scheduled_tour) : unscheduled_tour_date_time(scheduled_tour,community)
+    '<div>'+ scheduler_date_time +''+scheduled_tour_icon_status(scheduled_tour,community) +'</div>' rescue ""
   end
 
   def data
@@ -61,6 +87,7 @@ private
       [
         ind = ind + 1,
         get_scheduled_tour_html_date_time(scheduled_tour,community),
+        scheduled_tour_type(scheduled_tour),
         tour_user_name(@tour_user),
         @tour_user.email,
         @tour_user.phone_number,

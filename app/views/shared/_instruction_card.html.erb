@@ -14,6 +14,10 @@
     width: 50%;
     border-radius: 50%;
   }
+  .how_it_works_p {
+    font-size: 18px;
+    font-family: Poppins !important;
+  }
   .text-style {
     color: #555555;
     font-size: 14px;
@@ -38,30 +42,36 @@
       margin-bottom: 3% !important;
       display: block;
     }
+    .how_it_works_p{
+      font-size: 17px;
+      font-family: Poppins !important;
+    }
   }
 
 </style>
 
-<% data = [
+<% schedSelfTourData = SchedulerWidgetConstants::SCHED_SELF_TOUR_DATA %>
+<% schedGuidedTourData = SchedulerWidgetConstants::SCHED_GUIDED_TOUR_DATA %>
+<% remoteTourData = [
   {
     key: 1,
     image: "instruction-1.png",
-    title: "Install App and Follow Directions",
-    text: "Directions to the property will be texted to you about one hour before your tour. Install the app before you go.",
+    title: "Install App and Choose Property",
+    text: "Install the app and choose #{obj[:community_name]} from the list of properties to start your remote tour.",
     background: "#e2f5ff"
   },
   {
     key: 2,
     image: "instruction-2.png",
-    title: "Start Tour After Identity Verification",
-    text: "When you arrive at the property, open the app to start the tour. Follow the on-scren instructions to verify your identity with a driver's license, ID card,  or passport.",
+    title: "Start Tour Virtually",
+    text: "After selecting property choose to start virtual tour and select apartments and amenities you want to visit.",
     background: "#efffe7"
   },
   {
     key: 3,
     image: "instruction-3.png",
-    title: "Access Locked Areas and Navigate",
-    text: "The app will open locked doors for you, and navigation will help you get from one stop to the next.",
+    title: "See Property Images and Navigate",
+    text: "The app will show you images of available floor plans and different amenities while navigating from one stop to the next.",
     background: "#ffebe6"
   },
   {
@@ -71,18 +81,32 @@
     text: "Find the home you want? Apply for a lease or talk to property staff directly via live chat.",
     background: "#fcf0ff"
   }
-] %>
+  ] %>
+<% unschedSelfTour = SchedulerWidgetConstants::UNSCHED_SELF_TOUR_DATA%>
 
+<div>
+  <h2 class="mt-40 mb-20"><b>How It Works</b></h2>
+  <%if obj[:property_tour_type] == "remote_tour"%>
+    <p class="how_it_works_p"><%= SchedulerWidgetConstants::REMOTE_TOUR_TITLE %></p>
+  <%elsif obj[:property_tour_type] == "unscheduled_self_tour"%>
+    <p class="how_it_works_p"><%= SchedulerWidgetConstants::UNSCHED_SELF_TOUR_TITLE %></p>
+  <%elsif obj[:property_tour_type] == "scheduled_tour" && obj[:tour_type] == "guided_tour" %>
+    <p class="how_it_works_p">Check-in at leasing center on the day your tour is scheduled within <b>10</b> minutes of your scheduled time </p>
+  <%else%>
+    <p class="how_it_works_p">Be at the property on the day your tour is scheduled within <b>10</b> minutes of your scheduled time</p>
+  <%end%>
+</div>
 <div class="container col-md-12 mt-10 card-main">
-  <% data.each do |i| %> 
-    <div class="col-md-3 card-col" style="margin-right: <%= obj[:marginRight] %>">
+  <% data = obj[:property_tour_type] == "remote_tour" ? remoteTourData : (obj[:property_tour_type] == "scheduled_tour" && obj[:tour_type] == "guided_tour") ? schedGuidedTourData : schedSelfTourData %>
+  <% data.each do |i| %>
+    <div class="col-md-3 card-col">
       <div class="card align_items mt-10 h-100">
         <p style="color: #000;"><b><%= i[:key] %></b></p>
         <%= image_tag("#{i[:image]}", class: "card-style", style: "background: #{i[:background]};", alt: "instruction card")%>
-        <div class="card-body flex-fill">
-          <p class="card-title title-style mt-10"><b><%= i[:title]%></b></p>
-          <p class="card-text text-style"><%=i[:text]%></p>
-        </div>
+          <div class="card-body flex-fill">
+            <p class="card-title title-style mt-10"><b><%= confirmation_tour_second_card_title(i[:title],obj[:property_tour_type],obj[:tour_type],obj[:id_verification],i[:key],unschedSelfTour[:title]) %></b></p>
+            <p class="card-text text-style"><%= confirmation_tour_second_card_text(i[:text],obj[:property_tour_type],obj[:tour_type],obj[:id_verification],i[:key],unschedSelfTour[:text]) %></p>
+          </div>
       </div>
     </div>
   <% end %>
