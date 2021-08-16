@@ -941,12 +941,6 @@
 
         $("#tour_date").on("dp.change", function() {
           var time_slots = JSON.parse( $('#time_slot_hash').val() )
-          // currentDay = (new Date($(this).val())).getDay()
-          // day = !time_slots[currentDay].length ? (new Date($(this).val())).getDay()+1 : (new Date($(this).val())).getDay() 
-          // debugger
-          // if(time_slots[currentDay].length){
-          //   $('.schedule_datepicker').data("DateTimePicker").defaultDate(new Date($(this).val()));
-          // }
           day = (new Date($(this).val())).getDay()
           tour_time = '<%= @schedule_tour&.tour_time&.strftime("%I:%M %P") %>'
           options = '<option value="">Select Time Slot</option>'
