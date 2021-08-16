@@ -1,7 +1,9 @@
 class Api::V1::PynwheelAccessUsersController < ActionController::Base
   before_action :get_pynwheel_access_user_by_phone_number, only: [:generate_otp, :verify_otp]
-  before_action :get_pynwheel_access_user_by_id, only: [:pynwheel_access_user_authentication]
+  before_action :get_pynwheel_access_user_by_id, only: [:pynwheel_access_user_authentication, :resident_accesses_list, :dwelo_device_lock_or_unlock]
   before_action :is_authorized, only: [:resident_accesses_list, :resident_accesses_history]
+
+  include DweloDevicesHelper
 
   def pynwheel_access_user_authentication
     if @pynwheel_access_user.present?
@@ -17,9 +19,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   def resident_accesses_list
-    if is_authorized
-      # render json: {message: "Resident's list access granted", success_code: 200, status: true}
-    else
+    unless is_authorized
       render json: {message: "Access denied", success_code: 401, status: false}
     end
   end
@@ -28,7 +28,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     if is_authorized
       # render json: {message: "Resident's history access granted", success_code: 200, status: true}
     else
-      render json: {message: "Access denied", success_code: 200, status: true}
+      render json: {message: "Access denied", success_code: 401, status: false}
     end
   end
 
@@ -39,6 +39,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
       else
         @pynwheel_access_user.update(pin_code: random_otp)
         sms_otp_to_mobile()
+
         # execute job after 15 minutes(900 seconds) to expire the OTP
         ExpireOtpJob.perform_in(900, @pynwheel_access_user)
     
@@ -52,7 +53,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   def verify_otp
     if @pynwheel_access_user.present?
-      if @pynwheel_access_user.pin_code == params[:pin_code] || params[:is_zerv_lock] 
+      if @pynwheel_access_user.pin_code == params[:pin_code].to_s || params[:is_zerv_lock] 
         @zerv_present = is_zerv_present
         verify_user(true)
         @access_token = encode_jwt_token(@pynwheel_access_user)
@@ -63,6 +64,63 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     else
       render json: {message: "Pynwheel access user not found", success_code: 404, status: false}
     end
+  end
+
+  def lock_access_time
+    if is_authorized
+      puts "-----------"*20
+      puts params.inspect
+      puts "-----------"*20
+      render json: {message: "Lock access time", success_code: 200, status: true}
+    else
+      render json: {message: "Access denied", success_code: 401, status: false}
+    end
+  end
+
+  def dwelo_device_lock_or_unlock
+    if is_authorized          
+      if @pynwheel_access_user.present?
+        # @community = @pynwheel_access_user.community
+        # dwelo_community_account= Dwelo.find_by(community_id: @community.id)
+        # dwelo_client_credentials(dwelo_community_account)
+
+        # token_type = "Bearer"
+        # auth_header = token_type + " " + @token
+        # binding.pry
+        # guest_id = pynwheel_access_user.as_guests.where(community_id: @community.id).last.guest_id if pynwheel_access_user.present? and pynwheel_access_user.as_guests.where(community_id: @community.id).present?
+        # request_body = { "access_person_id": guest_id, "lock_id": params[:lock_id], "command": params[:command] }
+
+        # puts "--------------------------- commands request ----------------------------"
+        # puts request_body
+
+        # url = base_url + "/v4/integrations/pynwheel/devices/commands/"
+        # response = HTTParty.post(url,
+        #                         body: {
+        #                             "access_person_id": guest_id,
+        #                             "lock_id": params[:lock_id],
+        #                             "command": params[:command]
+        #                         }.to_json,
+        #                         :headers => {'Authorization' => auth_header,
+        #                                       'Accept' => 'application/vnd.lockstate+json; version=1',
+        #                                       'Content-Type' => 'application/json'})
+
+        # puts "--------------------------- commands response ----------------------------"
+        # puts response
+
+        # if response.nil?
+        #   render :json => {:success => true, :message => "Success"}
+        # else
+        #   render :json => {:success => false, :message => response["message"]}
+        # end
+        render json: {message: "Dwelo lock unlocked", success_code: 200, status: true}
+      else
+        render json: {message: "Pynwheel access user not found", success_code: 404, status: false}
+      end
+
+    else
+      render json: {message: "Access denied", success_code: 401, status: false}
+    end
+
   end
 
   private
@@ -80,8 +138,6 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
     zerv_is_present
   end
-
-
 
   def is_authorized
     grant_pynwheel_user_access(decode_jwt_token(params[:access_token])) rescue false

@@ -527,6 +527,8 @@ Rails.application.routes.draw do
           get :resident_accesses_history
           post :generate_otp
           post :verify_otp
+          post :lock_access_time
+          post :dwelo_device_lock_or_unlock
         end
       end
 
