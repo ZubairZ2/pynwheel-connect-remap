@@ -25,11 +25,17 @@ class SchedulerWidget::WidgetsController < ApplicationController
 
   def test_widget
     @tour_user = params[:tour_user_id].present? ? TourUser.find_by_id(params[:tour_user_id]) : TourUser.new
+    @reschedule_tour = params[:reschedule_tour] if params[:reschedule_tour].present?
+    @scheduled_tour_id = params[:schedule_tour_id] if params[:schedule_tour_id].present?
+    @scheduled_tour_for_another_tour = SchedualTour.find @scheduled_tour_id if @scheduled_tour_id.present?
+    @exiting_schedule_tour = SchedualTour.find_by(community_id: params[:community_id])
+    @schedule_tour = params[:scheduled_tour_id].present? ? SchedualTour.find_by_id(params[:scheduled_tour_id]) : @exiting_schedule_tour.present? ? @exiting_schedule_tour : SchedualTour.create(community_id: params[:community_id])
+    @phone_country_code = ISO3166::Country.new(@schedule_tour.country_code) if @schedule_tour.country_code.present?
     @community_id = params[:community_id]
     @community = Community.find params[:community_id]
     @scheduler_widget_setting = @community.tour.scheduler_widget_setting
     @credit_card_required =  @community.tour.credit_card_required
-    @bedroom_list = @community.floorplans.map{|x| x.bedrooms.to_i}.uniq
+    @bedroom_list = @community.fetch_bedroom_list()
     @marketing_source_required = @community.tour.marketing_source_required
     if params[:direct].present?
       @direct =  true
@@ -41,64 +47,84 @@ class SchedulerWidget::WidgetsController < ApplicationController
     else
       @direct =  false
     end
-    if @community.opening_hours.present?
-      @disable_day_of_week = [0,1,2,3,4,5,6]
-      @community.opening_hours.each do |rcd|
-        if rcd.day == "Sunday"
-          @disable_day_of_week = @disable_day_of_week - [0]
-        elsif rcd.day == "Monday"
-          @disable_day_of_week = @disable_day_of_week - [1]
-        elsif rcd.day == "Tuesday"
-          @disable_day_of_week = @disable_day_of_week - [2]
-        elsif rcd.day == "Wednesday"
-          @disable_day_of_week = @disable_day_of_week - [3]
-        elsif rcd.day == "Thursday"
-          @disable_day_of_week = @disable_day_of_week - [4]
-        elsif rcd.day == "Friday"
-          @disable_day_of_week = @disable_day_of_week - [5]
-        elsif rcd.day == "Saturday"
-          @disable_day_of_week = @disable_day_of_week - [6]
-        end
-      end
-    else
-      @disable_day_of_week = []
-    end
-    
+    @use_yardi_as_lead = @community.use_yardi_as_lead?
+    @is_virtual_on = @community.is_virtual_permission_on
+    @any_tour_type_selected = @community.is_any_tour_type_selected
+    @disable_day_of_week = @community.collect_disable_days
     @stepping = @community.tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
+    @tour_type = @schedule_tour.tour_type if @reschedule_tour.present?
+    @axisting_tour_users = scheduled_tour_users @community
+
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
-    # @visiting_times = @community.opening_hours.map{|day_obj| [day_obj.day, day_obj.opening_time , day_obj.closing_time] }
-    @visiting_times = @community.opening_hours.map{|day_obj| [day_obj.day, day_obj.opening_time , (Time.parse(day_obj.closing_time) - (@stepping.minutes)).strftime("%H:%M")] }
-    @guided_visiting_times = @community.guided_opening_hours.map{|day_obj| [day_obj.day, day_obj.opening_time , (Time.parse(day_obj.closing_time) - (@stepping.minutes)).strftime("%H:%M")] }
-    @error_message = []
-    day_hash = {}
-    @community.opening_hours.each do |day_obj|
-      day_hash[day_obj.day] = day_hash[day_obj.day].present? ? day_hash[day_obj.day] + ', ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p") : Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p")
-      # day_hash[day_obj.day] = day_hash[day_obj.day].present? ? day_hash[day_obj.day] + ', ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p") : Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p")
-      message = []
-      message[0] = day_obj.day
-      message[1] = '(visiting hours for ' +  day_obj.day + ' are from ' + day_hash[day_obj.day] +'). The last tour must be scheduled ' + cutt_of +' before visiting hours end.'
-      @error_message << message
+    if @use_yardi_as_lead
+      @yardi_time_slots = @community.available_slots
+      @yardi_self_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
+      @yardi_guided_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
+      @time_slots = @community.collect_time_slots_for_yardi(@stepping, @yardi_self_time_slots, @yardi_guided_time_slots)
+      @yardi_enable_days = @time_slots.keys
+    else
+      @time_slots = @reschedule_tour ? @community.collect_time_slots_for_rechedule_tours(@stepping,@tour_type) : @community.collect_time_slots(@stepping)
+      @yardi_enable_days = []
     end
-    @community.guided_opening_hours.each do |day_obj|
-      day_hash[day_obj.day] = day_hash[day_obj.day].present? ? day_hash[day_obj.day] + ', ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p") : Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + Time.parse(day_obj.closing_time).strftime("%I:%M %p")
-      # day_hash[day_obj.day] = day_hash[day_obj.day].present? ? day_hash[day_obj.day] + ', ' + Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p") : Time.parse(day_obj.opening_time).strftime("%I:%M %p") + ' to ' + (Time.parse(day_obj.closing_time) - @stepping.minutes).strftime("%I:%M %p")
-      message = []
-      message[0] = day_obj.day
-      message[1] = '(guided visiting hours for ' +  day_obj.day + ' are from ' + day_hash[day_obj.day] +'). The last tour must be scheduled ' + cutt_of +' before visiting hours end.'
-      @error_message << message
-    end
+    community = Community.find params[:community_id]
+    app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
+    android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
+    tour_type = params[:tour_type]
+    property_tour_type = params[:property_tour_type] if params[:property_tour_type].present?
     flash[:success] = params[:message] if params[:message].present?
-    render :test_widget, layout: false
+    render :test_widget, locals: {ios_link: app_link,android_link: android_link,property_tour_type: property_tour_type,community_name: community.name,tour_type: tour_type}, layout: false
   end
 
+  def confirmation_instructions
+    community = Community.find params[:community_id]
+    schedual_tour = SchedualTour.find params[:schedual_tour] if params[:schedual_tour].present?
+    reschedule = params[:reschedule]
+    app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
+    android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"  
+    property_tour_type = schedual_tour.property_tour_type
+    tour_type = schedual_tour.tour_type
+    flash[:success] = params[:message] if params[:message].present?
+    render :test_widget_confirmation, locals: {ios_link: app_link,android_link: android_link,schedual_tour: schedual_tour,is_rescheduled: reschedule,property_tour_type: property_tour_type,community_name: community.name,tour_type: tour_type}, layout: false
+  end
+
+  #TODO:: Remove this action after finalizing the reschedule form
   def change_tour_time_widget
     @schedule_tour = SchedualTour.find params[:id]
     @community = Community.find @schedule_tour.community_id
+    app_link = (Company.find @community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
+    android_link = (Company.find @community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"  
+    reschedule_tour = false
+    property_tour_type = @schedule_tour.property_tour_type
+    tour_type = @schedule_tour.tour_type
+    render :change_tour_time_widget, locals: {ios_link: app_link,android_link: android_link,property_tour_type: property_tour_type,tour_type: tour_type,community_name: @community.name}
   end
 
   private
   
   def allow_iframe
     response.headers.except! 'X-Frame-Options'
+  end
+
+  def scheduled_tour_users community
+    scheduled_tours = SchedualTour.where(community_id: community.id).where.not(tour_user_id: nil)
+    tour_user_ids = scheduled_tours_in_future(scheduled_tours, community)
+    TourUser.where(id: tour_user_ids).pluck(:email).uniq
+  end
+
+  def scheduled_tours_in_future(scheduled_tours, community, tour_user_ids = [], community_time_zone = nil)
+      community_time_zone = get_time_zone(community) if community.present? && community.latitude.present? && community.longitude.present?
+      scheduled_tours.find_each do |tour|
+        unless tour.is_tour_completed
+          community_time_zone = community_time_zone || tour.user_time_zone
+          is_in_timezone = (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(community_time_zone) > Time.now.in_time_zone(community_time_zone) if (tour.tour_date && tour.tour_time).present?
+          tour_user_ids << tour.tour_user_id if is_in_timezone
+        end
+      end  
+      tour_user_ids
+  end
+
+  def get_time_zone(community)
+    time_zone = Timezone.lookup(community.latitude, community.longitude)
+    timezone = time_zone.name
   end
 end

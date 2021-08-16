@@ -60,14 +60,16 @@ class TourHistory < ApplicationRecord
         # @mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}" + "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
 
         touruser = self.tour_user
-
-        if touruser.tour_type === "self_tour"
-          scheduled_tour = MaxDateScheduledTourService.new(touruser, community, false).get_scheduled_tour
-          
+        scheduled_tour = MaxDateScheduledTourService.new(touruser, community, false).get_scheduled_tour rescue community.schedual_tours.where(tour_user_id: touruser.id)
+        if touruser.tour_type === "self_tour" && scheduled_tour.property_tour_type == "scheduled_tour"          
           if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
-            scheduled_tour.update(is_tour_completed: true) if scheduled_tour.present?
+            scheduled_tour.update_attributes(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
           end
         end 
+        if (touruser.tour_type == "self_tour" or touruser.tour_type == "virtual_tour") && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour")
+          # scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id)
+          scheduled_tour.update_attributes(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
+        end
 
         tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}"
         @complete_tour_content = ["#{community.name} has been visited", "#{touruser.name.capitalize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.capitalize} Visitor Details</a> "]
@@ -325,7 +327,7 @@ class TourHistory < ApplicationRecord
 
   def send_sms_tour_user message_body
     begin
-      DelayedSchedulerTextJob.perform_async(message_body, self.tour_user.phone_number) if self.tour_user.phone_number.present?
+      DelayedSchedulerTextJob.perform_async(message_body, self.tour_user.phone_number) if self.tour_user.phone_number.present? && self.tour_user.is_sms_enabled
     rescue
     end
   end

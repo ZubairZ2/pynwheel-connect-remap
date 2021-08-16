@@ -9,7 +9,8 @@ class SchedualToursController < ApplicationController
   # GET /schedual_tours.json
   def index
     @schedual_tours = SchedualTour.where(community_id: @community.id).where.not(tour_user_id: nil).order! 'created_at DESC' rescue ""
-    community = params['community'] if params['community'].present?
+    community_id = params['community'] if params['community'].present?
+    community = community_id rescue @community.id
     respond_to do |format|
       format.html
       format.json { render json: SchedualToursDatatable.new(view_context,community) }
@@ -50,7 +51,9 @@ class SchedualToursController < ApplicationController
     tu = tu.last if tu.present?
 
     community = Community.find_by_id params[:community_id]
-
+    realpage_marketing_source = ""
+    cm = community.credential.realpage_marketing_sources.each {|s| realpage_marketing_source = s['Text'] if s['Value'] == params['marketing_source']}
+    # binding.pry
     f_name = params[:tour_user][:first_name].present? ? params[:tour_user][:first_name] : ""
     l_name = params[:tour_user][:last_name].present? ? params[:tour_user][:last_name] : ""
     tu = TourUser.new name: (f_name + " " + l_name), first_name: params[:tour_user][:first_name], last_name: params[:tour_user][:last_name], email: params[:tour_user][:email].downcase, phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
@@ -60,6 +63,7 @@ class SchedualToursController < ApplicationController
     tu.phone_number = phone_number if phone_number.present?
     tu.desired_bedroom = params[:desired_bedroom]
     tu.card_last_digits = params[:last_digits] if params[:last_digits].present?
+    tu.is_sms_enabled = params[:tour_user][:is_sms_enabled] == "0" ? false : true
 
     if tu.save
       begin
@@ -78,11 +82,14 @@ class SchedualToursController < ApplicationController
 
       end
 
-      new_tour = SchedualTour.find(params[:sched_tour_id])
+      if params[:sched_tour_id].present?
+        new_tour = SchedualTour.find(params[:sched_tour_id])
+      else
+        new_tour = SchedualTour.create!(community_id: params[:community_id], user_time_zone: params[:user_time_zone])
+        new_tour.save
+      end
       schedual_tour = MaxDateScheduledTourService.new(tu, community, true).get_scheduled_tour
-      
-
-
+      # binding.pry
       unless schedual_tour.present?
         scheduled_tours = community.schedual_tours.where(tour_user_id: tu.id)
         
@@ -94,27 +101,14 @@ class SchedualToursController < ApplicationController
       
       schedual_tour = (schedual_tour.present? && !schedual_tour.is_tour_completed) ? schedual_tour : new_tour
 
+      response = @community.use_yardi_as_lead? ? do_yardi_schedule_tour(schedual_tour,tu,params[:desired_move_in_date]) : nil
+
       previous_tour = {
         tour_date: schedual_tour.tour_date,
         tour_time: schedual_tour.tour_time,
         is_rescheduled: schedual_tour.tour_user_id.present?
       }
       
-      is_rescheduled = false
-      
-      schedual_tour.update_attributes(tour_date: new_tour.tour_date, tour_time: new_tour.tour_time, tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: params[:desired_move_in_date], desired_bedroom: params[:desired_bedroom])
-
-      if previous_tour[:is_rescheduled]
-        is_rescheduled = true
-        new_tour.delete
-      end
-      
-      begin
-        sent_notifications = send_email_and_other_notifications(schedual_tour, previous_tour, is_rescheduled)
-      rescue Exception => e
-        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace} ---"
-      end
-
       if params[:desired_move_in_date].present?
         date = params[:desired_move_in_date].split('/')
         date[0],date[1] = date[1],date[0]
@@ -124,7 +118,33 @@ class SchedualToursController < ApplicationController
         desired_move_in_date = ""
       end
 
-      appointment_time = (schedual_tour.tour_date.to_s +  " " + schedual_tour.tour_time.to_s.split(' ')[1]).to_datetime
+      is_rescheduled = false
+      tour_type = params["tour_type"].present? ? params["tour_type"] : ""
+      property_tour_type = params['tour_user']['property_tour_type'] if (params['tour_user'] && params['tour_user']['property_tour_type']).present? 
+      # binding.pry
+      schedual_tour.update_attributes(tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code],yardirentcafe_prospect_id: response.present? ? response[0] : nil, yardirentcafe_appointment_id: response.present? ? response[1] : nil, realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
+
+      if previous_tour[:is_rescheduled]
+        is_rescheduled = true
+        new_tour.delete
+      end
+      
+      begin
+        sent_notifications = send_email_and_other_notifications(schedual_tour,previous_tour,is_rescheduled,property_tour_type)
+      rescue Exception => e
+        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace} ---"
+      end
+
+      # if params[:desired_move_in_date].present?
+      #   date = params[:desired_move_in_date].split('/')
+      #   date[0],date[1] = date[1],date[0]
+      #   date = date.join('-').to_date
+      #   desired_move_in_date = date
+      # else
+      #   desired_move_in_date = ""
+      # end
+
+      appointment_time = (schedual_tour.tour_date.to_s +  " " + schedual_tour.tour_time.to_s.split(' ')[1]).to_datetime if schedual_tour.tour_date.present? and schedual_tour.tour_time.present?
       marketing_source = params[:marketing_source].present? ? params[:marketing_source] : "" rescue  ""
       community.realpage_insert_prospect(tu, appointment_time, marketing_source, desired_move_in_date) if community.present? and community.data_provider == "realpagesvc" # sending 'desired_move_in_date' for the parameter 'tour_time'
       # sms_notifire notification_content, params[:tour_user][:phone_number]
@@ -132,8 +152,13 @@ class SchedualToursController < ApplicationController
     else
       render json: {message: "some errors occured"}, status: 'failed'
     end
-    
-    redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: community.id)
+    redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification],community_id: community.id,property_tour_type: property_tour_type,tour_type: tour_type)
+  end
+  def do_yardi_schedule_tour(schedual_tour,tu,desired_move_in_date)
+    yardi_schedule_tour = @community.yardi_schedule_tour(schedual_tour, tu, desired_move_in_date)
+    yardirentcafe_prospect_id = yardi_schedule_tour["Response"][0]["VoyProspectId"] rescue nil
+    yardirentcafe_appointment_id = yardi_schedule_tour["Response"][0]["VoyProspectApptId"] rescue nil
+    [yardirentcafe_prospect_id, yardirentcafe_appointment_id]
   end
   # POST /schedual_tours
   # POST /schedual_tours.json
@@ -177,6 +202,35 @@ class SchedualToursController < ApplicationController
       render json: {message: error, code: "400" }
     end
   end
+
+  def get_tour_type
+    community = Community.find params[:community_id]
+    @use_yardi_as_lead = @community.use_yardi_as_lead?
+    date_time = params[:date] + " " +params[:time]
+    date = DateTime.strptime(date_time, '%m/%d/%Y %l:%M %p')
+    tour_types = @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
+    
+    tour_time, day_diff = get_tour_datetime_and_diff date
+    before_30_mints = tour_time.to_time - 30.minutes
+    after_30_mints = tour_time.to_time + 30.minutes
+    before_30_mints, c = get_tour_datetime_and_diff before_30_mints
+    after_30_mints, d = get_tour_datetime_and_diff after_30_mints
+
+    total_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints).where.not(tour_user_id: nil,tour_type: "virtual_tour").count
+    total_count_per_day = community.schedual_tours.where(tour_date: date).where.not(tour_user_id: nil,tour_type: "virtual_tour").count
+    
+    self_tour_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "self_tour").where.not(tour_user_id: nil).count
+    guided_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "guided_tour").where.not(tour_user_id: nil).count
+    limit_exceded_tour_types = check_limit(params[:tour_type], total_count,total_count_per_day,self_tour_count,guided_count,  @community)
+    if params.has_key?("schedual_tour_id") && params["schedual_tour_id"].present?
+      @schedual_tour = SchedualTour.find(params["schedual_tour_id"])
+    else
+      @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, end_time: after_30_mints, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
+      @schedual_tour.save
+    end
+    render json: {tour_types: tour_types.uniq,limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
+  end
+
   def show_tour_type_modal(show_self_tour_option, show_guided_tour_option, in_limit, community, limit_type, error)
     
     if(show_self_tour_option == "false" && show_guided_tour_option == "false")
@@ -201,8 +255,8 @@ class SchedualToursController < ApplicationController
       end
         
     end
-
   end
+
   def remove_array(arr, community, limit_type)
     if (!community.tour.tour_setting.allow_virtual_tour)
       arr = arr - [["Virtual Tour","virtual_tour"]]
@@ -223,10 +277,8 @@ class SchedualToursController < ApplicationController
     #   limit_type << "total"
     # end
     if (community.tour.tour_setting.do_limit_max_tour && community.tour.tour_setting.limit_max_tour.present? && total_count >= community.tour.tour_setting.limit_max_tour.to_i)
-      # return true, "max tour users limit reached for the selected time", (limit_type << "total")
-      limit_type << "total"
-    # elsif tour_type == "virtual_tour" && community.tour.max_virtual_tour_users.present? && community.tour.max_virtual_tour_users.present? && !(virtual_count < community.tour.max_virtual_tour_users.to_i)
-    #   return true, "max virtual tour users limit reached for the selected time", "virtual_tour"
+      #return true, "max tour users limit reached for the selected time", (limit_type << "total")
+      limit_type << "virtual_tour"
     end
     if community.tour.tour_setting.do_limit_max_tour && community.tour.max_self_tour_users.present? && community.tour.max_self_tour_users.present? && !(self_tour_count < community.tour.max_self_tour_users.to_i)
       # return true, "max self tour tour users limit reached for the selected time", (limit_type << "self_tour")
@@ -236,21 +288,19 @@ class SchedualToursController < ApplicationController
       # return true, "max guided tour users limit reached for the selected time", (limit_type << "guided_tour")
       limit_type << "guided_tour"
     end
-    return true, "", limit_type
+    return limit_type
       
 
   end
 
-  # PATCH/PUT /schedual_tours/1
-  # PATCH/PUT /schedual_tours/1.json
-  def update_tour_type
-    st = SchedualTour.find params[:schedual_tour_id]
-    st.tour_type = params[:tour_type]
-    st.save
-  end
   def update
-    date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
-    
+    # date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
+    date = Date.strptime(params[:tour_date], '%m/%d/%Y') if params[:tour_date].is_a? String
+    time = Time.zone.parse(params[:tour_time]) if params[:tour_time].is_a? String
+    date_time = DateTime.new(date.year, date.month, date.day, time.hour, time.min).strftime('%m/%d/%Y %l:%M %p')
+
+    date = DateTime.strptime(date_time, '%m/%d/%Y %l:%M %p')
+
     tour_time, day_diff = get_tour_datetime_and_diff date
 
     previous_tour = {
@@ -264,16 +314,15 @@ class SchedualToursController < ApplicationController
     set_daily_email_sent = true if day_diff >= 1
     @schedual_tour.update_attributes(hourly_email_sent: false, daily_email_sent: set_daily_email_sent)
     tu = @schedual_tour.tour_user
-    # binding.pry
     respond_to do |format|
       if @schedual_tour.save 
 
         begin
-          sent_notifications = send_email_and_other_notifications(@schedual_tour, previous_tour, true)
+          property_tour_type = @schedual_tour.property_tour_type.present? ? @schedual_tour.property_tour_type : "scheduled_tour"
+          sent_notifications = send_email_and_other_notifications(@schedual_tour, previous_tour, true, property_tour_type)
     
         rescue Exception => e
         end
-
         # format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
         # format.json { render :json, status: :updated, message: web_notification }
         # format.json { render json: @schedual_tour, status: :updated, location: @schedual_tour }
@@ -291,18 +340,20 @@ class SchedualToursController < ApplicationController
   def destroy
     if params[:delete_type].present? && params[:delete_type] == "page"
       schedual_tour = SchedualTour.find params[:id]
+      puts "*** yardi_cancel_tour ***", @schedual_tour.community.yardi_cancel_tour(@schedual_tour) if @schedual_tour.community.use_yardi_as_lead?
       schedual_tour.destroy
-      redirect_to community_schedual_tours_path(@community), notice: 'Schedual tour was successfully destroyed.'
+      redirect_to community_schedual_tours_path(@community), notice: 'Scheduled tour is successfully deleted'
     else
+      @schedual_tour.community.yardi_cancel_tour(@schedual_tour) if @schedual_tour.community.use_yardi_as_lead?
       @schedual_tour.destroy
 
       respond_to do |format|
         if user_signed_in?
-          flash[:notice] = 'Schedual tour was successfully destroyed.'
+          flash[:notice] = 'Scheduled tour is successfully deleted'
           format.html { redirect_to community_schedual_tours_path(@community) }
           format.json { render :json => {logged_in: true} }
         else
-          flash[:notice] = 'Schedual tour was successfully destroyed.'
+          flash[:notice] = 'Scheduled tour is successfully deleted'
           format.html { redirect_to schedual_tours_url }
           format.json { render :json => {logged_in: false} }
         end        
@@ -347,41 +398,103 @@ class SchedualToursController < ApplicationController
       [tour_time, day_diff]
     end
 
-    def send_email_and_other_notifications(schedual_tour, previous_tour, is_rescheduled)
+    def send_email_and_other_notifications(schedual_tour,previous_tour,is_rescheduled,property_tour_type)
       tu = schedual_tour.tour_user
       community = schedual_tour.community
       community_email = community.email.present? ? community.email : 'info@pynwheel.com'
+      @community_opening_hours = community.opening_hours.order(:sort).all
+      time_slot ||= []
+      slot_str = ""
+      sms_slot_str = ""
+      @community_opening_hours.each do |slot|
+        time_slot << {"#{slot.day[0..2]}": "#{Time.zone.parse(slot.opening_time).strftime("%I:%M%p")}-#{Time.zone.parse(slot.closing_time).strftime("%I:%M%p")}"}
+      end
+      merged_slots = time_slot.each_with_object({}) { |h, o| h.each { |k,v| (o[k] ||= []) << v } }
+      merged_slots.each do |k,v|
+        slot_str += "<b>#{k}:</b> #{v.join(' and ')}, "
+        sms_slot_str += "#{k}: #{v.join(' and ')}, "
+      end
+
       puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{params}---"
       # day_before, hour_before = calculate_seconds_one_day_prior_for_delayed_email schedual_tour
-      app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
-      # app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "http://onelink.to/6fsxvq" : "http://onelink.to/m5vuhn"
-      android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
-      # android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "http://onelink.to/6fsxvq" : "http://onelink.to/m5vuhn"
+      # app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
+      app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "http://onelink.to/6fsxvq" : "http://onelink.to/m5vuhn"
+      # android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
+      android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "http://onelink.to/6fsxvq" : "http://onelink.to/m5vuhn"
       
       app_link_web = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
       android_link_web = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
-      if community.tour.tour_setting.enable_header_footer
-        email_content = is_rescheduled ? "Thank you for rescheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download Self Tour app before you arrive: <br> iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}" : "Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}"
-      else
-        email_content = is_rescheduled ? "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/>Thank you for rescheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}" : "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /></div><br/>Thank you for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/> <ul><li>A photo ID</li> <li>Your mobile device with the Pynwheel Self Tour app installed.</li></ul>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br><br> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}"
-      end
-      community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Self Tour" : "Self Tour"
-      web_notification = is_rescheduled ? "<div style='vertical-align:middle; text-align:center'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /></div><br/> Thank you, <b>#{tu.name}</b>! Your reservation is rescheduled. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel Self Tour app before you arrive: <br/> <a href=#{app_link_web} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br><a href=#{android_link_web} target='_blank'>Download Pynwheel Self Tour from Google Play</a>" : "<div style='vertical-align:middle; text-align:center'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /></div><br/> Thank you, <b>#{tu.name}</b>! Your reservation is confirmed. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. Please download the Pynwheel Self Tour app before you arrive: <br/> <a href=#{app_link_web} target='_blank'>Download Pynwheel Self Tour From App Store</a><br><a href=#{android_link_web} target='_blank'>Download Pynwheel Self Tour From Google Play</a>"
-      sms_content = !is_rescheduled ? 
-      "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. When you go to the property, you will need 
-      - A photo ID
-      - Your mobile device with the #{community_text} app installed 
-      iPhone Users: Download #{community_text} from the App Store #{app_link}
-      Android Users: Download #{community_text} from Google Play #{android_link} 
+
       
-      #{community.email_text}" : 
+        if community.tour.tour_setting.enable_header_footer
+          email_content = (property_tour_type == "scheduled_tour" && is_rescheduled) ? "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px;'>Thank you <b>#{tu.name}</b>! for rescheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/></p> </div> <ul><li style='font-size: 18px;'>A photo ID</li> <li style='font-size: 18px;'>Your mobile device with the Pynwheel Self Tour app installed.</li></ul> <div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px;'><b>Please download Self Tour app before you arrive:</b></div>" : 
+          if property_tour_type == "unscheduled_self_tour"
+            "<div style='vertical-align:middle; text-align:center;'><p class='mt-10' style='font-weight: normal; font-size: 18px;'> Thank you, <b>#{tu.name}</b>! We look forward to having you at <b>#{community.name if community.present?}!</b> Our visiting hours are:</p>
+            <p style='text-align:center;font-size: 18px;padding-right: 8%;padding-left: 5%'>#{slot_str}</p><p style='text-align:center;font-size: 18px;'>When you go to the property, you will need a <b>photo ID</b> and a <b>mobile device</b> with the Pynwheel Self Tour app.</p><div style='text-align:center;font-size: 18px;'><b>Please download the Pynwheel Self Tour app before you arrive:</b></p></div>"
+          elsif property_tour_type == "remote_tour"
+            "<div style='vertical-align:middle; text-align:center'><p class='mt-10' style='font-weight: normal; font-size: 18px; '> Thank you <b>#{tu.name}</b>! for choosing to tour <b>#{community.name if community.present?}</b> remotely! You can visit at any time from the comfort of your own home using our mobile app.</p><p style='font-weight: normal; font-size: 18px;'><b>Please download the Pynwheel Self Tour app before you arrive:</b></p></div>"
+          else 
+            "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px;'> Thank you <b>#{tu.name}</b>! for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on  <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need <br/></p></div> <ul><li style='font-size: 18px;'>A photo ID</li><li style='font-size: 18px;'>Your mobile device with the Pynwheel Self Tour app installed.</li></ul><div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px;'><b>Please download Self Tour app before you arrive:</b></div> #{community.email_text.gsub("\n", "<br>").html_safe rescue ""}"
+          end
+        else
+          email_content = (property_tour_type == "scheduled_tour" && is_rescheduled) ? "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /><p style='font-weight: normal; font-size: 18px;'><br/><p class='mt-10' style='font-weight: normal; font-size: 18px;'>Thank you for rescheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need</p></div> <ul><li style='font-size: 18px;'>A photo ID</li> <li style='font-size: 18px;'>Your mobile device with the Pynwheel Self Tour app installed.</li></ul><div style='font-size: 18px;text-align:center'>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>" : 
+          if property_tour_type == "unscheduled_self_tour"
+            "<div style='vertical-align:middle; text-align:center;'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /><br/><p class='mt-10' style='font-weight: normal; font-size: 18px;'> We look forward to having you at <b>#{community.name if community.present?}!</b> Our visiting hours are:<br/>#{slot_str}<br/>When you go to the property, you will need a <b>photo ID</b> and a <b>mobile device</b> with the Pynwheel Self Tour app.</p></div><div style='text-align:center;font-size: 18px;'><b>Please download the Pynwheel Self Tour app before you arrive:</b></p></div>"
+          elsif property_tour_type == "remote_tour"
+            "<div style='vertical-align:middle; text-align:center'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /><br/><p class='mt-10' style='font-weight: normal; font-size: 18px;'> Thank you <b>#{tu.name}</b>! for choosing to tour <b>#{community.name if community.present?}</b> remotely! You can visit at any time from the comfort of your own home using our mobile app.</p><p style='font-weight: normal; font-size: 18px; '><b>Please download the Pynwheel Self Tour app before you arrive:</b></p></div>"
+          else
+            "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo.present? ? community.logo.url : ''}' data-title='#{community.name}' /><br/><p style='font-weight: normal; font-size: 18px;'>Thank you <b>#{tu.name}</b>! for scheduling your tour! We look forward to having you at the <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will </p></div> <br/> <ul><li style='font-size: 18px;'>A photo ID</li> <li style='font-size: 18px;'>Your mobile device with the Pynwheel Self Tour app installed.</li></ul><div style='font-size: 18px;text-align:center'>Please download Self Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div><br/>"
+          end
+        end
+      community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Self Tour" : "Pynwheel Self Tour"
+      web_notification = (property_tour_type == "scheduled_tour" && is_rescheduled) ? "<div style='vertical-align:middle; text-align:center;'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /><br/><p class='mt-10' style='font-weight: normal; font-size: 18px; font-family: Poppins;'>Thank you, <b>#{tu.name}</b>! Your reservation is rescheduled. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b> instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> <br/>at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions.</p><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'><b>Please download the Pynwheel Self Tour app before you arrive:</b></p></div>" : 
+      if property_tour_type == "unscheduled_self_tour"
+        "<div style='vertical-align:middle; text-align:center;'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /><br/><p class='mt-10' style='font-weight: normal; font-size: 18px; font-family: Poppins;'> Thank you, <b>#{tu.name}</b>! We look forward to having you at <b>#{community.name if community.present?}!</b> Our visiting hours are:</p><p style='text-align:center;font-size: 18px;font-family: Poppins !important; padding-right: 8%;padding-left: 5%'>#{slot_str}</p><p style='text-align:center;font-size: 18px;font-family: Poppins !important;'>When you go to the property, you will need a <b>photo ID</b> and a <b>mobile device</b> with the Pynwheel Self Tour app.</p></div><div style='text-align:center;font-size: 18px;font-family: Poppins !important;'><b>Please download the Pynwheel Self Tour app before you arrive:</b></p></div>"
+      elsif property_tour_type == "remote_tour"
+        "<div style='vertical-align:middle; text-align:center'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /><br/><p class='mt-10' style='font-weight: normal; font-size: 18px; font-family: Poppins;'> Thank you, <b>#{tu.name}</b>! for choosing to tour <b>#{community.name if community.present?}</b> remotely! You can visit at any time from the comfort of your own home using our mobile app.</p><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'><b>Please download the Pynwheel Self Tour app before you arrive:</b></p></div>"
+      else
+        "<div style='vertical-align:middle; text-align:center'><img style='max-height: 100px;' src='#{community.logo.present? ? community.logo.url : '/assets/logo-small.png'}' data-title='#{community.name}' /><br/><p class='mt-10' style='font-weight: normal; font-size: 18px; font-family: Poppins;'> Thank you, <b>#{tu.name}</b>! Your reservation is confirmed. We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> <br/>at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. Please keep an eye out for texts and emails with further instructions. </p><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'><b>Please download the Pynwheel Self Tour app before you arrive:</b></p></div>"
+      end 
+      confirmation_page_link = "#{root_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}"
+      (is_rescheduled && property_tour_type == "scheduled_tour") ? schedual_tour.update_attributes(reschedule_notification: web_notification) : schedual_tour.update_attributes(confirmation_notification: web_notification)
+      # iPhone Users: Download #{community_text} from the App Store #{app_link}
+      # Android Users: Download #{community_text} from Google Play #{android_link}
+      sms_content = (is_rescheduled && property_tour_type == "scheduled_tour") ? 
       "Thank you for rescheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")} instead of #{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")} at #{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}. When you go to the property, you will need 
       - A photo ID 
       - Your mobile device with the #{community_text} app installed 
-      iPhone Users: Download #{community_text} from the App Store #{app_link}
-      Android Users: Download #{community_text} from Google Play #{android_link}
+      Download #{community_text} #{app_link}
+      Get information about your tour here: #{confirmation_page_link}
       
-      #{community.email_text}"
+      #{community.email_text}" :
+
+      if property_tour_type == "unscheduled_self_tour"
+        "We look forward to having you at #{community.name if community.present?} ! Our visiting hours are:
+        #{sms_slot_str}
+        When you go to the property, you will need
+        - A photo ID
+        - Your mobile device with the #{community_text} app installed 
+        Download #{community_text} #{app_link} 
+        Get information about your tour here: #{confirmation_page_link}
+        
+        #{community.email_text}"
+      elsif property_tour_type == "remote_tour"
+        "Thank you for choosing to tour #{community.name if community.present?} remotely! You can visit at any time from the comfort of your own home using our mobile app.
+        Download #{community_text} #{app_link} 
+        Get information about your tour here: #{confirmation_page_link}
+        
+        #{community.email_text}"
+
+      else
+        "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. When you go to the property, you will need 
+        - A photo ID
+        - Your mobile device with the #{community_text} app installed 
+        Download #{community_text} #{app_link} 
+        Get information about your tour here: #{confirmation_page_link}
+        
+        #{community.email_text}"
+      end
+
       # sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(#{community.name.humanize if community.present?}) on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions. #{community.email_text}"
 
       # delayed_day_before_content = "We look forward to having you visit our property at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")} tomorrow for your self-guided tour. <br/>Download Pynwheel Self Tour <a href='https://apps.apple.com/us/app/pynwheel/id876032030' target='_blank'> Download Pynwheel Self Tour </a>. <br/><a href='#{schedular_widget_change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}'>Change appointment</a>"
@@ -395,27 +508,45 @@ class SchedualToursController < ApplicationController
       # DelayedSchedulerMailerJob.perform_in(day_before, "Your Tomorrow Tour", delayed_day_before_content, tu.email) if day_before.present?
       # DelayedSchedulerMailerJob.perform_in(hour_before, "Your self-guided tour starts soon!", delayed_hour_before_content, tu.email) if hour_before.present?
 
-      community_mail = is_rescheduled ? "<div style='vertical-align:middle; text-align:center'><img style='width: 150px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Someone has rescheduled a Self Tour at your property <b>#{community.name if community.present?}</b> from  <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b> to <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}" : "<div style='vertical-align:middle; text-align:center'><img style='width: 150px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Someone has scheduled a Self Tour at your property <b>#{community.name if community.present?}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}"
+      community_mail = is_rescheduled && property_tour_type == "scheduled_tour" && (schedual_tour.tour_type == "self_tour" ||  schedual_tour.tour_type == "guided_tour" ) ? "<div style='vertical-align:middle; text-align:center'><img style='width: 150px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>
+      Someone has rescheduled a #{property_tour_type == "scheduled_tour" ? schedual_tour.tour_type.split('_').map(&:capitalize).join(' ') : property_tour_type.split('_').map(&:capitalize).join(' ')} at your property <b>#{community.name if community.present?}</b> from  <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b>at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b> to <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at<b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}" : 
+      "<div style='vertical-align:middle; text-align:center'><img style='width: 150px;' src='#{community.logo.url}' data-title='#{community.name.humanize}' /></div><br/>Someone has scheduled a #{property_tour_type == "scheduled_tour" ? schedual_tour.tour_type.split('_').map(&:capitalize).join(' ') : property_tour_type.split('_').map(&:capitalize).join(' ')} at your property <b>#{community.name if community.present?}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.present? ? schedual_tour.tour_date.strftime("%m %d %Y") : schedual_tour.created_at.strftime("%m %d %Y") }<br>Time: #{Time.parse(schedual_tour.tour_time.present? ? schedual_tour.tour_time.to_s : schedual_tour.created_at.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}"
 
       # NotificationMailer.tour_history_mail("Tour has been scheduled", email_content, tu.email).deliver_later
 
       # DelayedSchedulerMailerJob.perform_async("Tour has been scheduled", email_content, tu.email,"A Self Tour has been scheduled!",community_mail,community.email)if (community.alert_contact == "email" || community.alert_contact == "both")
       emails = community_email.gsub(" ","").split(',')
-      subject1 = is_rescheduled ? "Tour has been rescheduled" : "Tour has been scheduled"
-      subject2 = is_rescheduled ? "A Self Tour has been rescheduled!" : "A Self Tour has been scheduled!"
+      subject1 =  email_subject(is_rescheduled,property_tour_type,schedual_tour,false) 
+      subject2 =  email_subject(is_rescheduled,property_tour_type,schedual_tour,true) #is_rescheduled ? "A Self Tour has been rescheduled!" : "A Self Tour has been scheduled!"
 
-      DelayedSchedulerMailerJob.perform_async(subject1, email_content, tu.email,community,nil,nil,nil,emails[0],true)if (community.alert_contact == "email" || community.alert_contact == "both")
+      DelayedSchedulerMailerJob.perform_async(subject1, email_content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both")
       emails.each do |email|
-        DelayedSchedulerMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,nil,false)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
+        DelayedSchedulerMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,nil,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
       end
       # DelayedSchedulerMailerJob.perform_async("A Self Tour has been scheduled!",community_mail,community.email,nil,nil,nil,nil)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
 
-      sms_notifire sms_content, schedual_tour.tour_user.phone_number if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
+      sms_notifire sms_content, schedual_tour.tour_user.phone_number if (schedual_tour.tour_user.is_sms_enabled && (community.alert_contact == "phone" || community.alert_contact == "both")) rescue nil
 
       {email_content: email_content, web_notification: web_notification, sms_content: sms_content}
       
       # {email_content: email_content, web_notification: web_notification, sms_content: sms_content, delayed_day_before_content: delayed_day_before_content, delayed_hour_before_content: delayed_hour_before_content}
 
+    end
+
+    def email_subject(is_rescheduled,property_tour_type,schedual_tour,community_mail)
+      if is_rescheduled && property_tour_type == "scheduled_tour" && schedual_tour.tour_type == "self_tour"
+        community_mail ? "A Self Tour has been rescheduled!" : "Tour has been rescheduled"
+      elsif property_tour_type == "unscheduled_self_tour"
+        community_mail ? "Unscheduled Self Tour has been confirmed!" : "Tour has been confirmed"
+      elsif property_tour_type == "remote_tour"
+        community_mail ? "Virtual Tour has been confirmed!" : "Remote Tour has been confirmed"
+      elsif !is_rescheduled && property_tour_type == "scheduled_tour" && schedual_tour.tour_type == "guided_tour"
+        community_mail ? "A Guided Tour has been scheduled!" : "Guided Tour has been scheduled"
+      elsif is_rescheduled && property_tour_type == "scheduled_tour" && schedual_tour.tour_type == "guided_tour"
+        community_mail ? "A Guided Tour has been rescheduled!" : "Guided Tour has been rescheduled"
+      else
+        community_mail ? "A Self Tour has been scheduled!" : "Tour has been scheduled"
+      end
     end
 
     # TODO not being used, remove it maybe
@@ -459,7 +590,7 @@ class SchedualToursController < ApplicationController
       account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
       auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
       @client = Twilio::REST::Client.new(account_sid, auth_token)
-      
+      # binding.pry
       
       message = @client.messages
         .create( 

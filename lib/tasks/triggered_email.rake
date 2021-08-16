@@ -5,6 +5,7 @@ namespace :triggered_email do
     tours = SchedualTour.where(tour_date: [(Date.today - 1)..(Date.today + 1)]).where.not(tour_user_id: nil)
     tours.each do |tour|
       community = Community.find tour.community_id
+      schedule_tour = SchedualTour.find_by community_id: community.id
       tu = TourUser.find tour.tour_user_id
       timezone = time_zone community
       current_time = Time.now.in_time_zone(timezone)
@@ -34,7 +35,7 @@ namespace :triggered_email do
         tour.update_column 'missed_email_sent', true
         emails = community.email.split(',')
         emails.each do |email|
-        DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,nil,false)
+        DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,nil,false,schedule_tour)
         # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,emails[0],false)
         end
 
@@ -48,9 +49,9 @@ namespace :triggered_email do
         
         text_msg_with_st = "Hi, #{tu.name.capitalize}! It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. Please click the link below to reschedule. 
 
-#{scheduler_link}
+      #{scheduler_link}
 
-Thank you!"
+      Thank you!"
         
         email_msg_no_st_tour_user = "Hi, #{tu.name.capitalize}! It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. Please contact us to reschedule: 
         <br><a href='mailto:#{community.email.present? ? community.email : ""}'>#{community.email.present? ? community.email : ""}</a>
@@ -58,20 +59,19 @@ Thank you!"
         "
 
         text_msg_no_st_tour_user = "Hi, #{tu.name.capitalize}! It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. Please contact us to reschedule: 
-#{community.phone.present? ? community.phone : ""}
-#{community.email.present? ? community.email : ""}
-        "
+        #{community.phone.present? ? community.phone : ""}
+        #{community.email.present? ? community.email : ""}"
         
         if community.scheduler_widget
           sleep 1
-          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_st, tu.email,community,nil,nil,nil,emails[0],true)
+          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_st, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour)
           # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_schedule_tool, tu.email,community,nil,nil,nil,emails[0],true)
-          DelayedSchedulerTextJob.perform_async(text_msg_with_st, tu.phone_number)
+          DelayedSchedulerTextJob.perform_async(text_msg_with_st, tu.phone_number) if tu.is_sms_enabled
         else
           sleep 1
-          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_no_st_tour_user, tu.email,community,nil,nil,nil,emails[0],true)
+          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_no_st_tour_user, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour)
           # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_tour_user, tu.email,community,nil,nil,nil,emails[0],true)
-          DelayedSchedulerTextJob.perform_async(text_msg_no_st_tour_user, tu.phone_number)
+          DelayedSchedulerTextJob.perform_async(text_msg_no_st_tour_user, tu.phone_number) if tu.is_sms_enabled
         end
       end
       
