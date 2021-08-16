@@ -4021,7 +4021,7 @@ div.mydiv {
     color: white;
     text-align: left;
     border-radius: 6px;
-    padding: 5px 0;
+    padding: 15px 15px;
     position: absolute;
     z-index: 1;
     bottom: 150%;
@@ -4029,7 +4029,6 @@ div.mydiv {
     margin-left: -60px;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 14px;
-    padding: 15px;
     line-height: 1.3;
 }
 
