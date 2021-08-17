@@ -61,17 +61,15 @@ class TourHistory < ApplicationRecord
 
         touruser = self.tour_user
         scheduled_tour = MaxDateScheduledTourService.new(touruser, community, false).get_scheduled_tour rescue community.schedual_tours.where(tour_user_id: touruser.id)
-        if touruser.tour_type == "self_tour" or touruser.tour_type == "virtual_tour"          
-          if touruser.tour_type == "self_tour" && scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
-            scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
-          else
+        if touruser.tour_type == "self_tour" && self.tour_type == "scheduled"          
+          if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
             scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
           end
         end 
-        # if (touruser.tour_type == "self_tour" or touruser.tour_type == "virtual_tour") && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour")
-        #   # scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id)
-        #   scheduled_tour.update_attributes(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
-        # end
+        if touruser.tour_type == "virtual_tour" && self.tour_type == "unscheduled"
+          # scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id)
+          scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
+        end
 
         tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}"
         @complete_tour_content = ["#{community.name} has been visited", "#{touruser.name.capitalize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.capitalize} Visitor Details</a> "]
