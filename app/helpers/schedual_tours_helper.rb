@@ -55,7 +55,36 @@ module SchedualToursHelper
   end
 
   def scheduled_tour_date_time tour
-    tour.present? ? tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p") : ""
+    tour.present? ? tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p") : "" if (tour.tour_date && tour.tour_time).present? 
+  end
+
+  def unscheduled_tour_date_time(scheduled_tour,community)
+    timezone = get_time_zone(community)
+    timezone = timezone || scheduled_tour.user_time_zone
+    scheduled_tour.is_tour_completed && scheduled_tour&.tour_completed_at.present? ? (scheduled_tour.tour_completed_at.in_time_zone(timezone)).strftime("%Y-%m-%d %I:%M%p") : (scheduled_tour.created_at.in_time_zone(timezone)).strftime("%Y-%m-%d %I:%M%p")
+  end
+
+  def scheduled_tour_type tour
+    tour_type = tour.tour_type.split('_').map(&:capitalize).join(' ')
+
+    property_tour_type = tour.property_tour_type == "scheduled_tour" ? tour_type : tour.property_tour_type.present? ? tour.property_tour_type.split('_').map(&:capitalize).join(' ') : tour_type 
+    if property_tour_type == "Remote Tour"
+      "Virtual Tour"
+    elsif property_tour_type == "Unscheduled Self Tour"
+      "Self Tour - Unscheduled"
+    elsif property_tour_type == "Self Tour"
+      "Self Tour - Scheduled"
+    else
+      return property_tour_type
+    end
+  end
+
+  def confirmation_tour_second_card_title(title,property_tour_type,tour_type,id_verification,key,unsched_title)
+    (property_tour_type == "unscheduled_self_tour" && !id_verification && key == 2) || (property_tour_type == "scheduled_tour" && tour_type == "self_tour" && !id_verification && key == 2) ? unsched_title : title
+  end
+
+  def confirmation_tour_second_card_text(text,property_tour_type,tour_type,id_verification,key,unsched_text)
+    (property_tour_type == "unscheduled_self_tour" && !id_verification && key == 2) || (property_tour_type == "scheduled_tour" && tour_type == "self_tour" && !id_verification && key == 2) ? unsched_text : text
   end
 
   def tour_user_name tour_user
@@ -63,15 +92,20 @@ module SchedualToursHelper
   end
 
   def schedule_tour_url community, community_code
-    "#{root_url}scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community_code}&schedual_tours_page=true&direct=true"
+    "#{root_url}scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community_code}&schedule_tours_page=true&direct=true"
   end
 
-  def reschedule_tour tour, community, community_code
-    "#{root_url}scheduler/change_schedule_tour_time/#{tour.id}?datetime=#{scheduled_tour_date_time(tour)}"
+  #Remove it Once new flow is finalized
+  # def reschedule_tour tour, community, community_code
+  #   "#{root_url}scheduler/change_schedule_tour_time/#{tour.id}?datetime=#{scheduled_tour_date_time(tour)}?reschedule_tour=true"
+  # end
+
+  def reschedule_tour tour, community, community_code, tour_user_id
+    "#{root_url}scheduler_widget/test_widget?scheduled_tour_id=#{tour.id}&community_id=#{community.id}&tour_user_id=#{tour_user_id}&reschedule_tour=true&direct=true&community_code=#{community_code}"
   end
 
-  def schedule_tour_of_user community, community_code, tour_user_id
-    "#{root_url}scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community_code}&tour_user_id=#{tour_user_id}&schedual_tours_page=true&direct=true"
+  def schedule_tour_of_user tour, community, community_code, tour_user_id
+    "#{root_url}scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community_code}&tour_user_id=#{tour_user_id}&schedule_tour_id=#{tour.id}&schedule_tours_page=true&schedule_another_tour=true&direct=true"
   end
 
   def is_tour_in_future(community, tour, timezone = nil)
@@ -80,8 +114,11 @@ module SchedualToursHelper
     end
 
     timezone = timezone || tour.user_time_zone
-
-    (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) > Time.now.in_time_zone(timezone)
+    if (tour.tour_date && tour.tour_time).present?
+      (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) > Time.now.in_time_zone(timezone)
+    else
+      return true
+    end
 
   end
 
@@ -96,7 +133,7 @@ module SchedualToursHelper
     timezone
   end
 
-    def get_visible_tour_stops(community, tour)
+  def get_visible_tour_stops(community, tour)
     tour_stops = community.tour.tour_stops
     if tour.present? && tour.stops_list.present?
       tour_stops.where(id: tour.stops_list).pluck(:id)

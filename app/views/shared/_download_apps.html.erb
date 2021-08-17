@@ -1,0 +1,29 @@
+<style type="text/css">
+  .download_app {
+    text-align: center;
+    padding: 1% 0 2%
+  }
+  .app_image {
+		width: 13%;
+	}
+
+  @media only screen and (max-width: 760px) {
+    .download_app {
+      text-align: center;
+      padding: 3% 0 5%;
+    }
+    .app_image {
+      width: 31%;
+    }
+  }
+
+</style>
+
+<div class="container h-100 download_app">
+  <a href="<%=obj[:ios_link]%>", target="_blank">
+    <%=image_tag("ios-store.png", class: "app_image mr-20", alt: "Ios App Link")%>
+  </a>
+  <a href="<%=obj[:android_link]%>", target="_blank">
+    <%=image_tag("android-store.png", class: "app_image", alt: "Android App Link")%>
+  </a>
+</div>

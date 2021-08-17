@@ -17,6 +17,7 @@
 class TourStop < ApplicationRecord
   belongs_to :tour
   belongs_to :stop, polymorphic: true
+
   include StandardUrl
   include RailsSortable::Model
   set_sortable :sort
@@ -28,8 +29,11 @@ class TourStop < ApplicationRecord
 
   has_one :path, as: :map_path
   has_many :path_points, through: :paths
+  belongs_to :unit, dependent: :destroy
   
-  after_destroy :remove_associated_stops
+  before_destroy :remove_associated_stops
+
+  scope :visible, -> { where(display_stop: true) }
 
   def path_data
   	self.stop_type.classify.constantize.path_data

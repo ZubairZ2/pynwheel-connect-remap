@@ -1,4 +1,5 @@
 <style type="text/css">
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
   .form-group input, .form-control input, .form-group select {
     border-color: #8c9192 !important;
   }
@@ -62,6 +63,32 @@
     margin-bottom: 15px;
     width: 100%;
   }
+  .how_it_works {
+    background: #008fd3;
+    text-align: center;
+    color: #fff;
+  }
+  .how_it_works_p {
+    font-size: 18px;
+    font-family: Poppins !important;
+  }
+  .how_it_works h2 {
+    font-size: 32px;
+    font-family: Poppins !important;
+  }
+  .confirmation-text {
+    padding: 2% 0 0;
+  }
+  .continue_link {
+    cursor: pointer;
+    font-size: 18px;
+  }
+  @media only screen and (max-width: 760px) {
+    .how_it_works_p{
+      font-size: 17px;
+      font-family: Poppins !important;
+    }
+  }
   @media only screen and (max-width: 560px) {
     .Pyn_Modal{
         background: #fff;
@@ -94,6 +121,7 @@
     <%= javascript_include_tag 'bootstrap-datetimepicker' %>
     <%= favicon_link_tag 'logo-small.png' %>
     <%= render '/font_awesome_v5' %>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
   </head>
   
   <body>
@@ -119,38 +147,63 @@
         </section>
       </div>
     </div>
-
-    <div class="modal fade" id="scheduleMyTourSuccess" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-      aria-hidden="true">
-      <div class="modal-dialog" role="document">
+      <div id="scheduleMyTourSuccess" tabindex="-1" aria-hidden="true">
         <section>
-          <div class="Pyn_Modal">
+          <div class="container confirmation-text">
             <p id="reschedule-content" style="font-weight: normal; font-size: 20px;"></p>
-            <div class="clearfix"></div>
-            <% if user_signed_in? %>
-              <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">Ok</button>
-            <% else %>
-              <button class="btn_popup" id="close">Ok</button>
-            <% end %>
           </div>
         </section>
+        <section >
+          <%= render 'shared/download_apps', :obj => {:ios_link => ios_link, :android_link => android_link } %>
+          <section class="container">
+            <div style="float: right;">
+              <% if user_signed_in? %>
+                <a onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')" class="continue_link">Continue <%= '<i class="fa fa-long-arrow-right" aria-hidden="true"></i>'.html_safe %></a>
+              <% end %>
+            </div>
+        </section>
+          <section class="mt-15">
+            <div class="container how_it_works">
+                <%= render 'shared/instruction_card', :obj => {property_tour_type: property_tour_type,community_name: community_name,tour_type: tour_type} %>
+            </div>
+          </section>
       </div>
-    </div>
+    <%# TODO: Remove after verification of confirmation page  %>
+    <% if false %>
+      <div class="modal fade" id="scheduleMyTourSuccess" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <section>
+            <div class="Pyn_Modal">
+              <p id="reschedule-content" style="font-weight: normal; font-size: 20px;"></p>
+              <div class="clearfix"></div>
+              <% if user_signed_in? %>
+                <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">Ok</button>
+              <% else %>
+                <button class="btn_popup" id="close">Ok</button>
+              <% end %>
+            </div>
+          </section>
+        </div>
+      </div>
+    <%end%>
 
     <script type="text/javascript">
+      $("#scheduleMyTourSuccess").hide();
       var success = "<%= flash[:success]  %>";
       var community_id = "<%= @community.id %>";
 
       <% flash[:success] = "" %>
       if(success){
         $("#modalLoginForm").modal('hide');
-        $("#scheduleMyTourSuccess").modal()
-        $("html, body").animate({ scrollTop: 0 }, 600);
+        $("#scheduleMyTourSuccess").show();
+        // $("html, body").animate({ scrollTop: 0 }, 600);
       }
 
       var tour_id;
 
       $(document).ready(function(){
+        $("#scheduleMyTourSuccess").hide();
         $('#scheduleMyTour').modal({backdrop: 'static', keyboard: false})  
 
         // $(".datepicker").datetimepicker({minDate: new Date(), format: 'MM/DD/YYYY'});
@@ -181,8 +234,8 @@
             cache: false,
             success: function(data){
               $("#reschedule-content").html(data.message)
-              $("#scheduleMyTourForm").modal('hide');
-              $("#scheduleMyTourSuccess").modal()
+              $("#scheduleMyTour").modal('hide');
+              $("#scheduleMyTourSuccess").show();
             },
             fail: function(error){
               console.log(error)
@@ -215,7 +268,7 @@
 
 
         $("#close").on('click', function(){
-          $("#scheduleMyTourSuccess").modal('hide')
+          $("#scheduleMyTourSuccess").hide()
           // window.location.reload();
         });
 

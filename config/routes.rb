@@ -15,11 +15,11 @@ Rails.application.routes.draw do
 
   post '/schedual_tours/:id', to: 'schedual_tours#update', format: :json
   post '/destroy_schedual_tours/:id', to: 'schedual_tours#destroy', format: :json
-  # post '/update_tour_type', to: 'schedual_tours#update_tour_type', format: :json
   resources :schedual_tours do
     # post :create_tour_user_from
     # member do
     # end
+    get :get_tour_type, on: :collection
   end
   post :map_dwelo_locks, to: 'dwelos#map_dwelo_locks'
   # selfie matching
@@ -33,6 +33,7 @@ Rails.application.routes.draw do
   namespace :scheduler_widget do
     get 'widget', to: 'widgets#widget'
     get 'test_widget', to: 'widgets#test_widget'
+    get 'confirmation_instructions', to: 'widgets#confirmation_instructions'
     get 'scheduler_widget_button', to: 'widgets#scheduler_widget_button'
 
     # get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time

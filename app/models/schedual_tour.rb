@@ -22,9 +22,9 @@ class SchedualTour < ApplicationRecord
   belongs_to :tour, optional: true
   belongs_to :community, optional: true
 
-  validates :tour_date, presence: true
-  validates :tour_type, presence: true
-  validates :tour_time, presence: true
+  # validates :tour_date, presence: true
+  # validates :tour_type, presence: true
+  # validates :tour_time, presence: true
 
   scope :desc_created_at, -> {order(created_at: :desc)}
 
