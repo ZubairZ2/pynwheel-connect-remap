@@ -289,6 +289,7 @@
   var already_watched = [];
   var automateTracking = true;
   var is_community_sitemap = false;
+  var tempVisitedStopsData = [];
 
   setTimeout(function(){
     draw_image_canvas(null);
@@ -467,7 +468,6 @@
     is_community_sitemap = is_sitemap;
 
     var tour_history_id = $('#tour_histories_dates :selected').val()
-    $("#tour_histories_dates").attr("disabled", true);
     var dwelo_id;
     if(#{@community.dwelo.present?}){
      dwelo_id = "present"
@@ -534,6 +534,7 @@
           else {
             buildingsArray = data.buildings;
             floorsArray = data.floors;
+            tempVisitedStopsData = data.stops;
 
             buildingIndex = 0;
             floorIndex = 0;
@@ -574,6 +575,7 @@
               visited_units_amenities_count = 0;
               indexesArr = [];
               diableButtons();
+              debugger;
               if(this.id.includes("building")) {
                 $('.building_btn').each(function( index, item ) { item.style.background = ""; $('#'+item.id).removeClass('selected_building');});
                 this.style.background = "green";
@@ -589,7 +591,7 @@
                 this.style.background = "green";
                 $('#'+this.id).addClass('selected_floor');
               }
-              //debugger;
+
               selected_building = $('.selected_building').text();
               selected_floor = $('.selected_floor').text();
               selected_floor = (selected_floor == first_floor ? [selected_floor, "", null] : [selected_floor])
@@ -626,16 +628,6 @@
                 tourStartingPoint = false;
                 final_stops.push(data.stops[0]);
               }
-
-             /* if(selected_building[0] === data.buildings[0] && parseInt(selected_floor[0]) === data.floors[0]) {
-                for(var s = 0; s < data.stops.length; s++) {
-                  let currentBuilding = getCurrentBuilding(data.stops[s], selected_building);
-                  if(data.stops[s] && data.stops[s][2] == "building_starting_point" && currentBuilding) {
-                    final_stops.push(data.stops[s]);
-                    break;
-                  }
-                }
-              }*/
 
               for(var s = 0; s < data.stops.length; s++) {
                 current_stop = data.stops[s];
@@ -874,35 +866,59 @@
 
   function automateUserTracking() {
     if(buildingIndex < buildingsArray.length && automateTracking) {
-      if(floorIndex < floorsArray.length) {
-        
-
+      if(floorIndex < floorsArray.length) {      
         if(floorIndex === (floorsArray.length -1)) {
-          setTimeout(function() {
-            $(`#building_${buildingsArray[buildingIndex]}`).click();
-          }, 1000);
-
           buildingIndex = buildingIndex + 1;
-
-          // Check if animation is completed
-          if(buildingIndex > (buildingsArray.length - 1)) {
-            enableAnimationBtns();
-            $("#tour_histories_dates").attr("disabled", false);
-            automateTracking = false;
-            setTimeout(function(){$('.popover').popover('hide')}, 5000);
-          }
-
           floorIndex = 0;
+          disableAutomateTracking();
+          animateToNextFloor();
 
         } else {
-          setTimeout(function() {
-            $(`#floor_${floorsArray[floorIndex]}`).click();
-          }, 1000);
-
           floorIndex = floorIndex + 1;
+          animateToNextFloor();
         }
       }
     }
+  }
+
+  function disableAutomateTracking() {
+    if(buildingIndex > (buildingsArray.length - 1)) {
+      enableAnimationBtns();
+      $("#tour_histories_dates").attr("disabled", false);
+      automateTracking = false;
+      setTimeout(function(){$('.popover').popover('hide')}, 5000);
+    }
+  }
+
+  function animateToNextFloor() {
+    if(checkNextFloor()) {
+      setTimeout(function() {
+        if(buildingsArray[buildingIndex]) {
+          $('.building_btn').each(function( index, item ) { item.style.background = ""; $('#'+item.id).removeClass('selected_building');});
+          $('#building_'+buildingsArray[buildingIndex])[0].style.background = "green";
+          $('#building_'+buildingsArray[buildingIndex]).addClass('selected_building');
+        }
+
+        $(`#floor_${floorsArray[floorIndex]}`).click();
+      }, 1000);
+    } else {
+      automateUserTracking();
+    }
+  }
+
+  function checkNextFloor() {
+    let isToDisplay = false
+
+    for(let s = 0; s < tempVisitedStopsData.length; s++) {
+      let currentFloor = ( tempVisitedStopsData[s] && (String(floorsArray[floorIndex]) ==  String(tempVisitedStopsData[s][1].floor) ) )
+      let currentBuilding = ( tempVisitedStopsData[s] && (String(buildingsArray[buildingIndex]) ==  String(tempVisitedStopsData[s][1].building) ) )
+
+      if( currentFloor && currentBuilding && tempVisitedStopsData[s] && (tempVisitedStopsData[s][2] === "unit" || tempVisitedStopsData[s][2] === "amenity")) {
+        isToDisplay = true 
+      }
+    }
+
+    return isToDisplay;
   }
 
   function enableAnimationBtns() {
