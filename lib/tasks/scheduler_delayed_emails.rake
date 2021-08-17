@@ -147,9 +147,9 @@ namespace :delayed_email_notifications do
 
 	def one_day_before_emails schedual_tours
 
-		schedual_tours.each do |schedual_tour|
+	schedual_tours.each do |schedual_tour|
 	
-		  begin
+	begin
 
 	  tu = schedual_tour.tour_user
 	  community = schedual_tour.community
@@ -190,7 +190,7 @@ namespace :delayed_email_notifications do
 
 		# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	  end
-  rescue => ex
+  	rescue => ex
   end
 
   end
