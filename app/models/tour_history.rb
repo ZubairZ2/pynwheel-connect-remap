@@ -60,15 +60,15 @@ class TourHistory < ApplicationRecord
         # @mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}" + "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
 
         touruser = self.tour_user
-        scheduled_tour = MaxDateScheduledTourService.new(touruser, community, false).get_scheduled_tour rescue community.schedual_tours.where(tour_user_id: touruser.id)
-        if touruser.tour_type == "self_tour" && self.tour_type == "scheduled"          
+        scheduled_tour = MaxDateScheduledTourService.new(touruser, community, false).get_scheduled_tour rescue community.schedual_tours.where(tour_user_id: touruser.id).last
+        if touruser.tour_type == "self_tour" && scheduled_tour.property_tour_type == "scheduled_tour"          
           if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
-            scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
+            scheduled_tour.update_attributes(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
           end
         end 
-        if touruser.tour_type == "virtual_tour" && self.tour_type == "unscheduled"
+        if touruser.tour_type == "virtual_tour" && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour")
           # scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id)
-          scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
+          scheduled_tour.update_attributes(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
         end
 
         tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}"
