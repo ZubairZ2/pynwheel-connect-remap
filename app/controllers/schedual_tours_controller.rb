@@ -89,8 +89,9 @@ class SchedualToursController < ApplicationController
         new_tour.save
       end
       schedual_tour = MaxDateScheduledTourService.new(tu, community, true).get_scheduled_tour
-      # binding.pry
-      unless schedual_tour.present?
+      if schedual_tour.present?
+        new_tour.update(stops_list: schedual_tour.stops_list)
+      else
         scheduled_tours = community.schedual_tours.where(tour_user_id: tu.id)
         
         if scheduled_tours.present?
@@ -98,7 +99,6 @@ class SchedualToursController < ApplicationController
         end
       end
 
-      binding.pry
       schedual_tour = (schedual_tour.present? && !schedual_tour.is_tour_completed) ? schedual_tour : new_tour
 
       response = @community.use_yardi_as_lead? ? do_yardi_schedule_tour(schedual_tour,tu,params[:desired_move_in_date]) : nil
