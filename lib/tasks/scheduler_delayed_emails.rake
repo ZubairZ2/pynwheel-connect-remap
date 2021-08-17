@@ -152,7 +152,7 @@ namespace :delayed_email_notifications do
 		  begin
 
 	  tu = schedual_tour.tour_user
-		community = schedual_tour.community
+	  community = schedual_tour.community
 	  community_code = (JWT.encode ({"community_id" => community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256') if community.present?
 	  community_email = community.email.present? ? community.email : 'info@pynwheel.com'
 		# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sending Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
