@@ -529,7 +529,7 @@ textarea {
 
 .reshedule-notification {
     color: red;
-    display: none !important;
+    display: none;
 }
 
 .expired_tour_text {

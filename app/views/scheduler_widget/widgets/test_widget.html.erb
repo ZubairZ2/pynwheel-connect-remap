@@ -592,6 +592,8 @@
         }
       })
 
+      verification_type_authenteq = ($("#verification_type_authenteq").val() == "true") ? true : false
+
       $('.select_property_tour').change(function() {
         if (this.value == 'remote_tour'){
           $(".tour_date").addClass('hidden');
@@ -600,6 +602,9 @@
           $('#tour_date')[0].required = false;
           $('#tour_time')[0].required = false;
           $('#tour_type')[0].required = false;
+          if(verification_type_authenteq){
+            $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)")
+          }
         }
         else if (this.value == 'unscheduled_self_tour') {
           $(".tour_date").addClass('hidden');
@@ -608,6 +613,9 @@
           $('#tour_date')[0].required = false;
           $('#tour_time')[0].required = false;
           $('#tour_type')[0].required = false;
+          if(verification_type_authenteq){
+            $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.")
+          }
         }
         else if (this.value == 'scheduled_tour') {
           $(".tour_date").removeClass('hidden');
@@ -616,6 +624,9 @@
           $('#tour_date')[0].required = true;
           $('#tour_time')[0].required = true;
           $('#tour_type')[0].required = true;
+          if(verification_type_authenteq){
+            $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.")
+          }
         }
       })
 
@@ -1038,10 +1049,10 @@
             $("#confirm_reservation").css('opacity', 1)
           }
           verification_type_authenteq = ($("#verification_type_authenteq").val() == "true") ? true : false
-          if(tour_type == "virtual_tour"){
+          if($('.select_property_tour').val() == "remote_tour"){
             $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)")
           }
-          else if (verification_type_authenteq){
+          else if (verification_type_authenteq && $('.select_property_tour').val() != "remote_tour" ){
            $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.") 
           }
           add_or_remove_question_mark(tour_type)
