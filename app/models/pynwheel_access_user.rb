@@ -32,10 +32,10 @@ class PynwheelAccessUser < ApplicationRecord
   def generate_access_hash access, type
     {
       stop_id: access.id,
-      stop_name: (type === "unit" ? access.marketing_name : access.name),
+      stop_name: (type === "unit" ? "Unit: #{access.marketing_name}" : access.name),
       stop_type: type,
       lock_type: access.lock_provider,
-      last_access: Time.now - 5.minutes,
+      last_access: Time.now.strftime("%a, %d %b %Y %I:%M %p"),
       guest_pin: '',
       latch_link: '',
       unit_dwelo_lock_id: 123,
