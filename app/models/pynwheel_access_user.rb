@@ -30,18 +30,43 @@ class PynwheelAccessUser < ApplicationRecord
   private
 
   def generate_access_hash access, type
+
     {
       stop_id: access.id,
       stop_name: (type === "unit" ? "Unit: #{access.marketing_name}" : access.name),
       stop_type: type,
       lock_type: access.lock_provider,
       last_access: Time.now.strftime("%a, %d %b %Y %I:%M %p"),
+    }.merge(lock_provider_data(access, type))
+  end
+
+  def lock_provider_data access, type
+    case access.lock_provider
+    when "Dwelo"
+      get_dwelo_lock_data(access)
+    when "Latch"
+      {}
+    when "EdgeState"
+      {}
+    when "Zerv"
+      {}
+    when "Manual"
+      {}
+    else
+      {}
+    end
+  end
+
+  def get_dwelo_lock_data access_stop
+    dwelo_lock = access_stop.remote_locks.where.not(dwelo_id: nil).last rescue nil
+    {
       guest_pin: '',
       latch_link: '',
-      unit_dwelo_lock_id: 123,
-      message: "Unlock the door"
+      unit_dwelo_lock_id: dwelo_lock.device_id,
+      message: "Please use given dwelo lock Id to unlock the lock",
     }
   end
+
 
   def get_access_points
     self.resident_access_points.pluck(:access_point_type, :access_point_id)
