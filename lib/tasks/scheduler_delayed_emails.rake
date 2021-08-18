@@ -170,9 +170,9 @@ namespace :delayed_email_notifications do
 			  content = "<div style='vertical-align:middle; text-align:center'><img style='height: 55px;' src='#{community.logo.url}' data-title='#{community.name}' /></div><br/>Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive. <br> iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_day_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 		  end
 		  sms_content = "Don't forget! You have an appointment for a Self Tour tomorrow at #{community.name if community.present?} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive.
-		  Download The #{community_text} #{one_link}
-		  Change appointment #{reschedule_tour(schedual_tour, community, community_code, tu.id)}
-		  Get information about your tour here: #{confirmation_page_link}
+Download The #{community_text} #{one_link}
+Change appointment #{reschedule_tour(schedual_tour, community, community_code, tu.id)}
+Get information about your tour here: #{confirmation_page_link}
 		  #{community.one_day_email_text}"
 		  # Change appointment #{change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}
 		  # iPhone Users: Download #{community_text} from the App Store. #{app_link}
@@ -228,10 +228,7 @@ namespace :delayed_email_notifications do
 					  content = "<div style='vertical-align:middle; text-align:center'><img style='height: 55px;' src='#{community.logo.url}' data-title='#{community.name}' /></div><br/>Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a> <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 				  end
 				  sms_content = "Your tour starts soon!
-				  Here are directions to #{community.name}  https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}
-				  When you arrive at the property, open the #{community_text} app to begin your tour.
-				  Open #{community_text} #{one_link}
-				  Get information about your tour here: #{confirmation_page_link}
+				  Here are directions to #{community.name}  https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude} #{"\n"} When you arrive at the property, open the #{community_text} app to begin your tour. #{"\n"} #{"\n"} Open #{community_text} #{one_link} #{"\n"} #{"\n"} Get information about your tour here: #{confirmation_page_link}
 				  #{community.one_hour_email_text}"
 				  # "Your self-guided tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>Open #{community_text} for iPhones <a href=#{app_link} target='_blank'>link</a><br>Open #{community_text} for Android <a href=#{app_link} target='_blank'>link</a> <br>#{community.one_hour_email_text}"
 				  # Open #{community_text} for iPhones #{app_link}
