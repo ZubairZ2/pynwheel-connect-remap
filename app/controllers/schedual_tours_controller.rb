@@ -300,6 +300,8 @@ class SchedualToursController < ApplicationController
   end
 
   def update
+    tu = @schedual_tour.tour_user
+    tu.is_sms_enabled = params[:tour_user][:is_sms_enabled] == "0" ? false : true
     # date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
     date = Date.strptime(params[:tour_date], '%m/%d/%Y') if params[:tour_date].is_a? String
     time = Time.zone.parse(params[:tour_time]) if params[:tour_time].is_a? String
@@ -413,12 +415,13 @@ class SchedualToursController < ApplicationController
       slot_str = ""
       sms_slot_str = ""
       @community_opening_hours.each do |slot|
-        time_slot << {"#{slot.day[0..2]}": "#{Time.zone.parse(slot.opening_time).strftime("%I:%M%p")}-#{Time.zone.parse(slot.closing_time).strftime("%I:%M%p")}"}
+        time_slot << {"#{slot.day[0..2]}": "#{Time.zone.parse(slot.opening_time).strftime("%I:%M%p")} - #{Time.zone.parse(slot.closing_time).strftime("%I:%M%p")}"}
       end
       merged_slots = time_slot.each_with_object({}) { |h, o| h.each { |k,v| (o[k] ||= []) << v } }
+      # binding.pry
       merged_slots.each do |k,v|
-        slot_str += "<b>#{k}:</b> #{v.join(' and ')}, "
-        sms_slot_str += "#{k}: #{v.join(' and ')}, "
+        slot_str += "<b>#{k}:</b> #{v.join(' and ')}#{merged_slots.keys.last == k ? "" : ", "}"
+        sms_slot_str += "#{k}: #{v.join(' and ')}#{merged_slots.keys.last == k ? "" : "\n"}"
       end
 
       puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{params}---"
@@ -466,31 +469,30 @@ class SchedualToursController < ApplicationController
       # iPhone Users: Download #{community_text} from the App Store #{app_link}
       # Android Users: Download #{community_text} from Google Play #{android_link}
       sms_content = (is_rescheduled && property_tour_type == "scheduled_tour") ? 
-      "Thank you for rescheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")} instead of #{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")} at #{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}. When you go to the property, you will need 
+      "Thank you for rescheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")} instead of #{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")} at #{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}.#{"\n"} When you go to the property, you will need 
       - A photo ID 
-      - Your mobile device with the #{community_text} app installed 
-      Download #{community_text} #{app_link}
-      Get information about your tour here: #{confirmation_page_link}" :
+      - Your mobile device with the #{community_text} app installed#{"\n"}
+Download #{community_text} #{app_link}#{"\n"}
+Get information about your tour here: #{confirmation_page_link}" :
 
       if property_tour_type == "unscheduled_self_tour"
         "We look forward to having you at #{community.name if community.present?} ! Our visiting hours are:
-        #{sms_slot_str}
-        When you go to the property, you will need
-        - A photo ID
-        - Your mobile device with the #{community_text} app installed 
-        Download #{community_text} #{app_link} 
-        Get information about your tour here: #{confirmation_page_link}"
+#{sms_slot_str} #{"\n"} #{"\n"} When you go to the property, you will need
+            - A photo ID
+            - Your mobile device with the #{community_text} app installed#{"\n"}
+Download #{community_text} #{app_link}#{"\n"}
+Get information about your tour here: #{confirmation_page_link}"
       elsif property_tour_type == "remote_tour"
-        "Thank you for choosing to tour #{community.name if community.present?} remotely! You can visit at any time from the comfort of your own home using our mobile app.
-        Download #{community_text} #{app_link} 
-        Get information about your tour here: #{confirmation_page_link}"
+        "Thank you for choosing to tour #{community.name if community.present?} remotely! You can visit at any time from the comfort of your own home using our mobile app.#{"\n"}
+Download #{community_text} #{app_link}#{"\n"}
+Get information about your tour here: #{confirmation_page_link}"
 
       else
-        "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. When you go to the property, you will need 
+        "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}.#{"\n"} When you go to the property, you will need 
         - A photo ID
-        - Your mobile device with the #{community_text} app installed 
-        Download #{community_text} #{app_link} 
-        Get information about your tour here: #{confirmation_page_link}"
+        - Your mobile device with the #{community_text} app installed#{"\n"}
+Download #{community_text} #{app_link}#{"\n"}
+Get information about your tour here: #{confirmation_page_link}"
       end
 
       # sms_content = "Thank you, #{tu.name}! Your Self-Guided Tour Reservation is confirmed. We look forward to having you at the property(#{community.name.humanize if community.present?}) on  #{schedual_tour.tour_date.strftime("%A, %d %b %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}. Please keep an eye out for texts and emails with further instructions. #{community.email_text}"
