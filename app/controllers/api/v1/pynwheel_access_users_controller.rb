@@ -95,7 +95,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
         puts "--------------------------- commands request ----------------------------"
         puts request_body
-
+        
         url = base_url + "/v4/integrations/pynwheel/devices/commands/"
         response = HTTParty.post(url,
                                 body: {
@@ -109,7 +109,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
         puts "--------------------------- commands response ----------------------------"
         puts response
-
+        
         if response.nil?
           render :json => {:success => true, :message => "Success"}
         else
@@ -129,43 +129,93 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   private
 
-  def dwelo_lock_access()
+  def dwelo_lock_access
     Thread.new do
       begin
-      
-
+      # tour_user = TourUser.find params[:tour_user_id]
+      # @pynwheel_access_user.update_column 'dwelo_status' , 'in progress'
       @community = @pynwheel_access_user.community
       providers_account = Dwelo.find_by(community_id: @community.id) rescue nil
+      current_time = current_community_time(@community)
       access_token = dwelo_client_credentials(providers_account)
+      prev_data = @pynwheel_access_user.as_guests.find_by(community_id: @community.id)
       
-      
-
-      response = create_dwelo_access_guest(access_token)
-      @pynwheel_access_user.update_attributes!(guest_id: response["id"])
+      # ----------- creating a guest for remote lock (type = locks) ----------------- #
+      unless prev_data.present? 
+        response = create_dwelo_access_guest(access_token)
+        dwelo_tour_user = @pynwheel_access_user.as_guests.create!(community_id: @community.id,  guest_id: response["id"], dwelo_guest: true)
+      else
+        delete_dwelo_access_guest(access_token, prev_data.guest_id)
+        response = create_dwelo_access_guest(access_token)
+        prev_data.update_attributes!(guest_id: response["id"])
+      end
 
       allowed_stops = locks_with_same_type("Dwelo")
-      
 
       dwelo = Dwelo.find_by(community_id: @community.id)
       locks = RemoteLock.where(stop_id: allowed_stops, dwelo_id: dwelo.id).pluck(:device_id, :remote_lock_type)
       
       if locks.present?
-        pynwheel_access_user_guest_id = @pynwheel_access_user.guest_id
-        
+        pynwheel_access_guest_id = @pynwheel_access_user.as_guests.find_by(community_id: @community.id).guest_id
+
         locks.each do |lock|
-          grant_dwelo_user_access(access_token, pynwheel_access_user_guest_id, lock[0])
+          grant_dwelo_user_access(access_token, pynwheel_access_guest_id, lock[0])
         end
       end
+      
+      # @pynwheel_access_user.update_column 'dwelo_status' , 'complete'
 
-    rescue => ex
+      rescue => ex
+        # @pynwheel_access_user.update_column 'dwelo_status' , 'complete'
         puts "--------- Dwelo error -------- ", ex
       end
-
     end
   end
 
+  def current_community_time(community)
+    timezone = get_community_time_zone(community)
+    (timezone != "UTC") ? Time.now.in_time_zone(timezone) : Time.now.utc
+  end
+
+  def get_community_time_zone(community)
+    tz = Ziptz.new
+    timezone = nil
+
+    if community.latitude.present? and community.longitude.present?
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and community.zip.present?
+        timezone = tz.time_zone_name(community.zip)
+    end
+
+    return timezone.present? ? timezone : "UTC"
+  rescue
+    return "UTC"
+  end
+
+
   def base_url
     @pynwheel_access_user&.community&.dwelo&.api_url
+  end
+
+  def delete_dwelo_access_guest(access_token, guest_id)
+
+    token_type = "Bearer"
+    auth_header = token_type + " " + access_token
+
+    url = base_url + "/v4/integrations/pynwheel/access_persons/"
+
+    response = HTTParty.delete(url,
+                               :headers => {'Authorization' => auth_header,
+                                            'Accept' => 'application/vnd.lockstate+json; version=1',
+                                            'Content-Type' => 'application/json'},
+                               :body => [guest_id].to_json)
+
+
+    return response
+
   end
 
   def grant_dwelo_user_access(access_token, access_person_id, accessible_id)
@@ -189,12 +239,13 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     
     puts "------------------- create grant_access_person_accesses response -----------------------"
     puts response
+    puts auth_header
     puts "----------------------------------------------------------------------------------------"
     
     return response
 
   end
-
+  
   def locks_with_same_type type, allowed_stops = []
     available_stops = @pynwheel_access_user.resident_access_points.pluck(:access_point_type, :access_point_id)
      
@@ -260,9 +311,6 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
       get_token_response["access_token"]
     end
   end
-
-
-  
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
