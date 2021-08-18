@@ -179,8 +179,9 @@ Change appointment #{change_tour_time_url(schedual_tour)}?datetime=#{get_date_ti
 			diff = (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(schedual_tour.user_time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y"))) 
 			schedual_tour.update_columns(daily_email_sent: true) if diff == 1
 			emails = community_email.gsub(" ","").split(',')
-			DelayedSchedulerMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true) if (diff == 1 && !(community.alert_contact == "phone"))
-			DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if (diff == 1 && !(community.alert_contact == "email"))
+
+			DelayedSchedulerMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true) if (diff == 1 && !(community.alert_contact == "phone") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
+			DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if (diff == 1 && !(community.alert_contact == "email") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
 
 	  	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		end
@@ -227,8 +228,8 @@ Open #{community_text} for Android #{android_link}
 					# "Your self-guided tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>Open #{community_text} for iPhones <a href=#{app_link} target='_blank'>link</a><br>Open #{community_text} for Android <a href=#{app_link} target='_blank'>link</a> <br>#{community.one_hour_email_text}"
 					schedual_tour.update_columns(hourly_email_sent: true)
 					emails = community_email.gsub(" ","").split(',')
-					DelayedSchedulerMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true) if !(community.alert_contact == "phone")
-					DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if !(community.alert_contact == "email")
+					DelayedSchedulerMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true) if !(community.alert_contact == "phone") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce")
+					DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if !(community.alert_contact == "email") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce")
 
 			  	# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 			  end

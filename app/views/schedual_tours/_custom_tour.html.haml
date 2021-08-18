@@ -25,11 +25,13 @@
 
       .modal-footer
         - if tour.is_tour_completed
-          %a.btn.btn-success.pull-right{:href => schedule_tour_of_user(community, community_code, tour_user.id)} Schedule Another Tour
+          - if tour.created_by != "salesforce"
+            %a.btn.btn-success.pull-right{:href => schedule_tour_of_user(community, community_code, tour_user.id)} Schedule Another Tour
 
         - else
           - if is_tour_in_future(community, tour)
-            %a.btn.btn-success{:href => reschedule_tour(tour, community, community_code)} Reschedule Tour
+            - if tour.created_by != "salesforce"
+              %a.btn.btn-success{:href => reschedule_tour(tour, community, community_code)} Reschedule Tour
             %a.btn.btn-primary{"data-target" => "#customizeStopsModal#{tour.id}", "data-toggle" => "modal", :href => "#"} Customize Tour
 
           - if is_tour_customized(tour)
