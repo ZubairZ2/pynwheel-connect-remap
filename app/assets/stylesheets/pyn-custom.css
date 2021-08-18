@@ -4929,3 +4929,13 @@ input:checked+.slider:before {
 .visitor-popover {
     top: -98px !important;
 }
+.disable_btn{
+  pointer-events: none;
+}
+.disable_btn:hover{
+  cursor: not-allowed !important;   
+}
+.enable_btn{
+  pointer-events: default;
+  cursor: default; 
+}

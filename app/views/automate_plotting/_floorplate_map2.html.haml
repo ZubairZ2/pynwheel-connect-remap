@@ -15,7 +15,7 @@
     - begin
       %h3 Select a Floor
       - @floors.sort.each do |f|
-        %a.btn-default{:href => "/automate_plotting?community_id="+@community.id.to_s+"&floorNo="+ "#{f}", :style => "display: inline-block;width: 33px;height: 25px;background: #{@floor.first.to_i == f ? "#49d849;" : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;"} #{f}
+        %a.btn-default.floor_btn{:href => "javascript:void(0)", :style => "display: inline-block;width: 33px;height: 25px;background: #{@floors.first.to_i == f ? "#49d849;" : "#e0e0e0;"} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold;", "data-floor_id" => "#{f.to_i}" } #{f}
     - rescue
       - puts "rescued"
     .btn-btn-danger.mt-10
@@ -30,19 +30,14 @@
                 Add Access point in hallways that are not associated with any specific unit or amenity- if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
       - if @community.self_tour and @community.auto_wayfinding
         //%button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting')"}Run Algo
+        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(true, 'sorting', false)"}Run Algo
   = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
   - # render map of each floor
   - @floors.each do |floor|
     = render :partial=>'show_map', :locals => {floor: floor}
 
 :javascript
-  $(document).ready(function () {
-    document.addEventListener("touchstart", touchHandler, true);
-    document.addEventListener("touchmove", touchHandler, true);
-    document.addEventListener("touchend", touchHandler, true);
-    document.addEventListener("touchcancel", touchHandler, true);
-    let elem = document.querySelector('#map');
+  function apply_zoom_functionality_against_floor(map_id_for_zoom ,elem){
     window.mapPanZoom = panzoom(elem, {
         minZoom: 0.5,
         maxZoom: 1.0,
@@ -52,7 +47,7 @@
     var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
     var scaleFactor = (1 / (transform.scale || 1));
     var previous_scale = 0;
-    while ($('#map').width() / scaleFactor > $('.map-block').width() || $('#map').height() / scaleFactor > $('.map-block').height()) {
+    while ($(map_id_for_zoom).width() / scaleFactor > $('.map-block').width() || $(map_id_for_zoom).height() / scaleFactor > $('.map-block').height()) {
         mapPanZoom.zoomInOut(189);
         transform = mapPanZoom ? mapPanZoom.getTransform() : {};
         scaleFactor = (1 / (transform.scale || 1));
@@ -62,7 +57,7 @@
         previous_scale = scaleFactor
     }
     mapPanZoom.moveTo(0, 0);
-    })
+  }
 
   function touchHandler(event) {
     var touch = event.changedTouches[0];
@@ -100,17 +95,37 @@
   var addmode = false;
   var adddoorsmode = false;
   var accesspointplot = false;
-  
+
   $( document ).ready(function() {
-    for (var i = 0; i < floors.length; i++) {
-      delayed(400, function (i) {
-        return function () {
-          console.log("j times:", i)
-          fp_id = floor_to_floorplate_id[floors[i]]
-          map = "map_" + floors[i]
-          hallways_coordinates = hallways[floors[i]]
-          draw_initial_hallways(hallways_coordinates, map)
-        };
-      }(i));      
-    }
+    document.addEventListener("touchstart", touchHandler, true);
+    document.addEventListener("touchmove", touchHandler, true);
+    document.addEventListener("touchend", touchHandler, true);
+    document.addEventListener("touchcancel", touchHandler, true);
+    map_id_for_zoom = "#map_" + floors[0]
+    let elem = document.querySelector(map_id_for_zoom);
+    apply_zoom_functionality_against_floor(map_id_for_zoom, elem)
+    fp_id = floor_to_floorplate_id[floors[0]]
+    map_id = "#map_" + floors[0]
+    hallways_coordinates = hallways[floors[0]]
+    floor_id = floors[0]
+    initialize_methods(map_id_for_zoom)
+    draw_initial_hallways(hallways_coordinates, map_id)
+    $('.floor_btn').click(function(){
+      floor_id = $(this).data('floor_id')
+      fp_id = floor_to_floorplate_id[floor_id]
+      map_id = "#map_" + floor_id
+      hallways_coordinates = hallways[floor_id]
+      $('.floor_map').addClass('hidden')
+      floor_map_id = '#floor_' + floor_id
+      $(floor_map_id).removeClass('hidden')
+      $('.floor_btn').css('background', '#e0e0e0')
+      $(this).css('background', "#49d849")
+      $('#floor_1 *').unbind('click')
+      $('#floor_1 *').off()
+      initialize_variables()
+      initialize_methods(map_id_for_zoom)
+      let elem = document.querySelector(map_id);
+      apply_zoom_functionality_against_floor(map_id, elem)
+      draw_initial_hallways(hallways_coordinates, map_id)
+    })
   });

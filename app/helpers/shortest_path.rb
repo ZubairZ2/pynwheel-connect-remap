@@ -143,9 +143,8 @@ module ShortestPath
     floors_graph[starting_floor].traverse_back(src, [0])
     starting_floor_elevator_to_starting_point = floors_graph[starting_floor].elevator_path.flatten
     starting_floor_elevator_to_starting_point_object_in_order = fetch_path_object_for_floor(starting_floor_elevator_to_starting_point, hallways_id_to_uniq_id[starting_floor], unit_id_to_uniq_id[starting_floor], amenity_id_to_uniq_id[starting_floor], elevator_id_to_uniq_id[starting_floor], start_point_data, new_hallways_coordinates[starting_floor], unit_data[starting_floor], amenity_data[starting_floor], @elevator_data[starting_floor], unit_starting_index[starting_floor], amenity_starting_index[starting_floor], elevator_starting_index[starting_floor], true)
-    binding.pry
-    #return path_object_in_order, traverse_back_path_object_in_order, starting_floor_elevator_to_starting_point_object_in_order
-    return []
+    total_path = {upstair_path: path_object_in_order, downstair_path: traverse_back_path_object_in_order, moving_to_starting_point: starting_floor_elevator_to_starting_point_object_in_order, floors: @floors_ids}
+    return total_path
   end
   def return_path_for_mobile(new_stops_arr, community_id, path_type)
     fetch_related_data_according_to_mobile(new_stops_arr, community_id)
