@@ -60,7 +60,7 @@ class TourHistory < ApplicationRecord
         # @mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}" + "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
 
         touruser = self.tour_user
-        scheduled_tour = MaxDateScheduledTourService.new(touruser, community, false).get_scheduled_tour rescue community.schedual_tours.where(tour_user_id: touruser.id).last
+        scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id).last #MaxDateScheduledTourService.new(touruser, community, false).get_scheduled_tour rescue community.schedual_tours.where(tour_user_id: touruser.id).last
         if touruser.tour_type == "self_tour" && scheduled_tour.property_tour_type == "scheduled_tour"          
           if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
             scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
