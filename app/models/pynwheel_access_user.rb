@@ -117,27 +117,30 @@ class PynwheelAccessUser < ApplicationRecord
 
   def manual_lock_access_code code 
     {
-      guest_pin: "Use code #{code} to enter",
+      guest_pin: code,
       latch_link: '',
       unit_dwelo_lock_id: '',
+      is_igloo_lock: false,
       message: "Please use given manual lock access code to unlock the door",
     }
   end
 
   def igloo_lock_guest_code code
     {
-      guest_pin: "Use code #{code} to enter",
+      guest_pin: code,
       latch_link: '',
       unit_dwelo_lock_id: '',
+      is_igloo_lock: true,
       message: "Please use given edgestate lock pin to unlock the door",
     }
   end
 
   def edestate_lock_pin pin
     {
-      guest_pin: "Use code #{pin} to enter",
+      guest_pin: pin,
       latch_link: '',
       unit_dwelo_lock_id: '',
+      is_igloo_lock: false,
       message: "Please use given edgestate lock pin to unlock the door",
     }
   end
@@ -147,6 +150,7 @@ class PynwheelAccessUser < ApplicationRecord
       guest_pin: '',
       latch_link: '',
       unit_dwelo_lock_id: lock.device_id,
+      is_igloo_lock: false,
       message: "Please use given dwelo lock Id to unlock the door",
     }
   end
@@ -156,6 +160,7 @@ class PynwheelAccessUser < ApplicationRecord
       guest_pin: '',
       latch_link: '',
       unit_dwelo_lock_id: '',
+      is_igloo_lock: false,
       message: "No lock",
     }
   end

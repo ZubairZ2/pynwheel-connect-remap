@@ -1,7 +1,7 @@
 class Api::V1::PynwheelAccessUsersController < ActionController::Base
   before_action :get_pynwheel_access_user_by_phone_number, only: [:generate_otp, :verify_otp]
   before_action :get_pynwheel_access_user_by_id, only: [:pynwheel_access_user_authentication, :resident_accesses_list, :dwelo_device_lock_or_unlock]
-  before_action :is_authorized, only: [:resident_accesses_list, :resident_accesses_history]
+  before_action :is_authorized, only: [:resident_accesses_list, :resident_accesses_history, :lock_access_time]
 
   # include DweloDevicesHelper
 
@@ -90,8 +90,9 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
         token_type = "Bearer"
         auth_header = token_type + " " + access_token
+
+        guest_id = @pynwheel_access_user.as_guests.where(community_id: @community.id).last.guest_id if @pynwheel_access_user.present? and @pynwheel_access_user.as_guests.where(community_id: @community.id).present?
         
-        guest_id = @pynwheel_access_user.guest_id
         request_body = { "access_person_id": guest_id, "lock_id": params[:lock_id], "command": params[:command] }
 
         puts "--------------------------- commands request ----------------------------"
