@@ -285,7 +285,7 @@
               <div class="form-group w-left-50 w-100">
                 <label>Email Address <span class="asterisk_color" >*</span></label>
                 <%= f.email_field :email, class: "form-control", placeholder: "Email Address", id: "tour_user_email", required: 'required' %>
-                <span class="reshedule-notification" style="display: <%= @tour_user.id.present? && !@reschedule_tour && @schedule_tour.is_tour_completed ? "block" : "none" %>">User with this email address already have scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
+                <span class="reshedule-notification" style="display: <%= @tour_user.id.present? && !@reschedule_tour && @schedule_tour.is_tour_completed ? "block" : "none" %>">A user with this email address already has a scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
               </div>
               <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_phone.nil? ? true : current_community.tour.tour_setting.show_phone) %>
                 <div class="form-group w-20 w-100">
@@ -951,6 +951,7 @@
         })
 
         $("#tour_date").on("dp.change", function() {
+          $("#tour_type").attr("disabled", true);
           var time_slots = JSON.parse( $('#time_slot_hash').val() )
           day = (new Date($(this).val())).getDay()
           tour_time = '<%= @schedule_tour&.tour_time&.strftime("%I:%M %P") %>'
@@ -986,9 +987,11 @@
           }
           
         });
+        $("#tour_type").attr("disabled", true);
         if(!form_for_reschedule_tour){
           $("#tour_time").on("change", function() {
             if ($(this).val() != ""){
+              $("#tour_type").attr("disabled", false);
               day = (new Date($("#tour_date").val())).getDay()
               date = $("#tour_date").val()
               time = $(this).val()
