@@ -24,7 +24,7 @@ class NotificationMailer < ApplicationMailer
 				key: 2,
 				image: "instruction-2.png",
 				title: "Start Tour Virtually",
-				text: "After selecting property choose to start virtual tour and select apartments and amenities you want to visit.",
+				text: "After selecting a property choose to start a virtual tour and select apartments and amenities you want to visit.",
 				background: "#efffe7"
 			},
 			{
