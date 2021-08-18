@@ -22,6 +22,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     
     if is_authorized
       dwelo_lock_access()
+      edgestate_lock_Access();
     else
       render json: {message: "Access denied", success_code: 401, status: false}
     end
@@ -128,6 +129,50 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   private
+
+  def edgestate_lock_Access()
+    Thread.new do
+      begin
+      # tour_user = TourUser.find params[:tour_user_id]
+      # tour_user.update_column 'edge_state_status' , 'in progress'
+      @community = @pynwheel_access_user.community
+      access_token = RemoteLockService.new(@community).client_credentials
+      prev_data = @pynwheel_access_user.as_guests.where(community_id: @community.id)
+      current_time = current_community_time(@community)
+
+      # ----------- creating a guest for remote lock (type = locks) ----------------- #
+      unless prev_data.present?
+        response = RemoteLockService.new(@community).create_access_guest(access_token, @pynwheel_access_user, current_time)
+        @pynwheel_access_user.as_guests.create(community_id: @community.id, edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+      else
+        RemoteLockService.new(@community).delete_access_guest(access_token, prev_data.last.guest_id)
+        response = RemoteLockService.new(@community).create_access_guest(access_token,  @pynwheel_access_user, current_time)
+        prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+      end
+
+      # ------------ creating guest and granting access for igloo lock -------------------------------- #
+      allowed_stops = locks_with_same_type("EdgeState")
+      locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: @community.edge_state.id, remote_lock_type: "igloo_lock").pluck(:device_id, :stop_id)
+
+      if locks.present?
+        igloo_guest_ids = @pynwheel_access_user.igloo_guests.where(community_id: @community.id, status: "active").map{|x| x.guest_id} rescue ''
+        
+        locks.each do |lock|
+            response = RemoteLockService.new(@community).create_igloo_guests(access_token, @pynwheel_access_user, lock[0] ,current_time)
+            @pynwheel_access_user.igloo_guests.create(community_id: @community.id, stop_id: lock[1], guest_type: response["data"]["type"],  guest_code: response["data"]["attributes"]["code"], guest_id: response["data"]["id"], status: "active") unless response["status"] == 500
+        end
+
+        igloo_guest_ids.map{ |guest_id| RemoteLockService.new(@community).delete_igloo_guests(access_token, guest_id) unless guest_id == ''}
+        IglooGuest.where(guest_id: igloo_guest_ids).update_all(status: 'deleted')
+      end
+      # tour_user.update_column 'edge_state_status' , 'complete'
+      rescue => ex
+        # tour_user.update_column 'edge_state_status' , 'complete'
+        puts "--------- EdgeState error -------- ", ex
+      end
+
+    end
+  end
 
   def dwelo_lock_access
     Thread.new do
