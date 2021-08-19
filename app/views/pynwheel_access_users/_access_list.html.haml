@@ -29,10 +29,10 @@
                     %span#additionalPageActionText 
                       Click on the edit icon to edit the Unit. Add photos, videos, and text. 
 
-                %a.text-default{"data-name"=>"Tour Stop", "data-target" => "#pynwheelAccessTimeModal", "data-toggle" => "modal"}
-                  %i.fa.fa-clock-o.pynwheel_access_user_action_icon_size.additionalPageAction
-                    %span#additionalPageActionText 
-                      Click on the clock icon to manage the pynwheel user access times.
+                -# %a.text-default{"data-name"=>"Tour Stop", "data-target" => "#pynwheelAccessTimeModal", "data-toggle" => "modal"}
+                -#   %i.fa.fa-clock-o.pynwheel_access_user_action_icon_size.additionalPageAction
+                -#     %span#additionalPageActionText 
+                -#       Click on the clock icon to manage the pynwheel user access times.
 
             = render :partial=>'access_timer', :locals => {community: community, access_point: unit}
             = render :partial=>'remove_user_access_modal', :locals => {community: community, access_point: unit, user: user}
@@ -56,10 +56,10 @@
                     %span#additionalPageActionText 
                       Click on the edit icon to edit the amenity. Add photos, videos, and text. 
 
-                %a.text-default{"data-name"=>"Tour Stop", "data-target" => "#pynwheelAccessTimeModal", "data-toggle" => "modal"}
-                  %i.fa.fa-clock-o.pynwheel_access_user_action_icon_size.additionalPageAction
-                    %span#additionalPageActionText 
-                      Click on the clock icon to manage the pynwheel user access times.
+                -# %a.text-default{"data-name"=>"Tour Stop", "data-target" => "#pynwheelAccessTimeModal", "data-toggle" => "modal"}
+                -#   %i.fa.fa-clock-o.pynwheel_access_user_action_icon_size.additionalPageAction
+                -#     %span#additionalPageActionText 
+                -#       Click on the clock icon to manage the pynwheel user access times.
 
             = render :partial=>'access_timer', :locals => {community: community, access_point: amenity}
             = render :partial=>'remove_user_access_modal', :locals => {community: community, access_point: amenity, user: user}
