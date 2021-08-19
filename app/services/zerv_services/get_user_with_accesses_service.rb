@@ -24,8 +24,9 @@ module ZervServices
                 else
                     community = args[:community]
                     stop_list = args[:stop_list]
+                    is_resident = args[:is_resident]
                     manual_error = response.success? ? {} : {manual_error: "AddUserWithAccessesService responsed false", error_position: "Error: #{response.error.code} => Phone number does not exists"}
-                    check_response(community, tour_user, stop_list, response, manual_error)
+                    check_response(is_resident, community, tour_user, stop_list, response, manual_error)
                 end
             else
                 OpenStruct.new({success?: false, error: response, payload: nil})  

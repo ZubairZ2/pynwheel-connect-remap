@@ -76,11 +76,11 @@ module ZervServices
             "https://accessapi.zervinc.net/v1/portal"
         end
 
-        def check_response(community, tour_user, stop_list, response, errors)
+        def check_response(is_resident, community, tour_user, stop_list, response, errors)
             if response.success?
-                resident_create_zerv_guest__success(community, tour_user, stop_list)
+                is_resident ? resident_create_zerv_guest__success(community, tour_user, stop_list) : create_zerv_guest__success(community, tour_user, stop_list)
             else
-                resident_zerv_guest__failure(community, tour_user, response.error.merge(errors))
+                is_resident ? resident_zerv_guest__failure(community, tour_user, response.error.merge(errors)) : zerv_guest__failure(community, tour_user, response.error.merge(errors))
             end
         end
 
@@ -94,6 +94,15 @@ module ZervServices
             else
                 ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active")
             end
+            Rails.cache.delete(:id_token)
+        end
+
+        def zerv_guest__failure(community, tour_user, errors)
+            puts '--------------------------    Failure in creating Zerv User      ------------------------'
+            puts errors
+            puts '--------------------------    Failure in creating Zerv User      ------------------------'
+            ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
+            ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active", res_errors: errors)
             Rails.cache.delete(:id_token)
         end
 
@@ -119,5 +128,6 @@ module ZervServices
             ZervGuest.create(community_id: community.id, pynwheel_access_user_id: tour_user.id, status: "active", res_errors: errors)
             Rails.cache.delete(:id_token)
         end
+        
     end
 end

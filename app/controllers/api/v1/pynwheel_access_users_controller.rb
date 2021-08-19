@@ -141,7 +141,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
       @community = @pynwheel_access_user.community
       if @community.enable_locks and @community.multiple_locks_provider.include?("Zerv")
         allowed_stops = zerv_multiple_stops_access()
-        ZervServices::GrantAccessesService.call(community: @community, tour_user: @pynwheel_access_user, stop_list: allowed_stops)
+        ZervServices::GrantAccessesService.call(community: @community, tour_user: @pynwheel_access_user, stop_list: allowed_stops, is_resident: true)
       end
       # tour_user.update_column 'zerv_status' , 'complete'
       rescue => ex

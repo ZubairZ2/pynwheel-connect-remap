@@ -5,23 +5,23 @@ module ZervServices
             community    = args[:community]
             tour_user    = args[:tour_user]
             stop_list    = args[:stop_list]
-
+            is_resident  = args[:is_resident]
             is_user_exists = false
             response = ZervServices::GetUsersService.call(community: community)
             if response.success?
                 if response.payload["listUsers"].length == 0
                     ################################### first zerv user ever ###################################
                     response = ZervServices::AddUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: stop_list)
-                    check_response(community, tour_user, stop_list, response, response.error.present? ? {manual_error: "AddUserWithAccessesService responsed false", error_position: "Error: #{response.error.code} :: Unable to create Zerv user"} : {})
+                    check_response(is_resident, community, tour_user, stop_list, response, response.error.present? ? {manual_error: "AddUserWithAccessesService responsed false", error_position: "Error: #{response.error.code} :: Unable to create Zerv user"} : {})
                 else
                     response.payload["listUsers"].each do |zerv_user|
                         tour_user.phone_number[0] = '' unless is_number?(tour_user.phone_number[0])
                         if zerv_user["phoneNumber"] == tour_user.phone_number
                             ################################## if user exists get previous data also #####################################
-                            response = ZervServices::GetUserWithAccessesService.call(community: community, tour_user: tour_user)
+                            response = ZervServices::GetUserWithAccessesService.call(is_resident: is_resident, community: community, tour_user: tour_user)
                             if response.success? 
                                 response = ZervServices::UpdateUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: stop_list, zerv_user: response.payload)
-                                check_response(community, tour_user, stop_list, response, response.error.present? ? {manual_error: "UpdateUserWithAccessesService responsed false", error_position: "Error: #{response.error.code} :: Unable to update Zerv user"} : {})
+                                check_response(is_resident, community, tour_user, stop_list, response, response.error.present? ? {manual_error: "UpdateUserWithAccessesService responsed false", error_position: "Error: #{response.error.code} :: Unable to update Zerv user"} : {})
                             else
                                 create_zerv_guest__failure(community, tour_user, response.error.merge(manual_error: "GetUserWithAccessesService responsed false", error_position: "Error: #{response.error.code} :: Unable to create Zerv user"))
                             end
@@ -32,7 +32,7 @@ module ZervServices
                     unless is_user_exists
                         ################################## creating zerv user #####################################
                         response = ZervServices::AddUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: stop_list)
-                        check_response(community, tour_user, stop_list, response, response.error.present? ? {manual_error: "AddUserWithAccessesService responsed false", error_position: "Error: #{response.error.code} :: Unable to create Zerv user"} : {})
+                        check_response(is_resident, community, tour_user, stop_list, response, response.error.present? ? {manual_error: "AddUserWithAccessesService responsed false", error_position: "Error: #{response.error.code} :: Unable to create Zerv user"} : {})
                     end
 
                 end
