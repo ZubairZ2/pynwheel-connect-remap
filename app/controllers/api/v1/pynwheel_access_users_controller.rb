@@ -22,7 +22,8 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     
     if is_authorized
       dwelo_lock_access()
-      edgestate_lock_Access();
+      edgestate_lock_Access()
+      create_latch_reservation()
     else
       render json: {message: "Access denied", success_code: 401, status: false}
     end
@@ -130,6 +131,61 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   private
+
+  def create_latch_reservation()
+    Thread.new do
+      begin
+      # tour_user.update_column 'latch_status' , 'in progress'
+      @community = @pynwheel_access_user.community
+      start_time = current_community_time(@community)
+      end_time = start_time + 90.minutes
+
+      unit_ids = @pynwheel_access_user.resident_access_points.where(access_point_type: "unit").pluck(:access_point_id)
+      amenity_ids = @pynwheel_access_user.resident_access_points.where(access_point_type: "amenity").pluck(:access_point_id)
+
+      units = Unit.where(id: unit_ids, lock_provider: "Latch").includes(:latch_locks)
+      amenities = Amenity.where(id: amenity_ids, lock_provider: "Latch").includes(:latch_locks)
+      locks_data = []
+      
+      units.each do |unit|
+        lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
+      end
+      
+      amenities.each do |amenity|
+        lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
+      end
+
+      if locks_data.present?
+        LatchGuest.where(pynwheel_access_user_id: @pynwheel_access_user.id, community_id: @community.id).update_all(status: "deleted")
+        
+        locks_data.each do |lock_info|
+          response = LatchCreateReservationService.call(
+            community_id: @community.id,
+            startTime: start_time,
+            endTime: end_time,
+            keyIds: lock_info[0],
+            tour_user: @pynwheel_access_user,
+            allowedKeycardCount: 0
+          )
+
+          latch_link = response["payload"]["message"]["link"]
+
+          if latch_link.present?
+            LatchLock.where(lock_id: lock_info[0]).map{|stop_data| @pynwheel_access_user.latch_guests.create(community_id: @community.id, latch_link: latch_link, guest_of_stop_type: stop_data.stop_type , guest_of_stop_id: stop_data.stop_id, start_time: start_time.to_i, end_time: end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
+          end
+        end
+      end
+
+      # tour_user.update_column 'latch_status' , 'complete'
+      rescue => ex
+        # tour_user.update_column 'latch_status' , 'complete'
+        puts "--------- Latch error -------- ", ex
+      end
+      
+    end
+  end
 
   def edgestate_lock_Access()
     Thread.new do

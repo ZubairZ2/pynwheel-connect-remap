@@ -6,7 +6,7 @@ class PynwheelAccessUser < ApplicationRecord
 
   has_many :as_guests, dependent: :destroy
   has_many :igloo_guests, dependent: :destroy
-
+  has_many :latch_guests, dependent: :destroy
 
   after_create :assign_common_access_points
 
@@ -65,7 +65,15 @@ class PynwheelAccessUser < ApplicationRecord
   end
 
   def get_latch_lock_data access_stop
-    default_empty_locks_json
+    lch = LatchLock.find_by(latch_id: self.community.latch.id, stop_id: access_stop.id) if self.community.latch.present?
+
+    if lch.present?
+      latch_guest = self.latch_guests.find_by(community_id: self.community.id, guest_of_stop_id: access_stop.id, status: "active")
+      latch_guest.present? ? latch_lock_access_link(latch_guest.latch_link) : default_empty_locks_json
+
+    else
+      default_empty_locks_json
+    end
   end
 
   def get_manual_lock_data access_stop
@@ -113,6 +121,16 @@ class PynwheelAccessUser < ApplicationRecord
     else
       default_empty_locks_json
     end
+  end
+
+  def latch_lock_access_link link
+    {
+      guest_pin: '',
+      latch_link: link,
+      unit_dwelo_lock_id: '',
+      is_igloo_lock: false,
+      message: "Please use given latch lock access link to unlock the door",
+    }
   end
 
   def manual_lock_access_code code 
