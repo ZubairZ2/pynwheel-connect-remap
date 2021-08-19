@@ -7,6 +7,7 @@ class PynwheelAccessUser < ApplicationRecord
   has_many :as_guests, dependent: :destroy
   has_many :igloo_guests, dependent: :destroy
   has_many :latch_guests, dependent: :destroy
+  has_many :zerv_guests, dependent: :destroy
 
   after_create :assign_common_access_points
 
@@ -52,7 +53,7 @@ class PynwheelAccessUser < ApplicationRecord
     when "EdgeState"
       get_edgestate_lock_data(access)
     when "Zerv"
-      get_zerv_lock_data(access)
+      get_zerv_lock_data(access, type)
     when "Manual"
       get_manual_lock_data(access)
     else
@@ -60,8 +61,26 @@ class PynwheelAccessUser < ApplicationRecord
     end
   end
 
-  def get_zerv_lock_data access_stop
-    default_empty_locks_json
+  def get_zerv_lock_data access_stop, type
+    zrv = ZervLock.find_by(zerv_id: self.community.zerv.id, stop_type: type.camelcase, stop_id: access_stop.id) if self.community.zerv.present?
+    
+    if zrv.present?
+      zrv_guest = self.zerv_guests.find_by(community_id: self.community.id, guest_of_stop_type: type.camelcase, guest_of_stop_id: access_stop.id, status: "active")
+      
+      if zrv_guest.present?
+        zerv_lock_access_pin('The door will automatically unlock when your mobile device is within range')
+      else
+        zrv_guest = self.zerv_guests.find_by(community_id: self.community.id, status: "active")
+        
+        if zrv_guest.present?
+          zerv_lock_access_pin(zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["error_position"])
+        else
+          default_empty_locks_json
+        end
+      end
+    else
+      default_empty_locks_json
+    end
   end
 
   def get_latch_lock_data access_stop
@@ -131,6 +150,16 @@ class PynwheelAccessUser < ApplicationRecord
       unit_dwelo_lock_id: '',
       is_igloo_lock: true,
       message: "Please use given igloo lock pin to unlock the door ",
+    }
+  end
+
+  def zerv_lock_access_pin msg
+    {
+      guest_pin: '',
+      latch_link: '',
+      unit_dwelo_lock_id: '',
+      is_igloo_lock: false,
+      message: msg,
     }
   end
 

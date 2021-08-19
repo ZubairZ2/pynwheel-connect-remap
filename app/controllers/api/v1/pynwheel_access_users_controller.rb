@@ -21,6 +21,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   def resident_accesses_list
     
     if is_authorized
+      create_zerv_user()
       dwelo_lock_access()
       edgestate_lock_Access()
       create_latch_reservation()
@@ -131,6 +132,29 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   private
+
+  def create_zerv_user()
+    locks_thread = Thread.new do
+      begin
+      # tour_user.update_column 'zerv_status' , 'in progress'
+      execution_context = Rails.application.executor.run!
+      @community = @pynwheel_access_user.community
+      if @community.enable_locks and @community.multiple_locks_provider.include?("Zerv")
+        allowed_stops = zerv_multiple_stops_access()
+        ZervServices::GrantAccessesService.call(community: @community, tour_user: @pynwheel_access_user, stop_list: allowed_stops)
+      end
+      # tour_user.update_column 'zerv_status' , 'complete'
+      rescue => ex
+        # tour_user.update_column 'zerv_status' , 'complete'
+        puts "--------- Zerv error -------- ", ex
+      end
+
+    ensure
+      execution_context.complete! if execution_context
+    end
+    
+    locks_thread.to_s
+  end
 
   def create_latch_reservation()
     Thread.new do
@@ -360,6 +384,17 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     allowed_stops
   end
 
+  def zerv_multiple_stops_access(allowed_stops = [])
+    available_stops = @pynwheel_access_user.resident_access_points.pluck(:access_point_type, :access_point_id)
+
+    available_stops.each do |stop|
+      if (stop[0].classify.constantize.find_by_id stop[1]).lock_provider == "Zerv"
+        allowed_stops << [stop[0], stop[1]]
+      end
+    end
+
+    allowed_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact if allowed_stops.present?
+  end
 
   def create_dwelo_access_guest(access_token)
     
