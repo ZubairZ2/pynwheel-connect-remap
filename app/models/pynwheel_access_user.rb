@@ -111,6 +111,7 @@ class PynwheelAccessUser < ApplicationRecord
           if igloo_guest.guest_code.present?
             igloo_lock_guest_code(igloo_guest.guest_code) 
           else
+            # default_empty_locks_json
             {
               guest_pin: '',
               latch_link: '',
