@@ -105,20 +105,14 @@ class PynwheelAccessUser < ApplicationRecord
           if pin.present? && rml.remote_lock_type != "igloo_lock"
             edestate_lock_pin(pin)
           else
-            default_empty_locks_json
+            temp_igloo_lock
           end
         else
           if igloo_guest.guest_code.present?
             igloo_lock_guest_code(igloo_guest.guest_code) 
           else
             # default_empty_locks_json
-            {
-              guest_pin: '',
-              latch_link: '',
-              unit_dwelo_lock_id: '',
-              is_igloo_lock: true,
-              message: "Please use given igloo lock pin to unlock the door ",
-            }
+            temp_igloo_lock
           end
         end
 
@@ -128,6 +122,16 @@ class PynwheelAccessUser < ApplicationRecord
     else
       default_empty_locks_json
     end
+  end
+
+  def temp_igloo_lock 
+    {
+      guest_pin: '',
+      latch_link: '',
+      unit_dwelo_lock_id: '',
+      is_igloo_lock: true,
+      message: "Please use given igloo lock pin to unlock the door ",
+    }
   end
 
   def latch_lock_access_link link
