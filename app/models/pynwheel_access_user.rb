@@ -16,6 +16,25 @@ class PynwheelAccessUser < ApplicationRecord
     self.resident_access_points.create(plotted_amenities)
   end
 
+  def get_residents_access_history
+    stops = self.resident_access_points.where.not(access_time: nil)
+    access_history = []
+
+    stops.each do |s|
+      access_point = (s.access_point_type.classify.constantize.find_by_id s.access_point_id)
+      access_history << access_history_json(access_point, s)
+    end
+  end
+
+  def access_history_json access_point, stop
+    {
+      stop_name: (stop.access_point_type === "unit" ? "Unit: #{access_point.marketing_name}" : access_point.name),
+      acccess_time: stop.access_time.strftime("%a, %d %b %Y %I:%M %p"),
+      message: stop.is_accessed ? "Successfully accessed" : "Failed to access",
+      is_successful: stop.is_accessed 
+    }
+  end
+
   def get_access_list accesses_list = [], access_hash = {}
     user_accesses = get_access_points
 

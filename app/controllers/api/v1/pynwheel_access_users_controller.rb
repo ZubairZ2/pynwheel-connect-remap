@@ -1,6 +1,6 @@
 class Api::V1::PynwheelAccessUsersController < ActionController::Base
   before_action :get_pynwheel_access_user_by_phone_number, only: [:generate_otp, :verify_otp]
-  before_action :get_pynwheel_access_user_by_id, only: [:pynwheel_access_user_authentication, :resident_accesses_list, :dwelo_device_lock_or_unlock]
+  before_action :get_pynwheel_access_user_by_id, only: [:pynwheel_access_user_authentication, :resident_accesses_list, :dwelo_device_lock_or_unlock, :lock_access_time, :resident_accesses_history]
   before_action :is_authorized, only: [:resident_accesses_list, :resident_accesses_history, :lock_access_time]
 
   # include DweloDevicesHelper
@@ -18,8 +18,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     end
   end
 
-  def resident_accesses_list
-    
+  def resident_accesses_list  
     if is_authorized
       create_zerv_user()
       dwelo_lock_access()
@@ -31,9 +30,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   def resident_accesses_history
-    if is_authorized
-      # render json: {message: "Resident's history access granted", success_code: 200, status: true}
-    else
+    unless is_authorized
       render json: {message: "Access denied", success_code: 401, status: false}
     end
   end
@@ -77,7 +74,8 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
       puts "-----------"*20
       puts params.inspect
       puts "-----------"*20
-      render json: {message: "Lock access time", success_code: 200, status: true}
+      set_access_time(true)
+      render json: {message: "Lock access time added", success_code: 200, status: true}
     else
       render json: {message: "Access denied", success_code: 401, status: false}
     end
@@ -115,12 +113,12 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
         puts response
         
         if response.nil?
+          set_access_time(true)
           render :json => {:success => true, :message => "Success"}
         else
+          set_access_time(false)
           render :json => {:success => false, :message => response["message"]}
         end
-
-        # render json: {message: "Dwelo lock unlocked", success_code: 200, status: true}
       else
         render json: {message: "Pynwheel access user not found", success_code: 404, status: false}
       end
@@ -132,6 +130,10 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   private
+
+  def set_access_time is_lock_accessed
+    @pynwheel_access_user.resident_access_points.where(access_point_type: params[:stop_type], access_point_id: params[:stop_id]).update_all(access_time: params[:access_time], is_accessed: is_lock_accessed)
+  end
 
   def create_zerv_user()
     locks_thread = Thread.new do
