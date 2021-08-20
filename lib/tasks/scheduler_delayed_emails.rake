@@ -171,7 +171,6 @@ namespace :delayed_email_notifications do
 		  end
 		  sms_content = "Don't forget! You have an appointment for a Self Tour tomorrow at #{community.name if community.present?} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive.
 Download The #{community_text} #{one_link}
-Change appointment #{reschedule_tour(schedual_tour, community, community_code, tu.id)}
 Get information about your tour here: #{confirmation_page_link}
 		  #{community.one_day_email_text}"
 		  # Change appointment #{change_tour_time_url(schedual_tour)}?datetime=#{get_date_time_combined(schedual_tour.tour_date, schedual_tour.tour_time).to_s}
