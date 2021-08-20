@@ -381,9 +381,9 @@
                           %section.clearfix
                             .container.h-100.downloadApp{:style => "text-align: center;padding: 1% 0 1%"}
                               %a.appImage{:href => "#{@app_link}", :target => "_blank"}
-                                %img{:src => "#{root_url}assets/ios-store.png", width: '13%', :style => "margin-right: 20px", :class => "appImage"}/
+                                %img{:src => "/assets/ios-store.png", width: '13%', :style => "margin-right: 20px", :class => "appImage"}/
                               %a.appImage{:href => "#{@android_link}", :target => "_blank"}
-                                %img{:src => "#{root_url}assets/android-store.png", width: '13%', :class => "appImage"}/
+                                %img{:src => "/assets/android-store.png", width: '13%', :class => "appImage"}/
                             -# = render 'shared/download_apps', obj: {ios_link: @app_link, android_link: @android_link }
                           %section.mt-15
                             %div.howItWorks{:style => "height: 375px; background: #008fd3;text-align: center; color: #fff; margin-bottom: 22%; padding-bottom: 3%;"}
