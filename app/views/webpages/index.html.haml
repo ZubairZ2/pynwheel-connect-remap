@@ -545,7 +545,10 @@
           %header.app-header
             .header-inner
               .app-logo
-                %img{:alt => "", :src => "/assets/logo_webpage.png", :title => ""}/
+                - if @community.community_logo
+                  %a.logo{:href => "#default"}
+                    %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
+                -# %img{:alt => "", :src => "/assets/logo_webpage.png", :title => ""}/
               .selection-fields
                 .selectable-field
                   %label Bedrooms
