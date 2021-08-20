@@ -232,7 +232,7 @@
       -#       %span Pynwheel Access      
 
       - if current_community.pynwheel_access && current_user.is_super_admin?
-        %li.loader_class{:class=>"#{controller_name =='pynwheel_accesses' ? 'active' : ''}"}
+        %li.loader_class{:class=>"#{controller_name =='pynwheel_access_users' ? 'active' : ''}"}
           %a{:href => "#{community_pynwheel_access_users_path(current_community)}"}
             %i.fa.fa-lock
             %span Pynwheel Access Users   
