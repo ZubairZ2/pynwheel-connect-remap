@@ -159,7 +159,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   def set_access_time is_lock_accessed
-    @pynwheel_access_user.resident_access_points.where(access_point_type: params[:stop_type], access_point_id: params[:stop_id]).update_all(access_time: params[:access_time], is_accessed: is_lock_accessed)
+    @pynwheel_access_user.resident_access_points.where(access_point_type: params[:stop_type], access_point_id: params[:stop_id]).update_all(access_time: params[:access_time].to_datetime, is_accessed: is_lock_accessed)
   end
 
   def create_zerv_user()
