@@ -6,6 +6,7 @@
 // var algo_amenity_data = [];
 // var algo_access_point_data = [];
 // var start_point_data = {};
+var stops_type_arr = ["unit", "amenity", "elevator"]
 var tmp_id = 0;
 var cntrlIsPressed = false;
 var xpos;
@@ -32,21 +33,23 @@ function initialize_variables(hallways_coordinates, map_id){
   map_id = map_id
 }
 function initialize_methods(map_id = "#map"){
-
 }
-function initialize_mouse_move(map_id = "#map"){
-  $(document).mousemove(map_id, function(event){
-    var dx = parseInt(event.pageX) - parseInt($(map_id).offset().left) + parseInt($(map_id).scrollLeft());
-    var dy = parseInt(event.pageY) - parseInt($(map_id).offset().top) + parseInt($(map_id).scrollTop());
-    console.log("map_id is :", map_id)
-    $('#active_x_plot').html(dx);
-    $('#active_y_plot').html(dy);
-  });
-}
+// function initialize_mouse_move(map_id = "#map"){
+//   $(document).mousemove(map_id, function(event){
+//     var dx = parseInt(event.pageX) - parseInt($(map_id).offset().left) + parseInt($(map_id).scrollLeft());
+//     var dy = parseInt(event.pageY) - parseInt($(map_id).offset().top) + parseInt($(map_id).scrollTop());
+//     $('#active_x_plot').html(dx);
+//     $('#active_y_plot').html(dy);
+//   });
+// }
   $(document).mousemove('.viewArea', function(event){
+    if ($(event.target).hasClass('viewArea')){
+      map_id = $(event.target).data('map-id')
+    }
+    if (!map_id)
+      map_id = "#map"
     var dx = parseInt(event.pageX) - parseInt($(map_id).offset().left) + parseInt($(map_id).scrollLeft());
     var dy = parseInt(event.pageY) - parseInt($(map_id).offset().top) + parseInt($(map_id).scrollTop());
-    console.log("map_id is :", map_id)
     $('#active_x_plot').html(dx);
     $('#active_y_plot').html(dy);
   }); 
@@ -570,7 +573,6 @@ function initialize_map_click(map_id){
 
   function return_x_y_values(shortest_path_obj){
     // check is there any need to add 17 or 8 in x, y
-    console.log("point_type is: ", shortest_path_obj['point_type'] )
     if (shortest_path_obj['point_type'] == undefined) // then its hallways
       return [shortest_path_obj["x_plot"] + 8, shortest_path_obj["y_plot"] + 8, 'hallways_point']
     else if (shortest_path_obj['point_type'] == 'unit')
@@ -629,7 +631,40 @@ function initialize_map_click(map_id){
     downstair_path_object_in_order = path_object_in_order['downstair_path']
     moving_to_starting_point_path_object_in_order = path_object_in_order['moving_to_starting_point']
     floor_ids = path_object_in_order['floors']
-    debugger
+    show_upstair_path(floor_ids, upstair_path_object_in_order, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order,function(floor_ids, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order){
+      show_downstair_path(floor_ids, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order, function(moving_to_starting_point_path_object_in_order){
+        $(".line").remove();
+        $(".line_hello").remove();
+        for (var k = 0; k < (Object.keys(moving_to_starting_point_path_object_in_order).length - 1); k++) {
+          delayed(400, function (k) {
+            return function () {
+              x0_y0_and_type = return_x_y_values(moving_to_starting_point_path_object_in_order[k])
+              x1_y1_and_type = return_x_y_values(moving_to_starting_point_path_object_in_order[k+1])
+              x0 = x0_y0_and_type[0]
+              y0 = x0_y0_and_type[1]
+              x1 = x1_y1_and_type[0]
+              y1 = x1_y1_and_type[1]
+              x1_y1_type = x1_y1_and_type[2]
+              $("#map_" + 1).line(x0, y0, x1, y1, {
+                  zindex: 99,
+                  color: '#ffa500',
+                  stroke: "5",
+                  style: "solid",
+                  class: "line_hello"
+              });
+              if (stops_type_arr.includes(x1_y1_type)){
+                $(".line").remove();
+                $(".line_hello").remove();
+              }
+            };
+          }(k));
+        }
+      });
+    });
+  }
+  function show_upstair_path(floor_ids, upstair_path_object_in_order, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order, callback){
+    run_only_once = true
+    $('.floor_btn')[0].click()
     for (var i = 1; i < (floor_ids.length + 1); i++) {
       for (var j = 0; j < (Object.keys(upstair_path_object_in_order[i]).length - 1); j++) {
         delayed(300, function (i, j) {
@@ -640,6 +675,7 @@ function initialize_map_click(map_id){
             y0 = x0_y0_and_type[1]
             x1 = x1_y1_and_type[0]
             y1 = x1_y1_and_type[1]
+            x1_y1_type = x1_y1_and_type[2]
             $("#map_" + i).line(x0, y0, x1, y1, {
                 zindex: 99,
                 color: '#ffa500',
@@ -647,8 +683,67 @@ function initialize_map_click(map_id){
                 style: "solid",
                 class: "line_hello"
             });
-            if (j == (Object.keys(upstair_path_object_in_order[i]).length - 2)){
+            if (stops_type_arr.includes(x1_y1_type)){
+              $(".line").remove();
+              $(".line_hello").remove();
+            }
+            if ( i != floor_ids.length && j == (Object.keys(upstair_path_object_in_order[i]).length - 2)){
               $('.floor_btn')[i].click()
+            }else if(run_only_once && i == floor_ids.length){
+              run_only_once = false
+              callback(floor_ids, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order)
+            }
+          };
+        }(i, j));
+      }
+    }
+  }
+  function show_downstair_path(floor_ids, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order, callback_two){
+    reverse_floor_ids = floor_ids.reverse()
+    $(".line").remove();
+    $(".line_hello").remove();
+    run_only_once_1 = true
+    $('.floor_btn')[reverse_floor_ids[0] - 1].click()
+    for (var i = 0; i < (reverse_floor_ids.length); i++) {
+      for (var j = 0; j < (Object.keys(downstair_path_object_in_order[reverse_floor_ids[i]]).length); j++) {
+        delayed(300, function (i, j) {
+          return function () {
+            x0_y0_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j])
+            if (downstair_path_object_in_order[reverse_floor_ids[i]][j+1]){
+              x1_y1_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j+1])
+              x0 = x0_y0_and_type[0]
+              y0 = x0_y0_and_type[1]
+              x1 = x1_y1_and_type[0]
+              y1 = x1_y1_and_type[1]
+              x1_y1_type = x1_y1_and_type[2]
+              $("#map_" + reverse_floor_ids[i]).line(x0, y0, x1, y1, {
+                  zindex: 99,
+                  color: '#ffa500',
+                  stroke: "5",
+                  style: "solid",
+                  class: "line_hello"
+              });
+              if (stops_type_arr.includes(x1_y1_type)){
+                $(".line").remove();
+                $(".line_hello").remove();
+              }
+              if ( i != reverse_floor_ids.length && j == (Object.keys(downstair_path_object_in_order[reverse_floor_ids[i]]).length - 1)){
+                $('.floor_btn')[reverse_floor_ids[i+1] -1 ].click()
+               }else if(run_only_once_1 && i == (reverse_floor_ids.length - 1) ){
+                run_only_once_1 = false
+                callback_two(moving_to_starting_point_path_object_in_order)
+              }
+            }else{
+              if(run_only_once_1 && i == (reverse_floor_ids.length -1)){
+                run_only_once_1 = false
+                callback_two(moving_to_starting_point_path_object_in_order) 
+              }else if(run_only_once_1){
+                if (i == (reverse_floor_ids.length - 1) )
+                  run_only_once_1 = false
+                else{
+                  $('.floor_btn')[reverse_floor_ids[i+1] - 1].click()
+                }
+              }
             }
           };
         }(i, j));

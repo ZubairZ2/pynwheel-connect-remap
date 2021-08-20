@@ -7,7 +7,7 @@ module ShortestPath
     algo_unit_data = get_unit_data(@hallways.dup, @unit_with_door.dup)
     algo_amenity_data = get_amenity_data(@hallways.dup, @amenity_with_doors.dup)
     start_point_data = get_starting_point_data(@hallways.dup)
-    algo_access_point_data = get_access_point_data()
+    #algo_access_point_data = get_access_point_data()
     new_hallways_coordinates = fetch_hallways_coordinates_with_distance(@hallways.dup)
     hallways_id_to_uniq_id = make_hallways_id_to_uniq_id(new_hallways_coordinates, true)
     hallways_dijkstra_data = make_hallways_data_for_dijakstra(new_hallways_coordinates, hallways_id_to_uniq_id)
@@ -152,7 +152,7 @@ module ShortestPath
     algo_unit_data = get_unit_data(@hallways.dup, @unit_with_door.dup)
     algo_amenity_data = get_amenity_data(@hallways.dup, @amenity_with_doors.dup)
     start_point_data = get_starting_point_data(@hallways.dup)
-    algo_access_point_data = get_access_point_data()
+    #algo_access_point_data = get_access_point_data()
     new_hallways_coordinates = fetch_hallways_coordinates_with_distance(@hallways.dup)
     hallways_id_to_uniq_id = make_hallways_id_to_uniq_id(new_hallways_coordinates, true)
     hallways_dijkstra_data = make_hallways_data_for_dijakstra(new_hallways_coordinates, hallways_id_to_uniq_id)
@@ -661,12 +661,14 @@ module ShortestPath
         new_point['next_points_distance'] = [];
         point.next_points.each_with_index do |element, i|
           obj  = hallways.where(id: element).first
-          id   = obj.id.to_s;
-          a    = point.x_plot - obj.x_plot;
-          b    = point.y_plot - obj.y_plot;
-          c    = Math::sqrt(a * a + b * b);
-          temp = {id => c};
-          new_point['next_points_distance'].push(temp);
+          if obj.present?
+            id   = obj.id.to_s;
+            a    = point.x_plot - obj.x_plot;
+            b    = point.y_plot - obj.y_plot;
+            c    = Math::sqrt(a * a + b * b);
+            temp = {id => c};
+            new_point['next_points_distance'].push(temp);
+          end
         end
         new_hallways_coordinates[point.id] = new_point;
       end
