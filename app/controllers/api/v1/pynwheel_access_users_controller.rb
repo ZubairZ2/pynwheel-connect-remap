@@ -335,7 +335,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   def current_community_time(community)
     timezone = get_community_time_zone(community)
-    (timezone != "UTC") ? Time.now.in_time_zone(timezone) : Time.now.utc
+    (timezone != "UTC") ? Time.now.in_time_zone(timezone) : Time.now
   end
 
   def get_community_time_zone(community)
