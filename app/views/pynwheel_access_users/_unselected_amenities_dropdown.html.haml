@@ -7,7 +7,7 @@
 
   - amenity_arr = []
   - select_tag_amenity = []
-  - amenities.each do |amenity|
+  - amenities&.each do |amenity|
     - if (amenity.x_plot.to_i + amenity.y_plot.to_i > 0 )
       - select_tag_amenity << ["<img src='#{image_tag amenity.image.present? ? amenity.image.url : "upload-image.png"}' />".html_safe + amenity.name, "#{amenity.id}:amenity"]
         

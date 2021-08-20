@@ -1,5 +1,5 @@
 - if community.mdu
-  - units = units.sort_by{|u| u.marketing_name}
+  - units = units&.sort_by{|u| u.marketing_name}
   .col-lg-6{:style => "margin-bottom: 10px;"}
     %h5.mt-40.mb-20
       Units
@@ -10,7 +10,7 @@
     - amenity_arr = []
     - select_tag_unit = []
     
-    - units.each do |unit|
+    - units&.each do |unit|
       - if ((unit.x_plot.to_i + unit.y_plot.to_i > 0))
         - select_tag_unit << [unit.building.present? ? (unit.building + "-" + unit.marketing_name) : unit.marketing_name, "#{unit.id}:unit"]
     = select_tag "unit_accesses", options_for_select(select_tag_unit, ""), :class => 'chosen-select-unit',:"data-placeholder" => "- select unit -", :multiple => "multiple",:name => "unit_data_selected", style: "width: 100%;"

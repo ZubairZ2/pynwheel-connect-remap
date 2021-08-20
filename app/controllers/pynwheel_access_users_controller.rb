@@ -41,6 +41,9 @@ class PynwheelAccessUsersController < ApplicationController
       @accessible_units = user_accessible_units( user_accessable_points("unit") )
       @un_accessible_amenities = @community.amenities - @accessible_amenities
       @un_accessible_units = @community.units - @accessible_units
+    else
+
+      redirect_to community_pynwheel_access_users_path(@community)
     end
   end
 

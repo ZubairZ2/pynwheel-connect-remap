@@ -10,7 +10,7 @@
             %th{:width => "150"} Actions
         %tbody
           - order_number = 0
-          - units.each do |unit|
+          - units&.each do |unit|
             %tr
               %td
                 = order_number = order_number + 1
@@ -37,7 +37,7 @@
             = render :partial=>'access_timer', :locals => {community: community, access_point: unit}
             = render :partial=>'remove_user_access_modal', :locals => {community: community, access_point: unit, user: user}
 
-          - amenities.each do |amenity|
+          - amenities&.each do |amenity|
             %tr
               %td
                 = order_number = order_number + 1
