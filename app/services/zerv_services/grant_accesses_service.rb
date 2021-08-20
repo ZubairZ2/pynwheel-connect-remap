@@ -14,9 +14,13 @@ module ZervServices
                     response = ZervServices::AddUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: stop_list)
                     check_response(is_resident, community, tour_user, stop_list, response, response.error.present? ? {manual_error: "AddUserWithAccessesService responsed false", error_position: "Error: #{response.error.code} :: Unable to create Zerv user"} : {})
                 else
+                    binding.pry
                     response.payload["listUsers"].each do |zerv_user|
-                        tour_user.phone_number[0] = '' unless is_number?(tour_user.phone_number[0])
-                        if zerv_user["phoneNumber"] == tour_user.phone_number
+                        unless is_resident
+                            tour_user.phone_number[0] = '' unless is_number?(tour_user.phone_number[0])
+                        end
+
+                        if zerv_user["phoneNumber"] == (is_resident ? tour_user.phone_number[1..-1] : tour_user.phone_number)
                             ################################## if user exists get previous data also #####################################
                             response = ZervServices::GetUserWithAccessesService.call(is_resident: is_resident, community: community, tour_user: tour_user)
                             if response.success? 
