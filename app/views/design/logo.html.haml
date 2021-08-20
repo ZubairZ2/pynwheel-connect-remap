@@ -1,6 +1,6 @@
 - content_for :title, "Property Logo - Pynwheel"
 .divLoading.hidden
-- if @community.touchscreen_app
+- if @community.touchscreen_app || current_community.self_tour
   %section.is-home-page
     .content
       .title-heading
