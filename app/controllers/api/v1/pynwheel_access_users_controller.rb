@@ -1,9 +1,7 @@
 class Api::V1::PynwheelAccessUsersController < ActionController::Base
   before_action :get_pynwheel_access_user_by_phone_number, only: [:generate_otp, :verify_otp]
-  before_action :get_pynwheel_access_user_by_id, only: [:check_lock_access, :pynwheel_access_user_authentication, :generate_locks_access,:resident_accesses_list, :dwelo_device_lock_or_unlock, :lock_access_time, :resident_accesses_history]
-  before_action :is_authorized, only: [:check_lock_access, :generate_locks_access, :resident_accesses_list, :resident_accesses_history, :lock_access_time]
-
-  # include DweloDevicesHelper
+  before_action :get_pynwheel_access_user_by_id, only: [:check_lock_access, :pynwheel_access_user_authentication,:resident_accesses_list, :dwelo_device_lock_or_unlock, :lock_access_time, :resident_accesses_history]
+  before_action :is_authorized, only: [:check_lock_access, :resident_accesses_list, :resident_accesses_history, :lock_access_time]
 
   def pynwheel_access_user_authentication
     if @pynwheel_access_user.present?
