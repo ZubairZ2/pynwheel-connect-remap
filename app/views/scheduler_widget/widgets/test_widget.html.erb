@@ -1163,10 +1163,16 @@
         });
 
         $('#desired_move_in_date').focusin( function(){
-          $('.moveindatepicker').datepicker({
+          $('.moveindatepicker').datetimepicker({
             // minDate: 1,
             minDate: new Date(),
-            dateFormat: 'mm/dd/yy'   
+            format: 'MM/DD/YYYY',
+            sideBySide: true,
+            showTodayButton: true,
+            showClear: true,
+            showClose: true,
+            useCurrent: false,
+            toolbarPlacement: "bottom",
           });
         })
 
