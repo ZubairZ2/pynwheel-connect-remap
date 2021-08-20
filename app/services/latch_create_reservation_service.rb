@@ -15,8 +15,8 @@ class LatchCreateReservationService < BaseService
 
     def execute(startTime, endTime, keyIds, tour_user, allowedKeycardCount)
         if @latch_property.present?
-            # proxy = URI("http://2rn1rzbnnvgtcd:6oH04iuecO3nRnroOcKhomXhHw@us-east-static-06.quotaguard.com:9293")
-            proxy = URI(ENV["QUOTAGUARDSTATIC_URL"])
+            proxy = URI("http://2rn1rzbnnvgtcd:6oH04iuecO3nRnroOcKhomXhHw@us-east-static-06.quotaguard.com:9293")
+            # proxy = URI(ENV["QUOTAGUARDSTATIC_URL"])
             options = 	{http_proxyaddr: proxy.host,http_proxyport:proxy.port, http_proxyuser:proxy.user, http_proxypass:proxy.password}
 
             request = {}
@@ -49,7 +49,8 @@ class LatchCreateReservationService < BaseService
                 :body => request[:body] ,
                 :headers => { 'Authorization' => token, 'Content-Type' => 'application/json'})
 
-            puts "---"*10
+            puts "---"*30
+            puts "------------------------------ Latch Response -----------------------------"
             puts response
 
             return response

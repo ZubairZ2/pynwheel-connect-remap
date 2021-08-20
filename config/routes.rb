@@ -525,6 +525,7 @@ Rails.application.routes.draw do
           get :pynwheel_access_user_authentication
           get :resident_accesses_list
           get :resident_accesses_history
+          post :check_lock_access
           post :generate_otp
           post :verify_otp
           post :lock_access_time

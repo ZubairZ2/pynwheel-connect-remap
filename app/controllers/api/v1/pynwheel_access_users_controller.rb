@@ -1,7 +1,7 @@
 class Api::V1::PynwheelAccessUsersController < ActionController::Base
   before_action :get_pynwheel_access_user_by_phone_number, only: [:generate_otp, :verify_otp]
-  before_action :get_pynwheel_access_user_by_id, only: [:pynwheel_access_user_authentication, :resident_accesses_list, :dwelo_device_lock_or_unlock, :lock_access_time, :resident_accesses_history]
-  before_action :is_authorized, only: [:resident_accesses_list, :resident_accesses_history, :lock_access_time]
+  before_action :get_pynwheel_access_user_by_id, only: [:check_lock_access, :pynwheel_access_user_authentication, :generate_locks_access,:resident_accesses_list, :dwelo_device_lock_or_unlock, :lock_access_time, :resident_accesses_history]
+  before_action :is_authorized, only: [:check_lock_access, :generate_locks_access, :resident_accesses_list, :resident_accesses_history, :lock_access_time]
 
   # include DweloDevicesHelper
 
@@ -10,6 +10,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
       if @pynwheel_access_user.is_verified
         @zerv_present = is_zerv_present
         @access_token = encode_jwt_token(@pynwheel_access_user)
+        grant_locks_accesses()
       else
         render json: {message: "Non Varified User", success_code: 404, status: false}
       end
@@ -18,14 +19,27 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     end
   end
 
-  def resident_accesses_list  
+  def resident_accesses_list
     if is_authorized
-      create_zerv_user()
-      dwelo_lock_access()
-      edgestate_lock_Access()
-      create_latch_reservation()
+      session["check_lock_access#{@pynwheel_access_user.id.to_s}"] = 0
     else
       render json: {message: "Access denied", success_code: 401, status: false}
+    end
+  end
+
+  def check_lock_access
+    if is_authorized
+      community = @pynwheel_access_user.community
+      access_user = @pynwheel_access_user
+
+      counter = check_lock_access_counter(access_user)
+      if ((community.multiple_locks_provider.include?("Dwelo") && (access_user.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (access_user.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (access_user.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (access_user.zerv_status == "in progress")) && !(counter >= 20))
+        render :json=> {success: "false", completed: false}
+      else
+        render :json=> {success: "true", completed: true}
+      end
+    else
+      render json: {message: "Access denied", success_code: 401, status: false, completed: false}
     end
   end
 
@@ -60,6 +74,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
         @zerv_present = is_zerv_present
         verify_user(true)
         @access_token = encode_jwt_token(@pynwheel_access_user)
+        grant_locks_accesses()
       else
         verify_user(false)
         render json: {message: "OTP is wrong or expired", success_code: 404, status: false}
@@ -131,23 +146,42 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   private
 
+  def grant_locks_accesses
+    create_zerv_user()
+    dwelo_lock_access()
+    edgestate_lock_Access()
+    create_latch_reservation()
+  end
+
+  def check_lock_access_counter(access_user)
+    session["check_lock_access#{access_user.id.to_s}"] = 0 if (session["check_lock_access#{access_user.id.to_s}"].nil? || (session["check_lock_access#{access_user.id.to_s}"] == 20))
+    session["check_lock_access#{access_user.id.to_s}"] += 1
+    puts "&$"*30, session["check_lock_access#{access_user.id.to_s}"]
+    session["check_lock_access#{access_user.id.to_s}"]
+  end
+
   def set_access_time is_lock_accessed
     @pynwheel_access_user.resident_access_points.where(access_point_type: params[:stop_type], access_point_id: params[:stop_id]).update_all(access_time: params[:access_time], is_accessed: is_lock_accessed)
   end
 
   def create_zerv_user()
     locks_thread = Thread.new do
+
       begin
-      # tour_user.update_column 'zerv_status' , 'in progress'
+      
+      @pynwheel_access_user.update_column 'zerv_status' , 'in progress'
       execution_context = Rails.application.executor.run!
       @community = @pynwheel_access_user.community
+
       if @community.enable_locks and @community.multiple_locks_provider.include?("Zerv")
         allowed_stops = zerv_multiple_stops_access()
         ZervServices::GrantAccessesService.call(community: @community, tour_user: @pynwheel_access_user, stop_list: allowed_stops, is_resident: true)
       end
-      # tour_user.update_column 'zerv_status' , 'complete'
+
+      @pynwheel_access_user.update_column 'zerv_status' , 'complete'
+
       rescue => ex
-        # tour_user.update_column 'zerv_status' , 'complete'
+        @pynwheel_access_user.update_column 'zerv_status' , 'complete'
         puts "--------- Zerv error -------- ", ex
       end
 
@@ -161,7 +195,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   def create_latch_reservation()
     Thread.new do
       begin
-      # tour_user.update_column 'latch_status' , 'in progress'
+      @pynwheel_access_user.update_column 'latch_status' , 'in progress'
       @community = @pynwheel_access_user.community
       start_time = current_community_time(@community)
       end_time = start_time + 90.minutes
@@ -204,9 +238,10 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
         end
       end
 
-      # tour_user.update_column 'latch_status' , 'complete'
+      @pynwheel_access_user.update_column 'latch_status' , 'complete'
+
       rescue => ex
-        # tour_user.update_column 'latch_status' , 'complete'
+        @pynwheel_access_user.update_column 'latch_status' , 'complete'
         puts "--------- Latch error -------- ", ex
       end
       
@@ -216,8 +251,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   def edgestate_lock_Access()
     Thread.new do
       begin
-      # tour_user = TourUser.find params[:tour_user_id]
-      # tour_user.update_column 'edge_state_status' , 'in progress'
+      @pynwheel_access_user.update_column 'edge_state_status' , 'in progress'
       @community = @pynwheel_access_user.community
       access_token = RemoteLockService.new(@community).client_credentials
       prev_data = @pynwheel_access_user.as_guests.where(community_id: @community.id)
@@ -248,9 +282,10 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
         igloo_guest_ids.map{ |guest_id| RemoteLockService.new(@community).delete_igloo_guests(access_token, guest_id) unless guest_id == ''}
         IglooGuest.where(guest_id: igloo_guest_ids).update_all(status: 'deleted')
       end
-      # tour_user.update_column 'edge_state_status' , 'complete'
+
+      @pynwheel_access_user.update_column 'edge_state_status' , 'complete'
       rescue => ex
-        # tour_user.update_column 'edge_state_status' , 'complete'
+        @pynwheel_access_user.update_column 'edge_state_status' , 'complete'
         puts "--------- EdgeState error -------- ", ex
       end
 
@@ -261,7 +296,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     Thread.new do
       begin
       # tour_user = TourUser.find params[:tour_user_id]
-      # @pynwheel_access_user.update_column 'dwelo_status' , 'in progress'
+      @pynwheel_access_user.update_column 'dwelo_status' , 'in progress'
       @community = @pynwheel_access_user.community
       providers_account = Dwelo.find_by(community_id: @community.id) rescue nil
       current_time = current_community_time(@community)
@@ -291,10 +326,10 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
         end
       end
       
-      # @pynwheel_access_user.update_column 'dwelo_status' , 'complete'
+      @pynwheel_access_user.update_column 'dwelo_status' , 'complete'
 
       rescue => ex
-        # @pynwheel_access_user.update_column 'dwelo_status' , 'complete'
+        @pynwheel_access_user.update_column 'dwelo_status' , 'complete'
         puts "--------- Dwelo error -------- ", ex
       end
     end
