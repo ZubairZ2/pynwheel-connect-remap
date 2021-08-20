@@ -598,7 +598,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
       if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and tour_user.tour_type != "virtual_tour"
         allowed_stops = zerv_multiple_stops_access(community)
-        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, is_resident: true)
+        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, is_resident: false)
       end
       tour_user.update_column 'zerv_status' , 'complete'
       rescue => ex

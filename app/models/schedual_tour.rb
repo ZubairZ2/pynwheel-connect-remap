@@ -32,7 +32,7 @@ class SchedualTour < ApplicationRecord
     if self.tour_user_id.present? and community.enable_locks and community.multiple_locks_provider.include?("Zerv")
       Thread.new do
         execution_context = Rails.application.executor.run!
-        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: nil, is_resident: true)
+        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: nil, is_resident: false)
       ensure
         execution_context.complete! if execution_context
       end

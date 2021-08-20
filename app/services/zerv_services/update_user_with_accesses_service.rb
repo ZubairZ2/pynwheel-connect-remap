@@ -6,6 +6,8 @@ module ZervServices
             tour_user    = args[:tour_user]
             stop_list    = args[:stop_list]
             zerv_user    = args[:zerv_user]
+            is_resident = args[:is_resident]
+            
             @facilityId   = community.zerv.facility_id.blank? ? "0" : community.zerv.facility_id
             @accessCode   = community.zerv.badge_id.blank? ? "1234" : community.zerv.badge_id
             @cardFormat   = community.zerv.card_format.blank? ? "HID Prox 26-bit H10301" : community.zerv.card_format
@@ -39,7 +41,10 @@ module ZervServices
                 end
             end
             
-            tour_user.phone_number = tour_user.phone_number[0] == '+' ?  tour_user.phone_number : '+' + tour_user.phone_number
+            unless is_resident
+                tour_user.phone_number = tour_user.phone_number[0] == '+' ?  tour_user.phone_number : '+' + tour_user.phone_number
+            end
+
             body = {
                 "firstName": tour_user.first_name,
                 "lastName": tour_user.last_name,

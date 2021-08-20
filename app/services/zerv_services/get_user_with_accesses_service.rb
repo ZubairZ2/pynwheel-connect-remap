@@ -4,9 +4,10 @@ module ZervServices
         def execute(args)
             tour_user = args[:tour_user]
             check_again = args[:checking_twice].present? ? true : false
-            tour_user.phone_number[0] = '' unless is_number?(tour_user.phone_number[0])
+            is_resident = args[:is_resident]
+            number = get_user_phone_number(is_resident, tour_user)
 
-            url =  base_url + "/user/getuserwithtimezone/" + tour_user.phone_number + "?customerId=PynWheel-TCXVx"
+            url =  base_url + "/user/getuserwithtimezone/" + number + "?customerId=PynWheel-TCXVx"
             id_token = get_id_token
 
             puts '--------------------------    Zerv get user with accesses called    ------------------------'
@@ -30,6 +31,15 @@ module ZervServices
                 end
             else
                 OpenStruct.new({success?: false, error: response, payload: nil})  
+            end
+        end
+
+        def get_user_phone_number is_resident, user, number = nil
+            if is_resident
+                number = user.phone_number[1..-1]
+            else
+                user.phone_number[0] = '' unless is_number?(user.phone_number[0])
+                number = user.phone_number
             end
         end
 
