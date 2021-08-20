@@ -335,10 +335,11 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   def current_community_time(community)
     timezone = get_community_time_zone(community)
-    timezone.present? ? Time.now.in_time_zone(timezone) : Time.now
+    (timezone != "UTC") ? Time.now.in_time_zone(timezone) : Time.now.utc
   end
 
   def get_community_time_zone(community)
+    tz = Ziptz.new
     timezone = nil
 
     if community.latitude.present? and community.longitude.present?
@@ -346,7 +347,13 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
       timezone = time_zone.name
     end
 
-    timezone
+    if timezone.nil? and community.zip.present?
+        timezone = tz.time_zone_name(community.zip)
+    end
+
+    return timezone.present? ? timezone : "UTC"
+  rescue
+    return "UTC"
   end
 
 
@@ -432,8 +439,8 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
     @pynwheel_access_user.update!(random_number: id)
     url = base_url + "/v4/integrations/pynwheel/access_persons/"
 
-    start_time = Time.now.strftime('%Y-%m-%dT%H:%M:%SZ')
-    ends_time = (Time.now + 90.minutes).strftime('%Y-%m-%dT%H:%M:%SZ')
+    start_time = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+    ends_time = (Time.now.utc + 90.minutes).strftime('%Y-%m-%dT%H:%M:%SZ')
     puts start_time
     puts ends_time
 
