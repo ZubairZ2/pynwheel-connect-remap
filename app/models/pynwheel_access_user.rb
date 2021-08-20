@@ -24,6 +24,8 @@ class PynwheelAccessUser < ApplicationRecord
       access_point = (s.access_point_type.classify.constantize.find_by_id s.access_point_id)
       access_history << access_history_json(access_point, s)
     end
+
+    access_history
   end
 
   def access_history_json access_point, stop
@@ -39,8 +41,8 @@ class PynwheelAccessUser < ApplicationRecord
     user_accesses = get_access_points
 
     user_accesses.each do |access|
-      access_point = (access[0].classify.constantize.find_by_id access[1])
-      accesses_list << generate_access_hash(access_point, access[0])
+      access_point = (access.access_point_type.classify.constantize.find_by_id access.access_point_id)
+      accesses_list << generate_access_hash(access_point, access)
     end
 
     accesses_list
@@ -52,15 +54,14 @@ class PynwheelAccessUser < ApplicationRecord
 
   private
 
-  def generate_access_hash access, type
-
+  def generate_access_hash access, stop
     {
       stop_id: access.id,
-      stop_name: (type === "unit" ? "Unit: #{access.marketing_name}" : access.name),
-      stop_type: type,
+      stop_name: (stop.access_point_type === "unit" ? "Unit: #{access.marketing_name}" : access.name),
+      stop_type: stop.access_point_type,
       lock_type: access.lock_provider,
-      last_access: Time.now.strftime("%a, %d %b %Y %I:%M %p"),
-    }.merge(lock_provider_data(access, type))
+      last_access: stop.access_time.present? ? stop.access_time.strftime("%a, %d %b %Y %I:%M %p") : "Never",
+    }.merge(lock_provider_data(access, stop.access_point_type))
   end
 
   def lock_provider_data access, type
@@ -243,6 +244,6 @@ class PynwheelAccessUser < ApplicationRecord
   end
 
   def get_access_points
-    self.resident_access_points.pluck(:access_point_type, :access_point_id)
+    self.resident_access_points
   end
 end
