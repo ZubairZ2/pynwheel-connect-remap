@@ -48,10 +48,12 @@ function initialize_methods(map_id = "#map"){
     }
     if (!map_id)
       map_id = "#map"
-    var dx = parseInt(event.pageX) - parseInt($(map_id).offset().left) + parseInt($(map_id).scrollLeft());
-    var dy = parseInt(event.pageY) - parseInt($(map_id).offset().top) + parseInt($(map_id).scrollTop());
-    $('#active_x_plot').html(dx);
-    $('#active_y_plot').html(dy);
+    if ($(map_id).length > 0){
+      var dx = parseInt(event.pageX) - parseInt($(map_id).offset().left) + parseInt($(map_id).scrollLeft());
+      var dy = parseInt(event.pageY) - parseInt($(map_id).offset().top) + parseInt($(map_id).scrollTop());
+      $('#active_x_plot').html(dx);
+      $('#active_y_plot').html(dy);
+    }
   }); 
   $(document).click('.viewArea', function(e){
     if ($(e.target).hasClass('viewArea')){
@@ -350,12 +352,13 @@ function initialize_map_click(map_id){
   });
 
   function icon_click(thiObj) {
+      map_id = thiObj.data("map-id")
       $(".fa-dot-circle").css('color', '#008fd4');
-      previous_id = $(".selected_point").attr('id');
+      previous_id = $(map_id + " .selected_point").attr('id');
       $(".fa-dot-circle").removeClass('selected_point');
       thiObj.children().css('color', '#f7296a');
       thiObj.children().addClass('selected_point');
-      current_id = $(".selected_point").attr('id');
+      current_id = $(map_id + " .selected_point").attr('id');
       if ($('#hallway_btn').html() === "Stop Plotting Hallways" && cntrlIsPressed){
         connect_leaf_point(current_id, previous_id)
       }
@@ -410,7 +413,7 @@ function initialize_map_click(map_id){
       for (var i = 0; i < hallways_coordinates.length; i++) {
           selected_color = hallways_coordinates[i].selected ? '#f7296a' : '#008fd4'
           classes = hallways_coordinates[i].selected ? 'fas fa-dot-circle fa-lg selected_point' : 'fas fa-dot-circle fa-lg'
-          tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker' onclick='icon_click($(this))' title='id:" + hallways_coordinates[i].id + ' np:' + hallways_coordinates[i].next_points + "'   style='left:" + (hallways_coordinates[i].x_plot) + "px; top:" + (hallways_coordinates[i].y_plot) + "px; z-index:100; position:absolute;'>"
+          tag = "<a class='marker ui-draggable ui-draggable-handle hallways_marker' onclick='icon_click($(this))'"+ "data-map-id=" + map_id + " title='id:" + hallways_coordinates[i].id + ' np:' + hallways_coordinates[i].next_points + "'   style='left:" + (hallways_coordinates[i].x_plot) + "px; top:" + (hallways_coordinates[i].y_plot) + "px; z-index:100; position:absolute;'>"
           tag += "<i id='" + hallways_coordinates[i].id + "' class='"+ classes + "' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; z-index:100; color: "+ selected_color + " ' ></i>";
           tag += "</a>"
           $(map_id).append(tag);

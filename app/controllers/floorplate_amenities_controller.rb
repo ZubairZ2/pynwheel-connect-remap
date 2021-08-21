@@ -104,7 +104,7 @@ class FloorplateAmenitiesController < ApplicationController
 
     @amenities              = @community.amenities
     @current_locks_provider =   existing_locks_provider(@community)
-    @hallways               = @floorplate.hallways
+    @hallways               = make_sure_one_selected_hallway(@floorplate.hallways)
     @all_locks              = all_locks(@community)
 
     @amenity_with_doors = []

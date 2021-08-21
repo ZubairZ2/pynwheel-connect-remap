@@ -79,7 +79,7 @@ class HallwaysController < ApplicationController
   end
 
   def save_selected_point
-    current_point = Hallway.find(params[:previous_id])
+    current_point = Hallway.find(params[:previous_id]) if params.has_key?('previous_id') && params[:previous_id].present?
     next_point = Hallway.find(params[:current_id])
     hallways = fetch_hallways_points()
     hallways.update_all(selected: false)

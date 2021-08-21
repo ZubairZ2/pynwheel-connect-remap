@@ -12,7 +12,7 @@ class AutomatePlottingController < ApplicationController
     @planned_to_visit_amenities_and_doors_ids = []
     if @community.is_sitemap
       @sitemap = @community.sitemap
-      @hallways = @sitemap.hallways.order("id ASC")
+      @hallways = make_sure_one_selected_hallway(@sitemap.hallways.order("id ASC"))
       #@access_points = @sitemap.access_points
       planned_to_visit_units_ids     = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
@@ -53,9 +53,9 @@ class AutomatePlottingController < ApplicationController
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
       @floor_to_floorplate = fetch_hash_for_floor_to_floorplate()
       @floor_to_floorplate_name_units = @floors.map {|floor| @floor_to_floorplate[floor].name + " Units" }
-      # After
+
       @floors.each do |floor|
-        @hallways[floor] = @floor_to_floorplate[floor].hallways.order("id ASC")
+        @hallways[floor] = make_sure_one_selected_hallway(@floor_to_floorplate[floor].hallways.order("id ASC"))
         @community_units[floor] = @floor_to_floorplate[floor].units.where(floor: floor).includes(:door)
         @amenities_doors[floor] = @floor_to_floorplate[floor].amenities.where(floor: floor).includes(:doors)
         @elevators[floor] = @floor_to_floorplate[floor].fetch_elevators(floor)

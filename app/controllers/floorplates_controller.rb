@@ -178,7 +178,7 @@ class FloorplatesController < ApplicationController
     @community_units = @floorplate.fetch_units.includes(:door)
     @current_locks_provider = existing_locks_provider(@community)
     @all_locks = all_locks(@community)
-    @hallways = @floorplate.hallways.order("id ASC")
+    @hallways = make_sure_one_selected_hallway(@floorplate.hallways.order("id ASC"))
     @access_points = @floorplate.access_points # @floorplate.access_points.select('DISTINCT ON (x_plot, y_plot) *')
     @unit_with_door = @community_units.map { |unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } } }
 

@@ -158,6 +158,15 @@ class ApplicationController < ActionController::Base
     current_community.present? ? CommunityUser.where(user_id: current_user.id, chat_enable: true).exists? : false rescue false
     # Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {community_id: current_community.id, user_id: current_user.id, chat_enable: true}).exists? rescue false
   end
+  def make_sure_one_selected_hallway(hallways)
+    if !hallways.where(selected: true).any?
+        hallway = hallways.last
+        hallway.selected = true
+        hallway.save
+        hallways.last.selected = true
+    end
+    hallways
+  end
   protected
 
   def layout_by_resource
