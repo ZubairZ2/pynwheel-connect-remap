@@ -164,7 +164,7 @@ function textFilter(selectedUnit, ocrDetectedUnit) {
   u_parts = ocrDetectedUnit.split("-");
   let u_flag = false
   u_parts.forEach((u_text) =>{
-    if(selectedUnit.includes(u_text)) {
+    if(selectedUnit && u_text && selectedUnit.includes(u_text)) {
       u_flag = true
     }
   });
