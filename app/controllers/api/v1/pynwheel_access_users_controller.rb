@@ -145,10 +145,33 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   private
 
   def grant_locks_accesses
-    create_zerv_user()
-    dwelo_lock_access()
-    edgestate_lock_Access()
-    create_latch_reservation()
+    existing_locks = get_existing_locks()
+    
+    if existing_locks.include?("Zerv")
+      create_zerv_user()
+    end
+
+    if existing_locks.include?("Dwelo")
+      dwelo_lock_access()
+    end
+
+    if existing_locks.include?("EdgeState")
+      edgestate_lock_Access()
+    end
+
+    if existing_locks.include?("Latch")
+      create_latch_reservation()
+    end
+  end
+
+  def get_existing_locks existing_locks = []
+    available_stops = @pynwheel_access_user.resident_access_points.pluck(:access_point_type, :access_point_id)
+
+    available_stops.each do |stop|
+      existing_locks << (stop[0].classify.constantize.find_by_id stop[1]).lock_provider
+    end
+
+    existing_locks
   end
 
   def check_lock_access_counter(access_user)
