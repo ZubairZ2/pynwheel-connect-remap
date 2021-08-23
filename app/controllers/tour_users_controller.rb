@@ -210,6 +210,9 @@ class TourUsersController < ApplicationController
 
               if f[1].building.present?
                 buildings <<  f[1].building
+              else
+                f[1].building = "A"
+                buildings << "A" #If no building Add building A for test
               end
             end
           end
