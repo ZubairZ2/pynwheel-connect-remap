@@ -87,9 +87,9 @@ class AutomatePlottingController < ApplicationController
   def shortest_path
     community = Community.find params[:community_id]
     if community.is_sitemap
-      path_object_in_order = return_path_for_sitemap(params[:community_id], params[:path_type]) rescue []
+      path_object_in_order = begin; return_path_for_sitemap(params[:community_id], params[:path_type]); rescue; []; end
     else
-      path_object_in_order = return_path_for_floorplate(params[:community_id], params[:path_type]) rescue []
+      path_object_in_order = begin; return_path_for_floorplate(params[:community_id], params[:path_type]); rescue; []; end
     end
     render :json => {path_object: path_object_in_order.to_json}, :status => 200
   end
