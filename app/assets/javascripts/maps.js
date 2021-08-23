@@ -765,18 +765,23 @@ function initialize_map_click(map_id){
       success: function (data) {
         $(".line").remove();
         $(".line_hello").remove();
-        if (is_sitemap){
-          path_object = JSON.parse(data["path_object"])
-          if (with_animation)
-            draw_shortest_path_with_animation(path_object)
-          else
-            draw_shortest_path(path_object)
-        }else{
-          path_object = JSON.parse(data["path_object"])
-          if (with_animation)
-            draw_shortest_path_for_floorplate_with_animation(path_object)
-          else
-            draw_shortest_path_for_floorplate(path_object)
+        path_object = JSON.parse(data["path_object"])
+        if (path_object.length == 0 && is_sitemap)
+          alert("please make you have draw connected hallways point")
+        if (path_object.length == 0 && !is_sitemap)
+          alert("please make you have draw connected hallways point on each floor")
+        else{
+          if (is_sitemap){
+            if (with_animation)
+              draw_shortest_path_with_animation(path_object)
+            else
+              draw_shortest_path(path_object)
+          }else{
+            if (with_animation)
+              draw_shortest_path_for_floorplate_with_animation(path_object)
+            else
+              draw_shortest_path_for_floorplate(path_object)
+          }
         }
 
       }
