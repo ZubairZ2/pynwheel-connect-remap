@@ -68,7 +68,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   def verify_otp
     if @pynwheel_access_user.present?
-      if @pynwheel_access_user.pin_code == params[:pin_code].to_s || params[:is_zerv_lock] 
+      if (@pynwheel_access_user.pin_code === params[:pin_code].to_s) || (params[:is_zerv_lock].to_s === "true")
         @zerv_present = is_zerv_present
         verify_user(true)
         @access_token = encode_jwt_token(@pynwheel_access_user)
@@ -77,7 +77,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
         verify_user(false)
         render json: {message: "OTP is wrong or expired", success_code: 404, status: false}
       end
-    else
+    else0
       render json: {message: "Pynwheel access user not found", success_code: 404, status: false}
     end
   end
