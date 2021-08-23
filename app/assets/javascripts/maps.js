@@ -639,7 +639,7 @@ function initialize_map_click(map_id){
         $(".line").remove();
         $(".line_hello").remove();
         for (var k = 0; k < (Object.keys(moving_to_starting_point_path_object_in_order).length - 1); k++) {
-          delayed(400, function (k) {
+          delayed(500, function (k) {
             return function () {
               x0_y0_and_type = return_x_y_values(moving_to_starting_point_path_object_in_order[k])
               x1_y1_and_type = return_x_y_values(moving_to_starting_point_path_object_in_order[k+1])
@@ -648,7 +648,7 @@ function initialize_map_click(map_id){
               x1 = x1_y1_and_type[0]
               y1 = x1_y1_and_type[1]
               x1_y1_type = x1_y1_and_type[2]
-              $("#map_" + 1).line(x0, y0, x1, y1, {
+              $("#map_" + floor_ids[0]).line(x0, y0, x1, y1, {
                   zindex: 99,
                   color: '#ffa500',
                   stroke: "5",
@@ -671,7 +671,7 @@ function initialize_map_click(map_id){
     //debugger
     for (var i = 0; i < (floor_ids.length); i++) {
       for (var j = 0; j < (Object.keys(upstair_path_object_in_order[floor_ids[i]]).length - 1); j++) {
-        delayed(30, function (i, j) {
+        delayed(500, function (i, j) {
           return function () {
             x0_y0_and_type = return_x_y_values(upstair_path_object_in_order[floor_ids[i]][j])
             x1_y1_and_type = return_x_y_values(upstair_path_object_in_order[floor_ids[i]][j+1])
@@ -702,58 +702,6 @@ function initialize_map_click(map_id){
       }
     }
   }
-  function show_downstair_path_1(floor_ids, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order, callback_two){
-    reverse_floor_ids = floor_ids.reverse()
-    $(".line").remove();
-    $(".line_hello").remove();
-    run_only_once_1 = true
-    $('.floor_btn')[reverse_floor_ids[0] - 1].click()
-    for (var i = 0; i < (reverse_floor_ids.length); i++) {
-      for (var j = 0; j < (Object.keys(downstair_path_object_in_order[reverse_floor_ids[i]]).length); j++) {
-        delayed(300, function (i, j) {
-          return function () {
-            x0_y0_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j])
-            if (downstair_path_object_in_order[reverse_floor_ids[i]][j+1]){
-              x1_y1_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j+1])
-              x0 = x0_y0_and_type[0]
-              y0 = x0_y0_and_type[1]
-              x1 = x1_y1_and_type[0]
-              y1 = x1_y1_and_type[1]
-              x1_y1_type = x1_y1_and_type[2]
-              $("#map_" + reverse_floor_ids[i]).line(x0, y0, x1, y1, {
-                  zindex: 99,
-                  color: '#ffa500',
-                  stroke: "5",
-                  style: "solid",
-                  class: "line_hello"
-              });
-              if (stops_type_arr.includes(x1_y1_type)){
-                $(".line").remove();
-                $(".line_hello").remove();
-              }
-              if ( i != reverse_floor_ids.length && j == (Object.keys(downstair_path_object_in_order[reverse_floor_ids[i]]).length - 1)){
-                $('.floor_btn')[reverse_floor_ids[i+1] -1 ].click()
-               }else if(run_only_once_1 && i == (reverse_floor_ids.length - 1) ){
-                run_only_once_1 = false
-                callback_two(moving_to_starting_point_path_object_in_order)
-              }
-            }else{
-              if(run_only_once_1 && i == (reverse_floor_ids.length -1)){
-                run_only_once_1 = false
-                callback_two(moving_to_starting_point_path_object_in_order) 
-              }else if(run_only_once_1){
-                if (i == (reverse_floor_ids.length - 1) )
-                  run_only_once_1 = false
-                else{
-                  $('.floor_btn')[reverse_floor_ids[i+1] - 1].click()
-                }
-              }
-            }
-          };
-        }(i, j));
-      }
-    }
-  }
   function show_downstair_path(floor_ids, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order, callback_two){
     reverse_floor_ids = floor_ids.reverse()
     $(".line").remove();
@@ -762,7 +710,7 @@ function initialize_map_click(map_id){
     $('.floor_btn')[reverse_floor_ids.length - 1].click()
     for (var i = 0; i < (reverse_floor_ids.length); i++) {
       for (var j = 0; j < (Object.keys(downstair_path_object_in_order[reverse_floor_ids[i]]).length); j++) {
-        delayed(30, function (i, j) {
+        delayed(500, function (i, j) {
           return function () {
             x0_y0_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j])
             if (downstair_path_object_in_order[reverse_floor_ids[i]][j+1]){
@@ -803,61 +751,6 @@ function initialize_map_click(map_id){
             }
           };
         }(i, j));
-      }
-    }
-  }
-  function show_downstair_path_2(floor_ids, downstair_path_object_in_order){
-    reverse_floor_ids = floor_ids.reverse()
-    $(".line").remove();
-    $(".line_hello").remove();
-    run_only_once_1 = true
-    $('.floor_btn')[reverse_floor_ids[0]].click()
-    for (var i = 0; i < (reverse_floor_ids.length); i++) {
-      for (var j = 0; j < (Object.keys(downstair_path_object_in_order[reverse_floor_ids[i]]).length); j++) {
-        x0_y0_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j])
-        if (downstair_path_object_in_order[reverse_floor_ids[i]][j+1]){
-          console.log("im in if")
-          x1_y1_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j+1])
-          x0 = x0_y0_and_type[0]
-          y0 = x0_y0_and_type[1]
-          x1 = x1_y1_and_type[0]
-          y1 = x1_y1_and_type[1]
-          x1_y1_type = x1_y1_and_type[2]
-          $("#map_" + reverse_floor_ids[i]).line(x0, y0, x1, y1, {
-              zindex: 99,
-              color: '#ffa500',
-              stroke: "5",
-              style: "solid",
-              class: "line_hello"
-          });
-          if (stops_type_arr.includes(x1_y1_type)){
-            $(".line").remove();
-            $(".line_hello").remove();
-          }
-          if ( i != reverse_floor_ids.length && j == (Object.keys(downstair_path_object_in_order[reverse_floor_ids[i]]).length - 1)){
-            $('.floor_btn')[reverse_floor_ids.length - i - 1 ].click()
-           }else if(run_only_once_1 && i == (reverse_floor_ids.length - 1) ){
-            run_only_once_1 = false
-            //callback_two(moving_to_starting_point_path_object_in_order)
-          }
-        }else{
-          console.log("im in else")
-          console.log("i is :", i)
-          if(run_only_once_1 && i == (reverse_floor_ids.length -1)){
-            run_only_once_1 = false
-            $('.floor_btn')[reverse_floor_ids.length - i - 1].click()
-            //callback_two(moving_to_starting_point_path_object_in_order) 
-          }else if(run_only_once_1){
-            if (i == (reverse_floor_ids.length - 1) ){
-              run_only_once_1 = false
-              $('.floor_btn')[reverse_floor_ids.length - i - 1].click()
-            }
-            else{
-              console.log("im in last else :", reverse_floor_ids.length - i - 1)
-              $('.floor_btn')[reverse_floor_ids.length - i - 1].click()
-            }
-          }
-        }
       }
     }
   }
