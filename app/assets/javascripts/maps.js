@@ -784,6 +784,9 @@ function initialize_map_click(map_id){
           }
         }
 
+      },
+      fail: function () {
+        alert("please make you have draw connected hallways point")
       }
     });
   }
