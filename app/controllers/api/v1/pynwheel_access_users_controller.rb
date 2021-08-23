@@ -146,7 +146,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   def grant_locks_accesses
     existing_locks = get_existing_locks()
-    
+
     if existing_locks.include?("Zerv")
       create_zerv_user()
     end
@@ -194,10 +194,8 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
       execution_context = Rails.application.executor.run!
       @community = @pynwheel_access_user.community
 
-      if @community.enable_locks and @community.multiple_locks_provider.include?("Zerv")
-        allowed_stops = zerv_multiple_stops_access()
-        ZervServices::GrantAccessesService.call(community: @community, tour_user: @pynwheel_access_user, stop_list: allowed_stops, is_resident: true)
-      end
+      allowed_stops = zerv_multiple_stops_access()
+      ZervServices::GrantAccessesService.call(community: @community, tour_user: @pynwheel_access_user, stop_list: allowed_stops, is_resident: true)
 
       @pynwheel_access_user.update_column 'zerv_status' , 'complete'
 

@@ -11,7 +11,8 @@ module ZervServices
             @facilityId   = community.zerv.facility_id.blank? ? "0" : community.zerv.facility_id
             @accessCode   = community.zerv.badge_id.blank? ? "1234" : community.zerv.badge_id
             @cardFormat   = community.zerv.card_format.blank? ? "HID Prox 26-bit H10301" : community.zerv.card_format
-
+            user_audit_logs = ZervServices::GetAuditLogsService.call(community: community) 
+            user_audit_logs = user_audit_logs.success? ? user_audit_logs["payload"]["listUserAudit"] : nil
             user_accesses = zerv_user["listGetUserAccess"]
 
             url = base_url + "/user/updateuserandtimezone/" + zerv_user["id"].to_s
@@ -25,7 +26,10 @@ module ZervServices
                     attached_lock = stop.zerv_locks.last
                     access_code = attached_lock.universal_access_code.present? ? attached_lock.universal_access_code : nil rescue nil
                     access_point = attached_lock.mac_id rescue nil
+
                     if access_point.present?
+                        update_user_access_time(community, tour_user, user_audit_logs, access_point, stop) if is_resident
+
                         if user_accesses.blank?
                             list_add_user_access << time_access_object(community, tour_time, nil)
                         else
@@ -77,6 +81,42 @@ module ZervServices
             end
         end
 
+        def update_user_access_time community, pynwheel_access_user, logs, mac_id, stop
+            access_points = pynwheel_access_user.resident_access_points.where(access_point_id: stop.id, access_point_type: stop.class.name.camelize(:lower))
+
+            if mac_id && access_points.present?
+                access_time = stop_access_time(community, pynwheel_access_user, logs, mac_id)
+                access_points.update_all(access_time: access_time)  if access_time.present?
+            end
+        end
+
+        def stop_access_time community, pynwheel_access_user, logs, mac_id, access_time_entries = []
+            location_name = (community.company.name + ' - ' + community.name).downcase.parameterize.gsub("-", "").gsub("_", "")
+            community_logs = logs.map{|log| log if log["locationName"].present? && log["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name}.compact
+
+            community_logs.each do |log|
+                if log["phoneNumber"].to_s === pynwheel_access_user.phone_number[1..-1] && log["deviceMACId"] === mac_id
+                    access_time_entries << log["eventTimestamp"]
+                end
+            end
+
+            latest_access_time(access_time_entries)
+        end
+
+        def latest_access_time access_time_entries, max_date = nil
+            if access_time_entries.present?
+                max_date = access_time_entries  [0].to_datetime
+
+                access_time_entries.each do |date|
+                    if max_date < date.to_datetime
+                        max_date = date.to_datetime
+                    end
+                end
+
+            end
+
+            max_date
+        end
 
         def time_access_object(community, tour_time, prev_access)
             # ------------------------------------ set values for zerv access parameters ----------------------------- #

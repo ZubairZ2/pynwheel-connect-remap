@@ -33,7 +33,7 @@ class PynwheelAccessUser < ApplicationRecord
       stop_name: (stop.access_point_type === "unit" ? "Unit: #{access_point.marketing_name}" : access_point.name),
       acccess_time: stop.access_time.strftime("%a, %d %b %Y %I:%M %p"),
       message: stop.is_accessed ? "Successfully accessed" : "Failed to access",
-      is_successful: stop.is_accessed 
+      is_successful: stop.is_accessed
     }
   end
 
