@@ -668,8 +668,8 @@ function initialize_map_click(map_id){
   function show_upstair_path(floor_ids, upstair_path_object_in_order, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order, callback){
     run_only_once = true
     $('.floor_btn')[0].click()
-    debugger
-    for (var i = 1; i < (floor_ids.length + 1); i++) {
+    //debugger
+    for (var i = 0; i < (floor_ids.length); i++) {
       for (var j = 0; j < (Object.keys(upstair_path_object_in_order[floor_ids[i]]).length - 1); j++) {
         delayed(300, function (i, j) {
           return function () {
@@ -691,9 +691,9 @@ function initialize_map_click(map_id){
               $(".line").remove();
               $(".line_hello").remove();
             }
-            if ( i != floor_ids.length && j == (Object.keys(upstair_path_object_in_order[floor_ids[i]]).length - 2)){
-              $('.floor_btn')[i].click()
-            }else if(run_only_once && i == floor_ids.length){
+            if ( i != (floor_ids.length - 1) && j == (Object.keys(upstair_path_object_in_order[floor_ids[i]]).length - 2)){
+              $('.floor_btn')[i+1].click()
+            }else if(run_only_once && i == (floor_ids.length - 1)){
               run_only_once = false
               callback(floor_ids, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order)
             }
