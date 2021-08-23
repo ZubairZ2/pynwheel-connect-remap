@@ -670,17 +670,17 @@ function initialize_map_click(map_id){
     $('.floor_btn')[0].click()
     debugger
     for (var i = 1; i < (floor_ids.length + 1); i++) {
-      for (var j = 0; j < (Object.keys(upstair_path_object_in_order[i]).length - 1); j++) {
+      for (var j = 0; j < (Object.keys(upstair_path_object_in_order[floor_ids[i]]).length - 1); j++) {
         delayed(300, function (i, j) {
           return function () {
-            x0_y0_and_type = return_x_y_values(upstair_path_object_in_order[i][j])
-            x1_y1_and_type = return_x_y_values(upstair_path_object_in_order[i][j+1])
+            x0_y0_and_type = return_x_y_values(upstair_path_object_in_order[floor_ids[i]][j])
+            x1_y1_and_type = return_x_y_values(upstair_path_object_in_order[floor_ids[i]][j+1])
             x0 = x0_y0_and_type[0]
             y0 = x0_y0_and_type[1]
             x1 = x1_y1_and_type[0]
             y1 = x1_y1_and_type[1]
             x1_y1_type = x1_y1_and_type[2]
-            $("#map_" + i).line(x0, y0, x1, y1, {
+            $("#map_" + floor_ids[i]).line(x0, y0, x1, y1, {
                 zindex: 99,
                 color: '#ffa500',
                 stroke: "5",
@@ -691,7 +691,7 @@ function initialize_map_click(map_id){
               $(".line").remove();
               $(".line_hello").remove();
             }
-            if ( i != floor_ids.length && j == (Object.keys(upstair_path_object_in_order[i]).length - 2)){
+            if ( i != floor_ids.length && j == (Object.keys(upstair_path_object_in_order[floor_ids[i]]).length - 2)){
               $('.floor_btn')[i].click()
             }else if(run_only_once && i == floor_ids.length){
               run_only_once = false
