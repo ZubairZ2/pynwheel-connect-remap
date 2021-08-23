@@ -668,6 +668,7 @@ function initialize_map_click(map_id){
   function show_upstair_path(floor_ids, upstair_path_object_in_order, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order, callback){
     run_only_once = true
     $('.floor_btn')[0].click()
+    debugger
     for (var i = 1; i < (floor_ids.length + 1); i++) {
       for (var j = 0; j < (Object.keys(upstair_path_object_in_order[i]).length - 1); j++) {
         delayed(300, function (i, j) {
@@ -768,7 +769,7 @@ function initialize_map_click(map_id){
         path_object = JSON.parse(data["path_object"])
         if (path_object.length == 0 && is_sitemap)
           alert("please make you have draw connected hallways point")
-        if (path_object.length == 0 && !is_sitemap)
+        else if (path_object.length == 0 && !is_sitemap)
           alert("please make you have draw connected hallways point on each floor")
         else{
           if (is_sitemap){
