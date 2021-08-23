@@ -648,7 +648,7 @@ function initialize_map_click(map_id){
               x1 = x1_y1_and_type[0]
               y1 = x1_y1_and_type[1]
               x1_y1_type = x1_y1_and_type[2]
-              $("#map_" + floor_ids[0]).line(x0, y0, x1, y1, {
+              $("#map_" + floor_ids[floor_ids.length - 1]).line(x0, y0, x1, y1, {
                   zindex: 99,
                   color: '#ffa500',
                   stroke: "5",
