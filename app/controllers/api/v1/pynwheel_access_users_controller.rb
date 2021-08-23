@@ -77,7 +77,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
         verify_user(false)
         render json: {message: "OTP is wrong or expired", success_code: 404, status: false}
       end
-    else0
+    else
       render json: {message: "Pynwheel access user not found", success_code: 404, status: false}
     end
   end
