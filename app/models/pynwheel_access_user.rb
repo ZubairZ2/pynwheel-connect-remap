@@ -31,7 +31,7 @@ class PynwheelAccessUser < ApplicationRecord
   def access_history_json access_point, stop
     {
       stop_name: (stop.access_point_type === "unit" ? "Unit: #{access_point.marketing_name}" : access_point.name),
-      acccess_time: stop.access_time.strftime("%a, %d %b %Y %I:%M %p"),
+      acccess_time: current_community_time(stop.access_time),
       message: stop.is_accessed ? "Successfully accessed" : "Failed to access",
       is_successful: stop.is_accessed
     }
@@ -54,13 +54,37 @@ class PynwheelAccessUser < ApplicationRecord
 
   private
 
+  def current_community_time(access_time)
+    community = self.community
+    timezone = get_community_time_zone(community)
+    access_time.in_time_zone(timezone).strftime("%a, %d %b %Y %I:%M %p")
+  end
+
+  def get_community_time_zone(community)
+    tz = Ziptz.new
+    timezone = nil
+
+    if community.latitude.present? and community.longitude.present?
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and community.zip.present?
+        timezone = tz.time_zone_name(community.zip)
+    end
+
+    return timezone.present? ? timezone : "UTC"
+  rescue
+    return "UTC"
+  end
+
   def generate_access_hash access, stop
     {
       stop_id: access.id,
       stop_name: (stop.access_point_type === "unit" ? "Unit: #{access.marketing_name}" : access.name),
       stop_type: stop.access_point_type,
       lock_type: access.lock_provider,
-      last_access: stop.access_time.present? ? stop.access_time.strftime("%a, %d %b %Y %I:%M %p") : "Never",
+      last_access: stop.access_time.present? ? current_community_time(stop.access_time) : "Never",
     }.merge(lock_provider_data(access, stop.access_point_type))
   end
 

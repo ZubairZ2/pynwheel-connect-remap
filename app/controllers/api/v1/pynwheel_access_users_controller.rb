@@ -19,6 +19,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   def resident_accesses_list
     if is_authorized
       session["check_lock_access#{@pynwheel_access_user.id.to_s}"] = 0
+      update_lock_status()
     else
       render json: {message: "Access denied", success_code: 401, status: false}
     end
@@ -145,6 +146,13 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   private
+
+  def update_lock_status
+    @pynwheel_access_user.update(dwelo_status: "in progress")
+    @pynwheel_access_user.update(edge_state_status: "in progress")
+    @pynwheel_access_user.update(latch_status: "in progress")
+    @pynwheel_access_user.update(zerv_status: "in progress")
+  end
 
   def grant_locks_accesses existing_locks
     if existing_locks.include?("Zerv")
