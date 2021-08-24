@@ -28,6 +28,8 @@ class WebpagesController < ActionController::Base
         if @units_with_floorplan_info.present?
           build_square_feet_range
           build_market_rent_range
+          unit_bedrooms_for_webpages
+          # binding.pry
           @units_with_floorplan_info = @units_with_floorplan_info.to_json
         end
       end
@@ -66,6 +68,24 @@ class WebpagesController < ActionController::Base
     end
   end
 
+  def unit_bedrooms_for_webpages
+    units = @units_with_floorplan_info.pluck(:bedrooms).sort_by(&:to_i).uniq rescue ""
+    @unit_bedrooms = []
+    units.present? && units.each do |unit|
+      @unit_bedrooms << append_bedroom_string(unit.to_i) #unit[:bedrooms]
+    end
+    @unit_bedrooms
+  end
+
+  def append_bedroom_string(bedroom_number)
+    "#{bedroom_number} #{bedroom_number == 0 ? "Studio" : bedroom_number == 1 ? "Bedroom" : "Bedrooms" }" #if bedroom_number != 0
+    # if bedroom_number == 1
+    #   "1 Bedroom"
+    # elsif bedroom_number == 2
+    #   "1 Bedrooms"
+    # end
+  end
+
   def build_square_feet_range
     maximum_square_feet = @units_with_floorplan_info.max_by{|k| k[:square_feet] }[:square_feet]
     minimum_square_feet = @units_with_floorplan_info.min_by{|k| k[:square_feet] }[:square_feet]
@@ -87,11 +107,12 @@ class WebpagesController < ActionController::Base
   def build_market_rent_range
     maximum_market_rent = @units_with_floorplan_info.max_by{|k| k[:market_rent] }[:market_rent]
     minimum_market_rent = @units_with_floorplan_info.min_by{|k| k[:market_rent] }[:market_rent]
-      
+      # binding.pry
     @market_rent = []
     market_rent_range = minimum_market_rent.to_i..maximum_market_rent.to_i
     market_rent_range_hash = market_rent_range.each_slice((market_rent_range.last/4 > 0 ? market_rent_range.last/4 : 1)).with_index.with_object({}) { |(a,i),h| h[minimum_market_rent.to_i.to_s+'-'+a.last.to_s]=a.last }
     market_rent_range_hash = market_rent_range_hash.invert
+    # binding.pry
     market_rent_range_hash.each do |v|
       @market_rent << v
     end
