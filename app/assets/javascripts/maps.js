@@ -629,6 +629,90 @@ function initialize_map_click(map_id){
         }(i));
       }
   }
+  function show_upstair_path_with_animation(floor_ids, upstair_path_object_in_order){
+    $('.floor_btn')[0].click()
+    $(".line").remove();
+    $(".line_hello").remove();
+    for (var i = 0; i < (floor_ids.length); i++) {
+      for (var j = 0; j < (Object.keys(upstair_path_object_in_order[floor_ids[i]]).length - 1); j++) {
+        delayed(500, function (i, j) {
+          return function () {
+            x0_y0_and_type = return_x_y_values(upstair_path_object_in_order[floor_ids[i]][j])
+            x1_y1_and_type = return_x_y_values(upstair_path_object_in_order[floor_ids[i]][j+1])
+            x0 = x0_y0_and_type[0]
+            y0 = x0_y0_and_type[1]
+            x1 = x1_y1_and_type[0]
+            y1 = x1_y1_and_type[1]
+            x1_y1_type = x1_y1_and_type[2]
+            $("#map_" + floor_ids[i]).line(x0, y0, x1, y1, {
+                zindex: 99,
+                color: '#ffa500',
+                stroke: "5",
+                style: "solid",
+                class: "line_hello"
+            });
+            if (stops_type_arr.includes(x1_y1_type)){
+              $(".line").remove();
+              $(".line_hello").remove();
+            }
+            if ( i != (floor_ids.length - 1) && j == (Object.keys(upstair_path_object_in_order[floor_ids[i]]).length - 2)){
+              $('.floor_btn')[i+1].click()
+            }
+          };
+        }(i, j));
+      }
+    }
+  }
+  function show_downstair_path_with_animation(floor_ids, downstair_path_object_in_order){
+    reverse_floor_ids = floor_ids.reverse()
+    $('.floor_btn')[reverse_floor_ids.length - 1].click()
+    $(".line").remove();
+    $(".line_hello").remove();
+    for (var i = 0; i < (reverse_floor_ids.length); i++) {
+      for (var j = 0; j < (Object.keys(downstair_path_object_in_order[reverse_floor_ids[i]]).length); j++) {
+        delayed(500, function (i, j) {
+          return function () {
+            x0_y0_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j])
+            if (downstair_path_object_in_order[reverse_floor_ids[i]][j+1]){
+              x1_y1_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j+1])
+              x0 = x0_y0_and_type[0]
+              y0 = x0_y0_and_type[1]
+              x1 = x1_y1_and_type[0]
+              y1 = x1_y1_and_type[1]
+              x1_y1_type = x1_y1_and_type[2]
+              $("#map_" + reverse_floor_ids[i]).line(x0, y0, x1, y1, {
+                  zindex: 99,
+                  color: '#ffa500',
+                  stroke: "5",
+                  style: "solid",
+                  class: "line_hello"
+              });
+              if (stops_type_arr.includes(x1_y1_type)){
+                $(".line").remove();
+                $(".line_hello").remove();
+              }
+              if ( i != reverse_floor_ids.length && j == (Object.keys(downstair_path_object_in_order[reverse_floor_ids[i]]).length - 1)){
+                $('.floor_btn')[reverse_floor_ids.length - i - 2 ].click()
+              }
+            }else
+              $('.floor_btn')[reverse_floor_ids.length - i - 2].click()
+          };
+        }(i, j));
+      }
+    }
+  }
+  function draw_shortest_path_for_floorplate_with_animation(path_object_in_order,floor_path_type){
+    upstair_path_object_in_order = path_object_in_order['upstair_path']
+    downstair_path_object_in_order = path_object_in_order['downstair_path']
+    moving_to_starting_point_path_object_in_order = path_object_in_order['moving_to_starting_point']
+    floor_ids = path_object_in_order['floors']
+    if (floor_path_type == "up")
+      show_upstair_path_with_animation(floor_ids, upstair_path_object_in_order)
+    else if (floor_path_type == "down")
+      show_downstair_path_with_animation(floor_ids, downstair_path_object_in_order)
+    else if (floor_path_type == "starting_point")
+      moving_towards_starting_point_with_animation(floor_ids, moving_to_starting_point_path_object_in_order)
+  }
    function draw_shortest_path_for_floorplate(path_object_in_order,floor_path_type){
     upstair_path_object_in_order = path_object_in_order['upstair_path']
     downstair_path_object_in_order = path_object_in_order['downstair_path']
@@ -706,6 +790,30 @@ function initialize_map_click(map_id){
           style: "solid",
           class: "line_hello"
       });
+    }
+  }
+  function moving_towards_starting_point_with_animation(floor_ids, moving_to_starting_point_path_object_in_order){
+    $(".line").remove();
+    $(".line_hello").remove();
+    for (var k = 0; k < (Object.keys(moving_to_starting_point_path_object_in_order).length - 1); k++) {
+      delayed(500, function (k) {
+        return function () {
+          x0_y0_and_type = return_x_y_values(moving_to_starting_point_path_object_in_order[k])
+          x1_y1_and_type = return_x_y_values(moving_to_starting_point_path_object_in_order[k+1])
+          x0 = x0_y0_and_type[0]
+          y0 = x0_y0_and_type[1]
+          x1 = x1_y1_and_type[0]
+          y1 = x1_y1_and_type[1]
+          x1_y1_type = x1_y1_and_type[2]
+          $("#map_" + floor_ids[0]).line(x0, y0, x1, y1, {
+              zindex: 99,
+              color: '#ffa500',
+              stroke: "5",
+              style: "solid",
+              class: "line_hello"
+          });
+        };
+      }(k));
     }
   }
   function run_algo(with_animation, path_type, is_sitemap, floor_path_type = ''){
