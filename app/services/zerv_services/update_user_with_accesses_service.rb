@@ -85,37 +85,46 @@ module ZervServices
             access_points = pynwheel_access_user.resident_access_points.where(access_point_id: stop.id, access_point_type: stop.class.name.camelize(:lower))
 
             if mac_id && access_points.present?
-                access_time = stop_access_time(community, pynwheel_access_user, logs, mac_id)
-                access_points.update_all(access_time: access_time, is_accessed: true)  if access_time.present?
+                access_log = stop_access_time(community, pynwheel_access_user, logs, mac_id)
+
+                if access_log.present? 
+                    if access_log["event"] === "Successfully accessed the device."
+                        access_points.update_all(access_time: access_log["eventTimestamp"].to_datetime, is_accessed: true)
+                    else
+                        access_points.update_all(access_time: access_log["eventTimestamp"].to_datetime, is_accessed: false)
+                    end
+                end
             end
         end
 
-        def stop_access_time community, pynwheel_access_user, logs, mac_id, access_time_entries = []
+        def stop_access_time community, pynwheel_access_user, logs, mac_id, access_log_entries = []
             location_name = (community.company.name + ' - ' + community.name).downcase.parameterize.gsub("-", "").gsub("_", "")
             community_logs = logs.map{|log| log if log["locationName"].present? && log["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name}.compact
 
             community_logs.each do |log|
                 if log["phoneNumber"].to_s === pynwheel_access_user.phone_number[1..-1] && log["deviceMACId"] === mac_id
-                    access_time_entries << log["eventTimestamp"]
+                    access_log_entries << log
                 end
             end
 
-            latest_access_time(access_time_entries)
+            latest_access_time(access_log_entries)
         end
 
-        def latest_access_time access_time_entries, max_date = nil
-            if access_time_entries.present?
-                max_date = access_time_entries  [0].to_datetime
+        def latest_access_time access_log_entries, max_date = nil, max_date_log = nil
+            if access_log_entries.present?
+                max_date = access_log_entries[0]["eventTimestamp"].to_datetime
+                max_date_log = access_log_entries[0]
 
-                access_time_entries.each do |date|
-                    if max_date < date.to_datetime
-                        max_date = date.to_datetime
+                access_log_entries.each do |log|
+                    if max_date < log["eventTimestamp"].to_datetime
+                        max_date = log["eventTimestamp"].to_datetime
+                        max_date_log = log
                     end
                 end
 
             end
-
-            max_date
+            
+            max_date_log
         end
 
         def time_access_object(community, tour_time, prev_access)
