@@ -54,6 +54,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   def generate_otp
     if @pynwheel_access_user.present?
       if is_zerv_present
+        create_user_on_zerv(@pynwheel_access_user)
         render json: {message: "Pynwheel access user with zerv lock", success_code: 200, status: true, is_zerv_lock: true, zerv_credentials: {username: @pynwheel_access_user&.community&.zerv&.username, password: @pynwheel_access_user&.community&.zerv&.password}}
       else
         @pynwheel_access_user.update(pin_code: random_otp)
@@ -146,6 +147,35 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   private
+
+  def create_user_on_zerv user
+    PynwheelAccessService.new().create_pynwheel_access_user(zerv_user_data(user), get_zerv_token(user))
+  end
+
+  def zerv_user_data user
+    {
+      firstName: user[:first_name],
+      lastName: user[:last_name],
+      phoneNumber: user[:phone_number],
+      email: user[:email],
+      image: nil,
+      listAddUserAccess: zerv_user_access(user)
+    }
+  end
+
+  def zerv_user_access user
+    []
+  end
+
+  def get_zerv_token user
+    response = PynwheelAccessService.new().pynwheel_access_login(user.community)
+
+    if response["payload"]["code"] == "200" && response["payload"]["status"] == "success"
+      response["payload"]["idToken"]
+    else
+      nil
+    end
+  end
 
   def update_lock_status
     @pynwheel_access_user.update(dwelo_status: "in progress", edge_state_status: "in progress", latch_status: "in progress", zerv_status: "in progress")

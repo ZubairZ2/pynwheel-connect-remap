@@ -82,8 +82,6 @@ class PynwheelAccessUsersController < ApplicationController
     PynwheelAccessService.new().create_pynwheel_access_user(zerv_user_data(user), get_zerv_token(user))
   end
 
-  def update_user_on_zerv
-  end
 
   def destroy_user_on_zerv user
     PynwheelAccessService.new().pynwheel_access_delete_user(user[:phone_number][1..-1], get_zerv_token(user))
