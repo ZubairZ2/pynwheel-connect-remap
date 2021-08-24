@@ -170,14 +170,15 @@ class PynwheelAccessUser < ApplicationRecord
           if pin.present? && rml.remote_lock_type != "igloo_lock"
             edestate_lock_pin(pin)
           else
-            temp_igloo_lock
+            default_empty_locks_json
+            # temp_igloo_lock
           end
         else
           if igloo_guest.guest_code.present?
             igloo_lock_guest_code(igloo_guest.guest_code) 
           else
-            # default_empty_locks_json
-            temp_igloo_lock
+            default_empty_locks_json
+            # temp_igloo_lock
           end
         end
 
