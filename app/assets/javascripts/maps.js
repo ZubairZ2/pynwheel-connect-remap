@@ -629,132 +629,86 @@ function initialize_map_click(map_id){
         }(i));
       }
   }
-   function draw_shortest_path_for_floorplate_with_animation(path_object_in_order){
+   function draw_shortest_path_for_floorplate(path_object_in_order,floor_path_type){
     upstair_path_object_in_order = path_object_in_order['upstair_path']
     downstair_path_object_in_order = path_object_in_order['downstair_path']
     moving_to_starting_point_path_object_in_order = path_object_in_order['moving_to_starting_point']
     floor_ids = path_object_in_order['floors']
-    show_upstair_path(floor_ids, upstair_path_object_in_order, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order,function(floor_ids, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order){
-      show_downstair_path(floor_ids, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order, function(moving_to_starting_point_path_object_in_order){
-        $(".line").remove();
-        $(".line_hello").remove();
-        for (var k = 0; k < (Object.keys(moving_to_starting_point_path_object_in_order).length - 1); k++) {
-          delayed(500, function (k) {
-            return function () {
-              x0_y0_and_type = return_x_y_values(moving_to_starting_point_path_object_in_order[k])
-              x1_y1_and_type = return_x_y_values(moving_to_starting_point_path_object_in_order[k+1])
-              x0 = x0_y0_and_type[0]
-              y0 = x0_y0_and_type[1]
-              x1 = x1_y1_and_type[0]
-              y1 = x1_y1_and_type[1]
-              x1_y1_type = x1_y1_and_type[2]
-              $("#map_" + floor_ids[floor_ids.length - 1]).line(x0, y0, x1, y1, {
-                  zindex: 99,
-                  color: '#ffa500',
-                  stroke: "5",
-                  style: "solid",
-                  class: "line_hello"
-              });
-              if (stops_type_arr.includes(x1_y1_type)){
-                $(".line").remove();
-                $(".line_hello").remove();
-              }
-            };
-          }(k));
-        }
-      });
-    });
+    if (floor_path_type == "up")
+      show_upstair_path(floor_ids, upstair_path_object_in_order)
+    else if (floor_path_type == "down")
+      show_downstair_path(floor_ids, downstair_path_object_in_order)
+    else if (floor_path_type == "starting_point")
+      moving_towards_starting_point(floor_ids, moving_to_starting_point_path_object_in_order)
   }
-  function show_upstair_path(floor_ids, upstair_path_object_in_order, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order, callback){
-    run_only_once = true
-    $('.floor_btn')[0].click()
-    //debugger
+  function show_upstair_path(floor_ids, upstair_path_object_in_order){
+    $(".line").remove();
+    $(".line_hello").remove();
     for (var i = 0; i < (floor_ids.length); i++) {
       for (var j = 0; j < (Object.keys(upstair_path_object_in_order[floor_ids[i]]).length - 1); j++) {
-        delayed(500, function (i, j) {
-          return function () {
-            x0_y0_and_type = return_x_y_values(upstair_path_object_in_order[floor_ids[i]][j])
-            x1_y1_and_type = return_x_y_values(upstair_path_object_in_order[floor_ids[i]][j+1])
-            x0 = x0_y0_and_type[0]
-            y0 = x0_y0_and_type[1]
-            x1 = x1_y1_and_type[0]
-            y1 = x1_y1_and_type[1]
-            x1_y1_type = x1_y1_and_type[2]
-            $("#map_" + floor_ids[i]).line(x0, y0, x1, y1, {
-                zindex: 99,
-                color: '#ffa500',
-                stroke: "5",
-                style: "solid",
-                class: "line_hello"
-            });
-            if (stops_type_arr.includes(x1_y1_type)){
-              $(".line").remove();
-              $(".line_hello").remove();
-            }
-            if ( i != (floor_ids.length - 1) && j == (Object.keys(upstair_path_object_in_order[floor_ids[i]]).length - 2)){
-              $('.floor_btn')[i+1].click()
-            }else if(run_only_once && i == (floor_ids.length - 1)){
-              run_only_once = false
-              callback(floor_ids, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order)
-            }
-          };
-        }(i, j));
+        x0_y0_and_type = return_x_y_values(upstair_path_object_in_order[floor_ids[i]][j])
+        x1_y1_and_type = return_x_y_values(upstair_path_object_in_order[floor_ids[i]][j+1])
+        x0 = x0_y0_and_type[0]
+        y0 = x0_y0_and_type[1]
+        x1 = x1_y1_and_type[0]
+        y1 = x1_y1_and_type[1]
+        x1_y1_type = x1_y1_and_type[2]
+        $("#map_" + floor_ids[i]).line(x0, y0, x1, y1, {
+            zindex: 99,
+            color: '#ffa500',
+            stroke: "5",
+            style: "solid",
+            class: "line_hello"
+        });
       }
     }
   }
-  function show_downstair_path(floor_ids, downstair_path_object_in_order, moving_to_starting_point_path_object_in_order, callback_two){
+  function show_downstair_path(floor_ids, downstair_path_object_in_order){
     reverse_floor_ids = floor_ids.reverse()
     $(".line").remove();
     $(".line_hello").remove();
-    run_only_once_1 = true
-    $('.floor_btn')[reverse_floor_ids.length - 1].click()
     for (var i = 0; i < (reverse_floor_ids.length); i++) {
       for (var j = 0; j < (Object.keys(downstair_path_object_in_order[reverse_floor_ids[i]]).length); j++) {
-        delayed(500, function (i, j) {
-          return function () {
-            x0_y0_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j])
-            if (downstair_path_object_in_order[reverse_floor_ids[i]][j+1]){
-              x1_y1_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j+1])
-              x0 = x0_y0_and_type[0]
-              y0 = x0_y0_and_type[1]
-              x1 = x1_y1_and_type[0]
-              y1 = x1_y1_and_type[1]
-              x1_y1_type = x1_y1_and_type[2]
-              $("#map_" + reverse_floor_ids[i]).line(x0, y0, x1, y1, {
-                  zindex: 99,
-                  color: '#ffa500',
-                  stroke: "5",
-                  style: "solid",
-                  class: "line_hello"
-              });
-              if (stops_type_arr.includes(x1_y1_type)){
-                $(".line").remove();
-                $(".line_hello").remove();
-              }
-              if ( i != reverse_floor_ids.length && j == (Object.keys(downstair_path_object_in_order[reverse_floor_ids[i]]).length - 1)){
-                $('.floor_btn')[reverse_floor_ids.length - i - 2 ].click()
-               }else if(run_only_once_1 && i == (reverse_floor_ids.length - 1) ){
-                run_only_once_1 = false
-                callback_two(moving_to_starting_point_path_object_in_order)
-              }
-            }else{
-              if(run_only_once_1 && i == (reverse_floor_ids.length -1)){
-                run_only_once_1 = false
-                callback_two(moving_to_starting_point_path_object_in_order) 
-              }else if(run_only_once_1){
-                if (i == (reverse_floor_ids.length - 1) )
-                  run_only_once_1 = false
-                else{
-                  $('.floor_btn')[reverse_floor_ids.length - i - 2].click()
-                }
-              }
-            }
-          };
-        }(i, j));
+        x0_y0_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j])
+        if (downstair_path_object_in_order[reverse_floor_ids[i]][j+1]){
+          x1_y1_and_type = return_x_y_values(downstair_path_object_in_order[reverse_floor_ids[i]][j+1])
+          x0 = x0_y0_and_type[0]
+          y0 = x0_y0_and_type[1]
+          x1 = x1_y1_and_type[0]
+          y1 = x1_y1_and_type[1]
+          x1_y1_type = x1_y1_and_type[2]
+          $("#map_" + reverse_floor_ids[i]).line(x0, y0, x1, y1, {
+              zindex: 99,
+              color: '#ffa500',
+              stroke: "5",
+              style: "solid",
+              class: "line_hello"
+          });
+        }
       }
     }
   }
-  function run_algo(with_animation, path_type, is_sitemap = true){
+  function moving_towards_starting_point(floor_ids, moving_to_starting_point_path_object_in_order){
+    $(".line").remove();
+    $(".line_hello").remove();
+    for (var k = 0; k < (Object.keys(moving_to_starting_point_path_object_in_order).length - 1); k++) {
+      x0_y0_and_type = return_x_y_values(moving_to_starting_point_path_object_in_order[k])
+      x1_y1_and_type = return_x_y_values(moving_to_starting_point_path_object_in_order[k+1])
+      x0 = x0_y0_and_type[0]
+      y0 = x0_y0_and_type[1]
+      x1 = x1_y1_and_type[0]
+      y1 = x1_y1_and_type[1]
+      x1_y1_type = x1_y1_and_type[2]
+      $("#map_" + floor_ids[0]).line(x0, y0, x1, y1, {
+          zindex: 99,
+          color: '#ffa500',
+          stroke: "5",
+          style: "solid",
+          class: "line_hello"
+      });
+    }
+  }
+  function run_algo(with_animation, path_type, is_sitemap, floor_path_type = ''){
     community_id = $('#community_id').val()
     $.ajax({
       url: '/automate_plotting/shortest_path',
@@ -779,9 +733,9 @@ function initialize_map_click(map_id){
               draw_shortest_path(path_object)
           }else{
             if (with_animation)
-              draw_shortest_path_for_floorplate_with_animation(path_object)
+              draw_shortest_path_for_floorplate_with_animation(path_object, floor_path_type)
             else
-              draw_shortest_path_for_floorplate(path_object)
+              draw_shortest_path_for_floorplate(path_object, floor_path_type)
           }
         }
 

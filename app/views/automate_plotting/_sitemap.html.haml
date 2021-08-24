@@ -21,10 +21,10 @@
               Add Access point in hallways that are not associated with any specific unit or amenity
       - if @community.self_tour and @community.auto_wayfinding
         // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(false, "actual shortest")'}Run Algo
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(true, "actual shortest")'}Run Algo With Animation
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(false, "sorting")'}Run Algo With Sorting
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(true, "sorting")'}Run Algo With Sorting And Animation
+        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(false, "actual shortest", true)'}Run Algo
+        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(true, "actual shortest", true)'}Run Algo With Animation
+        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(false, "sorting", true)'}Run Algo With Sorting
+        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'run_algo(true, "sorting", true)'}Run Algo With Sorting And Animation
   = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
   %form.form-horizontal
     .box-body.map-body-top
