@@ -8,7 +8,6 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
       if @pynwheel_access_user.is_verified
         @zerv_present = is_zerv_present
         @access_token = encode_jwt_token(@pynwheel_access_user)
-        grant_locks_accesses()
       else
         render json: {message: "Non Varified User", success_code: 404, status: false}
       end
@@ -31,9 +30,13 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
       access_user = @pynwheel_access_user
 
       counter = check_lock_access_counter(access_user)
-      if ((community.multiple_locks_provider.include?("Dwelo") && (access_user.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (access_user.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (access_user.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (access_user.zerv_status == "in progress")) && !(counter >= 20))
+      existing_lock_providers = get_existing_locks()
+     
+      grant_locks_accesses(existing_lock_providers) if params[:request_counter].to_i === 1
+
+      if ((existing_lock_providers.include?("Dwelo") && (access_user.dwelo_status == "in progress")) || (existing_lock_providers.include?("EdgeState")  && (access_user.edge_state_status == "in progress")) || (existing_lock_providers.include?("Latch")  && (access_user.latch_status == "in progress")) || (existing_lock_providers.include?("Zerv")  && (access_user.zerv_status == "in progress")) && !(counter >= 20))
         render :json=> {success: "false", completed: false}
-      else
+      else        
         render :json=> {success: "true", completed: true}
       end
     else
@@ -72,7 +75,6 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
         @zerv_present = is_zerv_present
         verify_user(true)
         @access_token = encode_jwt_token(@pynwheel_access_user)
-        grant_locks_accesses()
       else
         verify_user(false)
         render json: {message: "OTP is wrong or expired", success_code: 404, status: false}
@@ -144,9 +146,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   private
 
-  def grant_locks_accesses
-    existing_locks = get_existing_locks()
-
+  def grant_locks_accesses existing_locks
     if existing_locks.include?("Zerv")
       create_zerv_user()
     end
