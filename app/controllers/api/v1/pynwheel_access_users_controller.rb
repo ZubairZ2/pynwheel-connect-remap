@@ -148,10 +148,7 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   private
 
   def update_lock_status
-    @pynwheel_access_user.update(dwelo_status: "in progress")
-    @pynwheel_access_user.update(edge_state_status: "in progress")
-    @pynwheel_access_user.update(latch_status: "in progress")
-    @pynwheel_access_user.update(zerv_status: "in progress")
+    @pynwheel_access_user.update(dwelo_status: "in progress", edge_state_status: "in progress", latch_status: "in progress", zerv_status: "in progress")
   end
 
   def grant_locks_accesses existing_locks
