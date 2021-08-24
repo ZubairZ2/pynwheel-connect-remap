@@ -86,7 +86,7 @@ module ZervServices
 
             if mac_id && access_points.present?
                 access_time = stop_access_time(community, pynwheel_access_user, logs, mac_id)
-                access_points.update_all(access_time: access_time)  if access_time.present?
+                access_points.update_all(access_time: access_time, is_accessed: true)  if access_time.present?
             end
         end
 
