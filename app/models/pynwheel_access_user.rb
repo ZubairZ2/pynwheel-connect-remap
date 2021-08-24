@@ -42,7 +42,9 @@ class PynwheelAccessUser < ApplicationRecord
 
     user_accesses.each do |access|
       access_point = (access.access_point_type.classify.constantize.find_by_id access.access_point_id)
-      accesses_list << generate_access_hash(access_point, access)
+      if access_point.lock_provider.present?
+        accesses_list << generate_access_hash(access_point, access)
+      end
     end
 
     accesses_list
