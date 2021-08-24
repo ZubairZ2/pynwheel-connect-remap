@@ -597,7 +597,8 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   def get_pynwheel_access_user_by_phone_number
-    @pynwheel_access_user = PynwheelAccessUser.where(phone_number: params[:phone_number]).first
+    pynwheel_access_user = PynwheelAccessUser.where(phone_number: params[:phone_number])
+    @pynwheel_access_user = pynwheel_access_user.where(created_at: pynwheel_access_user.maximum('created_at')).first
   end
 
   def random_otp
