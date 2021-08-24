@@ -294,17 +294,39 @@ class CommunitiesController < ApplicationController
   def import
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
+    if @community.pynwheel_access
+      if @community.credentials_are_present? && @community.check_credentials
+        if @community.data_is_imported and Thread.current[:errors].empty?
+          flash[:notice] = "Good job! You have successfully imported this property's data."
+          PaperTrail::Version.create(item_type: "ImportData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+          redirect_to community_settings_path(:community_id=>@community.id)
+        else
+          flash[:error] = Thread.current[:errors].join(',')
+          redirect_to community_settings_path(:community_id=>@community.id)
+        end
+      else
+        flash[:error] = "Please enter valid credentials in settings before importing data."
+        redirect_to community_settings_path(:community_id=>@community.id)
+      end
+    else
+      redirect_to root_path
+    end
+  end
+
+  def import_pynwheel_access_users_data
+    Thread.current[:errors] = []
+    @community = Community.find params[:community_id]
     if @community.credentials_are_present? && @community.check_credentials
-      if @community.data_is_imported and Thread.current[:errors].empty?
-        flash[:notice] = "Good job! You have successfully imported this property's data."
-        PaperTrail::Version.create(item_type: "ImportData",item_id: @community.id,event: "update",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+      if @community.pynwheel_access_users_data and Thread.current[:errors].empty?
+        flash[:notice] = "Good job! You have successfully imported this property's residents data."
+        PaperTrail::Version.create(item_type: "FetchResidentsData",item_id: @community.id,event: "Fetch Residents Data",whodunnit: @community.id,community_id: @community.id, company_id: @community.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
         redirect_to community_settings_path(:community_id=>@community.id)
       else
         flash[:error] = Thread.current[:errors].join(',')
         redirect_to community_settings_path(:community_id=>@community.id)
       end
     else
-      flash[:error] = "Please enter valid credentials in settings before importing data."
+      flash[:error] = "Please enter valid credentials in settings before importing residents data."
       redirect_to community_settings_path(:community_id=>@community.id)
     end
   end

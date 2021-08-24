@@ -22,11 +22,14 @@ textarea {
 .main-sidebar {
     padding-top: 110px;
 }
+
 .clean-data-btn {
     display: none;
 }
+
 .add-user-button {
     float: right;
+    margin-left: 10px;
 }
 
 .tracking_btns {
@@ -52,12 +55,6 @@ textarea {
     border: 1px solid #eae6e6;
     border-radius: 4px;
     color: #555;
-}
-
-.pynwheel-access-time-modal {
-    min-height: 670px;
-    top: -30px;
-    left: -15px;
 }
 
 .pynwheel-access-datefield {
@@ -104,8 +101,12 @@ textarea {
     border-radius: 4px;
 }
 
+.pynwheel-access-time-block input[type=checkbox], input[type=radio] {
+    margin: 4px 5px 0 !important;  
+}
+
 .day-time-entry {
-    padding-top: 10px;
+    padding-top: 30px;
 }
 
 .custom-select {
@@ -194,7 +195,7 @@ textarea {
     color: red;
     margin-right: 10px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 30px;
 }
 
 .slow .toggle-group {
@@ -220,7 +221,22 @@ textarea {
     color: #2b90d4;
     margin-right: 10px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 30px;
+}
+
+.pynwheel-manage-accesses {
+    margin-bottom: 12px;
+}
+
+#pynwheel-access-user-type {
+    padding: 5px;
+    width: 100%;
+    border: 1px solid #d2d6de;
+    background-color: white;
+}
+
+#pynwheelAccessUsersData {
+    display: none;
 }
 
 .skin-blue .wrapper,
@@ -591,6 +607,11 @@ textarea {
     border-radius: 3px;
 }
 
+.pynwheel_access_user_action_icon_size {
+    font-size: x-large;
+    padding: 5px;
+    cursor: pointer;
+}
 
 /****Table Style***/
 
@@ -4007,7 +4028,7 @@ div.mydiv {
     font-size: 13px !important;
 }
 
-.propertyDetailName, 
+.propertyDetailName,
 .pyn-toolTip {
     position: relative;
     display: inline-block;
@@ -4067,12 +4088,10 @@ div.mydiv {
     visibility: visible;
 }
 
-
 .active-inactive-tooltip-text {
     width: 118px !important;
     left: -5% !important;
 }
-
 
 .propertyDetailName #propertyDetailNameText::after {
     content: "";
@@ -4855,7 +4874,7 @@ input:checked+.slider:before {
 }
 
 .slider.round:before {
-  border-radius: 50%;
+    border-radius: 50%;
 }
 
 .pynwheel-access-credentials {

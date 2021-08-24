@@ -1,0 +1,12 @@
+.modal.pynwheel-access-add-user-modal{:role => "dialog", :id => "pynwheel-access-add-user-modal", :tabindex => "-1"}
+  .modal-dialog.modal-lg{:role => "document"}
+    .modal-content
+      .modal-header
+        %h3.modal-title 
+          %strong.pynwheel-access-modal-title Add Pynwheel Access User
+      .modal-body
+        = render :partial => "pynwheel_access_user_form"
+
+      .modal-footer
+        %button.btn.btn-default{:type => "button", :onclick => "closePynwheelAccessAddUserModal()"} Cancel
+        %button.btn.btn-primary.pynwheel-access-modal-button{:type => "button", :onclick => "addNewPynwheelAccessUser()"} Add User

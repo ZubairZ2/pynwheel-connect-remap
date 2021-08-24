@@ -155,6 +155,7 @@ Rails.application.routes.draw do
     delete :delete_imported_data
     get :update_imported_data
     get :import
+    get :import_pynwheel_access_users_data
     get :clean_psi_units_data
     get :experimental_import
     get :credentials
@@ -405,14 +406,22 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :pynwheel_accesses, only: [:index] do
-      collection do
-        delete :delete_pynwheel_access_user
-        get :get_pynwheel_user_accesses
-        post :create_or_update_pynwheel_access_user
-        post :active_or_inactive_user
+    resources :pynwheel_access_users, only: [:index, :create, :update, :destroy] do
+      member do
+        get :accesses
+        delete :remove_pynwheel_user_access
+        post :grant_pynwheel_user_access
       end
     end
+
+    # resources :pynwheel_accesses, only: [:index] do
+    #   collection do
+    #     delete :delete_pynwheel_access_user
+    #     get :get_pynwheel_user_accesses
+    #     post :create_or_update_pynwheel_access_user
+    #     post :active_or_inactive_user
+    #   end
+    # end
 
     resources :favorite_settings, only: [:index, :create, :update] do
       resources :favorite_images
@@ -517,7 +526,18 @@ Rails.application.routes.draw do
         end
       end
 
-
+      resources :pynwheel_access_users do
+        collection do
+          get :pynwheel_access_user_authentication
+          get :resident_accesses_list
+          get :resident_accesses_history
+          post :check_lock_access
+          post :generate_otp
+          post :verify_otp
+          post :lock_access_time
+          post :dwelo_device_lock_or_unlock
+        end
+      end
 
       resources :tours,only: :index do
         collection do

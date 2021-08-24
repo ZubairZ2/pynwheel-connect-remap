@@ -25,7 +25,6 @@ gem 'phony_rails'
 gem 'write_xlsx'
 gem "mini_magick"
 gem 'google_places'
-gem 'time_difference'
 source 'https://rails-assets.org' do
   gem 'rails-assets-jsTimezoneDetect'
 end
