@@ -677,15 +677,15 @@ class ToursController < ApplicationController
         name = tour_user.name || tour_user.email.split('@').first.humanize
 
         email_content = "The photo ID/selfie for #{name} visiting #{community.name} was marked as a mismatch.  Please click on the link below to view.<br><br> <a href='#{manual_selfie_match_url tour_user.id }?community=#{community.id}' target='_blank'> Visitor's ID page</a>"
-        DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk',community,nil,nil,nil,nil,false)
+        DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk',community,nil,nil,nil,nil,false,nil)
         if community_email.present?
           emails = community_email.gsub(" ","").split(',')
           emails.each do |email|
-            DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, email,community,nil,nil,nil,nil,false)
+            DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, email,community,nil,nil,nil,nil,false,nil)
           end
           # DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, community_email)
         else
-          DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com',community,nil,nil,nil,nil,false) unless params[:local_testing].present?
+          DelayedSchedulerMailerJob.perform_async("User #{name} is marked Mismatched ", email_content, 'jennifer@pynwheel.com',community,nil,nil,nil,nil,false,nil) unless params[:local_testing].present?
         end
       end
     else

@@ -172,9 +172,9 @@ class SchedulerWidgetService < BaseService
     subject1 = is_rescheduled ? "Tour has been rescheduled" : "Tour has been scheduled"
     subject2 = is_rescheduled ? "A Self Tour has been rescheduled!" : "A Self Tour has been scheduled!"
 
-    DelayedSchedulerMailerJob.perform_async(subject1, email_content, tu.email,community,nil,nil,nil,emails[0],true)if (community.alert_contact == "email" || community.alert_contact == "both")
+    DelayedSchedulerMailerJob.perform_async(subject1, email_content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both")
     emails.each do |email|
-      DelayedSchedulerMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,nil,false)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
+      DelayedSchedulerMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,nil,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
     end
     sms_notifire sms_content, schedual_tour.tour_user.phone_number if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
 
