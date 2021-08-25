@@ -121,7 +121,7 @@
       box-shadow: 0px 19px 30px -15px #888888;
       margin: 0 auto;
       padding: 20px;
-      border-top: 4px solid #ef4d88;
+      border-top: 4px solid #008fd3;
     }
   }
   @media only screen and (max-width: 515px) {
@@ -155,7 +155,7 @@
     padding-left: 15px;
     width: 20%;
     display: inline;
-    float: left;
+    /* float: left; */
   }
   @media (max-width: 860px){
     .w-35,.w-37,.w-20-for-check{width: 100%; !important}
@@ -484,6 +484,9 @@
 
     <script type="text/javascript">
       // $("#schedule_btn").hide();
+      if('<%= params[:reschedule_tour]%>' == 'true'){
+        $("#scheduleMyTourSuccess").hide();
+      }
       $("#reschedule-content").addClass('hidden');
       var show_self_tour_option = false;
       var show_guided_tour_option = false;
@@ -508,10 +511,6 @@
       function redirectSheduledTourPage(url){
         window.location.href = url
       }
-      if('<%= params[:reschedule_tour]%>' == "true"){
-        $("#scheduleMyTourSuccess").hide();
-      }
-
       function onlyNumbers() {
         let pNum = $("#user_phone_number_field").val();
         if(pNum)
