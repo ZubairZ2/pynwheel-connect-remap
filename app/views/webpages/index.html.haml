@@ -55,11 +55,11 @@
                 - if @unit_bedrooms.present?
                   .selectable-field
                     %label Bedrooms
-                    = select_tag :unit_bedroom, options_for_select(@unit_bedrooms),{:class=>"custom-select", :include_blank => "All"}
+                    = select_tag :unit_bedroom, options_for_select(@unit_bedrooms),{:class=>"custom-select", :include_blank => "All "}
                 - else
                   .selectable-field
                     %label Bedrooms
-                    = select_tag :unit_bedroom, options_for_select([]),{:class=>"custom-select", :include_blank => "All"}
+                    = select_tag :unit_bedroom, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
                   -# .checkbox.checkbox-primary.pb-15.disabled
                   -#   %input.filters#zero-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
                   -#   %label.filter-label
