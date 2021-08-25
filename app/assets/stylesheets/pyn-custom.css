@@ -2498,7 +2498,6 @@ overflow-y: hidden;*/
 .right-side {
     margin-left: 331px;
     position: absolute;
-    /* width: calc(98% - 107px); */
     height: 100%;
 }
 
@@ -4782,6 +4781,15 @@ div.mydiv {
 .add-new-lock a.disabled {
     pointer-events: none;
     cursor: not-allowed;
+}
+
+#map-views-dropdown {
+    height: 25px;
+    padding-left: 5px;
+    padding-right: 10px;
+    border-radius: 3px;
+    font-weight: 600;
+    background: #f6f6f4;
 }
 
 .hide_it {

@@ -1,11 +1,25 @@
+var selectMap;
+var webCommunity;
+
+$(document).ready(function () {
+  webCommunity = $("#communityWebpagesData").data("community");
+  selectMap = webCommunity.web_map_type;
+
+  if(webCommunity.web_map_type === "3d-map") {
+    beansWidget.initMap("1430 Bell Rd, Nashville, TN", "OWU3MWI0NDgzNzlkNGQ0OjYyNjEzNzY1MzgzODYxMzA2NDYxMzczMTM0Mzk2MzMyMzg2NTY0NjE=", {'click-popup-listener' : polygonClickPopup, 'polygon-color' : '#f4f4f4', 'selected-polygon-color' : '#f4f4f4', 'selected-unit-color' : '#0000ff'});    
+  }
+
+  handleMapControl()
+});
+
+
 $(window).bind('load', function () {
     // $( window ).on( "orientationchange", function( event ) {
     //     $(".divLoading").removeClass("hidden");
     //     window.location.reload();
     // });
-     
-  if ($('.is-webpage')[0]) {
 
+  if ($('.is-webpage')[0]) {
     // $(".panzoom").addClass("transform-none");
     // $(document).on("click touchstart", ".zoom-controls", function () {
     //   $(".panzoom").removeClass("transform-none");
@@ -334,6 +348,10 @@ $(window).bind('load', function () {
   } // if condition ending curl
 });
 
+function polygonClickPopup() {
+  return;
+}
+
 function setFilters() {
   console.log("Setting filters");
   var zero_bedroom = false;
@@ -517,6 +535,9 @@ function showMarkers(market_rent_change = false) {
   $('.hidden-units').empty();
 
   var units_to_display = select_units_according_to_filters(units)
+
+  if(selectMap === "3d-map")
+    _3dMapViewMarkers(units_to_display);
   // set_prices_according_to_units_to_display(units_to_display, market_rent_change)
 
   set_prices_according_to_units_to_display(units, market_rent_change)
@@ -601,7 +622,6 @@ function disabled_enabled_anchors() {
     }
     //console.log(floorplate_units);
     var units_to_display = select_units_according_to_filters(units)
-
     // console.log(units_to_display.length);
     if (units_to_display.length == 0) {
       //console.log(floors[i]);
@@ -1241,6 +1261,52 @@ function adjustAmenitiesPosition() {
     $(this).css({"left": current_left, "top": current_top});
   });
 }
+
+function _3dMapViewMarkers(_3dUnits) {
+  let _3dUnitsMarketingNames = getUnitsMarketingNames(_3dUnits);
+  let cleanedNames = clean3DMarkers(_3dUnitsMarketingNames)
+  beansWidget.filterByUnit(cleanedNames)
+  // console.log("cleanedNames", cleanedNames);
+}
+
+function clean3DMarkers(unit_names) {
+  return unit_names.map(a => a.substr(0,3)).join()
+}
+
+function getUnitsMarketingNames(_3dUnits) {
+  return _3dUnits.map(a => a.marketing_name)
+}
+
+function handleMapControl() {
+  if(selectMap === "3d-map") {
+    display3DMap();
+  } else {
+    display2DMap();
+  }
+}
+
+function display3DMap() {
+  $(".beans-map-container").show();
+  $(".zoomable-map-container").hide();
+  $("#panzomm-container").css("width", "100%");
+  $(".select-floorP").hide();
+  let w1 = $(".select-list").width();
+  let w2 = $(".select-floorP").width();
+  $(".select-list").css("width", w1+w2);
+
+  let windowWidth = window.innerWidth;
+  let sideBarWidth = $("div.mydiv").innerWidth();
+  let mapWidth = windowWidth - sideBarWidth - 10;
+
+  $(".beans-map-container").css("width", mapWidth)
+}
+function display2DMap() {
+  $(".beans-map-container").hide();
+  $(".zoomable-map-container").show();
+  $("#panzomm-container").css("width", "");
+  // $(".select-floorP").show();
+}
+
 $(document).on('click','.share-favorite',function(){
   community_id = $("#maps_community_id").val()
   $.ajax({

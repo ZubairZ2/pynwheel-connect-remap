@@ -13,11 +13,12 @@
     = javascript_include_tag 'jquery.arrayUtilities'
     = javascript_include_tag 'slick'
     = javascript_include_tag "update_session"
+    %script{:src => "https://beans.ai/widgets/3d-maps/v1.2.0/beans-mapbox.min.js"}
     /%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
     /%link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
     -#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
-    = render '/font_awesome_v5'
+    = render '/font_awesome_v5'    
     / %link{:href => "css/bootstrap.min.css", :rel => "stylesheet"}/
     / %link{:href => "css/font-awesome.min.css", :rel => "stylesheet"}/
     / %link{:href => "css/slider.css", :rel => "stylesheet"}/
@@ -151,16 +152,17 @@
                           %li
                             = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "1245", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor, "data-toggle"=>"tooltip", "data-title"=>"0 matches", "data-placement"=>"top"
                               
-        .buttons{:style=>"position: absolute; right: 10px; top: 5px;z-index:999;"}
+        .zoomable-map-container.buttons{:style=>"position: absolute; right: 10px; top: 5px;z-index:999;"}
           %a.btn.btn-sm.btn-primary.zoom-in.zoom-controls{:href => "#"}
             %i.fa.fa-plus
           %a.btn.btn-sm.btn-primary.zoom-out.zoom-controls{:href => "#"}
             %i.fa.fa-minus
           %a.btn.btn-sm.btn-primary.reset.zoom-controls{:href => "#"}
             %i.fa.fa-refresh
+
         .right-side.parent#panzomm-container
           / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
-          .image-map#zoomable
+          .image-map.zoomable-map-container#zoomable
             - if @community_info.has_floorplates?
               - @floors.each do |floor|
                 - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
@@ -272,6 +274,9 @@
 
                     = link_to "<span class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>amenity.name
 
+          .w-100.d-flex-justify-content-center.beans-map-container
+            .beanswidget#beanswidget.some{:style => "width:100%; height:100%"}
+          
           .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:1px;width:100%;"}
             %strong Oops!
             There is nothing available on this floor that matches the parameters that you have selected.
@@ -396,6 +401,8 @@
     %p
       - if @community.display_rent
         %b#popover-price
+
+#communityWebpagesData{ data: {community: @community.to_json} }
 
 :javascript
   $(window).on('resize', function() {
