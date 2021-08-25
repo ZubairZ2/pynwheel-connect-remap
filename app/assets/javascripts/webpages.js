@@ -85,10 +85,16 @@ $(window).bind('load', function () {
     });
     /////////////////////////////////////////
     $('#market_rent').change(function () {
+      // debugger
       console.log('market_rent is changed')
       showMarkers(true);
     });
     $('#square_feet').change(function () {
+      showMarkers();
+    });
+    $('#unit_bedroom').change(function () {
+      // debugger
+      console.log('market_rent is changed')
       showMarkers();
     });
     ////////////////////////////////////////
@@ -669,6 +675,38 @@ function set_prices_according_to_units_to_display(floorplate_units, is_market_re
   }
 }
 
+  // var zero_bedroom = false;
+  // var one_bedroom = false;
+  // var two_bedroom = false;
+  // var three_bedroom = false;
+  // var four_bedroom = false;
+  // var five_bedroom = false;
+  // var six_bedroom = false;
+  // for (var i = 0; i < units.length; i++) {
+  //   //console.log(units[i]);
+  //   if (parseInt(units[i]['bedrooms']) == 0) {
+  //     zero_bedroom = true
+  //   }
+  //   if (parseInt(units[i]['bedrooms']) == 1) {
+  //     one_bedroom = true
+  //   }
+  //   if (parseInt(units[i]['bedrooms']) == 2) {
+  //     two_bedroom = true
+  //   }
+  //   if (parseInt(units[i]['bedrooms']) == 3) {
+  //     three_bedroom = true
+  //   }
+  //   if (parseInt(units[i]['bedrooms']) == 4) {
+  //     four_bedroom = true
+  //   }
+  //   if (parseInt(units[i]['bedrooms']) == 5) {
+  //     five_bedroom = true
+  //   }
+  //   if (parseInt(units[i]['bedrooms']) == 6) {
+  //     six_bedroom = true
+  //   }
+  // }
+
 function select_units_according_to_filters(floorplate_units) {
   var bedroom_base_units = [];
   var availability_base_units = [];
@@ -685,6 +723,7 @@ function select_units_according_to_filters(floorplate_units) {
   var all_units = [];
   var market_rent = $('#market_rent').val();
   var square_feet = $('#square_feet').val();
+  var unit_bedroom = $('#unit_bedroom').val();
   market_rent = market_rent.split('-');
   square_feet = square_feet.split('-');
   var minimum_market_rent = parseFloat(market_rent[0]);
@@ -698,12 +737,14 @@ function select_units_according_to_filters(floorplate_units) {
   var one_twenty_days = new Date(today).setDate(today.getDate() + 120);
   if (units.length == 0)
     $('.available_portion').addClass('hidden');
+    // debugger
   for (var i = 0; i < floorplate_units.length; i++) {
     if(($('.floorplate-anchor.selected').attr('id') != undefined) && ($('.floorplate-anchor.selected').attr('id') != floorplate_units[i].floor.toString()) )
       continue;
     all_units.push(floorplate_units[i]);
     //show zero bedroom markers  
-    if ($('#zero-bedroom-checkbox').is(':checked')) {
+    // ($('#zero-bedroom-checkbox').is(':checked'))
+    if(unit_bedroom == "Studio") {
       if (parseInt(floorplate_units[i]['bedrooms']) == 0) {
         //$('#m_'+units[i]['marketing_name']).removeClass('hidden');
         bedroom_base_units.push(floorplate_units[i]);
@@ -721,8 +762,10 @@ function select_units_according_to_filters(floorplate_units) {
           _120_units.push(floorplate_units[i]);
       }
     }
-    //show one bedroom markers  
-    if ($('#one-bedroom-checkbox').is(':checked')) {
+    //show one bedroom markers
+    // ($('#one-bedroom-checkbox').is(':checked'))  
+    if (unit_bedroom == "1 Bedroom"){
+      // debugger
       if (parseInt(floorplate_units[i]['bedrooms']) == 1) {
         //$('#m_'+units[i]['marketing_name']).removeClass('hidden');
         bedroom_base_units.push(floorplate_units[i]);
@@ -741,8 +784,9 @@ function select_units_according_to_filters(floorplate_units) {
       }
     }
     //show two bedroom markers
-    if ($('#two-bedroom-checkbox').is(':checked')) {
-      if (parseInt(floorplate_units[i]['bedrooms']) == 2) {
+    ($('#two-bedroom-checkbox').is(':checked'))
+    if (unit_bedroom == "2 Bedrooms"){
+      // if (parseInt(floorplate_units[i]['bedrooms']) == 2) {
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) <= today)
           _now_units.push(floorplate_units[i]);
@@ -756,10 +800,13 @@ function select_units_according_to_filters(floorplate_units) {
           _90_to_120_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
           _120_units.push(floorplate_units[i]);
-      }
+
+        debugger
+      // }
     }
     //show three bedroom markers
-    if ($('#three-bedroom-checkbox').is(':checked')) {
+    // ($('#three-bedroom-checkbox').is(':checked'))
+    if (unit_bedroom == "3 Bedrooms"){
       if (parseInt(floorplate_units[i]['bedrooms']) == 3) {
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) <= today)
@@ -777,7 +824,8 @@ function select_units_according_to_filters(floorplate_units) {
       }
     }
     //show four bedroom markers
-    if ($('#four-bedroom-checkbox').is(':checked')) {
+    // ($('#four-bedroom-checkbox').is(':checked'))
+    if (unit_bedroom == "4 Bedrooms"){
       if (parseInt(floorplate_units[i]['bedrooms']) == 4) {
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) <= today)
@@ -795,7 +843,8 @@ function select_units_according_to_filters(floorplate_units) {
       }
     }
     //show five bedroom markers
-    if ($('#five-bedroom-checkbox').is(':checked')) {
+    // ($('#five-bedroom-checkbox').is(':checked'))
+    if (unit_bedroom == "5 Bedrooms"){
       if (parseInt(floorplate_units[i]['bedrooms']) == 5) {
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) >= ninty_days && available_date <= one_twenty_days)
@@ -803,7 +852,8 @@ function select_units_according_to_filters(floorplate_units) {
       }
     }
     //show six bedroom markers
-    if ($('#six-bedroom-checkbox').is(':checked')) {
+    // ($('#six-bedroom-checkbox').is(':checked'))
+    if (unit_bedroom == "6 Bedrooms"){
       if (parseInt(floorplate_units[i]['bedrooms']) == 6) {
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) <= today)
@@ -888,10 +938,17 @@ function select_units_according_to_filters(floorplate_units) {
   var availability_filter_present = true
   var price_filter_present = true
   var area_filter_present = true
-  if (!($('#zero-bedroom-checkbox').is(':checked') || $('#one-bedroom-checkbox').is(':checked') || $('#two-bedroom-checkbox').is(':checked') || $('#three-bedroom-checkbox').is(':checked') || $('#four-bedroom-checkbox').is(':checked') || $('#five-bedroom-checkbox').is(':checked') || $('#six-bedroom-checkbox').is(':checked'))) {
+  var unit_bedroom = $('#unit_bedroom').val();
+  debugger
+  if (!(unit_bedroom == "Studio" || unit_bedroom == "1 Bedroom" || unit_bedroom == "2 Bedrooms" || unit_bedroom == "3 Bedrooms" || unit_bedroom == "4 Bedrooms" || unit_bedroom == "5 Bedrooms" || unit_bedroom == "6 Bedrooms")) {
     bedroom_base_units = all_units
     bedroom_filter_present = false
   }
+  
+  // if (!($('#zero-bedroom-checkbox').is(':checked') || $('#one-bedroom-checkbox').is(':checked') || $('#two-bedroom-checkbox').is(':checked') || $('#three-bedroom-checkbox').is(':checked') || $('#four-bedroom-checkbox').is(':checked') || $('#five-bedroom-checkbox').is(':checked') || $('#six-bedroom-checkbox').is(':checked'))) {
+  //   bedroom_base_units = all_units
+  //   bedroom_filter_present = false
+  // }
 
   if (!($('#now-checkbox').is(':checked') || $('#thirty-days-checkbox').is(':checked') || $('#thirty-to-sixty-days-checkbox').is(':checked') || $('#sixty-to-ninty-days-checkbox').is(':checked') || $('#ninty-to-one-twenty-days-checkbox').is(':checked') || $('#one-twenty-plus-days-checkbox').is(':checked'))) {
     availability_base_units = all_units
@@ -943,7 +1000,7 @@ function select_units_according_to_filters(floorplate_units) {
   {$('.available_portion').removeClass('hidden');}
 
   if (bedroom_filter_present || availability_filter_present || price_filter_present || area_filter_present) {
-    
+    debugger
     var units_to_display = $.intersect(bedroom_base_units, availability_base_units, rent_base_units, square_feet_base_units);
     // var units_to_display = $.intersect(_now_units, _now_to_30_units, _90_to_120_units, _60_to_90_units, _120_units, _30_to_60_units);
     //units_to_display = $.union(units_to_display, sold_units, are_available_units);

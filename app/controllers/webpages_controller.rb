@@ -29,6 +29,7 @@ class WebpagesController < ActionController::Base
           build_square_feet_range
           build_market_rent_range
           unit_bedrooms_for_webpages
+          unit_availability_for_webpages
           # binding.pry
           @units_with_floorplan_info = @units_with_floorplan_info.to_json
         end
@@ -84,6 +85,38 @@ class WebpagesController < ActionController::Base
     # elsif bedroom_number == 2
     #   "1 Bedrooms"
     # end
+  end
+
+  def unit_availability_for_webpages
+    # binding.pry
+    @available_units = []
+    today = DateTime.now.to_date
+    thirty_days = today + 30.days;
+    sixty_days = today + 60.days;
+    ninty_days = today + 90.days;
+    one_twenty_days = today + 120.days;
+    @units_with_floorplan_info.each do |available_unit|
+      available_date = available_unit[:available_date]
+      if (available_date <= today)
+        @available_units << ["Now", "now"]
+      end
+      if (available_date >= thirty_days && available_date <= sixty_days) 
+        @available_units << ["In the next 30 days","in_next_30_days"]
+      end
+      if (available_date >= thirty_days && available_date <= sixty_days)
+        @available_units << ["In 31-60 days","in_30_to_60_days"]
+      end
+      if (available_date >= sixty_days && available_date <= ninty_days)
+        @available_units << ["In 61-90 days","in_61_to_90_days"]
+      end
+      if (available_date >= ninty_days && available_date <= one_twenty_days)
+        @available_units << ["In 91-120 days","in_91_to_120_days"]
+      end
+      if (available_date > one_twenty_days)
+        @available_units << ["In 121+ days","in_121_plus_days"]
+      end
+    end
+    @available_units = @available_units.uniq
   end
 
   def build_square_feet_range

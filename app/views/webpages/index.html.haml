@@ -88,13 +88,48 @@
                   -#   %input.filters#six-bedroom-checkbox{:type => "checkbox",:name=>"bedrooms",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
                   -#   %label.filter-label
                   -#     6 Bedrooms
-                .selectable-field
-                  %label Availability
-                  %select.custom-select
-                    %option{:selected => "selected"} All
-                    %option{:value => "1"} One
-                    %option{:value => "2"} Two
-                    %option{:value => "3"} Three
+                - if @available_units.present?
+                  .selectable-field
+                    %label Availability
+                    = select_tag :available_unit, options_for_select(@available_units),{:class=>"custom-select", :include_blank => "All"}
+                - else
+                  .selectable-field
+                    %label Availability
+                    = select_tag :available_unit, options_for_select([]),{:class=>"custom-select", :include_blank => "All"}
+                  -# .available_portion
+                  -#   %h4 Available
+                  -#   .checkbox.checkbox-primary.pb-15.disabled
+                  -#     %input.filters#now-checkbox{:type => "checkbox",:name=>"available",checked: true,"data-toggle"=>"tooltip", "data-title"=>""}/
+                  -#     %label.filter-label
+                  -#       Now
+                  -#   .checkbox.checkbox-primary.pb-15.disabled
+                  -#     %input.filters#thirty-days-checkbox{:type => "checkbox",:name=>"available",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
+                  -#     %label.filter-label
+                  -#       In the next 30 days
+                  -#   .checkbox.checkbox-primary.pb-15.disabled
+                  -#     %input.filters#thirty-to-sixty-days-checkbox{:type => "checkbox",:name=>"available",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
+                  -#     %label.filter-label
+                  -#       In 31-60 days
+                  -#   .checkbox.checkbox-primary.pb-15.disabled
+                  -#     %input.filters#sixty-to-ninty-days-checkbox{:type => "checkbox",:name=>"available",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
+                  -#     %label.filter-label
+                  -#       In 61-90 days
+                  -#   .checkbox.checkbox-primary.pb-15.disabled
+                  -#     %input.filters#ninty-to-one-twenty-days-checkbox{:type => "checkbox",:name=>"available",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
+                  -#     %label.filter-label
+                  -#       In 91-120 days
+                  -#   .checkbox.checkbox-primary.pb-15.disabled
+                  -#     %input.filters#one-twenty-plus-days-checkbox{:type => "checkbox",:name=>"available",checked: true, "data-toggle"=>"tooltip", "data-title"=>""}/
+                  -#     %label.filter-label
+                  -#       In 121+ days
+                  -# .selectable-field
+                  -# %label Availability
+                  -# %select.custom-select
+                  -#   %option{:selected => "selected"} All
+                  -#   %option{:value => "1"} One
+                  -#   %option{:value => "2"} Two
+                  -#   %option{:value => "3"} Three
+                -# - binding.pry
                 - if @market_rent.present?
                   .selectable-field
                     %label Maximum Price
@@ -678,13 +713,21 @@
       })
       .slick({
         dots: false,
-        slidesToShow: slides_to_show,
-        slidesToScroll: slides_to_show,
-        vertical: true,
         infinite: false,
-        speed: 6,
-        prevArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-up"></i></button>',
-        nextArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-down"></i></button>'
+        slidesToShow: 3,
+        slidesToScroll: 1,
+        vertical: true,
+        prevArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+        nextArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right'></i></div>"
+
+        //dots: false,
+        //slidesToShow: slides_to_show,
+        //slidesToScroll: slides_to_show,
+        //vertical: true,
+        //infinite: false,
+        //speed: 6,
+        //prevArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-up"></i></button>',
+        //nextArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-down"></i></button>'
       })
     function mouseWheel($slider) {
       $('#slider').on('wheel', { $slider: $slider }, mouseWheelHandler)
@@ -727,7 +770,6 @@
   units = units.replace(/&quot;/g,'"');
   units = JSON.parse(units);
   console.log(units);
-  //debugger
   if (localStorage.getItem("oneBedroom") == "false")
   {
     $('#one-bedroom-checkbox').prop('checked',false);
