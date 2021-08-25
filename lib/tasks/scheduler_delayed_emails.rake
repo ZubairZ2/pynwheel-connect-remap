@@ -116,7 +116,7 @@ namespace :delayed_email_notifications do
 	def send_email subj, body, community
 		begin
 			emails = community.email.gsub(" ","").split(',')
-			NotificationMailer.tour_history_mail(subj.humanize, body, emails[0],community,false).deliver
+			NotificationMailer.tour_history_mail(subj.humanize, body, emails[0],"info@pynwheel.com",community,false).deliver
 		rescue
 
 		end
@@ -134,7 +134,7 @@ namespace :delayed_email_notifications do
   	def send_email_tour_user subj, body, th, comm_email, community
 		begin
 			emails = comm_email.gsub(" ","").split(',')
-			NotificationMailer.tour_history_mail(subj.humanize, body, th.tour_user.email,emails[0]).deliver
+			NotificationMailer.tour_history_mail(subj.humanize, body, th.tour_user.email,emails[0],community,false).deliver
 		rescue
 		end
 	end

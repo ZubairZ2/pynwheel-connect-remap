@@ -597,7 +597,7 @@ module DweloDevicesHelper
   def tour_user_arrival_email(tour_user, community)
     emails = community.email.gsub(" ","").split(',')
     emails.each do |email|
-      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email,"info@pynwheel.com").deliver
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email,"info@pynwheel.com",community,false).deliver
     end
   end
 
