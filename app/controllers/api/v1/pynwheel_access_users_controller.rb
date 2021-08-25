@@ -1,5 +1,6 @@
 class Api::V1::PynwheelAccessUsersController < ActionController::Base
   before_action :get_pynwheel_access_user_by_phone_number, only: [:generate_otp, :verify_otp]
+  before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
   before_action :get_pynwheel_access_user_by_id, only: [:check_lock_access, :pynwheel_access_user_authentication,:resident_accesses_list, :dwelo_device_lock_or_unlock, :lock_access_time, :resident_accesses_history]
   before_action :is_authorized, only: [:check_lock_access, :resident_accesses_list, :resident_accesses_history, :lock_access_time]
 
@@ -53,17 +54,21 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
 
   def generate_otp
     if @pynwheel_access_user.present?
-      if is_zerv_present
-        create_user_on_zerv(@pynwheel_access_user)
-        render json: {message: "Pynwheel access user with zerv lock", success_code: 200, status: true, is_zerv_lock: true, zerv_credentials: {username: @pynwheel_access_user&.community&.zerv&.username, password: @pynwheel_access_user&.community&.zerv&.password}}
-      else
-        @pynwheel_access_user.update(pin_code: random_otp)
-        sms_otp_to_mobile()
-
-        # execute job after 15 minutes(900 seconds) to expire the OTP
-        ExpireOtpJob.perform_in(900, @pynwheel_access_user)
-    
+      if @pynwheel_access_user.phone_number === @apple_test_number
         render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true, is_zerv_lock: false, zerv_credentials: {}}
+      else
+        if is_zerv_present
+          create_user_on_zerv(@pynwheel_access_user)
+          render json: {message: "Pynwheel access user with zerv lock", success_code: 200, status: true, is_zerv_lock: true, zerv_credentials: {username: @pynwheel_access_user&.community&.zerv&.username, password: @pynwheel_access_user&.community&.zerv&.password}}
+        else
+          @pynwheel_access_user.update(pin_code: random_otp)
+          sms_otp_to_mobile()
+  
+          # execute job after 15 minutes(900 seconds) to expire the OTP
+          ExpireOtpJob.perform_in(900, @pynwheel_access_user)
+      
+          render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true, is_zerv_lock: false, zerv_credentials: {}}
+        end
       end
     else
       render json: {message: "Pynwheel access user not found", success_code: 404, status: false, is_zerv_lock: false, zerv_credentials: {}}
@@ -599,6 +604,10 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   def get_pynwheel_access_user_by_phone_number
     pynwheel_access_user = PynwheelAccessUser.where(phone_number: params[:phone_number])
     @pynwheel_access_user = pynwheel_access_user.where(created_at: pynwheel_access_user.maximum('created_at')).first
+  end
+
+  def get_apple_store_test_number
+    @apple_test_number = "+10123456789"
   end
 
   def random_otp
