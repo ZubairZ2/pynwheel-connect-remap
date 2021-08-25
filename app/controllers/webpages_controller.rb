@@ -97,10 +97,11 @@ class WebpagesController < ActionController::Base
     one_twenty_days = today + 120.days;
     @units_with_floorplan_info.each do |available_unit|
       available_date = available_unit[:available_date]
+      # binding.pry
       if (available_date <= today)
         @available_units << ["Now", "now"]
       end
-      if (available_date >= thirty_days && available_date <= sixty_days) 
+      if (available_date > today && available_date <= thirty_days) 
         @available_units << ["In the next 30 days","in_next_30_days"]
       end
       if (available_date >= thirty_days && available_date <= sixty_days)

@@ -91,11 +91,11 @@
                 - if @available_units.present?
                   .selectable-field
                     %label Availability
-                    = select_tag :available_unit, options_for_select(@available_units),{:class=>"custom-select", :include_blank => "All"}
+                    = select_tag :available_unit, options_for_select(@available_units),{:class=>"custom-select", :include_blank => "All "}
                 - else
                   .selectable-field
                     %label Availability
-                    = select_tag :available_unit, options_for_select([]),{:class=>"custom-select", :include_blank => "All"}
+                    = select_tag :available_unit, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
                   -# .available_portion
                   -#   %h4 Available
                   -#   .checkbox.checkbox-primary.pb-15.disabled
@@ -360,7 +360,7 @@
 
                         = link_to "<span class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image","data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>amenity.name
 
-              .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:1px;width:100%;"}
+              .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:10%;width:100%;"}
                 %strong Oops!
                 There is nothing available on this floor that matches the parameters that you have selected.
 
@@ -381,11 +381,11 @@
                       %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                     %span Amenity image
               .zooming-content
-                %span.plus-action.zooming-action
+                %span.zooming-action
                   %img{:src => "/assets/plus.png"}/
-                %span.minus-action.zooming-action
+                %span.zooming-action
                   %img{:src => "/assets/minus.png"}/
-                %span.refresh-action.zooming-action
+                %span.zooming-action
                   %img{:src => "/assets/refresh.png"}/
           
       / /.content
