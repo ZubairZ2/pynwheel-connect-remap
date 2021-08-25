@@ -175,8 +175,9 @@ class Api::V1::TourHistoriesController < ActionController::Base
       tour_history.update_column 'lengthy_stay_email_sent',true
 
       emails = community.email.gsub(" ","").split(',')
+      schedule_tour = community.schedual_tours.where(tour_user_id: tu.id).last rescue nil
       emails.each do |email|
-        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email,"info@pynwheel.com",community,false).deliver
+        NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email,"info@pynwheel.com",community,false,schedule_tour).deliver
       end
 
     end
@@ -184,8 +185,9 @@ class Api::V1::TourHistoriesController < ActionController::Base
   def has_tour_user_left(community, tu, lat_long)
     if(tu.arrival_email_sent and lat_long.present? and geo_distance(lat_long[:lat],lat_long[:lng],community.latitude, community.longitude, 1)  )
       emails = community.email.gsub(" ","").split(',')
+      schedule_tour = community.schedual_tours.where(tour_user_id: tu.id).last rescue nil
       emails.each do |email|
-        NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.capitalize}  has left #{community.name}", email,"info@pynwheel.com",community,false).deliver
+        NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.capitalize}  has left #{community.name}", email,"info@pynwheel.com",community,false,schedule_tour).deliver
         tu.update_column 'arrival_email_sent' , false 
       end
     end

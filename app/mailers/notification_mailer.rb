@@ -2,7 +2,7 @@ class NotificationMailer < ApplicationMailer
 	# default from: 'info@pynwheel.com'
   layout 'mailer'
 
-	def tour_history_mail subject, msg, to,email_from = "info@pynwheel.com",community,show_html,schedule_tour = nil
+	def tour_history_mail(subject, msg, to,email_from = "info@pynwheel.com",community,show_html,schedule_tour)
 		@community = community
 		@app_link = (Company.find @community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
 		@android_link = (Company.find @community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"

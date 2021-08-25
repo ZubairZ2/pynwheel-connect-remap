@@ -297,7 +297,7 @@ class TourHistory < ApplicationRecord
     begin
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(subj.humanize, body, email,"info@pynwheel.com",community,false).deliver
+        NotificationMailer.tour_history_mail(subj.humanize, body, email,"info@pynwheel.com",community,false,nil).deliver
       end
       # NotificationMailer.tour_history_mail(subj.humanize, body, community.email).deliver
     rescue
@@ -309,7 +309,7 @@ class TourHistory < ApplicationRecord
     begin
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(subj.humanize, body, email,"info@pynwheel.com",community,false).deliver
+        NotificationMailer.tour_history_mail(subj.humanize, body, email,"info@pynwheel.com",community,false,nil).deliver
       end
     rescue
 
@@ -319,7 +319,7 @@ class TourHistory < ApplicationRecord
   def send_email_to_user_without_humanize subj, body , community_email=nil
     begin
       emails = community_email.gsub(" ","").split(',')
-      NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, email[0],community,false).deliver
+      NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, email[0],community,false,nil).deliver
     rescue
 
     end
@@ -335,7 +335,7 @@ class TourHistory < ApplicationRecord
   def send_email_tour_user subj, body, community_email, community
     begin
       emails = community_email.gsub(" ","").split(',')
-      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0],community,true).deliver
+      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0],community,true,nil).deliver
     rescue
     end
   end
