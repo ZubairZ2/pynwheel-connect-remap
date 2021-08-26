@@ -159,14 +159,15 @@ class PynwheelAccessUser < ApplicationRecord
   end
 
   def get_edgestate_lock_data access_stop
-    rml = RemoteLock.find_by(edge_state_id: self.community.edge_state.id , stop_id: access_stop.id) if self.community.edge_state.present?
+    rml = RemoteLock.where(edge_state_id: self.community.edge_state.id , stop_id: access_stop.id).last if self.community.edge_state.present?
     
     if rml.present?
-      if self.as_guests.find_by(community_id: self.community.id).present?
-        igloo_guest = IglooGuest.find_by(stop_id: access_stop.id, pynwheel_access_user_id: self.id, status: "active")
+      if self.as_guests.where(community_id: self.community.id).present?
+        igloo_guest = IglooGuest.where(stop_id: access_stop.id, pynwheel_access_user_id: self.id, status: "active").last
         
         if igloo_guest.nil?
-          pin = self.as_guests.find_by(community_id: self.community.id).edgestate_pin if self.as_guests.find_by(community_id: self.community.id).present?
+          pin = self.as_guests.where(community_id: self.community.id).last.edgestate_pin
+          
           if pin.present? && rml.remote_lock_type != "igloo_lock"
             edestate_lock_pin(pin)
           else
