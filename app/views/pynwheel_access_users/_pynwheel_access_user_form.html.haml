@@ -59,14 +59,14 @@
   .row
     .col-lg-6.col-md-6.col-sm-12
       .form-group
-        %label{:for => "pynwheelAccessUserLeaseInDate"} Lease In Date
+        %label{:for => "pynwheelAccessUserLeaseInDate"} Lease Start Date
         -# %span.red-required-star *
         = text_field_tag "", "", :id => "pynwheelUserLeaseInDate", :class=>"form-control datepicker", :placeholder=>"Lease In date", :autocomplete=>"off"
         -# %span.red-required-star.lease-in-date.required-field Lease in date is required
 
     .col-lg-6.col-md-6.col-sm-12
       .form-group
-        %label{:for => "pynwheelAccessUserLeaseOutInDate"} Lease Out Date
+        %label{:for => "pynwheelAccessUserLeaseOutInDate"} Lease End Date
         -# %span.red-required-star *
         = text_field_tag "", "", :id => "pynwheelUserLeaseOutDate", :class=>"form-control datepicker", :placeholder=>"Lease out date", :autocomplete=>"off"
         -# %span.red-required-star.lease-out-date.required-field Lease out date is required

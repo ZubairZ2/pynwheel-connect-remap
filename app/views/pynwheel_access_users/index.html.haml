@@ -53,14 +53,14 @@
                           = user[:move_out_date].present? ? "#{user[:move_out_date]&.strftime("%Y-%m-%d")}" : "N/A"
                       %td
                         %strong
-                          = "in:  "
+                          = "start:  "
                         %span
                           = user[:lease_in_date].present? ? "#{user[:lease_in_date]&.strftime("%Y-%m-%d")}" : "N/A"
 
                         %br 
                         
                         %strong
-                          = "out:  "
+                          = "end:  "
                         %span 
                           = user[:lease_out_date].present? ? "#{user[:lease_out_date]&.strftime("%Y-%m-%d")}" : "N/A"
 
