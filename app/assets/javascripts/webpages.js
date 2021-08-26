@@ -5,13 +5,16 @@ var _3dSelectedUnit;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
-  selectMap = webCommunity.web_map_type;
 
-  if(webCommunity.web_map_type === "3d-map") {
-    beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`, "OWU3MWI0NDgzNzlkNGQ0OjYyNjEzNzY1MzgzODYxMzA2NDYxMzczMTM0Mzk2MzMyMzg2NTY0NjE=", {'click-popup-listener' : polygonClickPopup, 'polygon-color' : '#f4f4f4', 'selected-polygon-color' : '#f4f4f4', 'selected-unit-color' : '#0000ff'});    
+  if(webCommunity) {
+    selectMap = webCommunity.web_map_type;
+
+    if(webCommunity.web_map_type === "3d-map") {
+      beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`, "OWU3MWI0NDgzNzlkNGQ0OjYyNjEzNzY1MzgzODYxMzA2NDYxMzczMTM0Mzk2MzMyMzg2NTY0NjE=", {'click-popup-listener' : polygonClickPopup, 'polygon-color' : '#f4f4f4', 'selected-polygon-color' : '#f4f4f4', 'selected-unit-color' : '#0000ff'});    
+    }
+
+    handleMapControl()
   }
-
-  handleMapControl()
 });
 
 
