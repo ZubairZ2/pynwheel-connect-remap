@@ -1001,19 +1001,40 @@ function select_units_according_to_filters(floorplate_units) {
 
 function set_psi_url(element) {
   //var url = $(element).data('website')+"/Apartments/module/application_authentication/http_referer/"+$(element).data('uri')+"/popup/false/kill_session/1/property[id]/"+$(element).data('community-property-id')+"/property_floorplan[id]/"+$(element).data('floorplan-provider-id')+"/unit_space[id]/"+$(element).data('unit-provider-id')+"/show_in_popup/false/from_check_availability/1/term_month/"+$(element).data('lease-term')+"/?lease_start_date="+$('#leasing-start-date').val();
-    var url = $(element).data('availability-url');
+  var url = $(element).data('availability-url');
+
+  if(selectMap === "3d-map") {
+    url = _3dSelectedUnit.availability_url
+  }
+
   window.open(url, '_blank');
 }
 function set_resman_url(element)
 {
   date = new Date($('#leasing-start-date').val())
   var url = $(element).data('availability-url') + "&leaseTerm=" + $('#lease-term').val() + "&moveInDate=" + date.toISOString().split('T')[0]
+
+  
+  if(selectMap === "3d-map") {
+    date = new Date();
+    url = _3dSelectedUnit.availability_url + "&leaseTerm=" + _3dSelectedUnit.lease_term + "&moveInDate=" + date.toISOString().split('T')[0]
+  }
+
   window.open(url, '_blank');
 }
 
 function set_realpagesvc_url(element) {
   //http://localhost:3000/communities/25/webpages/apply_now?MoveInDate=12/15/2017&UnitId=346&SearchUrl=https%3A//localhost:3000#k=70697
   var url = apply_now_url + "?MoveInDate=" + $('#leasing-start-date').val() + "&UnitId=" + $(element).data('unit-provider-id') + "&SearchUrl=" + redirect_url;
+  
+  if(selectMap === "3d-map") {
+    apply_now_url = `/communities/${community.id}/webpages/apply_now`;
+    redirect_url = `/communities/${community.id}/webpages`
+    date = new Date()
+
+    url = url = apply_now_url + "?MoveInDate=" + date.toISOString().split('T')[0] + "&UnitId=" + _3dSelectedUnit.provider_unit_id + "&SearchUrl=" + redirect_url;
+  }
+
   window.open(url, '_blank');
 }
 
