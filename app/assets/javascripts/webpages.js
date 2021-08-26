@@ -1126,7 +1126,8 @@ function setModalAttributes(element) {
     try {
         if ($(element).data('unit-description') == "")
         {
-            $('#unit-description-text-li').hide();
+            // $('#unit-description-text-li').hide();
+            $('#unitModal').find('#unit-description').html("Not Available");
         }
         else
         {
@@ -1175,6 +1176,8 @@ function setModalAttributes(element) {
     }
   }
   $('#unitModal').find('#market-rent').html('$' + $(element).data('market-rent'));
+  $('#unitModal').find('#total-market-rent').html('$' + $(element).data('total-market-rent'));
+  
   ///////////////////////////////////////////
   if (!$(element).data('is-fav')) {
     var community_id = $(element).data('community-id');

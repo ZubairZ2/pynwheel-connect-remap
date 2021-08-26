@@ -2498,6 +2498,7 @@ overflow-y: hidden;*/
     font-family: 'Raleway', sans-serif;
     color: #8f9495;
     padding: 25px 0 10px 0;
+    background: #1d2425;
 }
 
 .select-title {
@@ -2905,13 +2906,25 @@ div.mydiv {
     position: relative;
 }
 
-.plan-image-pop .icon-heart {
+.heart-icon-image {
     position: absolute;
     right: 0;
     top: 0;
     width: 50px;
     height: 50px;
     background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plan-image-pop .icon-heart {
+    /* position: absolute; */
+    right: 0;
+    top: 0;
+    width: 50px;
+    height: 50px;
+    /* background: #000; */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2972,6 +2985,7 @@ div.mydiv {
 
 .select-list-fav {
     width: 290px;
+    padding: 15px;
 }
 
 .select-list-fav .select-title {
@@ -5420,4 +5434,217 @@ footer.c-footer {
       padding-right: 6px;
   }
 
+}
+/***************** Marker Popup css ****************/
+.c-modal-sidebar {
+    z-index: 1030;
+    float: left;
+     max-width: 406px;
+    left: 0;
+    overflow-y: auto;
+    width: 40%;
+}
+.c-modal-dialog {
+    position: absolute;
+    top: 50%;
+    right: 50%;
+    transform: translate(50%,-50%);
+    width: 100%;
+    max-width: 1000px;
+    max-height: 635px;
+    overflow-y: auto;
+    background: white;
+}
+.c-modal-wrapper {
+    float: left;
+    width: 60%;
+    overflow: hidden;
+}
+.c-modal-header {
+    background: #e8e9e9;
+    position: relative;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+.c-modal-header .c-modal-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: 24px;
+}
+.c-modal-header .c-close {
+    position: absolute;
+    right: 20px;
+    top: 17px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+ .c-modal-header .c-close span {
+    font-size: 30px;
+}
+.modal-sidebar-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: #1d2425;
+}
+.modal-sidebar-title .section-title {
+    color: white;
+    font-size: 20px;
+    font-weight: 500;
+}
+.c-popup img {
+    max-width: 100%;
+}
+.c-modal-sidebar-inner .module-list {
+    padding: 15px 0 15px 0;
+    list-style: none;
+    border-bottom: 1px solid #cccccc94;
+    margin: 0;
+}
+.c-modal-sidebar-inner .module-list li {
+    display: inline-block;
+    padding: 0 0px 0 20px;
+}
+.c-modal-sidebar-inner .module-list li img {
+    width: 14px;
+}
+.c-modal-sidebar-inner .module-list li span {
+    font-size: 13px;
+}
+.availabilty-container .available-heading {
+    font-weight: 600;
+}
+.availabilty-container .text-left {
+    float: left;
+}
+.availabilty-container .text-right {
+    float: right;
+}
+.availabilty-container .available-info {
+    font-size: 13px;
+}
+.availabilty-container {
+    display: inline-block;
+    width: -webkit-fill-available;
+    border-bottom: 1px solid #cccccc94;
+    padding: 0px 13px 15px 13px;
+}
+.availabilty-container .show-more {
+    color: black;
+}
+.c-modal-sidebar-description .des-heading {
+    margin-bottom: 0;
+    font-weight: 500;
+}
+.c-modal-sidebar-description  .c-m-description {
+    font-weight: 500;
+    font-size: 13px;
+}
+.c-modal-sidebar-filters {
+    background: #1d2425;
+}
+.c-modal-sidebar-filters .m-filters label {
+    display: block;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    padding-bottom: 6px;
+}
+.c-modal-sidebar-filters .c-m-input-control {
+    background: transparent;
+    border: 1px solid white;
+    height: 31px;
+    border-radius: 4px;
+    color: white;
+    width: 100%
+}
+.c-modal-sidebar-filters .m-filters {
+    padding: 10px 6px 10px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+.c-modal-sidebar-filters .m-filters .c-m-filter {
+    width: 47%;
+}
+.c-modal-sidebar-filters select {
+    height: 34px !important;
+}
+.c-modal-sidebar-filters select option {
+    color: black;
+}
+.c-modal-sidebar-filters .filter-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 10px 20px 20px 20px;
+}
+.c-modal-sidebar-filters .filter-action .c-m-total-price {
+    color: white;
+    width: 50%;
+    font-weight: 600;
+    font-size: 20px;
+ }
+ .c-modal-sidebar-filters .filter-action .apply-now {
+    border-radius: 50px;
+    padding: 16px;
+    font-size: 18px;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-family: 'Raleway', sans-serif;
+    width: 50%;
+    border: transparent;
+    cursor: pointer;
+    color: black;
+    background: white;
+    display: block;
+    text-align: center;
+}
+.zooming-content .zooming-action {
+    background: #e8e9e9;
+    margin-left: 21px;
+    display: inline-block;
+    vertical-align: middle;
+    width: 42px;
+    height: 42px;
+    text-align: center;
+    line-height: 48px;
+    cursor: pointer;
+}
+.zooming-content .minus-action {
+    line-height: 35px;
+}
+.c-m-iframe-content img {
+    width: 100%;
+    max-width: 450px;
+}
+.c-m-iframe-content {
+    text-align: center;
+    margin: auto;
+}
+.c-modal-footer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+.c-modal-sidebar-description {
+    padding-left: 13px;
+    padding-right: 13px;
+    /* padding-bottom: 35px; */
+    padding-bottom: 52px;
+}
+
+.c-connect-map-wrapper{
+    width: 100%;
+    max-width: 1240px;
+    margin: auto;
+    background: white;
+    height: fit-content;
 }
