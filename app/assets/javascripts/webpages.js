@@ -8,7 +8,7 @@ $(document).ready(function () {
   selectMap = webCommunity.web_map_type;
 
   if(webCommunity.web_map_type === "3d-map") {
-    beansWidget.initMap("1430 Bell Rd, Nashville, TN", "OWU3MWI0NDgzNzlkNGQ0OjYyNjEzNzY1MzgzODYxMzA2NDYxMzczMTM0Mzk2MzMyMzg2NTY0NjE=", {'click-popup-listener' : polygonClickPopup, 'polygon-color' : '#f4f4f4', 'selected-polygon-color' : '#f4f4f4', 'selected-unit-color' : '#0000ff'});    
+    beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`, "OWU3MWI0NDgzNzlkNGQ0OjYyNjEzNzY1MzgzODYxMzA2NDYxMzczMTM0Mzk2MzMyMzg2NTY0NjE=", {'click-popup-listener' : polygonClickPopup, 'polygon-color' : '#f4f4f4', 'selected-polygon-color' : '#f4f4f4', 'selected-unit-color' : '#0000ff'});    
   }
 
   handleMapControl()
@@ -1028,8 +1028,8 @@ function set_realpagesvc_url(element) {
   var url = apply_now_url + "?MoveInDate=" + $('#leasing-start-date').val() + "&UnitId=" + $(element).data('unit-provider-id') + "&SearchUrl=" + redirect_url;
   
   if(selectMap === "3d-map") {
-    apply_now_url = `/communities/${community.id}/webpages/apply_now`;
-    redirect_url = `/communities/${community.id}/webpages`
+    apply_now_url = `/communities/${webCommunity.id}/webpages/apply_now`;
+    redirect_url = `/communities/${webCommunity.id}/webpages`
     date = new Date()
 
     url = url = apply_now_url + "?MoveInDate=" + date.toISOString().split('T')[0] + "&UnitId=" + _3dSelectedUnit.provider_unit_id + "&SearchUrl=" + redirect_url;
@@ -1220,10 +1220,10 @@ function _3dUnitModalDisplay() {
     $('#unitModal').find('#available-text').html('Unavailable');
   } else {
     if (_3dSelectedUnit.available) {
+      _3dDate = _3dSelectedUnit.available_date.split("-")
       $('#unitModal').find('#availability').html("Available");
-
       $('#unitModal').find('#available-text').html('Available');
-      $('#unitModal').find('#available-date').html(_3dSelectedUnit.available_date);
+      $('#unitModal').find('#available-date').html(`${_3dDate[2]}/${_3dDate[1]}/${_3dDate[0]}`);
     } else {
       $('#unitModal').find('#availability').html(_3dSelectedUnit.availability == "Unoccupied" ? "Available" : "Occupied");
       $('#unitModal').find('#available-text').html('Available');
