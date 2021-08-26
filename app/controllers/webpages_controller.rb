@@ -59,7 +59,16 @@ class WebpagesController < ActionController::Base
           y_plot: unit.y_plot,
           floor: unit.floor,
           sold: unit.sold,
-          available: unit.available
+          available: unit.available,
+          provider_floorplan_id: unit&.floorplan&.provider_floorplan_id,
+          community_property_id: unit&.community&.credential&.property_id,
+          lease_term: unit.lease_term,
+          availability_url: unit&.availability_url || unit&.floorplan&.availability_url,
+          floorplan_image: unit.standard_image_url || unit&.floorplan&.standard_image_url || '/assets/default.jpeg',
+          is_fav: unit&.community&.favorite_stop&.favorite_unit.include?(unit.id.to_s),
+          floorplan_name: unit&.floorplan.name,
+          lease_pricing: unit.lease_pricing,
+          description: unit.description || unit&.floorplan&.description
         }
         @units_with_floorplan_info << struct
       end
