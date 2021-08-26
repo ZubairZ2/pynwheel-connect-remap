@@ -367,7 +367,7 @@ function polygonClickPopup(feature) {
   if(_3dSelectedUnit)
     $("#unitModal").modal("show");
 
-  return "Unit: " + unitName + "<br/> Floor: " + unitFloor;
+  return "Name: " + unitName;
 }
 
 function setFilters() {
