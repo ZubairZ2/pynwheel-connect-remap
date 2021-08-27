@@ -441,10 +441,10 @@
               <%= hidden_field_tag 'existing_tour_user_email_arr', @axisting_tour_users.to_json %>
               <div>
                 <% if @reschedule_tour %>
-                  <button id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Done</button>
+                  <button id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
                   <button class="btn_popup" id="cancel-visit" style="border-left: 5px solid #fff;  width: 50%;">Cancel my visit</button>
                 <%else%>
-                  <button id ="confirm_reservation" class="btn_popup">Done</button>
+                  <button id ="confirm_reservation" class="btn_popup">Submit</button>
                 <%end%>
               </div>
               
