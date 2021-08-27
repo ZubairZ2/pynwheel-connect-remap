@@ -3,7 +3,6 @@
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
     %meta{:charset => "utf-8"}/
     %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
-    %meta{:content => "upgrade-insecure-requests", "http-equiv" => "Content-Security-Policy"}/
 
     %title Pynwheel | Dashboard
     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
@@ -15,7 +14,7 @@
     = javascript_include_tag 'jquery.arrayUtilities'
     = javascript_include_tag 'slick'
     = javascript_include_tag "update_session"
-    %script{:src => "https://beans.ai/widgets/3d-maps/v1.2.0/beans-mapbox.min.js"}
+    %script{:src => "https://beans.ai/widgets/3d-maps/v1.2.1/beans-mapbox.min.js"}
     /%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
     /%link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
