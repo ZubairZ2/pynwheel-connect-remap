@@ -1462,9 +1462,11 @@ function _3dMapViewMarkers() {
   let _3dUnitsMarketingNames = getUnitsMarketingNames();
   let cleanedNames = clean3DMarkers(_3dUnitsMarketingNames)
   console.log("cleanedNames:  ", cleanedNames);
-  _3dFilterByUnits(cleanedNames + _3dSampleAmenities.join());
-  // _3dFilterByFloor("1")
-
+  
+  if(cleanedNames.length > 0)
+    _3dFilterByUnits(cleanedNames + _3dSampleAmenities.join());
+  else
+    _3dFilterByUnits(cleanedNames);
 }
 
 function clean3DMarkers(unit_names) {
