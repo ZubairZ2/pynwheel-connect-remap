@@ -11,6 +11,7 @@ module ZervServices
             @facilityId   = community.zerv.facility_id.blank? ? "0" : community.zerv.facility_id
             @accessCode   = community.zerv.badge_id.blank? ? "1234" : community.zerv.badge_id
             @cardFormat   = community.zerv.card_format.blank? ? "HID Prox 26-bit H10301" : community.zerv.card_format
+
             user_audit_logs = ZervServices::GetAuditLogsService.call(community: community) 
             user_audit_logs = user_audit_logs.success? ? user_audit_logs["payload"]["listUserAudit"] : nil
             user_accesses = zerv_user["listGetUserAccess"]
@@ -56,6 +57,7 @@ module ZervServices
                 "email": tour_user.email,
                 "id": zerv_user["id"],
                 "image": nil,
+                "refreshCredentialFrequency": 24,
                 "removeExistingAccessDuration": [],
                 "removedExistingAccess": [],
                 "listAddUserAccess": list_add_user_access
@@ -193,6 +195,8 @@ module ZervServices
                 "credentialIdentifier": "1234",
                 "facilityId": @facilityId,
                 "cardFormat": @cardFormat,
+                "antiPassBack": 5,
+                "range": 100,
                 "active": true,
                 "monAccess": false,
                 "tueAccess": false,

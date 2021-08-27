@@ -10,6 +10,7 @@ module ZervServices
             @facilityId   = community.zerv.facility_id.blank? ? "0" : community.zerv.facility_id
             @accessCode   = community.zerv.badge_id.blank? ? "1234" : community.zerv.badge_id
             @cardFormat   = community.zerv.card_format.blank? ? "HID Prox 26-bit H10301" : community.zerv.card_format
+
             url = base_url + "/user/adduserwithtimezone"
             id_token = get_id_token
 
@@ -38,6 +39,7 @@ module ZervServices
                 "phoneNumber":  tour_user.phone_number,
                 "email": tour_user.email,
                 "image": nil,
+                "refreshCredentialFrequency": 24,
                 "listAddUserAccess": list_add_user_access
             }
             
@@ -120,6 +122,8 @@ module ZervServices
                 "credentialIdentifier": "1234",
                 "facilityId": @facilityId,
                 "cardFormat": @cardFormat,
+                "antiPassBack": 5,
+                "range": 100,
                 "active": true,
                 "monAccess": false,
                 "tueAccess": false,
