@@ -403,7 +403,7 @@
       - if @community.display_rent
         %b#popover-price
 
-#communityWebpagesData{ data: {community: @community.to_json} }
+#communityWebpagesData{ data: {community: @community.to_json, amenities: @amenities.to_json} }
 
 :javascript
   $(window).on('resize', function() {

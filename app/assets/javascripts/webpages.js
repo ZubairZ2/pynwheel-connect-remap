@@ -1,10 +1,16 @@
 var selectMap;
 var webCommunity;
 var _3dFilteredUnits;
+var _3dAmenities;
 var _3dSelectedUnit;
+var _3dFilteredAmenity;
+var _3dSampleAmenities = ["SWIMMINGPOOL", "GYM", "BBQ", "SPA", "OFFICE", "ST", "EL", "EN"]
+
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
+  _3dAmenities = $("#communityWebpagesData").data("amenities");
+
 
   if(webCommunity) {
     selectMap = webCommunity.web_map_type;
@@ -360,15 +366,48 @@ $(window).bind('load', function () {
 });
 
 function polygonClickPopup(feature) {
-  let unitName = feature.properties.name.replace("polygon", "")
-  let unitFloor = feature.properties.floor;
+  let htmlToDisplay;
+
+  if(_3dSampleAmenities.includes(feature.properties.display_text)) {
+    htmlToDisplay = amenityHTMLToDisplay(feature.properties);
+   } else {
+    htmlToDisplay = unitHTMLToDisplay(feature.properties);
+  }
+
+  return htmlToDisplay;
+}
+
+function unitHTMLToDisplay(unit) {
+  let unitName = unit.display_text;
+  let unitFloor = unit.floor;
+
   _3dSelectedUnit = set3DSelectedUnit(unitName, unitFloor);
-  console.log(" _3dSelectedUnit:  ", _3dSelectedUnit)
+  
   if(_3dSelectedUnit)
     $("#unitModal").modal("show");
 
-  return "Name: " + unitName;
+  $(".mapboxgl-popup-content").css("width", "")
+
+  return `<strong>Name: ${unitName}</strong>`;
 }
+
+function amenityHTMLToDisplay(amenity) {
+  let htmlToDisplay = amenity.display_text;
+  
+  _3dFilteredAmenity = _3dGetAmenityImageURL(amenity.display_text);
+
+  if(_3dFilteredAmenity && _3dFilteredAmenity.image && _3dFilteredAmenity.image.url) {
+    $(".mapboxgl-popup-content").css("width", "570px");
+    htmlToDisplay = `<strong>Name: ${amenity.display_text}</strong> </br> <img src=${_3dFilteredAmenity.image.url} alt="Girl in a jacket" class="amenity-image-3d">`;
+  }
+
+  return htmlToDisplay
+}
+
+function _3dGetAmenityImageURL(amenityName) {
+  return _3dAmenities.filter(a => a.name === amenityName)[0];
+}
+
 
 function setFilters() {
   console.log("Setting filters");
@@ -1423,7 +1462,7 @@ function _3dMapViewMarkers() {
   let _3dUnitsMarketingNames = getUnitsMarketingNames();
   let cleanedNames = clean3DMarkers(_3dUnitsMarketingNames)
   console.log("cleanedNames:  ", cleanedNames);
-  _3dFilterByUnits(cleanedNames);
+  _3dFilterByUnits(cleanedNames + _3dSampleAmenities.join());
   // _3dFilterByFloor("1")
 
 }

@@ -3989,6 +3989,16 @@ div.mydiv {
     min-height: 90vh;
 }
 
+.amenity-image-3d {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    width: 500px;
+    height: 500px;
+}
+
 .publish-changes-screen-context {
     text-align: center;
     height: 85vh;
