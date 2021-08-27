@@ -17,12 +17,12 @@
           HOME PAGE
           %span
     %h4.mt-30
-      Select Home Page Type
+      Select Home Page Ty
       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "selectHomepageTypePopover","data-content" => " "}
         %span#propertyDetailNameText
           Changing the Home Page Type will change whether the home page shows a video or slideshow.
     .row
-      .col-lg-12
+      .col-lg-12.p-0
         .form-group 
           .radio.radio-primary.pull-left
             %input#images-loop-type-radio{:name => "loop_type_radio", :type => "radio", :value => "images_loop_type_radio",:checked=>current_community.design.has_images_loop_type? ? true : false}
