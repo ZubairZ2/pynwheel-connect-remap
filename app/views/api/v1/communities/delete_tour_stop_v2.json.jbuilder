@@ -451,7 +451,14 @@ json.tours @tours do |tour|
   # ///////////////////////////////////////////////////////////////////// Stop data //////////////////////////////////////////////////////
   #use_helper_method("a","b")
   
-  mobile_path = ShortestPath.return_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+  if @community.is_sitemap
+    mobile_path = ShortestPath.return_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+  else
+    new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, @community.id) # I add extra elevator for shortest path making
+    mobile_path, new_stops_arr = ShortestPath.return_floorplate_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+    binding.pry
+  end
+  # fetch eleatorts which we need and remove others against each floor//////    update new_stops_arr
 
   json.tour_stop new_stops_arr.compact do |stop|
 
@@ -552,6 +559,7 @@ json.tours @tours do |tour|
         if counter == 0
           @existing_path_points = []
         else
+          # last stop to tour starting
           path_points = ShortestPath.return_path_points_to_mobile(mobile_path, "TourStop", "Tour", new_stops_arr[i-1].id, 0)
           @existing_path_points = path_points if path_points.present?
           # path = Path.where(map_path_to_id: nil, map_path_from_id: new_stops_arr[i-1].stop_id).first
