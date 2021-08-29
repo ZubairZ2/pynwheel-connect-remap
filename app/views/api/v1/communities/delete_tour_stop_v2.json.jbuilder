@@ -449,7 +449,6 @@ json.tours @tours do |tour|
   skip_1_path = false
 
   # ///////////////////////////////////////////////////////////////////// Stop data //////////////////////////////////////////////////////
-  #use_helper_method("a","b")
   if @community.auto_wayfinding
     if @community.is_sitemap
       mobile_path = ShortestPath.return_path_for_mobile(new_stops_arr, @community.id, 'sorting')
