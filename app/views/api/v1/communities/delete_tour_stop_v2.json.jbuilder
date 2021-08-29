@@ -450,35 +450,37 @@ json.tours @tours do |tour|
 
   # ///////////////////////////////////////////////////////////////////// Stop data //////////////////////////////////////////////////////
   #use_helper_method("a","b")
-  
-  if @community.is_sitemap
-    mobile_path = ShortestPath.return_path_for_mobile(new_stops_arr, @community.id, 'sorting')
-  else
-    new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, @community.id) # I add extra elevator for shortest path making
-    mobile_path, new_stops_arr = ShortestPath.return_floorplate_path_for_mobile(new_stops_arr, @community.id, 'sorting')
-    binding.pry
+  if @community.auto_wayfinding
+    if @community.is_sitemap
+      mobile_path = ShortestPath.return_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+    else
+      new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, @community.id) # I add extra elevator for shortest path making
+      mobile_path, new_stops_arr = ShortestPath.return_floorplate_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+    end
   end
   # fetch eleatorts which we need and remove others against each floor//////    update new_stops_arr
 
   json.tour_stop new_stops_arr.compact do |stop|
 
-    begin
-      if skip_1
-        i += 1
-        counter += 1
-        skip_1 = false
-        next
+    unless @community.auto_wayfinding
+      begin
+        if skip_1
+          i += 1
+          counter += 1
+          skip_1 = false
+          next
+        end
+        # binding.pry
+        if (stop.is_a? TourStop) and (new_stops_arr[counter + 2].is_a? TourStop) and (stop.building != new_stops_arr[counter + 2].building) and (new_stops_arr[counter + 1].stop_type == "elevator") and (stop.floor == new_stops_arr[counter + 2].floor) 
+          skip_1 = true
+        end
+        skip_bool = (new_stops_arr[counter + 2].is_a? Tour) ? (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].starting_floor) : (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].floor)
+        if skip_bool
+          skip_1 = true
+        end 
+        skip_1 = true if ((new_stops_arr[counter + 1].is_a? TourStop) and new_stops_arr[counter + 1].stop_type == "elevator" and (new_stops_arr[counter + 2].floor rescue new_stops_arr[counter + 2].starting_floor) == (stop.floor rescue stop.starting_floor))
+      rescue => ex
       end
-      
-      if (stop.is_a? TourStop) and (new_stops_arr[counter + 2].is_a? TourStop) and (stop.building != new_stops_arr[counter + 2].building) and (new_stops_arr[counter + 1].stop_type == "elevator") and (stop.floor == new_stops_arr[counter + 2].floor) 
-        skip_1 = true
-      end
-      skip_bool = (new_stops_arr[counter + 2].is_a? Tour) ? (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].starting_floor) : (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].floor)
-      if skip_bool
-        skip_1 = true
-      end 
-      skip_1 = true if ((new_stops_arr[counter + 1].is_a? TourStop) and new_stops_arr[counter + 1].stop_type == "elevator" and (new_stops_arr[counter + 2].floor rescue new_stops_arr[counter + 2].starting_floor) == (stop.floor rescue stop.starting_floor))
-    rescue => ex
     end
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
@@ -560,15 +562,18 @@ json.tours @tours do |tour|
           @existing_path_points = []
         else
           # last stop to tour starting
-          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, "TourStop", "Tour", new_stops_arr[i-1].id, 0)
-          @existing_path_points = path_points if path_points.present?
-          # path = Path.where(map_path_to_id: nil, map_path_from_id: new_stops_arr[i-1].stop_id).first
-          # if path.blank?
-          #   path = Path.where(map_path_to_id:  new_stops_arr[i-1].stop_id, map_path_from_id: nil).first
-          #   @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
-          # else
-          #   @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
-          # end
+          if @community.auto_wayfinding
+            path_points = ShortestPath.return_path_points_to_mobile(mobile_path, "TourStop", "Tour", new_stops_arr[i-1].id, 0)
+            @existing_path_points = path_points if path_points.present?
+          else
+            path = Path.where(map_path_to_id: nil, map_path_from_id: new_stops_arr[i-1].stop_id).first
+            if path.blank?
+              path = Path.where(map_path_to_id:  new_stops_arr[i-1].stop_id, map_path_from_id: nil).first
+              @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+            else
+              @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+            end
+          end
         end
       rescue => ex
         @existing_path_points = []
@@ -1080,37 +1085,47 @@ json.tours @tours do |tour|
       json.directional_text elevator.directional_text
       json.video_link_button_label ""
       json.video_link ""
-
-      if new_stops_arr.compact[counter + 1].present?
-        next_stop = new_stops_arr.compact[counter + 1]
-        next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id rescue nil
-        if next_stop.is_a? Elevator
-          next_floor = current_floor
-          elevator_stop_description = ""
-
-          if hit
-            current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
-            elevator_stop_description = current_stop.floors.present? ? "Go to floor " + (plates_name[current_stop.floors.max.to_s].present? ? plates_name[current_stop.floors.max.to_s] : current_stop.floors.max.to_s rescue current_stop.floors.max.to_s) : "" rescue ""
-          else
-            current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
-            elevator_stop_description =  current_stop.floors.present? ? "Go to floor " + (plates_name[current_stop.floors.min.to_s].present? ? plates_name[current_stop.floors.min.to_s] : current_stop.floors.min.to_s rescue current_stop.floors.min.to_s) : "" rescue ""
-          end
-          if current_stop.present? and next_stop.present? and current_stop.building.present? and next_stop.building.present? and current_stop.building != next_stop.building
-            elevator_stop_description =  "Go to floor " + (plates_name[next_stop.floors.min.to_s].present? ? plates_name[next_stop.floors.min.to_s] : next_stop.floors.min.to_s rescue next_stop.floors.min.to_s) rescue elevator_stop_description           
-          end
-        else
-          elevator_stop_description =  next_stop.floor.present? ? "Go to floor " + (plates_name[next_stop.floor.to_s].present? ? plates_name[next_stop.floor.to_s] : next_stop.floor.to_s rescue next_stop.floor.to_s) : "" rescue ""
-          next_floor  = next_stop.floor.to_i rescue current_floor
-        end
-        if new_stops_arr.compact[counter + 1].is_a? Tour
-          fl_text = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : min_floor).to_s
-          elevator_stop_description = "Go to floor " + (plates_name[fl_text].present? ? plates_name[fl_text] : fl_text rescue fl_text)
-          next_floor  = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : current_floor).to_i
-        end
-
+      if @community.auto_wayfinding
+        from_type = (new_stops_arr[i-1].is_a? Tour) ? "Tour" : "TourStop"
+        to_type = (new_stops_arr[i].is_a? Tour) ? "Tour" : "TourStop"
+        from_id = (new_stops_arr[i-1].is_a? Tour) ? 0 : new_stops_arr[i - 1].id
+        to_id = (new_stops_arr[i].is_a? Tour) ? 0 : new_stops_arr[i].id
+        from_id = (from_type == "TourStop" && TourStop.find(from_id).stop_type == "elevator") ? TourStop.find(from_id).stop_id : from_id
+        to_id = (to_type == "TourStop" && TourStop.find(to_id).stop_type == "elevator") ? TourStop.find(to_id).stop_id : to_id
+        next_floor = ShortestPath.return_next_floor_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
+        elevator_stop_description = "Go to floor " + next_floor.to_s
       else
-        
-        elevator_stop_description = "Go to floor " + (plates_name[min_floor.to_s].present? ? plates_name[min_floor.to_s] : min_floor.to_s rescue min_floor.to_s)
+        if new_stops_arr.compact[counter + 1].present?
+          next_stop = new_stops_arr.compact[counter + 1]
+          next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id rescue nil
+          if next_stop.is_a? Elevator
+            next_floor = current_floor
+            elevator_stop_description = ""
+
+            if hit
+              current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
+              elevator_stop_description = current_stop.floors.present? ? "Go to floor " + (plates_name[current_stop.floors.max.to_s].present? ? plates_name[current_stop.floors.max.to_s] : current_stop.floors.max.to_s rescue current_stop.floors.max.to_s) : "" rescue ""
+            else
+              current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
+              elevator_stop_description =  current_stop.floors.present? ? "Go to floor " + (plates_name[current_stop.floors.min.to_s].present? ? plates_name[current_stop.floors.min.to_s] : current_stop.floors.min.to_s rescue current_stop.floors.min.to_s) : "" rescue ""
+            end
+            if current_stop.present? and next_stop.present? and current_stop.building.present? and next_stop.building.present? and current_stop.building != next_stop.building
+              elevator_stop_description =  "Go to floor " + (plates_name[next_stop.floors.min.to_s].present? ? plates_name[next_stop.floors.min.to_s] : next_stop.floors.min.to_s rescue next_stop.floors.min.to_s) rescue elevator_stop_description           
+            end
+          else
+            elevator_stop_description =  next_stop.floor.present? ? "Go to floor " + (plates_name[next_stop.floor.to_s].present? ? plates_name[next_stop.floor.to_s] : next_stop.floor.to_s rescue next_stop.floor.to_s) : "" rescue ""
+            next_floor  = next_stop.floor.to_i rescue current_floor
+          end
+          if new_stops_arr.compact[counter + 1].is_a? Tour
+            fl_text = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : min_floor).to_s
+            elevator_stop_description = "Go to floor " + (plates_name[fl_text].present? ? plates_name[fl_text] : fl_text rescue fl_text)
+            next_floor  = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : current_floor).to_i
+          end
+
+        else
+          
+          elevator_stop_description = "Go to floor " + (plates_name[min_floor.to_s].present? ? plates_name[min_floor.to_s] : min_floor.to_s rescue min_floor.to_s)
+        end
       end
       if current_floor.present?
         floor_image = @community.floorplates.map{|x| x if x.floors.include?(current_floor)}.compact.last rescue nil
@@ -1267,43 +1282,52 @@ json.tours @tours do |tour|
     @existing_path_points = []
     
     if @community.show_map
-      from_type = (new_stops_arr[i-1].is_a? Tour) ? "Tour" : "TourStop"
-      to_type = (new_stops_arr[i].is_a? Tour) ? "Tour" : "TourStop"
-      from_id = (new_stops_arr[i-1].is_a? Tour) ? 0 : new_stops_arr[i - 1].id
-      to_id = (new_stops_arr[i].is_a? Tour) ? 0 : new_stops_arr[i].id
-      path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
-      @existing_path_points = path_points if path_points.present?
-      # if new_stops_arr[i-1].present? and new_stops_arr[i-1].is_a? Tour
-      #   @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
-      #   path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
-      #   if path.blank?
-      #     path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
-      #     @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
-      #   else
-      #     @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
-      #   end
-         
-      # else
-      #   unless skip_1_path
-      #     path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
-      #     if path.blank?
-      #       path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
-      #       @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
-      #     else
-      #       @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
-      #     end
-      #   else
-      #     path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-2].stop_id).first
-      #     if path.blank?
-      #       path = Path.where(map_path_to_id: new_stops_arr[i-2].stop_id, map_path_from_id: stop.stop_id).first
-      #       @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
-      #     else
-      #       @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
-      #     end
-      #   end
-        
-      #   # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
-      # end
+      if @community.auto_wayfinding
+        from_type = (new_stops_arr[i-1].is_a? Tour) ? "Tour" : "TourStop"
+        to_type = (new_stops_arr[i].is_a? Tour) ? "Tour" : "TourStop"
+        from_id = (new_stops_arr[i-1].is_a? Tour) ? 0 : new_stops_arr[i - 1].id
+        to_id = (new_stops_arr[i].is_a? Tour) ? 0 : new_stops_arr[i].id
+        if @community.is_sitemap
+          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
+        else
+          from_id = (from_type == "TourStop" && TourStop.find(from_id).stop_type == "elevator") ? TourStop.find(from_id).stop_id : from_id
+          to_id = (to_type == "TourStop" && TourStop.find(to_id).stop_type == "elevator") ? TourStop.find(to_id).stop_id : to_id
+          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
+        end
+        @existing_path_points = path_points if path_points.present?
+      else
+        if new_stops_arr[i-1].present? and new_stops_arr[i-1].is_a? Tour
+          @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
+          path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
+          if path.blank?
+            path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
+            @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+          else
+            @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+          end
+           
+        else
+          unless skip_1_path
+            path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
+            if path.blank?
+              path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
+              @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+            else
+              @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+            end
+          else
+            path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-2].stop_id).first
+            if path.blank?
+              path = Path.where(map_path_to_id: new_stops_arr[i-2].stop_id, map_path_from_id: stop.stop_id).first
+              @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+            else
+              @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+            end
+          end
+          
+          # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
+        end
+      end
       skip_1_path = skip_1
     end  
 

@@ -308,6 +308,17 @@ module ShortestPath
     end
     path_points
   end
+  def return_next_floor_to_mobile(mobile_path, source_type, dest_type, source_id, dest_id)
+    floor_index = 7
+    floor = ""
+    mobile_path.each_with_index do |path, indx|
+      if (path[0] == source_type && path[1] == dest_type && path[2] == source_id && path[3] == dest_id)
+        floor = mobile_path[indx + 1][floor_index]
+        break
+      end
+    end
+    floor
+  end
   def fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, community_id)
     community = Community.find community_id
     tour = community.tour
