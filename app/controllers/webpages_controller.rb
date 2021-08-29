@@ -73,22 +73,19 @@ class WebpagesController < ActionController::Base
     units = @units_with_floorplan_info.pluck(:bedrooms).sort_by(&:to_i).uniq rescue ""
     @unit_bedrooms = []
     units.present? && units.each do |unit|
-      @unit_bedrooms << append_bedroom_string(unit.to_i) #unit[:bedrooms]
+      bedroom_number = unit.to_i
+      if bedroom_number == 0 
+        @unit_bedrooms << ["Studio", "zero_bedrooms"] 
+      elsif bedroom_number == 1 
+        @unit_bedrooms << ["#{bedroom_number} Bedroom", "1_bedroom"] 
+      else
+        @unit_bedrooms << ["#{bedroom_number} Bedrooms", "#{bedroom_number}_bedrooms"]
+      end
     end
     @unit_bedrooms
   end
 
-  def append_bedroom_string(bedroom_number)
-    "#{bedroom_number} #{bedroom_number == 0 ? "Studio" : bedroom_number == 1 ? "Bedroom" : "Bedrooms" }" #if bedroom_number != 0
-    # if bedroom_number == 1
-    #   "1 Bedroom"
-    # elsif bedroom_number == 2
-    #   "1 Bedrooms"
-    # end
-  end
-
   def unit_availability_for_webpages
-    # binding.pry
     @available_units = []
     today = DateTime.now.to_date
     thirty_days = today + 30.days;
@@ -97,7 +94,6 @@ class WebpagesController < ActionController::Base
     one_twenty_days = today + 120.days;
     @units_with_floorplan_info.each do |available_unit|
       available_date = available_unit[:available_date]
-      # binding.pry
       if (available_date <= today)
         @available_units << ["Now", "now"]
       end
@@ -141,12 +137,10 @@ class WebpagesController < ActionController::Base
   def build_market_rent_range
     maximum_market_rent = @units_with_floorplan_info.max_by{|k| k[:market_rent] }[:market_rent]
     minimum_market_rent = @units_with_floorplan_info.min_by{|k| k[:market_rent] }[:market_rent]
-      # binding.pry
     @market_rent = []
     market_rent_range = minimum_market_rent.to_i..maximum_market_rent.to_i
     market_rent_range_hash = market_rent_range.each_slice((market_rent_range.last/4 > 0 ? market_rent_range.last/4 : 1)).with_index.with_object({}) { |(a,i),h| h[minimum_market_rent.to_i.to_s+'-'+a.last.to_s]=a.last }
     market_rent_range_hash = market_rent_range_hash.invert
-    # binding.pry
     market_rent_range_hash.each do |v|
       @market_rent << v
     end
@@ -204,6 +198,7 @@ class WebpagesController < ActionController::Base
       @scheduler_widget_link = get_scheduler_link
       @favorite = Favorite.find_by_session_id(cookies[:webpages_session_id])
       @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
+      @fav_units_info = @units.to_json 
       @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
     rescue => ex
     end
