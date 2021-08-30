@@ -569,7 +569,8 @@ json.tours @tours do |tour|
           @existing_path_points = []
         else
           if @community.auto_wayfinding
-            path_points = ShortestPath.return_path_points_to_mobile(mobile_path, "TourStop", "Tour", new_stops_arr[i-1].id, 0)
+            stop_id = TourStop.find(new_stops_arr[i-1].id).stop_type == "elevator" ? TourStop.find(new_stops_arr[i-1].id).stop_id : new_stops_arr[i-1].id
+            path_points = ShortestPath.return_path_points_to_mobile(mobile_path, "TourStop", "Tour", stop_id, 0)
             @existing_path_points = path_points if path_points.present?
           else
             path = Path.where(map_path_to_id: nil, map_path_from_id: new_stops_arr[i-1].stop_id).first
@@ -584,7 +585,7 @@ json.tours @tours do |tour|
       rescue => ex
         @existing_path_points = []
       end
-      json.path_points @existing_path_points[0].present? ? @existing_path_points[0] : @existing_path_points
+      json.path_points @existing_path_points[0].present? ? (@existing_path_points[0].class == Hash ? [@existing_path_points[0]] : @existing_path_points[0]) : @existing_path_points
       json.stop_description ((new_stops_arr.size - 1) == counter ? "Your Tour Has Ended" : "Starting point")
       counter = counter + 1
       i += 1
