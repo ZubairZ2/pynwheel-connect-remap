@@ -1596,6 +1596,7 @@ function display3DMap() {
   $(".zoomable-map-container").hide();
   $("#panzomm-container").css("width", "100%");
   $(".location-items").hide();
+  $(".c-sidebar").hide();
   // $(".select-floorP").hide();
   // let w1 = $(".select-list").width();
   // let w2 = $(".select-floorP").width();
@@ -1620,7 +1621,7 @@ function display2DMap() {
   $(".beans-map-container").hide();
   $(".zoomable-map-container").show();
   $("#panzomm-container").css("width", "");
-  $(".select-floorP").show();
+  // $(".select-floorP").show();
   // $(".select-floorP").show();
   $(".c-sidebar").show();
 }
