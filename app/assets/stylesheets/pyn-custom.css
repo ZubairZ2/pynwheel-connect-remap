@@ -3866,6 +3866,16 @@ div.mydiv {
     color: grey;
 }
 
+#_3DAmenityImage {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+._3d-modal-close-amenity {
+    margin-top: -20px !important;
+}
 .unit_manualoverride {
     position: relative;
     display: inline-block;
