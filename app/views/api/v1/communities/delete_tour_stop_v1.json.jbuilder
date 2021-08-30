@@ -585,7 +585,11 @@ json.tours @tours do |tour|
       rescue => ex
         @existing_path_points = []
       end
-      json.path_points @existing_path_points[0].present? ? (@existing_path_points[0].class == Hash ? [@existing_path_points[0]] : @existing_path_points[0]) : @existing_path_points
+      if @community.auto_wayfinding
+        json.path_points @existing_path_points
+      else
+        json.path_points @existing_path_points[0].present? ? (@existing_path_points[0].class == Hash ? [@existing_path_points[0]] : @existing_path_points[0]) : @existing_path_points
+      end
       json.stop_description ((new_stops_arr.size - 1) == counter ? "Your Tour Has Ended" : "Starting point")
       counter = counter + 1
       i += 1
@@ -1339,7 +1343,7 @@ json.tours @tours do |tour|
       skip_1_path = skip_1
     end  
 
-    @existing_path_points.flatten!
+    @existing_path_points.flatten! unless @community.auto_wayfinding
     json.path_points @existing_path_points
 
     i+=1
