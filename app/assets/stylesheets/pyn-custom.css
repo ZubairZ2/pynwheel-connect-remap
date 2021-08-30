@@ -3431,7 +3431,7 @@ a#favoriteclickme {
         margin: 20px 0 7px 0;
     }
     .right-side {
-        width: calc(97.7% - 300px);
+        width: auto
     }
 }
 
@@ -4990,11 +4990,11 @@ body {
     font-family: 'Raleway', sans-serif;
     font-weight: 600;
     padding-bottom: 4px;
+    white-space: nowrap;
 }
 .custom-iframe-modeule .selection-fields {
     padding: 0 0px 0 10px;
-    /* width: 50%; */
-    width: 100%;
+    width: 50%; 
     display: flex;
 }
 .selectable-field .custom-select {
@@ -5014,7 +5014,6 @@ body {
 .custom-iframe-modeule .header-buttons-groups {
     text-align: right;
     width: 42%;
-    margin-right: 90px;
 }
 .header-buttons-groups .header-action-btn {
     display: inline-block;
@@ -5042,7 +5041,7 @@ body {
     color: white;
 }
 .custom-iframe-modeule .c-wrapper {
-    /* margin-right: 90px; */
+     margin-right: 90px;  
 }
 .header-buttons-groups .transparent-btn:hover {
     background: black;
@@ -5104,10 +5103,13 @@ body {
     line-height: 26px;
     margin: 0 !important;
 }
-.floor-counts li a.selected {
+/* .floor-counts li a.selected {
   background: #435053;
   margin: 3px;
-  /* padding: 19px 5px 53px 0px; */
+  padding: 19px 5px 53px 0px;
+} */
+.floor-counts .digits-list-item.selected {
+    background: #435053;
 }
 .floor-counts .active-item {
      background: #435053;
@@ -5152,26 +5154,28 @@ ul.location-items span {
 .zooming-content .zooming-action {
     background: #e8e9e9;
     margin-left: 9px;
-    display: inline-block;
     vertical-align: middle;
     width: 42px;
-    /* height: 38px; */
+    height: 38px;
     text-align: center;
     line-height: 48px;
     cursor: pointer;
-    padding: 10px;
-}
-.zooming-content .minus-action {
-    line-height: 35px;
-    padding: 16px;
-}
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+ }
 footer.c-footer {
-    padding: 0 24px 0 25px;
-    position: fixed;
+     position: fixed;
     width: auto;
     left: 0px;
-    right: 100px;
+    right: 0;
     bottom: 0;
+    background: white;
+    padding: 10px 110px 10px 10px;
+}
+.need-to .apply-now:active {
+    background: white;
+    color: black;
 }
 .floor-counts .product-single__thumb-arrow i {
     color: white;
@@ -5221,11 +5225,16 @@ footer.c-footer {
   }
   .header-buttons-groups .header-action-btn {
       width: 100%;
-      /* max-width: 139px; */
+      max-width: 139px;
+      font-size: 13px;
+      margin-right: 4px;
   }
   .custom-iframe-modeule .app-logo {
       width: 10%;
   }
+  .selectable-field label {
+    font-size: 13px;
+}
 }
 @media screen and (min-width:568px) and (max-width:993px){
   .custom-iframe-modeule .header-buttons-groups {
@@ -5287,7 +5296,7 @@ footer.c-footer {
     font-size: 15px !important;
   }
   .header-buttons-groups .header-action-btn {
-    font-size: 13px;
+    font-size: 11px;
   }
   .iframe-content {
     display: block;
@@ -5308,7 +5317,7 @@ footer.c-footer {
     display: inline-block;
     width: 49%;
     padding-bottom: 8px;
-    font-size: 14px;
+    font-size: 13px;
   }
   .selected-data-mobile {
     padding-left: 0;
@@ -5344,9 +5353,9 @@ footer.c-footer {
       display: none;
   }
   .mobile-filter-mega-menu .selectable-field {
-      /* width: 29%; */
+      width: 45%; 
       display: inline-block;
-      padding: 8px 20px 9px 20px;
+      padding: 8px 20px 0px 20px;
   }
   .c-sidebar .c-sidebar-brand h6 {
       font-size: 16px;
@@ -5548,8 +5557,19 @@ footer.c-footer {
 .c-modal-sidebar-inner .module-list li span {
     font-size: 13px;
 }
+.availabilty-container-start{
+    display: inline-block;
+    width: -webkit-fill-available;
+    border-bottom: 1px solid #cccccc94;
+    padding: 0px 13px 15px 13px;
+    background: white;
+    display: inline-block;
+    padding-top: 14px;
+    max-width: 100%;
+    width: 100%;
+}
 .availabilty-container .available-heading {
-    font-weight: 600;
+    /* font-weight: 600; */
 }
 .availabilty-container .text-left {
     float: left;
@@ -5566,6 +5586,10 @@ footer.c-footer {
     border-bottom: 1px solid #cccccc94;
     padding: 0px 13px 15px 13px;
     background: white;
+    display: inline-block;
+    padding-top: 14px;
+    max-width: 100%;
+    width: 100%;
 }
 .availabilty-container .show-more {
     color: black;
@@ -5621,7 +5645,7 @@ footer.c-footer {
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding: 7px 20px 20px 20px;
+    padding: 20px 20px 20px 20px;
 }
 .c-modal-sidebar-filters .filter-action .c-m-total-price {
     color: white;
@@ -5644,6 +5668,23 @@ footer.c-footer {
     display: block;
     text-align: center;
 }
+
+.apply-now-responsive {
+    border-radius: 50px;
+    padding: 16px;
+    font-size: 18px;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-family: 'Raleway', sans-serif;
+    /* width: 50%; */
+    border: transparent;
+    cursor: pointer;
+    color: white;
+    background: black;
+    /* display: block; */
+    text-align: center;
+}
+
 .need-to .apply-now {
     border-radius: 50px;
     padding: 16px;
@@ -5659,21 +5700,22 @@ footer.c-footer {
     display: block;
     text-align: center;
 }
-.zooming-content .minus-action {
-    line-height: 35px;
-}
 .c-popup .c-m-iframe-content img {
-    width: 100%;
-    max-width: 450px;
+    width: auto;
+    max-width: 340px;
+    max-height: 340px;
 }
+
 .c-m-iframe-content {
     text-align: center;
     margin: auto;
 }
 .c-modal-footer {
     position: absolute;
-    bottom: 0;
-    right: 0;
+    bottom: 0; 
+     right: 0; 
+    width: 100%;
+    padding: 20px 24px 20px 0px;
 }
 ::-webkit-calendar-picker-indicator {
     filter: invert(1);
@@ -5744,10 +5786,15 @@ footer.c-footer {
     /* top: 0%; */
     /* bottom: 0px; */
     bottom: 0px;
-    padding: 83px 0px 0px 0px;
+    padding: 50px 0px 0px 0px;
     /* position: fixed;*/
 }
-
+.sitemap .c-wrapper {
+    margin-right: 0;
+}
+.sitemap footer.c-footer {
+    padding-right: 10px;
+}
 
 @media all and (max-width:1500px){
     .c-connect-map-wrapper  .c-modal-wrapper {
@@ -5757,7 +5804,7 @@ footer.c-footer {
          width: 35%;
     }
 }
-
+/* 
 @media only screen and (min-width: 990px) and (max-width: 1330px) {
     .custom-iframe-modeule .selection-fields .selectable-field {
         padding: 0 10px 0 6px;
@@ -5770,4 +5817,4 @@ footer.c-footer {
         font-size: 12px;
         max-width: 133px;
     }
-}
+} */

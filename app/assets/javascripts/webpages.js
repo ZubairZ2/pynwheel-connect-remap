@@ -91,20 +91,24 @@ $(window).bind('load', function () {
     });
     /////////////////////////////////////////
     $('#market_rent').change(function () {
-      // debugger
+      debugger
       console.log('market_rent is changed')
+      // $("#max_price_responsive").html($('#market_rent'.text()));
       showMarkers(true);
     });
     $('#square_feet').change(function () {
+      // $("#sq_feet_responsive").html($('#square_feet'.text()))
       showMarkers();
     });
     $('#unit_bedroom').change(function () {
       // debugger
+      // $("#bedroom_responsive").html($('#unit_bedroom'.text()))
       console.log('bedroom selected')
       showMarkers();
     });
     $('#available_unit').change(function () {
       // debugger
+      // $("#unit_availability").html($('#available_unit'.text()))
       console.log('availability option selected')
       showMarkers();
     });
@@ -660,6 +664,9 @@ function disabled_enabled_anchors() {
     disable_rent_filter_options(min_market_rent)
     disable_area_filter_options(max_area)
   }
+  else{
+    $('.custom-iframe-modeule').addClass('sitemap');
+  }
 }
 
 function set_prices_according_to_units_to_display(floorplate_units, is_market_rent_change_called){
@@ -1171,6 +1178,7 @@ function setModalAttributes(element) {
 
       $('#unitModal').find('#available-text').html('Available');
       $('#unitModal').find('#available-date').html($(element).data('available-date'));
+      $('#popup-available-date').html($(element).data('available-date'));
     } else {
       $('#unitModal').find('#availability').html($(element).data('availability') == "Unoccupied" ? "Available" : "Occupied");
       $('#unitModal').find('#available-text').html('Available');

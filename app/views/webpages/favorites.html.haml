@@ -47,7 +47,8 @@
       .select-list.select-list-fav
         = hidden_field_tag :maps_community_id, @community.id
         .need-to
-          = image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :width => "100%", :style => "padding: 1px 0px 5px 4px"
+          -if @community.logo.present?
+            = image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :width => "100%", :style => "padding: 1px 0px 5px 4px"
         .need-to
           %h3 Want to add favorites?
           %p{:style => "margin-bottom: 20px"} Explore available floor plans on the interactive site map.
@@ -61,8 +62,8 @@
           %p{:style => "margin-bottom: 20px"} Tap the heart to remove an item from the page, or click the clear button below to remove all items.
           %button.btn.btn-primary.btn-block.btn-lg.apply-now{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
         - if @community.self_tour && @community.scheduler_widget
-          .need-to
-            = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn apply-now btn-primary", :target=> "_blank", :style => ' width: 290px; margin-top: 15px; height: 57px; font-size: 18px; padding-top: 17px; color: white;'
+          .need-to{:style => "padding-top: 20px;"}
+            = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary apply-now btn-block btn-lg", :target=> "_blank"
         %span.logo-lg{:style => "text-align: center;"}
           %img{:alt => "", :src => '/assets/pynwheel-logo.png' , :title => "",:class => "pynwheel-logo-at-sidebar-bottom"}
       - if @units.nil?

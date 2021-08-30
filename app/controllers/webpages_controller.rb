@@ -161,6 +161,7 @@ class WebpagesController < ActionController::Base
     fs.favorite_unit << params[:unit_id] unless fs.favorite_unit.include?(params[:unit_id])
     fs.save
     favorite.save
+    # redirect_back(fallback_location: root_path)
   end
 
   def sent_favorite
@@ -206,8 +207,8 @@ class WebpagesController < ActionController::Base
 
   def favorites_share_link
     @favorite = Favorite.find_by_session_id(params[:webpages_session_id])
-    @units = Unit.where(id: @favorite.unit_ids,community_id: params[:community_id]).where.not(available_date: nil)
-    @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
+    @units = Unit.where(id: @favorite&.unit_ids,community_id: params[:community_id]).where.not(available_date: nil)
+    @floorplans = Floorplan.where(provider_floorplan_id: @units && @units.map(&:floorplan_id),community_id: params[:community_id])
   end
 
   def clear_favorites
