@@ -41,14 +41,16 @@
           .select-list{:class => @community.has_floorplates? ? "" : "adjust-width"}
             .select-title
               %h3.pull-left
-                Filter
+                Filter              
               .pull-right
                 .checkbox.checkbox-primary.pb-10
                   %input#select-all-filters-checkbox{:type => "checkbox",:name=>"all-filters-checkbox",checked: true}/
                   %label.filter-label
                     Select All
+
+            %button.pull-right.btn.btn-primary._3d-apply-filter-button{:type => "button", :onclick => "apply3DFilters();"} Apply Filters
             .list-select
-              %h4 Bedrooms
+              %h4{:style => "margin-top: -20px;"} Bedrooms
               / .checkbox.checkbox-primary.pb-15
               /   %input.filters#all-bedrooms-checkbox{:type => "checkbox",:name=>"bedrooms"}/
               /   %label

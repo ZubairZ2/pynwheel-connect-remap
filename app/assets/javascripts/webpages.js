@@ -363,6 +363,8 @@ $(window).bind('load', function () {
     }
 
   } // if condition ending curl
+
+  _3dMapViewMarkers();
 });
 
 function polygonClickPopup(feature) {
@@ -595,7 +597,6 @@ function showMarkers(market_rent_change = false) {
   console.log("units_to_display: ", units_to_display);
   if(selectMap === "3d-map") {
     _3dFilteredUnits = units_to_display;
-    _3dMapViewMarkers();
   }
   // set_prices_according_to_units_to_display(units_to_display, market_rent_change)
 
@@ -1492,6 +1493,7 @@ function handleMapControl() {
 }
 
 function display3DMap() {
+  $("._3d-apply-filter-button").css("display", "block");
   $(".beans-map-container").show();
   $(".zoomable-map-container").hide();
   $("#panzomm-container").css("width", "100%");
@@ -1508,6 +1510,7 @@ function display3DMap() {
 }
 
 function display2DMap() {
+  $("._3d-apply-filter-button").css("display", "none");
   $(".beans-map-container").hide();
   $(".zoomable-map-container").show();
   $("#panzomm-container").css("width", "");
@@ -1522,6 +1525,10 @@ function _3dFilterByUnits(_3dUnits) {
   beansWidget.filterByUnit(_3dUnits)
 }
 
+function apply3DFilters() {
+  _3dMapViewMarkers();
+}
+
 $(document).on('click','.share-favorite',function(){
   community_id = $("#maps_community_id").val()
   $.ajax({
@@ -1530,6 +1537,7 @@ $(document).on('click','.share-favorite',function(){
     success: function(response) {}
   });
 });
+
 $(document).on('click','.unit_marker',function(){
   community_id = $("#maps_community_id").val()
   $.ajax({
