@@ -88,6 +88,8 @@
                     %label Min Square Footage
                     = select_tag :square_feet, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"} 
 
+                %button._3d-apply-filter-button{:type => "button", :onclick => "apply3DFilters();"} Apply Filters
+
                 -# - if @community.self_tour && @community.scheduler_widget
                 -#   = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"header-action-btn colourd-btn", :target=> "_blank", :style => ' width: -webkit-fill-available; margin-top: 15px; background #1385e8; height: 43px; padding-top: 10px; font-weight: bold;'
 
