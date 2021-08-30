@@ -386,8 +386,6 @@ function unitHTMLToDisplay(unit) {
   if(_3dSelectedUnit)
     $("#unitModal").modal("show");
 
-  $(".mapboxgl-popup-content").css("width", "")
-
   return `<strong>Name: ${unitName}</strong>`;
 }
 
@@ -397,8 +395,9 @@ function amenityHTMLToDisplay(amenity) {
   _3dFilteredAmenity = _3dGetAmenityImageURL(amenity.display_text);
 
   if(_3dFilteredAmenity && _3dFilteredAmenity.image && _3dFilteredAmenity.image.url) {
-    $(".mapboxgl-popup-content").css("width", "570px");
-    htmlToDisplay = `<strong>Name: ${amenity.display_text}</strong> </br> <img src=${_3dFilteredAmenity.image.url} alt="Girl in a jacket" class="amenity-image-3d">`;
+    $("#3DAmenityName").html(htmlToDisplay);
+    $("#_3DAmenityImage").attr("src", _3dFilteredAmenity.image.url);
+    $("#3DAmenityModal").modal("show");
   }
 
   return htmlToDisplay
