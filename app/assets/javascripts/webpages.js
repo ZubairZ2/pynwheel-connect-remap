@@ -390,7 +390,9 @@ $(window).bind('load', function () {
 
   } // if condition ending curl
 
-  _3dMapViewMarkers();
+  if(selectMap === "3d-map") {
+    _3dMapViewMarkers();
+  }
 });
 
 function polygonClickPopup(feature) {
@@ -1290,7 +1292,7 @@ function setModalAttributes(element) {
     }
   }
   $('#unitModal').find('#market-rent').html('$' + $(element).data('market-rent'));
-  $('#unitModal').find('#total-market-rent').html('$' + $(element).data('total-market-rent'));
+  $('#unitModal').find('#total-market-rent').html('$' + $(element).data('market-rent'));
   
   ///////////////////////////////////////////
   if (!$(element).data('is-fav')) {
@@ -1632,7 +1634,9 @@ function _3dFilterByUnits(_3dUnits) {
 }
 
 function apply3DFilters() {
-  _3dMapViewMarkers();
+  if(selectMap === "3d-map") {
+    _3dMapViewMarkers();
+  }
 }
 
 $(document).on('click','.share-favorite',function(){

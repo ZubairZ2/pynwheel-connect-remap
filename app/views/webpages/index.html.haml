@@ -324,7 +324,7 @@
                     .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                       %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                     %span Amenity image
-              .zooming-content.zoomable-map-container
+              .zooming-content.zoomable-map-container.hidden
                 %span.zooming-action
                   %img{:src => "/assets/plus.png"}/
                 %span.zooming-action.minus-action
@@ -437,7 +437,7 @@
                 .c-modal-body
                   .c-m-iframe-content
                     %img#floorplan-image{:src => "/assets/default.jpeg", :title => ""}/
-                .c-modal-footer.zooming-content.zoomable-map-container
+                .c-modal-footer.zooming-content.zoomable-map-container.hidden
                   %span.plus-action.zooming-action
                     %img{:src => "/assets/plus.png"}/
                   %span.minus-action.zooming-action
@@ -562,7 +562,7 @@
     $('#slider').slick('unslick');
     $("#slider").slick({
       dots: false,
-      slidesToShow: 2,
+      slidesToShow: slides_to_show,
       slidesToScroll: slides_to_scroll,
       vertical: false,
       infinite: false,
@@ -744,9 +744,7 @@
   }
 
   $(".slider_class").click(function(){
-    debugger
     try {
-
     // localStorage.setItem("floorNo", $("#slider li a.selected").parent().parent().parent().index());
     //localStorage.getItem("floorNo").addClass("selected");
     var i = $("#slider li a.selected").parent().parent().parent().index()

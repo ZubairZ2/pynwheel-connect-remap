@@ -5802,8 +5802,8 @@ footer.c-footer {
 }
 .c-popup .c-m-iframe-content img {
     width: auto;
-    max-width: 340px;
-    max-height: 340px;
+    /* max-width: 340px; */
+    max-height: 400px;
 }
 
 .c-m-iframe-content {
@@ -5837,8 +5837,10 @@ footer.c-footer {
     height: auto;
  }
  .c-connect-map-wrapper .c-modal-sidebar {
-    background: #1d2425;
-    min-height: 770px;
+    /* background: #1d2425; */
+    background: white;
+    /* min-height: 770px; */
+    min-height: 730px
 }
 .module-info {
     background: white;
@@ -5850,7 +5852,8 @@ footer.c-footer {
     padding: 20px 13px 35px 13px;
  }
  .c-connect-map-wrapper  .c-modal-sidebar-description {
-    min-height: 370px;
+    /* min-height: 370px; */
+    min-height: 320px
 }
 .c-connect-map-wrapper .slick-dots li button:before {
     opacity: 1;
@@ -5868,11 +5871,13 @@ footer.c-footer {
 .c-connect-map-wrapper .c-modal-sidebar {
     max-width: 100%;
     width: 25%;
+    /* width: auto; */
 }
 .c-connect-map-wrapper  .c-modal-wrapper {
     width: 75%;
     /* min-height: 774px; */
-    min-height: 770px;
+    /* min-height: 770px; */
+    min-height: 730px;
 }
 
 .pynwheel-logo-at-sidebar-bottom{
