@@ -3853,6 +3853,10 @@ div.mydiv {
     visibility: visible;
 }
 
+._3d-apply-filter-button {
+    margin-top: 16px;
+}
+
 #logo_header {
     margin-bottom: 0px;
 }
