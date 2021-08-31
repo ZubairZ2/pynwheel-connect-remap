@@ -5286,6 +5286,20 @@ footer.c-footer {
     display: none;
 }
 
+.nextArrowBtn {
+    float: right;
+    position: absolute;
+    left: 50%;
+    margin-top: -4px;
+}
+.prevArrowBtn {
+    bottom: -30px;
+    position: absolute;
+    width: auto;
+    padding: 0;
+    z-index: 9999999;
+}
+
 
 @media screen and (max-width:1500px){
   .zooming-content .zooming-action {
@@ -5853,7 +5867,7 @@ footer.c-footer {
  }
  .c-connect-map-wrapper  .c-modal-sidebar-description {
     /* min-height: 370px; */
-    min-height: 320px
+    min-height: 304px
 }
 .c-connect-map-wrapper .slick-dots li button:before {
     opacity: 1;
