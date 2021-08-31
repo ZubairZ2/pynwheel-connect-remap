@@ -30,7 +30,6 @@ class WebpagesController < ActionController::Base
           build_market_rent_range
           unit_bedrooms_for_webpages
           unit_availability_for_webpages
-          # binding.pry
           @units_with_floorplan_info = @units_with_floorplan_info.to_json
         end
       end
@@ -79,7 +78,7 @@ class WebpagesController < ActionController::Base
   end
 
   def unit_bedrooms_for_webpages
-    units = @units_with_floorplan_info.pluck(:bedrooms).sort_by(&:to_i).uniq rescue ""
+    units = @units_with_floorplan_info.pluck(:bedrooms).sort_by(&:to_i) rescue ""
     @unit_bedrooms = []
     units.present? && units.each do |unit|
       bedroom_number = unit.to_i
@@ -91,6 +90,7 @@ class WebpagesController < ActionController::Base
         @unit_bedrooms << ["#{bedroom_number} Bedrooms", "#{bedroom_number}_bedrooms"]
       end
     end
+    @unit_bedrooms = @unit_bedrooms.uniq
     @unit_bedrooms
   end
 
