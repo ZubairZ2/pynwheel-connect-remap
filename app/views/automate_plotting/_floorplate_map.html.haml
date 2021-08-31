@@ -30,12 +30,10 @@
                 Add Access point in hallways that are not associated with any specific unit or amenity- if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
       - if @community.self_tour and @community.auto_wayfinding
         //%button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting', false, 'up')"}Move upstair
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting', false, 'down')"}Move downstair
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting', false, 'starting_point')"}Move towards starting point
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(true, 'sorting', false, 'up')"}Move upstair(Animated)
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(true, 'sorting', false, 'down')"}Move downstair(Animated)
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(true, 'sorting', false, 'starting_point')"}Move towards starting point(Animated)
+        // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting', false, 'up')"}Move upstair
+        // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting', false, 'down')"}Move downstair
+        // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting', false, 'starting_point')"}Move towards starting point
+        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(true, 'sorting', false, 'up')"}Run Algo(Animated)
   = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
   - # render map of each floor
   - @floors.each do |floor|
@@ -113,7 +111,6 @@
     map_id = "#map_" + floors[0]
     hallways_coordinates = hallways[floors[0]]
     floor_id = floors[0]
-    initialize_methods(map_id_for_zoom)
     draw_initial_hallways(hallways_coordinates, map_id)
     $('.floor_btn').click(function(){
       floor_id = $(this).data('floor_id')
@@ -128,7 +125,6 @@
       $('#floor_1 *').unbind('click')
       $('#floor_1 *').off()
       initialize_variables()
-      initialize_methods(map_id_for_zoom)
       let elem = document.querySelector(map_id);
       apply_zoom_functionality_against_floor(map_id, elem)
       draw_initial_hallways(hallways_coordinates, map_id)

@@ -88,10 +88,12 @@ class AutomatePlottingController < ApplicationController
     community = Community.find params[:community_id]
     if community.is_sitemap
       path_object_in_order = begin; return_path_for_sitemap(params[:community_id], params[:path_type]); rescue; []; end
+      response = {path_object: path_object_in_order.to_json}
     else
-      path_object_in_order = begin; return_path_for_floorplate(params[:community_id], params[:path_type]); rescue; []; end
+      path_object_in_order, floor_ids = begin; return_path_for_floorplate(params[:community_id], params[:path_type]); rescue; []; end
+      response = {path_object: path_object_in_order.to_json, floor_ids: floor_ids.to_json}
     end
-    render :json => {path_object: path_object_in_order.to_json}, :status => 200
+    render :json => response, :status => 200
   end
 
   private
