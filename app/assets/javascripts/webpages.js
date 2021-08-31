@@ -1370,8 +1370,8 @@ function _3dUnitModalDisplay() {
     }
   }
 
-  $('#unitModal').find('#market-rent').html(`$ ${_3dSelectedUnit.market_rent}`);
-  $('#unitModal').find('#total-market-rent').html('$' + $(element).data('total-market-rent'));
+  $('#unitModal').find('#market-rent').html("$" + _3dSelectedUnit.market_rent);
+  $('#unitModal').find('#total-market-rent').html("$" + _3dSelectedUnit.market_rent);
 
   if (!_3dSelectedUnit.is_fav) {
     var community_id = webCommunity.id;
@@ -1604,6 +1604,7 @@ function display3DMap() {
   let w1 = $(".digits-list-item").width();
   let w2 = $(".c-sidebar").width();
   $(".digits-list-item").css("width", w1+w2);
+  $(".c-wrapper").css("margin-right", "0px");
   // $(".select-floorP").hide();
   // let w1 = $(".select-list").width();
   // let w2 = $(".select-floorP").width();
@@ -1621,6 +1622,7 @@ function display2DMap() {
   $(".beans-map-container").hide();
   $(".zoomable-map-container").show();
   $("#panzomm-container").css("width", "");
+  $(".c-wrapper").css("margin-right", "90px");
   // $(".select-floorP").show();
   // $(".select-floorP").show();
   $(".c-sidebar").show();
