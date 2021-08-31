@@ -207,7 +207,7 @@ class WebpagesController < ActionController::Base
     begin
       @scheduler_widget_link = get_scheduler_link
       @favorite = Favorite.find_by_session_id(cookies[:webpages_session_id])
-      @units = Unit.where(id: [3695,3561],community_id: params[:community_id]).where.not(available_date: nil)
+      @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
       @fav_units_info = @units.to_json 
       @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
     rescue => ex
