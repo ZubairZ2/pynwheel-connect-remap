@@ -1438,7 +1438,8 @@ function _3dUnitModalDisplay() {
   }
   else
   {
-    $('#unit-description-text-li').hide();
+    // $('#unit-description-text-li').hide();
+    $('#unitModal').find('#unit-description').html("Not Available");
   }
 
 
