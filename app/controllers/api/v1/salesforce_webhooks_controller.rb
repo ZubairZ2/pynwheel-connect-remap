@@ -1,6 +1,7 @@
 class Api::V1::SalesforceWebhooksController < ActionController::Base
 
   def salesforce_tour_webhook
+    begin
     neighborEmail = params[:neighborEmail] if params[:neighborEmail].present?
     @tour_user = TourUser.find_by(email: neighborEmail.downcase) if neighborEmail.present?
     if @tour_user.nil?
@@ -13,7 +14,10 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
     @community = Community.find_by(name: neighborhoodName) rescue ""
     timezone = get_community_time_zone(@community) rescue "UTC"
     community_id = @community&.id rescue ""
-    tour_date =  params[:tourDate].strftime('%Y-%m-%d') if params[:tourDate].present?
+    tourDate =  params[:tourDate] if params[:tourDate].present?
+    binding.pry
+    date = Date.strptime(tourDate, '%m/%d/%Y')  if tourDate.present?
+    tour_date = date.strftime('%Y-%m-%d')  if date.present?
     @scheduled_tour = @community&.schedual_tours.where(tour_user_id: @tour_user.id).last rescue ""
     
     if @scheduled_tour.present?
@@ -28,7 +32,10 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       render :json => {:success=> true, :message => "Salesforce tour submitted successfully", :status => 200}
     else
       render :json => {:success=> false, :message => "Salesforce tour could not be submitted", :status => 200}
-    end  
+    end
+  rescue Exception
+    render :json => {:success=> false, :message => "Internal Server Error", :status => 500}
+  end
     # puts "------------------------------"*50
     # puts "Salesforce Webhook"
     # puts params.inspect
