@@ -1,20 +1,33 @@
 class Api::V1::SalesforceWebhooksController < ActionController::Base
 
   def salesforce_tour_webhook
-    @tour_user = TourUser.find_by(email: params[:neighborEmail].downcase)
+    neighborEmail = params[:neighborEmail] if params[:neighborEmail].present?
+    @tour_user = TourUser.find_by(email: neighborEmail.downcase) if neighborEmail.present?
     if @tour_user.nil?
-      @tour_user = TourUser.new(first_name: params[:neighborFirstName],last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: params[:neighborEmail].downcase, phone_number: params[:neighborPhone])
+      @tour_user = TourUser.new(first_name: params[:neighborFirstName],last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: neighborEmail.downcase, phone_number: params[:neighborPhone])
       @tour_user.save!
-    end
-    @community = Community.find_by(name: params[:neighborhoodName]) || Community.find_by(show_property_map_key_text: params[:neighborhoodName]) || ""
-    timezone = get_community_time_zone(@community) rescue "UTC"
-    community_id = @community.id rescue ""
-    @schedual_tour = SchedualTour.new(community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: params[:tourDate], tour_time: params[:tourTime], tour_type: params[:tourType], created_by: "salesforce")
-   
-    if @schedual_tour.save
-      render :json => {:success=>true, :message => "Salesforce tour submitted successfully", :status => 200}
     else
-      render :json => {:success=>false, :message => "Salesforce tour could not be submitted", :status => 200}
+      @tour_user.update_attributes(first_name: params[:neighborFirstName],last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: neighborEmail.downcase, phone_number: params[:neighborPhone]) 
+    end
+    neighborhoodName = params[:neighborhoodName] if params[:neighborhoodName].present?
+    @community = Community.find_by(name: neighborhoodName) rescue ""
+    timezone = get_community_time_zone(@community) rescue "UTC"
+    community_id = @community&.id rescue ""
+    tour_date =  params[:tourDate].strftime('%Y-%m-%d') if params[:tourDate].present?
+    @scheduled_tour = @community&.schedual_tours.where(tour_user_id: @tour_user.id).last rescue ""
+    
+    if @scheduled_tour.present?
+      @stops_list = @scheduled_tour.stops_list
+      @scheduled_tour.update_attributes(community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime], tour_type: params[:tourType], stops_list: @stops_list, created_by: "salesforce")
+    else
+      @scheduled_tour = SchedualTour.new(community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime], tour_type: params[:tourType], created_by: "salesforce")
+      @scheduled_tour.save
+    end
+
+    if @scheduled_tour.present?
+      render :json => {:success=> true, :message => "Salesforce tour submitted successfully", :status => 200}
+    else
+      render :json => {:success=> false, :message => "Salesforce tour could not be submitted", :status => 200}
     end  
     # puts "------------------------------"*50
     # puts "Salesforce Webhook"
