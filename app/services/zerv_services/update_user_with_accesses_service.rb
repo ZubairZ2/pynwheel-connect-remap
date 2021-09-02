@@ -32,13 +32,13 @@ module ZervServices
                         update_user_access_time(community, tour_user, user_audit_logs, access_point, stop) if is_resident
 
                         if user_accesses.blank?
-                            list_add_user_access << time_access_object(community, tour_time, nil)
+                            list_add_user_access << time_access_object(community, tour_time, nil, is_resident)
                         else
                             previous_access = user_accesses.find_all{ |access| access["accessPoint"] == access_point }
                             if previous_access.blank?
-                                list_add_user_access << time_access_object(community, tour_time, nil)
+                                list_add_user_access << time_access_object(community, tour_time, nil, is_resident)
                             else
-                                list_add_user_access << time_access_object(community, tour_time, previous_access)
+                                list_add_user_access << time_access_object(community, tour_time, previous_access, is_resident)
                             end
                         end
                         list_add_user_access.last.merge!({"accessCode": @accessCode,"accessPoint": access_point})
@@ -129,12 +129,17 @@ module ZervServices
             max_date_log
         end
 
-        def time_access_object(community, tour_time, prev_access)
+        def time_access_object(community, tour_time, prev_access, is_resident)
             # ------------------------------------ set values for zerv access parameters ----------------------------- #
             prev_access = prev_access[0] if prev_access.present?
             start_time = tour_time.strftime("%H:%M")
             end_time = (tour_time + 90.minutes).strftime("%H:%M")
-            
+
+            if is_resident
+                start_time = "00:00"
+                end_time = "23:59"
+            end
+
             if tour_time.monday?
                 main = {
                     "monAccess": true,
@@ -221,8 +226,8 @@ module ZervServices
                 "sun_access_start_time": "00:00",
             }
     
-            # below line will replace the main_keys within the required_keys
-            req_keys.merge(main) 
+            # below line will replace the main_keys within the required_keys            
+            req_keys.merge(main)
         end
     end
 end
