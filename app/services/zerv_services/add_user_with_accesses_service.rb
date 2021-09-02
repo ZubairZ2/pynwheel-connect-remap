@@ -67,7 +67,13 @@ module ZervServices
         def time_access_object(community, tour_time, is_resident)
             # ------------------------------------ set values for zerv access parameters ----------------------------- #
             start_time = tour_time.strftime("%H:%M")
-            end_time = (tour_time + 90.minutes).strftime("%H:%M")            
+            end_time = (tour_time + 90.minutes).strftime("%H:%M")
+        
+            if is_resident
+                start_time = "00:00"
+                end_time = "23:59"
+            end
+
             
             if tour_time.monday?
                 main = {
@@ -148,40 +154,7 @@ module ZervServices
             }
     
             # below line will replace the main_keys within the required_keys
-            
-            if is_resident 
-                req_keys.merge(residentAccessTime())
-            else
-                req_keys.merge(main)
-            end
-            
-            req_keys
-        end
-
-        def residentAccessTime()
-            {
-                "monAccess": true,
-                "tueAccess": true,
-                "wedAccess": true,
-                "thuAccess": true,
-                "friAccess": true,
-                "satAccess": true,
-                "sunAccess": true,
-                "mon_access_start_time": "00:00",
-                "mon_access_end_time": "23:59",
-                "tue_access_start_time": "00:00",
-                "tue_access_end_time": "23:59",
-                "wed_access_start_time": "00:00",
-                "wed_access_end_time": "23:59",
-                "thu_access_start_time": "00:00",
-                "thu_access_end_time": "23:59",
-                "fri_access_start_time": "00:00",
-                "fri_access_end_time": "23:59",
-                "sat_access_start_time": "00:00",
-                "sat_access_end_time": "23:59",
-                "sun_access_start_time": "00:00",
-                "sun_access_end_time": "23:59",
-            }
+            req_keys.merge(main)
         end
     end
 end
