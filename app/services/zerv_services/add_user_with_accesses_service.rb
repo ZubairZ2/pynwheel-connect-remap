@@ -23,7 +23,7 @@ module ZervServices
                     access_code = attached_lock.universal_access_code.present? ? attached_lock.universal_access_code : nil rescue nil
                     access_point = attached_lock.mac_id rescue nil
                     if access_point.present?
-                        list_add_user_access << time_access_object(community, tour_time)
+                        list_add_user_access << time_access_object(community, tour_time, is_resident)
                         list_add_user_access.last.merge!({"accessCode": @accessCode,"accessPoint": access_point})
                     end
                 end
@@ -64,11 +64,15 @@ module ZervServices
         end
 
 
-        def time_access_object(community, tour_time)
+        def time_access_object(community, tour_time, is_resident)
             # ------------------------------------ set values for zerv access parameters ----------------------------- #
-            
             start_time = tour_time.strftime("%H:%M")
             end_time = (tour_time + 90.minutes).strftime("%H:%M")
+            
+            if is_resident
+                end_time = (tour_time + 24.hours).strftime("%H:%M")
+            end
+            
             
             if tour_time.monday?
                 main = {
