@@ -134,10 +134,6 @@ $("#company_logo,#community_logo,#user_avatar,#amenity_image,#unit_image").chang
     readURL(this);
 });
 
-
-
-
-
 $(".import_data").on("click",function(e){
     $(".divLoading").removeClass("hidden")
 });
@@ -270,6 +266,10 @@ $('#markers-modal').on('show.bs.modal', function(e) {
 });
 
 });
+
+function submitSettingFormOnChange() {
+    $(".settings-form").submit();
+}
 
 function allowDrop(ev) {
     ev.preventDefault();
@@ -533,9 +533,9 @@ function showResmanFields(){
     $('#resman_account_id').show();
     //$('#community_credential_attributes_username').addClass("validate[required]");
     $('#resman_property_id').show();
+    $('#resman_api_version').show();
     //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#data-connection-buttons').show();
-
     $('#data-replace-update-buttons').hide();
 }
 function showYardiFields(){
