@@ -417,7 +417,7 @@
             .box-footer  
               = submit_tag 'Save', class: "btn btn-success pull-right mr-10", style: "margin-bottom: -36px;"
     ///////////////////// Scheduler Widget setting /////////////////////////
-    - if !@community.is_salesforce_community? && @community.scheduler_widget || @community.scheduler_widget.nil?
+    - if @community.scheduler_widget || @community.scheduler_widget.nil?
       .box.box-info.add-plan.mt-20#logo_header
         .box-header
           %h3.box-title
