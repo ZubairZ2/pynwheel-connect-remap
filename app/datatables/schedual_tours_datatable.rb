@@ -78,6 +78,14 @@ private
     '<div>'+ scheduler_date_time +''+scheduled_tour_icon_status(scheduled_tour,community) +'</div>' rescue ""
   end
 
+  def created_by_type scheduled_tour
+    if scheduled_tour.created_by == "salesforce"
+      scheduled_tour.created_by.capitalize
+    else
+      scheduled_tour.created_by  
+    end
+  end 
+
   def data
     ind = 0;
     community = Community.find @community if @community.present?
@@ -91,7 +99,7 @@ private
         tour_user_name(@tour_user),
         @tour_user.email,
         @tour_user.phone_number,
-        scheduled_tour.created_by,
+        created_by_type(scheduled_tour),
         '<div style="display: flex;">'+
           '<a class="btn btn-success custom-tour-btn" id="edit-custom-tour-'+"#{scheduled_tour.id}"+'" onclick="onEditButtonClick('+"#{visible_tour_stops}"+','+"#{scheduled_tour.id}"+','+"#{@tour_user.id}"+')"'+'>'+
             '<i class="fa fa-edit icon_size"></i>'+

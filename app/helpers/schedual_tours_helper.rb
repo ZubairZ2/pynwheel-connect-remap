@@ -72,7 +72,7 @@ module SchedualToursHelper
       "Virtual Tour"
     elsif property_tour_type == "Unscheduled Self Tour"
       "Self Tour - Unscheduled"
-    elsif property_tour_type == "Self Tour"
+    elsif property_tour_type == "Self Tour" || tour_type == "Self guided"
       "Self Tour - Scheduled"
     else
       return property_tour_type

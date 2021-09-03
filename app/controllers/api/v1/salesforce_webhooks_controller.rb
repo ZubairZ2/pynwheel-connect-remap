@@ -16,7 +16,6 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       @tour_user.first_name = first_name 
       @tour_user.last_name = last_name
       @tour_user.phone_number = phone_number if phone_number.present?
-
       # else
         # @tour_user.update_attributes(first_name: params[:neighborFirstName],last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: neighborEmail.downcase, phone_number: params[:neighborPhone]) 
       # end
