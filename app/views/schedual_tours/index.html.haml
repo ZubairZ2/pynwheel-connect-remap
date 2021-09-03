@@ -13,10 +13,9 @@
       .box-header
         %h3.box-title
           Scheduled Tours
-        - if !(@community.crm_credential && @community.crm_credential.crm_provider == "salesforce") 
+        - unless (@community&.credential&.use_different_crm_provider && @community&.crm_credential&.crm_provider == "salesforce")
           %a.btn.btn-success.pull-right{:href => schedule_tour_url(@community, @community_code)} Schedule Tour
-        - elsif !@community.crm_credential
-          %a.btn.btn-success.pull-right{:href => schedule_tour_url(@community, @community_code)} Schedule Tour    
+        
     .row{:style => "margin-bottom: 70px;"}
       .col-lg-12.col-md-12
         .row
