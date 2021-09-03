@@ -35,7 +35,7 @@ namespace :triggered_email do
         tour.update_column 'missed_email_sent', true
         emails = community.email.split(',')
         emails.each do |email|
-        DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,nil,false,schedule_tour)
+        DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,nil,false,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
         # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,emails[0],false)
         end
 
@@ -65,14 +65,14 @@ namespace :triggered_email do
         
         if community.scheduler_widget
           sleep 1
-          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_st, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour)
+          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_st, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
           # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_schedule_tool, tu.email,community,nil,nil,nil,emails[0],true)
-          DelayedSchedulerTextJob.perform_async(text_msg_with_st, tu.phone_number) if tu.is_sms_enabled
+          DelayedSchedulerTextJob.perform_async(text_msg_with_st, tu.phone_number) if tu.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
         else
           sleep 1
-          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_no_st_tour_user, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour)
+          DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_no_st_tour_user, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
           # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_tour_user, tu.email,community,nil,nil,nil,emails[0],true)
-          DelayedSchedulerTextJob.perform_async(text_msg_no_st_tour_user, tu.phone_number) if tu.is_sms_enabled
+          DelayedSchedulerTextJob.perform_async(text_msg_no_st_tour_user, tu.phone_number) if tu.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
         end
       end
       

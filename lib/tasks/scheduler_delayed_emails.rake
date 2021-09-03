@@ -134,13 +134,13 @@ namespace :delayed_email_notifications do
   	def send_email_tour_user subj, body, th, comm_email, community
 		begin
 			emails = comm_email.gsub(" ","").split(',')
-			NotificationMailer.tour_history_mail(subj.humanize, body, th.tour_user.email,emails[0],community,false,nil).deliver
+			NotificationMailer.tour_history_mail(subj.humanize, body, th.tour_user.email,emails[0],community,false,nil).deliver 
 		rescue
 		end
 	end
 	def send_sms_tour_user message_body,th
 		begin
-			DelayedSchedulerTextJob.perform_async(message_body, th.tour_user.phone_number) if th.tour_user.phone_number.present? && th.tour_user.is_sms_enabled
+			DelayedSchedulerTextJob.perform_async(message_body, th.tour_user.phone_number) if th.tour_user.phone_number.present? && th.tour_user.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
 		rescue
 		end
 	end
