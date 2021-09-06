@@ -49,7 +49,7 @@ namespace :import do
             #community.credential.url.include?("20") ? (Yardi2Service.new(community.credential.attributes).perform) : (Yardi4Service.new(community.credential.attributes).perform)
             community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
           when "resman"
-            ((community.credential.resman_api_version === "GetMarketing4_0") ? ImportResman4DataJob.perform_async community.credential.attributes.to_json : ImportResmanDataJob.perform_async community.credential.attributes.to_json)
+            ((community.credential.resman_api_version === "GetMarketing4_0") ? ImportResman4DataJob.perform_async(community.credential.attributes.to_json) : ImportResmanDataJob.perform_async(community.credential.attributes.to_json))
           when "zaremba"
             ImportZarembaDataJob.perform_async community.credential.attributes.to_json
           when "xml"
