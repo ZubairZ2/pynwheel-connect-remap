@@ -400,8 +400,17 @@ class Community < ApplicationRecord
     ImportPsiSwapDataJob.perform_async credential.attributes.to_json
   end
   def swap_resman_data
+    ((credential.resman_api_version === "GetMarketing4_0") ? swap_resman4_data : swap_resman2_data)
+  end
+
+  def swap_resman2_data
     ImportResmanSwapDataJob.perform_async credential.attributes.to_json
   end
+
+  def swap_resman4_data
+    ImportResman4SwapDataJob.perform_async credential.attributes.to_json
+  end
+
   def swap_zaremba_data
     ImportZarembaSwapDataJob.perform_async credential.attributes.to_json
   end
@@ -464,7 +473,7 @@ class Community < ApplicationRecord
   end
 
   def select_resman_provider
-    ((credential.resman_api_version === "GetMarketing2_0") ? resman2_static_data_import : resman4_static_data_import)
+    ((credential.resman_api_version === "GetMarketing4_0") ? resman4_static_data_import : resman2_static_data_import)
   end
 
   def resman2_static_data_import

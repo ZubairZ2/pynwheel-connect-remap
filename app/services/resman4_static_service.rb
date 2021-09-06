@@ -63,7 +63,7 @@ class Resman4StaticService < BaseService
     units.each do |u|
       vacateDate = ""
 
-      unit = Unit.where(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["IDValue"]).first_or_initialize
+      unit = Unit.where(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["IDValue"].gsub('*','-')).first_or_initialize
       unless unit.manual_override
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
@@ -100,7 +100,7 @@ class Resman4StaticService < BaseService
           unit.floor = u["FloorLevel"]
         end
 
-        if u["Availability"].present? && u["Availability"]["MadeReadyDate"]
+        if u["Availability"].present? && u["Availability"]["MadeReadyDate"].present?
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = "Unoccupied"
           end
