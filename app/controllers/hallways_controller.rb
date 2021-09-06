@@ -30,11 +30,11 @@ class HallwaysController < ApplicationController
   def update_point
     if params[:floor_plate_id].present?
       @floor_plate = Floorplate.find(params[:floor_plate_id])
-      Hallway.find(params[:current_id]).update(x_plot: params[:x_plot], y_plot: params[:y_plot])
+      Hallway.find(params[:current_id]).update(x_plot: params[:x_plot], y_plot: params[:y_plot], selected: true)
       return render json: @floor_plate.hallways.order("id ASC"), message: "New Point is Added", status: 200
     elsif params[:sitemap_id].present?
       @sitemap = Sitemap.find(params[:sitemap_id])
-      Hallway.find(params[:current_id]).update(x_plot: params[:x_plot], y_plot: params[:y_plot])
+      Hallway.find(params[:current_id]).update(x_plot: params[:x_plot], y_plot: params[:y_plot], selected: true)
       return render json: @sitemap.hallways.order("id ASC"), message: "New Point is Added", status: 200
     end
   end
@@ -42,21 +42,11 @@ class HallwaysController < ApplicationController
   def remove_point
     if params[:floor_plate_id].present?
       @floor_plate = Floorplate.find(params[:floor_plate_id])
-      Hallway.find(params[:current_id]).destroy
-      if params[:previous_id].present?
-        @previous_point = Hallway.find(params[:previous_id])
-        @previous_point.next_points.delete(params[:current_id].to_i)
-        @previous_point.save
-      end
+      Hallway.find(params[:current_id]).delete_hallway_point(@floor_plate.hallways)
       return render json: @floor_plate.hallways.order("id ASC"), message: "New Point is Added", status: 200
     elsif params[:sitemap_id].present?
       @sitemap = Sitemap.find(params[:sitemap_id])
-      Hallway.find(params[:current_id]).destroy
-      if params[:previous_id].present?
-        @previous_point = Hallway.find(params[:previous_id])
-        @previous_point.next_points.delete(params[:current_id].to_i)
-        @previous_point.save
-      end
+      Hallway.find(params[:current_id]).delete_hallway_point(@sitemap.hallways)
       return render json: @sitemap.hallways.order("id ASC"), message: "New Point is Added", status: 200
     end
   end

@@ -253,7 +253,7 @@ function initialize_map_click(map_id){
     return floor_ids
   }
 
-  function remove_hallwaypoint(current_id, previous_id) {
+  function remove_hallwaypoint(current_id) {
       if ($(".mapLoading").hasClass("hidden")) $(".mapLoading").removeClass("hidden")
       $.ajax({
           url: '/delete_hallways_point',
@@ -262,7 +262,6 @@ function initialize_map_click(map_id){
               'floor_plate_id': typeof fp_id !== 'undefined' ? fp_id : null,
               'sitemap_id': typeof sm_id !== 'undefined' ? sm_id : null,
               'current_id': current_id,
-              'previous_id': previous_id,
           },
           success: function (data) {
               hallways_coordinates = data;
@@ -358,37 +357,13 @@ function initialize_map_click(map_id){
   }
 
   function bind_markers() {
-      $(".hallways_marker").on('dblclick', function (e) {
-              e.stopImmediatePropagation();
-              if ($('#hallway_btn').html() === "Stop Plotting Hallways") {
-                  current_index = undefined;
-                  previous_index = undefined;
-                  current_id = parseInt(this.firstChild.id);
-                  previous_id = undefined;
-                  hallways_coordinates.forEach((element, index) => {
-                      if (element.id == current_id) {
-                          current_index = index;
-                      }
-                      if (element.next_points.includes(current_id)) {
-                          previous_index = index;
-                          previous_id = element.id;
-                      }
-                  });
-                  if (previous_index != undefined) {
-                      if (hallways_coordinates[current_index].next_points.length == 0) {
-                          remove_hallwaypoint(current_id, previous_id, map_id);
-                      } else {
-                          alert("You Cannot delete this point");
-                      }
-                  } else if (hallways_coordinates.length == 1) {
-                      remove_hallwaypoint(current_id, previous_id, map_id);
-                  } else {
-                      alert("You Cannot delete this point");
-                  }
-
-              }
-          }
-      );
+    $(".hallways_marker").on('dblclick', function (e) {
+      e.stopImmediatePropagation();
+      if ($('#hallway_btn').html() === "Stop Plotting Hallways") {
+        current_id = parseInt(this.firstChild.id);
+        remove_hallwaypoint(current_id, map_id);
+      }
+    });
   }
 
 

@@ -76,7 +76,7 @@
                     - puts "duplicated.........."
                   .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}", :id=>"h-#{unit.provider_unit_id}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot","data-unit-form-url"=>"/communities/#{@community.id}/units/#{unit.id}/adjust_position"}
               - coordinates_array = []
-              -  @sitemap.amenities.where(floor: [@floor, nil]).each do |amenity|
+              -  @all_amenities.where(floor: [@floor, nil]).each do |amenity|
                 - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
                   - unless coordinates_array.include?([amenity.x_plot, amenity.y_plot])
 

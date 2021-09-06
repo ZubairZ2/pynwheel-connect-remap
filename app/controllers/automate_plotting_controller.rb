@@ -16,19 +16,23 @@ class AutomatePlottingController < ApplicationController
       #@access_points = @sitemap.access_points
       planned_to_visit_units_ids     = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
-      @community_units = @community.units.are_ploted_units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
-      @unit_with_door = @community_units.map do |unit| 
-        if planned_to_visit_units_ids.include?(unit.id) && unit.door.present?
-          planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
-          @planned_to_visit_units_and_doors_ids << unit.door.id
-          update_precedence('unit', unit.id, unit.door.id)
-        elsif planned_to_visit_units_ids.include?(unit.id)
-          @planned_to_visit_units_and_doors_ids << unit.id
-        end 
-        { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
+      @community_units = @community.units.are_ploted_units.where(floorplate_id: nil).where(id: planned_to_visit_units_ids).order(:building, :unit_type).includes(:door) # only plotted units
+      # In future we will @unit_with_door it for plotting or delete unit stop
+      @unit_with_door = @community_units.map do |unit|
+        if planned_to_visit_units_ids.include?(unit.id) 
+          if unit.door.present?
+            planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
+            @planned_to_visit_units_and_doors_ids << unit.door.id
+            update_precedence('unit', unit.id, unit.door.id)
+          else planned_to_visit_units_ids.include?(unit.id)
+            @planned_to_visit_units_and_doors_ids << unit.id
+          end 
+          { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
+        end
       end 
-
-      @amenities_doors = @sitemap.amenities.includes(:doors)
+      @all_amenities = @sitemap.amenities.where(id: planned_to_visit_amenities_ids)
+      @amenities_doors = @sitemap.amenities.where(id: planned_to_visit_amenities_ids).includes(:doors)
+      # In future we will @amenity_with_doors it for plotting or delete unit stop
       @amenity_with_doors = @amenities_doors.map do |amenity| 
         if planned_to_visit_amenities_ids.include?(amenity.id) && amenity.doors.present?
           planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
@@ -53,11 +57,12 @@ class AutomatePlottingController < ApplicationController
       @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
       @floor_to_floorplate = fetch_hash_for_floor_to_floorplate()
       @floor_to_floorplate_name_units = @floors.map {|floor| @floor_to_floorplate[floor].name + " Units" }
-
+      planned_to_visit_units_ids     = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
+      planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
       @floors.each do |floor|
         @hallways[floor] = make_sure_one_selected_hallway(@floor_to_floorplate[floor].hallways.order("id ASC"))
-        @community_units[floor] = @floor_to_floorplate[floor].units.where(floor: floor).includes(:door)
-        @amenities_doors[floor] = @floor_to_floorplate[floor].amenities.where(floor: floor).includes(:doors)
+        @community_units[floor] = @floor_to_floorplate[floor].units.where(floor: floor).where(id: planned_to_visit_units_ids).includes(:door)
+        @amenities_doors[floor] = @floor_to_floorplate[floor].amenities.where(floor: floor).where(id: planned_to_visit_amenities_ids).includes(:doors)
         @elevators[floor] = @floor_to_floorplate[floor].fetch_elevators(floor)
         # unit_with_door and amenity_with_door for automate_path button and used in js 
         @unit_with_door[floor] = @community_units[floor].map { |unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } } } rescue []
