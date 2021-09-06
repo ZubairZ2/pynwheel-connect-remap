@@ -26,7 +26,6 @@ class ResmanSwapService < BaseService
           response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Floorplan"].each do |pro|
             floorplans << pro
           end
-          binding.pry
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
           # save_website_column_of_community(response)
@@ -54,6 +53,7 @@ class ResmanSwapService < BaseService
         unit = unit.first
         unit.provider = "resman_new"
         unit.provider_unit_id = u["Id"].gsub('*','-')
+        unit.lease_pricing = nil
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
         # unit.marketing_name = u["Id"]
@@ -91,6 +91,7 @@ class ResmanSwapService < BaseService
         unit.community_id = credentials.community_id
         unit.provider = "resman_new"
         unit.provider_unit_id = u["Id"].gsub('*','-')
+        unit.lease_pricing = nil
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
         unit.marketing_name = u["Id"]

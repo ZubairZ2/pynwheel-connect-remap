@@ -54,6 +54,7 @@ class Resman4SwapService < BaseService
         unit = unit.first
         unit.provider = "resman_new"
         unit.provider_unit_id = u["IDValue"].gsub('*','-')
+        unit.lease_pricing = get_unit_lease_prising(u)
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
         # unit.marketing_name = u["Id"]
@@ -91,6 +92,7 @@ class Resman4SwapService < BaseService
         unit.community_id = credentials.community_id
         unit.provider = "resman_new"
         unit.provider_unit_id = u["IDValue"].gsub('*','-')
+        unit.lease_pricing = get_unit_lease_prising(u)
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
@@ -207,5 +209,17 @@ class Resman4SwapService < BaseService
     Floorplan.where(community_id: credentials.community_id).where(provider: "resman_new").update_all(provider: "resman")
     Unit.where(community_id: credentials.community_id).where.not(provider: ["resman_new", "manually"]).destroy_all
     Unit.where(community_id: credentials.community_id).where(provider: "resman_new").update_all(provider: "resman")    
+  end
+
+  def get_unit_lease_prising unit
+    leasing = ""
+    unit["Pricing"]["MITS_OfferTerm"].each do |pr|
+        rent = pr["EffectiveRent"]
+        term = pr["Term"]
+
+        leasing = leasing + term.to_s + ":" + rent.to_s + ";"
+    end
+
+    leasing
   end
 end

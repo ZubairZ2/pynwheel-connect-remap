@@ -68,6 +68,8 @@ class Resman4StaticService < BaseService
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
 
+        unit.lease_pricing = get_unit_lease_prising(u)
+
         unless unit.name_is_updated.present? && unit.name_is_updated
           unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         end
@@ -200,6 +202,18 @@ class Resman4StaticService < BaseService
       floorplan.save(validate: false)
 
     end
+  end
+
+  def get_unit_lease_prising unit
+    leasing = ""
+    unit["Pricing"]["MITS_OfferTerm"].each do |pr|
+        rent = pr["EffectiveRent"]
+        term = pr["Term"]
+
+        leasing = leasing + term.to_s + ":" + rent.to_s + ";"
+    end
+
+    leasing
   end
 
 end

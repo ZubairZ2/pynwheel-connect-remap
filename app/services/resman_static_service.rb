@@ -65,7 +65,7 @@ class ResmanStaticService < BaseService
       unless unit.manual_override
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
-
+        unit.lease_pricing = nil
         unless unit.name_is_updated.present? && unit.name_is_updated
           unit.marketing_name = u["Id"]
         end
