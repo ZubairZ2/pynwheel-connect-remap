@@ -290,7 +290,7 @@
                         - coordinates_array.push([unit.x_plot, unit.y_plot])
                         - unit_door_exists = unit.door.present? ? true : false
 
-                        %p{class: "marker", style: "left:#{unit.x_plot-left_margin}px; top:#{unit.y_plot-right_margin}px; position:absolute"}
+                        %p{class: "marker", style: "left:#{unit.x_plot}px; top:#{unit.y_plot}px; position:absolute"}
                           = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{@community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                             %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
 
@@ -340,7 +340,7 @@
                       %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
                   
                   
-                  - arr.push([unit.provider_unit_id, unit.x_plot.to_i - left_margin, unit.y_plot.to_i - right_margin, true, unit.id.to_s, 5 , 0])
+                  - arr.push([unit.provider_unit_id, unit.x_plot.to_i, unit.y_plot.to_i, true, unit.id.to_s, 5 , 0])
               %h5.mt-40 SELECTED UNITS
               .add-plan.mt-10.mb-20
                 %ul#selected-units

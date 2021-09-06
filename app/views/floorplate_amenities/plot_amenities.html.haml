@@ -76,8 +76,8 @@
           = link_to "Back",community_floorplate_amenities_path(@community,@sitemap), :class=>"btn btn-primary mr-5 hidden" 
           = link_to "ADD AMENITY IMAGES", community_amenities_path(@community), class: "btn btn-primary"
           %a.btn.btn-danger{"data-name" => "floorplate's amenities plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/floorplates/#{@sitemap.id}/amenities/remove_amenities_plot"} RESET ALL PLOTS
-          - if @community.self_tour and @community.auto_wayfinding
-            %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
+          / - if @community.self_tour and @community.auto_wayfinding
+          /   %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
 
       / /.box-header
       / form start
