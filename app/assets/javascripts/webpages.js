@@ -214,20 +214,52 @@ $(window).bind('load', function () {
           return false; // tells the library to not preventDefault.
         }
       });
-    
-    $(".reset").on('click', function (e) {
+
+    $(".reset-webpage").on('click', function (e) {
       $(".divLoading").removeClass("hidden");
       window.location.reload()
     });
     
-    $(".zoom-in").on('click', function (e) {
+    $(".zoom-in-webpage").on('click', function (e) {
+      // debugger
       window.pz.zoomInOut(187);
     });
 
 
-    $(".zoom-out").on('click', function (e) {
+    $(".zoom-out-webpage").on('click', function (e) {
       window.pz.zoomInOut(189);
     });
+      
+    // $('#zoomable-modal-image a').on('touchstart', function (e) {
+    //   e.stopImmediatePropagation();
+    // });
+    // var $marea = document.getElementById('zoomable-modal-image');
+    // window.pz = panzoom($marea, 
+    // {
+    //   bounds: true, contain: 'automatic', smoothScroll: false,
+    //   maxZoom: 5,
+    //   minZoom: 1,
+    //   zoomDoubleClickSpeed: 1,
+      
+    //   onTouch: function(e) {
+    //     // `e` - is current touch event.
+    //     // $.get('/api/v1/communities/3/test_panzoom?keyCode='+$(e.path[1]))
+    //     e.preventDefault();
+    //     // $(e.path[1]).click();
+    //     return false; // tells the library to not preventDefault.
+    //   }
+    // });
+
+    // $(".zoom-in-modal").on('click', function (e) {
+    //   // debugger
+    //   window.pz.zoomInOut(187);
+    // });
+
+
+    // $(".zoom-out-modal").on('click', function (e) {
+    //   window.pz.zoomInOut(189);
+    // });
+    
 
     /////////////////////////////////////////////
     /*popover*/
@@ -712,6 +744,11 @@ function disabled_enabled_anchors() {
     }
     //console.log(floorplate_units);
     var units_to_display = select_units_according_to_filters(units)
+    // for (var j = 0; j < units_to_display.length; j++) {
+    //   if (units[j]['floor'] == floors[i]) {
+    //     floorplate_units.push(units[j]);
+    //   }
+    // }
     // console.log(units_to_display.length);
     if (units_to_display.length == 0) {
       //console.log(floors[i]);

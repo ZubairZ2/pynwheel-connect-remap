@@ -324,12 +324,15 @@
                     .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                       %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                     %span Amenity image
-              .zooming-content.zoomable-map-container.hidden
-                %span.zooming-action
+              .zooming-content.zoomable-map-container
+                %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls{:href => "#"}
+                  -# %i.fa.fa-plus
                   %img{:src => "/assets/plus.png"}/
-                %span.zooming-action.minus-action
+                %a.minus-action.zooming-action.zoom-out-webpage.zoom-controls{:href => "#"}
+                  -# %i.fa.fa-minus
                   %img{:src => "/assets/minus.png"}/
-                %span.zooming-action
+                %a.refresh-action.zooming-action.reset-webpage.zoom-controls{:href => "#"}
+                  -# %i.fa.fa-refresh
                   %img{:src => "/assets/refresh.png"}/
           
       / /.content
@@ -435,14 +438,17 @@
                         %a.apply-now.apply_now{:href => @community_info.credential.separate_link,:target => "_blank" } Apply Now
               .c-modal-wrapper
                 .c-modal-body
-                  .c-m-iframe-content
+                  .c-m-iframe-content#zoomable-modal-image
                     %img#floorplan-image{:src => "/assets/default.jpeg", :title => ""}/
-                .c-modal-footer.zooming-content.zoomable-map-container.hidden
-                  %span.plus-action.zooming-action
+                .c-modal-footer.zooming-content.zoomable-map-container
+                  %a.plus-action.zooming-action.zoom-in-modal.zoom-controls{:href => "#"}
+                    -# %i.fa.fa-plus
                     %img{:src => "/assets/plus.png"}/
-                  %span.minus-action.zooming-action
+                  %a.minus-action.zooming-action.zoom-out-modal.zoom-controls{:href => "#"}
+                    -# %i.fa.fa-minus
                     %img{:src => "/assets/minus.png"}/
-                  %span.refresh-action.zooming-action
+                  %a.refresh-action.zooming-action.reset-modal.zoom-controls{:href => "#"}
+                    -# %i.fa.fa-refresh
                     %img{:src => "/assets/refresh.png"}/
     - else
       .alert.alert-danger Community is Inactivated.    
