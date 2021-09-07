@@ -29,6 +29,7 @@ class Resman4SwapService < BaseService
 
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
+          rename_provider
           # save_website_column_of_community(response)
         else
           ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
@@ -37,7 +38,6 @@ class Resman4SwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    rename_provider
   end
   def save_resman_units(units,property_id)
     units.each do |u|
@@ -87,7 +87,6 @@ class Resman4SwapService < BaseService
         if dup.present?
           dup.destroy
         end
-
         unit = Unit.new
         unit.community_id = credentials.community_id
         unit.provider = "resman_new"
@@ -211,13 +210,20 @@ class Resman4SwapService < BaseService
     Unit.where(community_id: credentials.community_id).where(provider: "resman_new").update_all(provider: "resman")    
   end
 
-  def get_unit_lease_prising unit
-    leasing = ""
-    unit["Pricing"]["MITS_OfferTerm"].each do |pr|
+  def get_unit_lease_prising unit, leasing = ""
+    if unit["Pricing"]["MITS_OfferTerm"].kind_of?(Array)
+      unit["Pricing"]["MITS_OfferTerm"].each do |pr|
         rent = pr["EffectiveRent"]
         term = pr["Term"]
 
         leasing = leasing + term.to_s + ":" + rent.to_s + ";"
+      end
+
+    elsif unit["Pricing"]["MITS_OfferTerm"].kind_of?(Object)
+      rent = unit["Pricing"]["MITS_OfferTerm"]["EffectiveRent"]
+      term = unit["Pricing"]["MITS_OfferTerm"]["Term"]
+
+      leasing = leasing + term.to_s + ":" + rent.to_s + ";"
     end
 
     leasing

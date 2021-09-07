@@ -293,13 +293,20 @@ class Resman4Service < BaseService
     end
   end
 
-  def get_unit_lease_prising unit
-    leasing = ""
-    unit["Pricing"]["MITS_OfferTerm"].each do |pr|
+  def get_unit_lease_prising unit, leasing = ""
+    if unit["Pricing"]["MITS_OfferTerm"].kind_of?(Array)
+      unit["Pricing"]["MITS_OfferTerm"].each do |pr|
         rent = pr["EffectiveRent"]
         term = pr["Term"]
 
         leasing = leasing + term.to_s + ":" + rent.to_s + ";"
+      end
+
+    elsif unit["Pricing"]["MITS_OfferTerm"].kind_of?(Object)
+      rent = unit["Pricing"]["MITS_OfferTerm"]["EffectiveRent"]
+      term = unit["Pricing"]["MITS_OfferTerm"]["Term"]
+
+      leasing = leasing + term.to_s + ":" + rent.to_s + ";"
     end
 
     leasing

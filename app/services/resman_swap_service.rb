@@ -29,6 +29,7 @@ class ResmanSwapService < BaseService
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
           # save_website_column_of_community(response)
+          rename_provider
         else
           ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
@@ -36,7 +37,6 @@ class ResmanSwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    rename_provider
   end
   def save_resman_units(units,property_id)
     units.each do |u|
