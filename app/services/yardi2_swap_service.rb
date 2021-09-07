@@ -41,13 +41,13 @@ class Yardi2SwapService < BaseService
           end
           save_yardi2_floorplans(floorplans)
           save_yardi2_units(ils_units,external_property_id)
-          end
+          rename_provider
+        end
       rescue => e
         e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    rename_provider
   end
 
   def save_yardi2_units(ils_units,property_id)
