@@ -657,7 +657,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     elsif community.data_provider == "yardi"
       result = community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
     elsif community.data_provider == "resman"
-      result = ImportResmanDataJob.perform_async community.credential.attributes.to_json
+      result = ((community.credential.resman_api_version === "GetMarketing4_0") ? ImportResman4DataJob.perform_async(community.credential.attributes.to_json) : ImportResmanDataJob.perform_async(community.credential.attributes.to_json))
     elsif community.data_provider == "zaremba"
       result = ImportZarembaDataJob.perform_async community.credential.attributes.to_json
     elsif community.data_provider == "xml"
