@@ -9,9 +9,10 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       # @tour_user = TourUser.find_by(email: neighborEmail.downcase) if neighborEmail.present?
       @tour_user = TourUser.where(email: neighborEmail.downcase) if neighborEmail.present?
       @tour_user = @tour_user.last if @tour_user.present?
-      # if @tour_user.nil?
-      @tour_user = TourUser.new(first_name: first_name,last_name: last_name, name: first_name + " " + last_name, email: neighborEmail.downcase, phone_number: phone_number)
-      @tour_user.save!      
+      if !@tour_user.present?
+        @tour_user = TourUser.new(first_name: first_name,last_name: last_name, name: first_name + " " + last_name, email: neighborEmail.downcase, phone_number: phone_number)
+        @tour_user.save!
+      end
       @tour_user.name = (first_name + " " + last_name)
       @tour_user.first_name = first_name 
       @tour_user.last_name = last_name
