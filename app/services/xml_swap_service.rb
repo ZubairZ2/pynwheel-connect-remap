@@ -41,6 +41,7 @@ class XmlSwapService < BaseService
           end
           save_xml_units(units,property_id)
           save_xml_floorplans(floorplans,property_id)
+          rename_provider
         else
           # puts '-----------------------------' , response["response"]["error"]["message"]
           ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
@@ -50,7 +51,6 @@ class XmlSwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    rename_provider
   end
   def save_xml_units(units,property_id)
     units.each do |u|
