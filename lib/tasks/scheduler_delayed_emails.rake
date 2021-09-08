@@ -134,13 +134,13 @@ namespace :delayed_email_notifications do
   	def send_email_tour_user subj, body, th, comm_email, community
 		begin
 			emails = comm_email.gsub(" ","").split(',')
-			NotificationMailer.tour_history_mail(subj.humanize, body, th.tour_user.email,emails[0],community,false,nil).deliver
+			NotificationMailer.tour_history_mail(subj.humanize, body, th.tour_user.email,emails[0],community,false,nil).deliver 
 		rescue
 		end
 	end
 	def send_sms_tour_user message_body,th
 		begin
-			DelayedSchedulerTextJob.perform_async(message_body, th.tour_user.phone_number) if th.tour_user.phone_number.present? && th.tour_user.is_sms_enabled
+			DelayedSchedulerTextJob.perform_async(message_body, th.tour_user.phone_number) if th.tour_user.phone_number.present? && th.tour_user.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
 		rescue
 		end
 	end
@@ -187,8 +187,8 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 		  diff = (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(schedual_tour.user_time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y"))) 
 		  schedual_tour.update_columns(daily_email_sent: true) if diff == 1
 		  emails = community_email.gsub(" ","").split(',')
-		  DelayedSchedulerMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")))
-		  DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if (schedual_tour.property_tour_type == "scheduled_tour" && schedual_tour.tour_user.is_sms_enabled && (diff == 1 && !(community.alert_contact == "email")))
+		  DelayedSchedulerMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
+		  DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if (schedual_tour.property_tour_type == "scheduled_tour" && schedual_tour.tour_user.is_sms_enabled && (diff == 1 && !(community.alert_contact == "email")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
 
 		# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	  end
@@ -238,8 +238,8 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 				  # Open #{community_text} for Android #{android_link}
 				  schedual_tour.update_columns(hourly_email_sent: true)
 				  emails = community_email.gsub(" ","").split(',')
-				  DelayedSchedulerMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if !(community.alert_contact == "phone")
-				  DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if (schedual_tour.tour_user.is_sms_enabled && !(community.alert_contact == "email"))
+				  DelayedSchedulerMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if !(community.alert_contact == "phone") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce")
+				  DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if (schedual_tour.tour_user.is_sms_enabled && !(community.alert_contact == "email") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
 
 				# puts "<<<<<<<<<<<<<<<<<<<<<<<<< Sent Email To #{tu.email} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 			end

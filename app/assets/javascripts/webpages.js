@@ -1266,7 +1266,7 @@ function setModalAttributes(element) {
             for (var i = 0; i < ss.length -1; i++) {
                 var s = ss[i].split(':');
                 var sp;
-                if (s[2] != "")
+                if (s[2] && s[2] != "")
                 {
                     sp = s[2] +" - "
                 }

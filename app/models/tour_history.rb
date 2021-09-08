@@ -61,12 +61,12 @@ class TourHistory < ApplicationRecord
 
         touruser = self.tour_user
         scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id).last #MaxDateScheduledTourService.new(touruser, community, false).get_scheduled_tour rescue community.schedual_tours.where(tour_user_id: touruser.id).last
-        if touruser.tour_type == "self_tour" && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )         
+        if (touruser.tour_type == "self_tour" && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )) || scheduled_tour&.tour_type == "Self guided" || scheduled_tour&.tour_type == "Self Guided"      
           if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
             scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
           end
         end 
-        if touruser.tour_type == "virtual_tour" && (scheduled_tour&.property_tour_type.present? && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour"))
+        if (touruser.tour_type == "virtual_tour" && (scheduled_tour&.property_tour_type.present? && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour"))) || (scheduled_tour&.tour_type == "Virtual tour" || scheduled_tour&.tour_type == "Virtual Tour") 
           # scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id)
           scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
         end

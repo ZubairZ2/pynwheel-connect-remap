@@ -7,8 +7,10 @@ class ResmanConnectionService < BaseService
       property_id = property_ids[0]
 
       account_id = credentials.resman_account_id
+      version = credentials.resman_api_version
       #property_id = credentials.property_id
-      url = "https://api.myresman.com/MITS/GetMarketing2_0"
+
+      url = "https://api.myresman.com/MITS/#{version}"
       response = HTTParty.post(url,
                                :body => {
                                    "ApiKey": '9412bd2716b648c1b00b62643e63850b',
