@@ -364,7 +364,9 @@ $(window).bind('load', function () {
 
   } // if condition ending curl
 
-  _3dMapViewMarkers();
+  if(selectMap === "3d-map") {
+    _3dMapViewMarkers();
+  }
 });
 
 function polygonClickPopup(feature) {
@@ -1526,7 +1528,9 @@ function _3dFilterByUnits(_3dUnits) {
 }
 
 function apply3DFilters() {
-  _3dMapViewMarkers();
+  if(selectMap === "3d-map") {
+    _3dMapViewMarkers();
+  }
 }
 
 $(document).on('click','.share-favorite',function(){
