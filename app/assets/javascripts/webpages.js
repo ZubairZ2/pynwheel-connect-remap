@@ -199,7 +199,7 @@ $(window).bind('load', function () {
       e.stopImmediatePropagation();
     });
     var $area = document.getElementById('zoomable');
-    window.pz = panzoom($area, 
+    webpagePanZoom = panzoom($area, 
       {
         bounds: true, contain: 'automatic', smoothScroll: false,
         maxZoom: 5,
@@ -222,43 +222,51 @@ $(window).bind('load', function () {
     
     $(".zoom-in-webpage").on('click', function (e) {
       // debugger
-      window.pz.zoomInOut(187);
+      webpagePanZoom.zoomInOut(187);
     });
 
 
     $(".zoom-out-webpage").on('click', function (e) {
-      window.pz.zoomInOut(189);
+      webpagePanZoom.zoomInOut(189);
+    });
+    var $marea = document.getElementById('zoomable-modal-image');
+    $("#zoomable-modal-image a").on("touchstart", function (e) {
+      e.stopImmediatePropagation();
     });
       
-    // $('#zoomable-modal-image a').on('touchstart', function (e) {
-    //   e.stopImmediatePropagation();
-    // });
-    // var $marea = document.getElementById('zoomable-modal-image');
-    // window.pz = panzoom($marea, 
-    // {
-    //   bounds: true, contain: 'automatic', smoothScroll: false,
-    //   maxZoom: 5,
-    //   minZoom: 1,
-    //   zoomDoubleClickSpeed: 1,
-      
-    //   onTouch: function(e) {
-    //     // `e` - is current touch event.
-    //     // $.get('/api/v1/communities/3/test_panzoom?keyCode='+$(e.path[1]))
-    //     e.preventDefault();
-    //     // $(e.path[1]).click();
-    //     return false; // tells the library to not preventDefault.
-    //   }
-    // });
+      modalPanZoom = panzoom($marea, 
+      {
+        bounds: true, contain: 'automatic', smoothScroll: false,
+        maxZoom: 5,
+        minZoom: 1,
+        zoomDoubleClickSpeed: 1,
+        
+        onTouch: function(e) {
+          // `e` - is current touch event.
+          // $.get('/api/v1/communities/3/test_panzoom?keyCode='+$(e.path[1]))
+          e.preventDefault();
+          // $(e.path[1]).click();
+          return false; // tells the library to not preventDefault.
+        }
+      });
+  
+      $(".zoom-in-modal").on('click', function (e) {
+        // debugger
+        $($marea).removeClass("transform-none");
+        modalPanZoom.zoomInOut(187);
+      });
+  
+  
+      $(".zoom-out-modal").on('click', function (e) {
+        $($marea).removeClass("transform-none");
+        modalPanZoom.zoomInOut(189);
+      });
 
-    // $(".zoom-in-modal").on('click', function (e) {
-    //   // debugger
-    //   window.pz.zoomInOut(187);
-    // });
-
-
-    // $(".zoom-out-modal").on('click', function (e) {
-    //   window.pz.zoomInOut(189);
-    // });
+      $(".reset-modal").on('click', function (e) {
+        // $(".divLoading").removeClass("hidden");
+        // window.location.reload()
+        $($marea).addClass("transform-none");
+      });
     
 
     /////////////////////////////////////////////
