@@ -242,7 +242,7 @@
             /       %label.label-primary{:for => "show_checklist"}
             /       %span.pl-15 Yes 
             -# {:class => "#{(@community.is_salesforce_community?) ? 'hidden' : ''}"}
-            -unless @community&.crm_credential&.crm_provider == "salesforce"              
+            -unless @community&.credential&.use_different_crm_provider && @community&.crm_credential&.crm_provider == "salesforce"              
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Scheduler Tool
@@ -419,7 +419,7 @@
               = submit_tag 'Save', class: "btn btn-success pull-right mr-10", style: "margin-bottom: -36px;"
     ///////////////////// Scheduler Widget setting /////////////////////////
     - if @community.scheduler_widget || @community.scheduler_widget.nil?
-      -unless @community&.crm_credential&.crm_provider == "salesforce"
+      -unless @community&.credential&.use_different_crm_provider && @community&.crm_credential&.crm_provider == "salesforce"
         .box.box-info.add-plan.mt-20#logo_header
           .box-header
             %h3.box-title
@@ -586,7 +586,7 @@
 
     //////////////////////////////////////////////// Visiting hours ////////////////////////////////////              
     - if @tour_setting.allow_self_tour
-      -unless @community&.crm_credential&.crm_provider == "salesforce"
+      -unless @community&.credential&.use_different_crm_provider && @community&.crm_credential&.crm_provider == "salesforce"
         .box.box-info.add-plan.mt-20#logo_header
           .box-header
             %h3.box-title

@@ -59,9 +59,9 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
         #st = schedual_tour.present? ? schedual_tour : new_tour 
         tour_is_in_future = is_tour_in_future(@community,schedual_tour,timezone)
         if schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future
-          schedual_tour.update_attributes(stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: params[:tourDate], tour_time: params[:tourTime], tour_type: params[:tourType], created_by: "salesforce")
+          schedual_tour.update_attributes(stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime], tour_type: params[:tourType], created_by: "salesforce")
         else
-          schedual_tour = SchedualTour.create!(stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: params[:tourDate], tour_time: params[:tourTime], tour_type: params[:tourType], created_by: "salesforce")
+          schedual_tour = SchedualTour.create!(stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime], tour_type: params[:tourType], created_by: "salesforce")
           schedual_tour.save!
         end
         # schedual_tour = (schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future) ? schedual_tour : new_tour
