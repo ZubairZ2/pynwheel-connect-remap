@@ -21,7 +21,13 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       @tour_user.update_attributes(first_name: params[:neighborFirstName],last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: neighborEmail.downcase, phone_number: params[:neighborPhone]) 
     end
       neighborhoodName = params[:neighborhoodName] if params[:neighborhoodName].present?
-      @community = Community.find_by(name: neighborhoodName) rescue ""
+      neighborhoodId = params[:neighborhoodId] if params[:neighborhoodId].present?
+      if neighborhoodId.present?
+        crm_credential = CrmCredential.find_by(salesforce_property_id: neighborhoodId)
+        @community = crm_credential.community
+      else
+        @community = Community.find_by(name: neighborhoodName) rescue ""
+      end
       timezone = get_community_time_zone(@community) rescue "UTC"
       community_id = @community&.id rescue ""
       tourDate =  params[:tourDate] if params[:tourDate].present?
