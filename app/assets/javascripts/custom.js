@@ -268,6 +268,7 @@ $('#markers-modal').on('show.bs.modal', function(e) {
 });
 
 function submitSettingFormOnChange() {
+    debugger;
     $(".settings-form").submit();
 }
 
