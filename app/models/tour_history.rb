@@ -70,7 +70,7 @@ class TourHistory < ApplicationRecord
           # scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id)
           scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
         end
-        if (scheduled_tour&.tour_type == "Virtual tour" || scheduled_tour&.tour_type == "Virtual Tour") || (scheduled_tour&.tour_type == "Self guided" || scheduled_tour&.tour_type == "Self Guided")
+        if (touruser.tour_type == "virtual_tour" && (scheduled_tour&.tour_type == "Virtual tour" || scheduled_tour&.tour_type == "Virtual Tour")) || (touruser.tour_type == "self_tour" && (scheduled_tour&.tour_type == "Self guided" || scheduled_tour&.tour_type == "Self Guided"))
           scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
         end
 
