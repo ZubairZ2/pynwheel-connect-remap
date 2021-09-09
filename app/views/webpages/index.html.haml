@@ -397,7 +397,8 @@
                     - if @community.display_rent
                       #pricing-option.hidden
                         %h4.des-heading Pricing Options
-                        %span#unit-lease-pricing
+                        %div{style: "max-height: 6em; overflow-y: auto;"}
+                          %span#unit-lease-pricing
 
                   %div{style: "padding: 0px 0px 8px 7px"}
                     .unit-buttons
@@ -552,7 +553,8 @@
     }
 
   }
-  if (win.width() >= 568) {
+
+  /*if (win.width() >= 568) {
     $('#slider').slick('unslick');
     $("#slider").slick({
       dots: false,
@@ -564,7 +566,8 @@
       prevArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
       nextArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right'></i></div>"
     });
-    } else if (win.width() <= 567) {
+    } else*/
+    if (win.width() <= 567) {
     $('#slider').slick('unslick');
     $("#slider").slick({
       dots: false,
@@ -578,8 +581,7 @@
         nextArrow:
           "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
     });
-    }
-  });
+    };
   if ($(window).width() >= 568) {
     $("#slider").slick({
       dots: false,
@@ -601,10 +603,24 @@
       //speed: 6,
       prevArrow:
           "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-        nextArrow:
-          "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+      nextArrow:
+        "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
     });
   }
+  })
+
+  $(".slider_class").click(function(){
+    try {
+    // localStorage.setItem("floorNo", $("#slider li a.selected").parent().parent().parent().index());
+    //localStorage.getItem("floorNo").addClass("selected");
+    var i = $("#slider li a.selected").parent().parent().parent().index()
+    $(".digits-list-item").removeClass("selected");
+    $($(this).find(".digits-list-item")[i]).addClass("selected");
+    }
+    catch(err) {
+    }
+
+  });
 
   $(document).ready(function () {
     $("#max_price_responsive").html("Select Max Price");
@@ -748,21 +764,6 @@
       ele[i].children[0].style.fontSize = (#{marker_font_size} / (2800 / $(window).width())  )
     }
   }
-
-  $(".slider_class").click(function(){
-    try {
-    // localStorage.setItem("floorNo", $("#slider li a.selected").parent().parent().parent().index());
-    //localStorage.getItem("floorNo").addClass("selected");
-    var i = $("#slider li a.selected").parent().parent().parent().index()
-    $(".digits-list-item").removeClass("selected");
-    $($(this).find(".digits-list-item")[i]).addClass("selected");
-    }
-    catch(err) {
-    }
-
-  });
-
-
 
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
