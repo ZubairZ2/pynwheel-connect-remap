@@ -24,7 +24,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       neighborhoodId = params[:neighborhoodId] if params[:neighborhoodId].present?
       if neighborhoodId.present?
         crm_credential = CrmCredential.find_by(salesforce_property_id: neighborhoodId) rescue "" 
-        community = crm_credential.community
+        community = crm_credential.community rescue "" 
       end
       # binding.pry
       if neighborhoodId.present? && community&.crm_credential&.salesforce_property_id == neighborhoodId        
