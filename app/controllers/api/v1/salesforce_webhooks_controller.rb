@@ -33,9 +33,8 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       # if @scheduled_tour.present?
         # new_tour = SchedualTour.find(@scheduled_tour.id)
       # else
-      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< IN WEBHOOK >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< IN SALESFORCE WEBHOOK >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
       schedual_tour = @community&.schedual_tours&.where(tour_user_id: @tour_user.id).last
-      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR IF PRESENT #{schedual_tour} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
       #MaxDateScheduledTourService.new(@tour_user, @community, true).get_scheduled_tour #rescue @community&.schedual_tours&.where(tour_user_id: @tour_user.id)
       # if schedual_tour.present?
       #   new_tour = SchedualTour.find(schedual_tour.id)
@@ -56,7 +55,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       #     end
       #   end
         scheduled_tours = @community&.schedual_tours&.where(tour_user_id: @tour_user.id)
-        stops_list = scheduled_tours.last.stops_list if scheduled_tours.present?
+        stops_list = scheduled_tours.last.stops_list rescue []
         #st = schedual_tour.present? ? schedual_tour : new_tour 
         tour_is_in_future = is_tour_in_future(@community,schedual_tour,timezone) 
         if schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future
