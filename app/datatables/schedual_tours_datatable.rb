@@ -21,7 +21,7 @@ class SchedualToursDatatable
 private
 
   def scheduled_tour_icon_status(scheduled_tour,community)
-    if scheduled_tour.is_tour_completed && !is_tour_customized(scheduled_tour)
+    if scheduled_tour.is_tour_completed && !is_tour_customized(scheduled_tour) && is_tour_in_future(community,scheduled_tour)
       '<i class="fa fa-check-square icon_size customizeTourToolTip">
         <span id="customizeTourToolTipText">
           Tour has completed
@@ -62,11 +62,24 @@ private
             </span>
           </i>'
         else
-          '<i class="fa fa-exclamation-triangle icon_size expiredTourToolTip">
-            <span id="expiredTourToolTipText">
-              Tour has expired
-            </span>
-          </i>'
+          if scheduled_tour.is_tour_completed
+            '<i class="fa fa-exclamation-triangle icon_size expiredTourToolTip">
+              <span id="expiredTourToolTipText">
+                Tour has expired
+              </span>
+            </i>
+            <i class="fa fa-check-square icon_size customizeTourToolTip">
+              <span id="customizeTourToolTipText">
+                Tour has completed
+              </span>
+            </i>'
+          else
+            '<i class="fa fa-exclamation-triangle icon_size expiredTourToolTip">
+              <span id="expiredTourToolTipText">
+                Tour has expired
+              </span>
+            </i>'
+          end
         end
       end
     end
