@@ -23,9 +23,15 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       neighborhoodName = params[:neighborhoodName] if params[:neighborhoodName].present?
       neighborhoodId = params[:neighborhoodId] if params[:neighborhoodId].present?
       if neighborhoodId.present?
-        crm_credential = CrmCredential.find_by(salesforce_property_id: neighborhoodId)
-        @community = crm_credential.community
+        crm_credential = CrmCredential.find_by(salesforce_property_id: neighborhoodId) rescue "" 
+        community = crm_credential.community
+      end
+      # binding.pry
+      if neighborhoodId.present? && community&.crm_credential&.salesforce_property_id == neighborhoodId        
+        @community = community
+        binding.pry
       else
+        binding.pry
         @community = Community.find_by(name: neighborhoodName) rescue ""
       end
       timezone = get_community_time_zone(@community) rescue "UTC"
