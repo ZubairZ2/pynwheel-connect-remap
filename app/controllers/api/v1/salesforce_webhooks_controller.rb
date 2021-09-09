@@ -33,8 +33,10 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       # if @scheduled_tour.present?
         # new_tour = SchedualTour.find(@scheduled_tour.id)
       # else
+      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< IN WEBHOOK >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
       schedual_tour = @community&.schedual_tours&.where(tour_user_id: @tour_user.id).last
-       #MaxDateScheduledTourService.new(@tour_user, @community, true).get_scheduled_tour #rescue @community&.schedual_tours&.where(tour_user_id: @tour_user.id)
+      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR IF PRESENT #{schedual_tour} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      #MaxDateScheduledTourService.new(@tour_user, @community, true).get_scheduled_tour #rescue @community&.schedual_tours&.where(tour_user_id: @tour_user.id)
       # if schedual_tour.present?
       #   new_tour = SchedualTour.find(schedual_tour.id)
       # else
@@ -55,12 +57,12 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       #   end
         scheduled_tours = @community&.schedual_tours&.where(tour_user_id: @tour_user.id)
         stops_list = scheduled_tours.last.stops_list if scheduled_tours.present?
-        binding.pry 
         #st = schedual_tour.present? ? schedual_tour : new_tour 
-        tour_is_in_future = is_tour_in_future(@community,schedual_tour,timezone)
+        tour_is_in_future = is_tour_in_future(@community,schedual_tour,timezone) 
         if schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future
           schedual_tour.update_attributes(stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime], tour_type: params[:tourType], created_by: "salesforce")
         else
+          puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN CREATE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           schedual_tour = SchedualTour.create!(stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime], tour_type: params[:tourType], created_by: "salesforce")
           schedual_tour.save!
         end
