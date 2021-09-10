@@ -68,11 +68,11 @@ module SchedualToursHelper
     tour_type = tour.tour_type.split('_').map(&:capitalize).join(' ')
 
     property_tour_type = tour.property_tour_type == "scheduled_tour" ? tour_type : tour.property_tour_type.present? ? tour.property_tour_type.split('_').map(&:capitalize).join(' ') : tour_type 
-    if property_tour_type == "Remote Tour"
+    if property_tour_type == "Remote Tour" || tour_type == "Virtual tour"
       "Virtual Tour"
     elsif property_tour_type == "Unscheduled Self Tour"
       "Self Tour - Unscheduled"
-    elsif property_tour_type == "Self Tour"
+    elsif property_tour_type == "Self Tour"  || tour_type == "Self guided"
       "Self Tour - Scheduled"
     else
       return property_tour_type
