@@ -6,12 +6,10 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
     phone_number = params[:neighborPhone] rescue ""
     last_name = params[:neighborLastName] if params[:neighborLastName].present?
     first_name = params[:neighborFirstName] if params[:neighborFirstName].present?
-    # @tour_user = TourUser.find_by(email: neighborEmail.downcase) if neighborEmail.present?
     @tour_user = TourUser.where(email: neighborEmail.downcase) if neighborEmail.present?
     @tour_user = @tour_user.last if @tour_user.present?
    if !@tour_user.present?
     @tour_user = TourUser.new(first_name: first_name,last_name: last_name, name: first_name + " " + last_name, email: neighborEmail.downcase, phone_number: phone_number)
-    # end
     @tour_user.name = (first_name + " " + last_name)
     @tour_user.first_name = first_name 
     @tour_user.last_name = last_name
@@ -97,10 +95,6 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
   # rescue Exception
   #   render :json => {:success=> false, :message => "Internal Server Error", :status => 500}
   # end
-  # puts "------------------------------"*50
-  # puts "Salesforce Webhook"
-  # puts params.inspect
-  # puts "------------------------------"*50
   end
   def is_tour_in_future(community,tour,timezone)
     if tour.present?
