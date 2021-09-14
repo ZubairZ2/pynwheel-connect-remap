@@ -24,14 +24,14 @@
           %span Your customized tour is removed and set to community standard tour
 
       .modal-footer
-        - if tour.is_tour_completed && !is_tour_customized(tour)
+        - if tour.is_tour_completed && !is_tour_customized(tour) && tour.created_by != "salesforce"
           %a.btn.btn-success.pull-right{:href => schedule_tour_of_user(tour, community, community_code, tour_user.id)} Schedule Another Tour
-        - elsif tour.is_tour_completed && is_tour_customized(tour)
+        - elsif tour.is_tour_completed && is_tour_customized(tour) && tour.created_by != "salesforce"
           %a.btn.btn-success.pull-right{:href => schedule_tour_of_user(tour, community, community_code, tour_user.id)} Schedule Another Tour
           %button.btn.btn-warning{:type => "button", :onclick => "resetToStandardTour(#{community.id}, #{tour_user.id})"} Reset to Standard Tour
         - else
           - if is_tour_in_future(community, tour)
-            - if scheduled_tour_date_time(tour)
+            - if scheduled_tour_date_time(tour) && tour.created_by != "salesforce"
               %a.btn.btn-success{:href => reschedule_tour(tour, community, community_code, tour_user.id)} Reschedule Tour
             %a.btn.btn-primary{"data-target" => "#customizeStopsModal#{tour.id}", "data-toggle" => "modal", :href => "#"} Customize Tour
 
