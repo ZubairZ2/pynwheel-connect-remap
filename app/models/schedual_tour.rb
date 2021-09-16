@@ -26,7 +26,7 @@ class SchedualTour < ApplicationRecord
   # validates :tour_type, presence: true
   # validates :tour_time, presence: true
 
-  scope :desc_created_at, -> {order(created_at: :desc)}
+  scope :desc_created_at, -> {order(tour_date: :desc)}
 
   def add_user_in_zerv
     if self.tour_user_id.present? and community.enable_locks and community.multiple_locks_provider.include?("Zerv")
