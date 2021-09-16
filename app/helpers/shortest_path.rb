@@ -146,6 +146,33 @@ module ShortestPath
     total_path = path_object_in_order.to_a + traverse_back_path_object_in_order.to_a.reverse() + [[starting_floor, starting_floor_elevator_to_starting_point_object_in_order]]
     return total_path, @floors_ids
   end
+  def return_floorplate_path_for_multiple_buildings(building_list, community_id, path_type)
+    @building_list = building_list
+    path_object_in_order, complete_path, floors_graph, precedence_visited_ids_by_floor, algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, starting_point = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+    start_point_data, @stops, unit_starting_index, unit_data, amenity_data, unit_id_to_uniq_id, amenity_starting_index, amenity_id_to_uniq_id, elevator_starting_index, @elevator_data, elevator_id_to_uniq_id = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+    algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data = initialize_stops_with_buildings(algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data)
+    fetch_floorplate_related_data_for_multiple_buildings(community_id, @building_list)
+    starting_floor = @floors_ids.first # For now starting point is always on first in future we will change it to any floor selected from db
+    starting_building = @building_list.first
+    start_point_data = get_starting_point_data(@floorplate_hallways[@floor_to_floorplate_id[starting_floor]].dup)
+    #********Here i think hash object id is same in memory so thats why one is update other one is also update 
+    # one thing more I have check object id is diiferent because i use dup method on inilization method but still other updating 
+    # so please check it before going next 
+    @building_list.each do |building|
+      binding.pry
+      @floors_ids.each do |floor|
+        algo_unit_data[building][floor] = @unit_with_door[building][floor].present? ? get_unit_data(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup, @unit_with_door[building][floor].dup) : []
+        algo_amenity_data[building][floor] = @amenity_with_doors[building][floor].present? ? get_amenity_data(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup, @amenity_with_doors[building][floor].dup) : []
+        algo_elevator_data[building][floor] = @building_to_floor_to_elevators[building][floor].present? ? get_elevator_data(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup, @building_to_floor_to_elevators[building][floor], floor) : []
+        # access point functionality is on hold for now
+        new_hallways_coordinates[building][floor] = fetch_hallways_coordinates_with_distance(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup)      
+        hallways_id_to_uniq_id[building][floor] = make_hallways_id_to_uniq_id(new_hallways_coordinates[building][floor].dup, (@building_list.first == building && floor == starting_floor))
+        hallways_dijkstra_data[building][floor] = make_hallways_data_for_dijakstra(new_hallways_coordinates[building][floor].dup, hallways_id_to_uniq_id[building][floor].dup)
+      end
+    end
+    binding.pry
+    return []
+  end
   def return_path_for_mobile(new_stops_arr, community_id, path_type)
     fetch_related_data_according_to_mobile(new_stops_arr, community_id)
     stops = {}
@@ -492,7 +519,7 @@ module ShortestPath
       @stops_id_hash, @floor_lists_hash, @floorplate_hallways, @floorplate_access_points, @floor_to_floorplate_id, floor_to_elevators = {}, {}, {}, {}, {}, {}
       @community = Community.find community_id
       tour = @community.tour
-      # like stops input data hash connect with each floor 1 => stops, 2 => stops  
+      # stops input data hash connect with each floor 1 => stops, 2 => stops  
       tour_stops = tour&.tour_stops.visible.order('sort ASC')
       tour_stops.each {|tour_stop| @stops_id_hash[tour_stop.id] = tour_stop.stop_id}
       @planned_to_visit_units_and_doors_ids, @planned_to_visit_amenities_and_doors_ids, @floors_specific_units, @floors_specific_amenities = [], [], {}, {}
@@ -545,6 +572,76 @@ module ShortestPath
       @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
 
     end
+    def fetch_floorplate_related_data_for_multiple_buildings(community_id, building_list)
+      @stops_id_hash, @floor_lists_hash, @floorplate_hallways, @floorplate_access_points, @floor_to_floorplate_id, floor_to_elevators, @building_starting_exit_points = {}, {}, {}, {}, {}, {}, {}
+      @community = Community.find community_id
+      tour = @community.tour
+      # stops input data hash connect with each building => floor 1 => stops, 2 => stops  
+      tour_stops = tour&.tour_stops.visible.order('sort ASC')
+      tour_stops.each {|tour_stop| @stops_id_hash[tour_stop.id] = tour_stop.stop_id}
+      @planned_to_visit_units_and_doors_ids, @planned_to_visit_amenities_and_doors_ids, @floors_specific_units, @floors_specific_amenities = [], [], {}, {}
+      @floorplates = @community.floorplates
+      @community.floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
+      @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.uniq.sort
+      @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
+      @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.order("id ASC") }
+      #@floorplates.each {|floorplate| @floorplate_access_points[floorplate.id] = floorplate.access_points } # For future use
+      planned_to_visit_units_ids  = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
+      planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity", display_stop: true).pluck(:stop_id) rescue []
+      building_starting_exit_points_ids = tour_stops.where(stop_type: "building_starting_point", display_stop: true).pluck(:stop_id) rescue []
+      building_starting_exit_records = BuildingStartingPoint.fetch_building_starting_exit_points(building_starting_exit_points_ids)
+      building_starting_exit_records.each {|building_starting_point| @building_starting_exit_points[building_starting_point.building] = { "x_plot" => building_starting_point.x_plot, "y_plot" => building_starting_point.y_plot } }
+      elevators_ids = tour_stops.where(stop_type: "elevator", display_stop: true).pluck(:stop_id) rescue []
+      @building_to_floor_to_elevators = Elevator.fetch_elevator_according_to_building(@floors_ids, elevators_ids, building_list)
+      building_floors_specific_units = fetch_units_according_to_building_to_floor(planned_to_visit_units_ids, building_list)
+      building_floors_specific_amenities = fetch_amenities_according_to_building_to_floor(planned_to_visit_amenities_ids, building_list)
+      @precedence_according_to_building_to_floors = fetch_unit_and_amenity_in_floor_by_floor_sorted_way_for_building(tour_stops, building_floors_specific_units, building_floors_specific_amenities, @floors_ids, building_list)
+      # update precedence array according to floor in below code 
+      @community_units = @community.units.are_ploted_units.where.not(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
+      @unit_with_door = {}
+      building_list.each {|building| @unit_with_door[building] = {}}
+      @community_units.each do |unit| 
+        if planned_to_visit_units_ids.include?(unit.id) && unit.door.present?
+          planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
+          @planned_to_visit_units_and_doors_ids << unit.door.id
+          update_precedence_for_floors(unit.floor, 'unit', unit.id, unit.door.id)
+        elsif planned_to_visit_units_ids.include?(unit.id)
+          @planned_to_visit_units_and_doors_ids << unit.id
+        end 
+        if @unit_with_door[unit.building].has_key?(unit.floor)
+          @unit_with_door[unit.building][unit.floor] << { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
+        else
+          @unit_with_door[unit.building][unit.floor] = [{ unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }]
+        end
+      end
+      @amenities_doors = Amenity.where(amenityable_type: "Floorplate", amenityable_id: @floorplates.ids).includes(:doors)
+      @amenity_with_doors = {}
+      building_list.each {|building| @amenity_with_doors[building] = {}}
+      @amenities_doors.each do |amenity| 
+        if planned_to_visit_amenities_ids.include?(amenity.id) && amenity.doors.present?
+          planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
+          @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
+          update_precedence_for_floors(amenity.floor, 'amenity', amenity.id, amenity.doors.first.id)
+        elsif planned_to_visit_amenities_ids.include?(amenity.id)
+          @planned_to_visit_amenities_and_doors_ids << amenity.id
+        end
+        if @amenity_with_doors[amenity.building].has_key?(amenity.floor)
+          @amenity_with_doors[amenity.building][amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
+        else
+          @amenity_with_doors[amenity.building][amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+        end
+      end
+      @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
+    end
+    def fetch_units_according_to_building_to_floor(planned_to_visit_units_ids, building_list)
+      building_to_floor_to_units = {}
+      building_list.each {|building| building_to_floor_to_units[building] = {}}
+      building_floor_and_unit = Unit.where(id: planned_to_visit_units_ids).are_ploted_units.pluck(:building, :floor, :id)
+      building_floor_and_unit.each do |f_u|
+        building_to_floor_to_units[f_u[0]][f_u[1]] = building_to_floor_to_units[f_u[0]].keys.include?(f_u[1]) ? (building_to_floor_to_units[f_u[0]][f_u[1]] + [f_u[2]]) : ([f_u[2]])
+      end
+      building_to_floor_to_units
+    end
     def fetch_units_according_to_floor(planned_to_visit_units_ids)
       floor_units = {}
       floor_and_unit = Unit.where(id: planned_to_visit_units_ids).are_ploted_units.pluck(:floor, :id)
@@ -561,10 +658,29 @@ module ShortestPath
       end
       floor_amenities
     end
+    def fetch_amenities_according_to_building_to_floor(planned_to_visit_amenities_ids, building_list)
+      building_floor_amenities = {}
+      building_list.each {|building| building_floor_amenities[building] = {}}
+      building_floor_and_amenity = Amenity.where(id: planned_to_visit_amenities_ids).pluck(:building, :floor, :id)
+      building_floor_and_amenity.each do |f_a|
+        building_floor_amenities[f_a[0]][f_a[1]] = building_floor_amenities[f_a[0]].keys.include?(f_a[1]) ? (building_floor_amenities[f_a[0]][f_a[1]] + [f_a[2]]) : ([f_a[2]])
+      end
+      building_floor_amenities
+    end
     def fetch_unit_and_amenity_in_floor_by_floor_sorted_way(tour_stops, floors_specific_units, floors_specific_amenities, floors_ids)
       precedence_floor_hash = {}
       floors_ids.each do |floor|
         precedence_floor_hash[floor] = tour_stops.where("(stop_type = ? AND stop_id IN (?) ) OR (stop_type = ? AND stop_id IN (?))", 'unit', floors_specific_units[floor], 'amenity', floors_specific_amenities[floor]).order(:sort).pluck(:stop_id, :stop_type)
+      end
+      precedence_floor_hash
+    end
+    def fetch_unit_and_amenity_in_floor_by_floor_sorted_way_for_building(tour_stops, building_floors_specific_units, building_floors_specific_amenities, floors_ids, building_list)
+      precedence_floor_hash = {}
+      building_list.each {|building| precedence_floor_hash[building] = {}}
+      building_list.each do |building|
+        floors_ids.each do |floor|
+          precedence_floor_hash[building][floor] = tour_stops.where("(stop_type = ? AND stop_id IN (?) ) OR (stop_type = ? AND stop_id IN (?))", 'unit', building_floors_specific_units[building][floor], 'amenity', building_floors_specific_amenities[building][floor]).order(:sort).pluck(:stop_id, :stop_type)
+        end
       end
       precedence_floor_hash
     end
@@ -1309,5 +1425,16 @@ module ShortestPath
         uniq_id_org_id[values_arr[i]] = element
       end
       uniq_id_org_id
+    end
+    def initialize_stops_with_buildings(*args)
+      building_hash_arr = []
+      building_hash = {}
+      @building_list.each {|building| building_hash[building] = {}}
+      if args.count == 1
+        return building_hash.dup
+      else
+        args.count.times { |a| building_hash_arr << building_hash.dup }  
+      end
+      building_hash_arr
     end
 end

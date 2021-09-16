@@ -13,7 +13,6 @@ class AutomatePlottingController < ApplicationController
     if @community.is_sitemap
       fetch_data_for_sitemap
       add_breadcrumb "SiteMap", community_sitemaps_path(current_community)
-      add_breadcrumb "Automate plotting"
     else 
       sorted_building = @tour.building_order
       @building_list = @community.fetch_building_list(sorted_building)
@@ -23,8 +22,8 @@ class AutomatePlottingController < ApplicationController
         fetch_data_for_floorplate_and_multiple_buildings
       end
       add_breadcrumb "Floor plates", community_floorplates_path(current_community)
-      add_breadcrumb "Automate plotting"
     end
+    add_breadcrumb "Automate plotting"
   end
 
   def shortest_path
@@ -33,8 +32,14 @@ class AutomatePlottingController < ApplicationController
       path_object_in_order = begin; return_path_for_sitemap(params[:community_id], params[:path_type]); rescue; []; end
       response = {path_object: path_object_in_order.to_json}
     else
-      path_object_in_order, floor_ids = begin; return_path_for_floorplate(params[:community_id], params[:path_type]); rescue; []; end
-      response = {path_object: path_object_in_order.to_json, floor_ids: floor_ids.to_json}
+      sorted_building = community.tour.building_order
+      @building_list = @community.fetch_building_list(sorted_building)
+      if @building_list.count  < 2 # means there is only building in floorplate community
+        path_object_in_order, floor_ids = begin; return_path_for_floorplate(params[:community_id], params[:path_type]); rescue; []; end
+      else # means this community is a multiple building property
+        path_object_in_order = begin; return_floorplate_path_for_multiple_buildings(@building_list, params[:community_id], params[:path_type]); rescue; []; end
+      end        
+      response = {path_object: path_object_in_order.to_json}
     end
     render :json => response, :status => 200
   end
@@ -134,7 +139,7 @@ class AutomatePlottingController < ApplicationController
       planned_to_visit_units_ids     = @tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
       planned_to_visit_amenities_ids = @tour_stops.where(stop_type: "amenity", display_stop: true).pluck(:stop_id) rescue []
       building_starting_exit_points_ids = @tour_stops.where(stop_type: "building_starting_point", display_stop: true).pluck(:stop_id) rescue []
-      @building_starting_exit_points = fetch_building_starting_exit_points(building_starting_exit_points_ids)
+      @building_starting_exit_points = BuildingStartingPoint.fetch_building_starting_exit_points(building_starting_exit_points_ids)
       @building_list.each do |building|
         @floors.each do |floor|
           hallway_hash = { floor => make_sure_one_selected_hallway(@floor_to_floorplate[floor].hallways.order("id ASC")) }
@@ -152,9 +157,5 @@ class AutomatePlottingController < ApplicationController
           @amenity_with_doors[building] = @amenity_with_doors[building].present? ? @amenity_with_doors[building].merge(amenity_with_doors_hash) : amenity_with_doors_hash
         end
       end
-    end
-
-    def fetch_building_starting_exit_points(building_starting_exit_points_ids)
-      BuildingStartingPoint.where(id: building_starting_exit_points_ids)
     end
 end
