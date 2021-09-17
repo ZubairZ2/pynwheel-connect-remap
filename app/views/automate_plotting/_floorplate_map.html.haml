@@ -20,7 +20,7 @@
       - puts "rescued"
     .btn-btn-danger.mt-10
       - if @community.self_tour and @community.auto_wayfinding
-        %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
+        %button.btn.btn-primary.grid-overlay.header_map_btn{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
       - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
         = link_to community_floorplate_select_many_floors_path(@community, @floorplate), remote: true do
           %button.btn.btn-success
@@ -33,7 +33,7 @@
         // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting', false, 'up')"}Move upstair
         // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting', false, 'down')"}Move downstair
         // %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(false, 'sorting', false, 'starting_point')"}Move towards starting point
-        %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>"run_algo(true, 'sorting', false, 'up')"}Run Algo(Animated)
+        %button.btn.btn-primary.grid-overlay.header_map_btn{:type=>"button",:onclick=>"run_algo(true, 'sorting', false, 'up')"}Run Algo(Animated)
   = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
   - # render map of each floor
   - @floors.each do |floor|

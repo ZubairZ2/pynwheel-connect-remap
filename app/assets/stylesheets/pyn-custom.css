@@ -2531,7 +2531,25 @@ overflow-y: hidden;*/
     color: #8f9495;
     padding: 25px 0 10px 0;
 }
+.enable-suggestions-btn {
+    background-color: #e48c00 !important;
+    border-color: #e48c00 !important;
+}
+.disable-suggestions-btn {
+    background-color: #008fd4 !important;
+    border-color: #008fd4 !important;
+}
+.enable_run_algo{
+  background-color: #008fd4 !important;
+  border-color: #008fd4 !important;
+  opacity: 1;
 
+}
+.disable_run_algo{
+  background-color: #008fd4 !important;
+  border-color: #008fd4 !important;
+  opacity: 0.5;
+}
 .select-title {
     float: left;
     width: 100%;

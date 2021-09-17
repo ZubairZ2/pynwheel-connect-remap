@@ -471,6 +471,7 @@ function initialize_map_click(map_id){
       if (!map_id)
         map_id = "#map"
       if (thisObj.html() == "Start Plotting Hallways") {
+          thisObj.removeClass('disable-suggestions-btn').addClass('enable-suggestions-btn');
           thisObj.html("Stop Plotting Hallways")
           $(".multi-select-units").css({"pointer-events": "none"})
           $(map_id).css('cursor', 'crosshair')
@@ -486,6 +487,7 @@ function initialize_map_click(map_id){
           $('.hallways_marker').draggable('enable')
           $('.floor_btn').addClass('disable_btn').removeClass('enable_btn')
       } else {
+          thisObj.removeClass('enable-suggestions-btn').addClass('disable-suggestions-btn');
           thisObj.html("Start Plotting Hallways")
           $(".multi-select-units").css({"pointer-events": "auto"})
           $(map_id).css('cursor', 'default');
@@ -571,6 +573,37 @@ function initialize_map_click(map_id){
           });
       }
   }
+  function draw_shortest_path_with_animation(path_object_in_order){
+    
+    for (var i = 0; i < (Object.keys(path_object_in_order).length - 1); i++) {
+        delayed(500, function (i) {
+          return function () {
+            x0_y0_and_type = return_x_y_values(path_object_in_order[i])
+            x1_y1_and_type = return_x_y_values(path_object_in_order[i+1])
+            x0 = x0_y0_and_type[0]
+            y0 = x0_y0_and_type[1]
+            x1 = x1_y1_and_type[0]
+            y1 = x1_y1_and_type[1]
+
+            $(".plot-image").line(x0, y0, x1, y1, {
+                zindex: 99,
+                color: '#ffa500',
+                stroke: "5",
+                style: "solid",
+                class: "line_hello"
+            });
+            if (i == (Object.keys(path_object_in_order).length - 2) )
+              enable_run_algo_btn()
+          };
+        }(i));
+      }
+  }
+  function enable_run_algo_btn(){
+    $('.header_map_btn').removeClass('disable_run_algo').addClass('enable_run_algo').attr("disabled", false);
+  }
+  function disable_run_algo_btn(){
+    $('.header_map_btn').removeClass('enable_run_algo').addClass('disable_run_algo').attr("disabled", true);
+  }
   function return_floor_click_button_object(path_object_in_order_length, floor_ids ){
     f_btn_obj = {}
     for (var p = 0; p < floor_ids.length; p++){
@@ -615,6 +648,8 @@ function initialize_map_click(map_id){
                 $(".line_hello").remove();
               }
             }
+            if (i == (Object.keys(path_object_in_order).length - 1) &&  j == (Object.keys(path_object_in_order[i][1]).length - 2))
+              enable_run_algo_btn()
           };
         }(i, j));
       }
@@ -724,6 +759,7 @@ function initialize_map_click(map_id){
     }
   }
   function run_algo(with_animation, path_type, is_sitemap, floor_path_type = ''){
+    disable_run_algo_btn();
     community_id = $('#community_id').val()
     $.ajax({
       url: '/automate_plotting/shortest_path',
@@ -757,6 +793,7 @@ function initialize_map_click(map_id){
 
       },
       fail: function () {
+        enable_run_algo_btn();
         alert("please make you have draw connected hallways point")
       }
     });

@@ -86,14 +86,14 @@
             %a.btn.btn-danger{"data-name" => "floorplate's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots_from_floorplate?floorplate_id=#{params[:floorplate_id]}"} Reset all plots
           - if @community.self_tour and @community.auto_wayfinding
             %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
-          - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
+          - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
             = link_to community_floorplate_select_many_floors_path(@community, @floorplate), remote: true do
               %button.btn.btn-success
                 Add Access Point
                 %i.propertyDetailName.fa.fa-question-circle
                   %span#propertyDetailNameText{:style => "font-weight: normal;"}
                     Add Access point in hallways that are not associated with any specific unit or amenity- if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
-          - if @community.self_tour and @community.auto_wayfinding
+          - if false && @community.self_tour and @community.auto_wayfinding
             %button.btn.btn-primary.grid-overlay{:type=>"button",:onclick=>'automate_path()'}Automate Path
       / /.box-header
       / form start

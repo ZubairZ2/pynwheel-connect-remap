@@ -249,7 +249,7 @@
             %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
           - if @community.self_tour and @community.auto_wayfinding
             %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
-          - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
+          - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
             %button.btn.btn-success{onclick: 'start_access_point_plot(event)'}
               Add Access Point
               %i.propertyDetailName.fa.fa-question-circle
@@ -308,7 +308,7 @@
                         - puts "duplicated.........."
                       .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}", :id=>"h-#{unit.provider_unit_id}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot","data-unit-form-url"=>"/communities/#{@community.id}/units/#{unit.id}/adjust_position"}
                   
-                  - if @community.enable_locks and @community.self_tour and @community.auto_wayfinding
+                  - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
                     - coordinates_array = []
 
                     - @access_points.each do |access_point|
