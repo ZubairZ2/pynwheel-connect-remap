@@ -34,7 +34,7 @@ function initialize_variables(hallways_coordinates, map_id){
 }
   $(document).mousemove('.viewArea', function(event){
     if ($(event.target).hasClass('viewArea')){
-      map_id = $(event.target).data('map-id')
+      map_id = "#" + $(event.target).data('map-id')
     }
     if (!map_id)
       map_id = "#map"
@@ -47,7 +47,7 @@ function initialize_variables(hallways_coordinates, map_id){
   }); 
   $(document).click('.viewArea', function(e){
     if ($(e.target).hasClass('viewArea')){
-      map_id = $(e.target).data('map-id')
+      map_id = "#" + $(e.target).data('map-id')
       marker_color = $('#marker_color').html();
       camera_margin = $('#camera-margin').html();
       marker_font_size = ($('#font_size').html());
@@ -239,8 +239,18 @@ function initialize_map_click(map_id){
   }
   function update_hallways_in_floorplate(floorplate_id, latest_hallways){
     floor_ids = fetch_floorplate_floors(floorplate_id)
+    var building_id;
+    if ($('.building_btn_in_auto').length > 0)
+      building_id = $('.building_btn_in_auto.autoway_selected').data('building_id')
+    
     floor_ids.forEach((floor, index) => {
-      hallways[floor] = latest_hallways
+      if (building_id){
+        building_list.forEach((building, indx) => {
+          hallways[building][floor] = latest_hallways  
+        })
+      }
+      else
+        hallways[floor] = latest_hallways
     });
   }
   function fetch_floorplate_floors(floorplate_id){
@@ -485,7 +495,7 @@ function initialize_map_click(map_id){
               opacity: 0.5
           }).appendTo($(".multi-select-units").css("position", "relative"));
           $('.hallways_marker').draggable('enable')
-          $('.floor_btn').addClass('disable_btn').removeClass('enable_btn')
+          $('.floor_btn, .building_btn_in_auto').addClass('disable_btn').removeClass('enable_btn')
       } else {
           thisObj.removeClass('enable-suggestions-btn').addClass('disable-suggestions-btn');
           thisObj.html("Start Plotting Hallways")
@@ -493,7 +503,7 @@ function initialize_map_click(map_id){
           $(map_id).css('cursor', 'default');
           $(".multi-select-units").find('#overlay').remove();
           $('.hallways_marker').draggable('disable')
-          $('.floor_btn').addClass('enable_btn').removeClass('disable_btn')
+          $('.floor_btn, .building_btn_in_auto').addClass('enable_btn').removeClass('disable_btn')
       }
   }
  

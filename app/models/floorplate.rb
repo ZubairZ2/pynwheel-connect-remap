@@ -69,8 +69,8 @@ class Floorplate < ApplicationRecord
     units = Unit.where(community_id: community_id,floor: self.floors)
   end
 
-  def fetch_elevators(floor)
-    elevators = Elevator.where(community_id: community_id, building: [nil,""]) # nil or empty string for 0 or no building
+  def fetch_elevators(floor, building = [nil,""]) # nil or empty string for 0 or no building
+    elevators = Elevator.where(community_id: community_id, building: building)
     elevators = elevators.map {|elevator| elevator if elevator.floors.include?(floor) }.compact
     elevators
   end
