@@ -148,18 +148,15 @@ module ShortestPath
   end
   def return_floorplate_path_for_multiple_buildings(building_list, community_id, path_type)
     @building_list = building_list
-    path_object_in_order, complete_path, floors_graph, precedence_visited_ids_by_floor, algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, starting_point = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
-    start_point_data, @stops, unit_starting_index, unit_data, amenity_data, unit_id_to_uniq_id, amenity_starting_index, amenity_id_to_uniq_id, elevator_starting_index, @elevator_data, elevator_id_to_uniq_id = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
-    algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data = initialize_stops_with_buildings(algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data)
+    path_object_in_order, complete_path, floors_graph, precedence_visited_ids_by_floor, algo_unit_data, algo_amenity_data, algo_elevator_data, algo_building_starting_point_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, starting_point, building_start_id_to_uniq_id, building_dijkstra_data = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+    start_point_data, @stops, unit_starting_index, unit_data, amenity_data, unit_id_to_uniq_id, amenity_starting_index, amenity_id_to_uniq_id, elevator_starting_index, @elevator_data, elevator_id_to_uniq_id, building_starting_index, building_starting_point_data = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+    elevator_id_to_uniq_id, @elevator_data, elevator_starting_index, amenity_id_to_uniq_id, amenity_data, amenity_starting_index, unit_id_to_uniq_id, unit_data, start_point_data, @stops, starting_point, algo_unit_data, algo_amenity_data, algo_elevator_data, algo_building_starting_point_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, building_starting_index, building_starting_point_data, building_start_id_to_uniq_id, building_dijkstra_data, unit_starting_index = initialize_stops_with_buildings(start_point_data, @stops, starting_point,algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, algo_building_starting_point_data, building_starting_index, building_starting_point_data, building_start_id_to_uniq_id, building_dijkstra_data, unit_starting_index, unit_data, unit_id_to_uniq_id, amenity_starting_index, amenity_data, amenity_id_to_uniq_id, elevator_starting_index, @elevator_data, elevator_id_to_uniq_id)
     fetch_floorplate_related_data_for_multiple_buildings(community_id, @building_list)
     starting_floor = @floors_ids.first # For now starting point is always on first in future we will change it to any floor selected from db
     starting_building = @building_list.first
-    start_point_data = get_starting_point_data(@floorplate_hallways[@floor_to_floorplate_id[starting_floor]].dup)
-    #********Here i think hash object id is same in memory so thats why one is update other one is also update 
-    # one thing more I have check object id is diiferent because i use dup method on inilization method but still other updating 
-    # so please check it before going next 
+
     @building_list.each do |building|
-      binding.pry
+      start_point_data[building] = get_starting_point_data(@floorplate_hallways[@floor_to_floorplate_id[starting_floor]].dup)
       @floors_ids.each do |floor|
         algo_unit_data[building][floor] = @unit_with_door[building][floor].present? ? get_unit_data(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup, @unit_with_door[building][floor].dup) : []
         algo_amenity_data[building][floor] = @amenity_with_doors[building][floor].present? ? get_amenity_data(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup, @amenity_with_doors[building][floor].dup) : []
@@ -168,6 +165,44 @@ module ShortestPath
         new_hallways_coordinates[building][floor] = fetch_hallways_coordinates_with_distance(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup)      
         hallways_id_to_uniq_id[building][floor] = make_hallways_id_to_uniq_id(new_hallways_coordinates[building][floor].dup, (@building_list.first == building && floor == starting_floor))
         hallways_dijkstra_data[building][floor] = make_hallways_data_for_dijakstra(new_hallways_coordinates[building][floor].dup, hallways_id_to_uniq_id[building][floor].dup)
+        # Merge starting point
+        if starting_point_for_building(building, floor)
+          starting_point[building][hallways_id_to_uniq_id[building][floor][start_point_data[building]['hallway_id']]] = start_point_data[building]['distance']
+          @stops[building][floor] = {0 => starting_point[building]}
+          @stops[building][floor] = @stops[building][floor].merge({hallways_id_to_uniq_id[building][floor][start_point_data[building]['hallway_id']] => { 0 => start_point_data[building]['distance']} })
+        end
+        # Merge Hallways
+        @stops[building][floor] = @stops[building][floor].present? ? @stops[building][floor].deep_merge(hallways_dijkstra_data[building][floor]) : hallways_dijkstra_data[building][floor]
+        # Merge Building Starting Point
+        if building_starting_point_for_building(floor)
+          algo_building_starting_point_data[building][floor] = @building_starting_exit_points.present? ? get_building_starting_exit_point_data(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup, @building_starting_exit_points.dup) : []
+          building_starting_index[building][floor] = @stops[building][floor].keys.size
+          building_starting_point_data[building][floor] = make_building_starting_point_data_according_to_building_starting_point_id(algo_building_starting_point_data[building][floor].dup)
+          building_start_id_to_uniq_id[building][floor] = make_building_start_id_to_uniq_id(building_starting_index[building][floor], building_starting_point_data[building][floor])
+          building_dijkstra_data = make_building_start_data_for_dijakstra(building_starting_point_data[building][floor], building_start_id_to_uniq_id[building][floor], hallways_id_to_uniq_id[building][floor], @stops[building][floor])
+          @stops[building][floor].merge!(building_dijkstra_data)
+        end
+        # Merge Unit Data
+        unit_starting_index[building][floor] = @stops[building][floor].keys.size
+        unit_data[building][floor] = make_unit_data_according_to_door_id(algo_unit_data[building][floor])
+        unit_id_to_uniq_id[building][floor] = make_unit_id_to_uniq_id(unit_starting_index[building][floor], unit_data[building][floor])
+        unit_dijkstra_data = make_unit_data_for_dijakstra(unit_data[building][floor], unit_id_to_uniq_id[building][floor], hallways_id_to_uniq_id[building][floor], @stops[building][floor])
+        @stops[building][floor].merge!(unit_dijkstra_data)
+        # Merge Amenity Data
+        amenity_starting_index[building][floor] = @stops[building][floor].keys.size
+        amenity_data[building][floor] = make_amenity_data_according_to_door_id(algo_amenity_data[building][floor])
+        amenity_id_to_uniq_id[building][floor] = make_amenity_id_to_uniq_id(amenity_starting_index[building][floor], amenity_data[building][floor])
+        amenity_dijkstra_data = make_amenity_data_for_dijakstra(amenity_data[building][floor], amenity_id_to_uniq_id[building][floor], hallways_id_to_uniq_id[building][floor], @stops[building][floor])
+        @stops[building][floor].merge!(amenity_dijkstra_data)
+        # Merge Elevator Data
+        elevator_starting_index[building][floor] = @stops[building][floor].keys.size
+        @elevator_data[building][floor] = make_elevator_data_according_to_elevator_id(algo_elevator_data[building][floor])
+        elevator_id_to_uniq_id[building][floor] = make_elevator_id_to_uniq_id(elevator_starting_index[building][floor], @elevator_data[building][floor])
+        elevator_dijkstra_data = make_elevator_data_for_dijakstra(@elevator_data[building][floor], elevator_id_to_uniq_id[building][floor], hallways_id_to_uniq_id[building][floor], @stops[building][floor])
+        @stops[building][floor].merge!(elevator_dijkstra_data)
+        # Update @precedence_according_to_building_to_floors array like stops id key 
+        update_precedence_unit_arr_for_building(unit_id_to_uniq_id[building][floor], building, floor)
+        update_precedence_amenity_arr_for_building(amenity_id_to_uniq_id[building][floor], building, floor)
       end
     end
     binding.pry
@@ -590,7 +625,7 @@ module ShortestPath
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity", display_stop: true).pluck(:stop_id) rescue []
       building_starting_exit_points_ids = tour_stops.where(stop_type: "building_starting_point", display_stop: true).pluck(:stop_id) rescue []
       building_starting_exit_records = BuildingStartingPoint.fetch_building_starting_exit_points(building_starting_exit_points_ids)
-      building_starting_exit_records.each {|building_starting_point| @building_starting_exit_points[building_starting_point.building] = { "x_plot" => building_starting_point.x_plot, "y_plot" => building_starting_point.y_plot } }
+      building_starting_exit_records.each {|building_starting_point| @building_starting_exit_points[building_starting_point.building] = { "id" => building_starting_point.id, "building_name" => building_starting_point.name ,"x_plot" => building_starting_point.x_plot, "y_plot" => building_starting_point.y_plot } }
       elevators_ids = tour_stops.where(stop_type: "elevator", display_stop: true).pluck(:stop_id) rescue []
       @building_to_floor_to_elevators = Elevator.fetch_elevator_according_to_building(@floors_ids, elevators_ids, building_list)
       building_floors_specific_units = fetch_units_according_to_building_to_floor(planned_to_visit_units_ids, building_list)
@@ -943,7 +978,6 @@ module ShortestPath
               algo_elevator_data[indx]['hallway_y_plot'] = hallway.y_plot
             end
           else
-            # please continue
             h = {}
             h['hallway_id'] = hallway.id
             h['hallway_x_plot'] = hallway.x_plot
@@ -1048,6 +1082,37 @@ module ShortestPath
         end
       end
       start_point_data
+    end
+    def get_building_starting_exit_point_data(hallways, building_starting_exit_points)
+      algo_building_start_exit_data = []
+      hallways.each_with_index do |hallway, i|
+        building_starting_exit_points.values.each do |building_start_exit_point|
+          a = hallway.x_plot - building_start_exit_point['x_plot']
+          b = hallway.y_plot - building_start_exit_point['y_plot']
+          c = Math::sqrt(a * a + b * b);
+          if (i > 0)
+            indx = algo_building_start_exit_data.index{ |x| x['building_starting_exit_id'] == building_start_exit_point['id'] }
+            if algo_building_start_exit_data[indx]['distance'] > c
+              algo_building_start_exit_data[indx]['hallway_id'] = hallway.id
+              algo_building_start_exit_data[indx]['distance'] = c
+              algo_building_start_exit_data[indx]['hallway_x_plot'] = hallway.x_plot
+              algo_building_start_exit_data[indx]['hallway_y_plot'] = hallway.y_plot
+            end
+          else
+            h = {}
+            h['hallway_id'] = hallway.id
+            h['hallway_x_plot'] = hallway.x_plot
+            h['hallway_y_plot'] = hallway.y_plot
+            h['building_starting_exit_id'] = building_start_exit_point['id']
+            h['building_starting_exit_x_plot'] = building_start_exit_point['x_plot']
+            h['building_starting_exit_y_plot'] = building_start_exit_point['y_plot']
+            h['distance'] = c
+            h['point_type'] = "building_starting_exit_point"
+            algo_building_start_exit_data.push(h)
+          end
+        end
+      end
+      algo_building_start_exit_data
     end
     def get_access_point_data()
       algo_access_point_data = []
@@ -1162,6 +1227,13 @@ module ShortestPath
       end
       unit_data
     end
+    def make_building_starting_point_data_according_to_building_starting_point_id(building_starting_point_data)
+      building_data = {}
+      building_starting_point_data.each do |building_starting_point|
+        building_data[building_starting_point['building_starting_exit_id']] = building_starting_point
+      end
+      building_data
+    end
     def make_elevator_data_according_to_elevator_id(algo_elevator_data)
       elevator_data = {}
       algo_elevator_data.each do |elevator|
@@ -1176,6 +1248,14 @@ module ShortestPath
         starting_index+=1
       end
       unit_id_to_uniq_id
+    end
+    def make_building_start_id_to_uniq_id(starting_index, building_start_p_data)
+      building_start_id_to_uniq_id = {}
+      building_start_p_data.keys.each do |key|
+        building_start_id_to_uniq_id[key] = starting_index
+        starting_index+=1
+      end
+      building_start_id_to_uniq_id
     end
     def make_elevator_id_to_uniq_id(starting_index, elevator_data)
       elevator_id_to_uniq_id = {}
@@ -1196,6 +1276,18 @@ module ShortestPath
         stops[hallways_id_to_uniq_id[unit_data[key]['hallway_id']]] = stops[hallways_id_to_uniq_id[unit_data[key]['hallway_id']]].merge(obj2)
       end
       unit_dijkstra_data
+    end
+    def make_building_start_data_for_dijakstra(building_start_data, building_start_id_to_uniq_id, hallways_id_to_uniq_id, stops)
+      b_start_dijkstra_data = {}
+      building_start_data.keys.each do |key|
+        obj = {}
+        obj[hallways_id_to_uniq_id[building_start_data[key]['hallway_id']]] = building_start_data[key]['distance']  
+        b_start_dijkstra_data[building_start_id_to_uniq_id[key]] = obj
+        obj2 = {}
+        obj2[building_start_id_to_uniq_id[key]] = building_start_data[key]['distance']  
+        stops[hallways_id_to_uniq_id[building_start_data[key]['hallway_id']]] = stops[hallways_id_to_uniq_id[building_start_data[key]['hallway_id']]].merge(obj2)
+      end
+      b_start_dijkstra_data
     end
     def make_elevator_data_for_dijakstra(elevator_data, elevator_id_to_uniq_id, hallways_id_to_uniq_id, stops)
       elevator_dijkstra_data = {}
@@ -1249,9 +1341,19 @@ module ShortestPath
         update_precedence_arr_for_floor("unit", element, unit_id_to_uniq_id[element], floor)
       end
     end
+    def update_precedence_unit_arr_for_building(unit_id_to_uniq_id, building, floor)
+      @planned_to_visit_units_and_doors_ids.each_with_index do |element, i|
+        update_precedence_arr_for_building("unit", element, unit_id_to_uniq_id[element], building, floor)
+      end
+    end
     def update_precedence_amenity_arr_for_floor(amenity_id_to_uniq_id, floor)
       @planned_to_visit_amenities_and_doors_ids.each_with_index do |element, i|
         update_precedence_arr_for_floor("amenity", element, amenity_id_to_uniq_id[element], floor)
+      end
+    end
+    def update_precedence_amenity_arr_for_building(amenity_id_to_uniq_id, building, floor)
+      @planned_to_visit_amenities_and_doors_ids.each_with_index do |element, i|
+        update_precedence_arr_for_building("amenity", element, amenity_id_to_uniq_id[element], building, floor)
       end
     end
     def update_precedence_amenity_arr(amenity_id_to_uniq_id)
@@ -1274,6 +1376,14 @@ module ShortestPath
       @precedence_according_to_floors[floor].each_with_index do |p_arr, i|
         if (p_arr[1] == stop_type) && (p_arr[0] == door_id)
           @precedence_according_to_floors[floor][i] = [uniq_id, stop_type]
+          break
+        end
+      end
+    end
+    def update_precedence_arr_for_building(stop_type, door_id, uniq_id, building, floor)
+      @precedence_according_to_building_to_floors[building][floor].each_with_index do |p_arr, i|
+        if (p_arr[1] == stop_type) && (p_arr[0] == door_id)
+          @precedence_according_to_building_to_floors[building][floor][i] = [uniq_id, stop_type]
           break
         end
       end
@@ -1431,10 +1541,16 @@ module ShortestPath
       building_hash = {}
       @building_list.each {|building| building_hash[building] = {}}
       if args.count == 1
-        return building_hash.dup
+        return building_hash.deep_dup
       else
-        args.count.times { |a| building_hash_arr << building_hash.dup }  
+        args.count.times { |a| building_hash_arr << building_hash.deep_dup }  
       end
       building_hash_arr
+    end
+    def starting_point_for_building(building, floor)
+      (@building_list.first == building || @building_list.last == building) && @floors_ids.first == floor
+    end
+    def building_starting_point_for_building(floor)
+      @floors_ids.first == floor
     end
 end
