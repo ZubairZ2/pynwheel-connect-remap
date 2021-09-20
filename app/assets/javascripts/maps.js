@@ -588,7 +588,7 @@ function initialize_map_click(map_id){
   function draw_shortest_path_with_animation(path_object_in_order){
     
     for (var i = 0; i < (Object.keys(path_object_in_order).length - 1); i++) {
-        delayed(500, function (i) {
+        delayed(600, function (i) {
           return function () {
             x0_y0_and_type = return_x_y_values(path_object_in_order[i])
             x1_y1_and_type = return_x_y_values(path_object_in_order[i+1])
@@ -596,6 +596,7 @@ function initialize_map_click(map_id){
             y0 = x0_y0_and_type[1]
             x1 = x1_y1_and_type[0]
             y1 = x1_y1_and_type[1]
+            x1_y1_type = x1_y1_and_type[2]
 
             $(".plot-image").line(x0, y0, x1, y1, {
                 zindex: 99,
@@ -604,6 +605,10 @@ function initialize_map_click(map_id){
                 style: "solid",
                 class: "line_hello"
             });
+            if (stops_type_arr.includes(x1_y1_type)){
+              $(".line").remove();
+              $(".line_hello").remove();
+            }
             if (i == (Object.keys(path_object_in_order).length - 2) )
               enable_run_algo_btn()
           };
