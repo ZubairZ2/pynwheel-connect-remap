@@ -60,11 +60,13 @@ class Resman4SwapService < BaseService
         # unit.marketing_name = u["Id"]
         unit.floorplan_id = u["Units"]["Unit"]["UnitType"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-        if u["Units"]["Unit"]["MarketRent"].present?
+
+        if u["EffectiveRent"].present?
+          unit.effective_rent = u["EffectiveRent"]["min"]
+        elsif u["Units"]["Unit"]["MarketRent"].present?
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-        elsif u["EffectiveRent"].present?
-          unit.effective_rent = u["EffectiveRent"]["Avg"]
         end
+
         unit.floor = u["FloorLevel"]
         if u["Availability"].present? && u["Availability"]["MadeReadyDate"].present?
           unit.availability = "Unoccupied"
@@ -97,11 +99,13 @@ class Resman4SwapService < BaseService
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         unit.floorplan_id = u["Units"]["Unit"]["UnitType"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-        if u["Units"]["Unit"]["MarketRent"].present?
+       
+        if u["EffectiveRent"].present?
+          unit.effective_rent = u["EffectiveRent"]["min"]
+        elsif u["Units"]["Unit"]["MarketRent"].present?
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-        elsif u["EffectiveRent"].present?
-          unit.effective_rent = u["EffectiveRent"]["Avg"]
         end
+
         unit.floor = u["FloorLevel"]
         if u["Availability"].present? && u["Availability"]["MadeReadyDate"].present?
           unit.availability = "Unoccupied"

@@ -92,11 +92,11 @@ class Resman4StaticService < BaseService
           end
         end
 
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-          if u["Units"]["Unit"]["MarketRent"].present?
-            unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-          end
-        end 
+        # unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+        #   if u["Units"]["Unit"]["MarketRent"].present?
+        #     unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
+        #   end
+        # end 
 
         unless unit.floor_is_updated.present? && unit.floor_is_updated
           unit.floor = u["FloorLevel"]

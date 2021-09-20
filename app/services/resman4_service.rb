@@ -76,23 +76,23 @@ class Resman4Service < BaseService
         # unit.marketing_name = u["Id"]
         # unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
         
-        # unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
-        # unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
-        # unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-        #   if u["EffectiveRent"].present?
-        #     unit.effective_rent = u["EffectiveRent"]["Min"]
-        #   elsif u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
-        #     unit.effective_rent = u["Unit"]["MITS:Information"]["MITS:MarketRent"]
-        #   end
-        # end
+        unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
+        unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+          if u["EffectiveRent"].present?
+            unit.effective_rent = u["EffectiveRent"]["Min"]
+          elsif u["Units"]["Unit"]["MarketRent"].present?
+            unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
+          end
+        end
 
         unit.lease_pricing = get_unit_lease_prising(u)
 
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-          if u["Units"]["Unit"]["MarketRent"].present?
-            unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-          end
-        end 
+        # unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+        #   if u["Units"]["Unit"]["MarketRent"].present?
+        #     unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
+        #   end
+        # end 
 
         # unit.floor = u["FloorLevel"]
         if u["Availability"].present? && u["Availability"]["MadeReadyDate"].present?
