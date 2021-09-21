@@ -292,7 +292,7 @@
                   <label data-toggle="tooltip" data-placement="top" title="(Default US)">Country Code <span class="asterisk_color" >*</span></label> 
                   <select name="country_code" class="form-control select_number" id="country_code">
                     <% SchedualTour::COUNTRY_CODES.each do  |code| %>
-                      <option value="#{<%= code %>}"> <%= code %> </option>
+                      <option value="<%= code %>"> <%= code %> </option>
                     <% end %>
                   </select>
                 </div>
