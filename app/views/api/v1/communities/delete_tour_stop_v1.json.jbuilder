@@ -829,20 +829,20 @@ json.tours @tours do |tour|
       unit = Unit.find_by_id stop.stop_id
       if unit.present?
 
-      json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image" rescue "no image") ): "no image"
+      json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit&.floorplan&.image.present? ? unit&.floorplan&.image.url : "no image" rescue "no image") ): "no image"
       images = []
-      if (unit.image.present? || unit.floorplan.image.present? rescue false)
-        img = {url: unit.image.present? ? unit.image.url : unit.floorplan.image.url }
+      if (unit.image.present? || unit&.floorplan&.image.present? rescue false)
+        img = {url: unit.image.present? ? unit.image.url : unit&.floorplan&.image.url }
         images << img
       end
-      if (unit.secondary_image.present? || unit.floorplan.secondary_image.present? rescue false)
-        img = {url: unit.secondary_image.present? ? unit.secondary_image.url : unit.floorplan.secondary_image.url }
+      if (unit.secondary_image.present? || unit&.floorplan&.secondary_image.present? rescue false)
+        img = {url: unit.secondary_image.present? ? unit.secondary_image.url : unit&.floorplan&.secondary_image&.url }
         images << img
       end
       current_floor = unit.floor
       json.image_list images
       json.name (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
-      json.floorplan_id unit.floorplan.id
+      json.floorplan_id unit&.floorplan&.id
       # json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
       floorplate_image = (unit.floorplate.image.present? ? unit.floorplate : nil) if unit.floorplate.present?  rescue nil
       json.floorplate_image floorplate_image.image.url  rescue ""
@@ -860,8 +860,8 @@ json.tours @tours do |tour|
       json.directional_text show_directional_text ? unit_directional_text[0..description_limit - 1] : unit_directional_text
       json.show_long_directional_text show_directional_text
       json.long_directional_text styling_start + unit.stop_description.gsub('red','') + styling_end rescue ""      
-      json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
-      json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""
+      json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit&.floorplan&.virtual_tour_button_label
+      json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit&.floorplan.present? && unit&.floorplan&.virtual_tour_url.present? ) ? unit&.floorplan&.virtual_tour_url : ""
       lease_pricing = []
       if unit.lease_pricing.present? && !unit.modal_unit
         str_split = unit.lease_pricing.split(';')
@@ -907,7 +907,7 @@ json.tours @tours do |tour|
       else
         availability_url = (unit.availability_url.present? ? unit.availability_url : u.floorplan.availability_url rescue "")
       end
-      floorplan_for_name = Floorplan.find_by(id: unit.floorplan.id)
+      floorplan_for_name = Floorplan.find_by(id: unit&.floorplan&.id)
       stop_dat = {"floorplan" => (floorplan_for_name.name rescue ""),"floorplan_full_name" => (floorplan_for_name.name + "- #{(floorplan_for_name.bedrooms.present? ? (floorplan_for_name.bedrooms.to_i.to_s + " BR") : "") } / #{(floorplan_for_name.bathrooms.present? ? (floorplan_for_name.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
@@ -925,8 +925,8 @@ json.tours @tours do |tour|
           json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
           json.stop_description ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
           json.directional_text ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
-          json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
-          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""
+          json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit&.floorplan&.virtual_tour_button_label
+          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ( unit&.floorplan.present? && unit&.floorplan&.virtual_tour_url.present? ) ? unit&.floorplan&.virtual_tour_url : ""
           if unit_amenity.amenity_galleries.count == 0
             # temp_data = {"name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => unit_amenity.description}
             json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : ""), "directional_text" => ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")]
@@ -978,8 +978,8 @@ json.tours @tours do |tour|
           end
 
           json.long_directional_text styling_start + unit_amenity.directional_text.gsub('red','') + styling_end  rescue ""
-          json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
-          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""
+          json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit&.floorplan&.virtual_tour_button_label
+          json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ( unit&.floorplan.present? && unit&.floorplan&.virtual_tour_url.present? ) ? unit&.floorplan&.virtual_tour_url : ""
           if unit_amenity.amenity_galleries.count == 0
             stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
 
