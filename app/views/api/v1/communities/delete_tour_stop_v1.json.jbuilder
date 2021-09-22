@@ -848,6 +848,7 @@ json.tours @tours do |tour|
       json.floorplate_image floorplate_image.image.url  rescue ""
       json.image_width floorplate_image.width  rescue 0
       json.image_height floorplate_image.height  rescue 0
+      json.update_apply ((unit.provider == "resman" || unit.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
 
       unit_directional_text = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
 
