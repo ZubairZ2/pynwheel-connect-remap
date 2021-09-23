@@ -104,7 +104,7 @@ class SchedualTour < ApplicationRecord
       "communityId": self&.community&.crm_credential&.knock_community_id,
       "requestedTimes": [
         {
-          "startTime": "2020-09-23T15:30:00-07:00"
+          "startTime": knock_tour_date_time
         }
       ],
       "profile": {
@@ -126,8 +126,17 @@ class SchedualTour < ApplicationRecord
       "smsConsentDisclaimer": "I consent to appointment updates via SMS communication",
       "smsConsentUrl": self&.community&.crm_credential&.knock_sms_consent_url,
       "sourceTitle": "Property Website",
-      "tourType": "IN_PERSON"
+      "tourType": knock_tour_type
     }
+  end
+
+  def knock_tour_type
+    case self.tour_type
+    when "guided_tour"
+      "IN_PERSON"
+    when ("self_tour" or "virtual_tour")
+      "SELF_GUIDED"
+    end  
   end
 
   def desire_bedrooms
@@ -145,6 +154,29 @@ class SchedualTour < ApplicationRecord
     else
       "Error: No message"
     end
+  end
+
+  def knock_tour_date_time
+    timezone = get_community_time_zone(self.community)
+    tour_datetime = (self.tour_date.to_s + " " + self.tour_time.strftime("%I:%M%p")).in_time_zone(timezone)
+  end
+
+  def get_community_time_zone(community)
+    tz = Ziptz.new
+    timezone = nil
+
+    if community.latitude.present? and community.longitude.present?
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and community.zip.present?
+      timezone = tz.time_zone_name(community.zip)
+    end
+
+      return timezone
+    rescue
+      return "UTC"
   end
 
 end
