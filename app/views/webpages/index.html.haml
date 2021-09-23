@@ -1,4 +1,4 @@
-%html
+%html{:style=>"height: auto;min-height: 100%;overflow: hidden;"}
   %head
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
     %meta{:charset => "utf-8"}/
@@ -16,6 +16,7 @@
     = javascript_include_tag 'jquery.arrayUtilities'
     = javascript_include_tag 'slick'
     = javascript_include_tag "update_session"
+    = javascript_include_tag "moment"
     %script{:src => "https://www.beans.ai/widgets/3d-maps/v1.3.0/beans-mapbox.min.js"}
     %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css", :rel => "stylesheet"}/
     %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css", :rel => "stylesheet"}/
@@ -121,40 +122,40 @@
                 - if @unit_bedrooms.present?
                   .selectable-field
                     %label Bedrooms
-                    = select_tag :unit_bedroom, options_for_select(@unit_bedrooms),{:class=>"custom-select", :include_blank => "All "}
+                    = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms),{:class=>"custom-select", :include_blank => "All "}
                 - else
                   .selectable-field
                     %label Bedrooms
-                    = select_tag :unit_bedroom, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
+                    = select_tag :responsive_unit_bedroom, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
                 - if @available_units.present?
                   .selectable-field
                     %label Availability
-                    = select_tag :available_unit, options_for_select(@available_units),{:class=>"custom-select", :include_blank => "All "}
+                    = select_tag :responsive_available_unit, options_for_select(@available_units),{:class=>"custom-select", :include_blank => "All "}
                 - else
                   .selectable-field
                     %label Availability
-                    = select_tag :available_unit, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
+                    = select_tag :responsive_available_unit, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
                 
                 - if @market_rent.present?
                   .selectable-field
                     %label Maximum Price
-                    = select_tag :market_rent, options_for_select(@market_rent),{:class=>"custom-select", :include_blank => "Select Max Price"}
+                    = select_tag :responsive_market_rent, options_for_select(@market_rent),{:class=>"custom-select", :include_blank => "Select Max Price"}
                 - else
                   .selectable-field
                     %label Maxy Price
-                    = select_tag :market_rent, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Max Price"}      
+                    = select_tag :responsive_market_rent, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Max Price"}      
                 - if @square_feet.present?
                   .selectable-field
                     %label Min Square Footage
-                    = select_tag :square_feet, options_for_select(@square_feet),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
+                    = select_tag :responsive_square_feet, options_for_select(@square_feet),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
                     -# %div
                       -# = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"btn btn-primary btn-block view-btn", :target=> "pynwheel_iframe", :style => "height: 43px;"
                 - else
                   .selectable-field
                     %label Min Square Footage
-                    = select_tag :square_feet, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
+                    = select_tag :responsive_square_feet, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
                 %div{:style => "text-align: center; padding-bottom: 9px;"}
-                  %button.apply-now-responsive{"data-target" => "", "data-toggle" => "modal", :type => "button"} Apply Filters
+                  %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"} Apply Filters
           
           - if @community_info.has_floorplates?
             .c-sidebar
@@ -162,16 +163,16 @@
                 .sidebar-logo
                   %h6 Floor
                   %small Vacant Unit
-              .floor-counts
-                %ul.c-sidebar-nav.slider_class#slider
-                  - min_unit_floor = JSON.parse(@units_with_floorplan_info).map{|x| x["floor"]}.min rescue @floors.first
-                  - @floors.each do |floor|
-                    - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                    -# - binding.pry
-                    %li.digits-list-item{:class => "#{floor == min_unit_floor ? 'selected' : ''}"}
-                      = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "1245", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor      
-                      %div{style: "margin-top: 11px"}
-                        %span.teg-line{:id => "u_#{floor}"}
+              
+              %ul.floor-counts.c-sidebar-nav.slider_class#slider
+                - min_unit_floor = JSON.parse(@units_with_floorplan_info).map{|x| x["floor"]}.min rescue @floors.first
+                - @floors.each do |floor|
+                  - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
+                  -# - binding.pry
+                  %li.digits-list-item{:class => "#{floor == min_unit_floor ? 'selected' : ''}"}
+                    = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "1245", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor      
+                    %div{style: "margin-top: 11px"}
+                      %span.teg-line{:id => "u_#{floor}"}
             
           .c-body{:style => "overflow: hidden;"}
             - if @community.theme_name.include?('gables')
@@ -273,6 +274,7 @@
                     %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :id => "property-map-image", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
 
                 - coordinates_array = []
+                -# - binding.pry
                 - units.each do |unit|
                   - coordinates_array.push([unit.x_plot,unit.y_plot])
                 - units.each do |unit|
@@ -357,6 +359,21 @@
                           %i.far.fa-heart
                         %a.hide{:href => "##"}
                           %i.fa.fa-heart
+                  .modal-wrapper-mobile.hidden{style: "overflow: hidden"}
+                    -# = render partial: "image_with_zoom_controls"
+                    .c-modal-body#zoomable-modal-image
+                      .c-m-iframe-content
+                        %img#responsive-floorplan-image{:src => "/assets/default.jpeg", :title => ""}/
+                  .c-modal-footer.zooming-content.zoomable-map-container
+                    %a.plus-action.zooming-action.zoom-in-modal.zoom-controls{:href => "#"}
+                      -# %i.fa.fa-plus
+                      %img{:src => "/assets/plus.png"}/
+                    %a.minus-action.zooming-action.zoom-out-modal.zoom-controls{:href => "#"}
+                      -# %i.fa.fa-minus
+                      %img{:src => "/assets/minus.png"}/
+                    %a.refresh-action.zooming-action.reset-modal.zoom-controls{:href => "#"}
+                      -# %i.fa.fa-refresh
+                      %img{:src => "/assets/refresh.png"}/
                   .module-info
                     %ul.module-list
                       %li
@@ -381,34 +398,36 @@
                     %span.available-heading#available-text
                     %b
                       %span#popup-available-date
-                  .availabilty-container
-                    %span.text-left.available-info 
-                    %span#available-date
+                  
+                  #unit-lease-pricing-text-li.availabilty-container
+                    %span.text-left.available-info
+                    -# %span#available-date
+                    -# - if @community.display_rent
+                    -#   %b
+                    -#     %span#market-rent{style: "margin-left: 4%;"}
+                    -# - binding.pry
                     - if @community.display_rent
-                      %b
-                        %span#market-rent{style: "margin-left: 4%;"}
-                    %span.text-right.available-info#leas-price-option
+                      %span#first-unit-lease-pricing
+                      #pricing-option.hidden
+                        -# %h4.des-heading Pricing Options
+                        %div{style: "max-height: 6em; overflow-y: auto;"}
+                          %span#unit-lease-pricing
+                    %span.text-right.show-more-option.available-info#leas-price-option
                       %a.show-more#show-more-price Show more prices
                       %a.show-more#hide-more-price.hidden Hide more prices
                   .c-modal-sidebar-description
                     %h4.des-heading Description
                     %p.c-m-description#unit-description
 
-                    - if @community.display_rent
-                      #pricing-option.hidden
-                        %h4.des-heading Pricing Options
-                        %div{style: "max-height: 6em; overflow-y: auto;"}
-                          %span#unit-lease-pricing
-
                   %div{style: "padding: 0px 0px 8px 7px"}
                     .unit-buttons
                   .c-modal-sidebar-filters
                     - if @community_info.credential.present? and @community_info.credential.apply_now.to_s == "true"
                       .m-filters
-                        - if @community_info.data_provider == "resman"
+                        - if @community_info.data_provider == "resman" #|| @community_info.data_provider == "realpagesvc"
                           .m-filter-2.c-m-filter
                             %label Lease Term
-                            %input.c-m-input-control#lease-term{:type => "number", :min => "1", :max => "36", :value => "12"}/
+                            = select_tag :lease_term , options_for_select([]),{:id => "lease_term", :class=>"lease-term-custom-select", :include_blank => "All "}
                         - if @community_info.data_provider == "psi" || @community_info.data_provider == "realpagesvc" || @community_info.data_provider == "resman"
                           .m-filter-1.c-m-filter
                             %label= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
@@ -437,20 +456,13 @@
                         - if @community.display_rent
                           %span.c-m-total-price#total-market-rent
                         %a.apply-now.apply_now{:href => @community_info.credential.separate_link,:target => "_blank" } Apply Now
+                    - else
+                      .disabaled-apply-now
+                        - if @community.display_rent
+                          %span.c-m-total-price#total-market-rent
               .c-modal-wrapper
-                .c-modal-body#zoomable-modal-image
-                  .c-m-iframe-content
-                    %img#floorplan-image{:src => "/assets/default.jpeg", :title => ""}/
-                .c-modal-footer.zooming-content.zoomable-map-container
-                  %a.plus-action.zooming-action.zoom-in-modal.zoom-controls{:href => "#"}
-                    -# %i.fa.fa-plus
-                    %img{:src => "/assets/plus.png"}/
-                  %a.minus-action.zooming-action.zoom-out-modal.zoom-controls{:href => "#"}
-                    -# %i.fa.fa-minus
-                    %img{:src => "/assets/minus.png"}/
-                  %a.refresh-action.zooming-action.reset-modal.zoom-controls{:href => "#"}
-                    -# %i.fa.fa-refresh
-                    %img{:src => "/assets/refresh.png"}/
+                = render partial: "image_with_zoom_controls"
+                
     - else
       .alert.alert-danger Community is Inactivated.    
 -# %button.btn.btn-sm.btn-primary.top-arrow
@@ -495,66 +507,11 @@
 #communityWebpagesData{ data: {community: @community.to_json, amenities: @amenities.to_json} }
 
 :javascript
-
-  /*$('#unitModal').on('hidden.bs.modal', function () {
-    $(".divLoading").removeClass("hidden");
-    location.reload()
-  })*/
-
-  var slides_to_show = 4;
-  var slides_to_scroll = 1;
-  $(window).on('resize', function(){
+  /*$(window).on('resize', function() {
     $(".divLoading").removeClass("hidden");
     window.location.reload();
-  var win = $(this);
-  
-  /*if (window_height < 900){
-    slides_to_show = 4;
-  }*/
 
-  if ($("#slider")[0]){
-    const $slider = $("#slider");
-    $slider
-      .on('init', () => {
-        mouseWheel($slider)
-      })
-      .slick({
-        dots: false,
-        slidesToShow: slides_to_show,
-        slidesToScroll: slides_to_scroll,
-        vertical: true,
-        infinite: false,
-        speed: 6,
-        prevArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-        nextArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right'></i></div>"
-
-        //dots: false,
-        //slidesToShow: slides_to_show,
-        //slidesToScroll: slides_to_show,
-        //vertical: true,
-        //infinite: false,
-        //speed: 6,
-        //prevArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-up"></i></button>',
-        //nextArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-down"></i></button>'
-      })
-    function mouseWheel($slider) {
-      $('#slider').on('wheel', { $slider: $slider }, mouseWheelHandler)
-    }
-    function mouseWheelHandler(event) {
-      event.preventDefault()
-      const $slider = event.data.$slider
-      const delta = event.originalEvent.deltaY
-      if(delta > 0) {
-        $slider.slick('slickNext')
-      }
-      else {
-        $slider.slick('slickPrev')
-      }
-    }
-
-  }
-
-  /*if (win.width() >= 568) {
+    if (win.width() >= 568) {
     $('#slider').slick('unslick');
     $("#slider").slick({
       dots: false,
@@ -566,9 +523,9 @@
       prevArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
       nextArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right'></i></div>"
     });
-    } else*/
+    } else
     if (win.width() <= 567) {
-    $('#slider').slick('unslick');
+    //$('#slider').slick('unslick');
     $("#slider").slick({
       dots: false,
       slidesToShow: slides_to_show,
@@ -582,63 +539,37 @@
           "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
     });
     };
-  if ($(window).width() >= 568) {
-    $("#slider").slick({
-      dots: false,
-      slidesToShow: slides_to_show,
-      slidesToScroll: slides_to_scroll,
-      vertical: true,
-      infinite: false,
-      //speed: 6,
-      prevArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-      nextArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right'></i></div>"
-    });
-  }else{
-    $("#slider").slick({
-      dots: false,
-      slidesToShow: slides_to_show,
-      slidesToScroll: slides_to_scroll,
-      vertical: false,
-      infinite: false,
-      //speed: 6,
-      prevArrow:
-          "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
-      nextArrow:
-        "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
-    });
-  }
-  })
-
-  $(".slider_class").click(function(){
-    try {
-    // localStorage.setItem("floorNo", $("#slider li a.selected").parent().parent().parent().index());
-    //localStorage.getItem("floorNo").addClass("selected");
-    var i = $("#slider li a.selected").parent().parent().parent().index()
-    $(".digits-list-item").removeClass("selected");
-    $($(this).find(".digits-list-item")[i]).addClass("selected");
-    }
-    catch(err) {
-    }
-
-  });
-
-  $(document).ready(function () {
-    $("#max_price_responsive").html("Select Max Price");
-    $("#sq_feet_responsive").html("Select Sq Feet");
-    $("#unit_availability").html("All");
-    $("#bedroom_responsive").html("All");
-
-    $(".mobile-trigger").click(function(){
-      $(this).next('.mobile-filter-mega-menu').slideToggle();
+    /*if ($(window).width() >= 568) {
+      $("#slider").slick({
+        dots: false,
+        slidesToShow: slides_to_show,
+        slidesToScroll: slides_to_scroll,
+        vertical: true,
+        infinite: false,
+        //speed: 6,
+        prevArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+        nextArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right'></i></div>"
       });
-
+    }
+    else{
+      $("#slider").slick({
+        dots: false,
+        slidesToShow: slides_to_show,
+        slidesToScroll: slides_to_scroll,
+        vertical: false,
+        infinite: false,
+        //speed: 6,
+        prevArrow:
+            "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+        nextArrow:
+          "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+      });
+    }
   });
-
-
-  //$(window).on('resize', function() {
-  //$(".divLoading").removeClass("hidden");
-  //window.location.reload();
-  //});
+  /*$('#unitModal').on('hidden.bs.modal', function () {
+    $(".divLoading").removeClass("hidden");
+    location.reload()
+  })*/
 
   function iOSversion() {
 
@@ -764,11 +695,190 @@
       ele[i].children[0].style.fontSize = (#{marker_font_size} / (2800 / $(window).width())  )
     }
   }
+  
+  //$(window).on('resize', function(){
+   
+  var slides_to_show = 4;
+  var slides_to_scroll = 1;
+  var $slider = $("#slider");
+  
+  /*if (window_height < 900){
+    slides_to_show = 4;
+  }*/
 
+  $(window).on('resize', function(){
+    var win = $(this);
+    $(".divLoading").removeClass("hidden");
+    window.location.reload();
+    if (win.width() >= 568) {
+      $('#slider').slick('unslick');
+      $slider.on('init', () => {
+        mouseWheel($slider)
+      }).slick({
+        infinite: false,
+        slidesToShow: 4,
+        slidesToScroll: 1,
+        vertical: true,
+        //speed: 6,
+        prevArrow:
+          "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+        nextArrow:
+          "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+      });
+    } else if (win.width() <= 567) {
+      $('#slider').slick('unslick');
+      $slider.on('init', () => {mouseWheel($slider)}).slick({
+        infinite: false,
+        slidesToShow: 3,
+        slidesToScroll: 1,
+        vertical: false,
+        speed: 6,
+        prevArrow:
+          "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+        nextArrow:
+          "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+      });
+    }
+  });
+    
+  if ($("#slider")[0]){
+    if ($(window).width() >= 568) {
+      $slider.on('init', () => {
+        mouseWheel($slider)
+      }).slick({
+        infinite: false,
+        slidesToShow: 4,
+        slidesToScroll: 1,
+        vertical: true,
+        speed: 6,
+        prevArrow:
+          "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+        nextArrow:
+          "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+      });
+    }else{
+      $slider.on('init', () => {
+        mouseWheel($slider)
+      }).slick({
+        infinite: false,
+        slidesToShow: 3,
+        slidesToScroll: 1,
+        vertical: false,
+        speed: 6,
+        prevArrow:
+          "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+        nextArrow:
+          "<div class='product-single__thumb-arrow product-single__thumb-arrow_right'><i class='fa fa-angle-right'></i></div>",
+      });
+    }
+
+    function mouseWheel($slider) {
+      $('#slider').on('wheel', { $slider: $slider }, mouseWheelHandler)
+    }
+    function mouseWheelHandler(event) {
+      event.preventDefault()
+      const $slider = event.data.$slider
+      const delta = event.originalEvent.deltaY
+      if(delta > 0) {
+        $slider.slick('slickNext')
+      }
+      else {
+        $slider.slick('slickPrev')
+      }
+    }
+  }
+
+    $(".slider_class").click(function(){
+      try {
+        //debugger
+        // localStorage.setItem("floorNo", $("#slider li a.selected").parent().parent().parent().index());
+        //localStorage.getItem("floorNo").addClass("selected");
+        var i = $("#slider li a.selected").parent().parent().parent().index()
+        $(".digits-list-item").removeClass("selected");
+        $($(this).find(".digits-list-item")[i]).addClass("selected");
+        }
+        catch(err) {
+        }
+    });
+
+  $(document).ready(function () {
+    $("#max_price_responsive").html("Select Max Price");
+    $("#sq_feet_responsive").html("Select Min Sq Feet");
+    $("#unit_availability").html("All");
+    $("#bedroom_responsive").html("All");
+    //debugger
+    //$('.c-modal-wrapper').removeClass("hidden");
+    
+    $(".mobile-trigger").click(function(){
+      $(this).next('.mobile-filter-mega-menu').slideToggle();
+    });
+
+    if ($(window).width() <= 767){
+      $('.modal-wrapper-mobile').removeClass("hidden");
+      $('.c-modal-wrapper').addClass("hidden");
+    }
+  });
+
+  $("#show-more-price").click(function(){
+    $('#show-more-price').addClass('hidden');
+    $('#hide-more-price').removeClass('hidden');
+    $("#pricing-option").removeClass('hidden')
+  });
+
+  $("#hide-more-price").click(function(){
+    $('#hide-more-price').addClass('hidden');
+    $('#show-more-price').removeClass('hidden');
+    $("#pricing-option").addClass('hidden')
+  });
+  /*if ($("#slider")[0]){
+    const $slider = $("#slider");
+    $slider
+      .on('init', () => {
+        mouseWheel($slider)
+      })
+      .slick({
+        dots: false,
+        slidesToShow: slides_to_show,
+        slidesToScroll: slides_to_scroll,
+        vertical: true,
+        infinite: false,
+        speed: 6,
+        prevArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
+        nextArrow: "<div class='btn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right'></i></div>"
+
+        //dots: false,
+        //slidesToShow: slides_to_show,
+        //slidesToScroll: slides_to_show,
+        //vertical: true,
+        //infinite: false,
+        //speed: 6,
+        //prevArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-up"></i></button>',
+        //nextArrow: '<button class="btn view-btn-arrow btn-sm btn-block"><i class="fa fa-angle-double-down"></i></button>'
+      })
+    function mouseWheel($slider) {
+      $('#slider').on('wheel', { $slider: $slider }, mouseWheelHandler)
+    }
+    function mouseWheelHandler(event) {
+      event.preventDefault()
+      const $slider = event.data.$slider
+      const delta = event.originalEvent.deltaY
+      if(delta > 0) {
+        $slider.slick('slickNext')
+      }
+      else {
+        $slider.slick('slickPrev')
+      }
+    }
+
+  }*/
+  //})  
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
-  $(".datepicker").datepicker({dateFormat: 'mm/dd/yy' });
-
+  //$(".datepicker").datepicker({dateFormat: 'mm/dd/yy' });
+  $('.datepicker').datepicker({
+    dateFormat: 'mm/dd/yy',
+    minDate: new Date()
+  });
   var has_floorplate = "#{@community_info.has_floorplates?}";
   var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 0}";
   var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";
@@ -890,15 +1000,3 @@
     }, 1000);
 
   }*/
-
-  $("#show-more-price").click(function(){
-    $('#show-more-price').addClass('hidden');
-    $('#hide-more-price').removeClass('hidden');
-    $("#pricing-option").removeClass('hidden')
-  });
-
-  $("#hide-more-price").click(function(){
-    $('#hide-more-price').addClass('hidden');
-    $('#show-more-price').removeClass('hidden');
-    $("#pricing-option").addClass('hidden')
-  });

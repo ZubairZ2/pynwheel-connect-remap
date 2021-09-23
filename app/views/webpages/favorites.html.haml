@@ -42,136 +42,150 @@
     / Main content
     = render partial: "/messages"
     %section.is-favorites
-    %a#favoriteclickme{href: "#"} Share and Clear
-    .mydiv_fav
-      .select-list.select-list-fav
-        = hidden_field_tag :maps_community_id, @community.id
-        .need-to{:style=>"text-align: center;"}
-          -if @community.logo.present?
-            = image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :style => "width: 150px; padding: 1px 0px 5px 4px"
-        .need-to
-          %h3 Want to add favorites?
-          %p{:style => "margin-bottom: 20px"} Explore available floor plans on the interactive site map.
-          = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary apply-now btn-block btn-lg",:target => "pynwheel_iframe"
-        .need-to
-          %h3 Want to share your list?
-          %p{:style => "margin-bottom: 20px"} Click the share button and share your favorites link
-          %button.btn.btn-primary.btn-block.btn-lg.apply-now.share-favorite{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share 
-        .need-to
-          %h3 Need to pare down your list?
-          %p{:style => "margin-bottom: 20px"} Tap the heart to remove an item from the page, or click the clear button below to remove all items.
-          %button.btn.btn-primary.btn-block.btn-lg.apply-now{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
-        - if @community.self_tour && @community.scheduler_widget
+      -# %a#favoriteclickme{href: "#"} Share and Clear
+      .mydiv-fav
+        .select-list.select-list-fav
+          = hidden_field_tag :maps_community_id, @community.id
+          .need-to{:style=>"text-align: center;"}
+            -if @community.logo.present?
+              = image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :style => "width: 150px; padding: 1px 0px 5px 4px"
+          - if @units.present?
+            .need-to
+              %h3 Want to add favorites?
+              %p{:style => "margin-bottom: 20px"} Explore available floor plans on the interactive site map.
+              = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary apply-now btn-block btn-lg",:target => "pynwheel_iframe"
           .need-to
-            %h3 Want to schedule a tour?
-            %p{:style => "margin-bottom: 20px"} Click the schedule a tour below button and schedule a tour.
-            = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary apply-now btn-block btn-lg", :target=> "_blank"
-        %span.logo-lg{:style => "text-align: center;"}
-          %img{:alt => "", :src => '/assets/pynwheel-logo.png' , :title => "",:class => "pynwheel-logo-at-sidebar-bottom"}
-      - if @units.nil?
-        %b{:style => "color: #FFFFFF; position: relative; top: 350px; left: 45%;"} You have no favorites
-      - if !@units.present? && @units.count == 0
-        %b{:style => "color: #FFFFFF; position: relative; top: 350px; left: 45%;"} You have no favorites
-      .c-connect-map-wrapper
-        .c-modal-body-content
-          - @units = [] if @units.nil?
-          - @units.each do |unit|
-            - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
-            .map-slide-item
-              .c-modal-header
-                %h5.c-modal-title 
-                  = unit.unit_market
-                %button.c-close{:type => "button"}
-                  .plan-image-pop
-                    .icon-heart
-                      %a{"data-href"=> "/communities/#{@community.id}/webpages/delete_favorite?unit_id=#{unit.id}&from_favorites=true",href: "##",onclick: "deleteFavorite(this);"}
-                      %i.fa.fa-heart#fav-icon-tag
-              .c-modal-sidebar
-                .c-modal-sidebar-inner
-                  .modal-sidebar-title
-                    %h1.section-title 
-                      = floorplan.present? ? floorplan.name : nil
-                  .module-info
-                    %ul.module-list
-                      %li
-                        %b
-                          %img{:src => "/assets/bedroom-icon.png"}/
-                          %b= floorplan.present? ? floorplan.bedrooms : nil
-                        = "#{bedroom_text(floorplan)}" if floorplan.present?
-                      %li
-                        %b
-                          %img{:src => "/assets/bathroom-icon.png"}/
-                          %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
-                        = "#{bathroom_text(floorplan)}" if floorplan.present?
-                      %li
-                        %b
-                          %img{:src => "/assets/sq-feet-icon.png"}/
-                          %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil 
-                        Sq Feet
-                  .availabilty-container-start
-                    %span.available-heading= unit.availability == "Unoccupied" ? "Available" : ""
-                    %b
-                      %span{style: "margin-left: 4%"}= unit.available_date.strftime("%m/%d/%Y")
-                  .availabilty-container
-                    = unit.available_date.strftime("%m/%d/%Y")
-                    %b
-                      %span{style: "margin-left: 4%"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"                       
-                    %span.text-right.available-info{:id => "#{unit.id}-leas-price-option"}
-                      %a.show-more.show-more-option{:id => "#{unit.id}-show-more-option"} Show more prices
-                      %a.show-more.hide-more-option.hidden{:id => "#{unit.id}-hide-more-option"} Hide more prices
-                  .c-modal-sidebar-description
-                    %h4.des-heading Description
-                    %p.c-m-description= unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")
-
-                    - if @community.display_rent
-                      %div.pricing-option-for-fav.hidden{:id => "#{unit.id}-pricing-option-for-fav"}
-                        %h4.des-heading Pricing Options
-                        %span{:id => "#{unit.id}-lease-pricing"}= unit.lease_pricing
-                  -# .c-modal-sidebar-filters
-                  - if @community.credential.present? and @community.credential.apply_now.to_s == "true"
-                    .c-modal-sidebar-filters
-                      .m-filters
-                        - if @community.data_provider == "resman"
-                          .m-filter-2.c-m-filter
-                            %label Lease Term
-                            %input.c-m-input-control#lease-term{:type => "number", :min => "1", :max => "36", :value => "12"}/
-                        - if @community.data_provider == "psi" || @community.data_provider == "realpagesvc" || @community.data_provider == "resman"
-                          .m-filter-1.c-m-filter
-                            %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                            %input.c-m-input-control.datepicker#leasing-start-date{:type => "text", :style => "display: block !important", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/
-                      .filter-action
-                        - if @community.data_provider == "realpagesvc"
-                          - if @community.display_rent
-                            %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                          = link_to "Apply Now","##",:onclick=>"set_realpagesvc_url(this);",:id=>"realpagesvc-anchor-tag", class: "apply-now apply_now"
-                        - elsif @community.data_provider == "resman"
-                          - if @community.display_rent
-                            %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                          = link_to "Apply Now", "##",:onclick=>"set_resman_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
-                          
-                        - else
-                          - if @community.display_rent
-                            %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                          = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
-                  - elsif @community.credential.present? and @community.credential.apply_now.to_s == "separate_link"
-                    .m-filters
-                      .m-filter-1.c-m-filter
-                        %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                        %input.m-filter-1.c-m-filter.datepicker#leasing-start-date{:type => "text", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/
-                    .filter-action
+            %h3 Want to share your list?
+            %p{:style => "margin-bottom: 20px"} Click the share button and share your favorites link
+            %button.btn.btn-primary.btn-block.btn-lg.apply-now.share-favorite{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share 
+          .need-to
+            %h3 Need to pare down your list?
+            %p{:style => "margin-bottom: 20px"} Tap the heart to remove an item from the page, or click the clear button below to remove all items.
+            %button.btn.btn-primary.btn-block.btn-lg.apply-now{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
+          - if @community.self_tour && @community.scheduler_widget
+            .need-to
+              %h3 Want to schedule a tour?
+              %p{:style => "margin-bottom: 20px"} Click the schedule a tour below button and schedule a tour.
+              = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary apply-now btn-block btn-lg", :target=> "_blank"
+          %span.logo-lg{:style => "text-align: center;"}
+            %img{:alt => "", :src => '/assets/pynwheel-logo.png' , :title => "",:class => "pynwheel-logo-at-sidebar-bottom"}
+        - if @units.nil? || !@units.present? && @units.count == 0
+          = render partial: "empty_favorites_page"
+        .c-connect-map-wrapper
+          .c-modal-body-content
+            - @units = [] if @units.nil?
+            - @units.each do |unit|
+              - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
+              .map-slide-item
+                .c-modal-header
+                  %h5.c-modal-title 
+                    = unit.unit_market
+                  %button.c-close{:type => "button"}
+                    .plan-image-pop
+                      .icon-heart
+                        %a{"data-href"=> "/communities/#{@community.id}/webpages/delete_favorite?unit_id=#{unit.id}&from_favorites=true",href: "##",onclick: "deleteFavorite(this);"}
+                        %i.fa.fa-heart#fav-icon-tag
+                .c-modal-sidebar
+                  .c-modal-sidebar-inner
+                    .modal-sidebar-title
+                      %h1.section-title 
+                        = floorplan.present? ? floorplan.name : nil
+                    .c-modal-wrapper.modal-image-fav.hidden
+                      .c-m-iframe-content
+                        = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplan/image/27780/27780-1628027365-2705856e-file.jpeg")
+                      -# .c-modal-wrapper
+                      -#   .c-m-iframe-content
+                    .module-info
+                      %ul.module-list
+                        %li
+                          %b
+                            %img{:src => "/assets/bedroom-icon.png"}/
+                            %b= floorplan.present? ? floorplan.bedrooms : nil
+                          = "#{bedroom_text(floorplan)}" if floorplan.present?
+                        %li
+                          %b
+                            %img{:src => "/assets/bathroom-icon.png"}/
+                            %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
+                          = "#{bathroom_text(floorplan)}" if floorplan.present?
+                        %li
+                          %b
+                            %img{:src => "/assets/sq-feet-icon.png"}/
+                            %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil 
+                          Sq Feet
+                    .availabilty-container-start
+                      %span.available-heading= unit.availability == "Unoccupied" ? "Available" : ""
+                      %b
+                        %span{style: "margin-left: 4%"}= unit.available_date.strftime("%m/%d/%Y")
+                    .availabilty-container{:id => "#{unit.id}-unit-lease-pricing-text-li", :style=>"display: flex; flex-direction: column;"}
+                      -# = unit.available_date.strftime("%m/%d/%Y")
+                      -# %b
+                      -#   %span{style: "margin-left: 4%"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"                
+                      %span.available-info{:id => "#{unit.id}-leas-price-option"}
                       - if @community.display_rent
-                        %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                      %a.apply-now.apply_now{:href => @community.credential.separate_link,:target => "_blank" } Apply Now
-              .c-modal-wrapper
-                .c-m-iframe-content
-                  = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")
-                -# .c-modal-footer.zooming-content
-                -#   %span.plus-action.zooming-action
-                -#     %img{:src => "/assets/plus.png"}/
-                -#   %span.minus-action.zooming-action
-                -#     %img{:src => "/assets/minus.png"}/
-                -#   %span.refresh-action.zooming-action
-                -#     %img{:src => "/assets/refresh.png"}/
+                        %span{:id => "#{unit.id}-first-unit-lease-pricing"}
+                      %div.show-pricing-options
+                        %span.available-info
+                          %a.show-more.show-more-option-fav{:id => "#{unit.id}-show-more-option-fav"} Show more prices
+                          %a.show-more.hide-more-option.hidden{:id => "#{unit.id}-hide-more-option"} Hide more prices
+                      .pricing-option-for-fav.hidden{:id => "#{unit.id}-pricing-option-for-fav"}
+                        %div{style: "max-height: 6em; overflow-y: auto;"}
+                          %span{:id => "#{unit.id}-lease-pricing"}= unit.lease_pricing
+                      
+                    .c-modal-sidebar-description
+                      %h4.des-heading Description
+                      %p.c-m-description= unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")
+                    -# .c-modal-sidebar-filters
+                    - if @community.credential.present? and @community.credential.apply_now.to_s == "true"
+                      .c-modal-sidebar-filters.sidebar-footer
+                        .m-filters
+                          - if @community.data_provider == "resman" #|| @community.data_provider == "realpagesvc"
+                            .m-filter-2.c-m-filter
+                              %label Lease Term
+                              -# %input.c-m-input-control#lease-term{:type => "number", :min => "1", :max => "36", :value => "12"}/
+                              = select_tag :lease_term , options_for_select([]),{:id => "#{unit.id}-lease_term", :class=>"lease-term-custom-select", :include_blank => "All "}
+                          - if @community.data_provider == "psi" || @community.data_provider == "realpagesvc" || @community.data_provider == "resman"
+                            .m-filter-1.c-m-filter
+                              %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
+                              %input.c-m-input-control.datepicker#leasing-start-date{:type => "text", :style => "display: block !important", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/
+                        .filter-action
+                          - if @community.data_provider == "realpagesvc"
+                            - if @community.display_rent
+                              %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                            = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank", class: "apply-now apply_now"
+                            -# = link_to "Apply Now","##",:onclick=>"set_realpagesvc_url(this);",:id=>"realpagesvc-anchor-tag", class: "apply-now apply_now"
+                          - elsif @community.data_provider == "resman"
+                            - if @community.display_rent
+                              %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                            = link_to "Apply Now", "##",:onclick=>"set_resman_url_on_favorites(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
+                            
+                          - else
+                            - if @community.display_rent
+                              %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
+                            -# = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
+                    - elsif @community.credential.present? and @community.credential.apply_now.to_s == "separate_link"
+                      .m-filters
+                        .m-filter-1.c-m-filter
+                          %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
+                          %input.m-filter-1.c-m-filter.datepicker#leasing-start-date{:type => "text", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/
+                      .filter-action
+                        - if @community.display_rent
+                          %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                        %a.apply-now.apply_now{:href => @community.credential.separate_link,:target => "_blank" } Apply Now
+                    - else
+                      .disabaled-apply-now
+                        - if @community.display_rent
+                          %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                .c-modal-wrapper.h-class
+                  .c-m-iframe-content
+                    = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplan/image/27780/27780-1628027365-2705856e-file.jpeg")
+                  -# .c-modal-footer.zooming-content
+                  -#   %span.plus-action.zooming-action
+                  -#     %img{:src => "/assets/plus.png"}/
+                  -#   %span.minus-action.zooming-action
+                  -#     %img{:src => "/assets/minus.png"}/
+                  -#   %span.refresh-action.zooming-action
+                  -#     %img{:src => "/assets/refresh.png"}/
 #confirm-favorites-delete.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
@@ -194,55 +208,22 @@
         %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy to clipboard  
 
 :javascript
-  $(document).ready(function () {
-    $(".c-connect-map-wrapper .c-modal-body-content").slick({
-      infinite: true,
-      slidesToShow: 1,
-      slidesToScroll: 1,
-      vertical: false,
-      dots: true,
-      arrows: true,
-      prevArrow: "<div class='btn prevArrowBtn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left' style='font-size: 30px'></i></div>",
-      nextArrow: "<div class='btn nextArrowBtn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right' style='font-size: 30px'></i></div>"
-      //prevArrow:"<button type='button' class='pull-left'><i class='fa fa-angle-left' aria-hidden='true'></i></button>",
-      //nextArrow:"<button type='button' class='pull-right'><i class='fa fa-angle-right' aria-hidden='true'></i></button>"
-    });
-  });
-
   var data_provider = "#{@community.data_provider}"
   var units = "#{@fav_units_info}";
   units = units.replace(/&quot;/g,'"');
   units = JSON.parse(units);
-  /*for(var i = 0; i < units.length; i++) {
-    debugger
+  var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
+  var redirect_url = "#{community_webpages_url(@community)}"
 
-    $('#'+units[i].id+'-show-more-option').click(function(){
-      debugger
-      if(units[i] != "undefined"){
-        $('#'+units[i].id+'-show-more-option').addClass('hidden');
-        $('#'+units[i].id+'-hide-more-option').removeClass('hidden');
-        $('#'+units[i].id+'-pricing-option-for-fav').removeClass('hidden');
-      }
-    });
-
-    $('#'+units[i].id+'-hide-more-option').click(function(){
-      if(units[i] != "undefined"){
-        $('#'+units[i].id+'-hide-more-option').addClass('hidden');
-        $('#'+units[i].id+'-show-more-option').removeClass('hidden');
-        $('#'+units[i].id+'-pricing-option-for-fav').addClass('hidden');
-      }
-    });
-  }*/
-
-  $('.show-more-option').click(function(){
+  $('.show-more-option-fav').click(function(){
       
-    $('.show-more-option').addClass('hidden');
+    $('.show-more-option-fav').addClass('hidden');
     $('.hide-more-option').removeClass('hidden');
     $('.pricing-option-for-fav').removeClass('hidden');
   });
 
-    $('.hide-more-option').click(function(){
-        $('.hide-more-option').addClass('hidden');
-        $('.show-more-option').removeClass('hidden');
-        $('.pricing-option-for-fav').addClass('hidden');
-    });
+  $('.hide-more-option').click(function(){
+      $('.hide-more-option').addClass('hidden');
+      $('.show-more-option-fav').removeClass('hidden');
+      $('.pricing-option-for-fav').addClass('hidden');
+  });
