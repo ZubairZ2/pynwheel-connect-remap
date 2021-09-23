@@ -9,13 +9,13 @@ class KnockService < BaseService
     url = "#{ENV["KNOCK_BASE_URL"]}/prospect"
 
     response = HTTParty.post(url,
-      body: payload
+      body: payload.to_json,
       headers: { 
       'Content-Type' => 'application/json',
       'x-api-key' => @knock_api_key
       }
     )
-
+  
   rescue HTTParty::Error => e
     OpenStruct.new({success?: false, error: e, payload: nil})
   else
@@ -27,7 +27,7 @@ class KnockService < BaseService
     url = "#{ENV["KNOCK_BASE_URL"]}/appointment/request"
 
     response = HTTParty.post(url,
-      body: payload
+      body: payload,
       headers: {
       'Content-Type' => 'application/json',
       'x-api-key' => @knock_api_key
@@ -79,7 +79,7 @@ class KnockService < BaseService
     url = "#{ENV["KNOCK_BASE_URL"]}/visit"
 
     response = HTTParty.post(url,
-      body: payload
+      body: payload,
       headers: {
       'Content-Type' => 'application/json',
       'x-api-key' => @knock_api_key
