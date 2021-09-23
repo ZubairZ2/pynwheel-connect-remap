@@ -62,7 +62,7 @@ class Elevator < ApplicationRecord
   def self.fetch_elevator_according_to_floor(floors_ids, elevators_ids)
     elevator_floors = {}
     elevators_to_floors = {}
-    elevators = where(id: elevators_ids).where(building: "") # For no building means for only one building floor
+    elevators = where(id: elevators_ids) # Here no building check is applied
     elevators.each {|elevator| elevators_to_floors[elevator.id] = elevator.floors }
     elevators_to_floors.each do |elevator, ele_floors|
       ele_floors.each do |floor|
