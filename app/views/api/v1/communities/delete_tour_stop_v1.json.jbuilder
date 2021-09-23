@@ -912,6 +912,8 @@ json.tours @tours do |tour|
       floorplan_for_name = Floorplan.find_by(id: unit&.floorplan&.id)
       stop_dat = {"floorplan" => (floorplan_for_name.name rescue ""),"floorplan_full_name" => (floorplan_for_name.name + "- #{(floorplan_for_name.bedrooms.present? ? (floorplan_for_name.bedrooms.to_i.to_s + " BR") : "") } / #{(floorplan_for_name.bathrooms.present? ? (floorplan_for_name.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
       json.stop_data stop_dat
+      json.availability_url unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url
+
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       unit_amenities_hit = true
 
