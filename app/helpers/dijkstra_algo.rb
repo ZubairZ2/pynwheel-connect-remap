@@ -1,7 +1,7 @@
 module DijkstraAlgo
 	#ruby 2.3.1 recomended
 	class Graph
-  	attr_reader :graph, :nodes, :previous, :distance, :complete_path, :source, :elevator_path #getter methods
+  	attr_reader :graph, :nodes, :previous, :distance, :complete_path, :source, :elevator_path, :one_to_one_path #getter methods
     INFINITY = 1 << 64
   
     def initialize
@@ -187,6 +187,17 @@ module DijkstraAlgo
       @source = min_distance_node
     end
   
+    def from_one_point_to_move_other_point(source, destination_arr)
+      @one_to_one_path = []
+      @graph_paths = []
+      @source = source
+      dijkstra @source
+      @path=[]
+      min_distance_node = return_minimum_distance_node(destination_arr)
+      find_path min_distance_node
+      @one_to_one_path << @path
+      @source = min_distance_node
+    end
     # print result
   
     def print_result
