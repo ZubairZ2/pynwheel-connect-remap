@@ -299,8 +299,8 @@ module ShortestPath
         source = floors_graph[building][destination_floor_id].source
       end
     end # building loop end
-    binding.pry
-    return [], []
+    path_object_in_arr_order =  change_three_d_path_to_one_d_path(path_object_in_order)
+    return path_object_in_arr_order, @floors_ids
   end
   def return_path_for_mobile(new_stops_arr, community_id, path_type)
     fetch_related_data_according_to_mobile(new_stops_arr, community_id)
@@ -1770,5 +1770,17 @@ module ShortestPath
     end
     def building_starting_point_for_building(floor)
       @floors_ids.first == floor
+    end
+    def change_three_d_path_to_one_d_path(path_object_in_order)
+      path_objects = []
+      @building_list.each do |building|
+        @floors_ids.each do |floor|
+          path_objects << [building, floor, path_object_in_order[building]["upside_path_objects"][floor]]
+        end
+        @floors_ids.reverse.each do |floor|
+          path_objects << [building, floor, path_object_in_order[building]["downside_path_objects"][floor]]
+        end
+      end
+      path_objects
     end
 end

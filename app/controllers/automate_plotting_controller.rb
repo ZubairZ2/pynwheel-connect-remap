@@ -36,10 +36,12 @@ class AutomatePlottingController < ApplicationController
       @building_list = @community.fetch_building_list(sorted_building)
       if @building_list.count  < 2 # means there is only one building in floorplate community
         path_object_in_order, floor_ids = begin; return_path_for_floorplate(params[:community_id], params[:path_type]); rescue; []; end
+        is_multiple_buildings = false
       else # means this community is a multiple building property
         path_object_in_order, floor_ids = begin; return_floorplate_path_for_multiple_buildings(@building_list, params[:community_id], params[:path_type]); rescue; []; end
+        is_multiple_buildings = true
       end        
-      response = {path_object: path_object_in_order.to_json, floor_ids: floor_ids.to_json}
+      response = {path_object: path_object_in_order.to_json, floor_ids: floor_ids.to_json, is_multiple_buildings: is_multiple_buildings}
     end
     render :json => response, :status => 200
   end

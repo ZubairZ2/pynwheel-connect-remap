@@ -6,7 +6,7 @@
 // var algo_amenity_data = [];
 // var algo_access_point_data = [];
 // var start_point_data = {};
-var stops_type_arr = ["unit", "amenity", "elevator"]
+var stops_type_arr = ["unit", "amenity", "elevator", "building_starting_exit_point"]
 var tmp_id = 0;
 var cntrlIsPressed = false;
 var xpos;
@@ -561,6 +561,8 @@ function initialize_map_click(map_id){
       return [shortest_path_obj["door_x_plot"] + 8, shortest_path_obj["door_y_plot"] + 8, 'amenity']
     else if (shortest_path_obj['point_type'] == 'building_starting_point')
       return [shortest_path_obj["building_starting_x_plot"] + 8, shortest_path_obj["building_starting_y_plot"] + 8, 'building_starting_point']
+    else if (shortest_path_obj['point_type'] == 'building_starting_exit_point')
+      return [shortest_path_obj["building_starting_exit_x_plot"] + 8, shortest_path_obj["building_starting_exit_y_plot"] + 8, 'building_starting_exit_point']
     else if (shortest_path_obj['point_type'] == 'elevator')
       return [shortest_path_obj["elevator_x_plot"] + 8, shortest_path_obj["elevator_y_plot"] + 8, 'elevator']
   }
@@ -659,6 +661,59 @@ function initialize_map_click(map_id){
               }
             }
             if (i == (Object.keys(path_object_in_order).length - 1) &&  j == (Object.keys(path_object_in_order[i][1]).length - 2))
+              enable_run_algo_btn()
+          };
+        }(i, j));
+      }
+    }
+  }
+  function click_specific_building_and_floor_if_required(now_building, now_floor, previous_building = null, previous_floor = null){
+    if (previous_building == null && previous_floor == null){
+      $('a[data-building_id="' + now_building + '"]').click();
+      $('a[data-floor_id="' + now_floor + '"]').click();
+    }else if (previous_building != now_building && previous_floor != now_floor){
+      $('a[data-building_id="' + now_building + '"]').click();
+      $('a[data-floor_id="' + now_floor + '"]').click();
+    }else if (previous_building == now_building && previous_floor != now_floor){
+      $('a[data-floor_id="' + now_floor + '"]').click();
+    }else if (previous_building != now_building && previous_floor == now_floor){
+      $('a[data-building_id="' + now_building + '"]').click();
+    }
+  }
+  function draw_shortest_path_for_floorplate_multiple_building_with_animation(path_object_in_order,floor_ids){
+    $('.building_btn_in_auto')[0].click()
+    $('.floor_btn')[0].click() // click first floor
+    $(".line").remove();
+    $(".line_hello").remove();
+    for (var i = 0; i < (path_object_in_order.length); i++) {
+      for (var j = 0; j < (Object.keys(path_object_in_order[i][2]).length - 1); j++) {
+        delayed(500, function (i, j) {
+          return function () {
+            if (i==0 && j==0)
+              click_specific_building_and_floor_if_required(path_object_in_order[i][0], path_object_in_order[i][0], null, null)
+            else if (j==0)
+              click_specific_building_and_floor_if_required(path_object_in_order[i][0], path_object_in_order[i][1], path_object_in_order[i - 1][0], path_object_in_order[i - 1][1])
+            x0_y0_and_type = return_x_y_values(path_object_in_order[i][2][j])
+            if (path_object_in_order[i][2][j+1]){
+              x1_y1_and_type = return_x_y_values(path_object_in_order[i][2][j+1])
+              x0 = x0_y0_and_type[0]
+              y0 = x0_y0_and_type[1]
+              x1 = x1_y1_and_type[0]
+              y1 = x1_y1_and_type[1]
+              x1_y1_type = x1_y1_and_type[2]
+              $("#" + path_object_in_order[i][0] +"_map_" + path_object_in_order[i][1]).line(x0, y0, x1, y1, {
+                  zindex: 99,
+                  color: '#ffa500',
+                  stroke: "5",
+                  style: "solid",
+                  class: "line_hello"
+              });
+              if (stops_type_arr.includes(x1_y1_type)){
+                $(".line").remove();
+                $(".line_hello").remove();
+              }
+            }
+            if (i == (Object.keys(path_object_in_order).length - 1) &&  j == (Object.keys(path_object_in_order[i][2]).length - 2))
               enable_run_algo_btn()
           };
         }(i, j));
@@ -793,11 +848,21 @@ function initialize_map_click(map_id){
             else
               draw_shortest_path(path_object)
           }else{
-            floor_ids = JSON.parse(data["floor_ids"])
-            if (with_animation)
-              draw_shortest_path_for_floorplate_with_animation(path_object, floor_ids)
-            else
-              draw_shortest_path_for_floorplate(path_object, floor_ids)
+            is_multiple_building_community = data["is_multiple_buildings"]
+            if (is_multiple_building_community){
+              floor_ids = JSON.parse(data["floor_ids"])
+              if (with_animation)
+                draw_shortest_path_for_floorplate_multiple_building_with_animation(path_object, floor_ids)
+              else
+                draw_shortest_path_for_floorplate_multiple_building(path_object, floor_ids)
+            }
+            else{
+              floor_ids = JSON.parse(data["floor_ids"])
+              if (with_animation)
+                draw_shortest_path_for_floorplate_with_animation(path_object, floor_ids)
+              else
+                draw_shortest_path_for_floorplate(path_object, floor_ids)
+            }
           }
         }
 
