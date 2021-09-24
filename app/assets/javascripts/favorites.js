@@ -44,8 +44,7 @@ $(document).ready(function(){
       nextArrow: "<div class='btn nextArrowBtn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right' style='font-size: 30px'></i></div>"
     });
 	}
-
-  if(units.length > 0 || units !== undefined){
+  if(units.length > 0){
     getLeasePricing();  
   }
   else{
@@ -116,6 +115,10 @@ function getLeasePricing(){
           $('.c-connect-map-wrapper').find('#'+units[x].id+'-first-unit-lease-pricing').html(first_lease_item);
           $('.c-connect-map-wrapper').find('#'+units[x].id+'-lease_term').html(leaseTermOptions);
           $(`${units[x].id}-lease_term option[value="${first_lease_item[0]+first_lease_item[1]+" months"}"]`).attr("selected", true);
+          // debugger
+          // $('.c-connect-map-wrapper').find('#'+units[x].id+'-leasing-start-date').attr("value", new Date(units[x].available_date))
+          $('.c-connect-map-wrapper').find('#'+units[x].id+'-leasing-start-date').datepicker('setDate', new Date(units[x].available_date));
+          $('.c-connect-map-wrapper').find('#'+units[x].id+'-leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: new Date(units[x].available_date)})
       }
     }
     catch(err) {
@@ -134,9 +137,9 @@ function set_psi_url_on_favorite(element){
 
 function set_resman_url_on_favorites(element)
 {
-  debugger
+  leaseTerm = $('.c-connect-map-wrapper').find('#'+$(element).data('unit-id')+'-lease_term').val().split(" months")[0]
   date = new Date($('#leasing-start-date').val())
-  var url = $(element).data('availability-url') + "&leaseTerm=" + $('#lease-term').val() + "&moveInDate=" + date.toISOString().split('T')[0]
+  var url = $(element).data('availability-url') + "&leaseTerm=" + leaseTerm + "&moveInDate=" + date.toISOString().split('T')[0]
   window.open(url, '_blank');
 }
 

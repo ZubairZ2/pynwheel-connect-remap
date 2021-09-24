@@ -1357,10 +1357,6 @@ function setModalAttributes(element) {
       $('#unitModal').find('#available-text').html('Available');
       $('#unitModal').find('#available-date').html($(element).data('available-date'));
       $('#popup-available-date').html($(element).data('available-date'));
-      // $('.datepicker').datepicker({
-      //   dateFormat: 'mm/dd/yy',
-      //   minDate: $(element).data('available-date')
-      // });
     } else {
       $('#unitModal').find('#availability').html($(element).data('availability') == "Unoccupied" ? "Available" : "Occupied");
       $('#unitModal').find('#available-text').html('Available');
@@ -1405,9 +1401,9 @@ function setModalAttributes(element) {
     $('#psi-anchor-tag').attr('data-floorplan-provider-id', $(element).data('floorplan-provider-id'));
     $('#psi-anchor-tag').attr('data-lease-term', $(element).data('lease-term'));
     $('#psi-anchor-tag').attr('data-availability-url', $(element).data('availability-url'));
-    $("#leasing-start-date").datepicker('setDate', new Date());
+    $("#leasing-start-date").datepicker('setDate', new Date($(element).data('available-date')));
+    $('#leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: new Date($(element).data('available-date'))})
   } else if (($(element).data('provider') === 'realpagesvc')) {
-    // console.log($(e.relatedTarget).data('unit-provider-id'));
     $('#realpagesvc-anchor-tag').attr('data-unit-provider-id', $(element).data('unit-provider-id'));
   }
 }
@@ -1479,7 +1475,8 @@ function _3dUnitModalDisplay() {
     $('#psi-anchor-tag').attr('data-floorplan-provider-id', _3dSelectedUnit.provider_floorplan_id);
     $('#psi-anchor-tag').attr('data-lease-term', _3dSelectedUnit.lease_term);
     $('#psi-anchor-tag').attr('data-availability-url', _3dSelectedUnit.availability_url);
-    $("#leasing-start-date").datepicker('setDate', new Date());
+    $("#leasing-start-date").datepicker('setDate', new Date(`${_3dDate[2]}/${_3dDate[1]}/${_3dDate[0]}`));
+    $('#leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: new Date(`${_3dDate[2]}/${_3dDate[1]}/${_3dDate[0]}`)})
   } else if (webCommunity.data_provider === 'realpagesvc') {
     $('#realpagesvc-anchor-tag').attr('data-unit-provider-id', _3dSelectedUnit.provider_unit_id);
   }

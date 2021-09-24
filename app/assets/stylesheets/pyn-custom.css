@@ -3647,7 +3647,9 @@ a#favoriteclickme {
         width: 100% !important;
     }
     .show-more-option {
-        position: unset !important;
+        /* position: unset !important; */
+        position: absolute !important;
+        right: 16px !important;
     }
     .c-modal-sidebar {
         float: none !important;

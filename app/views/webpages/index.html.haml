@@ -431,7 +431,7 @@
                         - if @community_info.data_provider == "psi" || @community_info.data_provider == "realpagesvc" || @community_info.data_provider == "resman"
                           .m-filter-1.c-m-filter
                             %label= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                            %input.c-m-input-control.datepicker#leasing-start-date{:type => "text", :style => "display: block !important", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/
+                            %input.c-m-input-control.datepicker#leasing-start-date{:type => "text", :style => "display: block !important", :readonly => "readonly"}/
                             -# %i.fa.fa-calendar#leasing-start-date-icon
                       .filter-action
                         - if @community_info.data_provider == "realpagesvc"
@@ -451,7 +451,7 @@
                       .m-filters
                         .m-filter-1.c-m-filter
                           %label= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                          %input.m-filter-1.c-m-filter.datepicker#leasing-start-date{:type => "text", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/
+                          %input.m-filter-1.c-m-filter.datepicker#leasing-start-date{:type => "text", :readonly => "readonly"}/
                       .filter-action
                         - if @community.display_rent
                           %span.c-m-total-price#total-market-rent
@@ -788,18 +788,18 @@
     }
   }
 
-    $(".slider_class").click(function(){
-      try {
-        //debugger
-        // localStorage.setItem("floorNo", $("#slider li a.selected").parent().parent().parent().index());
-        //localStorage.getItem("floorNo").addClass("selected");
-        var i = $("#slider li a.selected").parent().parent().parent().index()
-        $(".digits-list-item").removeClass("selected");
-        $($(this).find(".digits-list-item")[i]).addClass("selected");
-        }
-        catch(err) {
-        }
-    });
+  $(".slider_class").click(function(){
+    try {
+      //debugger
+      // localStorage.setItem("floorNo", $("#slider li a.selected").parent().parent().parent().index());
+      //localStorage.getItem("floorNo").addClass("selected");
+      var i = $("#slider li a.selected").parent().parent().parent().index()
+      $(".digits-list-item").removeClass("selected");
+      $($(this).find(".digits-list-item")[i]).addClass("selected");
+      }
+      catch(err) {
+      }
+  });
 
   $(document).ready(function () {
     $("#max_price_responsive").html("Select Max Price");
@@ -875,10 +875,6 @@
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
   //$(".datepicker").datepicker({dateFormat: 'mm/dd/yy' });
-  $('.datepicker').datepicker({
-    dateFormat: 'mm/dd/yy',
-    minDate: new Date()
-  });
   var has_floorplate = "#{@community_info.has_floorplates?}";
   var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 0}";
   var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";

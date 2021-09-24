@@ -146,7 +146,8 @@
                           - if @community.data_provider == "psi" || @community.data_provider == "realpagesvc" || @community.data_provider == "resman"
                             .m-filter-1.c-m-filter
                               %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                              %input.c-m-input-control.datepicker#leasing-start-date{:type => "text", :style => "display: block !important", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/
+                              %input.c-m-input-control.datepicker{:id => "#{unit.id}-leasing-start-date", :type => "text", :style => "display: block !important", :readonly => "readonly"}/ 
+                              -#:value=>unit.available_date.strftime("%m/%d/%Y")
                         .filter-action
                           - if @community.data_provider == "realpagesvc"
                             - if @community.display_rent
@@ -156,8 +157,8 @@
                           - elsif @community.data_provider == "resman"
                             - if @community.display_rent
                               %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                            = link_to "Apply Now", "##",:onclick=>"set_resman_url_on_favorites(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
-                            
+                            -# - binding.pry
+                            = link_to "Apply Now", "##",:onclick=>"set_resman_url_on_favorites(this);",:id=>"psi-anchor-tag","data-unit-id"=>(unit.id),"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-community-property-id"=>@community.credential.property_id, class: "apply-now apply_now"
                           - else
                             - if @community.display_rent
                               %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
@@ -167,7 +168,7 @@
                       .m-filters
                         .m-filter-1.c-m-filter
                           %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                          %input.m-filter-1.c-m-filter.datepicker#leasing-start-date{:type => "text", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y")}/
+                          %input.m-filter-1.c-m-filter.datepicker{:id => "#{unit.id}-leasing-start-date", :type => "text", :readonly => "readonly"}/
                       .filter-action
                         - if @community.display_rent
                           %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
