@@ -70,7 +70,11 @@ class Floorplate < ApplicationRecord
   end
 
   def fetch_elevators(floor, building = [nil,""]) # nil or empty string for 0 or no building
-    elevators = Elevator.where(community_id: community_id, building: building)
+    if (building == [nil, ""])
+      elevators = Elevator.where(community_id: community_id) # For temporary purpose we are fetching every building name elevators
+    else
+      elevators = Elevator.where(community_id: community_id, building: building)
+    end
     elevators = elevators.map {|elevator| elevator if elevator.floors.include?(floor) }.compact
     elevators
   end
