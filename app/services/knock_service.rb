@@ -15,6 +15,24 @@ class KnockService < BaseService
     add_knock_appointment_id(knock_appointment_response["appointment"]["id"])
   end
 
+  def cancel_knock_appointment
+    cancel_appointment(knock_api_key, @scheduled_tour.knock_appointment_id)  if is_knock_crm
+  end
+
+  def knock_crm
+    if is_knock_crm
+      case @scheduled_tour.property_tour_type
+      when "scheduled_tour"
+        create_knock_prospect
+        create_knock_appointment
+      when "unscheduled_self_tour"
+        create_knock_prospect
+      when "remote_tour"
+        create_knock_prospect
+      end
+    end
+  end
+
   private
 
   def add_knock_appointment_id appointment_id
@@ -96,7 +114,9 @@ class KnockService < BaseService
     case @scheduled_tour.tour_type
     when "guided_tour"
       "IN_PERSON"
-    when ("self_tour" or "virtual_tour")
+    when "self_tour"
+      "SELF_GUIDED"
+    when "virtual_tour"      
       "SELF_GUIDED"
     end  
   end

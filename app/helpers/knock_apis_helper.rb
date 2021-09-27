@@ -2,7 +2,6 @@ module KnockApisHelper
   # Create a prospect on knock crm
   def create_prospect knock_api_key, payload
     url = "#{ENV["KNOCK_BASE_URL"]}/prospect"
-    binding.pry
     response = HTTParty.post(url,
       body: payload.to_json,
       headers: { 
