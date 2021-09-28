@@ -1,0 +1,31 @@
+%script{:src => "https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"}
+%script{:src => "https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"}
+%script{:src => "https://timmywil.com/panzoom/demo/panzoom.js"}
+-#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
+= render '/font_awesome_v5'
+- content_for :title, "Plot Unit - Pynwheel"
+.divLoading.hidden
+%section.is-floorplate
+  .content
+    .title-heading.mb-25
+      %h4
+        %i.fa.fa-database
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+        = hidden_field_tag 'community_id', @community.id
+    %h4{:style => "color: grey;"}
+      %p
+        Select units to add a marker to the floorplate. If nothing appears in the list, then there are no additional units to add.
+      %p
+        Drag and drop markers to reposition them on the property map.
+      %p
+        Click "Grid" to add a grid overlay to the map to make positioning the plots easier.
+    - if @community.is_sitemap
+      = render 'sitemap'
+    - else 
+      = render 'floorplate_map'
+
+
+

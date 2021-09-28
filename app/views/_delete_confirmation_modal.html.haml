@@ -8,6 +8,16 @@
       .modal-footer
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
         %a.btn.btn-danger.btn-ok#delete_button{"data-method"=>"delete"} Delete
+#ajax-confirm-delete.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#record-name
+        
+      .modal-body#record-message
+        
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+        %a.btn.btn-danger.ajax-btn-delete Delete
 #confirm-delete-visitor.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content

@@ -1,0 +1,44 @@
+- if @community.theme_name.include?('gables')
+  - @marker_color = @community.design.property_map_color.present? ? @community.design.property_map_color : "#d37474"
+- elsif @community.theme_name == 'modernist'
+  - @marker_color = @community.design.modernist_map_marker_color == 'no color' || @community.design.modernist_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernist_map_marker_color
+- elsif @community.theme_name == 'futurist'
+  - @marker_color = @community.design.futurist_property_map_marker_color.present? ? @community.design.futurist_property_map_marker_color : "#d37474"
+- elsif @community.theme_name == 'expressionist'
+  - @marker_color = @community.design.expressionist_property_map_marker_color.present? ? @community.design.expressionist_property_map_marker_color : "#d37474"
+- elsif @community.theme_name == 'panther'
+  - @marker_color = @community.design.panther_property_map_marker_color.present? ? @community.design.panther_property_map_marker_color : "#d37474"
+- else
+  - @marker_color = 'rgba(247, 0, 0, 0.61)'
+-#-
+- if @community.theme_name.include?('gables')
+  - @fontsize = @community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : 30
+- elsif @community.theme_name == 'modernist'
+  - @fontsize = @community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size : 30
+- elsif @community.theme_name == 'futurist'
+  - @fontsize = @community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size : 30
+- elsif @community.theme_name == 'expressionist'
+  - @fontsize = @community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size : 30
+- elsif @community.theme_name == 'panther'
+  - @fontsize = @community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size : 30
+- else
+  - @fontsize = 30
+
+- @left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
+- @right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
+%span.hidden#left_margin #{@left_margin}
+%span.hidden#right_margin #{@right_margin}
+%span.hidden#font_size #{@fontsize}
+%span.hidden#marker_color #{@marker_color}
+
+- @door_fontsize     = @fontsize
+- @door_marker_color = "#3153d2"
+
+%span.hidden#door_fontsize #{@door_fontsize}
+%span.hidden#door_marker_color #{@door_marker_color}
+%span.hidden#active_x_plot 0
+%span.hidden#active_y_plot 0
+
+- @camera_font_size = @fontsize / 2
+- @marker_font_size2 = @fontsize
+- @camera_margin = (@marker_font_size2 <= 27 ? 3 : (@marker_font_size2 <= 30 ? 4 : (@marker_font_size2 <= 33 ? 5 : (@marker_font_size2 <= 35 ? 6 : 6))))
