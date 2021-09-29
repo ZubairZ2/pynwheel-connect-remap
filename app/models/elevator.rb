@@ -15,7 +15,9 @@ class Elevator < ApplicationRecord
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
   has_many :zerv_locks, as: :stop, dependent: :destroy
   has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
-  
+  has_many :igloohome_locks, as: :stop, dependent: :destroy
+  has_many :igloohome_guests, as: :guest_of_stop, dependent: :destroy
+
   validate :check_floorplate_covering_range
 
   scope :plotted_elevators, -> { where("x_plot > ? or y_plot > ?", 0, 0) }

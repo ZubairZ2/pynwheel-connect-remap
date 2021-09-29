@@ -29,7 +29,9 @@ class Tour < ApplicationRecord
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy # only for of starting point's latch locks
   has_many :zerv_locks, as: :stop, dependent: :destroy # only for of starting point's latch locks
   has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy # only for of starting point's latch locks
-
+  has_many :igloohome_locks, as: :stop, dependent: :destroy
+  has_many :igloohome_guests, as: :guest_of_stop, dependent: :destroy
+  
   after_create :define_opening_hours
 
   def define_opening_hours

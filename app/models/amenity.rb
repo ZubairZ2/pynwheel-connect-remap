@@ -39,7 +39,9 @@ class Amenity < ApplicationRecord
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
   has_many :zerv_locks, as: :stop, dependent: :destroy
   has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
-  
+  has_many :igloohome_locks, as: :stop, dependent: :destroy
+  has_many :igloohome_guests, as: :guest_of_stop, dependent: :destroy
+
   scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
   after_commit :populate_image_urls, on: [:create,:update]

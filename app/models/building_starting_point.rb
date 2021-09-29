@@ -10,6 +10,8 @@ class BuildingStartingPoint < ApplicationRecord
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
   has_many :zerv_locks, as: :stop, dependent: :destroy
   has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
+  has_many :igloohome_locks, as: :stop, dependent: :destroy
+  has_many :igloohome_guests, as: :guest_of_stop, dependent: :destroy
   
   def validate_building
   	bsp = BuildingStartingPoint.where(community_id: attributes["community_id"], building: attributes["building"]).where.not(id: self.id)
