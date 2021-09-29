@@ -28,7 +28,6 @@
     .box-footer
       - if current_community.igloohome.present?
         = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
+        = link_to "Delete all Existing Locks" , remove_igloohome_locks_community_igloohome_accounts_path(current_community) , :class=>"btn btn-danger", :method => :delete, :style=> "background-color: #dd4b39d4;"
       - else
         = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
-      - if @community.igloohome.present?
-        = link_to "Delete all Existing Locks" , remove_igloohome_locks_community_igloohome_accounts_path(current_community) , :class=>"btn btn-danger", :method => :delete, :style=> "background-color: #dd4b39d4;"

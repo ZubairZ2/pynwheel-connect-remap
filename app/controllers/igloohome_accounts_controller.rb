@@ -1,18 +1,12 @@
 class IgloohomeAccountsController < ApplicationController
-  before_action :set_community
-  before_action :set_igloohome
+  before_action :set_community, :only => [:create, :remove_igloohome_locks]
+  before_action :set_igloohome, :only => [:create]
+  after_action :import_igloohome_locks, :update_community_lock_provider, :only => [:create]
   
-  def new
-    @igloohome = Igloohome.new
-  end
-
   def create
     unless @igloohome
       @igloohome = Igloohome.new(igloohome_params)
       if @igloohome.save
-        # import_igloohome_csv_data
-        update_community_lock_provider
-
         flash[:notice] = "Igloohome credentails saved successfully"
       else
         flash[:error] = igloohome_error
@@ -20,9 +14,6 @@ class IgloohomeAccountsController < ApplicationController
     else
       @igloohome = Igloohome.find_by(community_id: @community.id)
       if @igloohome.update_attributes(igloohome_params)
-        # import_igloohome_csv_data
-        update_community_lock_provider
-
         flash[:notice] = "Igloohome credentails updated successfully"
       else
         flash[:error] = igloohome_error
@@ -33,15 +24,11 @@ class IgloohomeAccountsController < ApplicationController
   end
 
   def remove_igloohome_locks 
-    if @community.igloohome.present?
-      if @community.igloohome.igloohome_locks.present?
-        @community.igloohome.igloohome_locks.destroy_all
-        flash[:notice] = "Locks deleted successfully"
-      else
-        flash[:error] = "No locks are present"
-      end
+    if @community&.igloohome&.igloohome_locks.present?
+      @community.igloohome.igloohome_locks.destroy_all
+      flash[:notice] = "Locks deleted successfully"
     else
-      flash[:error] = "Credentials for igloohome are missing"
+      flash[:error] = "No locks are present"
     end
 
     redirect_to new_community_dwelo_path(@community)
@@ -49,15 +36,18 @@ class IgloohomeAccountsController < ApplicationController
 
   private
 
-  def import_igloohome_csv_data
-    # result = parse_csv(params[:file]) if params[:file].present?
+  def import_igloohome_locks
+    result = @igloohome.import_data(params[:file]) if params[:file].present?
+    binding.pry    
   end
 
   def update_community_lock_provider
     locks_provider = @community.multiple_locks_provider
-    locks_provider << "Igloohome" unless locks_provider.include?("Igloohome")
 
-    @community.update_columns(:multiple_locks_provider => locks_provider)
+    unless locks_provider.include?("Igloohome")
+      locks_provider << "Igloohome" 
+      @community.update_columns(:multiple_locks_provider => locks_provider)
+    end
   end
 
   def igloohome_error
