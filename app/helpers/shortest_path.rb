@@ -1775,10 +1775,10 @@ module ShortestPath
       path_objects = []
       @building_list.each do |building|
         @floors_ids.each do |floor|
-          path_objects << [building, floor, path_object_in_order[building]["upside_path_objects"][floor]]
+          path_objects << [building.parameterize.underscore, floor, path_object_in_order[building]["upside_path_objects"][floor]]
         end
         @floors_ids.reverse.each do |floor|
-          path_objects << [building, floor, path_object_in_order[building]["downside_path_objects"][floor]]
+          path_objects << [building.parameterize.underscore, floor, path_object_in_order[building]["downside_path_objects"][floor]]
         end
       end
       path_objects
