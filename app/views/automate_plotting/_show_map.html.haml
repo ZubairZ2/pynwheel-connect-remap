@@ -1,5 +1,5 @@
 - hide_floor = defined?(building) ? fetch_hidden_class_for_building_with_floors(@building_list, building, @floors, floor) : fetch_hidden_class_for_floors(@floors, floor)
-- floor_map_id = defined?(building) ? (building + "_floor_" + floor.to_s) : ("floor_" + floor.to_s)
+- floor_map_id = defined?(building) ? (building.parameterize.underscore + "_floor_" + floor.to_s) : ("floor_" + floor.to_s)
 %form.form-horizontal.floor_map{:id => floor_map_id, :class => hide_floor}
   .box-body.map-body-top
     .row
@@ -13,7 +13,7 @@
             %i.fa.fa-refresh
         .mapLoading.hidden
         .map-block{:style=>"position: relative;"}
-          - map_id = defined?(building) ? (building + "_map_" + floor.to_s) : ("map_" + floor.to_s)
+          - map_id = defined?(building) ? ("" + building.parameterize.underscore + "_map_" + floor.to_s) : ("map_" + floor.to_s)
           .plot-image{id: map_id }
             .grid-graph.hidden
             - floorplate = @floor_to_floorplate[floor]

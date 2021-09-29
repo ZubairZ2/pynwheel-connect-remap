@@ -276,7 +276,7 @@
                     %object{:data => "your.svg", :type => "image/svg+xml"}
                       = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
                   - else
-                    = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "#map"}
+                    = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
                     - if @community.tour.x_plot.to_i + @community.tour.y_plot.to_i > 0
                       = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.tour.x_plot}px; top:#{@community.tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.tour.id}/resetStartingPoint"
                   - community_units = @units.sort_by{|u| u.marketing_name}

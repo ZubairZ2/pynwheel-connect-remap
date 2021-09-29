@@ -7,7 +7,8 @@
       = hidden_field_tag "floor_to_floorplate_id" , @floor_to_floorplate_id.to_json
       = hidden_field_tag "floors" , @floors
       - if @building_list.length > 1
-        = hidden_field_tag "building_list" , @building_list
+        - building_list_underscore = @building_list.map {|building| building.parameterize.underscore }
+        = hidden_field_tag "building_list" , building_list_underscore
       = hidden_field_tag "hallways" , @hallways.to_json
 
 
@@ -19,7 +20,7 @@
       %h3 Select a Building
       .building_sortable#building_buttons
         - @building_list.each do |b|
-          %a.btn-default.building_btn_in_auto{:href => "javascript:void(0)", :style => "display: inline-block;width: auto; min-width: 33px; height: 25px;background: #{(@building_list.first == b ? "#49d849;" : "#e0e0e0;")} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;", "data-building_id" => "#{b}" } #{b}
+          %a.btn-default.building_btn_in_auto{:href => "javascript:void(0)", :style => "display: inline-block;width: auto; min-width: 33px; height: 25px;background: #{(@building_list.first == b ? "#49d849;" : "#e0e0e0;")} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;", "data-building_id" => "#{b.parameterize.underscore}" } #{b}
 
     - begin
       %h3 Select a Floor

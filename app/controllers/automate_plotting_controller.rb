@@ -145,7 +145,7 @@ class AutomatePlottingController < ApplicationController
       @building_list.each do |building|
         @floors.each do |floor|
           hallway_hash = { floor => make_sure_one_selected_hallway(@floor_to_floorplate[floor].hallways.order("id ASC")) }
-          @hallways[building] = @hallways[building].present? ? @hallways[building].merge(hallway_hash) : hallway_hash
+          @hallways[building.parameterize.underscore] = @hallways[building.parameterize.underscore].present? ? @hallways[building.parameterize.underscore].merge(hallway_hash) : hallway_hash
           community_unit_hash = { floor => @floor_to_floorplate[floor].units.where(building: building,floor: floor).where(id: planned_to_visit_units_ids).includes(:door) }
           @community_units[building] = @community_units[building].present? ? @community_units[building].merge(community_unit_hash) : community_unit_hash
           amenities_doors_hash = { floor => @floor_to_floorplate[floor].amenities.where(building: building, floor: floor).where(id: planned_to_visit_amenities_ids).includes(:doors) }
