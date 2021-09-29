@@ -131,6 +131,12 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :igloohome_accounts do
+      collection do
+        delete :remove_igloohome_locks
+      end
+    end
+
     resources :dwelos do
       collection do
         get :test_dwelo_connection
