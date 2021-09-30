@@ -158,7 +158,7 @@ class Community < ApplicationRecord
   amoeba do
     include_association :design
   end
-
+  
   def create_tour_also
     tour = self.create_tour if self.tour.nil?
     tour.create_tour_setting if tour.present? and tour.tour_setting.nil?
