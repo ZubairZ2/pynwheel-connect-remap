@@ -31,7 +31,7 @@ class Latch < ApplicationRecord
         notify_pusher({error: "Error in parsing " + "the uploaded CSV" + " file."})
       end
     ensure
-        execution_context.complete! if execution_context
+      execution_context.complete! if execution_context
     end
   end
 

@@ -2,7 +2,7 @@ class IgloohomeAccountsController < ApplicationController
   before_action :set_community, :only => [:create, :remove_igloohome_locks]
   before_action :set_igloohome, :only => [:create]
   after_action :import_igloohome_locks, :update_community_lock_provider, :only => [:create]
-  
+
   def create
     unless @igloohome
       @igloohome = Igloohome.new(igloohome_params)
@@ -38,7 +38,6 @@ class IgloohomeAccountsController < ApplicationController
 
   def import_igloohome_locks
     result = @igloohome.import_data(params[:file]) if params[:file].present?
-    binding.pry    
   end
 
   def update_community_lock_provider
