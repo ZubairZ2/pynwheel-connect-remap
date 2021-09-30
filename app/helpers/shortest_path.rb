@@ -676,10 +676,12 @@ module ShortestPath
         elsif planned_to_visit_units_ids.include?(unit.id)
           @planned_to_visit_units_and_doors_ids << unit.id
         end 
-        if @unit_with_door.has_key?(unit.floor)
-          @unit_with_door[unit.floor] << { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
-        else
-          @unit_with_door[unit.floor] = [{ unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }]
+        if planned_to_visit_units_ids.include?(unit.id)
+          if @unit_with_door.has_key?(unit.floor)
+            @unit_with_door[unit.floor] << { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
+          else
+            @unit_with_door[unit.floor] = [{ unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }]
+          end
         end
       end 
       @amenities_doors = Amenity.where(amenityable_type: "Floorplate", amenityable_id: @floorplates.ids).includes(:doors)
@@ -692,10 +694,12 @@ module ShortestPath
         elsif planned_to_visit_amenities_ids.include?(amenity.id)
           @planned_to_visit_amenities_and_doors_ids << amenity.id
         end
-        if @amenity_with_doors.has_key?(amenity.floor)
-          @amenity_with_doors[amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
-        else
-          @amenity_with_doors[amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+        if planned_to_visit_amenities_ids.include?(amenity.id)
+          if @amenity_with_doors.has_key?(amenity.floor)
+            @amenity_with_doors[amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
+          else
+            @amenity_with_doors[amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+          end
         end
       end
       @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
@@ -737,11 +741,13 @@ module ShortestPath
           update_precedence_for_floors(unit.floor, 'unit', unit.id, unit.door.id)
         elsif planned_to_visit_units_ids.include?(unit.id)
           @planned_to_visit_units_and_doors_ids << unit.id
-        end 
-        if @unit_with_door[unit.building].has_key?(unit.floor)
-          @unit_with_door[unit.building][unit.floor] << { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
-        else
-          @unit_with_door[unit.building][unit.floor] = [{ unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }]
+        end
+        if planned_to_visit_units_ids.include?(unit.id)
+          if @unit_with_door[unit.building].has_key?(unit.floor)
+            @unit_with_door[unit.building][unit.floor] << { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
+          else
+            @unit_with_door[unit.building][unit.floor] = [{ unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }]
+          end
         end
       end
       @amenities_doors = Amenity.where(amenityable_type: "Floorplate", amenityable_id: @floorplates.ids).includes(:doors)
@@ -755,10 +761,12 @@ module ShortestPath
         elsif planned_to_visit_amenities_ids.include?(amenity.id)
           @planned_to_visit_amenities_and_doors_ids << amenity.id
         end
-        if @amenity_with_doors[amenity.building].has_key?(amenity.floor)
-          @amenity_with_doors[amenity.building][amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
-        else
-          @amenity_with_doors[amenity.building][amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+        if planned_to_visit_amenities_ids.include?(amenity.id)
+          if @amenity_with_doors[amenity.building].has_key?(amenity.floor)
+            @amenity_with_doors[amenity.building][amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
+          else
+            @amenity_with_doors[amenity.building][amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+          end
         end
       end
       @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
