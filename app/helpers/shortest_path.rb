@@ -217,11 +217,11 @@ module ShortestPath
     floors_graph = get_building_to_building_with_floors_graph()
     first_building_pass = true
     path_object_in_order.keys.each {|building| path_object_in_order[building] = {"upside_path_objects" => {}, "downside_path_objects" => {} } }
+    # before traversing from building to building first remove buildings which have no stop
     @building_list.each do |building|
       # Find upside path form temp uniq ids floor by floor
       @floors_ids.each do |floor|
         # first move towards starting point to building starting point
-        #if there_is_no_stop_in_this_building(precedence_visited_ids_by_floor[building]); next; end
         if first_building_pass
           source = 0; destination_arr = [building_start_id_to_uniq_id[building][floor][@building_to_building_id[building]]]
           floors_graph[building][floor].from_one_point_to_move_other_point(source, destination_arr)
@@ -345,7 +345,6 @@ module ShortestPath
     mobile_path = fetch_paths_arr(path_object_in_order)
     mobile_path
   end
-
   def return_floorplate_path_for_mobile(new_stops_arr, community_id, path_type)
     # initialize hashes to store data for making path
     path_object_in_order, complete_path, floors_graph, precedence_visited_ids_by_floor, algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, starting_point = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
@@ -451,9 +450,162 @@ module ShortestPath
     total_path = {upstair_path: path_object_in_order, downstair_path: traverse_back_path_object_in_order, moving_to_starting_point: starting_floor_elevator_to_starting_point_object_in_order, floors: @floors_ids}
     mobile_path, upstair_elevator_hash, downstair_elevator_hash = fetch_paths_arr_for_floorplate(path_object_in_order, traverse_back_path_object_in_order, starting_floor_elevator_to_starting_point_object_in_order)
     new_stops_arr = update_new_stops_arr(new_stops_arr, upstair_elevator_hash, downstair_elevator_hash)
+    binding.pry
     return mobile_path, new_stops_arr
   end
-
+  def return_floorplate_mobile_path_for_multiple_buildings(new_stops_arr, building_list, community_id, path_type)
+    @building_list = building_list
+    path_object_in_order, complete_path, floors_graph, precedence_visited_ids_by_floor, algo_unit_data, algo_amenity_data, algo_elevator_data, algo_building_starting_point_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, starting_point, building_start_id_to_uniq_id, building_dijkstra_data = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+    start_point_data, @stops, unit_starting_index, unit_data, amenity_data, unit_id_to_uniq_id, amenity_starting_index, amenity_id_to_uniq_id, elevator_starting_index, @elevator_data, elevator_id_to_uniq_id, building_starting_index, building_starting_point_data = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+    path_object_in_order, complete_path, elevator_id_to_uniq_id, @elevator_data, elevator_starting_index, amenity_id_to_uniq_id, amenity_data, amenity_starting_index, unit_id_to_uniq_id, unit_data, start_point_data, @stops, starting_point, algo_unit_data, algo_amenity_data, algo_elevator_data, algo_building_starting_point_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, building_starting_index, building_starting_point_data, building_start_id_to_uniq_id, building_dijkstra_data, unit_starting_index = initialize_stops_with_buildings(start_point_data, @stops, starting_point,algo_unit_data, algo_amenity_data, algo_elevator_data, new_hallways_coordinates, hallways_id_to_uniq_id, hallways_dijkstra_data, algo_building_starting_point_data, building_starting_index, building_starting_point_data, building_start_id_to_uniq_id, building_dijkstra_data, unit_starting_index, unit_data, unit_id_to_uniq_id, amenity_starting_index, amenity_data, amenity_id_to_uniq_id, elevator_starting_index, @elevator_data, elevator_id_to_uniq_id, complete_path, path_object_in_order)
+    fetch_floorplate_mobile_related_data_for_multiple_buildings(new_stops_arr, community_id, @building_list)
+    starting_floor = @floors_ids.first # For now starting point is always on first in future we will change it to any floor selected from db
+    starting_building = @building_list.first
+    # Make uniq stops for path 
+    @building_list.each do |building|
+      start_point_data[building] = get_starting_point_data(@floorplate_hallways[@floor_to_floorplate_id[starting_floor]].dup)
+      @floors_ids.each do |floor|
+        algo_unit_data[building][floor] = @unit_with_door[building][floor].present? ? get_unit_data(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup, @unit_with_door[building][floor].dup) : []
+        algo_amenity_data[building][floor] = @amenity_with_doors[building][floor].present? ? get_amenity_data(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup, @amenity_with_doors[building][floor].dup) : []
+        algo_elevator_data[building][floor] = @building_to_floor_to_elevators[building][floor].present? ? get_elevator_data(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup, @building_to_floor_to_elevators[building][floor], floor) : []
+        # access point functionality is on hold for now
+        new_hallways_coordinates[building][floor] = fetch_hallways_coordinates_with_distance(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup)      
+        hallways_id_to_uniq_id[building][floor] = make_hallways_id_to_uniq_id(new_hallways_coordinates[building][floor].dup, starting_point_for_building(building, floor))
+        hallways_dijkstra_data[building][floor] = make_hallways_data_for_dijakstra(new_hallways_coordinates[building][floor].dup, hallways_id_to_uniq_id[building][floor].dup)
+        # Merge starting point to first and last building of first floor
+        if starting_point_for_building(building, floor)
+          starting_point[building][hallways_id_to_uniq_id[building][floor][start_point_data[building]['hallway_id']]] = start_point_data[building]['distance']
+          @stops[building][floor] = {0 => starting_point[building]}
+          @stops[building][floor] = @stops[building][floor].merge({hallways_id_to_uniq_id[building][floor][start_point_data[building]['hallway_id']] => { 0 => start_point_data[building]['distance']} })
+        end
+        # Merge Hallways
+        @stops[building][floor] = @stops[building][floor].present? ? @stops[building][floor].deep_merge(hallways_dijkstra_data[building][floor]) : hallways_dijkstra_data[building][floor]
+        # Merge Building Starting/ Exit Point for first floor of every building
+        if building_starting_point_for_building(floor)
+          algo_building_starting_point_data[building][floor] = @building_starting_exit_points.present? ? get_building_starting_exit_point_data(@floorplate_hallways[@floor_to_floorplate_id[floor]].dup, @building_starting_exit_points.dup) : []
+          building_starting_index[building][floor] = @stops[building][floor].keys.size
+          building_starting_point_data[building][floor] = make_building_starting_point_data_according_to_building_starting_point_id(algo_building_starting_point_data[building][floor].dup)
+          building_start_id_to_uniq_id[building][floor] = make_building_start_id_to_uniq_id(building_starting_index[building][floor], building_starting_point_data[building][floor])
+          building_dijkstra_data = make_building_start_data_for_dijakstra(building_starting_point_data[building][floor], building_start_id_to_uniq_id[building][floor], hallways_id_to_uniq_id[building][floor], @stops[building][floor])
+          @stops[building][floor].merge!(building_dijkstra_data)
+        end
+        # Merge Unit Data
+        unit_starting_index[building][floor] = @stops[building][floor].keys.size
+        unit_data[building][floor] = make_unit_data_according_to_door_id(algo_unit_data[building][floor])
+        unit_id_to_uniq_id[building][floor] = make_unit_id_to_uniq_id(unit_starting_index[building][floor], unit_data[building][floor])
+        unit_dijkstra_data = make_unit_data_for_dijakstra(unit_data[building][floor], unit_id_to_uniq_id[building][floor], hallways_id_to_uniq_id[building][floor], @stops[building][floor])
+        @stops[building][floor].merge!(unit_dijkstra_data)
+        # Merge Amenity Data
+        amenity_starting_index[building][floor] = @stops[building][floor].keys.size
+        amenity_data[building][floor] = make_amenity_data_according_to_door_id(algo_amenity_data[building][floor])
+        amenity_id_to_uniq_id[building][floor] = make_amenity_id_to_uniq_id(amenity_starting_index[building][floor], amenity_data[building][floor])
+        amenity_dijkstra_data = make_amenity_data_for_dijakstra(amenity_data[building][floor], amenity_id_to_uniq_id[building][floor], hallways_id_to_uniq_id[building][floor], @stops[building][floor])
+        @stops[building][floor].merge!(amenity_dijkstra_data)
+        # Merge Elevator Data
+        elevator_starting_index[building][floor] = @stops[building][floor].keys.size
+        @elevator_data[building][floor] = make_elevator_data_according_to_elevator_id(algo_elevator_data[building][floor])
+        elevator_id_to_uniq_id[building][floor] = make_elevator_id_to_uniq_id(elevator_starting_index[building][floor], @elevator_data[building][floor])
+        elevator_dijkstra_data = make_elevator_data_for_dijakstra(@elevator_data[building][floor], elevator_id_to_uniq_id[building][floor], hallways_id_to_uniq_id[building][floor], @stops[building][floor])
+        @stops[building][floor].merge!(elevator_dijkstra_data)
+        # Update @precedence_according_to_building_to_floors array like stops id key 
+        update_precedence_unit_arr_for_building(unit_id_to_uniq_id[building][floor], building, floor)
+        update_precedence_amenity_arr_for_building(amenity_id_to_uniq_id[building][floor], building, floor)
+      end
+    end
+    floor_to_elevator_uniq_ids = get_elevator_uniq_ids_for_building(elevator_id_to_uniq_id)
+    uniq_id_to_elevator_by_floor = get_uniq_id_to_elevator_for_building(elevator_id_to_uniq_id)
+    precedence_visited_ids_by_floor = get_buildings_floor_by_floor_precedence_of_unit_and_amnity()
+    floors_graph = get_building_to_building_with_floors_graph()
+    first_building_pass = true
+    path_object_in_order.keys.each {|building| path_object_in_order[building] = {"upside_path_objects" => {}, "downside_path_objects" => {} } }
+    @building_list.each do |building|
+      # Find upside path form temp uniq ids floor by floor
+      @floors_ids.each do |floor|
+        # first move towards starting point to building starting point
+        #if there_is_no_stop_in_this_building(precedence_visited_ids_by_floor[building]); next; end
+        if first_building_pass
+          source = 0; destination_arr = [building_start_id_to_uniq_id[building][floor][@building_to_building_id[building]]]
+          floors_graph[building][floor].from_one_point_to_move_other_point(source, destination_arr)
+          complete_path[building][floor] = floors_graph[building][floor].one_to_one_path
+        end
+        
+        if first_building_pass; source = floors_graph[building][floor].source; elsif floor == @floors_ids.first; source = building_start_id_to_uniq_id[building][floor][@building_to_building_id[building]]; else; source = elevator_id_to_uniq_id[building][floor][uniq_id_to_elevator_by_floor[building][floor - 1][floors_graph[building][floor - 1].source]]; end
+        destination_arr = precedence_visited_ids_by_floor[building][floor]
+        unless (floor == @floors_ids.last)
+          elevator_arr = elevators_which_have_next_floor_in_building(floor_to_elevator_uniq_ids[building][floor], uniq_id_to_elevator_by_floor[building][floor], building, floor)
+        else
+          elevator_arr = elevators_which_have_previous_floor_in_building(floor_to_elevator_uniq_ids[building][floor], uniq_id_to_elevator_by_floor[building][floor], building, floor)
+        end
+        if path_type == "actual shortest"
+          #@gr.shortest_paths_without_sorting(source, destination_arr)
+        elsif path_type == "sorting"
+          floors_graph[building][floor].shortest_paths_with_sorting_in_floor(source, destination_arr, elevator_arr) #shortest path with sorting
+          complete_path[building][floor] = complete_path[building].has_key?(floor) ? (complete_path[building][floor] + floors_graph[building][floor].complete_path) : floors_graph[building][floor].complete_path
+        end
+        first_building_pass = false
+      end
+      # fetch all elements from uniq ids to print
+      path_uniq_ids_arr = fetch_flattan_path_of_each_floor(complete_path[building]) 
+      @floors_ids.each do |floor|
+        if building_starting_point_for_building(floor)
+          path_object_in_order[building]["upside_path_objects"][floor] = fetch_path_object_for_building(path_uniq_ids_arr[floor], hallways_id_to_uniq_id[building][floor], unit_id_to_uniq_id[building][floor], amenity_id_to_uniq_id[building][floor], elevator_id_to_uniq_id[building][floor], start_point_data[building], new_hallways_coordinates[building][floor], unit_data[building][floor], amenity_data[building][floor], @elevator_data[building][floor], unit_starting_index[building][floor], amenity_starting_index[building][floor], elevator_starting_index[building][floor], building, floor, building_starting_index[building][floor], building_starting_point_data[building][floor], building_start_id_to_uniq_id[building][floor])
+        else
+          path_object_in_order[building]["upside_path_objects"][floor] = fetch_path_object_for_building(path_uniq_ids_arr[floor], hallways_id_to_uniq_id[building][floor], unit_id_to_uniq_id[building][floor], amenity_id_to_uniq_id[building][floor], elevator_id_to_uniq_id[building][floor], start_point_data[building], new_hallways_coordinates[building][floor], unit_data[building][floor], amenity_data[building][floor], @elevator_data[building][floor], unit_starting_index[building][floor], amenity_starting_index[building][floor], elevator_starting_index[building][floor], building, floor)
+        end
+      end
+      # traverse back to starting floor
+      last_floor_id = @floors_ids.last
+      destination_floor_id = starting_floor # for now
+      traverse_back_path = {}
+      src = nil
+      @floors_ids.reverse.each_with_index do |floor,indx|
+        if floor == last_floor_id
+          traverse_back_path[floor] = [floors_graph[building][last_floor_id].source]
+          src = floors_graph[building][last_floor_id].source
+        else
+          if destination_floor_id == floor
+            src = elevator_id_to_uniq_id[building][floor][uniq_id_to_elevator_by_floor[building][floor + 1][src]]
+            traverse_back_path[floor] = [src]
+          elsif have_elevator_on_current_floor_for_building(src, uniq_id_to_elevator_by_floor[building][floor + 1], building, floor + 1) && have_elevator_on_current_floor_for_building(src, uniq_id_to_elevator_by_floor[building][floor + 1], building, floor - 1) 
+            src = elevator_id_to_uniq_id[building][floor][uniq_id_to_elevator_by_floor[building][floor + 1][src]]
+            traverse_back_path[floor] = [src]
+          else
+            src = elevator_id_to_uniq_id[building][floor][uniq_id_to_elevator_by_floor[building][floor + 1][src]]
+            elevator_arr = elevators_which_have_previous_floor_in_building(floor_to_elevator_uniq_ids[building][floor], uniq_id_to_elevator_by_floor[building][floor], building, floor)
+            floors_graph[building][floor].traverse_back(src, elevator_arr)
+            traverse_back_path[floor] = floors_graph[building][floor].elevator_path.flatten
+            src = floors_graph[building][floor].source
+          end
+        end
+      end
+      @floors_ids.each do |floor|
+        if building_starting_point_for_building(floor)
+          path_object_in_order[building]["downside_path_objects"][floor] = fetch_path_object_for_building(traverse_back_path[floor], hallways_id_to_uniq_id[building][floor], unit_id_to_uniq_id[building][floor], amenity_id_to_uniq_id[building][floor], elevator_id_to_uniq_id[building][floor], start_point_data[building], new_hallways_coordinates[building][floor], unit_data[building][floor], amenity_data[building][floor], @elevator_data[building][floor], unit_starting_index[building][floor], amenity_starting_index[building][floor], elevator_starting_index[building][floor], building, floor, building_starting_index[building][floor], building_starting_point_data[building][floor], building_start_id_to_uniq_id[building][floor] )
+        else
+          path_object_in_order[building]["downside_path_objects"][floor] = fetch_path_object_for_building(traverse_back_path[floor], hallways_id_to_uniq_id[building][floor], unit_id_to_uniq_id[building][floor], amenity_id_to_uniq_id[building][floor], elevator_id_to_uniq_id[building][floor], start_point_data[building], new_hallways_coordinates[building][floor], unit_data[building][floor], amenity_data[building][floor], @elevator_data[building][floor], unit_starting_index[building][floor], amenity_starting_index[building][floor], elevator_starting_index[building][floor], building, floor)
+        end
+      end
+      if @building_list[@building_list.find_index(building) + 1].present? # yes we can move to next building starting point
+        next_building = @building_list[@building_list.find_index(building) + 1]
+        source = src; destination_arr = [building_start_id_to_uniq_id[building][destination_floor_id][@building_to_building_id[next_building]]]
+        floors_graph[building][destination_floor_id].from_one_point_to_move_other_point(source, destination_arr)
+        from_elevator_to_next_building_starting_point = floors_graph[building][destination_floor_id].one_to_one_path.flatten
+        path_object_in_order[building]["downside_path_objects"][destination_floor_id] = fetch_path_object_for_building(from_elevator_to_next_building_starting_point, hallways_id_to_uniq_id[building][destination_floor_id], unit_id_to_uniq_id[building][destination_floor_id], amenity_id_to_uniq_id[building][destination_floor_id], elevator_id_to_uniq_id[building][destination_floor_id], start_point_data[building], new_hallways_coordinates[building][destination_floor_id], unit_data[building][destination_floor_id], amenity_data[building][destination_floor_id], @elevator_data[building][destination_floor_id], unit_starting_index[building][destination_floor_id], amenity_starting_index[building][destination_floor_id], elevator_starting_index[building][destination_floor_id], building, destination_floor_id, building_starting_index[building][destination_floor_id], building_starting_point_data[building][destination_floor_id], building_start_id_to_uniq_id[building][destination_floor_id])
+        source = floors_graph[building][destination_floor_id].source
+      else # then this one is last building
+        source = src; destination_arr = [0]
+        floors_graph[building][destination_floor_id].from_one_point_to_move_other_point(source, destination_arr)
+        from_elevator_to_starting_point = floors_graph[building][destination_floor_id].one_to_one_path.flatten
+        path_object_in_order[building]["downside_path_objects"][destination_floor_id] = fetch_path_object_for_building(from_elevator_to_starting_point, hallways_id_to_uniq_id[building][destination_floor_id], unit_id_to_uniq_id[building][destination_floor_id], amenity_id_to_uniq_id[building][destination_floor_id], elevator_id_to_uniq_id[building][destination_floor_id], start_point_data[building], new_hallways_coordinates[building][destination_floor_id], unit_data[building][destination_floor_id], amenity_data[building][destination_floor_id], @elevator_data[building][destination_floor_id], unit_starting_index[building][destination_floor_id], amenity_starting_index[building][destination_floor_id], elevator_starting_index[building][destination_floor_id], building, destination_floor_id, building_starting_index[building][destination_floor_id], building_starting_point_data[building][destination_floor_id], building_start_id_to_uniq_id[building][destination_floor_id])
+        source = floors_graph[building][destination_floor_id].source
+      end
+    end # building loop end
+    #path_object_in_arr_order = change_three_d_path_to_one_d_path(path_object_in_order) # no need here
+    binding.pry
+    mobile_path, upstair_elevator_hash, downstair_elevator_hash = fetch_paths_arr_for_floorplate_multiple_buildings(path_object_in_order)
+    #path_object_in_arr_order, @floors_ids
+    return [],[]
+  end
   def return_path_points_to_mobile(mobile_path, source_type, dest_type, source_id, dest_id)
     path_points = []
     mobile_path.each do |path|
@@ -475,15 +627,44 @@ module ShortestPath
     end
     floor
   end
-  def fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, community_id)
+  def check_stops_have_multiple_buildings(new_stops_arr, community_id)
+    community = Community.find community_id
+    tour = community.tour
+    sorted_building = tour.building_order.reject { |e| e.to_s.strip.empty? } rescue []
+    tour_stops = tour&.tour_stops.visible.order('sort ASC')
+    unit_ids = tour_stops.where(stop_type: "unit").pluck(:stop_id)
+    amenity_ids = tour_stops.where(stop_type: "amenity").pluck(:stop_id)
+    building_list = []
+    building_list = (Unit.where(id: unit_ids).pluck(:building)).reject { |e| e.to_s.strip.empty? } rescue []
+    building_list += Amenity.where(id: amenity_ids).pluck(:building).reject { |e| e.to_s.strip.empty? }
+    building_list.uniq!
+    is_multiple_building = building_list.uniq.count > 1
+    if sorted_building.present?
+      if (building_list - sorted_building != [] )
+        building_list = (sorted_building) + (building_list - sorted_building) 
+      elsif sorted_building - building_list != []
+        building_list = (building_list & sorted_building)
+      else
+        building_list = sorted_building
+      end
+    end
+    return is_multiple_building, building_list
+  end
+  def fetch_multiple_stops(stop_types, new_stops_arr, community_id)
     community = Community.find community_id
     tour = community.tour
     tour_stops = tour&.tour_stops.visible.order('sort ASC')
     floorplate_mobile_stops = []
     tour_stops.each do |tour_stop|
-      floorplate_mobile_stops << tour_stop if tour_stop.stop_type == 'elevator' || new_stops_arr.include?(tour_stop)
+      floorplate_mobile_stops << tour_stop if stop_types.include?(tour_stop.stop_type) || new_stops_arr.include?(tour_stop)
     end
     floorplate_mobile_stops
+  end
+  def fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, community_id)
+    fetch_multiple_stops(['elevator'], new_stops_arr, community_id)
+  end
+  def fetch_tour_stops_which_are_required_from_mobile_side_for_multiple(new_stops_arr, community_id)
+    fetch_multiple_stops(['elevator', 'building_starting_point'], new_stops_arr, community_id)
   end
   private
     def update_precedence(stop_type, stop_id, door_id)
@@ -703,7 +884,6 @@ module ShortestPath
         end
       end
       @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
-
     end
     def fetch_floorplate_related_data_for_multiple_buildings(community_id, building_list)
       @stops_id_hash, @floor_lists_hash, @floorplate_hallways, @floorplate_access_points, @floor_to_floorplate_id, floor_to_elevators, @building_starting_exit_points,@building_to_building_id = {}, {}, {}, {}, {}, {}, {}, {}
@@ -767,6 +947,70 @@ module ShortestPath
           else
             @amenity_with_doors[amenity.building][amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
           end
+        end
+      end
+      @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
+    end
+    def fetch_floorplate_mobile_related_data_for_multiple_buildings(new_stops_arr, community_id, building_list)
+      @stops_id_hash, @floor_lists_hash, @floorplate_hallways, @floorplate_access_points, @floor_to_floorplate_id, floor_to_elevators, @building_starting_exit_points,@building_to_building_id = {}, {}, {}, {}, {}, {}, {}, {}
+      @community = Community.find community_id
+      tour = @community.tour
+      # stops input data hash connect with each building => floor 1 => stops, 2 => stops  
+      tour_stops_ids = new_stops_arr.pluck(:id)
+      tour_stops = TourStop.where(id: tour_stops_ids)
+      tour_stops.each {|tour_stop| @stops_id_hash[tour_stop.id] = tour_stop.stop_id}
+      @planned_to_visit_units_and_doors_ids, @planned_to_visit_amenities_and_doors_ids, @floors_specific_units, @floors_specific_amenities = [], [], {}, {}
+      @floorplates = @community.floorplates
+      @community.floorplates.map { |x| @floor_lists_hash[x.id] = x.floors }
+      @floors_ids = @community.floorplates.map { |x| x.floors }.flatten!.uniq.sort
+      @floor_to_floorplate_id = fetch_hash_for_floor_to_floorplate_id()
+      @floorplates.each {|floorplate| @floorplate_hallways[floorplate.id] = floorplate.hallways.order("id ASC") }
+      #@floorplates.each {|floorplate| @floorplate_access_points[floorplate.id] = floorplate.access_points } # For future use
+      planned_to_visit_units_ids  = tour_stops.where(stop_type: "unit", display_stop: true).pluck(:stop_id) rescue []
+      planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity", display_stop: true).pluck(:stop_id) rescue []
+      building_starting_exit_points_ids = tour_stops.where(stop_type: "building_starting_point", display_stop: true).pluck(:stop_id) rescue []
+      building_starting_exit_records = BuildingStartingPoint.fetch_building_starting_exit_points(building_starting_exit_points_ids)
+      building_starting_exit_records.each {|building_starting_point| @building_starting_exit_points[building_starting_point.building] = { "id" => building_starting_point.id, "building_name" => building_starting_point.name ,"x_plot" => building_starting_point.x_plot, "y_plot" => building_starting_point.y_plot } }
+      building_starting_exit_records.each {|building_starting_point| @building_to_building_id[building_starting_point.building] = building_starting_point.id }
+      elevators_ids = tour_stops.where(stop_type: "elevator", display_stop: true).pluck(:stop_id) rescue []
+      @building_to_floor_to_elevators = Elevator.fetch_elevator_according_to_building(@floors_ids, elevators_ids, building_list)
+      building_floors_specific_units = fetch_units_according_to_building_to_floor(planned_to_visit_units_ids, building_list)
+      building_floors_specific_amenities = fetch_amenities_according_to_building_to_floor(planned_to_visit_amenities_ids, building_list)
+      @original_presendece_arr = fetch_unit_and_amenity_in_floor_by_floor_sorted_way_for_building(tour_stops, building_floors_specific_units, building_floors_specific_amenities, @floors_ids, building_list)      
+      @precedence_according_to_building_to_floors = @original_presendece_arr.deep_dup
+      # update precedence array according to floor in below code 
+      @community_units = @community.units.are_ploted_units.where.not(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
+      @unit_with_door = {}
+      building_list.each {|building| @unit_with_door[building] = {}}
+      @community_units.each do |unit| 
+        if planned_to_visit_units_ids.include?(unit.id) && unit.door.present?
+          planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
+          @planned_to_visit_units_and_doors_ids << unit.door.id
+          update_precedence_for_floors(unit.floor, 'unit', unit.id, unit.door.id)
+        elsif planned_to_visit_units_ids.include?(unit.id)
+          @planned_to_visit_units_and_doors_ids << unit.id
+        end 
+        if @unit_with_door[unit.building].has_key?(unit.floor)
+          @unit_with_door[unit.building][unit.floor] << { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
+        else
+          @unit_with_door[unit.building][unit.floor] = [{ unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }]
+        end
+      end
+      @amenities_doors = Amenity.where(amenityable_type: "Floorplate", amenityable_id: @floorplates.ids).includes(:doors)
+      @amenity_with_doors = {}
+      building_list.each {|building| @amenity_with_doors[building] = {}}
+      @amenities_doors.each do |amenity| 
+        if planned_to_visit_amenities_ids.include?(amenity.id) && amenity.doors.present?
+          planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
+          @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
+          update_precedence_for_floors(amenity.floor, 'amenity', amenity.id, amenity.doors.first.id)
+        elsif planned_to_visit_amenities_ids.include?(amenity.id)
+          @planned_to_visit_amenities_and_doors_ids << amenity.id
+        end
+        if @amenity_with_doors[amenity.building].has_key?(amenity.floor)
+          @amenity_with_doors[amenity.building][amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
+        else
+          @amenity_with_doors[amenity.building][amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
         end
       end
       @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
@@ -954,6 +1198,54 @@ module ShortestPath
       actual_path = updated_upstair_path + updated_downstair_path + starting_point_path
       return actual_path, upstair_elevator_hash, downstair_elevator_hash
     end
+    def fetch_paths_arr_for_floorplate_multiple_buildings(path_object_in_order)
+      tour_stop_type_arr = ["unit", "amenity", "elevator"]
+      stops_id_hash_reverse = convert_values_into_keys(@stops_id_hash)
+      @building_list.each do |building|
+        # for upstair
+        @floors_ids.each_with_index do |floor, indx|
+          len = path_object_in_order[building]["upside_path_objects"][floor].keys().length - 1  
+          if building.first == building && @floors_ids.first == floor
+            # here you must always have first point which is called starting point
+            path = []
+            source_type = "Tour"
+            from = "building_starting_point"
+            source_id = 0
+            path_points = []
+            path_object_keys = path_object_in_order[building]["upside_path_objects"][floor].keys()[1..len]
+          else
+            path_object_keys = path_object_in_order[building]["upside_path_objects"][floor].keys()[0..len]
+          end
+          path_object_keys.each do |key|
+            point = path_object_in_order[building]["upside_path_objects"][floor][key]
+            if point.has_key?("point_type")
+              path_points << {"x_plot" => point["door_x_plot"].to_f, "y_plot" => point["door_y_plot"].to_f} if point.has_key?("is_door") && point["is_door"]
+              if point.has_key?("is_door") && point["is_door"] # if its unit or amenity and have door
+                door = Door.find point["door_id"]
+                stop = door.attached_with
+                path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+              elsif (point.has_key?("is_door") && !point["is_door"]) # if its unit or amenity and have no door
+                stop = point["point_type"].classify.constantize.find point["door_id"]
+                path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+              elsif point["point_type"] == "elevator" # if its a elevator
+                stop = point["point_type"].classify.constantize.find point["elevator_id"]
+                path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+              end
+              dest_type = tour_stop_type_arr.include?(point["point_type"]) ? "TourStop" : "Tour"
+              dest_id = point.has_key?("door_id") ? stops_id_hash_reverse[point["door_id"]] : (point["point_type"] == "elevator" ? point["elevator_id"] : 0)
+              to = point["point_type"]
+              path << [source_type, dest_type, source_id, dest_id, path_points, from, to, floor]
+              source_type = dest_type
+              source_id = dest_id
+              from = to
+              path_points = []
+            else
+              path_points << {"x_plot" => point["x_plot"], "y_plot" => point["y_plot"]}
+            end
+          end
+        end
+      end
+    end
     def update_path_by_removing_floor(stop_to_stop_path)
       source_id, dest_id, source_stop, destination_stop, floor_index =2, 3, 5, 6, 7
       need_to_ignore_stops = ["unit", "amenity", "building_starting_point"]
@@ -969,7 +1261,7 @@ module ShortestPath
       end
       return stop_to_stop_path, elevator_hash
     end
-    def update_new_stops_arr(new_stops_arr, upstair_elevator_hash, downstair_elevator_hash)
+    def update_new_stops_arr(new_stops_arr, upstair_elevator_hash, downstair_elevator_hash) # sort stops according mobile path 
       stops_arr = [@community.tour]
       # for upstair
       @original_presendece_arr.keys().sort().each do |floor|
