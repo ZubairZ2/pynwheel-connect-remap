@@ -450,7 +450,6 @@ module ShortestPath
     total_path = {upstair_path: path_object_in_order, downstair_path: traverse_back_path_object_in_order, moving_to_starting_point: starting_floor_elevator_to_starting_point_object_in_order, floors: @floors_ids}
     mobile_path, upstair_elevator_hash, downstair_elevator_hash = fetch_paths_arr_for_floorplate(path_object_in_order, traverse_back_path_object_in_order, starting_floor_elevator_to_starting_point_object_in_order)
     new_stops_arr = update_new_stops_arr(new_stops_arr, upstair_elevator_hash, downstair_elevator_hash)
-    binding.pry
     return mobile_path, new_stops_arr
   end
   def return_floorplate_mobile_path_for_multiple_buildings(new_stops_arr, building_list, community_id, path_type)
@@ -601,7 +600,6 @@ module ShortestPath
       end
     end # building loop end
     #path_object_in_arr_order = change_three_d_path_to_one_d_path(path_object_in_order) # no need here
-    binding.pry
     mobile_path, upstair_elevator_hash, downstair_elevator_hash = fetch_paths_arr_for_floorplate_multiple_buildings(path_object_in_order)
     #path_object_in_arr_order, @floors_ids
     return [],[]
@@ -1199,19 +1197,22 @@ module ShortestPath
       return actual_path, upstair_elevator_hash, downstair_elevator_hash
     end
     def fetch_paths_arr_for_floorplate_multiple_buildings(path_object_in_order)
-      tour_stop_type_arr = ["unit", "amenity", "elevator"]
+      tour_stop_type_arr = ["Unit", "unit", "Amenity", "amenity", "elevator", "Elevator", "building_starting_exit_point", "building_starting_point"]
       stops_id_hash_reverse = convert_values_into_keys(@stops_id_hash)
+      path = []; source_type = "Tour"; from = "building_starting_point"; source_id = 0; path_points = [] #initialize it for access in 2d loop
       @building_list.each do |building|
         # for upstair
         @floors_ids.each_with_index do |floor, indx|
           len = path_object_in_order[building]["upside_path_objects"][floor].keys().length - 1  
-          if building.first == building && @floors_ids.first == floor
+          if @building_list.first == building && @floors_ids.first == floor
             # here you must always have first point which is called starting point
             path = []
             source_type = "Tour"
             from = "building_starting_point"
             source_id = 0
             path_points = []
+            path_object_keys = path_object_in_order[building]["upside_path_objects"][floor].keys()[1..len]
+          elsif @floors_ids.first == floor # for other buildings and first floor
             path_object_keys = path_object_in_order[building]["upside_path_objects"][floor].keys()[1..len]
           else
             path_object_keys = path_object_in_order[building]["upside_path_objects"][floor].keys()[0..len]
@@ -1230,11 +1231,48 @@ module ShortestPath
               elsif point["point_type"] == "elevator" # if its a elevator
                 stop = point["point_type"].classify.constantize.find point["elevator_id"]
                 path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+              elsif point["point_type"] == "building_starting_exit_point" # if its a building entry/exit point
+                stop = BuildingStartingPoint.find point["building_starting_exit_id"]
+                path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
               end
               dest_type = tour_stop_type_arr.include?(point["point_type"]) ? "TourStop" : "Tour"
-              dest_id = point.has_key?("door_id") ? stops_id_hash_reverse[point["door_id"]] : (point["point_type"] == "elevator" ? point["elevator_id"] : 0)
+              dest_id = fetch_destination_stop_id(point, stops_id_hash_reverse)
               to = point["point_type"]
-              path << [source_type, dest_type, source_id, dest_id, path_points, from, to, floor]
+              path << [source_type, dest_type, source_id, dest_id, path_points, from, to, floor, building]
+              source_type = dest_type
+              source_id = dest_id
+              from = to
+              path_points = []
+            else
+              path_points << {"x_plot" => point["x_plot"], "y_plot" => point["y_plot"]}
+            end
+          end
+        end
+        #for downstair
+        source_type = "TourStop"
+        from = "elevator"
+        source_id = path_object_in_order[building]["downside_path_objects"][@floors_ids.reverse.first][0]["elevator_id"]
+        path_points = []
+        @floors_ids[0..@floors_ids.length-2].reverse().each do |floor, indx|
+          len = path_object_in_order[building]["downside_path_objects"][floor].keys().length - 1
+          path_object_keys = path_object_in_order[building]["downside_path_objects"][floor].keys()[0..len]
+          path_object_keys.each do |key|
+            point = path_object_in_order[building]["downside_path_objects"][floor][key]
+            if point.has_key?("point_type")
+              if point["point_type"] == "elevator" # if its a elevator
+                stop = point["point_type"].classify.constantize.find point["elevator_id"]
+                dest_id = point["elevator_id"]
+              elsif point["point_type"] == "building_starting_exit_point" # if its a building entry/exit point
+                stop = BuildingStartingPoint.find point["building_starting_exit_id"]
+                dest_id = point["building_starting_exit_id"]
+              elsif point["point_type"] == "building_starting_point"
+                stop = @community.tour
+                dest_id = 0    
+              end
+              path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+              dest_type = point["point_type"] == "building_starting_point" ? "Tour" : "TourStop" 
+              to = point["point_type"]
+              path << [source_type, dest_type, source_id, dest_id, path_points, from, to, floor, building]
               source_type = dest_type
               source_id = dest_id
               from = to
@@ -1245,6 +1283,20 @@ module ShortestPath
           end
         end
       end
+      path
+      binding.pry
+    end
+    def fetch_destination_stop_id(point, stops_id_hash_reverse)
+      if point.has_key?("door_id")
+        dest_id = stops_id_hash_reverse[point["door_id"]]
+      elsif point["point_type"] == "elevator" 
+        dest_id = point["elevator_id"]
+      elsif point["point_type"] == "building_starting_exit_point" 
+        dest_id = point["building_starting_exit_id"]
+      else
+        dest_id = 0
+      end
+      dest_id
     end
     def update_path_by_removing_floor(stop_to_stop_path)
       source_id, dest_id, source_stop, destination_stop, floor_index =2, 3, 5, 6, 7
