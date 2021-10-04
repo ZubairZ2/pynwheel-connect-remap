@@ -106,7 +106,7 @@ module AssignLocksHelper
     end
   end
 
-  def assign_igloohome_lock_to_door community, door, lock_id    
+  def assign_igloohome_lock_to_door community, door, lock_id
     if lock_id.present?
       igloohome_lock = IgloohomeLock.find_by(device_id: lock_id, igloohome_id: community.igloohome.id) rescue nil
     

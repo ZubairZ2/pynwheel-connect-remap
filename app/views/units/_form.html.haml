@@ -118,7 +118,7 @@
       - @all_locks[:zerv_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
   - if locks_present_hash["Igloohome"]
-    = hidden_field_tag "igloohome_lock_input_value", @unit.igloohome_locks.present? ? @unit.igloohome_locks.last.device_name : ""
+    = hidden_field_tag "igloohome_lock_input_value", (@community.auto_wayfinding and @door.present?) ? (@door.igloohome_lock.present? ? @door.igloohome_lock.device_name : '') : ( @unit.igloohome_locks.present? ? @unit.igloohome_locks.first.device_name : '' )
     .igloohome_options.hide_it
       - @all_locks[:igloohome_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
