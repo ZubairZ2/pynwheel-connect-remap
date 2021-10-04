@@ -20,6 +20,7 @@
                 = hidden_field_tag "edgestate_lock_name" , door.edgestate_lock.present? ?  door.edgestate_lock.name + " (" + door.edgestate_lock.remote_lock_type + ")" : ''
                 = hidden_field_tag "latch_lock_name"     , door.latch_lock.present?     ?  door.latch_lock.lock_name : ''
                 = hidden_field_tag "zerv_lock_name"      , door.zerv_lock.present?      ?  door.zerv_lock.sub_location_name + " (" + door.zerv_lock.sub_location_friendly_name + ")" : ''
+                = hidden_field_tag "igloohome_lock_name"      , door.igloohome_lock.present?      ?  door.igloohome_lock.device_name : ''
                 = hidden_field_tag "door_id"             , door.present?                ?  door.id : ''
                 = text_field_tag :lock_name, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control"
                 %datalist#locks_list

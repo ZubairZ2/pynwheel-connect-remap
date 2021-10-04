@@ -87,7 +87,6 @@ module AssignLocksHelper
           door.edgestate_lock.update_attributes(stop_id: nil, stop_type: nil)
         end
     elsif door.lock_provider == "Zerv"
-
       if lock_id.present?
         zerv_lock = ZervLock.find_by(mac_id: lock_id, zerv_id: community.zerv.id) rescue nil
       
@@ -107,7 +106,7 @@ module AssignLocksHelper
     end
   end
 
-  def assign_igloohome_lock_to_door community, door, lock_id
+  def assign_igloohome_lock_to_door community, door, lock_id    
     if lock_id.present?
       igloohome_lock = IgloohomeLock.find_by(device_id: lock_id, igloohome_id: community.igloohome.id) rescue nil
     
