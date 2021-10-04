@@ -39,8 +39,10 @@
     / Google Font
     %link{:href => "https://fonts.googleapis.com/css?family=Raleway:100,200,300,400,500,600,700,800,900", :rel => "stylesheet"}/
   %body.floor-plan{style: "background-color:#303a3c;"}
+    .divLoading.hidden
     / Main content
-    = render partial: "/messages"
+    %div.alert_message{style: "margin-left: 290px"}
+      = render partial: "/messages"
     %section.is-favorites
       -# %a#favoriteclickme{href: "#"} Share and Clear
       .mydiv-fav
@@ -80,21 +82,27 @@
                 .c-modal-header
                   %h5.c-modal-title 
                     = unit.unit_market
-                  %button.c-close{:type => "button"}
+                  %div.c-close
                     .plan-image-pop
                       .icon-heart
                         %a{"data-href"=> "/communities/#{@community.id}/webpages/delete_favorite?unit_id=#{unit.id}&from_favorites=true",href: "##",onclick: "deleteFavorite(this);"}
-                        %i.fa.fa-heart#fav-icon-tag
+                          %i.fa.fa-heart#fav-icon-tag
                 .c-modal-sidebar
                   .c-modal-sidebar-inner
                     .modal-sidebar-title
                       %h1.section-title 
                         = floorplan.present? ? floorplan.name : nil
                     .c-modal-wrapper.modal-image-fav.hidden
-                      .c-m-iframe-content
-                        = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplan/image/27780/27780-1628027365-2705856e-file.jpeg")
-                      -# .c-modal-wrapper
-                      -#   .c-m-iframe-content
+                      .c-modal-body{:id => "#{unit.id}-res-zoomable-image"}
+                        .c-m-iframe-content
+                          = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplan/image/27780/27780-1628027365-2705856e-file.jpeg")
+                      .c-modal-footer-fav.zooming-content.zoomable-map-container
+                        %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-res-fav-zoom-in"}
+                          %img{:src => "/assets/plus.png"}/
+                        %a.minus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-res-fav-zoom-out"}
+                          %img{:src => "/assets/minus.png"}/
+                        %a.refresh-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-res-fav-reset-zoom"}
+                          %img{:src => "/assets/refresh.png"}/
                     .module-info
                       %ul.module-list
                         %li
@@ -146,7 +154,7 @@
                           - if @community.data_provider == "psi" || @community.data_provider == "realpagesvc" || @community.data_provider == "resman"
                             .m-filter-1.c-m-filter
                               %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                              %input.c-m-input-control.datepicker{:id => "#{unit.id}-leasing-start-date", :type => "text", :style => "display: block !important", :readonly => "readonly"}/ 
+                              %input.c-m-input-control.datepicker.leasing-start-date{:id => "#{unit.id}-leasing-start-date", :type => "text", :style => "display: block !important", :readonly => "readonly", :value=>unit.available_date.strftime("%m/%d/%Y")}/ 
                               -#:value=>unit.available_date.strftime("%m/%d/%Y")
                         .filter-action
                           - if @community.data_provider == "realpagesvc"
@@ -157,18 +165,17 @@
                           - elsif @community.data_provider == "resman"
                             - if @community.display_rent
                               %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                            -# - binding.pry
                             = link_to "Apply Now", "##",:onclick=>"set_resman_url_on_favorites(this);",:id=>"psi-anchor-tag","data-unit-id"=>(unit.id),"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-community-property-id"=>@community.credential.property_id, class: "apply-now apply_now"
                           - else
                             - if @community.display_rent
                               %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
+                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
                             -# = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
                     - elsif @community.credential.present? and @community.credential.apply_now.to_s == "separate_link"
                       .m-filters
                         .m-filter-1.c-m-filter
                           %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                          %input.m-filter-1.c-m-filter.datepicker{:id => "#{unit.id}-leasing-start-date", :type => "text", :readonly => "readonly"}/
+                          %input.m-filter-1.c-m-filter.datepicker.leasing-start-date{:id => "#{unit.id}-leasing-start-date", :type => "text", :readonly => "readonly", :value=>unit.available_date.strftime("%m/%d/%Y")}/
                       .filter-action
                         - if @community.display_rent
                           %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
@@ -178,15 +185,16 @@
                         - if @community.display_rent
                           %span.c-m-total-price= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                 .c-modal-wrapper.h-class
-                  .c-m-iframe-content
-                    = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplan/image/27780/27780-1628027365-2705856e-file.jpeg")
-                  -# .c-modal-footer.zooming-content
-                  -#   %span.plus-action.zooming-action
-                  -#     %img{:src => "/assets/plus.png"}/
-                  -#   %span.minus-action.zooming-action
-                  -#     %img{:src => "/assets/minus.png"}/
-                  -#   %span.refresh-action.zooming-action
-                  -#     %img{:src => "/assets/refresh.png"}/
+                  .c-modal-body{:id => "#{unit.id}-zoomable-fav-image"}
+                    .c-m-iframe-content
+                      = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplan/image/27780/27780-1628027365-2705856e-file.jpeg")
+                  .c-modal-footer-fav.zooming-content.zoomable-map-container
+                    %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-in"}
+                      %img{:src => "/assets/plus.png"}/
+                    %a.minus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-out"}
+                      %img{:src => "/assets/minus.png"}/
+                    %a.refresh-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-reset-zoom"}
+                      %img{:src => "/assets/refresh.png"}/
 #confirm-favorites-delete.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
