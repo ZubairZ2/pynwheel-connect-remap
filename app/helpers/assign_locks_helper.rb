@@ -102,6 +102,25 @@ module AssignLocksHelper
       elsif lock_id == ""
         door.zerv_lock.update_attributes(stop_id: nil, stop_type: nil)
       end
+    elsif door.lock_provider == "Igloohome"
+      assign_igloohome_lock_to_door(community, door, lock_id)
+    end
+  end
+
+  def assign_igloohome_lock_to_door community, door, lock_id
+    if lock_id.present?
+      igloohome_lock = IgloohomeLock.find_by(device_id: lock_id, igloohome_id: community.igloohome.id) rescue nil
+    
+      if igloohome_lock.present? and door.igloohome_lock.present? and door.igloohome_lock.device_id != igloohome_lock.device_id
+        igloohome_lock.stop.update_column(:lock_provider, "")  if igloohome_lock.stop.present?
+        door.igloohome_lock.update_attributes(stop_id: nil, stop_type: nil)
+        igloohome_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
+      elsif igloohome_lock.present? and door.igloohome_lock.blank?
+        igloohome_lock.stop.update_column(:lock_provider, "") if igloohome_lock.stop.present?
+        igloohome_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
+      end
+    elsif lock_id == ""
+      door.igloohome_lock.update_attributes(stop_id: nil, stop_type: nil)
     end
   end
 

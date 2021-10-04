@@ -96,7 +96,7 @@
                     = hidden_field_tag "edgestate_lock_name" , @amenity.edgestate_locks.present? ?  @amenity.edgestate_locks.first.name + " (" + @amenity.edgestate_locks.first.remote_lock_type + ")" : ''
                     = hidden_field_tag "latch_lock_name"     , @amenity.latch_locks.present?     ?  @amenity.latch_locks.first.lock_name : ''
                     = hidden_field_tag "zerv_lock_name"      , @amenity.zerv_locks.present?      ?  @amenity.zerv_locks.first.sub_location_name + " (" + @amenity.zerv_locks.first.sub_location_friendly_name + ")" : ''
-                    = hidden_field_tag "igloohome_lock_name" , @amenity.first.igloohome_lock.present? ? @amenity.first.igloohome_lock.device_name : ''
+                    = hidden_field_tag "igloohome_lock_name" , @amenity.igloohome_locks.present? ? @amenity.igloohome_locks.first.device_name : ''
 
                   = text_field_tag :lock_name, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control amenity_edit_field"
                   %datalist#locks_list

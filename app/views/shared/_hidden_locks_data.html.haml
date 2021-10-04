@@ -19,7 +19,8 @@
     - if locks_present_hash["Igloohome"]
         .igloohome_options.hide_it
             - all_locks[:igloohome_locks].each do |lock|
-            %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
+                %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
 
 :javascript
     var locks_present_hash = #{locks_present_hash.to_json.html_safe}
+    
