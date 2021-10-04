@@ -66,35 +66,31 @@ $(document).ready(function () {
     })
 
     // This is for plotting elevator when clicked on ul dropdown
-    $("#imageselect3 li").click(function (e) {
+    $("#imageselect3 li").click(function(e){
+      if ($(this).data("id")!=""){
+          console.log($.inArray($(this).data("id"), $.map(selected, function(v) { return v[0]; })) == -1);
+          if (selected.length == 0){
+              saveTourStopPoint($(this).data("id"));
+              // selected.push([ $(this).data("id"), $(this).data("name") ]);
+          }
+          else if ($.inArray($(this).data("id"), $.map(selected, function(v) { return v[0]; })) == -1){
+              saveTourStopPoint($(this).data("id"));
+              // selected.push([ $(this).data("id"), $(this).data("name") ]);
+          }
+      }
+      // add to selected list
+      $("#selected-units").empty();
+      for (i=0; i<selected.length; i++) {
+          $("#selected-units").append('<li class="s-unit" data-id='+i+'>' + selected[i][1] + '</li>');
+      }
+      $('#newmsg').hide();
 
-        if ($(this).data("id") != "") {
-            console.log($.inArray($(this).data("id"), $.map(selected, function (v) {
-                return v[0];
-            })) == -1);
-            if (selected.length == 0) {
-                saveTourStopPoint($(this).data("id"));
-                // selected.push([ $(this).data("id"), $(this).data("name") ]);
-            } else if ($.inArray($(this).data("id"), $.map(selected, function (v) {
-                return v[0];
-            })) == -1) {
-                saveTourStopPoint($(this).data("id"));
-                // selected.push([ $(this).data("id"), $(this).data("name") ]);
-            }
-        }
-        // add to selected list
-        $("#selected-units").empty();
-        for (i = 0; i < selected.length; i++) {
-            $("#selected-units").append('<li class="s-unit" data-id=' + i + '>' + selected[i][1] + '</li>');
-        }
-        $('#newmsg').hide();
-
-        // hide from unused list
-        $(this).css({"display": "none"});
-        plotMode();
-        $("#imageselect3").toggle();
-        // e.stopPropagation()
-        // window.location.reload()
+      // hide from unused list
+      $(this).css({"display": "none"});
+      plotMode();
+      $("#imageselect3").toggle();
+      // e.stopPropagation()
+      // window.location.reload()
     });
 
     // $('.amenities-list').on('change', function(e) {
@@ -173,76 +169,65 @@ $(document).ready(function () {
             }
             var elemPos = position($('.map-block')[0]);
             // var elemPos = position(e.target);
+
             dx = e.type === 'touchend' ? ((e.changedTouches[0].pageX - elemPos.left)) : parseInt($('#active_x_plot').html());
             dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : parseInt($('#active_y_plot').html());
+
             marker_color = $('#marker_color').html();
-            camera_margin = $('#camera-margin').html();
             marker_font_size = ($('#font_size').html());
             left_margin = parseInt($('#left_margin').html());
             right_margin = parseInt($('#right_margin').html());
+
             var transform = mapPanZoom ? mapPanZoom.getTransform() : {};
             var scaleFactor = (1 / (transform.scale || 1));
+
             dx = (dx * scaleFactor) - (e.type === 'touchend' ? (transform.x * scaleFactor) : (10 * scaleFactor));
             dy = (dy * scaleFactor) - (e.type === 'touchend' ? (transform.y * scaleFactor) : (10 * scaleFactor));
+
+            dx = Math.round(dx)
+            dy = Math.round(dy)
+
+            camera_margin = $('#camera_margin').html();
+            door_marker_color = $('#door_marker_color').html();
+            door_fontsize = ($('#door_fontsize').html());
+
             if (addmode) {
                 // save plotting for each selected unit
-                for (i = 0; i < selected.length; i++) {
-                    savePlot(selected[i][0], dx, dy);
-                }
-                var url = "";
-                if (typeof floorplan_id !== 'undefined') {
-                    url = '/communities/' + community_id + '/floorplans/' + floorplan_id + '/amenities/' + selected[0][0] + '/remove_amenity';
-                } else if (typeof sitemap_id !== 'undefined') {
-                    url = '/communities/' + community_id + '/units/' + selected[0][0] + '/remove_plot'
-                    // url = '/communities/'+community_id+'/sitemaps/'+sitemap_id+'/amenities/'+selected[0][0]+'/remove_amenity';
-                } else if (typeof floorplate_id_for_amenity !== 'undefined') {
-                    url = '/communities/' + community_id + '/floorplates/' + floorplate_id_for_amenity + '/amenities/' + selected[0][0] + '/remove_amenity'
-                } else if (typeof tour_id !== 'undefined') {
-                    url = '/communities/' + community_id + '/tours/' + tour_id + '/resetStartingPoint'
-                } else if (typeof tour_id_for_stop !== 'undefined') {
-                    url = '/communities/' + community_id + '/tours/' + community_tour_id + '/tour_stops/' + selected[0][0] + '/resetTourStopPoint'
-                } else if (typeof floorplate_id !== 'undefined') {
-                    url = '/communities/' + community_id + '/units/' + selected[0][0] + '/remove_plot_from_floorplate?floorplate_id=1'
-                } else {
-                    url = '/communities/' + community_id + '/units/' + $(this).attr("title") + '/remove_plot'
-                }
-                if (typeof tour_id_for_stop !== 'undefined') {
-                    tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-                    tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fa fa-star' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top:" + camera_margin + "px;'></i></i>";
-                    tag += "</a>"
-                } if (typeof tour_id !== 'undefined') {
-                    dx = dx - 3;
-                    dy = dy - 3;
-                    tag = "<a class='start-point marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-                    tag += "<img src='/assets/star.png'>";
-                    tag += "</a>"
-                    arr[0][1] = dx;
-                    arr[0][2] = dy;
-                }  else if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined') {
-                    tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + (dx - left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: " + marker_font_size + "px;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-                    tag += "<i class='fas fa-map-marker-alt' style='color: " + marker_color + ";'></i>";
-                    tag += "</a>"
+                if(typeof accesspointplot !== "undefined" && accesspointplot == true){
+                    try {
+                        for (i=0; i<selected.length; i++) {
+                            saveAccessPoint(selected[i], dx, dy);
+                        }
+                    }
+                    catch(err) {
+                        location.reload()
+                    }
 
-                } else if (typeof floorplate_id_for_elevator !== 'undefined') {
-                    elevator_remove_url = '/communities/' + community_id + '/elevators/' + selected[0][0] + '/remove_elevator_plotting'
-                    marker_color = '#d37474'
-                    tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + elevator_remove_url + "'>"
-                    tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fa fa-reorder' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top:" + camera_margin + "px;'></i></i>";
-                    tag += "</a>"
-                } else {
-                    marker_color = '#d37474'
-                    marker_font_size = '27px'
-                    tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
-                    tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fas fa-camera-retro' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top: " + camera_margin + "px;'></i></i>";
-                    tag += "</a>"
+                    tag = getAccessPointTag();
                 }
-                // add new marker to display
-                //tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][0] + "' style='left:" + dx + "px; top:" + dy +"px; position:absolute;'>";
+                else{
+                    try {
+                        for (i=0; i<selected.length; i++) {
+                            savePlot(selected[i][0], dx, dy);
+                        }
+                    }
+                    catch(err) {
+                        location.reload()
+                    }
+
+                    if(adddoorsmode){
+                        tag = getDoorTag(selected[0][0])
+                    }
+                    else{
+                        var url = getDeletionUrl();
+                        tag = getTagToPlot(url)
+                    }
+                }
+
+
                 $('#map').append(tag);
-                // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
-                //$(".marker:last").trigger("click")
-                reset();
                 doDraggable();
+                reset();
             }
         }
     });
@@ -260,5 +245,91 @@ $(document).ready(function () {
         mapPanZoom.zoomInOut(189);
     });
 
-
 });
+
+function getDeletionUrl(){
+    if (typeof floorplan_id !== 'undefined'){
+        return '/communities/'+community_id+'/floorplans/'+floorplan_id+'/amenities/'+selected[0][0]+'/remove_amenity';
+    }
+    else if (typeof sitemap_id !== 'undefined'){
+        return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot'
+    }
+    else if (typeof floorplate_id_for_amenity !== 'undefined'){
+        return '/communities/'+community_id+'/floorplates/'+floorplate_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity?floor=' + floor
+    }
+    else if (typeof sitemap_id_for_amenity !== 'undefined'){
+        return '/communities/'+community_id+'/sitemaps/'+sitemap_id_for_amenity+'/amenities/'+selected[0][0]+'/remove_amenity'
+    }
+    else if (typeof tour_id !== 'undefined'){
+        return '/communities/'+community_id+'/tours/'+tour_id+'/resetStartingPoint'
+    }
+    else if (typeof tour_id_for_stop !== 'undefined'){
+        return '/communities/'+community_id+'/tours/'+community_tour_id+'/tour_stops/'+selected[0][0]+'/resetTourStopPoint'
+    }
+    else if (typeof floorplate_id !== 'undefined'){
+        return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot_from_floorplate?floorplate_id='+floorplate_id
+    }
+    else{
+        return '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'
+    }
+}
+
+function getTagToPlot(url){
+    if (typeof tour_id_for_stop !== 'undefined') {
+        tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+        tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fa fa-star' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top:" + camera_margin + "px;'></i></i>";
+        tag += "</a>"
+    }
+    else if (typeof tour_id !== 'undefined'){
+        dx = dx - 3;
+        dy = dy - 3;
+        tag = "<a class='start-point marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+        tag += "<img src='/assets/star.png'>";
+        tag += "</a>"
+        arr[0][1] = dx;
+        arr[0][2] = dy;
+    }
+    else if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined'){   
+        if(automate_wayfinding == true && self_tour == true) 
+            plus_icon = returnPlusIconTag(selected[0][0], "unit", -6)
+        else
+            plus_icon = ''
+
+        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute">
+                    <a id="m_${selected[0][0]}" style="font-size: ${marker_font_size}px" title="${selected[0][1]}" data-toggle="modal" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="unit" href="javascript:void(0)">
+                        <i class="fas fa-map-marker-alt" style="color: ${marker_color};"></i> </a>
+                    ${plus_icon}
+                </p>`
+    }
+    else if (typeof floorplate_id_for_elevator !== 'undefined') {
+        elevator_remove_url = '/communities/' + community_id + '/elevators/' + selected[0][0] + '/remove_elevator_plotting'
+        marker_color = '#d37474'
+        tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + elevator_remove_url + "'>"
+        tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fa fa-reorder' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top:" + camera_margin + "px;'></i></i>";
+        tag += "</a>"
+    }
+
+    else if(typeof floorplate_id_for_amenity !== 'undefined' || typeof sitemap_id_for_amenity !== 'undefined'){
+        if(automate_wayfinding == true && self_tour == true) 
+            plus_icon = returnPlusIconTag(selected[0][0], "amenity", 0)
+        else
+            plus_icon = ''
+
+        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute">
+                    <a id="m_${selected[0][0]}" data-toggle="modal" title="${selected[0][1]}" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="amenity">
+                        <i class="custom-icon" style="width: ${marker_font_size}px; height: ${marker_font_size}px; border: 2px solid; color: ${marker_color}" >
+                            <i class="fas fa-camera-retro" style="color: ${marker_color}; font-size: ${parseInt(marker_font_size) /2}px; margin-top:${camera_margin}px;"></i>
+                        </i>
+                    </a>
+                    ${plus_icon}
+                </p>`
+    }
+    else {
+        tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
+        tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fas fa-camera-retro' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top:" + camera_margin + "px;'></i></i>";
+        tag += "</a>"
+    }
+    return tag
+}
+
+

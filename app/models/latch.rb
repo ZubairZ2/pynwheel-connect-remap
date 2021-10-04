@@ -3,23 +3,32 @@ class Latch < ApplicationRecord
   belongs_to :community
   has_many :latch_locks, dependent: :destroy
 
-  def import_data(file)
-    Thread.new do
-      sleep 4
-      execution_context = Rails.application.executor.run!
-      begin
-        if file.path.split('.').last.include?("csv")
-          names_with_ids = Community.pluck(:id,:name).map{|x| [x[0], x[1].downcase.gsub(/([-() ])/, '')]}
-          CSV.foreach(file.path, headers: true) do |row|
-            community = Community.find_by_name row[0]
-            if community.present?
-              save_lock_info(community,row)
-            else
-              id = names_with_ids.map{|n| n[0] if n[1] == row[0].downcase.gsub(/([-() ])/, '')}.compact
-              community = Community.find_by_id id.first
-              if community.present?
-                save_lock_info(community, row)
-              end
+    def import_data(file)
+        Thread.new do
+            execution_context = Rails.application.executor.run!
+            clear_locks_provider(community)
+            begin
+                if file.path.split('.').last.include?("csv")
+                    names_with_ids = Community.pluck(:id,:name).map{|x| [x[0], x[1].downcase.gsub(/([-() ])/, '')]}
+                    CSV.foreach(file.path, headers: true) do |row|
+                        community = Community.find_by_name row[0]
+                        if community.present?
+                            save_lock_info(community,row)
+                        else
+                            id = names_with_ids.map{|n| n[0] if n[1] == row[0].downcase.gsub(/([-() ])/, '')}.compact
+                            community = Community.find_by_id id.first
+                            if community.present?
+                                save_lock_info(community, row)
+                            end
+                        end
+                    end
+                    notify_pusher({success: "Locks are imported successfully."})
+                else
+                    notify_pusher({error: "Invalid File"})
+                end
+            rescue => exception
+                puts "--------------------------- an error occured -----------------------------"
+                notify_pusher({error: "Error in parsing " + "the uploaded CSV" + " file."})
             end
           end
           notify_pusher({success: "Locks are imported successfully."})
@@ -58,12 +67,25 @@ class Latch < ApplicationRecord
   def parse_stop(stop_name)
     data=nil
 
-    if stop_name.include?('-')
-      building_name, unit_name = stop_name.split('-',2)
-    else
-      building_name = nil
-      unit_name = stop_name
+    def clear_locks_provider(community)
+        community.units.where(lock_provider: "Latch").update_all(lock_provider: "")
+        community.amenities.where(lock_provider: "Latch").update_all(lock_provider: "")
+        community.elevators.where(lock_provider: "Latch").update_all(lock_provider: "")
+        community.building_starting_point.where(lock_provider: "Latch").update_all(lock_provider: "")
+        community.tour.where(lock_provider: "Latch").update_all(lock_provider: "")
+        community.doors.where(lock_provider: "Latch").update_all(lock_provider: "")
     end
+
+
+    def parse_stop(stop_name)
+        data=nil
+
+        if stop_name.include?('-')
+            building_name, unit_name = stop_name.split('-',2)
+        else
+            building_name = nil
+            unit_name = stop_name
+        end
 
     if building_name == nil
       building_name_ = ''
@@ -74,10 +96,11 @@ class Latch < ApplicationRecord
     data = community.units.where('(marketing_name = ? or provider_unit_id = ?) and (building = ? or building = ?)', unit_name, unit_name, building_name, building_name_).first rescue nil
     data = community.units.where('(marketing_name = ? or provider_unit_id = ?) and (building = ? or building = ?)', stop_name, stop_name, nil, '').first rescue nil unless data.present?
 
-    data = community.amenities.where(name: stop_name).first if data.nil?
-    data = community.elevators.where(name: stop_name).first if data.nil?
-    data = community.building_starting_point.where(name: stop_name).first if data.nil?
-    data = community.tour.name == stop_name ? community.tour : nil if data.nil?
+        data = community.doors.where(name: sub_location_name).first if data.nil?
+        data = community.amenities.where(name: stop_name).first if data.nil?
+        data = community.elevators.where(name: stop_name).first if data.nil?
+        data = community.building_starting_point.where(name: stop_name).first if data.nil?
+        data = community.tour.name == stop_name ? community.tour : nil if data.nil?
 
     if data.nil? and stop_name.count('-') > 1
       (stop_name.count('-')+1).times.each do |i|

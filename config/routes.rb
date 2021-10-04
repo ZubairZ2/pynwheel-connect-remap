@@ -25,7 +25,7 @@ Rails.application.routes.draw do
   # selfie matching
   get '/id_selfie_matching/:tour_user_id', to: 'tours#id_selfie_matching', as: 'manual_selfie_match', format: :json
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
-  
+
   get 'tours/index'
   post 'tours/customize_tour', to: 'tours#customize_tour' 
   delete 'tours/reset_to_standard_tour', to: 'tours#reset_to_standard_tour'
@@ -37,8 +37,8 @@ Rails.application.routes.draw do
     get 'scheduler_widget_button', to: 'widgets#scheduler_widget_button'
 
     # get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
-    
-  end 
+
+  end
   get 'scheduler/change_schedule_tour_time/:id', to: 'scheduler_widget/widgets#change_tour_time_widget', as: :change_tour_time
 
   devise_for :users, :controllers => { :invitations => 'invitations', sessions: 'users/sessions' }
@@ -50,7 +50,7 @@ Rails.application.routes.draw do
   root to: "home#index"
   resources :chatrooms
   resources :chats
-  get 'listening_message', to: 'chats#listening_message' 
+  get 'listening_message', to: 'chats#listening_message'
   post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages'
   resources :analytics, only: [:index]
   resources :companies do
@@ -105,8 +105,8 @@ Rails.application.routes.draw do
       get :web_cam_test
     end
 
-    resources :building_starting_points 
-    resources :crm_providers 
+    resources :building_starting_points
+    resources :crm_providers
     resources :remote_locks do
       collection do
         get :authorization_code
@@ -186,7 +186,7 @@ Rails.application.routes.draw do
       # end
     end
     resources :floorplans do
-      resources :amenities,controller: "floorplan_amenities" do
+      resources :amenities, controller: "floorplan_amenities" do
         post :plot_amenity
         collection do
           get :plot_amenities
@@ -208,11 +208,11 @@ Rails.application.routes.draw do
         post :save_floorplan_name_order
       end
     end
-    
+
     resources :elevators do
       resources :elevator_galleries
       # do
-        # post :destroy, controller: 'elevators', action: 'destroy_elevator_gallery'
+      # post :destroy, controller: 'elevators', action: 'destroy_elevator_gallery'
       # end
       # member do
       #   get :edit_gallery_image_of
@@ -239,6 +239,8 @@ Rails.application.routes.draw do
         post :extract_floors
         get :show_amenity_image_in_modal
         put :crop_amenity_image
+        put :update_amenity_door_lock
+        delete :remove_amenity_door_plot
       end
     end
     resources :tour_users do
@@ -250,25 +252,39 @@ Rails.application.routes.draw do
       resources :elevators, controller: "floorplates" do
         post :plot_elevator
       end
-      resources :amenities,controller: "floorplate_amenities" do
+      resources :amenities, controller: "floorplate_amenities" do
         post :plot_amenity
         collection do
           get :plot_amenities
           delete :remove_amenities_plot
         end
         member do
+          post :plot_amenity_door
+          post :load_amenity_door_lock
           delete :remove_amenity
+        end
+      end
+      resources :access_points do
+        member do
+          get :open_access_point_modal
+          post :plot_access_point
+          post :add_new_access_points
+          post :load_access_point_lock
+          put :update_access_point_lock
+          delete :remove_access_point_plot
         end
       end
       get :select_floor
       post :select_floor
+      get :select_many_floors
       get :plotexp
       get :grid_overlay
       post :adjust_marker_positions
       get :floatplate_images
+      post :save_access_point_for_floorplate
     end
     resources :units do
-      resources :amenities,controller: "unit_amenities" do
+      resources :amenities, controller: "unit_amenities" do
         post :plot_amenity
         collection do
           get :plot_amenities
@@ -288,15 +304,19 @@ Rails.application.routes.draw do
         put :crop_unit_secondary_image
       end
       member do
+        post :load_unit_door_lock
         post :ajaxplotunit
         post :ajaxplotunitforfloorplate
+        post :plot_unit_door
         delete :remove_plot
         delete :remove_plot_from_floorplate
+        delete :remove_unit_door_plot
         post :adjust_position
         post :load_remotelock_data
         post :clear_locks
         delete :remove_pri_scnd_image
         post :set_amenities_for_units
+        put :update_unit_door_lock
       end
       collection do
         post :set_floor
@@ -307,6 +327,7 @@ Rails.application.routes.draw do
         post :set_sold
         post :add_description
         post :set_image
+        post :plot_multiple_units_door_for_floorplate
       end
     end
     resources :tutorials do
@@ -321,7 +342,18 @@ Rails.application.routes.draw do
           delete :remove_amenities_plot
         end
         member do
+          post :plot_amenity_door
+          post :load_amenity_door_lock
           delete :remove_amenity
+        end
+      end
+      resources :access_points do
+        member do
+          get :open_access_point_modal
+          post :plot_access_point
+          post :load_access_point_lock
+          put :update_access_point_lock
+          delete :remove_access_point_plot
         end
       end
       post :save_sitemap_image
@@ -335,7 +367,7 @@ Rails.application.routes.draw do
         post :adjust_marker_positions
       end
     end
-    resources :settings , only: :index
+    resources :settings, only: :index
     resources :design, only: :index do
       collection do
         get :logo
@@ -402,7 +434,6 @@ Rails.application.routes.draw do
       end
     end
 
-
     resources :homepage_icons, only: [:index, :create, :update] do
       collection do
         get :show_image_in_modal
@@ -453,7 +484,7 @@ Rails.application.routes.draw do
         get :show_images
         post :save_gallery_video
       end
-    end  
+    end
     resources :webpages, only: :index do
       collection do
         get :apply_now
@@ -478,15 +509,31 @@ Rails.application.routes.draw do
         delete :delete_additional_image
       end
     end
+    get 'return_door_lock', to: 'amenities#return_door_lock'
   end
   post '/draw_map_line/:unit_or_amenity', to: 'tours#draw_map_line', as: :draw_line
   post '/add_elevator/:tour_id/:community_id', to: 'tours#add_elevator', as: :create_elevator
   post '/update_elevator', to: 'tours#update_elevator', as: :update_elevator
-  
+  get '/remaining_floors', to: 'access_points#remaining_access_point_floors'
+
   post :save_path_point, to: 'tours#point_save'
   post :update_path_point, to: 'tours#point_update'
   post :delete_path_point, to: 'tours#point_delete'
   post :delete_path_on_sort_change, to: 'tours#delete_path_on_sort_change'
+
+  #### Hallways Controller Routes ####
+  post :save_hallways_point, to: 'hallways#point_save'
+  post :update_hallways_point, to: 'hallways#update_point'
+  post :delete_hallways_point, to: 'hallways#remove_point'
+  post :connect_leaf_point, to: 'hallways#connect_leaf_point'
+  post :save_selected_point, to: 'hallways#save_selected_point'
+
+  #### Automate Plotting Controller Routes ####
+  resources :automate_plotting, only: :index do
+    collection do
+      get :shortest_path
+    end
+  end
 
   namespace :api, constraints: { format: 'json' } do
     namespace :v1 do
@@ -521,6 +568,7 @@ Rails.application.routes.draw do
           get :update_unit_floorplan_data
           delete :delete_tour_stop
           delete :delete_tour_stop_v1
+          delete :delete_tour_stop_v2
         end
         collection do
           get :authenteq

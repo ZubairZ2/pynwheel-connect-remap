@@ -25,7 +25,85 @@ module AssignLocksHelper
     {igloohome_locks: igloohome_locks, edgestate_locks: edge_state_locks, dwelo_locks: dwelo_locks, latch_locks: latch_locks, zerv_locks: zerv_locks}
   end
 
-  private
+  def existing_locks_provider(community)
+    locks_present_hash = {}
+    locks_present_hash["Dwelo"] = community.multiple_locks_provider.include?("Dwelo") && community.dwelo.present? && community.dwelo.remote_locks.dwelo_locks.present?
+    locks_present_hash["EdgeState"] = community.multiple_locks_provider.include?("EdgeState") && community.edge_state.present? && community.edge_state.remote_locks.edgestate_locks.present?
+    locks_present_hash["Latch"] = community.multiple_locks_provider.include?("Latch") && community.latch.present? && community.latch.latch_locks.present?
+    locks_present_hash["Zerv"] = community.multiple_locks_provider.include?("Zerv") && community.zerv.present? && community.zerv.zerv_locks.present?
+    locks_present_hash["Igloohome"] = community.multiple_locks_provider.include?("Igloohome") &&  community.igloohome.present? && community.igloohome.igloohome_locks.present?
+
+    return locks_present_hash
+  end
+
+  def assign_lock_to_door(community, door, lock_id)
+    if door.lock_provider == "Latch"
+
+      if lock_id.present?
+        latch_lock = LatchLock.find_by(door_uuid: lock_id, latch_id: community.latch.id) rescue nil
+
+        if latch_lock.present? and door.latch_lock.present? and door.latch_lock.door_uuid != latch_lock.door_uuid
+          latch_lock.stop.update_column(:lock_provider, "")   if latch_lock.stop.present?
+          door.latch_lock.update_attributes(stop_id: nil, stop_type: nil)
+          latch_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
+        elsif latch_lock.present? and door.latch_lock.blank?
+          latch_lock.stop.update_column(:lock_provider, "")   if latch_lock.stop.present?
+          latch_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
+        end
+      elsif lock_id == ""
+        door.latch_lock.update_attributes(stop_id: nil, stop_type: nil)
+      end
+    
+    elsif door.lock_provider == "Dwelo"
+
+      if lock_id.present?
+        dwelo_lock = RemoteLock.find_by(device_id: lock_id, dwelo_id: community.dwelo.id, edge_state_id: nil) rescue nil
+
+        if dwelo_lock.present? and door.dwelo_lock.present? and door.dwelo_lock.device_id != dwelo_lock.device_id
+          dwelo_lock.stop.update_column(:lock_provider, "")   if dwelo_lock.stop.present?
+          door.dwelo_lock.update_attributes(stop_id: nil, stop_type: nil)
+          dwelo_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
+        elsif dwelo_lock.present? and door.dwelo_lock.blank?
+          dwelo_lock.stop.update_column(:lock_provider, "")   if dwelo_lock.stop.present?
+          dwelo_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
+        end
+      elsif lock_id == ""
+          door.dwelo_lock.update_attributes(stop_id: nil, stop_type: nil)
+      end
+    elsif door.lock_provider == "EdgeState"
+
+        if lock_id.present?
+          edgestate_lock = RemoteLock.find_by(device_id: lock_id, edge_state_id: community.edge_state.id, dwelo_id: nil) rescue nil
+
+          if edgestate_lock.present? and door.edgestate_lock.present? and door.edgestate_lock.device_id != edgestate_lock.device_id
+            edgestate_lock.stop.update_column(:lock_provider, "")   if edgestate_lock.stop.present?
+            door.edgestate_lock.update_attributes(stop_id: nil, stop_type: nil)
+            edgestate_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
+          elsif edgestate_lock.present? and door.edgestate_lock.blank?
+            edgestate_lock.stop.update_column(:lock_provider, "")   if edgestate_lock.stop.present?
+            edgestate_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
+          end
+        elsif lock_id == ""
+          door.edgestate_lock.update_attributes(stop_id: nil, stop_type: nil)
+        end
+    elsif door.lock_provider == "Zerv"
+
+      if lock_id.present?
+        zerv_lock = ZervLock.find_by(mac_id: lock_id, zerv_id: community.zerv.id) rescue nil
+      
+        if zerv_lock.present? and door.zerv_lock.present? and door.zerv_lock.mac_id != zerv_lock.mac_id
+          zerv_lock.stop.update_column(:lock_provider, "")  if zerv_lock.stop.present?
+          door.zerv_lock.update_attributes(stop_id: nil, stop_type: nil)
+          zerv_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
+        elsif zerv_lock.present? and door.zerv_lock.blank?
+          zerv_lock.stop.update_column(:lock_provider, "") if zerv_lock.stop.present?
+          zerv_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
+        end
+      elsif lock_id == ""
+        door.zerv_lock.update_attributes(stop_id: nil, stop_type: nil)
+      end
+    end
+  end
 
   def assign_latch_lock community, stop, lock_id
     if lock_id.present?

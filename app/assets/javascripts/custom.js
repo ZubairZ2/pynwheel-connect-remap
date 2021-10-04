@@ -11,7 +11,11 @@ $(document).ready(function(e){
   })
 
   $('body').on("click", ".imageselect", function(e){
-    $("#imageselect").toggle();
+    debugger
+    if($("#selected-units").children().length == 0 )
+        $("#imageselect").toggle();
+    else
+        $("#selected-units").children().addClass("blink_me").css("color", "red");
     e.stopPropagation();
   })
     $('body').on("click", ".amenity-imageselect", function(e){
@@ -196,6 +200,12 @@ $('#confirm-delete').on('show.bs.modal', function(e) {
     $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
     $(this).find('#record-name').html('Delete '+$(e.relatedTarget).data('name'));
     $(this).find('#record-message').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
+});
+$('#ajax-confirm-delete').on('show.bs.modal', function(e) {
+    $(this).find('#record-name').html('Delete '+$(e.relatedTarget).data('name'));
+    $(this).find('#record-message').html('Are you sure you want to delete this '+$(e.relatedTarget).data('name')+'?');
+    $(this).find('.ajax-btn-delete').attr('data-href', $(e.relatedTarget).data('href'));
+    $(this).find('.ajax-btn-delete').attr('data-plotted-category', $(e.relatedTarget).data('plotted-category'));
 });
 $('#confirm-delete-visitor').on('show.bs.modal', function(e) {
     $(this).find('.btn-ok-visitor').attr('href', $(e.relatedTarget).data('href'));

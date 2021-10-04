@@ -22,6 +22,8 @@
 // require turbolinks
 //= require amenity
 //= require tour_stop_plotting
+//= require door-plotting
+//= require access-point-plotting
 //= require pyn.min
 //= require jquery.validationEngine-en
 //= require jquery.validationEngine
@@ -43,7 +45,6 @@
 //= require regions
 //= require floorplate
 //= require chosen.jquery.min
-
 //= require ekko-lightbox
 //= require jquery.remotipart
 //= require jquery.mCustomScrollbar.concat.min
@@ -59,9 +60,9 @@
 //= require tags
 //= require multiple_tabs
 //= require easy-loading
-//= require hammer.min
 //= require jquery.mousewheel.min
-//= require zoom-marker
+//= require jquery.line
+//= require zoom-marker.min
 //= require pinch-zoom.umd
 //= require jquery.ui.touch-punch.min
 //= require accesses
@@ -72,7 +73,8 @@
 // require_tree .
 //= require bootstrap-wysihtml5
 //= require bootstrap-wysihtml5/locales
+//= require automate_plotting
 
-$(document).ready(function() {
-    new Clipboard('.clipboard-btn');
+$(document).ready(function(){
+	new Clipboard('.clipboard-btn');
 });

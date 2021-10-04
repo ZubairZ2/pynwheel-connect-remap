@@ -914,7 +914,7 @@
     var start_point_array = []
     var stop_point_array = []
     function drop_point_on_screen(db_data){
-
+    debugger;
       var size =  point_size.toString()+ 'px';
 
       id = "point_"+db_data.point.id.toString()
@@ -1213,7 +1213,6 @@
   });
 
   $(document).ready(function(){
-
     function hasDuplicates(array,times_hash) {
       var valuesSoFar = Object.create(null);
       for (var i = 0; i < array.length; ++i) {
