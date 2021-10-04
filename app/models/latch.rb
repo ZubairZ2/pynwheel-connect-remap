@@ -61,7 +61,7 @@ class Latch < ApplicationRecord
         community.amenities.where(lock_provider: "Latch").update_all(lock_provider: "")
         community.elevators.where(lock_provider: "Latch").update_all(lock_provider: "")
         community.building_starting_point.where(lock_provider: "Latch").update_all(lock_provider: "")
-        community.tour.where(lock_provider: "Latch").update_all(lock_provider: "")
+        community.tour.update(lock_provider: "") if community.tour.lock_provider === "Latch"
         community.doors.where(lock_provider: "Latch").update_all(lock_provider: "")
     end
 
