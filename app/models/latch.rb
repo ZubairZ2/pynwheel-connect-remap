@@ -56,16 +56,6 @@ class Latch < ApplicationRecord
   end
 
 
-<<<<<<< Updated upstream
-  def clear_locks_provider(community)
-      community.units.where(lock_provider: "Latch").update_all(lock_provider: "")
-      community.amenities.where(lock_provider: "Latch").update_all(lock_provider: "")
-      community.elevators.where(lock_provider: "Latch").update_all(lock_provider: "")
-      community.building_starting_point.where(lock_provider: "Latch").update_all(lock_provider: "")
-      community.tour.where(lock_provider: "Latch").update_all(lock_provider: "")
-      community.doors.where(lock_provider: "Latch").update_all(lock_provider: "")
-  end
-=======
     def clear_locks_provider(community)
         community.units.where(lock_provider: "Latch").update_all(lock_provider: "")
         community.amenities.where(lock_provider: "Latch").update_all(lock_provider: "")
@@ -74,7 +64,6 @@ class Latch < ApplicationRecord
         community.tour.update(lock_provider: "") if community.tour.lock_provider === "Latch"
         community.doors.where(lock_provider: "Latch").update_all(lock_provider: "")
     end
->>>>>>> Stashed changes
 
 
   def parse_stop(stop_name)
