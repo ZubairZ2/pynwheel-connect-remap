@@ -709,7 +709,7 @@ json.tours @tours do |tour|
           end
         
         elsif stop_lock_provider == "Igloohome"
-          igloohome_lock = IgloohomeLock.where(igloohome_id: @community.igloohome.id, stop_id: stop.id) if @community.igloohome.present?
+          igloohome_lock = IgloohomeLock.where(igloohome_id: @community.igloohome.id, stop_id: stop.id).last if @community.igloohome.present?
 
           if igloohome_lock.present? && igloohome_lock.device_id.present?
             json.guest_pin ''
@@ -853,7 +853,7 @@ json.tours @tours do |tour|
           end
         
         elsif stop_lock_provider == "Igloohome"
-          igloohome_lock = IgloohomeLock.where(igloohome_id: @community.igloohome.id, stop_id: stop.id) if @community.igloohome.present?
+          igloohome_lock = IgloohomeLock.where(igloohome_id: @community.igloohome.id, stop_id: stop.id).last if @community.igloohome.present?
 
           if igloohome_lock.present? && igloohome_lock.device_id.present?
             json.guest_pin ''
