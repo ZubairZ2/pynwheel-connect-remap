@@ -599,10 +599,10 @@ module ShortestPath
         source = floors_graph[building][destination_floor_id].source
       end
     end # building loop end
-    #path_object_in_arr_order = change_three_d_path_to_one_d_path(path_object_in_order) # no need here
-    mobile_path, upstair_elevator_hash, downstair_elevator_hash = fetch_paths_arr_for_floorplate_multiple_buildings(path_object_in_order)
-    #path_object_in_arr_order, @floors_ids
-    return [],[]
+
+    mobile_path = fetch_paths_arr_for_floorplate_multiple_buildings(path_object_in_order)
+    new_stops_arr = update_new_stops_arr_for_multiple_buildings(new_stops_arr)
+    return mobile_path, new_stops_arr
   end
   def return_path_points_to_mobile(mobile_path, source_type, dest_type, source_id, dest_id)
     path_points = []
@@ -1199,7 +1199,9 @@ module ShortestPath
     def fetch_paths_arr_for_floorplate_multiple_buildings(path_object_in_order)
       tour_stop_type_arr = ["Unit", "unit", "Amenity", "amenity", "elevator", "Elevator", "building_starting_exit_point", "building_starting_point"]
       stops_id_hash_reverse = convert_values_into_keys(@stops_id_hash)
-      path = []; source_type = "Tour"; from = "building_starting_point"; source_id = 0; path_points = [] #initialize it for access in 2d loop
+      path = []; source_type = "Tour"; from = "building_starting_point"; source_id = 0; path_points = [], actual_path = [] #initialize it for access in 2d loop
+      @upstair_elevator_hash, @downstair_elevator_hash = {}, {}
+      @building_list.each {|building| @upstair_elevator_hash[building] = {}; @downstair_elevator_hash[building] = {}; }
       @building_list.each do |building|
         # for upstair
         @floors_ids.each_with_index do |floor, indx|
@@ -1248,6 +1250,8 @@ module ShortestPath
             end
           end
         end
+        actual_path += update_path_by_removing_floor_for_buildings(path, "upstair")
+        path = []
         #for downstair
         source_type = "TourStop"
         from = "elevator"
@@ -1282,9 +1286,10 @@ module ShortestPath
             end
           end
         end
+        actual_path += update_path_by_removing_floor_for_buildings(path, "downstair")
+        path = []
       end
-      path
-      binding.pry
+      actual_path
     end
     def fetch_destination_stop_id(point, stops_id_hash_reverse)
       if point.has_key?("door_id")
@@ -1313,6 +1318,23 @@ module ShortestPath
       end
       return stop_to_stop_path, elevator_hash
     end
+    def update_path_by_removing_floor_for_buildings(stop_to_stop_path, type)
+      source_id, dest_id, source_stop, destination_stop, floor_index, building_index =2, 3, 5, 6, 7, 8
+      need_to_ignore_stops = ["unit", "amenity", "building_starting_point", "building_starting_exit_point"]
+      elevator_hash = {}
+      stop_to_stop_path.each_with_index do |path, indx|
+        if (need_to_ignore_stops.include?(path[source_stop]) && path[destination_stop] == "elevator")
+          @upstair_elevator_hash[path[building_index]][path[floor_index]] = @upstair_elevator_hash[path[floor_index]].nil? ? ([path[dest_id]]) : (@upstair_elevator_hash[path[floor_index]] + [path[dest_id]]) if type == "upstair"
+          @downstair_elevator_hash[path[building_index]][path[floor_index]] = @downstair_elevator_hash[path[floor_index]].nil? ? ([path[dest_id]]) : (@downstair_elevator_hash[path[floor_index]] + [path[dest_id]]) if type == "downstair"
+        elsif path[source_stop] == "elevator" && path[destination_stop] == "elevator" && path[source_id] == path[dest_id]
+          stop_to_stop_path = stop_to_stop_path - [path]
+        elsif path[source_stop] == "elevator" && path[destination_stop] == "elevator" && path[source_id] != path[dest_id]
+          @upstair_elevator_hash[path[building_index]][path[floor_index]] = @upstair_elevator_hash[path[floor_index]].nil? ? ([path[dest_id]]) : (@upstair_elevator_hash[path[floor_index]] + [path[dest_id]]) if type == "upstair"
+          @downstair_elevator_hash[path[building_index]][path[floor_index]] = @downstair_elevator_hash[path[floor_index]].nil? ? ([path[dest_id]]) : (@downstair_elevator_hash[path[floor_index]] + [path[dest_id]]) if type == "downstair"
+        end
+      end
+      stop_to_stop_path
+    end
     def update_new_stops_arr(new_stops_arr, upstair_elevator_hash, downstair_elevator_hash) # sort stops according mobile path 
       stops_arr = [@community.tour]
       # for upstair
@@ -1338,6 +1360,45 @@ module ShortestPath
         end
       end
       stops_arr << @community.tour
+      stops_arr
+    end
+    def update_new_stops_arr_for_multiple_buildings(new_stops_arr) # sort stops according mobile path 
+      stops_arr = []
+      @building_list.each do |building|
+        # add starting point and building start/exit point
+        if @building_list.first ==  building
+          stops_arr << @community.tour
+          stops_arr << TourStop.find_by(stop_type: "building_starting_point", stop_id: @building_to_building_id[building])
+        end
+        # for upstair
+        @original_presendece_arr[building].keys().sort().each do |floor|
+          if @original_presendece_arr[building][floor].present?
+            @original_presendece_arr[building][floor].each do |arr|
+              indx = find_index_for_stop(new_stops_arr, arr[0], arr[1])
+              if indx != -1
+                stops_arr << new_stops_arr[indx]
+              end
+            end
+          end
+          if @upstair_elevator_hash[building][floor].present?
+            @upstair_elevator_hash[building][floor].each do |elevator_id|
+              stops_arr << TourStop.find_by(stop_type: "elevator", stop_id: elevator_id)
+            end
+          end
+        end
+        # for downstair
+        (@downstair_elevator_hash[building].keys().sort_by { |h| h * -1 }).each do |desc_floor|
+          @downstair_elevator_hash[building][desc_floor].each do |ele_id|
+            stops_arr << TourStop.find_by(stop_type: "elevator", stop_id: ele_id)
+          end
+        end
+        # add next building start/exit point OR starting point/ exit point if last building
+        if @building_list[@building_list.find_index(building) + 1].present? # means there is next building present
+          stops_arr << TourStop.find_by(stop_type: "building_starting_point", stop_id: @building_to_building_id[@building_list[@building_list.find_index(building) + 1]])
+        else # its last building
+          stops_arr << @community.tour
+        end
+      end
       stops_arr
     end
     def find_index_for_stop(new_stops_arr, stop_id, stop_type)

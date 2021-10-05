@@ -9,7 +9,7 @@ def check_unit_occupied add_stop
 end
 i = 0
 description_limit = ENV["DESCRIPTION_LIMIT"].to_i
-
+need_original_id_arr = ["elevator", "building_starting_point"]
 is_zerv_lock_present = false
 
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
@@ -1107,8 +1107,8 @@ json.tours @tours do |tour|
         to_type = (new_stops_arr[i].is_a? Tour) ? "Tour" : "TourStop"
         from_id = (new_stops_arr[i-1].is_a? Tour) ? 0 : new_stops_arr[i - 1].id
         to_id = (new_stops_arr[i].is_a? Tour) ? 0 : new_stops_arr[i].id
-        from_id = (from_type == "TourStop" && TourStop.find(from_id).stop_type == "elevator") ? TourStop.find(from_id).stop_id : from_id
-        to_id = (to_type == "TourStop" && TourStop.find(to_id).stop_type == "elevator") ? TourStop.find(to_id).stop_id : to_id
+        from_id = (from_type == "TourStop" && need_original_id_arr.include?( TourStop.find(from_id).stop_type ) ) ? TourStop.find(from_id).stop_id : from_id
+        to_id = (to_type == "TourStop" && need_original_id_arr.include?( TourStop.find(to_id).stop_type ) ) ? TourStop.find(to_id).stop_id : to_id
         next_floor = ShortestPath.return_next_floor_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
         elevator_stop_description = "Go to floor " + next_floor.to_s
       else
@@ -1308,9 +1308,9 @@ json.tours @tours do |tour|
         if @community.is_sitemap
           path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
         else
-          from_id = (from_type == "TourStop" && TourStop.find(from_id).stop_type == "elevator") ? TourStop.find(from_id).stop_id : from_id
-          to_id = (to_type == "TourStop" && TourStop.find(to_id).stop_type == "elevator") ? TourStop.find(to_id).stop_id : to_id
-          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
+          from_id = (from_type == "TourStop" && need_original_id_arr.include?( TourStop.find(from_id).stop_type) ) ? TourStop.find(from_id).stop_id : from_id
+          to_id = (to_type == "TourStop" && need_original_id_arr.include?( TourStop.find(to_id).stop_type ) ) ? TourStop.find(to_id).stop_id : to_id
+          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)     
         end
         @existing_path_points = path_points if path_points.present?
       else
