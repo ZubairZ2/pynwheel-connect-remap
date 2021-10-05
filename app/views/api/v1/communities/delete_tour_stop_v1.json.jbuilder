@@ -725,7 +725,7 @@ json.tours @tours do |tour|
         
         elsif stop_lock_provider == "Igloohome"
           igloohome_lock = IgloohomeLock.where(igloohome_id: @community.igloohome.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
-          igloohome_guest = IgloohomeGuest.where(igloohome_id: @community.igloohome.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
+          igloohome_guest = IgloohomeGuest.where(community_id: @community.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
 
           if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && igloohome_guest.guest_bluetooth_key.present?
             json.guest_pin ''
@@ -888,7 +888,7 @@ json.tours @tours do |tour|
         
         elsif stop_lock_provider == "Igloohome"
           igloohome_lock = IgloohomeLock.where(igloohome_id: @community.igloohome.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
-          igloohome_guest = IgloohomeGuest.where(igloohome_id: @community.igloohome.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
+          igloohome_guest = IgloohomeGuest.where(community_id: @community.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
          
           if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && igloohome_guest.guest_bluetooth_key.present?
             json.guest_pin ''
