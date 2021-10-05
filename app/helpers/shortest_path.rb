@@ -998,7 +998,7 @@ module ShortestPath
           if unit.door.present?
             planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
             @planned_to_visit_units_and_doors_ids << unit.door.id
-            update_precedence_for_floors(unit.floor, 'unit', unit.id, unit.door.id)
+            update_precedence_for_building(unit.building, unit.floor, 'unit', unit.id, unit.door.id)
           else
             @planned_to_visit_units_and_doors_ids << unit.id  
           end
@@ -1017,7 +1017,7 @@ module ShortestPath
           if amenity.doors.present?
             planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
             @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
-            update_precedence_for_floors(amenity.floor, 'amenity', amenity.id, amenity.doors.first.id)
+            update_precedence_for_building(amenity.building, amenity.floor, 'amenity', amenity.id, amenity.doors.first.id)
           else
             @planned_to_visit_amenities_and_doors_ids << amenity.id
           end
