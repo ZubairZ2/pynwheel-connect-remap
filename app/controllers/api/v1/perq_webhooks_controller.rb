@@ -25,7 +25,7 @@ class Api::V1::PerqWebhooksController < ActionController::Base
   private
 
   def is_required_params_present
-    ( params["Email"].present? && params["FirstName"].present? && params["LastName"].present? && params["TourType"].present? && params["Phone"].present? && params["AppointmentDateTime"].present? && (params["CommunityName"].present? || params["CommunityId"].present?) )
+    ( params["Email"].present? && params["FirstName"].present? && params["LastName"].present? && params["TourType"].present? && params["Phone"].present? && params["AppointmentDateTime"].present? && (params["ClientName"].present? || params["ClientID"].present?) )
   end
 
   def create_scheduled_tour tour
@@ -99,11 +99,11 @@ class Api::V1::PerqWebhooksController < ActionController::Base
   end
 
   def perq_community_by_name
-    @perq_community ||= Community.where(name: params["CommunityName"]).last if params["CommunityName"].present?
+    @perq_community ||= Community.where(name: params["ClientName"]).last if params["ClientName"].present?
   end
 
   def perq_community_by_property_id
-    credentials = CrmCredential.where(salesforce_property_id: params["CommunityId"]).last if params["CommunityId"].present?
+    credentials = CrmCredential.where(salesforce_property_id: params["ClientID"]).last if params["ClientID"].present?
     @perq_community ||= credentials.community if credentials&.community
   end
 
