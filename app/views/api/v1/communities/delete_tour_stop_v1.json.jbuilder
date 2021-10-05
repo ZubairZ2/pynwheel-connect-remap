@@ -725,13 +725,14 @@ json.tours @tours do |tour|
         
         elsif stop_lock_provider == "Igloohome"
           igloohome_lock = IgloohomeLock.where(igloohome_id: @community.igloohome.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
+          igloohome_guest = IgloohomeGuest.where(igloohome_id: @community.igloohome.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
 
-          if igloohome_lock.present? && igloohome_lock.device_id.present?
+          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && igloohome_guest.guest_bluetooth_key.present?
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id igloohome_lock.device_id
-            json.igloohome_guest_bluetooth_key '3OYX4Bvqa0N3yq561RLoe66DR0wV1pqin9vW9doMtdJ7nI4sN+RqNgMGiaRUWOkAkjwx7us4JzyLcbK6PZW/FWAMrSlFgtS5Otyh+H1uoIrl632sfqrwHJ0wDFPQc2tV0gqGY1obXSiNd+6Mqonoi1tk2jMxXcT6tqXz69ohn0HJHhOo0fHRjkyQ6aYqVRS/L+4zm+6JLlq2wteG6UwqN15bYDdMFYLKuvJFUxR9XVwxNcxWGTF2WMdUTpKlcKYL159Tm+Kgjfq+D6FP6eyVFb7SWEAAfDdyOgeYwIkB5hfgG+prQ3fKrnrVc9RWtll8apBcR6in1HSkMLKedD0='
+            json.igloohome_guest_bluetooth_key igloohome_guest.guest_bluetooth_key
           else
             json.guest_pin ''
             json.latch_link ''
@@ -887,13 +888,14 @@ json.tours @tours do |tour|
         
         elsif stop_lock_provider == "Igloohome"
           igloohome_lock = IgloohomeLock.where(igloohome_id: @community.igloohome.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
-
-          if igloohome_lock.present? && igloohome_lock.device_id.present?
+          igloohome_guest = IgloohomeGuest.where(igloohome_id: @community.igloohome.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
+         
+          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && igloohome_guest.guest_bluetooth_key.present?
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id igloohome_lock.device_id
-            json.igloohome_guest_bluetooth_key '3OYX4Bvqa0N3yq561RLoe66DR0wV1pqin9vW9doMtdJ7nI4sN+RqNgMGiaRUWOkAkjwx7us4JzyLcbK6PZW/FWAMrSlFgtS5Otyh+H1uoIrl632sfqrwHJ0wDFPQc2tV0gqGY1obXSiNd+6Mqonoi1tk2jMxXcT6tqXz69ohn0HJHhOo0fHRjkyQ6aYqVRS/L+4zm+6JLlq2wteG6UwqN15bYDdMFYLKuvJFUxR9XVwxNcxWGTF2WMdUTpKlcKYL159Tm+Kgjfq+D6FP6eyVFb7SWEAAfDdyOgeYwIkB5hfgG+prQ3fKrnrVc9RWtll8apBcR6in1HSkMLKedD0='
+            json.igloohome_guest_bluetooth_key igloohome_guest.guest_bluetooth_key
           else
             json.guest_pin ''
             json.latch_link ''
