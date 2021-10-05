@@ -26,7 +26,7 @@ class SchedualTour < ApplicationRecord
   # validates :tour_type, presence: true
   # validates :tour_time, presence: true
 
-  scope :desc_created_at, -> {order(tour_date: :desc)}
+  scope :desc_tour_date, -> {order('coalesce(tour_date, created_at) desc')}
 
   COUNTRY_CODES =  JSON.parse(File.read(Rails.root.join("app/assets/javascripts/country_codes.json")))
   
