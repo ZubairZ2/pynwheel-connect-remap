@@ -1,0 +1,22 @@
+.modal-dialog{:style=>"overflow-y: initial width: 400px !important; width: 300px;"}
+  .modal-content{:style => "margin-top: 50%;"}
+    .modal-body{:style => "text-align: center;"}
+
+      %label{style: "margin-bottom: 20px !important;"} Select the floors
+      %select{id: "multi_floors", multiple: :true,  placeholder: "Select the floors"}>
+        - @floorplate.floors.each do |floor| 
+          %option{value: floor}= "#{floor.ordinalize}" + " floor"
+
+      .form-group{style: "padding-bottom: 0px !important;"}
+        -#= link_to "fffffff", plot_amenities_community_floorplate_amenities_path(current_community,@floorplate),:class => "btn btn-success"
+        %button.btn.btn-success.btn-sm.mt-20{onclick: 'select_multiple_floors(event)'}
+          Confirm
+
+:javascript
+  multi_floors = new SlimSelect({
+    select: '#multi_floors',
+    placeholder: 'Select the floors',
+    showSearch: false,
+    deselectLabel: '<span style="color: #d04d4d;">✖</span>'
+  })
+  multi_floors.open()

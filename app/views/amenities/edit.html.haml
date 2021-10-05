@@ -57,57 +57,48 @@
                 = f.select :amenity_type , options_for_select(Amenity::AMENITY_TYPE, f.object.amenity_type),{},{:class=>"form-control amenity_edit_field"}
 
             - if @community.enable_locks
-
-              - locks_present_hash = {}
-              - locks_present_hash["Dwelo"] = @community.multiple_locks_provider.include?("Dwelo") && @community.dwelo.present? && @all_locks[:dwelo_locks].any?
-              - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?
-              - locks_present_hash["Latch"] = @community.multiple_locks_provider.include?("Latch") &&  @community.latch.present? && @all_locks[:latch_locks].any?
-              - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
-
-              // load options and input values start
-              - if locks_present_hash["Dwelo"]
-                = hidden_field_tag "dwelo_lock_input_value", @amenity.remote_locks.dwelo_locks.present? ? @amenity.remote_locks.dwelo_locks.last.name + " (" + @amenity.remote_locks.dwelo_locks.last.remote_lock_type + ")" : ''
-                .dwelo_options.hide_it
-                  - @all_locks[:dwelo_locks].each do |lock|
-                    %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-              - if locks_present_hash["EdgeState"]
-                = hidden_field_tag "edgestate_lock_input_value", @amenity.remote_locks.edgestate_locks.present? ? @amenity.remote_locks.edgestate_locks.last.name + " (" + @amenity.remote_locks.edgestate_locks.last.remote_lock_type + ")" : ''
-                .edgestate_options.hide_it
-                  - @all_locks[:edgestate_locks].each do |lock|
-                    %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
-              - if locks_present_hash["Latch"]
-                = hidden_field_tag "latch_lock_input_value", @amenity.latch_locks.present? ?  @amenity.latch_locks.last.lock_name : ''
-                .latch_options.hide_it
-                  - @all_locks[:latch_locks].each do |lock|
-                    %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-              - if locks_present_hash["Zerv"]
-                = hidden_field_tag "zerv_lock_input_value", @amenity.zerv_locks.present? ?  @amenity.zerv_locks.last.sub_location_name + " (" + @amenity.zerv_locks.last.sub_location_friendly_name + ")" : ''
-                .zerv_options.hide_it
-                  - @all_locks[:zerv_locks].each do |lock|
-                    %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-              // load options and input values send
-
+              = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
+              - if @community.auto_wayfinding and @doors.present?
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Select the door
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = select_tag :door_id, options_for_select(@doors.collect{|d| [d.name, d.id]}, selected: @doors.first.id), class: "form-control"
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Select Lock Type
-                  %span Select the access provider for this stop
+                  Select Lock Provider
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), f.object.lock_provider),{},{:class=>"form-control"}
+                  - if @community.auto_wayfinding and @doors.present?
+                    = select_tag :lock_provider , options_for_select(@community.lock_options(@current_locks_provider), @doors.first.lock_provider),{:class=>"form-control"}
+                  - else
+                    = f.select :lock_provider , options_for_select(@community.lock_options(@current_locks_provider), f.object.lock_provider),{},{:id=> "lock_provider", :class=>"form-control"}
 
-              .form-group.hide_it#manual_access_code
+              .form-group.hidden.mt-30#access_code_field
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Access Code
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control  amenity_edit_field", :placeholder=>"Access Code",:maxLength => "6"
+                  = text_field_tag :access_code, (@community.auto_wayfinding and @doors.present?) ? @doors.first.access_code : @amenity.access_code, :name => "access_code" , :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code",:maxLength => "6"
 
-              .form-group#lock_access_code.hide_it
+              .form-group.hidden.mt-30#digital_lock_field
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                
+                  Select the lock
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = text_field_tag :lock_input, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control  amenity_edit_field"
+                  
+                  - if @community.auto_wayfinding and @doors.present?
+                    = hidden_field_tag "dwelo_lock_name"     , @doors.first.dwelo_lock.present?     ?  @doors.first.dwelo_lock.name + " (" + @doors.first.dwelo_lock.remote_lock_type + ")" : ''
+                    = hidden_field_tag "edgestate_lock_name" , @doors.first.edgestate_lock.present? ?  @doors.first.edgestate_lock.name + " (" + @doors.first.edgestate_lock.remote_lock_type + ")" : ''
+                    = hidden_field_tag "latch_lock_name"     , @doors.first.latch_lock.present?     ?  @doors.first.latch_lock.lock_name : ''
+                    = hidden_field_tag "zerv_lock_name"      , @doors.first.zerv_lock.present?      ?  @doors.first.zerv_lock.sub_location_name + " (" + @doors.first.zerv_lock.sub_location_friendly_name + ")" : ''
+                  - else
+                    = hidden_field_tag "dwelo_lock_name"     , @amenity.dwelo_locks.present?     ?  @amenity.dwelo_locks.first.name + " (" + @amenity.dwelo_locks.first.remote_lock_type + ")" : ''
+                    = hidden_field_tag "edgestate_lock_name" , @amenity.edgestate_locks.present? ?  @amenity.edgestate_locks.first.name + " (" + @amenity.edgestate_locks.first.remote_lock_type + ")" : ''
+                    = hidden_field_tag "latch_lock_name"     , @amenity.latch_locks.present?     ?  @amenity.latch_locks.first.lock_name : ''
+                    = hidden_field_tag "zerv_lock_name"      , @amenity.zerv_locks.present?      ?  @amenity.zerv_locks.first.sub_location_name + " (" + @amenity.zerv_locks.first.sub_location_friendly_name + ")" : ''
+                  
+                  = text_field_tag :lock_name, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control amenity_edit_field"
                   %datalist#locks_list
-
+                  = hidden_field_tag "lock_id", ""
 
             - if @community.self_tour
               .row
@@ -205,55 +196,39 @@
 
 :javascript
 
-  var locks_input, locks_list, param_name, load_btn = "";
-  $(document).ready(function(){
-    update_locks_select_and_lock_code_field()
-    // provide locks on change 
-    $('#amenity_lock_provider').change(function(){
-      update_locks_select_and_lock_code_field();
-      if ($('#amenity_lock_provider').val().length == 0)
-        $('.edit_amenity').submit();
-    });
-    function update_locks_select_and_lock_code_field(){
-      // if any lock selected selected
-      if ($('#amenity_lock_provider').val().length > 0 && $('#amenity_lock_provider').val() != "Manual")
-      {
-        $('#manual_access_code').addClass('hide_it')
-        // initialize elements    
-        lock_provider_type = $('#amenity_lock_provider').val().toLowerCase()
-        lock_input_value = "#" + lock_provider_type + "_lock_input_value"
-        options = '.' + lock_provider_type + "_options"
-        locks_input = "#lock_input"
-        locks_list = "#locks_list"
-        param_name = "lock_id"
-        // assign values
-        if (lock_provider_type == "zerv")
-          $('#lock_access_code').find('label').html("Lock <span>Assign the lock to this amenity</span>")
-        else
-          $('#lock_access_code').find('label').html(capitalize(lock_provider_type) + " Lock <span>Assign the lock to this amenity</span>")
-          
-        $('#lock_input').val( $(lock_input_value).val() )
-        $('datalist#locks_list').html($(options).html())
-        $('#lock_access_code').removeClass('hide_it') 
-      }
-      else if ($('#amenity_lock_provider').val().length > 0)
-      {
-        $('#lock_access_code').addClass('hide_it')
-        $('#manual_access_code').removeClass('hide_it')
-        locks_input = undefined
-      }
-      else
-      {
-        $('#lock_access_code').addClass('hide_it')
-        $('#manual_access_code').addClass('hide_it')
-      }
-    }
-  });
-
   var amenity_id = #{@amenity.id}
   var amenity_name = '#{@amenity.name}'
   var community_id = #{ @community.id}
   var from = #{ @from_unit}
+
+  $(document).ready(function(){
+    update_locks_fields()
+  });
+
+  $('.sortable_amenity').railsSortable();
+
+  $('#lock_provider').change(function(){
+    update_locks_fields()
+    if ($('#lock_provider').val().length == 0)
+      $('.edit_amenity').submit();
+  });
+
+  $("#lock_name").change(function() {
+    var optionFound = false,
+    datalist = this.list;
+    for (var j = 0; j < datalist.options.length; j++) {
+        if (this.value == datalist.options[j].value) {
+            optionFound = true;
+            break;
+        }
+    }
+    if (optionFound) {
+      this.setCustomValidity('');
+    } else {
+      //if ( $("#lock_name").val() != "" )
+          this.setCustomValidity('Lock does not exist');
+    }
+  });
 
   $('#amenity_building').change(function(){
     $.ajax({
@@ -271,104 +246,84 @@
     event.preventDefault();
   });
 
+  $('#on_done').click(function(e){
+    $('.edit_amenity').append('<input type="hidden" name="done_action" value="true">');
+    submit_form()
+  })
 
-  unit = #{@unit.present? ? @unit.id : 111111000000000}
   $('.amenity_edit_field').change(function(){
-    setTimeout(function(){ 
-      if (locks_input){
-        var lock = $(locks_input)[0];
-        if(lock.value == "")
-            lock.setCustomValidity('')
-
-        if(lock.checkValidity() == true){
-          lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-          input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-          $("#" + lock.id).closest('form').append(input)
-          $('.edit_amenity').submit();
-        }
-        else{ lock.reportValidity(); }
-      }
-      else
-        $('.edit_amenity').submit();
-    }, 300);
-    
+    setTimeout(function(){
+      submit_form()
+    },300)
   });
 
-  if (unit != 111111000000000){
-    var from = #{ @from_unit}
-  }
+  $("#door_id").change(function(){
+    var door_id = this.value
+    $.ajax({
+      type: "get",
+      url:  "/communities/" + community_id + "/return_door_lock?door_id=" + door_id,
+      cache: false,
+      success: function(res) {
 
-  $('.amenity_edit_field').change(function(){
-    if (locks_input){
-      action = "change"
-      $('#on_done').click(function(e){
-        action = "clicked"
+        $("#lock_provider").val(res.lock_provider)
+        $('#access_code').val(res.access_code.length === 0 ? '' : res.access_code)
 
-        setTimeout(function(){ 
-          var lock = $(locks_input)[0];
-          if(lock.value == "")
-            lock.setCustomValidity('')
+        $('#edgestate_lock_name').val(res.digital_lock.edgestate_lock === null ? '' : res.digital_lock.edgestate_lock.name + " (" + res.digital_lock.edgestate_lock.remote_lock_type + ")")
+        $('#dwelo_lock_name').val(res.digital_lock.dwelo_lock === null ? '' : res.digital_lock.dwelo_lock.name + " (" + res.digital_lock.dwelo_lock.remote_lock_type + ")")
+        $('#latch_lock_name').val(res.digital_lock.latch_lock === null ? '' : res.digital_lock.latch_lock.lock_name)
+        $('#zerv_lock_name').val(res.digital_lock.zerv_lock === null ? '' : res.digital_lock.zerv_lock.sub_location_name + " (" + res.digital_lock.zerv_lock.sub_location_friendly_name + ")")
 
-          if(lock.checkValidity() == true){
-            lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-            input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-            $("#" + lock.id).closest('form').append(input)
-            call_submit()
-          }
-          else{ lock.reportValidity(); }
-        }, 300);
-      })
+        if(res.lock_provider == "EdgeState")
+          $('#lock_id').val(res.digital_lock.edgestate_lock === null ? '' : res.digital_lock.edgestate_lock.device_id)
+        else if(res.lock_provider == "Dwelo")
+          $('#lock_id').val(res.digital_lock.dwelo_lock === null ? '' : res.digital_lock.dwelo_lock.device_id)
+        else if(res.lock_provider == "Latch")
+          $('#lock_id').val(res.digital_lock.latch_lock === null ? '' : res.digital_lock.latch_lock.door_uuid)
+        else if(res.lock_provider == "Zerv")
+          $('#lock_id').val(res.digital_lock.zerv_lock === null ? '' : res.digital_lock.zerv_lock.mac_id)
+        else if(res.lock_provider == "Manual" || res.lock_provider == "")
+          $('#lock_id').val('')
+
+        update_locks_fields()
+      },
+      fail: function(){},
+    })
+  })
+
+  function submit_form(){
+    var digital_lock = $("#lock_name")
+    if (digital_lock.length > 0 && !digital_lock.hasClass("hidden")){
+      var lock = digital_lock[0];
+
+      if(lock.checkValidity() == true){
+        lock_id = $("#locks_list [value='" + lock.value + "']").data('value')
+        $("#lock_id").val(lock_id)
+        $('.edit_amenity').submit();
+      }
+      else{ lock.reportValidity(); }
     }
     else
       $('.edit_amenity').submit();
-  });
+  }
 
-  $('#on_done').click(function(e){
-    setTimeout(function(){ 
-      if (locks_input){
-        var lock = $(locks_input)[0];
-        if(lock.value == "")
-              lock.setCustomValidity('')
+  function update_locks_fields(){
+    if($('#lock_provider').val() == '' || $('#lock_provider').val() == null){
+        $('#access_code_field').addClass('hidden')
+        $('#digital_lock_field').addClass('hidden')
+    }
+    else if($('#lock_provider').val() == "Manual" ){
+        $('#digital_lock_field').addClass('hidden')
+        $('#access_code_field').removeClass('hidden')
+    }
+    else{
+        $('#digital_lock_field').removeClass('hidden')
+        $('#access_code_field').addClass('hidden') 
+        
+        lock_provider         =  $('#lock_provider').val().toLowerCase()
+        selected_lock_name    =  $("#"+lock_provider+"_lock_name").val()
+        selected_lock_options =  $('.'+lock_provider+"_options").html()
 
-        if(lock.checkValidity() == true){
-          lock_id = $(locks_list + ' [value="' + lock.value + '"]').data('value')
-          input = $("<input>").attr("type", "hidden").attr("name", param_name).val(lock_id);
-          $("#" + lock.id).closest('form').append(input)
-          $('.edit_amenity').submit();
-        }
-        else{ lock.reportValidity(); }
-      }
-    }, 300);
-  })
-
-  if (locks_input){
-    var inputs = document.querySelectorAll('input[list]');
-    for (var i = 0; i < inputs.length; i++) {
-      inputs[i].addEventListener('change', function() {
-        var optionFound = false,
-        datalist = this.list;
-        for (var j = 0; j < datalist.options.length; j++) {
-            if (this.value == datalist.options[j].value) {
-                optionFound = true;
-                break;
-            }
-        }
-        if (optionFound) {
-          this.setCustomValidity('');
-        } else {
-          if ( $(locks_input).val() != "" )
-              this.setCustomValidity('Lock does not exist');
-        }
-      });
+        $('datalist#locks_list').html(selected_lock_options)
+        $('#lock_name').val(selected_lock_name)
     }
   }
-  function call_submit(){
-    $('.edit_amenity').submit(function() {
-        $(this).append('<input type="hidden" name="done_action" value="true">');
-        $(this).append('<input type="hidden" name="from_id" value="' + from + '">');
-        if (unit != 111111000000000) {
-          $(this).append('<input type="hidden" name="unit_render" value="' + unit + '">');
-        }
-      });
-  }
-  $('.sortable_amenity').railsSortable();

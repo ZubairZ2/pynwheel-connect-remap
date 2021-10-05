@@ -5,8 +5,8 @@ class Latch < ApplicationRecord
 
     def import_data(file)
         Thread.new do
-            sleep 4
             execution_context = Rails.application.executor.run!
+            clear_locks_provider(community)
             begin
                 if file.path.split('.').last.include?("csv")
                     names_with_ids = Community.pluck(:id,:name).map{|x| [x[0], x[1].downcase.gsub(/([-() ])/, '')]}
@@ -56,6 +56,16 @@ class Latch < ApplicationRecord
     end
 
 
+    def clear_locks_provider(community)
+        community.units.where(lock_provider: "Latch").update_all(lock_provider: "")
+        community.amenities.where(lock_provider: "Latch").update_all(lock_provider: "")
+        community.elevators.where(lock_provider: "Latch").update_all(lock_provider: "")
+        community.building_starting_point.where(lock_provider: "Latch").update_all(lock_provider: "")
+        community.tour.update(lock_provider: "") if community.tour.lock_provider === "Latch"
+        community.doors.where(lock_provider: "Latch").update_all(lock_provider: "")
+    end
+
+
     def parse_stop(stop_name)
         data=nil
 
@@ -75,6 +85,7 @@ class Latch < ApplicationRecord
         data = community.units.where('(marketing_name = ? or provider_unit_id = ?) and (building = ? or building = ?)', unit_name, unit_name, building_name, building_name_).first rescue nil
         data = community.units.where('(marketing_name = ? or provider_unit_id = ?) and (building = ? or building = ?)', stop_name, stop_name, nil, '').first rescue nil unless data.present?
 
+        data = community.doors.where(name: stop_name).first if data.nil?
         data = community.amenities.where(name: stop_name).first if data.nil?
         data = community.elevators.where(name: stop_name).first if data.nil?
         data = community.building_starting_point.where(name: stop_name).first if data.nil?

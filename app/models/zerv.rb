@@ -3,6 +3,6 @@ class Zerv < ApplicationRecord
   has_many :zerv_locks, dependent: :destroy
 
   def map_locks_with_stops
-    MapZervLocksJob.perform_async community
+    MapLocksJob.perform_async community, "Zerv"
   end
 end

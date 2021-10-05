@@ -35,6 +35,8 @@ class TourStop < ApplicationRecord
 
   scope :visible, -> { where(display_stop: true) }
 
+  scope :visible, -> { where(display_stop: true) }
+
   def path_data
   	self.stop_type.classify.constantize.path_data
   end
