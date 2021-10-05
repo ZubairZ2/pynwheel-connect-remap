@@ -130,8 +130,8 @@ private
   end
 
   def fetch_scheduled_tours
-    scheduled_tours = SchedualTour.joins(:tour_user).where(community_id: @community).where.not(tour_user_id: nil) rescue ""
-    scheduled_tours = scheduled_tours.joins(joins_relation(sort_column)).order("#{sort_column} #{sort_direction}")
+    scheduled_tours = SchedualTour.where(community_id: @community).where.not(tour_user_id: nil).desc_tour_date rescue ""
+    # scheduled_tours = scheduled_tours.joins(joins_relation(sort_column)).order("#{sort_column} #{sort_direction}")
     scheduled_tours = scheduled_tours.page(page).per_page(per_page)
     if params[:sSearch].present?
       scheduled_tours = scheduled_tours.joins(:tour_user).where("tour_users.email like :search or lower(tour_users.name) like :search or tour_users.phone_number like :search", search: "%#{params[:sSearch]}%")
@@ -140,7 +140,7 @@ private
       # binding.pry
     # end
     
-    scheduled_tours.order(:tour_date).reverse_order
+    scheduled_tours #.order(:tour_date).reverse_order
   end
 
   def joins_relation(column)
