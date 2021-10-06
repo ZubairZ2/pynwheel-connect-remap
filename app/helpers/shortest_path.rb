@@ -97,53 +97,67 @@ module ShortestPath
     precedence_visited_ids_by_floor = get_floor_by_floor_precedence_of_unit_and_amnity()
     floors_graph = get_floor_by_floor_graph()
     # Find upside path form temp uniq ids floor by floor
-    @floors_ids.each do |floor|
-      if (floor == @floors_ids.first); source = 0; else; source = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor - 1][floors_graph[floor - 1].source]]; end
-      destination_arr = precedence_visited_ids_by_floor[floor]
-      unless (floor == @floors_ids.last)
-        elevator_arr = elevators_which_have_next_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
-      else
-        elevator_arr = elevators_which_have_previous_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
-      end
-      if path_type == "actual shortest"
-        #@gr.shortest_paths_without_sorting(source, destination_arr)
-      elsif path_type == "sorting"
-        floors_graph[floor].shortest_paths_with_sorting_in_floor(source, destination_arr, elevator_arr) #shortest path with sorting
-        complete_path[floor] = floors_graph[floor].complete_path
-      end
-    end
-    # fetch all elements from uniq ids to print
-    path_uniq_ids_arr = fetch_flattan_path_of_each_floor(complete_path)
-    @floors_ids.each do |floor|
-      path_object_in_order[floor] = fetch_path_object_for_floor(path_uniq_ids_arr[floor], hallways_id_to_uniq_id[floor], unit_id_to_uniq_id[floor], amenity_id_to_uniq_id[floor], elevator_id_to_uniq_id[floor], start_point_data, new_hallways_coordinates[floor], unit_data[floor], amenity_data[floor], @elevator_data[floor], unit_starting_index[floor], amenity_starting_index[floor], elevator_starting_index[floor], starting_floor == floor)
-    end
-    # traverse back to starting floor
-    last_floor_id = @floors_ids.last
-    destination_floor_id = starting_floor # for now
+    last_floor_id = fetch_last_floor(precedence_visited_ids_by_floor)
+    @floors_ids = @floors_ids[0..@floors_ids.find_index(last_floor_id)]
     traverse_back_path, traverse_back_path_object_in_order = {}, {}
-    src = nil
-    @floors_ids.reverse.each_with_index do |floor,indx|
-      if floor == last_floor_id
-        traverse_back_path[floor] = [floors_graph[last_floor_id].source]
-        src = floors_graph[last_floor_id].source
+    if @floors_ids.size == 1
+      source = 0; destination_arr = precedence_visited_ids_by_floor[starting_floor]
+      if path_type == "actual shortest"
+        floors_graph[starting_floor].shortest_paths_without_sorting(source, destination_arr)
       else
-        if destination_floor_id == floor
-          src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
-          traverse_back_path[floor] = [src]
-        elsif have_elevator_on_current_floor(src, uniq_id_to_elevator_by_floor[floor + 1], floor + 1) && have_elevator_on_current_floor(src, uniq_id_to_elevator_by_floor[floor + 1], floor - 1) 
-          src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
-          traverse_back_path[floor] = [src]
+        floors_graph[starting_floor].shortest_paths_with_sorting(source, destination_arr)
+      end
+      complete_path[starting_floor] = floors_graph[starting_floor].complete_path
+      src = floors_graph[starting_floor].source
+      path_uniq_ids_arr = fetch_flattan_path_of_each_floor(complete_path)
+      path_object_in_order[starting_floor] = fetch_path_object_for_floor(path_uniq_ids_arr[starting_floor], hallways_id_to_uniq_id[starting_floor], unit_id_to_uniq_id[starting_floor], amenity_id_to_uniq_id[starting_floor], elevator_id_to_uniq_id[starting_floor], start_point_data, new_hallways_coordinates[starting_floor], unit_data[starting_floor], amenity_data[starting_floor], @elevator_data[starting_floor], unit_starting_index[starting_floor], amenity_starting_index[starting_floor], elevator_starting_index[starting_floor], starting_floor == starting_floor)
+    else
+      @floors_ids.each do |floor|
+        if (floor == @floors_ids.first); source = 0; else; source = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor - 1][floors_graph[floor - 1].source]]; end
+        destination_arr = precedence_visited_ids_by_floor[floor]
+        unless (floor == last_floor_id)
+          elevator_arr = elevators_which_have_next_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
         else
-          src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
           elevator_arr = elevators_which_have_previous_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
-          floors_graph[floor].traverse_back(src, elevator_arr)
-          traverse_back_path[floor] = floors_graph[floor].elevator_path.flatten
-          src = floors_graph[floor].source
+        end
+        if path_type == "actual shortest"
+          #@gr.shortest_paths_without_sorting(source, destination_arr)
+        elsif path_type == "sorting"
+          floors_graph[floor].shortest_paths_with_sorting_in_floor(source, destination_arr, elevator_arr) #shortest path with sorting
+          complete_path[floor] = floors_graph[floor].complete_path
         end
       end
-    end
-    @floors_ids.each do |floor|
-      traverse_back_path_object_in_order[floor] = fetch_path_object_for_floor(traverse_back_path[floor], hallways_id_to_uniq_id[floor], unit_id_to_uniq_id[floor], amenity_id_to_uniq_id[floor], elevator_id_to_uniq_id[floor], start_point_data, new_hallways_coordinates[floor], unit_data[floor], amenity_data[floor], @elevator_data[floor], unit_starting_index[floor], amenity_starting_index[floor], elevator_starting_index[floor], false)
+      # fetch all elements from uniq ids to print
+      path_uniq_ids_arr = fetch_flattan_path_of_each_floor(complete_path)
+      @floors_ids.each do |floor|
+        path_object_in_order[floor] = fetch_path_object_for_floor(path_uniq_ids_arr[floor], hallways_id_to_uniq_id[floor], unit_id_to_uniq_id[floor], amenity_id_to_uniq_id[floor], elevator_id_to_uniq_id[floor], start_point_data, new_hallways_coordinates[floor], unit_data[floor], amenity_data[floor], @elevator_data[floor], unit_starting_index[floor], amenity_starting_index[floor], elevator_starting_index[floor], starting_floor == floor)
+      end
+      # traverse back to starting floor
+      destination_floor_id = starting_floor # for now
+      src = nil
+      @floors_ids.reverse.each_with_index do |floor,indx|
+        if floor == last_floor_id
+          traverse_back_path[floor] = [floors_graph[last_floor_id].source]
+          src = floors_graph[last_floor_id].source
+        else
+          if destination_floor_id == floor
+            src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
+            traverse_back_path[floor] = [src]
+          elsif have_elevator_on_current_floor(src, uniq_id_to_elevator_by_floor[floor + 1], floor + 1) && have_elevator_on_current_floor(src, uniq_id_to_elevator_by_floor[floor + 1], floor - 1) 
+            src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
+            traverse_back_path[floor] = [src]
+          else
+            src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
+            elevator_arr = elevators_which_have_previous_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
+            floors_graph[floor].traverse_back(src, elevator_arr)
+            traverse_back_path[floor] = floors_graph[floor].elevator_path.flatten
+            src = floors_graph[floor].source
+          end
+        end
+      end
+      @floors_ids.each do |floor|
+        traverse_back_path_object_in_order[floor] = fetch_path_object_for_floor(traverse_back_path[floor], hallways_id_to_uniq_id[floor], unit_id_to_uniq_id[floor], amenity_id_to_uniq_id[floor], elevator_id_to_uniq_id[floor], start_point_data, new_hallways_coordinates[floor], unit_data[floor], amenity_data[floor], @elevator_data[floor], unit_starting_index[floor], amenity_starting_index[floor], elevator_starting_index[floor], false)
+      end
     end
     # now move to starting point again
     floors_graph[starting_floor].traverse_back(src, [0])
@@ -395,53 +409,67 @@ module ShortestPath
     precedence_visited_ids_by_floor = get_floor_by_floor_precedence_of_unit_and_amnity()
     floors_graph = get_floor_by_floor_graph()
     # Find path form temp uniq ids floor by floor
-    @floors_ids.each do |floor|
-      if (floor == @floors_ids.first); source = 0; else; source = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor - 1][floors_graph[floor - 1].source]]; end
-      destination_arr = precedence_visited_ids_by_floor[floor]
-      unless (floor == @floors_ids.last)
-        elevator_arr = elevators_which_have_next_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
-      else
-        elevator_arr = elevators_which_have_previous_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
-      end
-      if path_type == "actual shortest"
-        #@gr.shortest_paths_without_sorting(source, destination_arr)
-      elsif path_type == "sorting"
-        floors_graph[floor].shortest_paths_with_sorting_in_floor(source, destination_arr, elevator_arr) #shortest path with sorting
-        complete_path[floor] = floors_graph[floor].complete_path
-      end
-    end
-    # fetch all elements from uniq ids to print
-    path_uniq_ids_arr = fetch_flattan_path_of_each_floor(complete_path)
-    @floors_ids.each do |floor|
-      path_object_in_order[floor] = fetch_path_object_for_floor(path_uniq_ids_arr[floor], hallways_id_to_uniq_id[floor], unit_id_to_uniq_id[floor], amenity_id_to_uniq_id[floor], elevator_id_to_uniq_id[floor], start_point_data, new_hallways_coordinates[floor], unit_data[floor], amenity_data[floor], @elevator_data[floor], unit_starting_index[floor], amenity_starting_index[floor], elevator_starting_index[floor], starting_floor == floor)
-    end
-    # traverse back to starting floor
-    last_floor_id = @floors_ids.last
-    destination_floor_id = starting_floor # for now
+    last_floor_id = fetch_last_floor(precedence_visited_ids_by_floor)
+    @floors_ids = @floors_ids[0..@floors_ids.find_index(last_floor_id)]
     traverse_back_path, traverse_back_path_object_in_order = {}, {}
-    src = nil
-    @floors_ids.reverse.each_with_index do |floor,indx|
-      if floor == last_floor_id
-        traverse_back_path[floor] = [floors_graph[last_floor_id].source]
-        src = floors_graph[last_floor_id].source
+    if @floors_ids.size == 1
+      source = 0; destination_arr = precedence_visited_ids_by_floor[starting_floor]
+      if path_type == "actual shortest"
+        floors_graph[starting_floor].shortest_paths_without_sorting(source, destination_arr)
       else
-        if destination_floor_id == floor
-          src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
-          traverse_back_path[floor] = [src]
-        elsif have_elevator_on_current_floor(src, uniq_id_to_elevator_by_floor[floor + 1], floor + 1) && have_elevator_on_current_floor(src, uniq_id_to_elevator_by_floor[floor + 1], floor - 1) 
-          src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
-          traverse_back_path[floor] = [src]
+        floors_graph[starting_floor].shortest_paths_with_sorting(source, destination_arr)
+      end
+      complete_path[starting_floor] = floors_graph[starting_floor].complete_path
+      src = floors_graph[starting_floor].source
+      path_uniq_ids_arr = fetch_flattan_path_of_each_floor(complete_path)
+      path_object_in_order[starting_floor] = fetch_path_object_for_floor(path_uniq_ids_arr[starting_floor], hallways_id_to_uniq_id[starting_floor], unit_id_to_uniq_id[starting_floor], amenity_id_to_uniq_id[starting_floor], elevator_id_to_uniq_id[starting_floor], start_point_data, new_hallways_coordinates[starting_floor], unit_data[starting_floor], amenity_data[starting_floor], @elevator_data[starting_floor], unit_starting_index[starting_floor], amenity_starting_index[starting_floor], elevator_starting_index[starting_floor], starting_floor == starting_floor)
+    else
+      @floors_ids.each do |floor|
+        if (floor == @floors_ids.first); source = 0; else; source = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor - 1][floors_graph[floor - 1].source]]; end
+        destination_arr = precedence_visited_ids_by_floor[floor]
+        unless (floor == last_floor_id)
+          elevator_arr = elevators_which_have_next_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
         else
-          src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
           elevator_arr = elevators_which_have_previous_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
-          floors_graph[floor].traverse_back(src, elevator_arr)
-          traverse_back_path[floor] = floors_graph[floor].elevator_path.flatten
-          src = floors_graph[floor].source
+        end
+        if path_type == "actual shortest"
+          #@gr.shortest_paths_without_sorting(source, destination_arr)
+        elsif path_type == "sorting"
+          floors_graph[floor].shortest_paths_with_sorting_in_floor(source, destination_arr, elevator_arr) #shortest path with sorting
+          complete_path[floor] = floors_graph[floor].complete_path
         end
       end
-    end
-    @floors_ids.each do |floor|
-      traverse_back_path_object_in_order[floor] = fetch_path_object_for_floor(traverse_back_path[floor], hallways_id_to_uniq_id[floor], unit_id_to_uniq_id[floor], amenity_id_to_uniq_id[floor], elevator_id_to_uniq_id[floor], start_point_data, new_hallways_coordinates[floor], unit_data[floor], amenity_data[floor], @elevator_data[floor], unit_starting_index[floor], amenity_starting_index[floor], elevator_starting_index[floor], false)
+      # fetch all elements from uniq ids to print
+      path_uniq_ids_arr = fetch_flattan_path_of_each_floor(complete_path)
+      @floors_ids.each do |floor|
+        path_object_in_order[floor] = fetch_path_object_for_floor(path_uniq_ids_arr[floor], hallways_id_to_uniq_id[floor], unit_id_to_uniq_id[floor], amenity_id_to_uniq_id[floor], elevator_id_to_uniq_id[floor], start_point_data, new_hallways_coordinates[floor], unit_data[floor], amenity_data[floor], @elevator_data[floor], unit_starting_index[floor], amenity_starting_index[floor], elevator_starting_index[floor], starting_floor == floor)
+      end
+      # traverse back to starting floor
+      destination_floor_id = starting_floor # for now
+      src = nil
+      @floors_ids.reverse.each_with_index do |floor,indx|
+        if floor == last_floor_id
+          traverse_back_path[floor] = [floors_graph[last_floor_id].source]
+          src = floors_graph[last_floor_id].source
+        else
+          if destination_floor_id == floor
+            src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
+            traverse_back_path[floor] = [src]
+          elsif have_elevator_on_current_floor(src, uniq_id_to_elevator_by_floor[floor + 1], floor + 1) && have_elevator_on_current_floor(src, uniq_id_to_elevator_by_floor[floor + 1], floor - 1) 
+            src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
+            traverse_back_path[floor] = [src]
+          else
+            src = elevator_id_to_uniq_id[floor][uniq_id_to_elevator_by_floor[floor + 1][src]]
+            elevator_arr = elevators_which_have_previous_floor(floor_to_elevator_uniq_ids[floor], uniq_id_to_elevator_by_floor[floor], floor)
+            floors_graph[floor].traverse_back(src, elevator_arr)
+            traverse_back_path[floor] = floors_graph[floor].elevator_path.flatten
+            src = floors_graph[floor].source
+          end
+        end
+      end
+      @floors_ids.each do |floor|
+        traverse_back_path_object_in_order[floor] = fetch_path_object_for_floor(traverse_back_path[floor], hallways_id_to_uniq_id[floor], unit_id_to_uniq_id[floor], amenity_id_to_uniq_id[floor], elevator_id_to_uniq_id[floor], start_point_data, new_hallways_coordinates[floor], unit_data[floor], amenity_data[floor], @elevator_data[floor], unit_starting_index[floor], amenity_starting_index[floor], elevator_starting_index[floor], false)
+      end
     end
     # now move to starting point again
     floors_graph[starting_floor].traverse_back(src, [0])
@@ -1123,7 +1151,7 @@ module ShortestPath
       end
       path
     end
-    def fetch_paths_arr_for_floorplate(path_object_in_order, traverse_back_path_object_in_order, starting_floor_elevator_to_starting_point_object_in_order)
+    def fetch_paths_arr_for_floorplate(path_object_in_order, traverse_back_path_object_in_order, starting_floor_stop_to_starting_point_object_in_order)
       stops_id_hash_reverse = convert_values_into_keys(@stops_id_hash)
       path = []
       source_type = "Tour"
@@ -1162,53 +1190,56 @@ module ShortestPath
         end
       end
       updated_upstair_path, upstair_elevator_hash = update_path_by_removing_floor(path)
+      updated_downstair_path, downstair_elevator_hash = [], {}
       # Now for Downstair
-      path = []
-      source_type = "TourStop"
-      from = "elevator"
-      source_id = traverse_back_path_object_in_order[@floors_ids.reverse().first][0]["elevator_id"]
-      path_points = []
-      tour_stop_type_arr = ["elevator"]
-      @floors_ids[0..@floors_ids.length-2].reverse().each do |floor, indx|
-        len = traverse_back_path_object_in_order[floor].keys().length - 1
-        path_object_keys = traverse_back_path_object_in_order[floor].keys()[0..len]
-        path_object_keys.each do |key|
-          if traverse_back_path_object_in_order[floor][key].has_key?("point_type")
-            stop = traverse_back_path_object_in_order[floor][key]["point_type"].classify.constantize.find traverse_back_path_object_in_order[floor][key]["elevator_id"]
-            path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
-            dest_type = "TourStop"
-            dest_id = traverse_back_path_object_in_order[floor][key]["elevator_id"]
-            to = traverse_back_path_object_in_order[floor][key]["point_type"]
-            path << [source_type, dest_type, source_id, dest_id, path_points, from, to, floor]
-            source_type = dest_type
-            source_id = dest_id
-            from = to
-            path_points = []
-          else
-            path_points << {"x_plot" => traverse_back_path_object_in_order[floor][key]["x_plot"], "y_plot" => traverse_back_path_object_in_order[floor][key]["y_plot"]}
+      if @floors_ids.size > 1
+        path = []
+        source_type = "TourStop"
+        from = "elevator"
+        source_id = traverse_back_path_object_in_order[@floors_ids.reverse().first][0]["elevator_id"]
+        path_points = []
+        tour_stop_type_arr = ["elevator"]
+        @floors_ids[0..@floors_ids.length-2].reverse().each do |floor, indx|
+          len = traverse_back_path_object_in_order[floor].keys().length - 1
+          path_object_keys = traverse_back_path_object_in_order[floor].keys()[0..len]
+          path_object_keys.each do |key|
+            if traverse_back_path_object_in_order[floor][key].has_key?("point_type")
+              stop = traverse_back_path_object_in_order[floor][key]["point_type"].classify.constantize.find traverse_back_path_object_in_order[floor][key]["elevator_id"]
+              path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+              dest_type = "TourStop"
+              dest_id = traverse_back_path_object_in_order[floor][key]["elevator_id"]
+              to = traverse_back_path_object_in_order[floor][key]["point_type"]
+              path << [source_type, dest_type, source_id, dest_id, path_points, from, to, floor]
+              source_type = dest_type
+              source_id = dest_id
+              from = to
+              path_points = []
+            else
+              path_points << {"x_plot" => traverse_back_path_object_in_order[floor][key]["x_plot"], "y_plot" => traverse_back_path_object_in_order[floor][key]["y_plot"]}
+            end
           end
         end
+        updated_downstair_path, downstair_elevator_hash = update_path_by_removing_floor(path)
+        # Now for starting point
+        source_type = "TourStop"
+        from = "elevator"
+        source_id = starting_floor_stop_to_starting_point_object_in_order[0]["elevator_id"]
       end
-      updated_downstair_path, downstair_elevator_hash = update_path_by_removing_floor(path)
-      # Now for starting point
       path = []
-      source_type = "TourStop"
-      from = "elevator"
-      source_id = starting_floor_elevator_to_starting_point_object_in_order[0]["elevator_id"]
       path_points = []
       tour_stop_type_arr = ["building_starting_point"]
-      len = starting_floor_elevator_to_starting_point_object_in_order.keys().length - 1
-      path_object_keys = starting_floor_elevator_to_starting_point_object_in_order.keys()[1..len]
+      len = starting_floor_stop_to_starting_point_object_in_order.keys().length - 1
+      path_object_keys = starting_floor_stop_to_starting_point_object_in_order.keys()[1..len]
       path_object_keys.each do |key|
-        if starting_floor_elevator_to_starting_point_object_in_order[key].has_key?("point_type")
+        if starting_floor_stop_to_starting_point_object_in_order[key].has_key?("point_type")
           stop = @community.tour
           path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
           dest_type = "Tour"
           dest_id = 0
-          to = starting_floor_elevator_to_starting_point_object_in_order[key]["point_type"]
+          to = starting_floor_stop_to_starting_point_object_in_order[key]["point_type"]
           path << [source_type, dest_type, source_id, dest_id, path_points, from, to, @floors_ids.first]
         else
-          path_points << {"x_plot" => starting_floor_elevator_to_starting_point_object_in_order[key]["x_plot"], "y_plot" => starting_floor_elevator_to_starting_point_object_in_order[key]["y_plot"]}
+          path_points << {"x_plot" => starting_floor_stop_to_starting_point_object_in_order[key]["x_plot"], "y_plot" => starting_floor_stop_to_starting_point_object_in_order[key]["y_plot"]}
         end
       end
       starting_point_path = path
@@ -2229,4 +2260,14 @@ module ShortestPath
       end
       @building_list -= need_to_remove_building
     end 
+    def fetch_last_floor(precedence_visited_ids_by_floor)
+      last_floor = @floors_ids.last
+      @floors_ids.reverse.each do |floor|
+        if precedence_visited_ids_by_floor[floor].any?
+          last_floor = floor
+          break;
+        end
+      end
+      last_floor
+    end
 end
