@@ -103,7 +103,7 @@ class Api::V1::PerqWebhooksController < ActionController::Base
   end
 
   def perq_community_by_property_id
-    credentials = CrmCredential.where(salesforce_property_id: params["ClientID"]).last if params["ClientID"].present?
+    credentials = Credential.where(perq_property_id: params["ClientID"]).last if params["ClientID"].present?
     @perq_community ||= credentials.community if credentials&.community
   end
 
