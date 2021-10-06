@@ -50,9 +50,7 @@ class Api::V1::PerqWebhooksController < ActionController::Base
   end
 
   def get_tour_type
-    if params["TourType"] === "Self-Guided"
-      "Self Guided"
-    end
+    params["TourType"] === "Self-Guided" ? "self_tour" : params["TourType"] === "Guided" ? "guided" : ""
   end
 
   def get_tour_date tour_date_time
@@ -61,7 +59,6 @@ class Api::V1::PerqWebhooksController < ActionController::Base
   end
 
   def get_tour_time tour_date_time
-    binding.pry
     time_array = tour_date_time.split(" ")
     time = nil
 
