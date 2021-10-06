@@ -504,6 +504,8 @@
       var move_in_date = "<%= @schedule_tour&.desired_move_in_date&.strftime('%m/%d/%Y')&.gsub("-", "") %>"
       var desired_bedroom = "<%= @schedule_tour.desired_bedroom %>"
       var country_code = "<%= @schedule_tour.country_code %>"
+      var community_time_zone = "<%= @community_time_zone rescue "UTC" %>"
+      var current_time_according_to_timzone = "<%= @current_time rescue ""%>"
       // var realpage_marketing_source = "<%= @schedule_tour&.community&.credential&.realpage_marketing_sources[0]["Value"] rescue "" %>"
       var realpage_marketing_source = "<%= @schedule_tour&.realpage_marketing_source rescue "" %>"
       var realpage_provider = "<%= @community.data_provider == "realpagesvc" && @marketing_source_required%>"
@@ -716,17 +718,22 @@
           else{
             selected_day_slots = time_slots[day]
           }
-          selected_date = moment($(this).val()).format("YYYY/MM/DD")
-          today_date = moment().format("YYYY/MM/DD")
+          selected_date = moment($(this).val()).zone(community_time_zone).format("YYYY/MM/DD")
+          today_date = moment().zone(community_time_zone).format("YYYY/MM/DD")
           if (selected_date == today_date){
-            today_time = moment().format("HH:mm A")
-            today_datetime = moment(today_date + " " + today_time, "YYYY/MM/DD HH:mm: A")
+            if(current_time_according_to_timzone !== ""){
+              today_time = current_time_according_to_timzone
+            }
+            else{
+              today_time = moment().zone(community_time_zone).format("HH:mm A")
+            }
+            today_datetime = moment(today_date + " " + today_time, "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A")
             minus_day_slots = []
             for (let i = 0; i < selected_day_slots.length; ++i) {
-              if (moment(selected_date + " " + selected_day_slots[i], "YYYY/MM/DD HH:mm: A") >= today_datetime){
+              if (moment(selected_date + " " + selected_day_slots[i], "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A") >= today_datetime){
                 minus_day_slots.push(selected_day_slots[i])
               }
-            }  
+            }
             selected_day_slots = minus_day_slots 
           }
           for (let i = 0; i < selected_day_slots.length; ++i) {

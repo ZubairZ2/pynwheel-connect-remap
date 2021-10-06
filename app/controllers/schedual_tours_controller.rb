@@ -8,7 +8,7 @@ class SchedualToursController < ApplicationController
   # GET /schedual_tours
   # GET /schedual_tours.json
   def index
-    @schedual_tours = SchedualTour.where(community_id: @community.id).where.not(tour_user_id: nil).order! 'tour_date DESC' rescue ""
+    @schedual_tours = SchedualTour.where(community_id: @community.id).where.not(tour_user_id: nil).desc_tour_date rescue ""
     community_id = params['community'] if params['community'].present?
     community = community_id rescue @community.id
     respond_to do |format|

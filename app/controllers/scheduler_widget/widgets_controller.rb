@@ -37,6 +37,8 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @credit_card_required =  @community.tour.credit_card_required
     @bedroom_list = @community.fetch_bedroom_list()
     @marketing_source_required = @community.tour.marketing_source_required
+    @community_time_zone = get_time_zone(@community) if @community.present? && @community.latitude.present? && @community.longitude.present?
+    @current_time = Time.now.in_time_zone(@community_time_zone).strftime("%H:%M %p") if @community_time_zone.present?
     if params[:direct].present?
       @direct =  true
       params[:message].present? ? @show_first = false : @show_first = true
