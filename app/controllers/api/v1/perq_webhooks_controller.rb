@@ -61,7 +61,18 @@ class Api::V1::PerqWebhooksController < ActionController::Base
   end
 
   def get_tour_time tour_date_time
-    DateTime.now.strftime("%H:%M")
+    binding.pry
+    time_array = tour_date_time.split(" ")
+    time = nil
+
+    if time_array.present? && time_array[2].present? && time_array[2] === "PM"
+      temp = time_array[1].split(":") if time_array.present? && time_array[1].present?
+      time = Time.strptime("#{temp[0]}pm", "%I%P").strftime("%H:%M:S") if temp.present? && temp[0].present?
+    else
+      time = time_array[1] if time_array.present? && time_array[1].present?
+    end
+
+    time.present? ? time : DateTime.now.strftime("%H:%M")
   end
 
   def get_tour_stops_list tour
