@@ -50,7 +50,7 @@ class Api::V1::PerqWebhooksController < ActionController::Base
   end
 
   def get_tour_type
-    params["TourType"] === "Self-Guided" ? "self_tour" : params["TourType"] === "Guided" ? "guided" : ""
+    params["TourType"] === "Self-Guided" ? "self_tour" : params["TourType"] === "Guided" ? "guided_tour" : ""
   end
 
   def get_tour_date tour_date_time
