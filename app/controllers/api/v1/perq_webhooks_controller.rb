@@ -1,6 +1,6 @@
 class Api::V1::PerqWebhooksController < ActionController::Base
-  before_action :perq_community_by_name, only: :perq_tour_webhook
   before_action :perq_community_by_property_id, only: :perq_tour_webhook
+  before_action :perq_community_by_name, only: :perq_tour_webhook
   before_action :perq_tour_user_by_email, only: :perq_tour_webhook
   before_action :set_perq_tour_user, only: :perq_tour_webhook
 
@@ -25,7 +25,7 @@ class Api::V1::PerqWebhooksController < ActionController::Base
   private
 
   def is_required_params_present
-    ( params["Email"].present? && params["FirstName"].present? && params["LastName"].present? && params["TourType"].present? && params["Phone"].present? && params["AppointmentDateTime"].present? && (params["ClientName"].present? || params["ClientID"].present?) )
+    (@perq_community.present? && @perq_community&.credential&.is_perq_allowed && params["Email"].present? && params["FirstName"].present? && params["LastName"].present? && params["TourType"].present? && params["Phone"].present? && params["AppointmentDateTime"].present? && (params["ClientName"].present? || params["ClientID"].present?) )
   end
 
   def create_scheduled_tour tour
@@ -89,7 +89,7 @@ class Api::V1::PerqWebhooksController < ActionController::Base
     @perq_tour_user.update_attributes!(
       first_name: params["FirstName"], 
       last_name: params["LastName"], 
-      name: "#{params["FirstName"]} #{params["LastName"]}", 
+      name: "#{params["FirstName"]} #{params["LastName"]}",
       phone_number: params["Phone"]
     )
   end
@@ -104,7 +104,7 @@ class Api::V1::PerqWebhooksController < ActionController::Base
 
   def perq_community_by_property_id
     credentials = Credential.where(perq_property_id: params["ClientID"]).last if params["ClientID"].present?
-    @perq_community ||= credentials.community if credentials&.community
+    @perq_community ||= credentials.community if credentials&.community.present?
   end
 
   def get_tour_in_future
