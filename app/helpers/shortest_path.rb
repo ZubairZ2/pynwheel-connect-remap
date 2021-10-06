@@ -217,7 +217,7 @@ module ShortestPath
     floors_graph = get_building_to_building_with_floors_graph()
     first_building_pass = true
     path_object_in_order.keys.each {|building| path_object_in_order[building] = {"upside_path_objects" => {}, "downside_path_objects" => {} } }
-    # before traversing from building to building first remove buildings which have no stop
+    remove_buildings_which_have_no_any_stop_to_visit(precedence_visited_ids_by_floor)
     @building_list.each do |building|
       # Find upside path form temp uniq ids floor by floor
       @floors_ids.each do |floor|
@@ -517,11 +517,11 @@ module ShortestPath
     floors_graph = get_building_to_building_with_floors_graph()
     first_building_pass = true
     path_object_in_order.keys.each {|building| path_object_in_order[building] = {"upside_path_objects" => {}, "downside_path_objects" => {} } }
+    remove_buildings_which_have_no_any_stop_to_visit(precedence_visited_ids_by_floor)
     @building_list.each do |building|
       # Find upside path form temp uniq ids floor by floor
       @floors_ids.each do |floor|
-        # first move towards starting point to building starting point
-        #if there_is_no_stop_in_this_building(precedence_visited_ids_by_floor[building]); next; end
+        # first move towards starting point to building starting points
         if first_building_pass
           source = 0; destination_arr = [building_start_id_to_uniq_id[building][floor][@building_to_building_id[building]]]
           floors_graph[building][floor].from_one_point_to_move_other_point(source, destination_arr)
@@ -632,16 +632,18 @@ module ShortestPath
     tour_stops = tour&.tour_stops.visible.order('sort ASC')
     unit_ids = tour_stops.where(stop_type: "unit").pluck(:stop_id)
     amenity_ids = tour_stops.where(stop_type: "amenity").pluck(:stop_id)
-    building_list = []
+    building_list, actual_building_list = []
+    actual_building_list = (Unit.where(community_id: community_id).pluck(:building)).reject { |e| e.to_s.strip.empty? } rescue []
+    actual_building_list += Amenity.where(community_id: community_id).pluck(:building).reject { |e| e.to_s.strip.empty? }
+    is_multiple_building = actual_building_list.uniq.count > 1
     building_list = (Unit.where(id: unit_ids).pluck(:building)).reject { |e| e.to_s.strip.empty? } rescue []
     building_list += Amenity.where(id: amenity_ids).pluck(:building).reject { |e| e.to_s.strip.empty? }
     building_list.uniq!
-    is_multiple_building = building_list.uniq.count > 1
     if sorted_building.present?
       if (building_list - sorted_building != [] )
         building_list = (sorted_building) + (building_list - sorted_building) 
       elsif sorted_building - building_list != []
-        building_list = (building_list & sorted_building)
+        building_list = (sorted_building & building_list)
       else
         building_list = sorted_building
       end
@@ -2196,7 +2198,8 @@ module ShortestPath
       building_hash_arr
     end
     def starting_point_for_building(building, floor)
-      (@building_list.first == building || @building_list.last == building) && @floors_ids.first == floor
+      #(@building_list.first == building || @building_list.last == building) && @floors_ids.first == floor #currenly i'm attaching staring point on all first of every building
+      @floors_ids.first == floor
     end
     def building_starting_point_for_building(floor)
       @floors_ids.first == floor
@@ -2213,4 +2216,17 @@ module ShortestPath
       end
       path_objects
     end
+    def remove_buildings_which_have_no_any_stop_to_visit(precedence_visited_ids_by_floor)
+      need_to_remove_building = []
+      @building_list.each do |building|
+        @floors_ids.each do |floor|
+          if @floors_ids.last == floor && !(precedence_visited_ids_by_floor[building][floor].any?)
+            need_to_remove_building << building
+          elsif precedence_visited_ids_by_floor[building][floor].any?
+            break
+          end
+        end
+      end
+      @building_list -= need_to_remove_building
+    end 
 end
