@@ -85,11 +85,12 @@ class Api::V1::PerqWebhooksController < ActionController::Base
   end
 
   def create_perq_tour_user
-    @perq_tour_user ||= TourUser.create!(      first_name: params["FirstName"], 
+    @perq_tour_user ||= TourUser.create!(      
+      first_name: params["FirstName"], 
       last_name: params["LastName"], 
       name: "#{params["FirstName"]} #{params["LastName"]}", 
       email: params["Email"].downcase, 
-      phone_number: params["Phone"]
+      phone_number: "+1#{params["Phone"]}"
     )
   end
 
@@ -98,7 +99,7 @@ class Api::V1::PerqWebhooksController < ActionController::Base
       first_name: params["FirstName"], 
       last_name: params["LastName"], 
       name: "#{params["FirstName"]} #{params["LastName"]}",
-      phone_number: params["Phone"]
+      phone_number: "+1#{params["Phone"]}"
     )
   end
 
