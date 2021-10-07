@@ -581,6 +581,13 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :igloohomes do
+        collection do
+          get :timezone
+          get :pairing
+        end
+      end
+
       resources :pynwheel_access_users do
         collection do
           get :pynwheel_access_user_authentication
