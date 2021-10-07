@@ -189,7 +189,7 @@
                 .c-modal-wrapper.h-class
                   .c-modal-body{:id => "#{unit.id}-zoomable-fav-image"}
                     .c-m-iframe-content
-                      = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplan/image/27780/27780-1628027365-2705856e-file.jpeg")
+                      = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")
                   .c-modal-footer-fav.zooming-content.zoomable-map-container
                     %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-in"}
                       %img{:src => "/assets/plus.png"}/

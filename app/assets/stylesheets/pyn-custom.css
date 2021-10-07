@@ -5104,7 +5104,9 @@ body {
     padding: 0 15px 0 15px;
 }
 .custom-iframe-modeule .app-logo {
-    width: 7%;
+    /* width: 7%; */
+    width: 90px;
+    padding-bottom: inherit;
 }
 .custom-iframe-modeule .header-buttons-groups {
     text-align: right;
