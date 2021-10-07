@@ -8,13 +8,18 @@ class Api::V1::PerqWebhooksController < ActionController::Base
     if is_required_params_present
       tour_in_future = get_tour_in_future
       if tour_in_future.present? && !tour_in_future.is_tour_completed
+        previous_tour = get_previous_tour(tour_in_future)
         update_scheduled_tour(tour_in_future)
+        schedual_tour = SchedualTour.find_by_id tour_in_future.id
+        perq_tour_confirmation(schedual_tour, previous_tour, true)
 
         render :json => {:success=>true, :message => "You already have tour in future, tour is updated successfully with new submitted data", :status => 200}
       else
-        tour = get_latest_tour
-        create_scheduled_tour(tour)
-
+        previous_tour = get_previous_tour(get_latest_tour())
+        create_scheduled_tour(previous_tour)
+        schedual_tour = SchedualTour.last
+        perq_tour_confirmation(schedual_tour, previous_tour, false)
+        
         render :json => {:success=>true, :message => "New tour is scheduled successfully", :status => 200}
       end
     else
@@ -23,6 +28,18 @@ class Api::V1::PerqWebhooksController < ActionController::Base
   end
 
   private
+
+  def get_previous_tour schedual_tour
+    {
+      tour_date: schedual_tour.tour_date,
+      tour_time: schedual_tour.tour_time,
+      is_rescheduled: schedual_tour.tour_user_id.present?
+    }
+  end
+
+  def perq_tour_confirmation schedual_tour, previous_tour, is_rescheduled
+    SchedulerWidgetService.new(@community).send_email_and_other_notifications(schedual_tour, previous_tour, is_rescheduled)
+  end
 
   def is_required_params_present
     (@community.present? && @community.self_tour && @community&.credential&.is_perq_allowed && params["Email"].present? && params["FirstName"].present? && params["LastName"].present? && params["TourType"].present? && params["Phone"].present? && params["AppointmentDateTime"].present? && (params["ClientName"].present? || params["ClientID"].present?) )
