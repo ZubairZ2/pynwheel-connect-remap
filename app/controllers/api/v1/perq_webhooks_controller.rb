@@ -15,10 +15,9 @@ class Api::V1::PerqWebhooksController < ActionController::Base
 
         render :json => {:success=>true, :message => "You already have tour in future, tour is updated successfully with new submitted data", :status => 200}
       else
-        previous_tour = get_previous_tour(get_latest_tour())
-        create_scheduled_tour(previous_tour)
+        create_scheduled_tour(get_latest_tour())
         schedual_tour = SchedualTour.last
-        perq_tour_confirmation(schedual_tour, previous_tour, false)
+        perq_tour_confirmation(schedual_tour, nil, false)
         
         render :json => {:success=>true, :message => "New tour is scheduled successfully", :status => 200}
       end
