@@ -1,30 +1,15 @@
 $(window).on('resize', function(){
-  // $(".divLoading").removeClass("hidden");
-  // window.location.reload();
+  $(".divLoading").removeClass("hidden");
+  window.location.reload();
   $('#sidebar-for-responsive').addClass("hidden");
   $('.h-class').removeClass('hidden');
-  if ($(window).width() <= 993){
-    $('#sidebar-for-responsive').removeClass("hidden");
-    $('.select-list-fav').addClass("hidden");
-    $('.modal-image-fav').removeClass("hidden");
-    $('.h-class').addClass('hidden');
-    $('.alert_message').css({"margin-left": 0})
-  }
-  else{
-    $('.select-list-fav').removeClass("hidden");
-  }
+  addAttributes();
 })
 
 $(document).ready(function(){
 	if ($('.is-favorites')[0]){
     $('#sidebar-for-responsive').addClass("hidden");
-    if ($(window).width() <= 993){
-      // $('.modal-wrapper-mobile').removeClass("hidden");
-      $('#sidebar-for-responsive').removeClass("hidden");
-      $('.select-list-fav').addClass("hidden");
-      $('.modal-image-fav').removeClass("hidden");
-      $('.h-class').addClass('hidden');
-    }
+    addAttributes();
     $('#favoriteclickme').click(function() {
       $("#favoriteclickme").html($("#favoriteclickme").html() == 'Share and Clear' ? 'Hide Options' : 'Share and Clear');
       var $slider = $('.mydiv-fav');
@@ -33,7 +18,7 @@ $(document).ready(function(){
         0 : -331
       });
     });
-		$(".leasing-start-date").datepicker({dateFormat: 'mm/dd/yy' }); 
+		$(".leasing-start-date").datepicker({dateFormat: 'mm/dd/yy' });
     $(".c-connect-map-wrapper .c-modal-body-content").slick({
       infinite: true,
       slidesToShow: 1,
@@ -53,6 +38,19 @@ $(document).ready(function(){
   }
 });
 
+function addAttributes(){
+  if ($(window).width() <= 993){
+    $('#sidebar-for-responsive').removeClass("hidden");
+    $('.select-list-fav').addClass("hidden");
+    $('.modal-image-fav').removeClass("hidden");
+    $('.h-class').addClass('hidden');
+  }
+  else{
+    $('.select-list-fav').removeClass("hidden");
+    $('.disabaled-apply-now').addClass("disabaled-apply-now-for-bigger-screen")
+  }
+}
+
 function setAttributes(){
   for(var x = 0; x < units.length; x++) {
     var unit_id = units[x].id
@@ -63,12 +61,11 @@ function setAttributes(){
           $('#'+unit_id+'-unit-lease-pricing-text-li').addClass('hidden');
           $('#'+unit_id+'-leas-price-option').addClass('hidden');
           $('.c-connect-map-wrapper').find('#'+unit_id+'-lease-pricing').html("No more prices are available");
-          // $('#unitModal').find('#unit-lease-pricing').html($(element).data('unit-lease-pricing'));
       }
       else
       {
           var lease = [];
-          var first_lease_item = "";
+          var first_lease_item = unit_id+'-first_lease_item';
           var smallest_lease_month = "";
           var lease_price_arr = [];
           var lease_months_arr = [];
@@ -109,18 +106,15 @@ function setAttributes(){
           }
           var leaseTermOptions = ""
           for (let i = 0; i < lease_months_arr.length; ++i) {
-            leaseTermOptions += `<option value="${lease_months_arr[i]+" months"}" >${lease_months_arr[i]+" months"}</option>`
+            leaseTermOptions += `<option value="${lease_months_arr[i]+" months"}" data-lease-price="${lease_price_arr[i]}" >${lease_months_arr[i]+" months"}</option>`
           }
-          $('.c-connect-map-wrapper').find('#'+unit_id+'-lease-pricing').html(lease);
+          // $('#psi-anchor-tag').attr('data-unit-provider-id', $(element).data('unit-provider-id'));
+          $('.c-connect-map-wrapper').find('#'+unit_id+'-lease-pricing').html(lease); 
           $('.c-connect-map-wrapper').find('#'+unit_id+'-first-unit-lease-pricing').html(first_lease_item);
           $('.c-connect-map-wrapper').find('#'+unit_id+'-lease_term').html(leaseTermOptions);
-          // debugger
-          $(`${unit_id}-lease_term option[value="${first_lease_item[0]+first_lease_item[1]+" months"}"]`).attr("selected", true);
-          // debugger
-          // $('.c-connect-map-wrapper').find(units[x].id+'-leasing-start-date').attr("value", new Date(units[x].available_date))
-          // $('.c-connect-map-wrapper').find(units[x].id+'-leasing-start-date').datepicker('setDate', $('#'+units[x].id+'-leasing-start-date').val());
-          $(".leasing-start-date").datepicker('option', {dateFormat: 'mm/dd/yy', minDate: $('#'+unit_id+'-leasing-start-date').val()});
-          // $('.c-connect-map-wrapper').find(units[x].id+'-leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: $('#'+units[x].id+'-leasing-start-date').val()})
+          $(`#${unit_id}-lease_term option[value="${first_lease_item[0]+first_lease_item[1]+" months"}"]`).attr("selected", true);
+          $("#"+unit_id+"-leasing-start-date").datepicker('setDate', new Date($('#'+unit_id+'-leasing-start-date').data('available_date')));
+          $("#"+unit_id+"-leasing-start-date").datepicker('option', {dateFormat: 'mm/dd/yy', minDate: $('#'+unit_id+'-leasing-start-date').data('available_date') == "Now" ? new Date() : new Date($('#'+unit_id+'-leasing-start-date').data('available_date'))});
       }
     }
     catch(err) {
@@ -214,9 +208,15 @@ function deleteFavorite(element){
     // $(".divLoading").removeClass("hidden");
     // window.location.reload();
   }, 1000);
-
 }
 
 function sendAjaxToDeleteFavorite(url){
   $.ajax({url: url});
+}
+
+function changeEffectiveRent(element){
+  unitId = $(element).data('unit-id');
+  select = document.getElementById(unitId+'-lease_term');
+  option = select.options[select.selectedIndex];
+  $('#'+unitId+'-total-price').html('$' + option.dataset.leasePrice)
 }
