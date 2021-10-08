@@ -29,8 +29,11 @@ class TourStop < ApplicationRecord
 
   has_one :path, as: :map_path
   has_many :path_points, through: :paths
+  belongs_to :unit, dependent: :destroy
   
-  after_destroy :remove_associated_stops
+  before_destroy :remove_associated_stops
+
+  scope :visible, -> { where(display_stop: true) }
 
   scope :visible, -> { where(display_stop: true) }
 

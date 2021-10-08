@@ -5,9 +5,12 @@ module ZervServices
             community = args[:community]
             tour_user = args[:tour_user]
             stop_list = args[:stop_list]
+            is_resident = args[:is_resident]
+
             @facilityId   = community.zerv.facility_id.blank? ? "0" : community.zerv.facility_id
             @accessCode   = community.zerv.badge_id.blank? ? "1234" : community.zerv.badge_id
             @cardFormat   = community.zerv.card_format.blank? ? "HID Prox 26-bit H10301" : community.zerv.card_format
+
             url = base_url + "/user/adduserwithtimezone"
             id_token = get_id_token
 
@@ -20,19 +23,23 @@ module ZervServices
                     access_code = attached_lock.universal_access_code.present? ? attached_lock.universal_access_code : nil rescue nil
                     access_point = attached_lock.mac_id rescue nil
                     if access_point.present?
-                        list_add_user_access << time_access_object(community, tour_time)
+                        list_add_user_access << time_access_object(community, tour_time, is_resident)
                         list_add_user_access.last.merge!({"accessCode": @accessCode,"accessPoint": access_point})
                     end
                 end
             end
             
-            tour_user.phone_number = tour_user.phone_number[0] == '+' ?  tour_user.phone_number : '+' + tour_user.phone_number
+            unless is_resident
+                tour_user.phone_number = tour_user.phone_number[0] == '+' ?  tour_user.phone_number : '+' + tour_user.phone_number
+            end
+            
             body = {
                 "firstName": tour_user.first_name,
                 "lastName": tour_user.last_name,
                 "phoneNumber":  tour_user.phone_number,
                 "email": tour_user.email,
                 "image": nil,
+                "refreshCredentialFrequency": 24,
                 "listAddUserAccess": list_add_user_access
             }
             
@@ -57,11 +64,16 @@ module ZervServices
         end
 
 
-        def time_access_object(community, tour_time)
+        def time_access_object(community, tour_time, is_resident)
             # ------------------------------------ set values for zerv access parameters ----------------------------- #
-            
             start_time = tour_time.strftime("%H:%M")
             end_time = (tour_time + 90.minutes).strftime("%H:%M")
+        
+            if is_resident
+                start_time = "00:00"
+                end_time = "23:59"
+            end
+
             
             if tour_time.monday?
                 main = {
@@ -115,6 +127,8 @@ module ZervServices
                 "credentialIdentifier": "1234",
                 "facilityId": @facilityId,
                 "cardFormat": @cardFormat,
+                "antiPassBack": 5,
+                "range": 100,
                 "active": true,
                 "monAccess": false,
                 "tueAccess": false,
@@ -140,7 +154,7 @@ module ZervServices
             }
     
             # below line will replace the main_keys within the required_keys
-            req_keys.merge(main) 
+            req_keys.merge(main)
         end
     end
 end

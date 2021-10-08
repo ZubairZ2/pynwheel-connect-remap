@@ -1,0 +1,78 @@
+<style type="text/css">
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+  .how_it_works{
+    background: #008fd3;
+    text-align: center;
+    color: #fff;
+  }
+  .how_it_works_p{
+    font-size: 20px;
+    font-family: Poppins !important;
+  }
+  .how_it_works h2{
+    font-size: 32px;
+    font-family: Poppins !important;
+  }
+  .confirmation-text{
+    padding-top: 1%;
+  }
+  .btn_popup{
+    width: 100%;
+    border: none;
+    text-align: center;
+    color: #008fd3;
+    font-size: 19px;
+  }
+  @media only screen and (max-width: 760px) {
+    .how_it_works_p{
+      font-size: 17px;
+      font-family: Poppins !important;
+    }
+  }
+
+</style>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <meta charset="utf-8"/>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <title>Pynwheel | Schedule Confirmation</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
+    <%= csrf_meta_tags %>
+    <%= stylesheet_link_tag 'jquery.mCustomScrollbar.css' %>
+    <%= stylesheet_link_tag 'slick.css' %>
+    <%= stylesheet_link_tag 'bootstrap-datetimepicker' %>
+    <%= stylesheet_link_tag 'application', media: 'all' %>
+    <%= favicon_link_tag 'logo-small.png' %>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="divLoading hidden"></div>
+    <div id="scheduleMyTourSuccess" tabindex="-1" aria-hidden="true">
+        <section>
+          <div class="container confirmation-text">
+            <% if true %>
+                <% if is_rescheduled == "true" %>
+                <p>
+                  <%= schedual_tour.reschedule_notification.html_safe if schedual_tour.reschedule_notification.present? %>
+                </p>
+                <%else%>
+                <p>
+                  <%= schedual_tour.confirmation_notification.html_safe if schedual_tour.confirmation_notification.present? %>
+                </p>
+                <%end%>
+            <%end%>
+          </div>
+        </section>
+        <section class="clearfix">
+          <%= render 'shared/download_apps', :obj => {:ios_link => ios_link, :android_link => android_link } %>
+        </section>
+        <section class="mt-15">
+          <div class="container how_it_works">
+            <%= render 'shared/instruction_card',:obj => {property_tour_type: property_tour_type,community_name: community_name,tour_type: tour_type,id_verification: @community.tour.visual_id_verification} %>
+          </div>
+        </section>
+    </div>
+  </body>
+</html>

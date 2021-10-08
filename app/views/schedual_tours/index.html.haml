@@ -13,8 +13,9 @@
       .box-header
         %h3.box-title
           Scheduled Tours
-        %a.btn.btn-success.pull-right{:href => schedule_tour_url(@community, @community_code)} Schedule Tour
-
+        - unless (@community&.credential&.use_different_crm_provider && @community&.crm_credential&.crm_provider == "salesforce")
+          %a.btn.btn-success.pull-right{:href => schedule_tour_url(@community, @community_code)} Schedule Tour
+        
     .row{:style => "margin-bottom: 70px;"}
       .col-lg-12.col-md-12
         .row
@@ -25,6 +26,7 @@
                   %tr
                     %th{:style => "width: 55px;"} Sr #
                     %th Date & Time
+                    %th Tour Type
                     %th Name
                     %th Email
                     %th Phone
@@ -34,16 +36,6 @@
                 %tbody
 
 %div{ :id => "edit-modal-data" }
-
-.row
-  .col-md-12{:style => "position: absolute; bottom: 51px;"}
-    .box-footer.mt-30.pt-15
-      .row
-        .col-lg-10
-          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
-            .col-md-12.col-lg-12
-              %button.btn-primary.done_btn.mb-20{:onclick => "visitor_index_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
-                DONE
 
 :javascript
   $(document).ready(function () {
@@ -61,7 +53,10 @@
         "bDeferRender": true,
         "columnReorder": true,
         "lengthMenu": [ 5, 10, 25, 50, 100 ],
-        "pageLength": 10       
+        "pageLength": 10,
+        'columnDefs': [{ 'orderable': false, 'targets': [0,7] }], // hide sort icon on header of first column
+        'aaSorting': [[1, 'asc']]
+        //"iSortCol_0": true; 
       }
     );
       

@@ -1,11 +1,36 @@
+var selectMap;
+var webCommunity;
+var _3dFilteredUnits;
+var _3dAmenities;
+var _3dSelectedUnit;
+var _3dFilteredAmenity;
+var _3dSampleAmenities = ["SWIMMINGPOOL", "GYM", "BBQ", "SPA", "OFFICE", "ST", "EL", "EN"]
+
+
+$(document).ready(function () {
+  webCommunity = $("#communityWebpagesData").data("community");
+  _3dAmenities = $("#communityWebpagesData").data("amenities");
+
+
+  if(webCommunity) {
+    selectMap = webCommunity.web_map_type;
+
+    if(webCommunity.web_map_type === "3d-map") {
+      beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`, "OWU3MWI0NDgzNzlkNGQ0OjYyNjEzNzY1MzgzODYxMzA2NDYxMzczMTM0Mzk2MzMyMzg2NTY0NjE=", {'click-popup-listener' : polygonClickPopup, 'polygon-color' : '#f4f4f4', 'selected-polygon-color' : '#f4f4f4', 'selected-unit-color' : '#0000ff'});    
+    }
+
+    handleMapControl()
+  }
+});
+
+
 $(window).bind('load', function () {
     // $( window ).on( "orientationchange", function( event ) {
     //     $(".divLoading").removeClass("hidden");
     //     window.location.reload();
     // });
-     
-  if ($('.is-webpage')[0]) {
 
+  if ($('.is-webpage')[0]) {
     // $(".panzoom").addClass("transform-none");
     // $(document).on("click touchstart", ".zoom-controls", function () {
     //   $(".panzoom").removeClass("transform-none");
@@ -50,24 +75,30 @@ $(window).bind('load', function () {
     ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('show.bs.modal', function (e) {
-      $('.unit-buttons').empty();
-      $('.unit-buttons').addClass('hidden');
-      if ($('.h-' + $(e.relatedTarget).data('unit-x-plot') + '-' + $(e.relatedTarget).data('unit-y-plot')).length > 1) {
-        $('.h-' + $(e.relatedTarget).data('unit-x-plot') + '-' + $(e.relatedTarget).data('unit-y-plot')).each(function () {
-          console.log('CLick on marker for displaying multiple units');
-          var target_id = $(e.relatedTarget).attr('id');
-          var underneath_unit_id = $(this).attr('id');
-          var button_style = ""
-          if (target_id.split('_')[1] == underneath_unit_id.split('-')[1]) {
-            button_style = "btn-primary"
-          } else {
-            button_style = "btn-default"
-          }
-          $('.unit-buttons').removeClass('hidden');
-          $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" data-title="' + $(this).data('title') + '" data-community-id="' + $(this).data('community-id') + '" data-unit-id="' + $(this).data('unit-id') + '" data-is-fav="' + $(this).data('is-fav') + '" data-provider="' + $(this).data('provider') + '" data-website="' + $(this).data('website') + '" data-community-property-id="' + $(this).data('community-property-id') + '" data-unit-provider-id="' + $(this).data('unit-provider-id') + '" data-floorplan-provider-id="' + $(this).data('floorplan-provider-id') + '" data-floorplan-name="' + $(this).data('floorplan-name') + '" data-unit-description="' + $(this).data('unit-description') + '" data-unit-marketing-name="' + $(this).data('unit-marketing-name') + '" data-market-rent="' + $(this).data('market-rent') + '" data-square-feet="' + $(this).data('square-feet') + '" data-availability="' + $(this).data('availability') + '" data-available-date="' + $(this).data('available-date') + '" data-bedrooms="' + $(this).data('bedrooms') + '" data-bathrooms="' + $(this).data('bathrooms') + '" data-floorplan-image="' + $(this).data('floorplan-image') + '" data-lease-term="' + $(this).data('lease-term') + '" onclick="setUnitAttributes(this);">' + $(this).data('title') + '</button>');
-        });
+      if(selectMap === "3d-map") {
+        _3dUnitModalDisplay();
+        $('.unit-buttons').addClass('hidden');
       }
-      setModalAttributes(e.relatedTarget);
+      else {
+        $('.unit-buttons').empty();
+        $('.unit-buttons').addClass('hidden');
+        if ($('.h-' + $(e.relatedTarget).data('unit-x-plot') + '-' + $(e.relatedTarget).data('unit-y-plot')).length > 1) {
+          $('.h-' + $(e.relatedTarget).data('unit-x-plot') + '-' + $(e.relatedTarget).data('unit-y-plot')).each(function () {
+            console.log('CLick on marker for displaying multiple units');
+            var target_id = $(e.relatedTarget).attr('id');
+            var underneath_unit_id = $(this).attr('id');
+            var button_style = ""
+            if (target_id.split('_')[1] == underneath_unit_id.split('-')[1]) {
+              button_style = "btn-primary"
+            } else {
+              button_style = "btn-default"
+            }
+            $('.unit-buttons').removeClass('hidden');
+            $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" data-title="' + $(this).data('title') + '" data-community-id="' + $(this).data('community-id') + '" data-unit-id="' + $(this).data('unit-id') + '" data-is-fav="' + $(this).data('is-fav') + '" data-provider="' + $(this).data('provider') + '" data-website="' + $(this).data('website') + '" data-community-property-id="' + $(this).data('community-property-id') + '" data-unit-provider-id="' + $(this).data('unit-provider-id') + '" data-floorplan-provider-id="' + $(this).data('floorplan-provider-id') + '" data-floorplan-name="' + $(this).data('floorplan-name') + '" data-unit-description="' + $(this).data('unit-description') + '" data-unit-marketing-name="' + $(this).data('unit-marketing-name') + '" data-market-rent="' + $(this).data('market-rent') + '" data-square-feet="' + $(this).data('square-feet') + '" data-availability="' + $(this).data('availability') + '" data-available-date="' + $(this).data('available-date') + '" data-bedrooms="' + $(this).data('bedrooms') + '" data-bathrooms="' + $(this).data('bathrooms') + '" data-floorplan-image="' + $(this).data('floorplan-image') + '" data-lease-term="' + $(this).data('lease-term') + '" onclick="setUnitAttributes(this);">' + $(this).data('title') + '</button>');
+          });
+        }
+        setModalAttributes(e.relatedTarget);
+      }
     });
 
     /////////////////////////////////////////
@@ -234,10 +265,32 @@ $(window).bind('load', function () {
       var in_browser_width = 0;
       var actual_height = 0;
       var actual_width = 0;
+      var extra_width = 0;
+      var extra_hieght = 0;
       in_browser_height = parseFloat($('.floorplate-image').parent().height());
       in_browser_width = parseFloat($('.floorplate-image').parent().width());
       actual_height = parseInt($('.floorplate-image').data("height"));
       actual_width = parseInt($('.floorplate-image').data("width"));
+
+      // var propertyMapImg = document.getElementById('property-map-image');
+      // if(actual_width > in_browser_width && actual_height > in_browser_height) {
+      //   actual_width = propertyMapImg.clientWidth;
+      //   actual_height = propertyMapImg.clientHeight;
+      // }
+      // setTimeout(function(){ 
+      //   // debugger
+      //   actual_width = propertyMapImg.clientWidth;
+      //   actual_height = propertyMapImg.clientHeight; 
+      // }, 3000);
+      
+      // if( actual_height > in_browser_height && actual_width > in_browser_width){
+      //   actual_width = propertyMapImg.clientWidth;
+      //   actual_height = propertyMapImg.clientHeight;
+      //   // extra_width = actual_width - in_browser_width
+      //   // extra_hieght = actual_height - in_browser_height
+      //   // actual_width = actual_width - extra_width
+      //   // actual_height = actual_height - extra_hieght
+      // }
       if (actual_width < in_browser_width)
         var width_ratio = 1;
       else
@@ -247,27 +300,117 @@ $(window).bind('load', function () {
       else
         var height_ratio = actual_height / in_browser_height;
 
-
       $('.marker').each(function () {
         var x_plot = parseFloat($(this).data('unit-x-plot'));
         var y_plot = parseFloat($(this).data('unit-y-plot'));
-        current_left = x_plot / width_ratio;
-        current_top = y_plot / height_ratio;
+
+        //TODO::Fix it dynamically. It is temporary fix right now
+        if(actual_width > in_browser_width && actual_height > in_browser_height) {
+          if(actual_width >= 5884){
+            current_left = x_plot / width_ratio - 6;
+            current_top = y_plot / height_ratio - 20;
+          }
+          if(actual_width >= 2824 && actual_width < 5884 ){
+            current_left = x_plot / width_ratio - 4;
+            current_top = y_plot / height_ratio - 13;
+          }
+          if(actual_width < 2824 && actual_width > 1568){
+            current_left = x_plot / width_ratio - 1;
+            current_top = y_plot / height_ratio - 6;
+          }
+          if(actual_width < 2824){
+            current_left = x_plot / width_ratio;
+            current_top = y_plot / height_ratio;
+          }
+        }
+        else {
+          current_left = x_plot / width_ratio;
+          current_top = y_plot / height_ratio;
+        }
+        // $(this).css({"left": current_left-4, "top": current_top-14});
         $(this).css({"left": current_left, "top": current_top});
       });
-
 
       $('.sitemap-amenity-marker').each(function () {
         var x_plot = parseFloat($(this).data('amenity-x-plot'));
         var y_plot = parseFloat($(this).data('amenity-y-plot'));
-        current_left = x_plot / width_ratio;
-        current_top = y_plot / height_ratio;
+        if(actual_width > in_browser_width && actual_height > in_browser_height) {
+          if(actual_width >= 5884){
+            current_left = x_plot / width_ratio - 6;
+            current_top = y_plot / height_ratio - 20;
+          }
+          if(actual_width >= 2824 && actual_width < 5884 ){
+            current_left = x_plot / width_ratio - 4;
+            current_top = y_plot / height_ratio - 6;
+          }
+          if(actual_width < 2824 && actual_width > 1568){
+            current_left = x_plot / width_ratio - 1;
+            current_top = y_plot / height_ratio - 6;
+          }
+          if(actual_width < 2824){
+            current_left = x_plot / width_ratio;
+            current_top = y_plot / height_ratio;
+          }
+        }
+        else {
+          current_left = x_plot / width_ratio;
+          current_top = y_plot / height_ratio;
+        }
+        // current_left = x_plot / width_ratio;
+        // current_top = y_plot / height_ratio;
         $(this).css({"left": current_left, "top": current_top});
       });
     }
 
   } // if condition ending curl
+
+  if(selectMap === "3d-map") {
+    _3dMapViewMarkers();
+  }
 });
+
+function polygonClickPopup(feature) {
+  let htmlToDisplay;
+
+  if(_3dSampleAmenities.includes(feature.properties.display_text)) {
+    htmlToDisplay = amenityHTMLToDisplay(feature.properties);
+   } else {
+    htmlToDisplay = unitHTMLToDisplay(feature.properties);
+  }
+
+  return htmlToDisplay;
+}
+
+function unitHTMLToDisplay(unit) {
+  let unitName = unit.display_text;
+  let unitFloor = unit.floor;
+
+  _3dSelectedUnit = set3DSelectedUnit(unitName, unitFloor);
+  
+  if(_3dSelectedUnit)
+    $("#unitModal").modal("show");
+
+  return `<strong>Name: ${unitName}</strong>`;
+}
+
+function amenityHTMLToDisplay(amenity) {
+  let htmlToDisplay = amenity.display_text;
+  
+  _3dFilteredAmenity = _3dGetAmenityImageURL(amenity.display_text);
+
+  if(_3dFilteredAmenity && _3dFilteredAmenity.image && _3dFilteredAmenity.image.url) {
+    $("#3DAmenityName").html(htmlToDisplay);
+    $("#_3DAmenityImage").attr("src", _3dFilteredAmenity.image.url);
+    $("#3DAmenityModal").modal("show");
+  }
+
+  return htmlToDisplay
+}
+
+function _3dGetAmenityImageURL(amenityName) {
+  return _3dAmenities.filter(a => a.name === amenityName)[0];
+}
+
 
 function setFilters() {
   console.log("Setting filters");
@@ -452,6 +595,11 @@ function showMarkers(market_rent_change = false) {
   $('.hidden-units').empty();
 
   var units_to_display = select_units_according_to_filters(units)
+ 
+  console.log("units_to_display: ", units_to_display);
+  if(selectMap === "3d-map") {
+    _3dFilteredUnits = units_to_display;
+  }
   // set_prices_according_to_units_to_display(units_to_display, market_rent_change)
 
   set_prices_according_to_units_to_display(units, market_rent_change)
@@ -470,8 +618,8 @@ function showMarkers(market_rent_change = false) {
   }
   var json_object = {}
   for (var i = 0; i < units_to_display.length; i++) {
-    if ($('#m_' + units_to_display[i]['marketing_name']).hasClass('overlapping-unit')) {
-      var element = $('#m_' + units_to_display[i]['marketing_name']);
+    if ($('#m_' + units_to_display[i]['id']).hasClass('overlapping-unit')) {
+      var element = $('#m_' + units_to_display[i]['id']);
       $('.hidden-units').append('<div class="hidden h-' + $(element).data('unit-x-plot') + '-' + $(element).data('unit-y-plot') + '" id="h-' + $(element).data('title') + '" data-title="' + $(element).data('title') + '" data-community-id="' + $(element).data('community-id') + '" data-unit-id="' + $(element).data('unit-id') + '" data-is-fav="' + $(element).data('is-fav') + '" data-provider="' + $(element).data('provider') + '" data-website="' + $(element).data('website') + '" data-community-property-id="' + $(element).data('community-property-id') + '" data-unit-provider-id="' + $(element).data('unit-provider-id') + '" data-floorplan-provider-id="' + $(element).data('floorplan-provider-id') + '" data-floorplan-name="' + $(element).data('floorplan-name') + '" data-unit-description="' + $(element).data('unit-description') + '" data-unit-lease-pricing="' + $(element).data('unit-lease-pricing') + '" data-unit-marketing-name="' + $(element).data('unit-marketing-name') + '" data-market-rent="' + $(element).data('market-rent') + '" data-square-feet="' + $(element).data('square-feet') + '" data-availability="' + $(element).data('availability') + '" data-available-date="' + $(element).data('available-date') + '" data-bedrooms="' + $(element).data('bedrooms') + '" data-bathrooms="' + $(element).data('bathrooms') + '" data-floorplan-image="' + $(element).data('floorplan-image') + '" data-lease-term="' + $(element).data('lease-term') + '"></div>');
       if (!json_object.hasOwnProperty(units_to_display[i]['x_plot'] + '-' + units_to_display[i]['y_plot'])) {
         var overlapping_units = [];
@@ -486,18 +634,18 @@ function showMarkers(market_rent_change = false) {
     } else {
       if (has_floorplate == 'true') {
         console.log('Adjusting markers');
-        adjustMarkerPosition($('#m_' + units_to_display[i]['marketing_name']));
+        adjustMarkerPosition($('#m_' + units_to_display[i]['id']));
       }
-      $('#m_' + units_to_display[i]['marketing_name']).removeClass('hidden');
+      $('#m_' + units_to_display[i]['id']).removeClass('hidden');
     }
   }
   for (var key in json_object) {
     var units_from_json = json_object[key];
-    $('#m_' + units_from_json[0]['marketing_name'] + ' span').html(units_from_json.length > 1 ? units_from_json.length : '')
+    $('#m_' + units_from_json[0]['id'] + ' span').html(units_from_json.length > 1 ? units_from_json.length : '')
     if (has_floorplate == 'true') {
-      adjustMarkerPosition($('#m_' + units_from_json[0]['marketing_name']));
+      adjustMarkerPosition($('#m_' + units_from_json[0]['id']));
     }
-    $('#m_' + units_from_json[0]['marketing_name']).removeClass('hidden');
+    $('#m_' + units_from_json[0]['id']).removeClass('hidden');
   }
   disabled_enabled_anchors();
 } //function ending curl
@@ -510,6 +658,7 @@ function populate_current_units() {
     $('.amenity-marker').addClass('hidden'); // first hidding all amenity markers
     $('.a_' + current_floor).removeClass('hidden'); // showing amenity markers on current floorplate 
     adjustAmenitiesPosition();
+    
     for (var i = 0; i < units.length; i++) {
       if (units[i]['floor'] == current_floor) {
         current_units.push(units[i]);
@@ -520,6 +669,7 @@ function populate_current_units() {
       current_units.push(units[i]);
     }
   }
+
   showMarkers();
 }
 
@@ -536,7 +686,6 @@ function disabled_enabled_anchors() {
     }
     //console.log(floorplate_units);
     var units_to_display = select_units_according_to_filters(units)
-
     // console.log(units_to_display.length);
     if (units_to_display.length == 0) {
       //console.log(floors[i]);
@@ -633,11 +782,15 @@ function select_units_according_to_filters(floorplate_units) {
   var one_twenty_days = new Date(today).setDate(today.getDate() + 120);
   if (units.length == 0)
     $('.available_portion').addClass('hidden');
+  
   for (var i = 0; i < floorplate_units.length; i++) {
-    if(($('.floorplate-anchor.selected').attr('id') != undefined) && ($('.floorplate-anchor.selected').attr('id') != floorplate_units[i].floor.toString()) )
-      continue;
+    if(!(selectMap === "3d-map"))
+      if(($('.floorplate-anchor.selected').attr('id') != undefined) && ($('.floorplate-anchor.selected').attr('id') != floorplate_units[i].floor.toString()) )
+        continue;
+    
     all_units.push(floorplate_units[i]);
     //show zero bedroom markers  
+
     if ($('#zero-bedroom-checkbox').is(':checked')) {
       if (parseInt(floorplate_units[i]['bedrooms']) == 0) {
         //$('#m_'+units[i]['marketing_name']).removeClass('hidden');
@@ -842,6 +995,7 @@ function select_units_according_to_filters(floorplate_units) {
     rent_base_units = all_units
     price_filter_present = false
   }
+
   if(_now_units.length == 0)
   {$('#now-checkbox').parent().addClass('hidden');}
   else
@@ -891,19 +1045,40 @@ function select_units_according_to_filters(floorplate_units) {
 
 function set_psi_url(element) {
   //var url = $(element).data('website')+"/Apartments/module/application_authentication/http_referer/"+$(element).data('uri')+"/popup/false/kill_session/1/property[id]/"+$(element).data('community-property-id')+"/property_floorplan[id]/"+$(element).data('floorplan-provider-id')+"/unit_space[id]/"+$(element).data('unit-provider-id')+"/show_in_popup/false/from_check_availability/1/term_month/"+$(element).data('lease-term')+"/?lease_start_date="+$('#leasing-start-date').val();
-    var url = $(element).data('availability-url');
+  var url = $(element).data('availability-url');
+
+  if(selectMap === "3d-map") {
+    url = _3dSelectedUnit.availability_url
+  }
+
   window.open(url, '_blank');
 }
 function set_resman_url(element)
 {
   date = new Date($('#leasing-start-date').val())
   var url = $(element).data('availability-url') + "&leaseTerm=" + $('#lease-term').val() + "&moveInDate=" + date.toISOString().split('T')[0]
+
+  
+  if(selectMap === "3d-map") {
+    date = new Date();
+    url = _3dSelectedUnit.availability_url + "&leaseTerm=" + _3dSelectedUnit.lease_term + "&moveInDate=" + date.toISOString().split('T')[0]
+  }
+
   window.open(url, '_blank');
 }
 
 function set_realpagesvc_url(element) {
   //http://localhost:3000/communities/25/webpages/apply_now?MoveInDate=12/15/2017&UnitId=346&SearchUrl=https%3A//localhost:3000#k=70697
   var url = apply_now_url + "?MoveInDate=" + $('#leasing-start-date').val() + "&UnitId=" + $(element).data('unit-provider-id') + "&SearchUrl=" + redirect_url;
+  
+  if(selectMap === "3d-map") {
+    apply_now_url = `/communities/${webCommunity.id}/webpages/apply_now`;
+    redirect_url = `/communities/${webCommunity.id}/webpages`
+    date = new Date()
+
+    url = url = apply_now_url + "?MoveInDate=" + date.toISOString().split('T')[0] + "&UnitId=" + _3dSelectedUnit.provider_unit_id + "&SearchUrl=" + redirect_url;
+  }
+
   window.open(url, '_blank');
 }
 
@@ -955,7 +1130,7 @@ function setModalAttributes(element) {
             for (var i = 0; i < ss.length -1; i++) {
                 var s = ss[i].split(':');
                 var sp;
-                if (s[2] != "")
+                if (s[2] && s[2] != "")
                 {
                     sp = s[2] +" - "
                 }
@@ -1064,6 +1239,114 @@ function setModalAttributes(element) {
   }
 }
 
+function _3dUnitModalDisplay() {
+  $('#unitModal').find('#unit-marketing-name').html(_3dSelectedUnit.marketing_name)
+  $('#unitModal').find('#floorplan-name').html(_3dSelectedUnit.floorplan_name);
+  $('#unitModal').find('#square-feet').html(_3dSelectedUnit.square_feet);
+  $('#unitModal').find('#bathrooms').html(_3dSelectedUnit.bathrooms);
+
+  if ($('#unitModal').find('#bathrooms').html() == '1') {
+    $('#unitModal').find('#bathrooms').parents().siblings(".bathrooms").html("Bathroom")
+  } else {
+    $('#unitModal').find('#bathrooms').parents().siblings(".bathrooms").html("Bathrooms")
+  }
+  $('#unitModal').find('#bedrooms').html(_3dSelectedUnit.bedrooms);
+  if ($('#unitModal').find('#bedrooms').html() == '1') {
+    $('#unitModal').find('#bedrooms').parents().siblings(".bedrooms").html("Bedroom")
+  } else {
+    $('#unitModal').find('#bedrooms').parents().siblings(".bedrooms").html("Bedrooms")
+  }
+
+  if (_3dSelectedUnit.sold) {
+    console.log('Sold');
+    $('#unitModal').find('#availability').html("Sold");
+    $('#unitModal').find('#available-date').html('');
+    $('#unitModal').find('#available-text').html('Unavailable');
+  } else {
+    if (_3dSelectedUnit.available) {
+      _3dDate = _3dSelectedUnit.available_date.split("-")
+      $('#unitModal').find('#availability').html("Available");
+      $('#unitModal').find('#available-text').html('Available');
+      $('#unitModal').find('#available-date').html(`${_3dDate[2]}/${_3dDate[1]}/${_3dDate[0]}`);
+    } else {
+      $('#unitModal').find('#availability').html(_3dSelectedUnit.availability == "Unoccupied" ? "Available" : "Occupied");
+      $('#unitModal').find('#available-text').html('Available');
+      $('#unitModal').find('#available-date').html(_3dSelectedUnit.available_date);
+    }
+  }
+
+  $('#unitModal').find('#market-rent').html(`$ ${_3dSelectedUnit.market_rent}`);
+
+  if (!_3dSelectedUnit.is_fav) {
+    var community_id = webCommunity.id;
+    var unit_id = _3dSelectedUnit.id;
+    var url = "/communities/" + community_id + "/webpages/save_favorite?unit_id=" + unit_id;
+    var html = '<a href="' + url + '" data-remote="true"><i class="far fa-heart"></i></a>';
+    $('#fav-icon-tag').html(html);
+  } else {
+    var community_id = webCommunity.id;
+    var unit_id = _3dSelectedUnit.id;
+    var url = "/communities/" + community_id + "/webpages/delete_favorite?unit_id=" + unit_id;
+    var html = '<a href="' + url + '" data-remote="true"><i class="fa fa-heart"></i></a>';
+    $('#fav-icon-tag').html(html);
+  }
+
+  // debugger;
+
+  $('#unitModal').find('#floorplan-image').attr('src', _3dSelectedUnit.floorplan_image);
+
+  if (webCommunity.data_provider != 'realpagesvc') {
+    var website = webCommunity.website;
+    var uri = website.replace(/^https?\:\/\//, '');
+    $('#psi-anchor-tag').attr('data-community-property-id', _3dSelectedUnit.community_property_id);
+    $('#psi-anchor-tag').attr('data-website', website);
+    $('#psi-anchor-tag').attr('data-uri', uri);
+    $('#psi-anchor-tag').attr('data-unit-provider-id', _3dSelectedUnit.provider_unit_id);
+    $('#psi-anchor-tag').attr('data-floorplan-provider-id', _3dSelectedUnit.provider_floorplan_id);
+    $('#psi-anchor-tag').attr('data-lease-term', _3dSelectedUnit.lease_term);
+    $('#psi-anchor-tag').attr('data-availability-url', _3dSelectedUnit.availability_url);
+    $("#leasing-start-date").datepicker('setDate', new Date());
+  } else if (webCommunity.data_provider === 'realpagesvc') {
+    $('#realpagesvc-anchor-tag').attr('data-unit-provider-id', _3dSelectedUnit.provider_unit_id);
+  }
+
+  if(_3dSelectedUnit.lease_pricing){
+    $('#unit-lease-pricing-text-li').show();
+    var lease = "";
+    ss = _3dSelectedUnit.lease_pricing.split(';');
+    var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+
+    ss = ss.sort(collator.compare).reverse();
+    for (var i = 0; i < ss.length -1; i++) {
+      var s = ss[i].split(':');
+      var sp;
+      if (s[2] != "")
+      {
+          sp = s[2] +" - "
+      }
+      else
+      {
+          sp = ""
+      }
+      lease = lease + s[0] + " months - " + sp +"$"+ s[1] + '<br>'
+    }
+  
+  $('#unitModal').find('#unit-lease-pricing').html(lease);
+  } else {
+    $('#unit-lease-pricing-text-li').hide();
+  }
+
+  if (_3dSelectedUnit.description)
+  {
+    $('#unitModal').find('#unit-description').html(_3dSelectedUnit.description);
+  }
+  else
+  {
+    $('#unit-description-text-li').hide();
+  }
+
+
+}
 
 function setUnitAttributes(element) {
   $('.modal-unit-button').each(function () {
@@ -1075,7 +1358,7 @@ function setUnitAttributes(element) {
   setModalAttributes(element);
 }
 
-
+  // for floorplates
 function adjustMarkerPosition(marker) {
   /*adjusting markers according to screen size*/
   var in_browser_height = 0;
@@ -1099,8 +1382,31 @@ function adjustMarkerPosition(marker) {
 
   var x_plot = parseFloat($(marker).data('unit-x-plot'));
   var y_plot = parseFloat($(marker).data('unit-y-plot'));
-  var current_left = x_plot / width_ratio;
-  var current_top = y_plot / height_ratio;
+  
+  if(actual_width > in_browser_width && actual_height > in_browser_height) {
+    if(actual_width >= 5884){
+      current_left = x_plot / width_ratio - 6;
+      current_top = y_plot / height_ratio - 20;
+    }
+    if(actual_width >= 2824 && actual_width < 5884 ){
+      current_left = x_plot / width_ratio - 4;
+      current_top = y_plot / height_ratio - 13;
+    }
+    if(actual_width < 2824 && actual_width > 1568){
+      current_left = x_plot / width_ratio - 1;
+      current_top = y_plot / height_ratio - 6;
+    }
+    if(actual_width < 2824){
+      current_left = x_plot / width_ratio;
+      current_top = y_plot / height_ratio;
+    }
+  }
+  else {
+    current_left = x_plot / width_ratio;
+    current_top = y_plot / height_ratio;
+  }
+  // var current_left = x_plot / width_ratio;
+  // var current_top = y_plot / height_ratio;
   $(marker).css({"left": current_left, "top": current_top});
 }
 
@@ -1126,11 +1432,107 @@ function adjustAmenitiesPosition() {
   $('.a_' + current_floor).each(function () {
     var x_plot = parseFloat($(this).data('amenity-x-plot'));
     var y_plot = parseFloat($(this).data('amenity-y-plot'));
-    current_left = x_plot / width_ratio;
-    current_top = y_plot / height_ratio;
+    if(actual_width > in_browser_width && actual_height > in_browser_height) {
+      if(actual_width >= 5884){
+        current_left = x_plot / width_ratio - 6;
+        current_top = y_plot / height_ratio - 20;
+      }
+      if(actual_width >= 2824 && actual_width < 5884 ){
+        current_left = x_plot / width_ratio - 4;
+        current_top = y_plot / height_ratio - 6;
+      }
+      if(actual_width < 2824 && actual_width > 1568){
+        current_left = x_plot / width_ratio - 1;
+        current_top = y_plot / height_ratio - 6;
+      }
+      if(actual_width < 2824){
+        current_left = x_plot / width_ratio;
+        current_top = y_plot / height_ratio;
+      }
+    }
+    else {
+      current_left = x_plot / width_ratio;
+      current_top = y_plot / height_ratio;
+    }
+    // current_left = x_plot / width_ratio;
+    // current_top = y_plot / height_ratio;
     $(this).css({"left": current_left, "top": current_top});
   });
 }
+
+function _3dMapViewMarkers() {
+  let _3dUnitsMarketingNames = getUnitsMarketingNames();
+  let cleanedNames = clean3DMarkers(_3dUnitsMarketingNames)
+  console.log("cleanedNames:  ", cleanedNames);
+  
+  if(cleanedNames.length > 0)
+    _3dFilterByUnits(cleanedNames + _3dSampleAmenities.join());
+  else
+    _3dFilterByUnits(cleanedNames);
+}
+
+function clean3DMarkers(unit_names) {
+  return unit_names.map(a => a.substr(0,3)).join()
+}
+
+function getUnitsMarketingNames() {
+  return _3dFilteredUnits.map(a => a.marketing_name)
+}
+
+function set3DSelectedUnit(unitName, floor) {
+  // unitName = "431";
+  // floor = "2"
+  // _3dFilteredUnits.filter(a => (a.floor == floor && a.marketing_name.substr(0,3) === unitName) )[0];
+  return _3dFilteredUnits.filter(a => (a.marketing_name.substr(0,3) === unitName) )[0];;
+}
+
+function handleMapControl() {
+  if(selectMap === "3d-map") {
+    display3DMap();
+  } else {
+    display2DMap();
+  }
+}
+
+function display3DMap() {
+  $("._3d-apply-filter-button").css("display", "block");
+  $(".beans-map-container").show();
+  $(".zoomable-map-container").hide();
+  $("#panzomm-container").css("width", "100%");
+  $(".select-floorP").hide();
+  let w1 = $(".select-list").width();
+  let w2 = $(".select-floorP").width();
+  $(".select-list").css("width", w1+w2);
+
+  let windowWidth = window.innerWidth;
+  let sideBarWidth = $("div.mydiv").innerWidth();
+  let mapWidth = windowWidth - sideBarWidth - 10;
+
+  $(".beans-map-container").css("width", mapWidth)
+}
+
+function display2DMap() {
+  $("._3d-apply-filter-button").css("display", "none");
+  $(".beans-map-container").hide();
+  $(".zoomable-map-container").show();
+  $("#panzomm-container").css("width", "");
+  $(".select-floorP").show();
+}
+
+function _3dFilterByFloor(floorNumber) {
+  beansWidget.filterByFloor(floorNumber)
+}
+
+function _3dFilterByUnits(_3dUnits) {
+  beansWidget.filterByUnit(_3dUnits)
+}
+
+function apply3DFilters() {
+  if(selectMap === "3d-map") {
+    _3dMapViewMarkers();
+  }
+}
+
 $(document).on('click','.share-favorite',function(){
   community_id = $("#maps_community_id").val()
   $.ajax({
@@ -1139,6 +1541,7 @@ $(document).on('click','.share-favorite',function(){
     success: function(response) {}
   });
 });
+
 $(document).on('click','.unit_marker',function(){
   community_id = $("#maps_community_id").val()
   $.ajax({

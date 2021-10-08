@@ -245,8 +245,17 @@
             %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapGridOverlayPopover","data-content" => " "}
               %span#propertyDetailNameText{:style => "font-weight: normal;"}
                 Add a grid overlay to the map to make it easier to see if the markers are straight.
+
+          - if !@sitemap.is_ocr_enabled
+            = link_to "Enable Suggestions <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Enabling suggestions will highlight possible matches on the map when units are selected from the list. You still have to click on the map to plot the marker for each unit/unit group.</span></i>".html_safe , "/communities/#{@community.id}/suggest_sitemap_units?is_ocr_enabled=#{!@sitemap.is_ocr_enabled}" , :class=>"btn btn-success loader_class"
+          - else 
+            = link_to "Disable Suggestions <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Enabling suggestions will highlight possible matches on the map when units are selected from the list. You still have to click on the map to plot the marker for each unit/unit group.</span></i>".html_safe , "/communities/#{@community.id}/suggest_sitemap_units?is_ocr_enabled=#{!@sitemap.is_ocr_enabled}" , :class=>"btn btn-success loader_class enable-suggestions-btn"
+
           - if current_user.is_super_admin?
+            = link_to "Auto Plot <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Use Auto-plotting to add markers only when unit names in list and on map match exactly. All markers will be automatically added to the map.</span></i>".html_safe , "/communities/#{@community.id}/sitemap_auto_plot_units" , :class=>"btn btn-success loader_class"
+
             %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
+
           - if @community.self_tour and @community.auto_wayfinding
             %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
           - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
@@ -255,6 +264,7 @@
               %i.propertyDetailName.fa.fa-question-circle
                 %span#propertyDetailNameText{:style => "font-weight: normal;"}
                   Add Access point in hallways that are not associated with any specific unit or amenity
+
       / /.box-header
       / form start
       = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
@@ -430,10 +440,10 @@
           %label.col-sm-2.col-form-label
           .col-sm-10.doors-selects-in-popup
             %select.doors-list-on-popup.form-control{:multiple=>"multiple"}
-
       .modal-footer
         %a.btn.btn-primary{:id=> "add-unplotted-doors"} Add
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel   
+#ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
 :javascript
   $(document).ready(function () {
   
@@ -462,7 +472,7 @@
     }
     mapPanZoom.moveTo(0, 0);
     })
-
+  
   function touchHandler(event) {
     var touch = event.changedTouches[0];
 

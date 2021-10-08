@@ -65,7 +65,8 @@
 //= require zoom-marker.min
 //= require pinch-zoom.umd
 //= require jquery.ui.touch-punch.min
-//= require pynwheel_access
+//= require accesses
+//= require pynwheel_access_users
 //= require Chart.min
 //= require analytics
 //made changes in jquery.multi-select according to our requirement in at library at line #488. Commented sanitize function
@@ -73,6 +74,7 @@
 //= require bootstrap-wysihtml5
 //= require bootstrap-wysihtml5/locales
 //= require automate_plotting
+
 $(document).ready(function(){
 	new Clipboard('.clipboard-btn');
 });

@@ -1,0 +1,77 @@
+- content_for :title, "Users - Pynwheel Access"
+.divLoading.hidden
+%section
+  .content
+    .box.box-info.add-plan.mt-20#logo_header
+      .box-header
+        %h3.box-title
+          Pynwheel Access Users
+        %button.btn.btn-success.add-user-button{:type => "button", :onclick =>"addPynwheelaccessUserModal()"} Add New User
+      
+      .row{:style => "margin-bottom: 70px;"}
+      .col-lg-12.col-md-12
+        .row
+          .col-md-12#outer_div
+            .box.box-widget.panel-box.add-plan
+              %table#pyn-miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.units
+                %thead
+                  %tr
+                    %th
+                      Name
+                    %th
+                      User Type
+                    %th
+                      Phone Number
+                    %th
+                      Email Address
+                    %th
+                      Moving Date
+                    %th 
+                      Leasing Date
+                    %th
+                      Actions
+                %tbody
+                  - @pynwheel_access_users.each_with_index  do |user,index|
+                    %tr
+                      %td 
+                        = "#{user[:first_name]} #{user[:last_name]}"
+                      %td 
+                        = user[:user_type]&.capitalize()
+                      %td 
+                        = user[:phone_number]
+                      %td
+                        = user[:email]
+                      %td
+                        %strong
+                          = "in:  "
+                        %span 
+                          = user[:move_in_date].present? ? "#{user[:move_in_date]&.strftime("%Y-%m-%d")}" : "N/A"
+                        %br
+                        %strong
+                          = "out:  "
+                        %span
+                          = user[:move_out_date].present? ? "#{user[:move_out_date]&.strftime("%Y-%m-%d")}" : "N/A"
+                      %td
+                        %strong
+                          = "start:  "
+                        %span
+                          = user[:lease_in_date].present? ? "#{user[:lease_in_date]&.strftime("%Y-%m-%d")}" : "N/A"
+
+                        %br 
+                        
+                        %strong
+                          = "end:  "
+                        %span 
+                          = user[:lease_out_date].present? ? "#{user[:lease_out_date]&.strftime("%Y-%m-%d")}" : "N/A"
+
+                      %td
+                        %i.fa.fa-pencil-square-o.pynwheel-access-edit{"aria-hidden" => "true", :onclick => "editPynwheelAccessUser(#{user.to_json})"}
+                        
+                        %i.fa.fa-trash-o.pynwheel-access-delete{"aria-hidden" => "true", :onclick => "showDeleteUserModal(#{user.id})"}
+                        
+                        %a{href: "/communities/#{@community.id}/pynwheel_access_users/#{user[:id]}/accesses", type:  "button",class: "btn btn-success pynwheel-manage-accesses"} Manage Accesses
+
+  #pynwheelAccessUsersData{ data: {community: @community.to_json} }
+
+= render :partial=>'add_user_modal'
+= render :partial=>'delete_user_modal'

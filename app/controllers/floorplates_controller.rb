@@ -98,6 +98,9 @@ class FloorplatesController < ApplicationController
     else
       @floorplate.width = (image.width rescue 0)
       @floorplate.height = (image.height rescue 0)
+      @floorplate.map_ocr_data = nil
+      @floorplate.is_ocr_enabled = false
+      
       if params[:floorplate][:manual_override] == "true"
         if @floorplate.update(floorplate_params)
           flash[:notice] = "Floorplate updated successfully."
@@ -174,8 +177,13 @@ class FloorplatesController < ApplicationController
       flash[:error] = "Please import unit data first"
       return
     end
-
     @community_units = @floorplate.fetch_units.includes(:door)
+    
+    @map_ocr_data = @floorplate.is_ocr_enabled ? @floorplate.map_ocr_data : []
+    @dimensions = @floorplate.is_ocr_enabled ? s3_img_dimensions(floorplate_image_url(@floorplate)) : {}
+    
+    @test_units = @community_units.to_json
+
     @current_locks_provider = existing_locks_provider(@community)
     @all_locks = all_locks(@community)
     @hallways = make_sure_one_selected_hallway(@floorplate.hallways.order("id ASC"))
@@ -217,6 +225,25 @@ class FloorplatesController < ApplicationController
   end
 
   private
+
+  def s3_img_dimensions url
+    img = MiniMagick::Image.open(url)
+
+    {
+      width: img[:width],
+      height: img[:height],
+    }
+  end
+
+  def floorplate_image_url floorplate
+    if !Rails.env.development?
+      floorplate.image_url if floorplate.image.url.present?
+    else
+      "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
+    end
+    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
+    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1148/1577209294-floorplates_2.png"
+  end
 
   def floorplate_params
     params.require(:floorplate).permit!

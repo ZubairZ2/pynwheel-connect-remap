@@ -1,23 +1,31 @@
 <style type="text/css">
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
   .form-group input, .form-control input, .form-group select {
     border-color: #8c9192 !important;
   }
   .form-group {
     padding-bottom: 5px !important;
   }
+  @media (min-width: 768px){
+    .modal-dialog {
+      width: 815px !important;
+      margin: 30px auto;
+    }
+  }
   .Pyn_Modal{
     background: #fff;
-    width: 520px;
+    width: 815px;
     box-shadow: 0px 19px 30px -15px #888888;
     margin: 0 auto;
     padding: 20px;
-    border-top: 4px solid #ef4d88;
+    border-top: 4px solid #008fd3;
   }
   .Pyn_Modal p{
     padding: 0px;
     font-size: 14px;
     text-align: center;
     font-weight: bold;
+    font-family: Poppins !important;
   }
   .Pyn_Modal label{
     font-size: 15px;
@@ -32,21 +40,31 @@
     line-height: normal;
     box-shadow: none;
   }
-  .select_number{
-    width: 36%;
+  .w-left-50{
+    width: 49%;
     float: left;
   }
-  .phoneNumber{
-    width: 60%;
-    float: right;
+  .tag-margin {
+    margin-right: 3%;
   }
-  .cardNumber{
-    width: 70%;
+  .w-right-50{
+    width: 49%;
     float: left;
+    margin-left: 2%;
   }
-  .expiry{
-    width: 26%;
-    float: right;
+  .w-right-checkbox{
+    /* width: 49%; */
+    margin-top: 10%;
+  }
+  .w-20{
+    width: 18%;
+    float: left;
+    margin-left: 2%;
+  }
+  .w-30{
+    width: 29%;
+    float: left;
+    margin-left: 2%;
   }
   .btn_popup{
     width: 100%;
@@ -62,18 +80,92 @@
     margin-bottom: 15px;
     width: 100%;
   }
-  @media only screen and (max-width: 560px) {
+  .header-center{ text-align: center; }
+  .font-45{ font-size: 45px !important; }
+
+  .how_it_works {
+    background: #008fd3;
+    text-align: center;
+    color: #fff;
+  }
+  .how_it_works h2 {
+    font-size: 32px;
+    font-family: Poppins !important;
+  }
+  .confirmation-text {
+    padding: 1% 0 0;
+  }
+  .continue_link {
+    cursor: pointer;
+    font-size: 18px;
+  }
+  .asterisk_color {
+    color: #ff0000;
+  }
+  .inst_text_label{
+    font-size: 13px !important;
+  }
+  .reschedule-heading {
+    padding: 0px;
+    font-size: 15px !important;
+    text-align: center;
+    font-weight: bold;
+    font-family: Poppins !important;
+    margin-top: 4% !important;
+  }
+  .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+    background-color: #eee !important;
+    opacity: 1 !important;
+  }
+  @media only screen and (max-width: 815px) {
     .Pyn_Modal{
-        background: #fff;
-        width: 100%;
-        box-shadow: 0px 19px 30px -15px #888888;
-        margin: 0 auto;
-        padding: 20px;
-        border-top: 4px solid #ef4d88;
+      background: #fff;
+      width: 100%;
+      box-shadow: 0px 19px 30px -15px #888888;
+      margin: 0 auto;
+      padding: 20px;
+      border-top: 4px solid #008fd3;
+    }
+  }
+  @media only screen and (max-width: 515px) {
+    .w-100{
+     width: 100%;
+     margin-left: 0px;
     }
   }
   .color-red{
     color: red;
+  }
+  .property-tour-type {
+    font-family: Poppins !important;
+  }
+  .Pyn_Modal h2, .Pyn_Modal label, .Pyn_Modal input, .Pyn_Modal select, #charge_text{
+    font-family: Poppins !important;
+  }
+  .w-35{
+    padding-left: 15px;
+    width: 35%;
+    display: inline;
+    float: left;
+  }
+  .w-37{
+    padding-left: 15px;
+    width: 40%;
+    display: inline;
+    float: left;
+  }
+  .w-20-for-check{
+    padding-left: 15px;
+    width: 20%;
+    display: inline;
+    /* float: left; */
+  }
+  @media (max-width: 860px){
+    .w-35,.w-37,.w-20-for-check{width: 100%; !important}
+  }
+  .tooltip-pynwheel{
+    font-weight: 500;
+    width: 350px !important;
   }
 </style>
 
@@ -103,116 +195,176 @@
     <%= javascript_include_tag 'bootstrap-datetimepicker' %>
     <%= favicon_link_tag 'logo-small.png' %>
     <%= render '/font_awesome_v5' %>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
   </head>
   
   <body>
     <div class="divLoading hidden"></div>
 
-    <%= link_to("Schedule a Visit", "url",id: "schedule_btn" , class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#scheduleMyTour", backdrop: "static"}) %>
+    <%= link_to("#{@scheduler_widget_setting.btn_text}", "url",id: "schedule_btn", style: "width: #{@scheduler_widget_setting.btn_width}; height: #{@scheduler_widget_setting.btn_height}; font-size: #{@scheduler_widget_setting.btn_font_size}; background-color: #{@scheduler_widget_setting.btn_color}; border-color: #{@scheduler_widget_setting.btn_color}; font-family: #{@scheduler_widget_setting.btn_font}; align-items: center; display: inline-grid; margin: 10px; padding: 0px;",class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#modalLoginForm", backdrop: "static"}) %>
 
     <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
       <div class="modal-dialog" role="document">
         <section>
           <div class="Pyn_Modal">
-            <p>Great! We are looking forward to having you at our property. Please complete the following fields to confirm your reservation:</p>
+            <div class = "header-center">
+              <%# <i class="fa fa-calendar font-45" aria-hidden="true"></i> %>
+              <% if @reschedule_tour %>
+                <p class="reschedule-heading">Select a date and time below to reschedule your <%= @schedule_tour.tour_type.split('_').map(&:capitalize).join(' ') %> at <%= @community.name %></p>
+              <%else%>
+                <h2> PROPERTY TOUR </h2>
+              <%end%>
+            </div>
             
-            <%= form_for @tour_user, url: "/create_tour_user_from", :as => :tour_user, class: "form_popup", id: "tour_user_form", method: 'post' do |f| %>
+            <% url = @reschedule_tour ? "/" : "/create_tour_user_from" %>
+            <% id = @reschedule_tour ? "rescheduleTourForm" : "tour_user_form" %>
+            <%= form_for @tour_user, url: url, class: "form_popup", id: id, method: 'post' do |f| %>
 
               <%= hidden_field_tag :sched_tour_id, nil , :id => "sched_tour_id"%>
               <%= hidden_field_tag :community_id, @community_id %>
+              <%= hidden_field_tag :user_time_zone, value: nil %>
 
               <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_first_name.nil? ? true : current_community.tour.tour_setting.show_first_name) %>
-
-              <div class="form-group">
-                <label>First Name *</label>
-                <%= f.text_field :first_name, class: "form-control", placeholder: "First Name", required: 'required' %>
-              </div>
-              <div class="form-group">
-                <label>Last Name *</label>
-                <%= f.text_field :last_name, class: "form-control", placeholder: "Last Name", required: 'required' %>
-              </div>
+                <div class="row mb-20 mt-20">
+                  <div class="w-35 unschedule_tour">
+                    <%= f.radio_button :property_tour_type, 'unscheduled_self_tour', :checked => (@schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "unscheduled_self_tour") || @schedule_tour.property_tour_type == nil ? true : false, :class => "select_property_tour", :id => "unscheduled_self_tour" %> 
+                    <%= label :select_property_tour, 'Visit at your own convenience', value: 'own_convenience_tour', for: "unscheduled_self_tour" %>
+                    <i class="fa fa-question-circle propertyDetailName" data-content=" " data-toggle="tooltip" data-placement="top" >
+                      <span id="propertyDetailNameText" class="tooltip-pynwheel">
+                        Use an app to tour our property at your convenience; you will have full, secured access to vacant units and amenities during extended hours. We will send you instructions so you know what to do!
+                      </span>
+                    </i>
+                  </div>
+                  <div class="w-37">
+                    <%= f.radio_button :property_tour_type, 'scheduled_tour', :id => "scheduled_tour",:class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false  %> 
+                    <%= label :select_property_tour, 'Schedule a tour on a specific date', value: 'tour_on_specific_date', for: "scheduled_tour" %>
+                    <i class="fa fa-question-circle propertyDetailName" data-content=" " data-toggle="tooltip" data-placement="top" >
+                      <span id="propertyDetailNameText" class="tooltip-pynwheel">
+                        Schedule a time to tour the property during visiting hours. You will use an app which provides information and directions around the property and allows you to take notes and photos and share your tour details with others.
+                      </span>
+                    </i>
+                  </div>
+                  <div class="w-20-for-check">
+                    <%= f.radio_button :property_tour_type, 'remote_tour', :id => "remote_tour", :class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "remote_tour" ? true : false  %> 
+                    <%= label :select_property_tour, 'Tour remotely', value: 'remote_tour', for: "remote_tour" %>
+                    <%# <i class="fa fa-question-circle remote_tour_tip" data-toggle="tooltip" data-placement="top" ></i> %>
+                    <i class="propertyDetailName fa fa-question-circle" data-content=" " data-toggle="tooltip" data-placement="top">
+                      <span id="propertyDetailNameText" class="tooltip-pynwheel">
+                        Use an app to tour our property remotely at your convenience; we will send you instructions.
+                      </span>
+                    </i>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-left-50 w-100 tour_date">
+                    <label>Tour Date <span class="asterisk_color" >*</span></label>
+                    <% tour_date_class = @reschedule_tour == "true" ? "form-control reschedule_datepicker" : "form-control schedule_datepicker" %>
+                    <%= text_field_tag :tour_date,"", :class=>tour_date_class, :placeholder=>"Tour Date",:maxlength=>"10",:autocomplete=>"off", required: false %>
+                  </div>
+                  <%= hidden_field_tag 'time_slot_hash', @time_slots.to_json %>
+                  <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_time">
+                    <label>Tour Time <span class="asterisk_color" >*</span></label>
+                    <%= select_tag :tour_time , options_for_select([]),:class => "form-control", :include_blank => 'Select time slot', required: false %>
+                  </div>
+                  <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_type">
+                    <label>Tour Type <span class="asterisk_color" >*</span>
+                      <i class="fa fa-question-circle tour_type_tip hidden propertyDetailName" data-toggle="tooltip" data-placement="top" title="" >
+                        <span id="propertyDetailNameText" class="tooltip-pynwheel"></span>
+                      </i>
+                    </label>
+                    <%= select_tag :tour_type , options_for_select([]),:class => "form-control", :include_blank => 'Select tour type', required: false %>
+                  </div>
+                </div>
+                
+                <div class="form-group w-left-50">
+                  <label>First Name <span class="asterisk_color" >*</span></label>
+                  <%= f.text_field :first_name, class: "form-control", placeholder: "First Name", id: "first_name", required: 'required' %>
+                </div>
+                <div class="form-group w-right-50">
+                  <label>Last Name <span class="asterisk_color" >*</span></label>
+                  <%= f.text_field :last_name, class: "form-control", placeholder: "Last Name", id: "last_name", required: 'required' %>
+                </div>
               <% end %>
-              <div class="form-group">
-                <label>Email Address *</label>
-                <%= f.email_field :email, class: "form-control", placeholder: "Email Address", required: 'required' %>
-                <span class="reshedule-notification" style="display: <%= @tour_user.id.present? ? "block" : "none" %>">User with this email address already have scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
+              <div class="form-group w-left-50 w-100">
+                <label>Email Address <span class="asterisk_color" >*</span></label>
+                <%= f.email_field :email, class: "form-control", placeholder: "Email Address", id: "tour_user_email", required: 'required' %>
+                <span class="reshedule-notification" style="display: <%= @tour_user.id.present? && !@reschedule_tour && @schedule_tour.is_tour_completed ? "block" : "none" %>">A user with this email address already has a scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
               </div>
               <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_phone.nil? ? true : current_community.tour.tour_setting.show_phone) %>
-              <div class="form-group">
-                <div class="inner_phn_wrap">
-                 
-                    <label>Country Code <small>(Default US)</small></label> 
-                    <div class="clearfix"></div>
-                    <select name="country_code" class="form-control select_number">
-                      <option value=""></option><option value="AC">AC</option><option value="AD">AD</option><option value="AE">AE</option><option value="AF">AF</option><option value="AG">AG</option><option value="AI">AI</option><option value="AL">AL</option><option value="AM">AM</option><option value="AO">AO</option><option value="AR">AR</option><option value="AS">AS</option><option value="AT">AT</option><option value="AU">AU</option><option value="AW">AW</option><option value="AX">AX</option><option value="AZ">AZ</option><option value="BA">BA</option><option value="BB">BB</option><option value="BD">BD</option><option value="BE">BE</option><option value="BF">BF</option><option value="BG">BG</option><option value="BH">BH</option><option value="BI">BI</option><option value="BJ">BJ</option><option value="BL">BL</option><option value="BM">BM</option><option value="BN">BN</option><option value="BO">BO</option><option value="BQ">BQ</option><option value="BR">BR</option><option value="BS">BS</option><option value="BT">BT</option><option value="BW">BW</option><option value="BY">BY</option><option value="BZ">BZ</option><option value="CA">CA</option><option value="CC">CC</option><option value="CD">CD</option><option value="CF">CF</option><option value="CG">CG</option><option value="CH">CH</option><option value="CI">CI</option><option value="CK">CK</option><option value="CL">CL</option><option value="CM">CM</option><option value="CN">CN</option><option value="CO">CO</option><option value="CR">CR</option><option value="CU">CU</option><option value="CV">CV</option><option value="CW">CW</option><option value="CX">CX</option><option value="CY">CY</option><option value="CZ">CZ</option><option value="DE">DE</option><option value="DJ">DJ</option><option value="DK">DK</option><option value="DM">DM</option><option value="DO">DO</option><option value="DZ">DZ</option><option value="EC">EC</option><option value="EE">EE</option><option value="EG">EG</option><option value="EH">EH</option><option value="ER">ER</option><option value="ES">ES</option><option value="ET">ET</option><option value="FI">FI</option><option value="FJ">FJ</option><option value="FK">FK</option><option value="FM">FM</option><option value="FO">FO</option><option value="FR">FR</option><option value="GA">GA</option><option value="GB">GB</option><option value="GD">GD</option><option value="GE">GE</option><option value="GF">GF</option><option value="GG">GG</option><option value="GH">GH</option><option value="GI">GI</option><option value="GL">GL</option><option value="GM">GM</option><option value="GN">GN</option><option value="GP">GP</option><option value="GQ">GQ</option><option value="GR">GR</option><option value="GT">GT</option><option value="GU">GU</option><option value="GW">GW</option><option value="GY">GY</option><option value="HK">HK</option><option value="HN">HN</option><option value="HR">HR</option><option value="HT">HT</option><option value="HU">HU</option><option value="ID">ID</option><option value="IE">IE</option><option value="IL">IL</option><option value="IM">IM</option><option value="IN">IN</option><option value="IO">IO</option><option value="IQ">IQ</option><option value="IR">IR</option><option value="IS">IS</option><option value="IT">IT</option><option value="JE">JE</option><option value="JM">JM</option><option value="JO">JO</option><option value="JP">JP</option><option value="KE">KE</option><option value="KG">KG</option><option value="KH">KH</option><option value="KI">KI</option><option value="KM">KM</option><option value="KN">KN</option><option value="KP">KP</option><option value="KR">KR</option><option value="KW">KW</option><option value="KY">KY</option><option value="KZ">KZ</option><option value="LA">LA</option><option value="LB">LB</option><option value="LC">LC</option><option value="LI">LI</option><option value="LK">LK</option><option value="LR">LR</option><option value="LS">LS</option><option value="LT">LT</option><option value="LU">LU</option><option value="LV">LV</option><option value="LY">LY</option><option value="MA">MA</option><option value="MC">MC</option><option value="MD">MD</option><option value="ME">ME</option><option value="MF">MF</option><option value="MG">MG</option><option value="MH">MH</option><option value="MK">MK</option><option value="ML">ML</option><option value="MM">MM</option><option value="MN">MN</option><option value="MO">MO</option><option value="MP">MP</option><option value="MQ">MQ</option><option value="MR">MR</option><option value="MS">MS</option><option value="MT">MT</option><option value="MU">MU</option><option value="MV">MV</option><option value="MW">MW</option><option value="MX">MX</option><option value="MY">MY</option><option value="MZ">MZ</option><option value="NA">NA</option><option value="NC">NC</option><option value="NE">NE</option><option value="NF">NF</option><option value="NG">NG</option><option value="NI">NI</option><option value="NL">NL</option><option value="NO">NO</option><option value="NP">NP</option><option value="NR">NR</option><option value="NU">NU</option><option value="NZ">NZ</option><option value="OM">OM</option><option value="PA">PA</option><option value="PE">PE</option><option value="PF">PF</option><option value="PG">PG</option><option value="PH">PH</option><option value="PK">PK</option><option value="PL">PL</option><option value="PM">PM</option><option value="PR">PR</option><option value="PS">PS</option><option value="PT">PT</option><option value="PW">PW</option><option value="PY">PY</option><option value="QA">QA</option><option value="RE">RE</option><option value="RO">RO</option><option value="RS">RS</option><option value="RU">RU</option><option value="RW">RW</option><option value="SA">SA</option><option value="SB">SB</option><option value="SC">SC</option><option value="SD">SD</option><option value="SE">SE</option><option value="SG">SG</option><option value="SH">SH</option><option value="SI">SI</option><option value="SJ">SJ</option><option value="SK">SK</option><option value="SL">SL</option><option value="SM">SM</option><option value="SN">SN</option><option value="SO">SO</option><option value="SR">SR</option><option value="SS">SS</option><option value="ST">ST</option><option value="SV">SV</option><option value="SX">SX</option><option value="SY">SY</option><option value="SZ">SZ</option><option value="TA">TA</option><option value="TC">TC</option><option value="TD">TD</option><option value="TG">TG</option><option value="TH">TH</option><option value="TJ">TJ</option><option value="TK">TK</option><option value="TL">TL</option><option value="TM">TM</option><option value="TN">TN</option><option value="TO">TO</option><option value="TR">TR</option><option value="TT">TT</option><option value="TV">TV</option><option value="TW">TW</option><option value="TZ">TZ</option><option value="UA">UA</option><option value="UG">UG</option><option value="US" selected>US</option><option value="UY">UY</option><option value="UZ">UZ</option><option value="VA">VA</option><option value="VC">VC</option><option value="VE">VE</option><option value="VG">VG</option><option value="VI">VI</option><option value="VN">VN</option><option value="VU">VU</option><option value="WF">WF</option><option value="WS">WS</option><option value="YE">YE</option><option value="YT">YT</option><option value="ZA">ZA</option><option value="ZM">ZM</option><option value="ZW">ZW</option>
-                    </select>
-                  
-
-                  <label>Phone Number *</label> 
+                <div class="form-group w-20 w-100">
+                  <label data-toggle="tooltip" data-placement="top" title="(Default US)">Country Code <span class="asterisk_color" >*</span></label> 
+                  <select name="country_code" class="form-control select_number" id="country_code">
+                    <% SchedualTour::COUNTRY_CODES.each do  |code| %>
+                      <option value="<%= code %>"> <%= code %> </option>
+                    <% end %>
+                  </select>
+                </div>
+                <div class="form-group w-30 w-100">
+                  <label>Phone Number <span class="asterisk_color" >*</span></label> 
                   <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 , required: 'required', id: "user_phone_number_field" %>
                 </div>
-              </div>
               <% end %>
+              <div class="clearfix"></div>
 
               <% if @credit_card_required %>
-                <% if ((@community.tour.present? and @community.tour.tour_setting.present?) ? (@community.tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.tour.present? ? @community.tour.visual_id_verification : true)  && (@community.tour.verification_type == "authenteq") %>
+                <%= hidden_field_tag :verification_type_authenteq, ((@community.tour.present? and @community.tour.tour_setting.present?) ? (@community.tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.tour.present? ? @community.tour.visual_id_verification : true)  && (@community.tour.verification_type == "authenteq") %>
+                <% if ((@community.tour.present? and @community.tour.tour_setting.present?) ? (@community.tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.tour.present? ? @community.tour.visual_id_verification : true)  && (@community.tour.verification_type == "authenteq") && @schedule_tour.property_tour_type == "scheduled_tour" %>
                   <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.</p>
                 <% else %>
                   <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)</p>
                 <% end %>
               
-              <div class="clearfix"></div>
-              <div class="form-group cardNumber">
-                <label>Credit Card Number</label>
-                  
-                  <input type="text" data-stripe="number" id="tour_user_credit_card_number" class="form-control" placeholder = "Credit Card" required />
-              </div>
+                <div class="clearfix"></div>
+                <div class="card-information">
+                  <div class="form-group cardNumber w-left-50 w-100">
+                    <label>Credit Card Number <span class="asterisk_color" >*</span></label>    
+                    <input type="text" data-stripe="number" id="tour_user_credit_card_number" class="form-control" placeholder = "Credit Card" required />
+                  </div>
+                  <div class="form-group expiry w-right-50 w-100">
+                    <label>CVV <span class="asterisk_color" >*</span></label>
+                    <%= text_field_tag :card_verification, nil, class: "form-control", "data-stripe" => "cvv", placeholder: "123", required: 'required' %>
+                  </div>
 
-              <div class="form-group expiry">
-                <label>CVV</label>
-                  <%= text_field_tag :card_verification, nil, class: "form-control", "data-stripe" => "cvv", placeholder: "123", required: 'required' %>
-              </div>
+                  <div class="form-group cardNumber w-left-50">
+                    <%# <%= label_tag "Exp Month", nil, required: true %>
+                    <%= label_tag :exp_month, nil, required: true do %>
+                      Exp Month <span class="asterisk_color">*</span>
+                    <% end %>
+                    <%= select_tag :exp_month, options_for_select(Date::MONTHNAMES.compact.each_with_index.map { |name,i| ["#{i+1} - #{name}", i+1] }), include_blank: false, "data-stripe" => "exp-month", class: "span2 form-control" %>
+                  </div>
 
-              <div class="form-group cardNumber">
-
-                <%= label_tag "Exp Month", nil, required: true %>
-                <%= select_tag :exp_month, options_for_select(Date::MONTHNAMES.compact.each_with_index.map { |name,i| ["#{i+1} - #{name}", i+1] }), include_blank: false, "data-stripe" => "exp-month", class: "span2 form-control" %>
-
-              </div>
-              <div class="form-group expiry">
-                <%= label_tag "Exp Year", nil, required: true %>
-                <%= select_tag :exp_year, options_for_select((Date.today.year..(Date.today.year+10)).to_a), include_blank: false, "data-stripe" => "exp-year", class: "span1 form-control" %>
-              </div>
-              
+                  <div class="form-group expiry w-right-50" id="expiry-year">
+                    <%# <%= label_tag "Exp Year", nil, required: true %>
+                    <%= label_tag :exp_year, nil, required: true do %>
+                      Exp Year <span class="asterisk_color">*</span>
+                    <% end %>
+                    <%= select_tag :exp_year, options_for_select((Date.today.year..(Date.today.year+10)).to_a), include_blank: false, "data-stripe" => "exp-year", class: "span1 form-control" %>
+                  </div>
+                </div>
               <% end %>
+
               <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_bedroom.nil? ? true : current_community.tour.tour_setting.show_desired_bedroom )  %>
-              <div class="">
-
-                <label>Desired Number of Bedrooms</label>
-                <span class="hidden" id="bedroom"></span>
-                <%= select_tag :desired_bedroom, options_for_select( @bedroom_list.sort), include_blank: true, :class=>"form-control " %>
-
-
-              </div>
-
+                <div class="w-left-50">
+                  <label>Desired Number of Bedrooms</label>
+                  <span class="hidden" id="bedroom"></span>
+                  <%= select_tag :desired_bedroom, options_for_select( @bedroom_list ), :class=>"form-control ", :checked => 'checked' %>
+                </div>
               <% end %> 
+
               <div class="form-group hidden">
                 <span class="hidden" id="hidden_tour_type"></span>
                 <%= hidden_field_tag :hidden_tour_type,"", :class=>"form-control"%>
               </div>
-              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.tour.tour_setting.show_desired_move_in_date  ) %>
-              <div class="form-group">
-                <label>Desired Move-in Date</label>
+              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.tour.tour_setting.show_desired_move_in_date) %>
+              <div class="form-group w-right-50">
+                <label>Desired Move-in Date <span class="asterisk_color" >*</span></label>
                 <span class="hidden" id="move-in-date"></span>
-                <%= text_field_tag :desired_move_in_date,"", :class=>"form-control datepicker", :placeholder=>"Move in date",:maxlength=>"15",:autocomplete=>"off"%>
+                <%= text_field_tag :desired_move_in_date,"", :class=>"form-control moveindatepicker", :placeholder=>"Move in date",:maxlength=>"15",required: 'required',:autocomplete=>"off"%>
                 
               </div>
               <% end %> 
 
-
-
-              
-              
+        
               <% if false %>
                 <div class="form-group expiry">
                   <label>Expiration Date</label>
@@ -268,103 +420,220 @@
               <div class="clearfix"></div>
 
               <% if @community.data_provider == "realpagesvc" && @marketing_source_required %>
-                <div class="form-group">
-                  <label> How did you hear about <%= @community.name.titleize %> ? </label>
-                  <%= select_tag :marketing_source, options_for_select(@community.credential.realpage_marketing_sources.present? ? @community.credential.realpage_marketing_sources.collect{|s| [ s["Text"], s["Value"] ]} : []), include_blank: false , prompt: "Select your option", required: 'required', class: "span2 form-control"%>
+                <div class="form-group w-left-50 w-100 tag-margin">
+                  <label> How did you hear about <%= @community.name.titleize %> ? <span class="asterisk_color" >*</span></label>
+                  <%= select_tag :marketing_source, options_for_select(@community.credential.realpage_marketing_sources.present? ? @community.credential.realpage_marketing_sources.collect{|s| [ s["Text"], s["Value"] ]} : []), include_blank: false , prompt: "Select your option", required: 'required', class: "span2 form-control marketing_source"%>
                 </div>
               <% end %>
+              
+              <div class="<%= @community.data_provider == "realpagesvc" && @marketing_source_required ? "form-group w-100 w-right-checkbox" : "form-group w-100" %>">
+                <% privacy_policy_link = 'https://pynwheeltouchscreens.com/privacy-policy' %>
+                <%= f.check_box :is_sms_enabled, id: "text_instructions", class: "hidden" %>
+                <label for="text_instructions" class="inst_text_label"> By clicking on submit, you consent to receive delivery notification sent by text and/or email communications. Please visit our <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.</label>
+              </div>
 
-              <button id ="confirm_reservation" class="btn_popup">Confirm My Reservation!</button>
+              <span class="hidden" id="show-limit-error"></span>
+              <% if false %>
+                <% unless @any_tour_type_selected %>
+                  <span style=" display: block; color: red; margin-bottom: 5px;">*Please select atleast one tour type from setting for schedule</span>
+                <% end %>
+              <%end%>
+              <%# <% unless @time_slots.any? %>
+                <span class="no-tour-time-error" style="display: none; color: red; margin-bottom: 5px;">*There is no slot available. please check your available slots in tour setting page</span>
+              <%# <% end %>
+              <%= hidden_field_tag 'limit_tour_type_error_arr', [].to_json %>
+              <%= hidden_field_tag 'existing_tour_user_email_arr', @axisting_tour_users.to_json %>
+              <div>
+                <% if @reschedule_tour %>
+                  <button id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
+                  <button class="btn_popup" id="cancel-visit" style="border-left: 5px solid #fff;  width: 50%;">Cancel my visit</button>
+                <%else%>
+                  <button id ="confirm_reservation" class="btn_popup">Submit</button>
+                <%end%>
+              </div>
+              
             <% end %>
           </div>
         </section>
       </div>
     </div>
-
-    <div class="modal fade" id="scheduleMyTour" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-      aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <section>
-          <div class="Pyn_Modal">
-            <p>Schedule a self-guided tour. Come at your convenience and tour the property, using your phone as a guide! </p>
-            <form class="form_popup" id="scheduleMyTourForm">
-              <div class="clearfix"></div>
-              <div class="form-group">
-                <label>Date/Time *</label>
-                <span class="hidden" id="not-visiting-hours"></span>
-                <%= text_field_tag :tour_time,"", :class=>"form-control datepickertime", :placeholder=>"Date/Time",:maxlength=>"15",:autocomplete=>"off", required: 'required' %>
-                <%= hidden_field_tag :community_id, @community_id %>
-                <%= hidden_field_tag :user_time_zone, value: nil %>
+    <% if flash[:success].present? || @reschedule_tour %>
+      <div id="scheduleMyTourSuccess" tabindex="-1" aria-hidden="true">
+          <section>
+            <div class="confirmation-text">
+              <% if flash[:success].present? && !@reschedule_tour %>
+                <%= flash[:success].html_safe if flash[:success].present? %>
+              <%else%>
+                <p id="reschedule-content" style="font-weight: normal; font-size: 20px;" ></p>
+              <%end%>
+            </div>
+          </section>
+          <section>
+            <%= render 'shared/download_apps', :obj => {:ios_link => ios_link, :android_link => android_link } %>
+            <section class="container">
+              <div style="float: right;">
+                <% if user_signed_in? %>
+                  <a onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')" class="continue_link">Continue <%= '<i class="fa fa-long-arrow-right" aria-hidden="true"></i>'.html_safe %></a>
+                <% end %>
               </div>
-              <!-- <div class="form-group">
-                <label>Tour Type</label>
-                <span class="hidden" id="tour_type_field"></span>
-                <%= select_tag :tour_type, options_for_select( [["Self Tour","self_tour"],["Virtual Tour","virtual_tour"],["Guided Tour","guided_tour"]]), :class=>"form-control " %>
-               
-              </div> -->
-              <div class="clearfix"></div>
-              <button class="btn_popup" id="date_schedule_tour">Schedule My Tour!</button>
-            </form>
-          </div>
-        </section>
+          </section>
+          <section class="mt-15">
+            <div class="container how_it_works">
+                <%= render 'shared/instruction_card', :obj => {property_tour_type: property_tour_type,community_name: community_name,tour_type: tour_type,id_verification: @community.tour.visual_id_verification} %>
+            </div>
+          </section>
       </div>
-    </div>
+    <% end %>
 
-     <div class="modal fade" id="scheduleTourType" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-      aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <section>
-          <div class="Pyn_Modal">
-            <p>What type of tour would you like to schedule today?</p>
-            <form class="form_popup" id="scheduleTourTypeForm">
-              <div class="clearfix"></div>
-              <div class="form-group">
-                <label>Tour Type</label>
-                <span class="hidden" id="tour_type_field"></span>
-                <%= select_tag :tour_type, options_for_select( [[]]), :class=>"form-control " %>
-               
-              </div>
-              <div class="clearfix"></div>
-              <button class="btn_popup" id="type_schedule_tour">Schedule My Tour!</button>
-            </form>
-          </div>
-        </section>
-      </div>
-    </div>
-
-    <div class="modal fade" id="scheduleMyTourSuccess" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-      aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <section>
-          <div class="Pyn_Modal">
-            <p style="font-weight: normal; font-size: 20px;"><%= flash[:success].html_safe if flash[:success].present?  %></p>
-            <div class="clearfix"></div>
-            <% if user_signed_in? %>
-              <button class="btn_popup" onclick="redirectSheduledTourPage('/communities/<%= @community.id %>/scheduled_tours')">Ok</button>
-            <% else %>
-              <button class="btn_popup" id="close">Ok</button>
-            <% end %>
-          </div>
-        </section>
-      </div>
-    </div>
 
     <script type="text/javascript">
+      // $("#schedule_btn").hide();
+      if('<%= params[:reschedule_tour]%>' == 'true'){
+        $("#scheduleMyTourSuccess").hide();
+      }
+      $("#reschedule-content").addClass('hidden');
       var show_self_tour_option = false;
       var show_guided_tour_option = false;
       var hidden_tour_type_value;
+      var schedule_tour_only = "<%= @community.tour.only_scheduled_tour %>";
       var community_id = <%= raw @community.id %>;
+      var form_for_reschedule_tour = "<%= @reschedule_tour %>";
+      var property_tour_type = "<%= @schedule_tour.property_tour_type %>"
+      var tour_is_completed = "<%= @schedule_tour&.is_tour_completed %>"
+      var scheduled_tour_for_another_tour = "<%= @scheduled_tour_for_another_tour&.property_tour_type %>"
+      var move_in_date = "<%= @schedule_tour&.desired_move_in_date&.strftime('%m/%d/%Y')&.gsub("-", "") %>"
+      var desired_bedroom = "<%= @schedule_tour.desired_bedroom %>"
+      var country_code = "<%= @schedule_tour.country_code %>"
+      var community_time_zone = "<%= @community_time_zone rescue "UTC" %>"
+      var current_time_according_to_timzone = "<%= @current_time rescue ""%>"
+      // var realpage_marketing_source = "<%= @schedule_tour&.community&.credential&.realpage_marketing_sources[0]["Value"] rescue "" %>"
+      var realpage_marketing_source = "<%= @schedule_tour&.realpage_marketing_source rescue "" %>"
+      var realpage_provider = "<%= @community.data_provider == "realpagesvc" && @marketing_source_required%>"
+      var phone_country_code = "+<%= @phone_country_code&.country_code %>"
+      var tour_type = "<%= @schedule_tour&.tour_type.split('_').map(&:capitalize).join(' ') rescue "" %>"
       var existing_tour_users = []
-
+      var use_yardi_as_lead = <%= raw @use_yardi_as_lead %>;
+      var is_virtual_on = <%= raw @is_virtual_on %>;
       function redirectSheduledTourPage(url){
         window.location.href = url
       }
-
       function onlyNumbers() {
         let pNum = $("#user_phone_number_field").val();
         if(pNum)
-          $("#user_phone_number_field").val(pNum.replace("+", ""));        
+          $("#user_phone_number_field").val(pNum.replace(phone_country_code, ""));        
       }
+
+      $(document).ready(function(){
+
+        if(form_for_reschedule_tour){
+          $("#desired_move_in_date").val(move_in_date).attr('selected', true)
+          $("#desired_bedroom").val(desired_bedroom).attr('selected', true)
+          $("#country_code").val(country_code).attr('selected', true)
+          $('#tour_type').attr('disabled', true)
+          $(".card-information").addClass("hidden")
+          $("#first_name").attr('disabled', true)
+          $("#last_name").attr('disabled', true)
+          $("#tour_user_email").attr('disabled', true)
+          $("#user_phone_number_field").attr('disabled', true)
+          $("#unscheduled_self_tour").attr('disabled', true)
+          $("#remote_tour").attr('disabled', true)
+          $("#tour_user_credit_card_number").attr('disabled', true)
+          $("#card_verification").attr('disabled', true)
+          $("#desired_move_in_date").attr('disabled', true)
+          $("#desired_bedroom").attr('disabled', true)
+          $("#exp_month").attr('disabled', true)
+          $("#exp_year").attr('disabled', true)
+          $("#country_code").attr('disabled', true)
+          if(realpage_provider){
+          // $("#marketing_source").val(realpage_marketing_source).attr('selected', true)
+          $("#marketing_source").html(`<option value="">${realpage_marketing_source}</option>`)
+          $("#marketing_source").attr('disabled', true)
+          }
+        }
+
+        if(schedule_tour_only == "true")
+        {
+          $(".unschedule_tour").addClass("hidden");
+          $("#scheduled_tour").attr('checked', "checked")
+        }
+        else if(!form_for_reschedule_tour){
+          $("#unscheduled_self_tour").attr('checked', "checked")
+        }
+        if($('#unscheduled_self_tour')[0].checked == true || $('#remote_tour')[0].checked == true) {
+          $(".tour_date").addClass('hidden');
+          $(".tour_time").addClass('hidden');
+          $(".tour_type").addClass('hidden');
+        }
+
+        if("<%= params['schedule_another_tour'] == "true" %>"){
+          if(scheduled_tour_for_another_tour == "unscheduled_self_tour"){
+            $("#unscheduled_self_tour").attr('checked', "checked");
+            $(".tour_date").addClass('hidden');
+            $(".tour_time").addClass('hidden');
+            $(".tour_type").addClass('hidden');
+            $('#tour_date')[0].required = false;
+            $('#tour_time')[0].required = false;
+            $('#tour_type')[0].required = false;
+          }
+          if(scheduled_tour_for_another_tour == "scheduled_tour"){
+            $("#scheduled_tour").attr('checked', "checked");
+            $(".tour_date").removeClass('hidden');
+            $(".tour_time").removeClass('hidden');
+            $(".tour_type").removeClass('hidden');
+            $('#tour_date')[0].required = true;
+            $('#tour_time')[0].required = true;
+            $('#tour_type')[0].required = true;
+          }
+          if(scheduled_tour_for_another_tour == "remote_tour"){
+            $("#remote_tour").attr('checked', "checked");
+            $(".tour_date").addClass('hidden');
+            $(".tour_time").addClass('hidden');
+            $(".tour_type").addClass('hidden');
+            $('#tour_date')[0].required = false;
+            $('#tour_time')[0].required = false;
+            $('#tour_type')[0].required = false;
+          }
+          
+        }
+      })
+
+      verification_type_authenteq = ($("#verification_type_authenteq").val() == "true") ? true : false
+
+      $('.select_property_tour').change(function() {
+        if (this.value == 'remote_tour'){
+          $(".tour_date").addClass('hidden');
+          $(".tour_time").addClass('hidden');
+          $(".tour_type").addClass('hidden');
+          $('#tour_date')[0].required = false;
+          $('#tour_time')[0].required = false;
+          $('#tour_type')[0].required = false;
+          if(verification_type_authenteq){
+            $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)")
+          }
+        }
+        else if (this.value == 'unscheduled_self_tour') {
+          $(".tour_date").addClass('hidden');
+          $(".tour_time").addClass('hidden');
+          $(".tour_type").addClass('hidden');
+          $('#tour_date')[0].required = false;
+          $('#tour_time')[0].required = false;
+          $('#tour_type')[0].required = false;
+          if(verification_type_authenteq){
+            $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.")
+          }
+        }
+        else if (this.value == 'scheduled_tour') {
+          $(".tour_date").removeClass('hidden');
+          $(".tour_time").removeClass('hidden');
+          $(".tour_type").removeClass('hidden');
+          $('#tour_date')[0].required = true;
+          $('#tour_time')[0].required = true;
+          $('#tour_type')[0].required = true;
+          if(verification_type_authenteq){
+            $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.")
+          }
+        }
+      })
 
       $(document).ready(function(){
         onlyNumbers();
@@ -382,309 +651,187 @@
           }
           else
           {
-            $('#schedule_btn').removeClass('hidden');
+            $("#schedule_btn").removeClass('hidden');
           }
           document.getElementById('user_time_zone').value = jstz.determine().name();
           // -new Date().getTimezoneOffset()/60;
         })
-      var steps = <%= @stepping %>
-      var success = "<%= flash[:success]  %>";
-      var credit_card_required = <%= @credit_card_required %>
+        var steps = <%= @stepping %>
+        var success = "<%= flash[:success] %>";
+        var credit_card_required = <%= @credit_card_required %>
 
-      <% flash[:success] = "" %>
-      if(success){
-        $("#modalLoginForm").modal('hide');
-        $('.divLoading').addClass('hidden')
-        $("#scheduleMyTourSuccess").modal({backdrop: 'static', keyboard: false})
-        $("html, body").animate({ scrollTop: 0 }, 600);
-      }
-      else
-      {
-          $('.divLoading').addClass('hidden');
-      }
-
-      $('#date_schedule_tour').click(function(){
-        // $('.divLoading').removeClass('hidden')
-      });
-
-      $('#confirm_reservation').click(function(){
-      });
+        <% flash[:success] = "" %>
+        if(success){
+          $("#modalLoginForm").modal('hide');
+          $('.divLoading').addClass('hidden')
+          $("#scheduleMyTourSuccess").show();
+          // $("html, body").animate({ scrollTop: 0 }, 600);
+          $("#schedule_btn").hide();
+        }
+        else
+        {
+            $('.divLoading').addClass('hidden');
+        }
 
       $("#tour_user_email").keyup(function() {
-        if(existing_tour_users.indexOf($("#tour_user_email").val()) !== -1)
+        existing_tour_users = JSON.parse($("#existing_tour_user_email_arr").val())
+        if(existing_tour_users.indexOf($("#tour_user_email").val()) !== -1 && tour_is_completed)
           $(".reshedule-notification").css("display", "block");
         else 
           $(".reshedule-notification").css("display", "none");
       });
 
+      $('.select_property_tour').change(function() {
+        if( "<%= !@time_slots.any? %>" == "true" && this.value == 'scheduled_tour') {
+          $(".no-tour-time-error").css("display", "block")
+        }
+        else
+        {
+          $(".no-tour-time-error").css("display", "none")
+        }
+          
+      })
+      
       var tour_id;
       $(document).ready(function(){
-
-        // phone
-        var countries = [
-          "",
-          "AC",
-          "AD",
-          "AE",
-          "AF",
-          "AG",
-          "AI",
-          "AL",
-          "AM",
-          "AO",
-          "AR",
-          "AS",
-          "AT",
-          "AU",
-          "AW",
-          "AX",
-          "AZ",
-          "BA",
-          "BB",
-          "BD",
-          "BE",
-          "BF",
-          "BG",
-          "BH",
-          "BI",
-          "BJ",
-          "BL",
-          "BM",
-          "BN",
-          "BO",
-          "BQ",
-          "BR",
-          "BS",
-          "BT",
-          "BW",
-          "BY",
-          "BZ",
-          "CA",
-          "CC",
-          "CD",
-          "CF",
-          "CG",
-          "CH",
-          "CI",
-          "CK",
-          "CL",
-          "CM",
-          "CN",
-          "CO",
-          "CR",
-          "CU",
-          "CV",
-          "CW",
-          "CX",
-          "CY",
-          "CZ",
-          "DE",
-          "DJ",
-          "DK",
-          "DM",
-          "DO",
-          "DZ",
-          "EC",
-          "EE",
-          "EG",
-          "EH",
-          "ER",
-          "ES",
-          "ET",
-          "FI",
-          "FJ",
-          "FK",
-          "FM",
-          "FO",
-          "FR",
-          "GA",
-          "GB",
-          "GD",
-          "GE",
-          "GF",
-          "GG",
-          "GH",
-          "GI",
-          "GL",
-          "GM",
-          "GN",
-          "GP",
-          "GQ",
-          "GR",
-          "GT",
-          "GU",
-          "GW",
-          "GY",
-          "HK",
-          "HN",
-          "HR",
-          "HT",
-          "HU",
-          "ID",
-          "IE",
-          "IL",
-          "IM",
-          "IN",
-          "IO",
-          "IQ",
-          "IR",
-          "IS",
-          "IT",
-          "JE",
-          "JM",
-          "JO",
-          "JP",
-          "KE",
-          "KG",
-          "KH",
-          "KI",
-          "KM",
-          "KN",
-          "KP",
-          "KR",
-          "KW",
-          "KY",
-          "KZ",
-          "LA",
-          "LB",
-          "LC",
-          "LI",
-          "LK",
-          "LR",
-          "LS",
-          "LT",
-          "LU",
-          "LV",
-          "LY",
-          "MA",
-          "MC",
-          "MD",
-          "ME",
-          "MF",
-          "MG",
-          "MH",
-          "MK",
-          "ML",
-          "MM",
-          "MN",
-          "MO",
-          "MP",
-          "MQ",
-          "MR",
-          "MS",
-          "MT",
-          "MU",
-          "MV",
-          "MW",
-          "MX",
-          "MY",
-          "MZ",
-          "NA",
-          "NC",
-          "NE",
-          "NF",
-          "NG",
-          "NI",
-          "NL",
-          "NO",
-          "NP",
-          "NR",
-          "NU",
-          "NZ",
-          "OM",
-          "PA",
-          "PE",
-          "PF",
-          "PG",
-          "PH",
-          "PK",
-          "PL",
-          "PM",
-          "PR",
-          "PS",
-          "PT",
-          "PW",
-          "PY",
-          "QA",
-          "RE",
-          "RO",
-          "RS",
-          "RU",
-          "RW",
-          "SA",
-          "SB",
-          "SC",
-          "SD",
-          "SE",
-          "SG",
-          "SH",
-          "SI",
-          "SJ",
-          "SK",
-          "SL",
-          "SM",
-          "SN",
-          "SO",
-          "SR",
-          "SS",
-          "ST",
-          "SV",
-          "SX",
-          "SY",
-          "SZ",
-          "TA",
-          "TC",
-          "TD",
-          "TG",
-          "TH",
-          "TJ",
-          "TK",
-          "TL",
-          "TM",
-          "TN",
-          "TO",
-          "TR",
-          "TT",
-          "TV",
-          "TW",
-          "TZ",
-          "UA",
-          "UG",
-          "US",
-          "UY",
-          "UZ",
-          "VA",
-          "VC",
-          "VE",
-          "VG",
-          "VI",
-          "VN",
-          "VU",
-          "WF",
-          "WS",
-          "YE",
-          "YT",
-          "ZA",
-          "ZM",
-          "ZW"
-        ];
-        
-        // var inputPhone = $("#tour_user_phone_number");
-        // var cleavePhone = new Cleave('#tour_user_phone_number', {
-        //   phone: true,
-        //   phoneRegionCode: 'US'
-        // });
-
         $(".select_number").on("change", function() {
           cleavePhone.setPhoneRegionCode(this.value);
           cleavePhone.setRawValue("");
           inputPhone.focus();
         });
 
-        // var cleaveDate = new Cleave('#tour_user_card_expiry', {
-        //     date: true,
-        //     datePattern: ['m', 'y']
-        // });
+        $("#expiry-year").on("change", function() {
+          $("#confirm_reservation").attr('disabled', false)
+          $("#confirm_reservation").css('opacity', 1)
+        })
+
+        $("#tour_date").on("dp.change", function() {
+          $("#tour_type").attr("disabled", true);
+          var time_slots = JSON.parse( $('#time_slot_hash').val() )
+          day = (new Date($(this).val())).getDay()
+          tour_time = '<%= @schedule_tour&.tour_time&.strftime("%I:%M %P") %>'
+          options = '<option value="">Select Time Slot</option>'
+          if (use_yardi_as_lead && !is_virtual_on){
+            date_for_yardi = moment($(this).val()).format("M/D/YYYY")  
+            selected_day_slots = time_slots[date_for_yardi] 
+          }
+          else{
+            selected_day_slots = time_slots[day]
+          }
+          selected_date = moment($(this).val()).zone(community_time_zone).format("YYYY/MM/DD")
+          today_date = moment().zone(community_time_zone).format("YYYY/MM/DD")
+          if (selected_date == today_date){
+            if(current_time_according_to_timzone !== ""){
+              today_time = current_time_according_to_timzone
+            }
+            else{
+              today_time = moment().zone(community_time_zone).format("HH:mm A")
+            }
+            today_datetime = moment(today_date + " " + today_time, "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A")
+            minus_day_slots = []
+            for (let i = 0; i < selected_day_slots.length; ++i) {
+              if (moment(selected_date + " " + selected_day_slots[i], "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A") >= today_datetime){
+                minus_day_slots.push(selected_day_slots[i])
+              }
+            }
+            selected_day_slots = minus_day_slots 
+          }
+          for (let i = 0; i < selected_day_slots.length; ++i) {
+            options += `<option value="${selected_day_slots[i]}" >${selected_day_slots[i]}</option>`
+          }
+          $('#tour_time').html(options)
+          $('#tour_type').html('<option value="">Select Tour Type</option>')
+          if(form_for_reschedule_tour && property_tour_type == "scheduled_tour" ) {
+            $(`#tour_time option[value="<%= @schedule_tour.tour_time&.strftime("%I:%M %P") %>"]`).attr("selected", true);
+            $('#tour_type').html('<option value="<%= @schedule_tour.tour_type %>"><%= @schedule_tour&.tour_type&.split('_').map(&:capitalize).join(' ') rescue ""%></option>')
+          }
+          
+        });
+        $("#tour_type").attr("disabled", true);
+        if(!form_for_reschedule_tour){
+          $("#tour_time").on("change", function() {
+            if ($(this).val() != ""){
+              $("#tour_type").attr("disabled", false);
+              day = (new Date($("#tour_date").val())).getDay()
+              date = $("#tour_date").val()
+              time = $(this).val()
+              $.ajax({
+                type: "GET",
+                url: "/schedual_tours/get_tour_type",
+                data: {day: day, time: time, date: date, schedual_tour_id: tour_id, community_id: $('#community_id').val() },
+                success: function(data){
+                  tour_types = data["tour_types"]
+                  options = '<option value="">Select Tour Type</option>'
+                  tour_id = data["schedual_tour_id"];
+                  $('#sched_tour_id').val(tour_id)
+                  $('#limit_tour_type_error_arr').val(data["limit_exceded_tour_types"])
+                  if (tour_types.length > 1){
+                    for (let i = 0; i < tour_types.length; ++i) {
+                      options += `<option value="${tour_types[i][0]}" >${tour_types[i][1]}</option>`
+                    }
+                    $('#tour_type').html(options)
+                  }
+                  else if(tour_types.length == 1){
+                    options += `<option value="${tour_types[0][0]}">${tour_types[0][1]}</option>`
+                    $('#tour_type').html(options)
+                    $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
+                    add_or_remove_question_mark(tour_types[0][0])
+                  }
+                  else{
+                    $('#tour_time').html(options)
+                    $('#tour_type').html('<option value="">Select Tour Type</option>')     
+                  }
+                  $("#tour_type").change();
+                },
+                fail: function(error){
+                  console.log(error)
+                }
+              });
+            }
+          else
+          {
+            $('#tour_type').html('<option value="">Select Tour Type</option>')
+            $('.tour_type_tip').addClass('hidden');
+          }
+          });
+        }
+
+        $("#tour_type").on("change", function() {
+          arr_str = $('#limit_tour_type_error_arr').val()
+          arr = arr_str.split(",")
+          tour_type = $(this).val()
+          if (tour_type != "" && arr.includes(tour_type)){
+            $("#show-limit-error").removeClass('hidden')
+            $("#show-limit-error").addClass('color-red').text("max tour users limit reached for the selected time")
+            $("#confirm_reservation").attr('disabled', true)
+            $("#confirm_reservation").css('opacity', 0.5)
+          }
+          else{
+            $("#show-limit-error").addClass('hidden')
+            $("#confirm_reservation").attr('disabled', false)
+            $("#confirm_reservation").css('opacity', 1)
+          }
+          verification_type_authenteq = ($("#verification_type_authenteq").val() == "true") ? true : false
+          if($('.select_property_tour').val() == "remote_tour"){
+            $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)")
+          }
+          else if (verification_type_authenteq && $('.select_property_tour').val() != "remote_tour" ){
+           $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.") 
+          }
+          add_or_remove_question_mark(tour_type)
+        });
+        function add_or_remove_question_mark(tour_type){
+          if (tour_type == "self_tour"){
+            $('.tour_type_tip').removeClass('hidden')
+            $('.tour_type_tip span').text('The Self Tour mobile app will provide you with directions, information, and access as you tour the areas of the property you choose to see, independently and at your own pace. (We’ll send you a link to download it with further instructions.)')
+          }else if (tour_type == "guided_tour"){
+            $('.tour_type_tip').removeClass('hidden')
+            $('.tour_type_tip span').text("For “Guided Tours” you will still be able to use the mobile app but a member of our staff will also accompany you on your tour.")
+          }
+          else{
+            $('.tour_type_tip').addClass('hidden')
+          }
+        }
         if(credit_card_required == true){
         var cleave = new Cleave('#card_verification', {
             numericOnly: true,
@@ -696,7 +843,69 @@
           creditCard: true
         });
         }
-        var days_disabled = <%= @disable_day_of_week %>
+        var days_disabled = <%= @disable_day_of_week %>;
+        var time_slots = JSON.parse( $('#time_slot_hash').val() )
+        // currentDay = (new Date($(this).val())).getDay()
+        var d = new Date();
+        var currentDay = d.getDay();
+        
+        if (use_yardi_as_lead && !is_virtual_on){
+          var availableDates = <%= raw @yardi_enable_days %>;
+          $('.schedule_datepicker').datetimepicker({
+            format : 'MM/DD/YYYY',
+            minDate: moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
+            showTodayButton: true,
+            showClear: true,
+            showClose: true,
+            useCurrent: true,
+            toolbarPlacement: "bottom",
+            stepping: steps,
+            daysOfWeekDisabled: days_disabled,
+            enabledDates: availableDates
+          });
+        }
+        else {
+          $('.schedule_datepicker').datetimepicker({
+            format : 'MM/DD/YYYY',
+            minDate: moment(), //time_slots[currentDay].length ? moment()+1 : moment(),
+            showTodayButton: true,
+            showClear: true,
+            showClose: true,
+            useCurrent: true,//time_slots[currentDay].length ? false : true,
+            toolbarPlacement: "bottom",
+            stepping: steps,
+            daysOfWeekDisabled: days_disabled,
+          });
+        }
+
+        var today_day = moment().format("YYYY-MM-DD")
+        scheduled_tour_date = '<%= @schedule_tour.tour_date %>'
+        useCurrentFlag = scheduled_tour_date == today_day ? true : false
+        if(form_for_reschedule_tour){
+          $('.reschedule_datepicker').datetimepicker({
+            format : 'MM/DD/YYYY',
+            minDate: moment(),
+            sideBySide: true,
+            showTodayButton: true,
+            showClear: true,
+            showClose: true,
+            useCurrent: useCurrentFlag,
+            toolbarPlacement: "bottom",
+            stepping: steps,
+            daysOfWeekDisabled: days_disabled         
+          });
+          if(scheduled_tour_date != today_day) {
+            <% if @schedule_tour.tour_date.present? %>
+              let dateTime = getTourDate(scheduled_tour_date);
+              $('.reschedule_datepicker').data("DateTimePicker").defaultDate(dateTime);
+            <% end %>
+          }
+          
+          function getTourDate(datetime) {
+            return new Date(Date.parse(datetime));
+          }
+        }
+
         // $(".datepicker").datetimepicker({minDate: new Date(), format: 'MM/DD/YYYY'});
         $('.datepickertime').datetimepicker({
           
@@ -712,265 +921,82 @@
           stepping: steps,
           daysOfWeekDisabled: days_disabled
         });
-        $('.datepicker').datepicker({
-          
-          
+
+        $('#desired_move_in_date').focusin( function(){
+          $('.moveindatepicker').datetimepicker({
+            // minDate: 1,
+            defaultDate: new Date(),
+            minDate: new Date(),
+            format: 'MM/DD/YYYY',
+            sideBySide: true,
+            showTodayButton: true,
+            showClear: true,
+            showClose: true,
+            useCurrent: false,
+            toolbarPlacement: "bottom",
+          });
+        })
+
+        $('.phoneNumber').keypress(function(event) {
+            if ((event.which != 46 || $(this).val().indexOf('.') != -1) &&
+                ((event.which < 48 || event.which > 57) &&
+                    (event.which != 0 && event.which != 8))) {
+                event.preventDefault();
+            }
         });
-          $('.phoneNumber').keypress(function(event) {
-              if ((event.which != 46 || $(this).val().indexOf('.') != -1) &&
-                  ((event.which < 48 || event.which > 57) &&
-                      (event.which != 0 && event.which != 8))) {
-                  event.preventDefault();
+
+        $("#close").on('click', function(){
+          $("#scheduleMyTourSuccess").hide()
+          $("#scheduleMyTour").modal({backdrop: 'static', keyboard: false})
+
+          // window.location.reload();
+        });
+        if (form_for_reschedule_tour){
+          $(".edit_tour_user").submit(function(e){
+            e.preventDefault();
+            $.ajax({
+              type: "POST",
+              url: "/schedual_tours/<%= params[:scheduled_tour_id]%>.json",
+              data: $(this).serialize(),
+              cache: false,
+              success: function(data){
+                $("#reschedule-content").removeClass('hidden')
+                $("#reschedule-content").html(data.message)
+                $("#modalLoginForm").modal('hide');
+                $('.divLoading').addClass('hidden')
+                $("#scheduleMyTourSuccess").show();
+                // $("html, body").animate({ scrollTop: 0 }, 600);
+                $("#schedule_btn").hide();
+              },
+              fail: function(error){
+                console.log(error)
               }
+            });
+            
           });
 
-        // $('.datepickertime').on('dp.change', function(e){ 
-        //   // e.date._d.getDay()
-        //   console.log(e.date._d.getDay())
-          
-        //   $('.datepickertime').datetimepicker({    
-        //       disabledTimeIntervals: [[moment({ h: 0 }), moment({ h: 8 })], [moment({ h: 18 }), moment({ h: 24 })]]
-        //     });
-        // })
-        function getMinutes(str) {
-            var time = str.split(':');
-            return time[0]*60+time[1]*1;
-        }
-        function schedual_my_tour(params_data, error){
+          $("#cancel-visit").on('click', function(e) {
           $.ajax({
             type: "POST",
-            url: "/schedual_tours.json",
-            data: params_data.serialize()+"&show_self_tour_option="+show_self_tour_option+"&show_guided_tour_option="+show_guided_tour_option+"&error="+error,
+            url: "/destroy_schedual_tours/<%= params[:scheduled_tour_id]%>.json",
+            data: {community_id: community_id},
             cache: false,
             success: function(data){
-              if(data.code != 400){
-                if(data && data.axisting_tour_users)
-                  existing_tour_users = data.axisting_tour_users;
-
-                document.getElementById('sched_tour_id').value = data.schedual_tour.id
-                tour_id = data.schedual_tour.id;
-                $('.divLoading').addClass('hidden');
-                if(data.show_tour_type_modal  && (data.type_list.length > 1))
-                {
-                  $("#scheduleMyTour").modal('hide');
-                  var select = $("#tour_type")[0];
-                  $('#tour_type').empty()
-                  for (op of data.type_list)
-                  {
-                    select.add(new Option(op[0], op[1]));
-                  }
-                  // $("#modalLoginForm").modal();
-                  $("#scheduleTourType").modal({backdrop: 'static', keyboard: false});
-
-                }
-                else
-                {
-                  $("#scheduleMyTour").modal('hide');
-                  if(data.type_list[0][1] == "virtual")
-                  {
-                    $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)")
-                  }
-                  $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
-                  // hidden_tour_type_value = data.type_list[0][1]
-                  send_tour_type(data.schedual_tour.id,data.type_list[0][1])
-                  // $("#scheduleTourType").modal();
-                }
-
-                
-
-                $("#not-visiting-hours").addClass('hidden')
-              }
-              else{
-                $("#not-visiting-hours").removeClass('hidden')
-                $("#not-visiting-hours").addClass('color-red').text(data.message)
+              if(data.logged_in) {
+                window.location.href = `${window.location.origin}/communities/${community_id}/scheduled_tours`;
+              } else {
+                window.location.href = window.location.origin
               }
             },
             fail: function(error){
               console.log(error)
             }
           });
+          e.preventDefault();
+        });
         }
 
-        $("#scheduleTourTypeForm").on('submit', function(e){
-
-          var visiting_times = <%= raw @visiting_times %>;
-          var guided_visiting_times = <%= raw @guided_visiting_times %>;
-
-          var error_messages = <%= raw @error_message %>;
-          var selected_date = $(".datepickertime").val()
-          var matched = false
-          var error
-          selected_day = moment(selected_date).format('dddd')
-          selected_time = moment(selected_date).format('HH:mm')
-          // hidden_tour_type_value = $("#tour_type option:selected").val()
-          send_tour_type(document.getElementById('sched_tour_id').value,$("#tour_type option:selected").val())
-          $('.divLoading').addClass('hidden');
-          $("#scheduleTourType").modal('hide');
-          if($('#tour_type').val() == "virtual")
-            {
-              $('#charge_text').text("A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)")
-            }
-          $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
-          // $.ajax({
-          //     type: 'POST',
-          //     dataType: 'json',
-          //     cache: false,
-          //     url: "/communities/4/schedual_tours/"+document.getElementById('sched_tour_id').value+"/update_tour_type",
-          //     data: {"tour_type" : $("#tour_type option:selected").text()},
-          //     success: function(data){
-          //       $('.divLoading').addClass('hidden');
-          //       $("#scheduleTourType").modal('hide');
-          //       $("#modalLoginForm").modal();
-          //     },
-          //     fail: function(data){
-          //       console.log(data)
-          //     }
-          //   });
-          
-
-          // if(visiting_times.length > 0){
-          //   for(var d_t in visiting_times){
-          //     if (selected_day == visiting_times[d_t][0]){
-          //       var start = getMinutes(visiting_times[d_t][1]);
-          //       var end = getMinutes(visiting_times[d_t][2]);
-          //       var selected = getMinutes(selected_time);
-
-          //       if ((selected >= start) && (selected <= end)) {
-          //         matched = true
-          //         schedual_my_tour($(this))
-          //       }
-          //       else{
-          //         $("#not-visiting-hours").removeClass('hidden')
-          //         for(var each in error_messages){
-          //           if (visiting_times[d_t][0] == error_messages[each][0]){
-          //             error = error_messages[each][1]
-          //           }
-          //         }
-          //       }
-          //     }
-          //   }
-          //   if (matched == false)
-          //     $("#not-visiting-hours").addClass('color-red').text(error)
-          // }
-          // else{
-          //   schedual_my_tour($(this))
-          // }
-          e.preventDefault();
-        });
-        
-        $("#scheduleMyTourForm").on('submit', function(e){
-          var visiting_times = <%= raw @visiting_times %>
-
-          var guided_visiting_times = <%= raw @guided_visiting_times %>;
-          var error_messages = <%= raw @error_message %>
-          var selected_date = $(".datepickertime").val()
-          var self_tour_matched = false
-          var guided_tour_matched = false
-          var error
-          selected_day = moment(selected_date).format('dddd')
-          selected_time = moment(selected_date).format('HH:mm')
-
-          if(visiting_times.length > 0){
-
-            for(var d_t in visiting_times){
-              if (selected_day == visiting_times[d_t][0]){
-                var start = getMinutes(visiting_times[d_t][1]);
-                var end = getMinutes(visiting_times[d_t][2]);
-                var selected = getMinutes(selected_time);
-                if ((selected >= start) && (selected <= end)) {
-                  self_tour_matched = true
-                  show_self_tour_option = true;
-                  // schedual_my_tour($(this))
-                }
-                else{
-                  $("#not-visiting-hours").removeClass('hidden')
-                  for(var each in error_messages){
-                    if (visiting_times[d_t][0] == error_messages[each][0]){
-                      error = error_messages[each][1]
-                    }
-                  }
-                }
-              }
-            }
-          }
-          if(guided_visiting_times.length > 0){
-
-            for(var d_t in guided_visiting_times){
-              if (selected_day == guided_visiting_times[d_t][0]){
-                var start = getMinutes(guided_visiting_times[d_t][1]);
-                var end = getMinutes(guided_visiting_times[d_t][2]);
-                var selected = getMinutes(selected_time);
-                if ((selected >= start) && (selected <= end)) {
-                  guided_tour_matched = true
-                  show_guided_tour_option = true;
-                  // schedual_my_tour($(this))
-                }
-                else{
-                  $("#not-visiting-hours").removeClass('hidden')
-                  for(var each in error_messages){
-                    if (guided_visiting_times[d_t][0] == error_messages[each][0]){
-                      error = error_messages[each][1]
-                    }
-                  }
-                }
-              }
-            }
-          }
-          if(guided_tour_matched || self_tour_matched)
-          {
-            schedual_my_tour($(this),error)
-          }
-          else
-          { 
-            schedual_my_tour($(this),error)
-            // $("#not-visiting-hours").addClass('color-red').text(error)
-            // $("#not-visiting-hours").removeClass('hidden')
-          }
-          e.preventDefault();
-        });
-
-        // $("#new_tour_user").on('submit', function(e){
-        //   $.ajax({
-        //     type: "POST",
-        //     url: "/schedual_tours/"+ tour_id +"/create_tour_user_from.json",
-        //     data: $(this).serialize(),
-        //     cache: false,
-        //     success: function(data){
-        //       $("#scheduleMyTourSuccess .Pyn_Modal p").html(data.message)
-        //       $("#modalLoginForm").modal('hide');
-        //       $("#scheduleMyTourSuccess").modal()
-        //       $("html, body").animate({ scrollTop: 0 }, 600);
-        //     },
-        //     fail: function(error){
-        //       console.log(error)
-        //     }
-        //   });
-        //   e.preventDefault();
-        // });
-
-        $("#close").on('click', function(){
-          $("#scheduleMyTourSuccess").modal('hide')
-          $("#scheduleMyTour").modal({backdrop: 'static', keyboard: false})
-
-          // window.location.reload();
-        });
-
       });
-      function send_tour_type(s_id,type)
-      {
-        $.ajax({
-              type: 'POST',
-              dataType: 'json',
-              cache: false,
-              url: "/communities/"+community_id+"/schedual_tours/"+s_id+"/update_tour_type",
-              data: {"tour_type" : type},
-              success: function(data){
-              },
-              fail: function(data){
-                console.log(data)
-              }
-            });
-      }
 
       if(credit_card_required == true){
       jQuery(function ($) {
@@ -985,13 +1011,10 @@
           }
           var $form;
           $form = $(this);
-          // debugger
           $form.find("input[type=submit]").prop("disabled", true);
           Stripe.card.createToken($form, stripeResponseHandler);
-          
-          // $('#confirm_reservation').attr('disabled','disabled');
-          // debugger
           return false;
+          event.preventDefault();
           
         });
 
@@ -1004,40 +1027,17 @@
           } else {
             token = response.id;
             $form.append($("<input type=\"hidden\" name=\"tour_user[card_token]\" />").val(token));
-            // $("[data-stripe=number]").remove();
-            // $("[data-stripe=cvv]").remove();
-            // $("[data-stripe=exp-year]").remove();
-            // $("[data-stripe=exp-month]").remove();
             $form.append($("<input type=\"hidden\" name=\"sched_tour_id\" />").val(tour_id));
             $form.append($("<input type=\"hidden\" name=\"last_digits\" />").val(  $('#tour_user_credit_card_number').val().substr($('#tour_user_credit_card_number').val().length - 4) ));
             $form.get(0).submit();
-            
-
-            // $.ajax({
-            //   type: "POST",
-            //   url: "/schedual_tours/"+ tour_id +"/create_tour_user_from.json",
-            //   data: {data: $($form.get(0)).serialize()},
-            //   cache: false,
-            //   success: function(data){
-            //     $("#scheduleMyTourSuccess .Pyn_Modal p").html(data.message)
-            //     $("#modalLoginForm").modal('hide');
-            //     $("#scheduleMyTourSuccess").modal()
-            //     $("html, body").animate({ scrollTop: 0 }, 600);
-            //   },
-            //   fail: function(error){
-            //     console.log(error)
-            //   }
-            // });
-          
-
+                
           }
           return false;
         };
 
         show_error = function (message) {
           alert(message);
-            $('.divLoading').addClass('hidden');
-          // $('.alert').delay(5000).fadeOut(3000);
+          $('.divLoading').addClass('hidden');
           return false;
         };
       });

@@ -5,7 +5,7 @@ class CommunitiesController < ApplicationController
   include FeedbacksHelper
   #load_and_authorize_resource
   before_action :check_community
-  before_action :set_community , only: [:edit,:update,:destroy,:remove_plots]
+  before_action :set_community , only: [:edit,:update,:destroy,:remove_plots, :sitemap_auto_plot_units, :floorplate_auto_plot_units, :suggest_sitemap_units, :suggest_floorplate_units]
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Companies", :companies_path, except: [:import_page, :settings_page,:logs]
   add_breadcrumb "Communities", :company_communities_path, except: [:import_page,:settings_page,:logs]
@@ -102,7 +102,6 @@ class CommunitiesController < ApplicationController
     # end
   end
   def update
-    
     if params[:community][:billing_rate_touch].present? or params[:community][:lincoln_billing_rate].present? or params[:community][:dwelo_billing_rate].present? or params[:community][:billing_rate_selftour].present? or params[:community][:billing_rate_maps].present? or params[:community][:billing_rate_for_both].present?
       @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour], billing_rate_for_both: params[:community][:billing_rate_for_both])
     end
@@ -305,6 +304,24 @@ class CommunitiesController < ApplicationController
       end
     else
       flash[:error] = "Please enter valid credentials in settings before importing data."
+      redirect_to community_settings_path(:community_id=>@community.id)
+    end
+  end
+
+  def import_pynwheel_access_users_data
+    Thread.current[:errors] = []
+    @community = Community.find params[:community_id]
+    if @community.credentials_are_present? && @community.check_credentials
+      if @community.pynwheel_access_users_data and Thread.current[:errors].empty?
+        flash[:notice] = "Good job! You have successfully imported this property's residents data."
+        PaperTrail::Version.create(item_type: "FetchResidentsData",item_id: @community.id,event: "Fetch Residents Data",whodunnit: @community.id,community_id: @community.id, company_id: @community.id,object: "name: #{@community.name} community_id: '#{@community.id}'")
+        redirect_to community_settings_path(:community_id=>@community.id)
+      else
+        flash[:error] = Thread.current[:errors].join(',')
+        redirect_to community_settings_path(:community_id=>@community.id)
+      end
+    else
+      flash[:error] = "Please enter valid credentials in settings before importing residents data."
       redirect_to community_settings_path(:community_id=>@community.id)
     end
   end
@@ -533,6 +550,103 @@ class CommunitiesController < ApplicationController
     redirect_to plotexp_community_sitemaps_path(@community), notice: "All plots have been deleted successfully."
   end
 
+  def suggest_sitemap_units
+    if !Rails.env.development?
+      sitemap = @community.sitemap if @community.sitemap.present?
+      sitemap.update(is_ocr_enabled: params[:is_ocr_enabled])
+
+      if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
+        unless sitemap.map_ocr_data.present?
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
+          sitemap.update(map_ocr_data: aws_ocr_detected_units)
+        end
+      end
+
+      redirect_to plotexp_community_sitemaps_path(@community), notice: "Suggestions for sitemap has #{sitemap.is_ocr_enabled ? "enabled" : "disabled"} successfully"
+    else
+
+      redirect_to plotexp_community_sitemaps_path(@community), alert: "Something went wrong please check sitemap image"
+    end
+  end
+
+  def suggest_floorplate_units
+    if !Rails.env.development?
+      floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
+      floorplate.update(is_ocr_enabled: params[:is_ocr_enabled])
+
+      if floorplate.present? && floorplate.image.present? && floorplate.image.url.present? && floorplate.is_ocr_enabled
+        unless floorplate.map_ocr_data.present? 
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
+          floorplate.update(map_ocr_data: aws_ocr_detected_units)
+        end
+      end
+
+      redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "Suggestions for floorplate has #{floorplate.is_ocr_enabled ? "enabled" : "disabled"} successfully"
+    else
+
+      redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), alert: "Something went wrong please check floorplate image"
+    end
+  end
+
+  def sitemap_auto_plot_units
+    if !Rails.env.development?
+      sitemap = @community.sitemap if @community.sitemap.present?
+
+      if sitemap.present? && sitemap.image.present? && sitemap.image.url.present?
+        units = @community.units.where(floorplate_id: nil)
+        aws_ocr_detected_units = []
+
+        if sitemap.map_ocr_data.present? 
+          aws_ocr_detected_units = sitemap.map_ocr_data
+        else
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(sitemap_image_url(sitemap))
+          sitemap.update(map_ocr_data: aws_ocr_detected_units)
+        end
+
+        dimensions = s3_img_dimensions(sitemap_image_url(sitemap))
+        set_sitemap_markers_on_map(units, aws_ocr_detected_units, dimensions)
+      else
+
+        redirect_to plotexp_community_sitemaps_path(@community), alert: "Something went wrong please check sitemap image"
+      end
+
+      redirect_to plotexp_community_sitemaps_path(@community), notice: "Auto plotting is done on the sitemap successfully"
+    else
+
+      redirect_to plotexp_community_sitemaps_path(@community), alert: "Automate plotting is not allowed in development environment"
+    end
+  end
+
+  def floorplate_auto_plot_units
+    if !Rails.env.development?
+      floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
+      
+      if floorplate.present? && floorplate.image.present? && floorplate.image.url.present?
+        aws_ocr_detected_units = []
+
+        if floorplate.map_ocr_data.present? 
+          aws_ocr_detected_units = floorplate.map_ocr_data
+        else
+          aws_ocr_detected_units = AwsTextract.aws_texract_ocr_service(floorplate_image_url(floorplate))
+          floorplate.update(map_ocr_data: aws_ocr_detected_units)
+        end
+
+        units = floorplate.fetch_units
+        dimensions = s3_img_dimensions(floorplate_image_url(floorplate))
+        set_floorplate_markers_on_map(units, aws_ocr_detected_units, dimensions, floorplate.id)
+      else
+
+        redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), alert: "Something went wrong please check floorplate image"
+      end
+
+      redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), notice: "Auto plotting is completed on the floorplate successfully"
+    else
+
+      redirect_to community_floorplate_plotexp_path(:community_id=>@community.id,floorplate_id: params[:floorplate_id]), alert: "Automate plotting is not allowed in development environment"
+    end
+  end
+
+
   def add_plots
     units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
     units.update_all(x_plot: params[:add_horizontal_position],y_plot: params[:add_vertical_position])
@@ -672,6 +786,7 @@ class CommunitiesController < ApplicationController
       redirect_back(fallback_location: root_path)
     end
   end
+
   def save_apartment_settings
     @community = Community.find params[:community_id]
     @community.show_apartment = params[:show_apartment].present? ? params[:show_apartment] : false
@@ -695,7 +810,6 @@ class CommunitiesController < ApplicationController
       flash[:error] = @community.errors.full_messages.join(',')
       redirect_back(fallback_location: root_path)
     end
-    
   end
 
   def desings_for_new_community(current_community)
@@ -708,7 +822,7 @@ class CommunitiesController < ApplicationController
     expressionist = design.filter_panel ||  design.create_filter_panel 
   end
 
-  private
+private
 
   def show_chat_modal(tour_user_id, tour_id)
     @chatroom = Chatroom.find_by(tour_user_id: tour_user_id, tour_id: tour_id)
@@ -722,10 +836,10 @@ class CommunitiesController < ApplicationController
  
   def community_params
 
-    params.require(:community).permit(:pynwheel_access,:name,:creator_id,:default_community_id, :region_id,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
+    params.require(:community).permit(:web_map_type,:pynwheel_access,:name,:creator_id,:default_community_id, :region_id,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :auto_wayfinding, :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:enable_locks,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password,:property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
-      :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:crm_credential_attributes=>[:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id, :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username, :salesforce_password, :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :salesforce_grant_type],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
+      :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_api_version, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:crm_credential_attributes=>[:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id, :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username, :yardirentcafe_marketing_api_key, :yardirentcafe_company_code, :yardirentcafe_property_id, :yardirentcafe_property_code,:salesforce_password, :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :salesforce_grant_type],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,
         :futurist_property_map_marker_color, :expressionist_property_map_marker_color, :panther_property_map_marker_color, :futurist_amenity_map_marker_color,:expressionist__amenity_map_marker_color,
         :panther_amenity_map_marker_color,:futurist_property_map_size,:expressionist_property_map_size,:panther_property_map_size,:modernist_property_map_size, :futurist_amenity_map_size, :expressionist_amenity_map_size, :panther_amenity_map_size, :modernist_amenity_map_size,

@@ -75,6 +75,7 @@ class TourUsersController < ApplicationController
  end
 
   def lock_ploting
+    binding.pry
     community_id = params[:community_id]
     tour_user_id = params[:tour_user_id]
     tour_history_id = params[:tour_history_id]
@@ -150,25 +151,69 @@ class TourUsersController < ApplicationController
       tour_history = TourHistory.find params[:tour_history_id]
       floors = []
       buildings = []
+      stops = []
+
+      visitod_stops = VisitedStop.where(tour_key: tour_history.tour_key).order(:id)
+      tour =  @community.tour
+      puts "--------------------"*20
+      puts "---------------------------------------- visitod_stops ----------------------------------------"
+      puts visitod_stops.inspect
+      puts "--------------------"*20
+
+
+      visitod_stops.each_with_index do |x, index|
+        points = []
+        tour_stop = TourStop.find_by_id x.tour_stop_id if x.tour_stop_id.present?
+        puts "--------------------"*20
+        puts "---------------------------------------- tour_stop ----------------------------------------"
+        puts tour_stop.inspect
+        puts "--------------------"*20
+
+        if tour_stop.present? && tour_stop.stop_id.present?
+          v_s = tour_stop.stop_type.classify.constantize.find_by_id tour_stop.stop_id
+          
+          if v_s.present?
+            # For Tour Starting Point             
+            if index === 0 
+              points << {x_plot: tour.x_plot, y_plot: tour.y_plot}
+              points = inserTourPoints(tour_stop, points)
+
+              stops << ['', tour, 'tour', points]
+              points = []
+            end
+            
+            current_stop = TourStop.find_by_id visitod_stops[index+1].tour_stop_id if visitod_stops[index+1].present? && visitod_stops[index+1].tour_stop_id.present?
+            prev_stop = tour_stop
+            
+            if current_stop.present? && prev_stop.present?
+              points << {x_plot: v_s.x_plot, y_plot: v_s.y_plot}
+              points = insertMiddlePoints(current_stop, prev_stop, points)
+            end
       
-      # floorplate = Floorplate.find params[:floorplate_id] if params[:floorplate_id].present?
-      stops = VisitedStop.where(tour_key: tour_history.tour_key).order(:id).map{|x| 
-      
-        (x.stop_type == "amenity") ? ([x, (Amenity.find_by_id (TourStop.find x.tour_stop_id).stop_id), 'amenity'] rescue next): ([x, (Unit.find_by_id (TourStop.find x.tour_stop_id).stop_id) , 'unit'] rescue next)
-      }
+            stops << [x, v_s, tour_stop.stop_type, points]
+            points = []
+          end 
+        end
+      end
+
       if @community.is_sitemap
         floor_image = @community.floorplates.map{|x| [x.floors,x.image.url]}
         floors = buildings = nil
       else
         floor_image = @community.floorplates.map{|x| [x.floors,x.image.url]}
         stops.each do |f|
-          if f.present? && f[1].present?
-            if f[1].floor.present?
-              floors << f[1].floor
-            end
+          if f[2].present? && (f[2] == "unit" || f[2] == "amenity")
+            if f.present? && f[1].present?
+              if f[1].floor.present?
+                floors << f[1].floor
+              end
 
-            if f[1].building.present?
-              buildings <<  f[1].building
+              if f[1].building.present?
+                buildings <<  f[1].building
+              else
+                f[1].building = "A"
+                buildings << "A" #If no building Add building A for test
+              end
             end
           end
         end
@@ -176,12 +221,54 @@ class TourUsersController < ApplicationController
         floors = floors.compact.uniq.sort
         buildings = buildings.compact.uniq
       end
-      
-      stops.unshift(['',current_community.tour,"tour"])
-      render json: { :stops => stops, :floors => floors, :buildings => buildings, :floor_image => floor_image, :lock_access_time => (tour_history.lock_access_time.strftime("%I:%M %p") rescue ""), :left => tour_history.left}, status: 200
+
+      render json: {:stops => stops, :floors => floors, :buildings => buildings, :floor_image => floor_image, :lock_access_time => (tour_history.lock_access_time.strftime("%I:%M %p") rescue ""), :left => tour_history.left}, status: 200
     else
       render json: {}, status: 404
     end
+  end
+
+  def insertMiddlePoints(current_stop, previous_stop, points = [])
+    path = Path.where(map_path_to_id: current_stop.stop_id, map_path_from_id: previous_stop.stop_id).first
+
+    if path.blank?
+      path = Path.where(map_path_to_id: previous_stop.stop_id, map_path_from_id: current_stop.stop_id).first
+
+      if path.present? && path.path_points.present?
+        path.path_points.reorder('id DESC').each do |p|
+          points << {x_plot: p.x_plot, y_plot: p.y_plot}
+        end
+      end
+    else
+      if path.present? && path.path_points.present?
+        path.path_points.reorder('id ASC').each do |p|
+          points << {x_plot: p.x_plot, y_plot: p.y_plot}
+        end
+      end
+    end
+
+    points
+  end
+
+  def inserTourPoints(tour_stop, points = [])
+    path = Path.where(map_path_to_id: tour_stop.stop_id, map_path_from_id: nil).first
+
+    if path.blank?
+      path = Path.where(map_path_to_id: nil, map_path_from_id: tour_stop.stop_id).first
+      if path.present? && path.path_points.present?
+        path.path_points.reorder('id DESC').each do |p|
+          points << {x_plot: p.x_plot, y_plot: p.y_plot}
+        end
+      end
+    else
+      if path.present? && path.path_points.present?
+        path.path_points.reorder('id ASC').each do |p|
+          points << {x_plot: p.x_plot, y_plot: p.y_plot}
+        end
+      end
+    end
+
+    points
   end
 
   def destroy
@@ -191,9 +278,9 @@ class TourUsersController < ApplicationController
     if params[:delete_all].present?
       delete_tour_user_all_attributes(@tour_user, @community)
       redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
-    elsif  params[:image].present? or params[:name].present? or params[:email].present? or params[:phone_number].present? or params[:history].present? or params[:verified_at].present?
+    elsif  params[:image].present? or params[:name].present? or params[:email].present? or params[:phone_number].present? or params[:history].present? or params[:authentiq_verified_at].present? or params[:checkpoint_verified_at].present?
       update_tour_user_attributes(@tour_user, @community)
-      if params[:verified_at].present?
+      if params[:authentiq_verified_at].present? or params[:checkpoint_verified_at].present?
         redirect_to community_tour_users_path(@community), :notice => "Id verification has been reset"
       else
         redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
@@ -273,9 +360,11 @@ class TourUsersController < ApplicationController
         tour_history.save!
       end
     end
-    if params[:verified_at] == "true"
-      tour_user.update_attributes(verified_at: nil, is_authentiq_verified: false) if community.tour.verification_type == "authenteq"
-      tour_user.update_attributes(verified_at: nil, is_checkpoint_verified: false) if community.tour.verification_type == "check_point_id"
+    if params[:authentiq_verified_at] == "true"
+      tour_user.update_attributes(authentiq_verified_at: nil, is_authentiq_verified: false) if community.tour.verification_type == "authenteq"
+    end
+    if params[:checkpoint_verified_at] == "true"
+      tour_user.update_attributes(checkpoint_verified_at: nil, is_checkpoint_verified: false) if community.tour.verification_type == "check_point_id"
     end
   end
 
@@ -283,5 +372,4 @@ class TourUsersController < ApplicationController
   def breadCrumb
     add_breadcrumb "Home", root_path
   end
-
 end

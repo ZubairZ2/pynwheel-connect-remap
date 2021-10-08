@@ -27,6 +27,12 @@
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = f.select(:region_id, options_for_select(@all_regions,@community.region_id), {:include_blank => 'Select a region'}, { :class => 'form-control' })
 
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Map Type
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.select(:web_map_type, options_for_select(["3d-map", "2d-map"], @community.web_map_type), {:include_blank => 'Select map type'}, { :class => 'form-control' })
+
               -#.form-group#chat_control_row
               -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               -#    Chat Control

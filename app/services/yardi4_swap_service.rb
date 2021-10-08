@@ -69,6 +69,7 @@ class Yardi4SwapService < BaseService
           end
           update_yardi4_floorplans(floorplans)
           update_yardi4_units(ils_units,external_property_id)
+          rename_provider
           #else
           #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
@@ -78,7 +79,6 @@ class Yardi4SwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    rename_provider
   end
     
 

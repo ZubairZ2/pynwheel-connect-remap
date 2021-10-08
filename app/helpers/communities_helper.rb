@@ -150,21 +150,19 @@ module CommunitiesHelper
 
   def check_visual_id_verification(tour_user, community)
     tour_type = tour_user.tour_type
-    verified_at = tour_user.verified_at
+    authentiq_verified_at = tour_user.authentiq_verified_at
+    checkpoint_verified_at = tour_user.checkpoint_verified_at
     is_authentiq_verified = tour_user.is_authentiq_verified
     is_checkpoint_verified = tour_user.is_checkpoint_verified
     time_zone = get_time_zone community
     current_tour_time = params[:current_time] if params[:current_time].present?
-    # binding.pry
     if community.tour.visual_id_verification && tour_type != "virtual_tour"
       if community.tour.verification_type == "authenteq"
         if !is_authentiq_verified
           true
-        elsif is_authentiq_verified and (current_tour_time > (verified_at + 10.minutes)) #tour_type != "virtual_tour" and is_authentiq_verified and (verified_at and verified_at.to_datetime > 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
+        elsif is_authentiq_verified and (current_tour_time > (authentiq_verified_at + 30.days))
           true
-          # tour_user.update_attributes(is_authentiq_verified: false)
-        elsif is_authentiq_verified and (current_tour_time < (verified_at + 10.minutes)) #tour_type != "virtual_tour" and is_authentiq_verified and (verified_at and verified_at.to_datetime < 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
-          # tour_user.update_attributes(verified_at: nil, is_authentiq_verified: false)
+        elsif is_authentiq_verified and (current_tour_time < (authentiq_verified_at + 30.days))
           false
         else
           false
@@ -173,10 +171,9 @@ module CommunitiesHelper
         if community.tour.verification_type == "check_point_id"
           if !is_checkpoint_verified
             true
-          elsif is_authentiq_verified and (current_tour_time > (verified_at + 10.minutes)) #tour_type != "virtual_tour" and is_checkpoint_verified and (verified_at and verified_at.to_datetime > 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
+          elsif is_authentiq_verified and (current_tour_time > (checkpoint_verified_at + 30.days))
             true
-          elsif is_authentiq_verified and (current_tour_time < (verified_at + 10.minutes)) #tour_type != "virtual_tour" and is_checkpoint_verified and (verified_at and verified_at.to_datetime < 1.hour.ago.in_time_zone(time_zone)) #TODO:: change to 1 month after testing
-            # tour_user.update_attributes(verified_at: nil, is_checkpoint_verified: false)
+          elsif is_authentiq_verified and (current_tour_time < (checkpoint_verified_at + 30.days))
             false
           else
             false

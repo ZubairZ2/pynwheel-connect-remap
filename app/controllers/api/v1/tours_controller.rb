@@ -53,9 +53,9 @@ class Api::V1::ToursController < ActionController::Base
             vs.id_selfie_mismatch = false
             url = Rails.env.production? ? "https://pynwheelconnect.com/id_selfie_matching/#{vs.id }?community=#{community.id}" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }?community=#{community.id}"
             email_content = "Please verify the user #{vs.name} #{community_name} on the following link <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"
-            DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com',community,nil,nil,nil,nil,false) unless params[:local_testing].present?
+            DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'jennifer@pynwheel.com',community,nil,nil,nil,nil,false,nil) unless params[:local_testing].present?
             community.email.split(',').each do |email|
-              DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, email,community,nil,nil,nil,nil,false) unless params[:local_testing].present?
+              DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, email,community,nil,nil,nil,nil,false,nil) unless params[:local_testing].present?
             end
             # DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
             # DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'nawaal.asif@intagleo.com')
@@ -214,9 +214,9 @@ iPhone Users:
     phone_number = ph_nm[0] == "1" ? "+" + ph_nm : ((ph_nm[0] != "+" and ph_nm[0] != "1") ? ("+1" + ph_nm) : ph_nm) if ph_nm.present?
     tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
     if tu.blank?
-      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false, is_authentiq_verified: false, is_checkpoint_verified: false, verified_at: nil, is_sms_enabled: params[:is_sms_enabled])
+      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false, is_authentiq_verified: false, is_checkpoint_verified: false, authentiq_verified_at: nil, checkpoint_verified_at: nil, is_sms_enabled: params[:is_sms_enabled])
     else
-      tu.update_attributes(name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false, is_authentiq_verified: false, is_checkpoint_verified: false, verified_at: nil, is_sms_enabled: params[:is_sms_enabled])
+      tu.update_attributes(name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false, is_authentiq_verified: false, is_checkpoint_verified: false, authentiq_verified_at: nil, checkpoint_verified_at: nil, is_sms_enabled: params[:is_sms_enabled])
     end
 
     begin
@@ -335,14 +335,23 @@ iPhone Users:
       end
     end
   end
+
   def floorplan_list
-    puts params
     access = grant_access (decoded(params[:token])) rescue false
+    
     if api_access or access == true
       @community = Community.find params[:community_id]
-      @floorplans = @community.floorplans.order(:bedrooms)
+      units = @community.units.where(available: true)
+      floorplans = []
+      
+      units.each do |u|
+        floorplans << u.floorplan
+      end
+
+      @floorplans = floorplans.present? ? floorplans.uniq.compact.sort_by { |f| f.bedrooms } : []
     end
   end
+
   def floorplan_units_v1
     puts params
     access = grant_access (decoded(params[:token])) rescue false
@@ -390,7 +399,7 @@ iPhone Users:
         email_content = "#{name} visiting #{@community.name} was unable to begin the tour because of an issue with ID verification." + reason
         emails = @community.email.gsub(" ","").split(',')
         emails.each do |email|
-          DelayedSchedulerMailerJob.perform_async("ID Verification Issue for #{name}", email_content, email,@community,nil,nil,nil,nil,false)
+          DelayedSchedulerMailerJob.perform_async("ID Verification Issue for #{name}", email_content, email,@community,nil,nil,nil,nil,false,nil)
         end
         render :json => { :success => true, :message => "success" }
       else

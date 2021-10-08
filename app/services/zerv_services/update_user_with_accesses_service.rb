@@ -6,10 +6,14 @@ module ZervServices
             tour_user    = args[:tour_user]
             stop_list    = args[:stop_list]
             zerv_user    = args[:zerv_user]
+            is_resident = args[:is_resident]
+            
             @facilityId   = community.zerv.facility_id.blank? ? "0" : community.zerv.facility_id
             @accessCode   = community.zerv.badge_id.blank? ? "1234" : community.zerv.badge_id
             @cardFormat   = community.zerv.card_format.blank? ? "HID Prox 26-bit H10301" : community.zerv.card_format
 
+            user_audit_logs = ZervServices::GetAuditLogsService.call(community: community) 
+            user_audit_logs = user_audit_logs.success? ? user_audit_logs["payload"]["listUserAudit"] : nil
             user_accesses = zerv_user["listGetUserAccess"]
 
             url = base_url + "/user/updateuserandtimezone/" + zerv_user["id"].to_s
@@ -23,15 +27,18 @@ module ZervServices
                     attached_lock = stop.zerv_locks.last
                     access_code = attached_lock.universal_access_code.present? ? attached_lock.universal_access_code : nil rescue nil
                     access_point = attached_lock.mac_id rescue nil
+
                     if access_point.present?
+                        update_user_access_time(community, tour_user, user_audit_logs, access_point, stop) if is_resident
+
                         if user_accesses.blank?
-                            list_add_user_access << time_access_object(community, tour_time, nil)
+                            list_add_user_access << time_access_object(community, tour_time, nil, is_resident)
                         else
                             previous_access = user_accesses.find_all{ |access| access["accessPoint"] == access_point }
                             if previous_access.blank?
-                                list_add_user_access << time_access_object(community, tour_time, nil)
+                                list_add_user_access << time_access_object(community, tour_time, nil, is_resident)
                             else
-                                list_add_user_access << time_access_object(community, tour_time, previous_access)
+                                list_add_user_access << time_access_object(community, tour_time, previous_access, is_resident)
                             end
                         end
                         list_add_user_access.last.merge!({"accessCode": @accessCode,"accessPoint": access_point})
@@ -39,7 +46,10 @@ module ZervServices
                 end
             end
             
-            tour_user.phone_number = tour_user.phone_number[0] == '+' ?  tour_user.phone_number : '+' + tour_user.phone_number
+            unless is_resident
+                tour_user.phone_number = tour_user.phone_number[0] == '+' ?  tour_user.phone_number : '+' + tour_user.phone_number
+            end
+
             body = {
                 "firstName": tour_user.first_name,
                 "lastName": tour_user.last_name,
@@ -47,6 +57,7 @@ module ZervServices
                 "email": tour_user.email,
                 "id": zerv_user["id"],
                 "image": nil,
+                "refreshCredentialFrequency": 24,
                 "removeExistingAccessDuration": [],
                 "removedExistingAccess": [],
                 "listAddUserAccess": list_add_user_access
@@ -72,13 +83,63 @@ module ZervServices
             end
         end
 
+        def update_user_access_time community, pynwheel_access_user, logs, mac_id, stop
+            access_points = pynwheel_access_user.resident_access_points.where(access_point_id: stop.id, access_point_type: stop.class.name.camelize(:lower))
 
-        def time_access_object(community, tour_time, prev_access)
+            if mac_id && access_points.present?
+                access_log = stop_access_time(community, pynwheel_access_user, logs, mac_id)
+
+                if access_log.present? 
+                    if access_log["event"] === "Successfully accessed the device."
+                        access_points.update_all(access_time: access_log["eventTimestamp"].to_datetime, is_accessed: true)
+                    else
+                        access_points.update_all(access_time: access_log["eventTimestamp"].to_datetime, is_accessed: false)
+                    end
+                end
+            end
+        end
+
+        def stop_access_time community, pynwheel_access_user, logs, mac_id, access_log_entries = []
+            location_name = (community.company.name + ' - ' + community.name).downcase.parameterize.gsub("-", "").gsub("_", "")
+            community_logs = logs.map{|log| log if log["locationName"].present? && log["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name}.compact
+
+            community_logs.each do |log|
+                if log["phoneNumber"].to_s === pynwheel_access_user.phone_number[1..-1] && log["deviceMACId"] === mac_id
+                    access_log_entries << log
+                end
+            end
+
+            latest_access_time(access_log_entries)
+        end
+
+        def latest_access_time access_log_entries, max_date = nil, max_date_log = nil
+            if access_log_entries.present?
+                max_date = access_log_entries[0]["eventTimestamp"].to_datetime
+                max_date_log = access_log_entries[0]
+
+                access_log_entries.each do |log|
+                    if max_date < log["eventTimestamp"].to_datetime
+                        max_date = log["eventTimestamp"].to_datetime
+                        max_date_log = log
+                    end
+                end
+
+            end
+            
+            max_date_log
+        end
+
+        def time_access_object(community, tour_time, prev_access, is_resident)
             # ------------------------------------ set values for zerv access parameters ----------------------------- #
             prev_access = prev_access[0] if prev_access.present?
             start_time = tour_time.strftime("%H:%M")
             end_time = (tour_time + 90.minutes).strftime("%H:%M")
-            
+
+            if is_resident
+                start_time = "00:00"
+                end_time = "23:59"
+            end
+
             if tour_time.monday?
                 main = {
                     "monAccess": true,
@@ -139,6 +200,8 @@ module ZervServices
                 "credentialIdentifier": "1234",
                 "facilityId": @facilityId,
                 "cardFormat": @cardFormat,
+                "antiPassBack": 5,
+                "range": 100,
                 "active": true,
                 "monAccess": false,
                 "tueAccess": false,
@@ -163,8 +226,8 @@ module ZervServices
                 "sun_access_start_time": "00:00",
             }
     
-            # below line will replace the main_keys within the required_keys
-            req_keys.merge(main) 
+            # below line will replace the main_keys within the required_keys            
+            req_keys.merge(main)
         end
     end
 end

@@ -11,6 +11,7 @@
 
 class Sitemap < ApplicationRecord
   # has_paper_trail
+  serialize :map_ocr_data, Array
   mount_uploader :image, SiteMapUploader
 
   belongs_to :community

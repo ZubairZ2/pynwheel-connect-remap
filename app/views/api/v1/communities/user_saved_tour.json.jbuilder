@@ -57,7 +57,7 @@ json.tours tours do |tour|
         json.floorplan_image @community.unit_floorplan_images(unit)
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
         json.video_link_button_label  unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
-        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : unit.floorplan.present? ? unit.floorplan.virtual_tour_url : ""
+        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""
         lease_pricing = []
         if unit.lease_pricing.present?
           str_split = unit.lease_pricing.split(';')
@@ -101,7 +101,7 @@ json.tours tours do |tour|
         json.update_apply ((unit.provider == "resman" || unit.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
         json.provider unit.provider
 
-        stop_dat = {"floorplan" => unit.floorplan_id,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
+        stop_dat = {"floorplan" => unit.floorplan_id, "floorplan_id" => unit.floorplan.id, "floorplan_full_name" => unit.floorplan.name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
         
         json.stop_data stop_dat
         @unit_gallery_arr = []
@@ -132,7 +132,7 @@ json.tours tours do |tour|
 
           json.directional_text unit_amenity.directional_text
           json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
-          json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : unit.floorplan.present? ? unit.floorplan.virtual_tour_url : ""
+          json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""
 
             # unit_amenity.description = nil
             @unit_gallery_arr << unit_amenity
@@ -219,9 +219,11 @@ json.tours tours do |tour|
           json.directional_text ag.directional_text
         end
       end
+
       user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id).where.not(image: nil)
       gallery_arr = []
       gallery_arr_v1 = []
+      
       user_gallery.each do |ud|
         obj = {}
         obj[:id] = ud.id
@@ -231,11 +233,15 @@ json.tours tours do |tour|
         gallery_arr_v1 << obj
         # json.image ud.image.url
       end
+
       json.user_gallery gallery_arr
       json.user_gallery_v1 gallery_arr_v1
       user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id).where.not(description: nil)
+      user_notes = user_notes.present? ? user_notes.order(:created_at).compact : []
+
       description_arr = []
       description_arr_v1 = []
+
       user_notes.each do |un|
         obj = {}
         obj[:id] = un.id
@@ -245,8 +251,10 @@ json.tours tours do |tour|
         description_arr_v1 << obj
         # json.description un.description
       end
+
       json.notes description_arr
       json.notes_v1 description_arr_v1
+
     end
   end
 

@@ -187,14 +187,9 @@ class Api::V1::CommunitiesController < ActionController::Base
       charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
       @tour_user.verified_by = params[:verfied_by_provider]
       time_zone = get_time_zone @community
-      # (params[:verified_at].in_time_zone(time_zone)).strftime("%Y-%m-%d %-I:%M %P"))
-      # if params[:verified_at].present? && @community.tour.visual_id_verification
-      #   @tour_user.update_attributes(verified_at: params[:verified_at].to_datetime)  if (@tour_user.verified_at.nil? && @community.tour.verification_type == "authenteq")  || (@tour_user.verified_at.nil? && @community.tour.verification_type == "check_point_id")   
-      # end
-      # verified_at = @tour_user.verified_at
       if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.tour.visual_id_verification #TODO:: change to 1 month after testing
-        @tour_user.update_attributes(verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
-        @tour_user.update_attributes(verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
+        @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
+        @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
       end
 
       unless @tour_user.email == "Removed at Consumer Request"
@@ -558,8 +553,9 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   def tour_user_arrival_email(tour_user, community)
     emails = community.email.gsub(" ","").split(',')
+    schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
     emails.each do |email|
-      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email,"info@pynwheel.com",community,false).deliver
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}",email,"info@pynwheel.com",community,false,schedule_tour).deliver
     end
   end
   def check_lock_access
@@ -604,7 +600,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
       if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and tour_user.tour_type != "virtual_tour"
         allowed_stops = zerv_multiple_stops_access(community)
-        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops)
+        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, is_resident: false)
       end
       tour_user.update_column 'zerv_status' , 'complete'
       rescue => ex
@@ -637,7 +633,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           end
 
           if tour_user.zerv_guests.where(community_id: community.id, status: "active", res_errors: nil).blank?
-            ZervServices::GetUserWithAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true)
+            ZervServices::GetUserWithAccessesService.call(is_resident: false, community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true)
           end
 
         end
@@ -662,7 +658,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     elsif community.data_provider == "yardi"
       result = community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
     elsif community.data_provider == "resman"
-      result = ImportResmanDataJob.perform_async community.credential.attributes.to_json
+      result = ((community.credential.resman_api_version === "GetMarketing4_0") ? ImportResman4DataJob.perform_async(community.credential.attributes.to_json) : ImportResmanDataJob.perform_async(community.credential.attributes.to_json))
     elsif community.data_provider == "zaremba"
       result = ImportZarembaDataJob.perform_async community.credential.attributes.to_json
     elsif community.data_provider == "xml"

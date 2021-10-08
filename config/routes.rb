@@ -15,11 +15,11 @@ Rails.application.routes.draw do
 
   post '/schedual_tours/:id', to: 'schedual_tours#update', format: :json
   post '/destroy_schedual_tours/:id', to: 'schedual_tours#destroy', format: :json
-  # post '/update_tour_type', to: 'schedual_tours#update_tour_type', format: :json
   resources :schedual_tours do
     # post :create_tour_user_from
     # member do
     # end
+    get :get_tour_type, on: :collection
   end
   post :map_dwelo_locks, to: 'dwelos#map_dwelo_locks'
   # selfie matching
@@ -33,6 +33,7 @@ Rails.application.routes.draw do
   namespace :scheduler_widget do
     get 'widget', to: 'widgets#widget'
     get 'test_widget', to: 'widgets#test_widget'
+    get 'confirmation_instructions', to: 'widgets#confirmation_instructions'
     get 'scheduler_widget_button', to: 'widgets#scheduler_widget_button'
 
     # get 'change_schedule_tour_time/:id', to: 'widgets#change_tour_time_widget', as: :change_tour_time
@@ -89,6 +90,11 @@ Rails.application.routes.draw do
       post :add_plots
       post :add_plots_on_floorplate
       delete :remove_plots_from_floorplate
+      get :suggest_sitemap_units
+      get :suggest_floorplate_units
+      get :sitemap_auto_plot_units
+      get :floorplate_auto_plot_units
+
     end
     collection do
       post :make_cordinate
@@ -149,6 +155,7 @@ Rails.application.routes.draw do
     delete :delete_imported_data
     get :update_imported_data
     get :import
+    get :import_pynwheel_access_users_data
     get :clean_psi_units_data
     get :experimental_import
     get :credentials
@@ -430,14 +437,22 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :pynwheel_accesses, only: [:index] do
-      collection do
-        delete :delete_pynwheel_access_user
-        get :get_pynwheel_user_accesses
-        post :create_or_update_pynwheel_access_user
-        post :active_or_inactive_user
+    resources :pynwheel_access_users, only: [:index, :create, :update, :destroy] do
+      member do
+        get :accesses
+        delete :remove_pynwheel_user_access
+        post :grant_pynwheel_user_access
       end
     end
+
+    # resources :pynwheel_accesses, only: [:index] do
+    #   collection do
+    #     delete :delete_pynwheel_access_user
+    #     get :get_pynwheel_user_accesses
+    #     post :create_or_update_pynwheel_access_user
+    #     post :active_or_inactive_user
+    #   end
+    # end
 
     resources :favorite_settings, only: [:index, :create, :update] do
       resources :favorite_images
@@ -524,6 +539,7 @@ Rails.application.routes.draw do
       post '/schedule_tour', to: 'schedule_tours#schedule_tour'
       put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
       post :salesforce_tour_webhook, to: 'salesforce_webhooks#salesforce_tour_webhook'
+      post :perq_tour_webhook, to: 'perq_webhooks#perq_tour_webhook'
       post :save_data, to: 'dwelo_devices#load_data'
       post :device_lock_unlock, to: 'dwelo_devices#device_lock_or_unlock'
       resources :communities, only: :index do
@@ -559,7 +575,20 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :tours, only: :index do
+      resources :pynwheel_access_users do
+        collection do
+          get :pynwheel_access_user_authentication
+          get :resident_accesses_list
+          get :resident_accesses_history
+          post :check_lock_access
+          post :generate_otp
+          post :verify_otp
+          post :lock_access_time
+          post :dwelo_device_lock_or_unlock
+        end
+      end
+
+      resources :tours,only: :index do
         collection do
           post :tour_user_login
           post :start_tour_auto_message

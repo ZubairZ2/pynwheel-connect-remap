@@ -29,6 +29,7 @@ class ResmanSwapService < BaseService
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
           # save_website_column_of_community(response)
+          rename_provider
         else
           ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         end
@@ -36,7 +37,6 @@ class ResmanSwapService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    rename_provider
   end
   def save_resman_units(units,property_id)
     units.each do |u|
@@ -53,6 +53,7 @@ class ResmanSwapService < BaseService
         unit = unit.first
         unit.provider = "resman_new"
         unit.provider_unit_id = u["Id"].gsub('*','-')
+        unit.lease_pricing = nil
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
         # unit.marketing_name = u["Id"]
@@ -90,6 +91,7 @@ class ResmanSwapService < BaseService
         unit.community_id = credentials.community_id
         unit.provider = "resman_new"
         unit.provider_unit_id = u["Id"].gsub('*','-')
+        unit.lease_pricing = nil
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
         unit.marketing_name = u["Id"]
@@ -207,33 +209,9 @@ class ResmanSwapService < BaseService
   end
 
   def rename_provider
-    fp = Floorplan.where(community_id: credentials.community_id)
-    fp.each do |d|
-      unless d.provider == "resman_new"
-        d.destroy
-      end
-    end
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      unless d.provider == "resman_new" || d.provider == "manually"
-        d.destroy
-      end
-    end
-    unit = Unit.where(community_id: credentials.community_id)
-    unit.each do |d|
-      if d.provider == "resman_new"
-        d.provider = "resman"
-        d.save
-      end
-    end
-
-    fp = Floorplan.where(community_id: credentials.community_id)
-    fp.each do |d|
-      if d.provider == "resman_new"
-        d.provider = "resman"
-        d.save
-      end
-    end
-    
+    Floorplan.where(community_id: credentials.community_id).where.not(provider: "resman_new").destroy_all
+    Floorplan.where(community_id: credentials.community_id).where(provider: "resman_new").update_all(provider: "resman")
+    Unit.where(community_id: credentials.community_id).where.not(provider: ["resman_new", "manually"]).destroy_all
+    Unit.where(community_id: credentials.community_id).where(provider: "resman_new").update_all(provider: "resman")
   end
 end

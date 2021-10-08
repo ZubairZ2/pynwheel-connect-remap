@@ -8,7 +8,8 @@ class ImportRemotelockEventsJob < ApplicationJob
     
     if as_guests_data.present?
       email_content = "Events for #{tour_user.name} with tour id #{tour_user.id} are imported in pynwheel as a backgroubjob, while the tour history id is #{tour_history.id} and the assigned pin is #{assigned_pin}" if tour_user.present? and tour_user.as_guests.present?
-  		DelayedSchedulerMailerJob.perform_async("Remote Lock Events, BackGroud Job", email_content, "humza4142@gmail.com","Lock History has been imported","check the database, BackGroud Job, its ran in  BackGroud Job","humza4142@gmail.com") if tour_user.present? and tour_user.as_guests.present?
+  		
+      DelayedSchedulerMailerJob.perform_async("Remote Lock Events, BackGroud Job", email_content, "humza4142@gmail.com",community,"Lock History has been imported","check the database, BackGroud Job, its ran in  BackGroud Job","humza4142@gmail.com",nil,false,nil) if tour_user.present? and tour_user.as_guests.present?
 
       access_token = RemoteLockService.new(community).client_credentials
 

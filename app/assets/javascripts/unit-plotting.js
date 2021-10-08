@@ -64,7 +64,7 @@ function saveFloorplateUnit(id, dx, dy) {
 
             $('#' + data.unit.provider_unit_id + '-selectable').remove();
             $('#' + data.unit.provider_unit_id + '-selection').remove();
-
+            $(".hint-unit-blink").remove();
         });
 }
 
@@ -233,7 +233,7 @@ function saveSiteMapUnit(id, dx, dy) {
 
             $('#' + data.unit.provider_unit_id + '-selectable').remove();
             $('#' + data.unit.provider_unit_id + '-selection').remove();
-
+            $(".hint-unit-blink").remove();
         });
 }
 
@@ -386,11 +386,17 @@ function saveAmenityPlotForSitemap(id, dx, dy) {
 
 
 function removeUnitFromSelectedArray(value) {
+    console.log("Selected Units Before: ", selected);
     for (i = 0; i < selected.length; i++) {
         if (selected[i][0] == value) {
-            selected.splice(i, i + 1);
+            selected.splice(i, 1);
+            $(`.suggested-circle-${value}`).remove();
+            // selected.splice(i, i + 1);
+            
         }
     }
+    console.log("Selected Units After: ", selected);
+
 }
 
 

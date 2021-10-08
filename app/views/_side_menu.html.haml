@@ -213,28 +213,35 @@
                 %span Tour Stops
                 %span.pull-right-container
 
-            %li.loader_class{:class=>"#{controller_name =='automate_plotting' && params[:action] == "index" ? 'active' : ''}"}
-              %a{:href => "#{automate_plotting_index_path(community_id:current_community)}"}
-                %i.fa.fa-robot
-                %span Automate Plotting
-                %span.pull-right-container
+            - if current_community.present? && current_community.auto_wayfinding
+              %li.loader_class{:class=>"#{controller_name =='automate_plotting' && params[:action] == "index" ? 'active' : ''}"}
+                %a{:href => "#{automate_plotting_index_path(community_id:current_community)}"}
+                  %i.fa.fa-robot
+                  %span Automate Plotting
+                  %span.pull-right-container
 
       - if (current_community.self_tour) && (current_user.is_admin? || current_user.is_view_visitor_details_page? || current_user.is_community_assistant?)
         %li.loader_class{:class=>"#{controller_name =='tour_users' ? 'active' : ''}"}
           %a{:href => "#{community_tour_users_path(current_community)}"}
             %i.fa.fa-sticky-note-o
             %span Visitors
-      - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_community.self_tour && current_community.scheduler_widget == true
+      - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_community.self_tour && current_community.scheduler_widget == true || (current_community&.credential&.use_different_crm_provider && current_community&.crm_credential&.crm_provider == "salesforce")
         %li.loader_class{:class=>"#{controller_name =='schedual_tours' ? 'active' : ''}"}
           %a{:href => "#{community_schedual_tours_path(current_community)}"}
             %i.fa.fa-sticky-note-o
             %span Scheduled Tours      
       
+      -# - if current_community.pynwheel_access && current_user.is_super_admin?
+      -#   %li.loader_class{:class=>"#{controller_name =='pynwheel_accesses' ? 'active' : ''}"}
+      -#     %a{:href => "#{community_pynwheel_accesses_path(current_community)}"}
+      -#       %i.fa.fa-lock
+      -#       %span Pynwheel Access      
+
       - if current_community.pynwheel_access && current_user.is_super_admin?
-        %li.loader_class{:class=>"#{controller_name =='pynwheel_accesses' ? 'active' : ''}"}
-          %a{:href => "#{community_pynwheel_accesses_path(current_community)}"}
+        %li.loader_class{:class=>"#{controller_name =='pynwheel_access_users' ? 'active' : ''}"}
+          %a{:href => "#{community_pynwheel_access_users_path(current_community)}"}
             %i.fa.fa-lock
-            %span Pynwheel Access      
+            %span Pynwheel Access Users   
 
       - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_user.is_super_admin?
         %li.loader_class{:class=>"#{controller_name =='Community' && params[:action] == "logs" ? 'active' : ''}"}
@@ -248,4 +255,3 @@
             %span Tutorials
   / /.sidebar
 / End menu nav left Section 
-

@@ -34,11 +34,24 @@ textarea {
 .main-sidebar {
     padding-top: 110px;
 }
+
 .clean-data-btn {
     display: none;
 }
+
 .add-user-button {
     float: right;
+    margin-left: 10px;
+}
+
+.tracking_btns {
+    pointer-events: none;
+    background-color: #ddd;
+}
+
+.floor_unit_visibility {
+    color: red;
+    display: none;
 }
 
 .red-required-star {
@@ -54,12 +67,6 @@ textarea {
     border: 1px solid #eae6e6;
     border-radius: 4px;
     color: #555;
-}
-
-.pynwheel-access-time-modal {
-    min-height: 670px;
-    top: -30px;
-    left: -15px;
 }
 
 .pynwheel-access-datefield {
@@ -106,8 +113,12 @@ textarea {
     border-radius: 4px;
 }
 
+.pynwheel-access-time-block input[type=checkbox], input[type=radio] {
+    margin: 4px 5px 0 !important;  
+}
+
 .day-time-entry {
-    padding-top: 10px;
+    padding-top: 30px;
 }
 
 .custom-select {
@@ -196,7 +207,7 @@ textarea {
     color: red;
     margin-right: 10px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 30px;
 }
 
 .slow .toggle-group {
@@ -222,7 +233,22 @@ textarea {
     color: #2b90d4;
     margin-right: 10px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 30px;
+}
+
+.pynwheel-manage-accesses {
+    margin-bottom: 12px;
+}
+
+#pynwheel-access-user-type {
+    padding: 5px;
+    width: 100%;
+    border: 1px solid #d2d6de;
+    background-color: white;
+}
+
+#pynwheelAccessUsersData {
+    display: none;
 }
 
 .skin-blue .wrapper,
@@ -531,7 +557,7 @@ textarea {
 
 .reshedule-notification {
     color: red;
-    display: none !important;
+    display: none;
 }
 
 .expired_tour_text {
@@ -593,6 +619,11 @@ textarea {
     border-radius: 3px;
 }
 
+.pynwheel_access_user_action_icon_size {
+    font-size: x-large;
+    padding: 5px;
+    cursor: pointer;
+}
 
 /****Table Style***/
 
@@ -1425,7 +1456,7 @@ table#communities tbody tr td {
     display: inline-block;
     vertical-align: middle;
     position: relative;
-    padding-left: 5px;
+    padding-left: 25px;
 }
 
 .radio label::before {
@@ -1435,7 +1466,6 @@ table#communities tbody tr td {
     width: 20px;
     height: 20px;
     left: 0;
-    margin-left: -20px;
     border: 3px solid #cccccc;
     border-radius: 50%;
     background-color: #fff;
@@ -1452,7 +1482,6 @@ table#communities tbody tr td {
     height: 10px;
     left: 5px;
     top: 5px;
-    margin-left: -20px;
     border-radius: 50%;
     background-color: #555555;
     -webkit-transform: scale(0, 0);
@@ -1893,6 +1922,7 @@ ul.images-tabs li a span {
       height: 100%;
       max-height: 932px;*/
     display: inline-block;
+    /* transform: matrix(1, 0, 0, 1, 0, 0) !important; */
 }
 
 .map-block {
@@ -1901,7 +1931,9 @@ ul.images-tabs li a span {
     overflow: scroll;
 }
 
-.map-block img {}
+/* .map-block img {
+    max-width: 100%;
+} */
 
 ul.amenities-list {
     margin: 0;
@@ -2242,8 +2274,12 @@ overflow-y: hidden;*/
     border: 3px solid #fff;
 }
 
+.plot-image-sitemap {
+    transform: matrix(1, 0, 0, 1, 0, 0) !important;
+}
 .image-map img {
     max-width: 100%;
+    /* height: auto; */ 
 }
 
 .building-plan {
@@ -2461,6 +2497,11 @@ overflow-y: hidden;*/
     width: 100%;
 }
 
+.enable-suggestions-btn {
+    background-color: #e48c00 !important;
+    border-color: #e48c00 !important;
+}
+
 .slider-box {}
 
 .slider-box .slider-handle {
@@ -2509,7 +2550,6 @@ overflow-y: hidden;*/
 .right-side {
     margin-left: 331px;
     position: absolute;
-    /*    width: calc(98.3% - 305px);*/
     height: 100%;
 }
 
@@ -3270,6 +3310,12 @@ div.mydiv {
     height: 100%;
 }
 
+#floor_label, #building_label{
+    margin-top: 15px;
+    margin-bottom: -10px;
+    margin-left: 7px;
+}
+
 #container .grid-graph {
     background-size: 30px 30px;
     background-image: linear-gradient(to right, grey 1px, transparent 1px), linear-gradient(to bottom, grey 1px, transparent 1px);
@@ -3877,6 +3923,10 @@ div.mydiv {
     visibility: visible;
 }
 
+._3d-apply-filter-button {
+    margin-top: 16px;
+}
+
 #logo_header {
     margin-bottom: 0px;
 }
@@ -3890,6 +3940,16 @@ div.mydiv {
     color: grey;
 }
 
+#_3DAmenityImage {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+._3d-modal-close-amenity {
+    margin-top: -20px !important;
+}
 .unit_manualoverride {
     position: relative;
     display: inline-block;
@@ -4013,6 +4073,16 @@ div.mydiv {
     min-height: 90vh;
 }
 
+.amenity-image-3d {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    width: 500px;
+    height: 500px;
+}
+
 .publish-changes-screen-context {
     text-align: center;
     height: 85vh;
@@ -4051,10 +4121,11 @@ div.mydiv {
     font-size: 13px !important;
 }
 
-.propertyDetailName, 
+.propertyDetailName,
 .pyn-toolTip {
     position: relative;
     display: inline-block;
+    white-space: initial;
     z-index: 1000;
 }
 
@@ -4065,7 +4136,7 @@ div.mydiv {
     color: white;
     text-align: left;
     border-radius: 6px;
-    padding: 5px 0;
+    padding: 15px 15px;
     position: absolute;
     z-index: 1;
     bottom: 150%;
@@ -4073,7 +4144,6 @@ div.mydiv {
     margin-left: -60px;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 14px;
-    padding: 15px;
     line-height: 1.3;
 }
 
@@ -4111,12 +4181,10 @@ div.mydiv {
     visibility: visible;
 }
 
-
 .active-inactive-tooltip-text {
     width: 118px !important;
     left: -5% !important;
 }
-
 
 .propertyDetailName #propertyDetailNameText::after {
     content: "";
@@ -4809,6 +4877,15 @@ div.mydiv {
     cursor: not-allowed;
 }
 
+#map-views-dropdown {
+    height: 25px;
+    padding-left: 5px;
+    padding-right: 10px;
+    border-radius: 3px;
+    font-weight: 600;
+    background: #f6f6f4;
+}
+
 .hide_it {
     display: none;
 }
@@ -4899,7 +4976,7 @@ input:checked+.slider:before {
 }
 
 .slider.round:before {
-  border-radius: 50%;
+    border-radius: 50%;
 }
 
 .pynwheel-access-credentials {
@@ -4936,7 +5013,7 @@ input:checked+.slider:before {
 }
 
 .visitors-hints-arrow {
-    top: 100px !important;
+    top: 116px !important;
 }
 
 .visitors-hints-arrow:after {
@@ -4946,6 +5023,33 @@ input:checked+.slider:before {
 
 .visitor-popover {
     top: -98px !important;
+}
+/* .hint-unit-blink {
+    animation: blink 2s steps(5, start) infinite;
+    -webkit-animation: blink 1s steps(5, start) infinite;
+}
+@keyframes hint-unit-blink  {
+    to {
+        visibility: hidden;
+    }
+}
+@-webkit-keyframes hint-unit-blink  {
+    to {
+        visibility: hidden;
+    }
+} */
+
+@keyframes hint-unit-blink {
+    0% { opacity: 1;}
+    50% { opacity: 0.5;}
+    100% { opacity: 0;}
+}
+.hint-unit-blink {
+  -webkit-animation: hint-unit-blink 1.5s linear infinite;
+  -moz-animation: hint-unit-blink 1.5s linear infinite;
+  -ms-animation: hint-unit-blink 1.5s linear infinite;
+  -o-animation: hint-unit-blink 1.5s linear infinite;
+  animation: hint-unit-blink 1.5s linear infinite;
 }
 .disable_btn{
   pointer-events: none;

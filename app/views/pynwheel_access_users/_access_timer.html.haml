@@ -1,0 +1,141 @@
+.modal{id: "pynwheelAccessTimeModal", role: "dialog", tabindex: "-1"}
+  .modal-dialog.modal-lg{role: "document"}
+    .modal-content
+      .modal-header.date-time-header
+        %h3.modal-title
+          %strong Set Day  Time Restrictions
+      .modal-body
+        .pynwheel-access-date-block
+          .row
+            .col-lg-6.col-md-6.col-sm-12.pynwheel-access-datefield
+              %strong Start Date
+              .input-group.start-date.date{"data-provide" => "datepicker"}
+                %input.pynwheel-access-start-date.pynwheel-access-date.datepicker{"data-date-format" => "yyyy/mm/dd", onchange: "onDateChange()", placeholder: "Select start date", value: ""}/
+            .col-lg-6.col-md-6.col-sm-12.pynwheel-access-datefield
+              %strong End Date
+              .input-group.end-date.date{"data-provide" => "datepicker"}
+                %input.pynwheel-access-end-date.pynwheel-access-date.datepicker{"data-date-format" => "yyyy/mm/dd", onchange: "onDateChange()", placeholder: "Select end date", value: ""}/
+       
+        %span{style: "color: red"} Note: End time should be greater than start time
+       
+        .pynwheel-access-time-block
+          .time-entries-header
+            .row
+              .col-lg-4.col-md-4.col-sm-4
+                .form-check
+                  %input.pynwheel-access-check-all.form-check-input{type: "checkbox"}>/
+                  -# onCheckAllChange() ${!access ? "checked" : ""} &gt;
+                  %label.form-check-label{for: "flexCheckDefault"}
+                    %strong Select All
+              
+              .col-lg-4.col-md-4.col-sm-4
+                %strong Start Time
+              
+              .col-lg-4.col-md-4.col-sm-4
+                %strong End Time
+          
+          .time-entries
+            .row.day-time-entry
+              .col-lg-4.col-md-4.col-sm-4
+                .form-check
+                  %input.pynwheel-access-sunday-check-box.form-check-input{name: "checkboxes", onchange: "onChangeCheckbox()", type: "checkbox"}>/
+                  -# ${!access ? "checked" : getSundayAccess(access) } &gt;
+                  %label.form-check-label{for: "flexCheckDefault"} Sunday
+              
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-sunday-start-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+                -# ${getSundayStartTime(access)} type="time" &gt;
+              
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-sunday-end-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+              -# ${getSundayEndTime(access)} type="time" &gt;
+            
+            .row.day-time-entry
+              .col-lg-4.col-md-4.col-sm-4
+                .form-check
+                  %input.pynwheel-access-monday-check-box.form-check-input{name: "checkboxes", onchange: "onChangeCheckbox()", type: "checkbox"}>/
+                  -# ${!access ? "checked" : getMondayAccess(access) } &gt;
+                  %label.form-check-label{for: "flexCheckDefault"} Monday
+              
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-monday-start-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+                -# ${getMondayStartTime(access)} type="time" &gt;
+              
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-monday-end-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+              -# ${getMondayEndTime(access)} type="time" &gt;
+
+            .row.day-time-entry
+              .col-lg-4.col-md-4.col-sm-4
+                .form-check
+                  %input.pynwheel-access-tuesday-check-box.form-check-input{name: "checkboxes", onchange: "onChangeCheckbox(${index})", type: "checkbox"}>/
+                  -# ${!access ? "checked" : getTuesdayAccess(access) } &gt;
+                  %label.form-check-label{for: "flexCheckDefault"} Tuesday
+
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-tuesday-start-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+                -# ${getTuesdayStartTime(access)} type="time" &gt;
+                
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-tuesday-end-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+          
+
+            .row.day-time-entry
+              .col-lg-4.col-md-4.col-sm-4
+                .form-check
+                  %input.pynwheel-access-wednessday-check-box.form-check-input{name: "checkboxes", onchange: "onChangeCheckbox(${index})", type: "checkbox"}>/
+                  -# ${!access ? "checked" : getWednessdayAccess(access) } &gt;
+                  %label.form-check-label{for: "flexCheckDefault"} Wednessday
+
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-wednessday-start-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+                -# ${getWednessdayStartTime(access)} type="time" &gt;
+              
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-wednessday-end-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+
+            .row.day-time-entry
+              .col-lg-4.col-md-4.col-sm-4
+                .form-check
+                  %input.pynwheel-access-thursday-check-box.form-check-input{name: "checkboxes", onchange: "onChangeCheckbox(${index})", type: "checkbox"}>/
+                  -# ${!access ? "checked" : getWednessdayAccess(access) } &gt;
+                  %label.form-check-label{for: "flexCheckDefault"} Thursday
+
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-thursday-start-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+                -# ${getWednessdayStartTime(access)} type="time" &gt;
+              
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-thursday-end-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+            
+            .row.day-time-entry
+              .col-lg-4.col-md-4.col-sm-4
+                .form-check
+                  %input.pynwheel-access-friday-check-box.form-check-input{name: "checkboxes", onchange: "onChangeCheckbox(${index})", type: "checkbox"}>/
+                  -# ${!access ? "checked" :(access) } &gt;
+                  %label.form-check-label{for: "flexCheckDefault"} Friday
+
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-friday-start-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+                -# ${getWednessdayStartTime(access)} type="time" &gt;
+              
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-friday-end-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+            
+            .row.day-time-entry
+              .col-lg-4.col-md-4.col-sm-4
+                .form-check
+                  %input.pynwheel-access-saturday-check-box.form-check-input{name: "checkboxes", onchange: "onChangeCheckbox(${index})", type: "checkbox"}>/
+                  -# ${!access ? "checked" : getWednessdayAccess(access) } &gt;
+                  %label.form-check-label{for: "flexCheckDefault"} Saturday
+
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-saturday-start-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+                -# ${getWednessdayStartTime(access)} type="time" &gt;
+              
+              .col-lg-4.col-md-4.col-sm-4
+                %input.day-list.pynwheel-access-saturday-end-time.pynwheel-access-time-entry.bg-grey-v{type: "time", value: ""}/
+      
+      .modal-footer
+        %button.btn.btn-default{onclick: "closePynwheelAccessTimeModal(${index})", type: "button"} Cancel
+        %button.btn.btn-primary{onclick: "saveAddressDateTime(${index})", type: "button"} Save

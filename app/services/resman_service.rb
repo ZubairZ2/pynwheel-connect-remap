@@ -85,6 +85,7 @@ class ResmanService < BaseService
         #     unit.effective_rent = u["Unit"]["MITS:Information"]["MITS:MarketRent"]
         #   end
         # end
+        unit.lease_pricing = nil
 
         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
           if u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
@@ -135,7 +136,8 @@ class ResmanService < BaseService
         unless unit.manual_override
           unit.property_id = property_id
           unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
-
+          unit.lease_pricing = nil
+          
           unless unit.name_is_updated.present? && unit.name_is_updated
             unit.marketing_name = u["Id"]
           end

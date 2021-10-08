@@ -596,8 +596,76 @@ module DweloDevicesHelper
   end
   def tour_user_arrival_email(tour_user, community)
     emails = community.email.gsub(" ","").split(',')
+    schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
     emails.each do |email|
-      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email,"info@pynwheel.com").deliver
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email,"info@pynwheel.com",community,false,schedule_tour).deliver
     end
   end
+
+
+  def set_sitemap_markers_on_map(units, detected_units, img_dimensions)
+    units = units.where(x_plot: [0, "0", nil], y_plot: [0, "0", nil])
+
+    if units.present?
+      detected_units.each do |detected_unit|
+        if detected_unit[:text].present? && detected_unit[:text].length > 2
+
+          units.each do |unit|  
+            if(unit[:marketing_name].include?(detected_unit[:text]))
+              x_position = detected_unit[:left] * img_dimensions[:width]
+              y_position = detected_unit[:top] * img_dimensions[:height]
+              unit.update(x_plot: x_position, y_plot: y_position)
+            end
+          end
+        end
+      end
+    end
+  end
+
+  def set_floorplate_markers_on_map(units, detected_units, img_dimensions, floorplate_id)
+    units = units.where(x_plot: [0, "0", nil], y_plot: [0, "0", nil])
+
+    if units.present?
+      detected_units.each do |detected_unit|
+        if detected_unit[:text].present? && detected_unit[:text].length > 2
+
+          units.each do |unit|  
+            if(unit[:marketing_name].include?(detected_unit[:text]))
+              x_position = detected_unit[:left] * img_dimensions[:width]
+              y_position = detected_unit[:top] * img_dimensions[:height]
+              unit.update(x_plot: x_position, y_plot: y_position, floorplate_id: floorplate_id)
+            end
+          end
+        end
+      end
+    end
+  end
+
+  def s3_img_dimensions url
+    img = MiniMagick::Image.open(url)
+
+    {
+      width: img[:width],
+      height: img[:height],
+    }
+  end
+
+  def sitemap_image_url sitemap
+    if !Rails.env.development?
+      sitemap.image.url if sitemap.image.url.present?
+    else
+      "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1127/1575971020-floorplate_image.png"
+    end
+  end
+
+  def floorplate_image_url floorplate
+    if !Rails.env.development?
+      floorplate.image_url if floorplate.image.url.present?
+    else
+      "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
+    end
+    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
+    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1148/1577209294-floorplates_2.png"
+  end
 end
+

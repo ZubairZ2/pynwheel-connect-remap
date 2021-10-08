@@ -53,25 +53,35 @@ class TourHistory < ApplicationRecord
       #   send_email_sms_or_both @mail_content
       # end
 
-      if self.left and !self.is_left
+      if self.left.present? and !self.is_left
         self.update_columns(is_left: true)
         @mail_content = ["tour_has_ended", "#{self.tour_user.name.capitalize} has completed a tour of #{community.name}"] #get_alert_message('tour_has_ended')
         url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
         # @mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}" + "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
 
         touruser = self.tour_user
-
-        if touruser.tour_type === "self_tour"
-          scheduled_tour = MaxDateScheduledTourService.new(tour_user, community, false).get_scheduled_tour
-          
+        scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id).last #MaxDateScheduledTourService.new(touruser, community, false).get_scheduled_tour rescue community.schedual_tours.where(tour_user_id: touruser.id).last
+        if touruser.tour_type == "self_tour" && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )         
           if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
-            scheduled_tour.update(is_tour_completed: true) if scheduled_tour.present?
+            scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
           end
         end 
+        if touruser.tour_type == "virtual_tour" && (scheduled_tour&.property_tour_type.present? && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour"))
+          # scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id)
+          scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
+        end
+
+        if (touruser.tour_type == "virtual_tour" && (scheduled_tour&.tour_type == "Virtual tour" || scheduled_tour&.tour_type == "Virtual Tour")) || (touruser.tour_type == "self_tour" && (scheduled_tour&.tour_type == "Self guided" || scheduled_tour&.tour_type == "Self Guided"))
+          scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
+        end
 
         tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}"
         @complete_tour_content = ["#{community.name} has been visited", "#{touruser.name.capitalize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.capitalize} Visitor Details</a> "]
-        @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+        if self.tour_user_id == 1445
+          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "completed Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+        else
+          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+        end
         tour_user_remotelock_data(community)
 
         # tour = (Tour.find_by_id self.tour_id)
@@ -85,38 +95,24 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both(@complete_tour_content, community)
         send_email_sms_or_both_to_touruser(@thank_you_content, community)
         # community.deleted_ids = []
-     
+
+        puts "----------------"*50
+        puts "Tour Successfyly Completed"
+        puts "----------------"*50
+        
         if community.credential.present? and community.crm_credential.present? and community.crm_credential.crm_provider == "salesforce"
-
-          puts "************"*100
-          puts "community.credential.present?"
-          puts community.credential.present?
-          puts "************"*100
-          puts community.crm_credential.present?
-          puts "************"*100
-          puts community.crm_credential.crm_provider.present?
-          puts "************"*100
-
-          current_tour = VisitedStop.where(tour_user_id: tour_user.id, tour_id: self.tour_id).last
-          puts "current_tour"
-          puts current_tour
-          puts "************"*100
-          if current_tour.present?
-            # current_tour.tour_key = "450e96530bb8ae7af1b3f3d019a6a055" # testing line
-            Prospect.where(community_id: community.id, tour_user_id: tour_user.id, crm_provider: "salesforce", sf_status: "active").update_all(tour_key: current_tour.tour_key)
-            community.send_feedback_to_salesforce(tour_user, self)
-          end
+          save_salesforce_feedback_data(community, touruser)
         else
           save_prospect(self.left, community)
         end
         community.save
       end
 
-      # if self.abandoned_tour_at_stop.present?
+      if self.abandoned_tour_at_stop.present?
 
-      #   @mail_content = ["abandoned_tour_at_stop", "A tour was abandoned before it was completed at "] #get_alert_message('abandoned_tour_at_stop')
-      #   @mail_content[1] = "#{@mail_content.last} stop #{(TourStop.find self.abandoned_tour_at_stop.to_i).name rescue "Not Found"}."
-      #   @thank_you_content  = @community.thank_you_message.present? ? @community.thank_you_message : "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+        # @mail_content = ["abandoned_tour_at_stop", "A tour was abandoned before it was completed at "] #get_alert_message('abandoned_tour_at_stop')
+        # @mail_content[1] = "#{@mail_content.last} stop #{(TourStop.find self.abandoned_tour_at_stop.to_i).name rescue "Not Found"}."
+        # @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
       #   touruser_remotelock_data
 
       #   # tour = (Tour.find_by_id self.tour_id)
@@ -127,13 +123,35 @@ class TourHistory < ApplicationRecord
       #   # email_content = "Events for #{self.tour_user.name} with tour id #{self.tour_user.id} are imported in pynwheel, while the tour history id is #{self.id} and the assigned pin is #{assigned_pin}" if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
       #   # DelayedSchedulerMailerJob.perform_async("Remote Lock Events", email_content, "humza4142@gmail.com","Lock History has been imported","check the database, its ran in callback","humza4142@gmail.com") if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
 
-      #   send_email_sms_or_both @mail_content
-      #   send_email_sms_or_both_to_touruser @thank_you_content
+        # send_email_sms_or_both(@mail_content, community)
+        # send_email_sms_or_both_to_touruser(@thank_you_content, community)
+        touruser = self.tour_user
+
+        puts "----------------"*50
+        puts "Tour Successfyly Abandoned"
+        puts "----------------"*50
+
+        if community.credential.present? and community.crm_credential.present? and community.crm_credential.crm_provider == "salesforce"
+          save_salesforce_feedback_data(community, touruser)
+        end
+
       #   # community.deleted_ids = []
       #   save_prospect(self.lengthy_stay)
       #     community.save
-      # end
+      end
 
+    end
+  end
+
+  def save_salesforce_feedback_data community, tour_user
+    current_tour = VisitedStop.where(tour_user_id: tour_user.id, tour_id: self.tour_id).last
+    puts "current_tour"
+    puts current_tour
+    puts "************"*100
+    if current_tour.present?
+      # current_tour.tour_key = "450e96530bb8ae7af1b3f3d019a6a055" # testing line
+      Prospect.where(community_id: community.id, tour_user_id: tour_user.id, crm_provider: "salesforce", sf_status: "active").update_all(tour_key: current_tour.tour_key)
+      community.send_feedback_to_salesforce(tour_user, self)
     end
   end
 
@@ -265,7 +283,7 @@ class TourHistory < ApplicationRecord
   	if community.alert_contact == "email"
       send_email_tour_user "Thank you for visiting #{community.name}", content, community.email, community
   	elsif community.alert_contact == "phone"
-  		send_sms_tour_user thank_you_ms
+  		send_sms_tour_user thank_you_msg
   	else
   		send_email_tour_user "Thank you for visiting #{community.name}", content, community.email, community
   		send_sms_tour_user thank_you_msg
@@ -283,7 +301,7 @@ class TourHistory < ApplicationRecord
     begin
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(subj.humanize, body, email,"info@pynwheel.com",community,false).deliver
+        NotificationMailer.tour_history_mail(subj.humanize, body, email,"info@pynwheel.com",community,false,nil).deliver
       end
       # NotificationMailer.tour_history_mail(subj.humanize, body, community.email).deliver
     rescue
@@ -295,7 +313,7 @@ class TourHistory < ApplicationRecord
     begin
       emails = community.email.gsub(" ","").split(',')
       emails.each do |email|
-        NotificationMailer.tour_history_mail(subj.humanize, body, email,"info@pynwheel.com",community,false).deliver
+        NotificationMailer.tour_history_mail(subj.humanize, body, email,"info@pynwheel.com",community,false,nil).deliver
       end
     rescue
 
@@ -305,7 +323,7 @@ class TourHistory < ApplicationRecord
   def send_email_to_user_without_humanize subj, body , community_email=nil
     begin
       emails = community_email.gsub(" ","").split(',')
-      NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, email[0],community,false).deliver
+      NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, email[0],community,false,nil).deliver
     rescue
 
     end
@@ -313,7 +331,7 @@ class TourHistory < ApplicationRecord
 
   def send_sms_tour_user message_body
     begin
-      DelayedSchedulerTextJob.perform_async(message_body, self.tour_user.phone_number) if self.tour_user.phone_number.present?
+      DelayedSchedulerTextJob.perform_async(message_body, self.tour_user.phone_number) if self.tour_user.phone_number.present? && self.tour_user.is_sms_enabled
     rescue
     end
   end
@@ -321,7 +339,7 @@ class TourHistory < ApplicationRecord
   def send_email_tour_user subj, body, community_email, community
     begin
       emails = community_email.gsub(" ","").split(',')
-      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0],community,true).deliver
+      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0],community,true,nil).deliver
     rescue
     end
   end

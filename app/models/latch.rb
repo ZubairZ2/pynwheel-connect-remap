@@ -61,7 +61,7 @@ class Latch < ApplicationRecord
         community.amenities.where(lock_provider: "Latch").update_all(lock_provider: "")
         community.elevators.where(lock_provider: "Latch").update_all(lock_provider: "")
         community.building_starting_point.where(lock_provider: "Latch").update_all(lock_provider: "")
-        community.tour.where(lock_provider: "Latch").update_all(lock_provider: "")
+        community.tour.update(lock_provider: "") if community.tour.lock_provider === "Latch"
         community.doors.where(lock_provider: "Latch").update_all(lock_provider: "")
     end
 
@@ -85,7 +85,7 @@ class Latch < ApplicationRecord
         data = community.units.where('(marketing_name = ? or provider_unit_id = ?) and (building = ? or building = ?)', unit_name, unit_name, building_name, building_name_).first rescue nil
         data = community.units.where('(marketing_name = ? or provider_unit_id = ?) and (building = ? or building = ?)', stop_name, stop_name, nil, '').first rescue nil unless data.present?
 
-        data = community.doors.where(name: sub_location_name).first if data.nil?
+        data = community.doors.where(name: stop_name).first if data.nil?
         data = community.amenities.where(name: stop_name).first if data.nil?
         data = community.elevators.where(name: stop_name).first if data.nil?
         data = community.building_starting_point.where(name: stop_name).first if data.nil?

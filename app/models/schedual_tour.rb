@@ -22,17 +22,19 @@ class SchedualTour < ApplicationRecord
   belongs_to :tour, optional: true
   belongs_to :community, optional: true
 
-  validates :tour_date, presence: true
-  validates :tour_type, presence: true
-  validates :tour_time, presence: true
+  # validates :tour_date, presence: true
+  # validates :tour_type, presence: true
+  # validates :tour_time, presence: true
 
-  scope :desc_created_at, -> {order(created_at: :desc)}
+  scope :desc_tour_date, -> {order('coalesce(tour_date, created_at) desc')}
 
+  COUNTRY_CODES =  JSON.parse(File.read(Rails.root.join("app/assets/javascripts/country_codes.json")))
+  
   def add_user_in_zerv
     if self.tour_user_id.present? and community.enable_locks and community.multiple_locks_provider.include?("Zerv")
       Thread.new do
         execution_context = Rails.application.executor.run!
-        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: nil)
+        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: nil, is_resident: false)
       ensure
         execution_context.complete! if execution_context
       end
