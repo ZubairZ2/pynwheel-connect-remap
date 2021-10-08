@@ -1,4 +1,5 @@
 class IgloohomeService < BaseService
+  include AllowedTourStopsHelper
   def initialize community, current_time, tour_user
     @community = community
     @current_time = current_time
@@ -6,31 +7,61 @@ class IgloohomeService < BaseService
   end
 
   def assign_guest_bluetooth_key
-    allowed_stops = igloohome_allowed_stops
+    allowed_stops = igloohome_allowed_stops(@community)
     igloohome = @community.igloohome
     igloohome_locks = IgloohomeLock.where(igloohome_id: @community&.igloohome&.id, stop_id: allowed_stops)
     get_igloohome_locks_guest_key(igloohome_locks) if igloohome_locks.present?
   end
 
+  def assign_guest_pin
+    allowed_stops = igloohome_allowed_stops(@community)
+    igloohome = @community.igloohome
+    igloohome_locks = IgloohomeLock.where(igloohome_id: @community&.igloohome&.id, stop_id: allowed_stops)
+  end
+
   private
 
-  def update_igloohome_guest response, lock
+  def update_igloohome_guest_key_pin response, lock
+    binding.pry
     if response.success? && response["payload"].present? && response["payload"]["bluetoothGuestKey"].present? && response["payload"]["keyId"].present?
-      igloohome_guest = @tour_user.igloohome_guests.where(community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type)
-      igloohome_guest.delete_all if igloohome_guest.present?
-      create_gloohome_guest(lock, response)
+      igloohome_guests = @tour_user.igloohome_guests.where(community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type)
+      guest_pin = get_guest_pin(lock)
+      binding.pry
+
+      if guest_pin.present?
+        if igloohome_guests.present? && igloohome_guests.last.present?
+          update_igloohome_guest(igloohome_guests.last, response, pin)
+        else
+          create_gloohome_guest(lock, response, pin)
+        end
+      end
     end
   end
 
-  def create_gloohome_guest lock, response
-    IgloohomeGuest.create!(tour_user_id: @tour_user.id, community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type, guest_bluetooth_key: response["payload"]["bluetoothGuestKey"], guest_key: response["payload"]["keyId"])
+  def get_guest_pin lock
+    response = get_device_guest_pin(lock)
+    binding.pry
+    if response.success? && response["payload"].present? && response["payload"]["pin"].present?
+      response["payload"]["pin"]
+    else
+      nil
+    end
+  end
+
+  def update_igloohome_guest igloohome_guest, response, pin
+    igloohome_guest.update!(guest_pin: pin, guest_bluetooth_key: response["payload"]["bluetoothGuestKey"], guest_key: response["payload"]["keyId"])
+  end
+
+  def create_gloohome_guest lock, response, pin
+    IgloohomeGuest.create!(guest_pin: pin, tour_user_id: @tour_user.id, community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type, guest_bluetooth_key: response["payload"]["bluetoothGuestKey"], guest_key: response["payload"]["keyId"])
   end
 
   def get_igloohome_locks_guest_key igloohome_locks
+    binding.pry
     igloohome_locks.each do |lock|
       if lock.device_id.present?
         response = get_device_bluetooth_key(lock)
-        update_igloohome_guest(response, lock)
+        update_igloohome_guest_key_pin(response, lock)
       end
     end
   end
@@ -55,18 +86,24 @@ class IgloohomeService < BaseService
     OpenStruct.new({success?: true, error: nil, payload: response})
   end
 
-  def igloohome_allowed_stops(allowed_stops = [])
-    visible_stops = @community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+  def get_device_guest_pin lock
+    url = "#{ENV["IGLOOHOME_API_BASE_URL"]}/v2/locks/#{lock.device_id}/pin/hourly"
+    binding.pry
+    response = HTTParty.post(url,
+      body: {
+        startDate: @current_time.iso8601,
+        endDate: (@current_time + 90.minutes).iso8601,
+        variance: 3
+      }.to_json,
+      headers: { 
+        'Content-Type' => 'application/json',
+        'X-IGLOOCOMPANY-APIKEY' => ENV["IGLOOHOME_API_KEY"]
+      })
 
-    visible_stops.each do |stop|
-      if (stop[0].classify.constantize.find_by_id stop[1]).lock_provider == "Igloohome"
-        allowed_stops << stop[1]
-      end
-    end
-
-    allowed_stops << @community.tour.id if @community.tour.lock_provider == "Igloohome"
-    
-    allowed_stops
+  rescue HTTParty::Error => e
+    OpenStruct.new({success?: false, error: e, payload: nil})
+  else
+    OpenStruct.new({success?: true, error: nil, payload: response})
   end
 
   def get_igloohome_permisions

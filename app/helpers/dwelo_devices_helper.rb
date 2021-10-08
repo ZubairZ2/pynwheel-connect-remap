@@ -183,6 +183,10 @@ module DweloDevicesHelper
   end
 
   def lock_access_by_type(params, community, tour_user, current_time)
+    if community.multiple_locks_provider.include?("Igloohome")
+      igloohome_lock_access(params, community, current_time)
+    end
+    
     if community.multiple_locks_provider.include?("Dwelo")
       dwelo_lock_access(params, community, current_time)
     end
