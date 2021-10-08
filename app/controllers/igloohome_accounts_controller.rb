@@ -1,23 +1,31 @@
 class IgloohomeAccountsController < ApplicationController
   before_action :set_community, :only => [:create, :remove_igloohome_locks]
-  before_action :set_igloohome, :only => [:create]
+  before_action :create_igloohome_account, :only => [:create, :import_single_lock] 
   after_action :import_igloohome_locks, :update_community_lock_provider, :only => [:create]
 
   def create
-    unless @igloohome
-      @igloohome = Igloohome.new(igloohome_params)
-      if @igloohome.save
-        flash[:notice] = "Igloohome credentails saved successfully"
-      else
-        flash[:error] = igloohome_error
-      end
+    if params[:file].present?
+      flash[:notice] = "Igloohome Locks imported successfully"
     else
-      @igloohome = Igloohome.find_by(community_id: @community.id)
-      if @igloohome.update_attributes(igloohome_params)
-        flash[:notice] = "Igloohome credentails updated successfully"
+      flash[:error] = "To import locks please upload CSV file"
+    end
+
+    redirect_to new_community_dwelo_path(@community)
+  end
+
+  def import_single_lock
+    if params["device_id"].present? && params["device_name"].present?
+      igloohome_lock =  @igloohome.igloohome_locks.where(device_id: params["device_id"])
+      
+      if igloohome_lock.present?
+        flash[:alert] = "Igloohome Lock with this device id already present"
       else
-        flash[:error] = igloohome_error
+        @igloohome.igloohome_locks.create(device_id: params["device_id"], device_name: "device_name")
+        flash[:notice] = "Igloohome Lock added"
       end
+
+    else
+      flash[:error] = "Device id and device name is required"
     end
 
     redirect_to new_community_dwelo_path(@community)
@@ -26,8 +34,10 @@ class IgloohomeAccountsController < ApplicationController
   def remove_igloohome_locks 
     if @community&.igloohome&.igloohome_locks.present?
       @community.igloohome.igloohome_locks.destroy_all
+      
       flash[:notice] = "Locks deleted successfully"
     else
+
       flash[:error] = "No locks are present"
     end
 
@@ -35,6 +45,16 @@ class IgloohomeAccountsController < ApplicationController
   end
 
   private
+
+  def create_igloohome_account
+    @igloohome = Igloohome.find_by(community_id: params[:community_id])
+    
+    unless @igloohome.present? 
+      @igloohome = Igloohome.create!(username: "testing igloohome lock", password: "igloohome password", community_id: @community.id)
+    end
+
+    @igloohome
+  end
 
   def import_igloohome_locks
     result = @igloohome.import_data(params[:file]) if params[:file].present?
@@ -49,19 +69,7 @@ class IgloohomeAccountsController < ApplicationController
     end
   end
 
-  def igloohome_error
-    @igloohome.errors.full_messages.join(',')
-  end
-
   def set_community
     @community ||= Community.find_by_id(params[:community_id])
-  end
-
-  def set_igloohome
-    @igloohome ||= Igloohome.find_by(community_id: params[:community_id])
-  end
-
-  def igloohome_params
-    params.require(:igloohome).permit(:username, :password, :community_id)
   end
 end

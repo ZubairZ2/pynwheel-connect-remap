@@ -22,11 +22,9 @@ class IgloohomeService < BaseService
   private
 
   def update_igloohome_guest_key_pin response, lock
-    binding.pry
     if response.success? && response["payload"].present? && response["payload"]["bluetoothGuestKey"].present? && response["payload"]["keyId"].present?
       igloohome_guests = @tour_user.igloohome_guests.where(community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type)
       guest_pin = get_guest_pin(lock)
-      binding.pry
 
       if guest_pin.present?
         if igloohome_guests.present? && igloohome_guests.last.present?
@@ -40,7 +38,6 @@ class IgloohomeService < BaseService
 
   def get_guest_pin lock
     response = get_device_guest_pin(lock)
-    binding.pry
     if response.success? && response["payload"].present? && response["payload"]["pin"].present?
       response["payload"]["pin"]
     else
@@ -57,7 +54,6 @@ class IgloohomeService < BaseService
   end
 
   def get_igloohome_locks_guest_key igloohome_locks
-    binding.pry
     igloohome_locks.each do |lock|
       if lock.device_id.present?
         response = get_device_bluetooth_key(lock)
@@ -88,7 +84,6 @@ class IgloohomeService < BaseService
 
   def get_device_guest_pin lock
     url = "#{ENV["IGLOOHOME_API_BASE_URL"]}/v2/locks/#{lock.device_id}/pin/hourly"
-    binding.pry
     response = HTTParty.post(url,
       body: {
         startDate: @current_time.iso8601,

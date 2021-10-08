@@ -134,6 +134,7 @@ Rails.application.routes.draw do
     resources :igloohome_accounts do
       collection do
         delete :remove_igloohome_locks
+        post :import_single_lock
       end
     end
 
