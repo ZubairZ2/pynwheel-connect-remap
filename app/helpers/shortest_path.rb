@@ -375,7 +375,7 @@ module ShortestPath
           { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
         end
       end 
-
+      @unit_with_door.compact!
       @amenities_doors = @sitemap.amenities.includes(:doors)
       @amenity_with_doors = @amenities_doors.map do |amenity| 
         if planned_to_visit_amenities_ids.include?(amenity.id)
@@ -389,6 +389,7 @@ module ShortestPath
           { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } 
         end
       end
+      @amenity_with_doors.compact!
       @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
     end
     def fetch_related_data_according_to_mobile(new_stops_arr, community_id)
@@ -419,7 +420,7 @@ module ShortestPath
             { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
           end 
         end
-
+        @unit_with_door.compact!
         @amenities_doors = @sitemap.amenities.includes(:doors)
         @amenity_with_doors = @amenities_doors.map do |amenity| 
           if planned_to_visit_amenities_ids.include?(amenity.id)
@@ -433,6 +434,7 @@ module ShortestPath
             { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } 
           end
         end
+        @amenity_with_doors.compact!
         @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
       else
 
