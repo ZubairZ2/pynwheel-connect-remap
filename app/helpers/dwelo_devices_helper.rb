@@ -209,7 +209,7 @@ module DweloDevicesHelper
       begin
         tour_user = TourUser.find params[:tour_user_id]
         tour_user.update_column 'igloohome_status' , 'in progress'
-
+        
         IgloohomeService.new(community, current_time, tour_user).assign_guest_bluetooth_key
         
         tour_user.update_column 'igloohome_status' , 'complete'

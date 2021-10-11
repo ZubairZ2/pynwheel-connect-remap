@@ -538,6 +538,7 @@ json.tours @tours do |tour|
       json.unit_dwelo_lock_id ''
       json.igloohome_lock_id ''
       json.igloohome_guest_bluetooth_key ''
+      json.igloohome_guest_pin ''
       json.navigation_title navigation_title
       json.id stop.id
       json.x_plot stop.x_plot
@@ -613,12 +614,14 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             else
               json.guest_pin ''
               json.latch_link ''
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             end
           end
 
@@ -634,12 +637,14 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               else
                 json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               end
             else
               json.guest_pin ''
@@ -647,6 +652,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             end
           else
             json.guest_pin ''
@@ -654,6 +660,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Zerv" and @community.zerv.present? and stop.zerv_locks.present?
@@ -667,6 +674,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
@@ -676,12 +684,14 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               else
                 json.guest_pin ''
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               end
             end
           else
@@ -690,6 +700,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Dwelo"
@@ -700,12 +711,14 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id dwelo_lock.device_id
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Manual"
@@ -715,12 +728,14 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
         
         elsif stop_lock_provider == "Igloohome"
@@ -733,12 +748,14 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id igloohome_lock.device_id
             json.igloohome_guest_bluetooth_key igloohome_guest.guest_bluetooth_key
+            json.igloohome_guest_pin '12345'
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
         else
           json.guest_pin ''
@@ -746,6 +763,7 @@ json.tours @tours do |tour|
           json.unit_dwelo_lock_id ''
           json.igloohome_lock_id ''
           json.igloohome_guest_bluetooth_key ''
+          json.igloohome_guest_pin ''
         end
 
 
@@ -755,6 +773,7 @@ json.tours @tours do |tour|
         json.unit_dwelo_lock_id ''
         json.igloohome_lock_id ''
         json.igloohome_guest_bluetooth_key ''
+        json.igloohome_guest_pin ''
       end
       rescue => exception
         json.guest_pin ''
@@ -762,6 +781,7 @@ json.tours @tours do |tour|
         json.unit_dwelo_lock_id ''
         json.igloohome_lock_id ''
         json.igloohome_guest_bluetooth_key ''
+        json.igloohome_guest_pin ''
       end
 
       next
@@ -784,12 +804,14 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               else
                 json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               end
             else
               json.guest_pin ''
@@ -797,6 +819,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             end
           else
             json.guest_pin ''
@@ -804,6 +827,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Latch"
@@ -817,12 +841,14 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             else
               json.guest_pin ''
               json.latch_link ''
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             end
           else
             json.guest_pin ''
@@ -830,6 +856,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Dwelo"
@@ -842,12 +869,14 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id dwelo_lock.device_id
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Zerv"
@@ -861,6 +890,7 @@ json.tours @tours do |tour|
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
               json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
@@ -870,12 +900,14 @@ json.tours @tours do |tour|
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               else
                 json.guest_pin ''
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
                 json.igloohome_lock_id ''
                 json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               end
             end
           else
@@ -884,6 +916,7 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
         
         elsif stop_lock_provider == "Igloohome"
@@ -896,12 +929,14 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id igloohome_lock.device_id
             json.igloohome_guest_bluetooth_key igloohome_guest.guest_bluetooth_key
+            json.igloohome_guest_pin '12345'
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Manual"
@@ -912,12 +947,14 @@ json.tours @tours do |tour|
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
         else
           json.guest_pin ''
@@ -925,6 +962,7 @@ json.tours @tours do |tour|
           json.unit_dwelo_lock_id ''
           json.igloohome_lock_id ''
           json.igloohome_guest_bluetooth_key ''
+          json.igloohome_guest_pin ''
         end
       else
         json.guest_pin ''
@@ -932,6 +970,7 @@ json.tours @tours do |tour|
         json.unit_dwelo_lock_id ''
         json.igloohome_lock_id ''
         json.igloohome_guest_bluetooth_key ''
+        json.igloohome_guest_pin ''
       end
     rescue => pin
       json.guest_pin ''
@@ -939,6 +978,7 @@ json.tours @tours do |tour|
       json.unit_dwelo_lock_id ''
       json.igloohome_lock_id ''
       json.igloohome_guest_bluetooth_key ''
+      json.igloohome_guest_pin ''
     end
     
     json.navigation_title navigation_title

@@ -13,24 +13,18 @@ class IgloohomeService < BaseService
     get_igloohome_locks_guest_key(igloohome_locks) if igloohome_locks.present?
   end
 
-  def assign_guest_pin
-    allowed_stops = igloohome_allowed_stops(@community)
-    igloohome = @community.igloohome
-    igloohome_locks = IgloohomeLock.where(igloohome_id: @community&.igloohome&.id, stop_id: allowed_stops)
-  end
-
   private
 
   def update_igloohome_guest_key_pin response, lock
     if response.success? && response["payload"].present? && response["payload"]["bluetoothGuestKey"].present? && response["payload"]["keyId"].present?
       igloohome_guests = @tour_user.igloohome_guests.where(community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type)
+      
       guest_pin = get_guest_pin(lock)
-
       if guest_pin.present?
         if igloohome_guests.present? && igloohome_guests.last.present?
-          update_igloohome_guest(igloohome_guests.last, response, pin)
+          update_igloohome_guest(igloohome_guests.last, response, guest_pin)
         else
-          create_gloohome_guest(lock, response, pin)
+          create_gloohome_guest(lock, response, guest_pin)
         end
       end
     end
@@ -45,12 +39,12 @@ class IgloohomeService < BaseService
     end
   end
 
-  def update_igloohome_guest igloohome_guest, response, pin
-    igloohome_guest.update!(guest_pin: pin, guest_bluetooth_key: response["payload"]["bluetoothGuestKey"], guest_key: response["payload"]["keyId"])
+  def update_igloohome_guest igloohome_guest, response, guest_pin
+    igloohome_guest.update!(guest_pin: guest_pin, guest_bluetooth_key: response["payload"]["bluetoothGuestKey"], guest_key: response["payload"]["keyId"])
   end
 
-  def create_gloohome_guest lock, response, pin
-    IgloohomeGuest.create!(guest_pin: pin, tour_user_id: @tour_user.id, community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type, guest_bluetooth_key: response["payload"]["bluetoothGuestKey"], guest_key: response["payload"]["keyId"])
+  def create_gloohome_guest lock, response, guest_pin
+    IgloohomeGuest.create!(guest_pin: guest_pin, tour_user_id: @tour_user.id, community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type, guest_bluetooth_key: response["payload"]["bluetoothGuestKey"], guest_key: response["payload"]["keyId"])
   end
 
   def get_igloohome_locks_guest_key igloohome_locks
@@ -86,8 +80,8 @@ class IgloohomeService < BaseService
     url = "#{ENV["IGLOOHOME_API_BASE_URL"]}/v2/locks/#{lock.device_id}/pin/hourly"
     response = HTTParty.post(url,
       body: {
-        startDate: @current_time.iso8601,
-        endDate: (@current_time + 90.minutes).iso8601,
+        startDate: "2021-10-11T15:00:00+05:00",#@current_time.iso8601,
+        endDate: "2021-10-11T16:00:00+05:00", #(@current_time + 90.minutes).iso8601,
         variance: 3
       }.to_json,
       headers: { 
