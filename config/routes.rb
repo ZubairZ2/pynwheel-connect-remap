@@ -585,7 +585,7 @@ Rails.application.routes.draw do
       resources :igloohomes do
         collection do
           get :timezone
-          get :pairing
+          post :pairing
         end
       end
 
