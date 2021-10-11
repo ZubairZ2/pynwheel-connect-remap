@@ -66,6 +66,8 @@ class Community < ApplicationRecord
   # has_paper_trail
   # mount_uploader :logo, AvatarUploader
   # attr_readonly :uuid
+  include LockedTourStopHelper
+
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   mount_base64_uploader :self_tour_logo, AvatarUploader
@@ -159,6 +161,16 @@ class Community < ApplicationRecord
   scope :desc_created_at, -> { order(created_at: :desc) }
   amoeba do
     include_association :design
+  end
+
+  def get_igloohome_lock stop
+    igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
+    IgloohomeLock.where(igloohome_id: self.igloohome.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
+  end
+
+  def get_igloohome_guest stop
+    igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
+    IgloohomeGuest.where(community_id: self.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
   end
   
   def create_tour_also

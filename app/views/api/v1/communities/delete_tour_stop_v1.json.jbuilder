@@ -739,10 +739,10 @@ json.tours @tours do |tour|
           end
         
         elsif stop_lock_provider == "Igloohome"
-          igloohome_lock = IgloohomeLock.where(igloohome_id: @community.igloohome.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
-          igloohome_guest = IgloohomeGuest.where(community_id: @community.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
-
-          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && igloohome_guest.guest_bluetooth_key.present?
+          igloohome_lock = @community.get_igloohome_lock(stop)
+          igloohome_guest = @community.get_igloohome_guest(stop)
+         
+          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && igloohome_guest.guest_bluetooth_key.present? && igloohome_guest.guest_pin.present?
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
@@ -920,16 +920,16 @@ json.tours @tours do |tour|
           end
         
         elsif stop_lock_provider == "Igloohome"
-          igloohome_lock = IgloohomeLock.where(igloohome_id: @community.igloohome.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
-          igloohome_guest = IgloohomeGuest.where(community_id: @community.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify).last if @community.igloohome.present?
+          igloohome_lock = @community.get_igloohome_lock(stop)
+          igloohome_guest = @community.get_igloohome_guest(stop)
          
-          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && igloohome_guest.guest_bluetooth_key.present?
+          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && igloohome_guest.guest_bluetooth_key.present? && igloohome_guest.guest_pin.present?
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
             json.igloohome_lock_id igloohome_lock.device_id
             json.igloohome_guest_bluetooth_key igloohome_guest.guest_bluetooth_key
-            json.igloohome_guest_pin '12345'
+            json.igloohome_guest_pin igloohome_guest.guest_pin
           else
             json.guest_pin ''
             json.latch_link ''

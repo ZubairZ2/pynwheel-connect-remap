@@ -20,6 +20,15 @@ class IgloohomeService < BaseService
       igloohome_guests = @tour_user.igloohome_guests.where(community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type)
       
       guest_pin = get_guest_pin(lock)
+
+      puts "------------------------------"*30
+      puts "Igloohome Bluetooth Key"
+      puts response["payload"]["bluetoothGuestKey"]
+      puts "------------------------------"*30
+      puts "Igloohome Guest Pin"
+      puts guest_pin
+      puts "------------------------------"*30
+
       if guest_pin.present?
         if igloohome_guests.present? && igloohome_guests.last.present?
           update_igloohome_guest(igloohome_guests.last, response, guest_pin)
@@ -80,8 +89,8 @@ class IgloohomeService < BaseService
     url = "#{ENV["IGLOOHOME_API_BASE_URL"]}/v2/locks/#{lock.device_id}/pin/hourly"
     response = HTTParty.post(url,
       body: {
-        startDate: "2021-10-11T15:00:00+05:00",#@current_time.iso8601,
-        endDate: "2021-10-11T16:00:00+05:00", #(@current_time + 90.minutes).iso8601,
+        startDate:@current_time.change({ min: 0 }).iso8601,
+        endDate: (@current_time + 120.minutes).change({ min: 0 }).iso8601,
         variance: 3
       }.to_json,
       headers: { 

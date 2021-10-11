@@ -198,10 +198,6 @@ module DweloDevicesHelper
     if community.multiple_locks_provider.include?("Latch")
       create_latch_reservation(community, tour_user, DateTime.now.utc)
     end
-
-    if community.multiple_locks_provider.include?("Igloohome")
-      igloohome_lock_access(params, community, current_time)
-    end
   end
 
   def igloohome_lock_access params, community, current_time
