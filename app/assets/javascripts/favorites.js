@@ -30,8 +30,8 @@ $(document).ready(function(){
       nextArrow: "<div class='btn nextArrowBtn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right' style='font-size: 30px'></i></div>"
     });
 	}
-  if(units.length > 0){
-    setAttributes();  
+  if(window.location.href.includes('favorites') && units.length > 0){
+    setAttributes();
   }
   else{
     $('.floor-plan').addClass('no-fav');

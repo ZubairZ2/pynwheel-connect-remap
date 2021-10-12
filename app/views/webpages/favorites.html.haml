@@ -95,7 +95,7 @@
                     .c-modal-wrapper.modal-image-fav.hidden
                       .c-modal-body{:id => "#{unit.id}-res-zoomable-image"}
                         .c-m-iframe-content
-                          = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplan/image/27780/27780-1628027365-2705856e-file.jpeg")
+                          = image_tag unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
                       .c-modal-footer-fav.zooming-content.zoomable-map-container
                         %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-res-fav-zoom-in"}
                           %img{:src => "/assets/plus.png"}/
@@ -139,27 +139,23 @@
                     .c-modal-sidebar-description
                       %h4.des-heading Description
                       %p.c-m-description= unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")
-                    -# .c-modal-sidebar-filters
                     - if @community.credential.present? and @community.credential.apply_now.to_s == "true"
                       .c-modal-sidebar-filters.sidebar-footer
                         .m-filters
-                          - if @community.data_provider == "resman" #|| @community.data_provider == "realpagesvc"
+                          - if @community.data_provider == "resman"
                             .m-filter-2.c-m-filter
                               %label Lease Term
-                              -# %input.c-m-input-control#lease-term{:type => "number", :min => "1", :max => "36", :value => "12"}/
                               = select_tag :lease_term , options_for_select([]),{:id => "#{unit.id}-lease_term", :class=>"lease-term-custom-select", "data-unit-id"=>(unit.id), onchange: 'changeEffectiveRent(this)', :include_blank => "All "}
                           - if @community.data_provider == "psi" || @community.data_provider == "realpagesvc" || @community.data_provider == "resman"
                             .m-filter-1.c-m-filter
                               %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
                               %input.c-m-input-control.datepicker.leasing-start-date{:id => "#{unit.id}-leasing-start-date", :type => "text", :style => "display: block !important", :readonly => "readonly", "data-available_date"=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil}/ 
-                              -#:value=>unit.available_date.strftime("%m/%d/%Y")
                         .filter-action
                           - if @community.data_provider == "realpagesvc"
                             - if @community.display_rent
                               %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                               %span.per-month-price-text /month
                             = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank", class: "apply-now apply_now"
-                            -# = link_to "Apply Now","##",:onclick=>"set_realpagesvc_url(this);",:id=>"realpagesvc-anchor-tag", class: "apply-now apply_now"
                           - elsif @community.data_provider == "resman"
                             - if @community.display_rent
                               %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
@@ -170,7 +166,6 @@
                               %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                               %span.per-month-price-text /month
                             = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
-                            -# = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
                     - elsif @community.credential.present? and @community.credential.apply_now.to_s == "separate_link"
                       .m-filters
                         .m-filter-1.c-m-filter
@@ -189,7 +184,7 @@
                 .c-modal-wrapper.h-class
                   .c-modal-body{:id => "#{unit.id}-zoomable-fav-image"}
                     .c-m-iframe-content
-                      = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")
+                      = image_tag unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
                   .c-modal-footer-fav.zooming-content.zoomable-map-container
                     %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-in"}
                       %img{:src => "/assets/plus.png"}/

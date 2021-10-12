@@ -359,7 +359,7 @@ $(window).bind('load', function () {
         $(this).removeClass('hidden');
         marker_width = $(this).width();
         marker_height = $(this).height();
-        $(this).css({"left": ((x_plot - (marker_width/2)) + 9) +  left_diff, "top": (y_plot - marker_height) + 24});
+        $(this).css({"left": ((x_plot - (marker_width/2)) + 6) +  left_diff, "top": (y_plot - marker_height) + 21});
         // $(this).css({"left": ((x_plot - (marker_width/2)) + 4) +  left_diff, "top": (y_plot - marker_height) + 4});
         if($(window).width() >= 567 && $(window).width() <= 1360 ){
           $(this).css({"margin-left": -5, "margin-top": -7})       
