@@ -6172,3 +6172,26 @@ footer.c-footer {
          width: 35%;
     }
 }
+.addon-i{
+    top: 4px !important
+}
+.main-container{
+    padding-left: unset !important;
+}
+.config-modal-title{
+    text-align: center;
+    font-weight: 600;
+}
+.map-configurations-alert {
+    padding: 12px;
+    margin-bottom: 0px;
+    /* margin-top: 30px; */
+    text-align: center;
+    font-size: 15px;
+    border-radius: 4px;
+    display: block;
+    background-color: #20a445 !important;
+}
+.map-config-tooltip{
+    width: max-content !important;
+}

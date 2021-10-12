@@ -327,8 +327,10 @@
                   %img{:src => "/assets/plus.png"}/
                 %a.minus-action.zooming-action.zoom-out-webpage.zoom-controls{:href => "#"}
                   %img{:src => "/assets/minus.png"}/
-                %a.refresh-action.zooming-action.reset-webpage.zoom-controls{:href => "#"}
-                  %img{:src => "/assets/refresh.png"}/
+                %a.refresh-action.zooming-action.zoom-controls.map-options.3d-map-option.hidden{:href => "#", :onclick => "select3DCurrentMap(this)", "data-current-map-type"=>"3d-current-map"}
+                  %img{:src => "/assets/3D_modeling.svg"}/
+                %a.refresh-action.zooming-action.zoom-controls.map-options.2d-map-option{:href => "#", :onclick => "select2DCurrentMap(this)", "data-current-map-type"=>"2d-current-map"}
+                  %img{:src => "/assets/2D_modeling.svg"}/
           
       / /.content
       / Trigger the modal with a button

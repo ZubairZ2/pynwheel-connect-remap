@@ -264,6 +264,17 @@ $('#markers-modal').on('show.bs.modal', function(e) {
     $(this).find('#horizontal_position').val($(e.relatedTarget).data('horizontal'));
     $(this).find('#vertical_position').val($(e.relatedTarget).data('vertical'));
 });
+$('#configurations-modal').on('show.bs.modal', function(e) {
+    $(this).find('#modal-title').html($(e.relatedTarget).attr('title'));
+})
+$('.submit-click').click(function() {
+    $('.map-configurations-alert').removeClass('hidden');
+    setTimeout(() => {
+        $('.map-configurations-alert').addClass('hidden');
+        $('#configurations-modal').modal('hide');
+      }, 3000)
+    
+})
 
 });
 
