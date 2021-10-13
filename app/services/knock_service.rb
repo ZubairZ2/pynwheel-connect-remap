@@ -20,16 +20,9 @@ class KnockService < BaseService
   end
 
   def knock_crm
-    if is_knock_crm
-      case @scheduled_tour.property_tour_type
-      when "scheduled_tour"
-        create_knock_prospect
-        create_knock_appointment
-      when "unscheduled_self_tour"
-        create_knock_prospect
-      when "remote_tour"
-        create_knock_prospect
-      end
+    if is_knock_crm && @scheduled_tour.property_tour_type.present?
+      create_knock_prospect
+      create_knock_appointment if @scheduled_tour.property_tour_type === "scheduled_tour"
     end
   end
 
