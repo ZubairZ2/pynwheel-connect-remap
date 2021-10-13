@@ -18,16 +18,8 @@ class IgloohomeService < BaseService
   def update_igloohome_guest_key_pin response, lock
     if response.success? && response["payload"].present? && response["payload"]["bluetoothGuestKey"].present? && response["payload"]["keyId"].present?
       igloohome_guests = @tour_user.igloohome_guests.where(community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type)
-      
-      guest_pin = get_guest_pin(lock)
-
-      puts "------------------------------"*30
-      puts "Igloohome Bluetooth Key"
-      puts response["payload"]["bluetoothGuestKey"]
-      puts "------------------------------"*30
-      puts "Igloohome Guest Pin"
-      puts guest_pin
-      puts "------------------------------"*30
+    
+      guest_pin = "12345" #get_guest_pin(lock)
 
       if guest_pin.present?
         if igloohome_guests.present? && igloohome_guests.last.present?
