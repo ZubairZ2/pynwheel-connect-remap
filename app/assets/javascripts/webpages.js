@@ -706,7 +706,7 @@ function showMarkers(market_rent_change = false) {
         console.log('Adjusting markers');
         adjustMarkerPosition($('#m_' + units_to_display[i]['id']));
       }
-      // $('#m_' + units_to_display[i]['id']).removeClass('hidden');
+      $('#m_' + units_to_display[i]['id']).removeClass('hidden');
     }
   }
   for (var key in json_object) {
@@ -715,7 +715,7 @@ function showMarkers(market_rent_change = false) {
     if (has_floorplate == 'true') {
       adjustMarkerPosition($('#m_' + units_from_json[0]['id']));
     }
-    // $('#m_' + units_from_json[0]['id']).removeClass('hidden');
+    $('#m_' + units_from_json[0]['id']).removeClass('hidden');
   }
   disabled_enabled_anchors();
 } //function ending curl
@@ -1856,7 +1856,7 @@ function adjustMarkerPosition(marker) {
   $(marker).removeClass('hidden');
   marker_width = $('#m_' + unit_id).width();
   marker_height = $('#m_' + unit_id).height();
-  $(marker).css({"left": ((x_plot - (marker_width/2)) + 10) +  left_diff, "top": (y_plot - marker_height) + 10});
+  $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
   if($(window).width() >= 567 && $(window).width() <= 1360 ){
     $(marker).css({"margin-left": -5, "margin-top": -2})       
   }

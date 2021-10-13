@@ -5568,6 +5568,10 @@ footer.c-footer {
 }
 
 @media screen and (max-width:567px){
+   .res-fav-footer{
+      padding-top: 15px !important;
+      padding-bottom: 14px !important;
+   }
   .floorplate-anchor{
       font-size: 22px !important;
   }
@@ -6172,3 +6176,7 @@ footer.c-footer {
          width: 35%;
     }
 }
+.text-p{
+    position: absolute !important;
+}
+

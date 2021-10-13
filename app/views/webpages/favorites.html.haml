@@ -154,17 +154,17 @@
                           - if @community.data_provider == "realpagesvc"
                             - if @community.display_rent
                               %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                              %span.per-month-price-text /month
+                              %span.per-month-price-text.text-p /month
                             = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank", class: "apply-now apply_now"
                           - elsif @community.data_provider == "resman"
                             - if @community.display_rent
                               %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                              %span.per-month-price-text /month
+                              %span.per-month-price-text.text-p /month
                             = link_to "Apply Now", "##",:onclick=>"set_resman_url_on_favorites(this);",:id=>"psi-anchor-tag","data-unit-id"=>(unit.id),"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-community-property-id"=>@community.credential.property_id, class: "apply-now apply_now"
                           - elsif @community.data_provider == "psi"
                             - if @community.display_rent
                               %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                              %span.per-month-price-text /month
+                              %span.per-month-price-text.text-p /month
                             = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
                     - elsif @community.credential.present? and @community.credential.apply_now.to_s == "separate_link"
                       .m-filters
@@ -192,6 +192,20 @@
                       %img{:src => "/assets/minus.png"}/
                     %a.refresh-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-reset-zoom"}
                       %img{:src => "/assets/refresh.png"}/
+        .secondary-sidebar-color#sidebar-for-responsive{style: "text-align: center"}
+          %ul.add-fav-options.res-fav-footer
+            %li
+              %a{:href => "#{community_webpages_path}",:target => "pynwheel_iframe"}
+                %img{:src => "/assets/map-icon.png"}/
+                %span.fav-option-icon-text View Map
+            %li
+              %a{"data-toggle"=>"modal","data-target"=>"#share-favorites"}
+                %img{:src => "/assets/share-icon.png"}/
+                %span.fav-option-icon-text Share Map
+            %li
+              %a{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"}
+                %img{:src => "/assets/clear-all.png"}/
+                %span.fav-option-icon-text Clear all
 #confirm-favorites-delete.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
