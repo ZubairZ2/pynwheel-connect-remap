@@ -8,6 +8,7 @@ class PynwheelAccessUser < ApplicationRecord
   has_many :igloo_guests, dependent: :destroy
   has_many :latch_guests, dependent: :destroy
   has_many :zerv_guests, dependent: :destroy
+  has_many :igloohome_guests, dependent: :destroy
 
   after_create :assign_common_access_points
 

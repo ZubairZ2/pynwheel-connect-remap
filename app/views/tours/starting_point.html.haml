@@ -54,6 +54,7 @@
                   - locks_present_hash["EdgeState"] = @community.multiple_locks_provider.include?("EdgeState") && @community.edge_state.present? && @all_locks[:edgestate_locks].any?
                   - locks_present_hash["Latch"] = @community.multiple_locks_provider.include?("Latch") &&  @community.latch.present? && @all_locks[:latch_locks].any?
                   - locks_present_hash["Zerv"] = @community.multiple_locks_provider.include?("Zerv") &&  @community.zerv.present? && @all_locks[:zerv_locks].any?
+                  - locks_present_hash["Igloohome"] = @community.multiple_locks_provider.include?("Igloohome") &&  @community.igloohome.present? && @all_locks[:igloohome_locks].any?
 
                   // load options and input values start
                   - if locks_present_hash["Dwelo"]
@@ -76,8 +77,11 @@
                     .zerv_options.hide_it
                       - @all_locks[:zerv_locks].each do |lock|
                         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
-                  // load options and input values send
-
+                  - if locks_present_hash["Igloohome"]
+                    = hidden_field_tag "igloohome_lock_input_value", @tours.igloohome_locks.present? ? @tours.igloohome_locks.last.device_name : ""
+                    .igloohome_options.hide_it
+                      - @all_locks[:igloohome_locks].each do |lock|
+                        %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
 
                   .form-group
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
