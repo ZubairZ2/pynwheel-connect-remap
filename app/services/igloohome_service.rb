@@ -19,7 +19,7 @@ class IgloohomeService < BaseService
     if response.success? && response["payload"].present? && response["payload"]["bluetoothGuestKey"].present? && response["payload"]["keyId"].present?
       igloohome_guests = @tour_user.igloohome_guests.where(community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type)
     
-      guest_pin = "12345" #get_guest_pin(lock)
+      guest_pin = get_guest_pin(lock)
 
       if guest_pin.present?
         if igloohome_guests.present? && igloohome_guests.last.present?
