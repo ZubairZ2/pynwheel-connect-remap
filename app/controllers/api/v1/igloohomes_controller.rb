@@ -12,7 +12,7 @@ class Api::V1::IgloohomesController < ActionController::Base
   end
 
   def pairing
-    response = get_paired_device(timezone_making(params[:timezone]), params[:payload]) if params[:timezone].present? && params[:payload].present?
+    response = get_paired_device(params[:timezone], params[:payload]) if params[:timezone].present? && params[:payload].present?
 
     if response.present? && response["payload"].present? && response["payload"]["bluetoothAdminKey"].present? &&  response["payload"]["masterPin"].present?
       render :json=> {status: true, respnse: response["payload"]}
