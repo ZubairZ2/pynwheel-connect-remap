@@ -183,6 +183,10 @@ module DweloDevicesHelper
   end
 
   def lock_access_by_type(params, community, tour_user, current_time)
+    if community.multiple_locks_provider.include?("Igloohome")
+      igloohome_lock_access(params, community, current_time)
+    end
+    
     if community.multiple_locks_provider.include?("Dwelo")
       dwelo_lock_access(params, community, current_time)
     end
@@ -193,6 +197,23 @@ module DweloDevicesHelper
     
     if community.multiple_locks_provider.include?("Latch")
       create_latch_reservation(community, tour_user, DateTime.now.utc)
+    end
+  end
+
+  def igloohome_lock_access params, community, current_time
+    Thread.new do
+      begin
+        tour_user = TourUser.find params[:tour_user_id]
+        tour_user.update_column 'igloohome_status' , 'in progress'
+        
+        IgloohomeService.new(community, current_time, tour_user).assign_guest_bluetooth_key
+        
+        tour_user.update_column 'igloohome_status' , 'complete'
+
+      rescue => ex
+        tour_user.update_column 'igloohome_status' , 'complete'
+        puts "--------- Igloohome error -------- ", ex
+      end
     end
   end
 
@@ -668,4 +689,3 @@ module DweloDevicesHelper
     # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1148/1577209294-floorplates_2.png"
   end
 end
-
