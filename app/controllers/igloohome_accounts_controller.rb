@@ -20,7 +20,7 @@ class IgloohomeAccountsController < ApplicationController
       if igloohome_lock.present?
         flash[:alert] = "Igloohome Lock with this device id already present"
       else
-        @igloohome.igloohome_locks.create(device_id: params["device_id"], device_name: "device_name")
+        @igloohome.igloohome_locks.create(device_id: params["device_id"], device_name: params["device_name"])
         flash[:notice] = "Igloohome Lock added"
       end
 
