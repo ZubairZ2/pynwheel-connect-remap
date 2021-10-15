@@ -360,7 +360,8 @@ module DweloDevicesHelper
     available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
 
     available_stops.each do |stop|
-      if (stop[0].classify.constantize.find_by_id stop[1]).lock_provider == "Zerv"
+      actual_stop = stop[0].classify.constantize.find_by_id stop[1]
+      if lock_provider_type(actual_stop) == "Zerv"
         allowed_stops << [stop[0], stop[1]]
       end
     end

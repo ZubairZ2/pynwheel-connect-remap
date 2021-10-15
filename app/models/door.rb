@@ -9,7 +9,7 @@ class Door < ApplicationRecord
 
     # after_create    :snatch_lock,             if: Proc.new { attached_with_type == "Unit" or attached_with_type == "Amenity" and lock_provider.blank? }          # To be on secure side for other developers, but I am not using Door.create any where
     after_save      :snatch_lock,             if: Proc.new { attached_with_type == "Unit" or attached_with_type == "Amenity" and lock_provider.blank? }
-    before_destroy  :throw_back_lock,         if: Proc.new { attached_with_type == "Unit" and lock_provider.present? }
+    before_destroy  :throw_back_lock,         if: Proc.new { attached_with_type == "Unit" or attached_with_type == "Amenity" and lock_provider.present? }
 
     # after_create    :re_arrange_door_names,   if: Proc.new { attached_with_type != "Sitemap" and attached_with_type != "Floorplate" }                            # To be on secure side for other developers, but I am not using Door.create any where
     after_save      :re_arrange_door_names,   if: Proc.new { attached_with_type != "Sitemap" and attached_with_type != "Floorplate" }

@@ -85,7 +85,7 @@
                   Select the lock
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   
-                  - if @community.auto_wayfinding and @doors.present?
+                  - if @doors.present?
                     = hidden_field_tag "dwelo_lock_name"     , @doors.first.dwelo_lock.present?     ?  @doors.first.dwelo_lock.name + " (" + @doors.first.dwelo_lock.remote_lock_type + ")" : ''
                     = hidden_field_tag "edgestate_lock_name" , @doors.first.edgestate_lock.present? ?  @doors.first.edgestate_lock.name + " (" + @doors.first.edgestate_lock.remote_lock_type + ")" : ''
                     = hidden_field_tag "latch_lock_name"     , @doors.first.latch_lock.present?     ?  @doors.first.latch_lock.lock_name : ''

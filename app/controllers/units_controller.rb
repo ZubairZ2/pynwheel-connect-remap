@@ -619,7 +619,7 @@ class UnitsController < ApplicationController
 
   def update_locks
     if @community.enable_locks
-      if @community.auto_wayfinding and @unit.door.present?
+      if @unit.door.present?
         @unit.door.update_attributes(lock_provider: params[:unit][:lock_provider], access_code: params[:unit][:access_code])
         assign_lock_to_door(@community, @unit.door, params[:lock_id]) if params[:lock_id].present?
       else

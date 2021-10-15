@@ -170,7 +170,7 @@ class AmenitiesController < ApplicationController
 
   def update_locks
     if @community.enable_locks
-      if @community.auto_wayfinding and @amenity.doors.present?
+      if @amenity.doors.present?
         @door = @amenity.doors.find_by id: params[:door_id]
         @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code], updated_at: Time.now.utc)
         assign_lock_to_door(@community, @door, params[:lock_id]) if params[:lock_id].present?

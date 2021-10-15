@@ -97,22 +97,22 @@
 
   // load options and input values start
   - if locks_present_hash["Dwelo"]
-    = hidden_field_tag "dwelo_lock_input_value", (@community.auto_wayfinding and @door.present?) ? (@door.dwelo_lock.present? ? @door.dwelo_lock.name + " (" + @door.dwelo_lock.remote_lock_type + ")"  : '') : ( @unit.dwelo_locks.present? ? @unit.dwelo_locks.first.name + " (" + @unit.dwelo_locks.first.remote_lock_type + ")" : '' )
+    = hidden_field_tag "dwelo_lock_input_value", (@door.present?) ? (@door.dwelo_lock.present? ? @door.dwelo_lock.name + " (" + @door.dwelo_lock.remote_lock_type + ")"  : '') : ( @unit.dwelo_locks.present? ? @unit.dwelo_locks.first.name + " (" + @unit.dwelo_locks.first.remote_lock_type + ")" : '' )
     .dwelo_options.hide_it
       - @all_locks[:dwelo_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
   - if locks_present_hash["EdgeState"]
-    = hidden_field_tag "edgestate_lock_input_value", (@community.auto_wayfinding and @door.present?) ? (@door.edgestate_lock.present? ? @door.edgestate_lock.name + " (" + @door.edgestate_lock.remote_lock_type + ")"  : '') : ( @unit.edgestate_locks.present? ? @unit.edgestate_locks.first.name + " (" + @unit.edgestate_locks.first.remote_lock_type + ")" : '' )
+    = hidden_field_tag "edgestate_lock_input_value", (@door.present?) ? (@door.edgestate_lock.present? ? @door.edgestate_lock.name + " (" + @door.edgestate_lock.remote_lock_type + ")"  : '') : ( @unit.edgestate_locks.present? ? @unit.edgestate_locks.first.name + " (" + @unit.edgestate_locks.first.remote_lock_type + ")" : '' )
     .edgestate_options.hide_it
       - @all_locks[:edgestate_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
   - if locks_present_hash["Latch"]
-    = hidden_field_tag "latch_lock_input_value", (@community.auto_wayfinding and @door.present?) ? (@door.latch_lock.present? ? @door.latch_lock.lock_name : '') : ( @unit.latch_locks.present? ? @unit.latch_locks.first.lock_name : '' )
+    = hidden_field_tag "latch_lock_input_value", (@door.present?) ? (@door.latch_lock.present? ? @door.latch_lock.lock_name : '') : ( @unit.latch_locks.present? ? @unit.latch_locks.first.lock_name : '' )
     .latch_options.hide_it
       - @all_locks[:latch_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
   - if locks_present_hash["Zerv"]
-    = hidden_field_tag "zerv_lock_input_value", (@community.auto_wayfinding and @door.present?) ? (@door.zerv_lock.present? ? @door.zerv_lock.sub_location_name + " (" + @door.zerv_lock.sub_location_friendly_name + ")" : '') : ( @unit.zerv_locks.present? ?  @unit.zerv_locks.first.sub_location_name + " (" + @unit.zerv_locks.first.sub_location_friendly_name + ")" : '' )
+    = hidden_field_tag "zerv_lock_input_value", (@door.present?) ? (@door.zerv_lock.present? ? @door.zerv_lock.sub_location_name + " (" + @door.zerv_lock.sub_location_friendly_name + ")" : '') : ( @unit.zerv_locks.present? ?  @unit.zerv_locks.first.sub_location_name + " (" + @unit.zerv_locks.first.sub_location_friendly_name + ")" : '' )
     .zerv_options.hide_it
       - @all_locks[:zerv_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}

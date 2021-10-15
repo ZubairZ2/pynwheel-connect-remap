@@ -89,12 +89,27 @@ module ZervServices
             ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
             if stop_list.present?
                 stop_list.each do |stop|
-                    stop.zerv_guests.create(community_id: community.id, tour_user_id: tour_user.id, status: "active") if stop.zerv_locks.last.present?
+                    stop.zerv_guests.create(community_id: community.id, tour_user_id: tour_user.id, status: "active") if chec_zerv_lock_present(stop)
                 end
             else
                 ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active")
             end
             Rails.cache.delete(:id_token)
+        end
+
+        def chec_zerv_lock_present(actual_stop)
+          zerv_lock_present = false
+          have_door = (actual_stop.class.name == "Unit" &&  actual_stop.door.present?) || (actual_stop.class.name == "Amenity" &&  actual_stop.doors.any?)
+          if have_door
+            if actual_stop.class.name == "Unit"
+              zerv_lock_present = actual_stop.door.zerv_lock.present?
+            elsif 
+              zerv_lock_present = actual_stop.doors.first.zerv_lock.present?
+            end
+          else
+            zerv_lock_present = actual_stop.zerv_locks.last.present?  
+          end
+          zerv_lock_present
         end
 
         def zerv_guest__failure(community, tour_user, errors)
@@ -111,7 +126,7 @@ module ZervServices
             ZervGuest.where(community_id: community.id, pynwheel_access_user_id: tour_user.id).update_all(status: "deleted")
             if stop_list.present?
                 stop_list.each do |stop|
-                    stop.zerv_guests.create(community_id: community.id, pynwheel_access_user_id: tour_user.id, status: "active") if stop.zerv_locks.last.present?
+                    stop.zerv_guests.create(community_id: community.id, pynwheel_access_user_id: tour_user.id, status: "active") if chec_zerv_lock_present(stop)
                 end
             else
                 ZervGuest.create(community_id: community.id, pynwheel_access_user_id: tour_user.id, status: "active")
