@@ -1,6 +1,5 @@
 module LockedTourStopHelper
   def get_door_or_stop_lock stop, lock_provider
-    binding.pry
     unless stop.is_a?(Tour)
       tour_stop = stop.stop_type.classify.constantize.find_by_id stop.stop_id
 
