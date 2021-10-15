@@ -165,6 +165,8 @@ class Community < ApplicationRecord
 
   def get_igloohome_lock stop
     igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
+    binding.pry
+
     puts "------------------------------ Igloohome Stop -----------------------------"
     puts stop
     puts igloohome_stop
@@ -175,6 +177,8 @@ class Community < ApplicationRecord
 
   def get_igloohome_guest stop
     igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
+    binding.pry
+
     puts "------------------------------ Igloohome Stop -----------------------------"
     puts stop
     puts igloohome_stop
