@@ -337,16 +337,6 @@ $(window).bind('load', function () {
       actual_image_width = parseInt($('.floorplate-image').data("width"));
       stretched_image_width = parseInt($('.floorplate-image').width());
       stretched_image_height = parseInt($('.floorplate-image').height());
-
-      // if (actual_width < in_browser_width)
-      //   var width_ratio = 1;
-      // else
-      //   var width_ratio = actual_width / in_browser_width;
-      // if (actual_height < in_browser_height)
-      //   var height_ratio = 1;
-      // else
-      //   var height_ratio = actual_height / in_browser_height;
-
       left_diff = (in_browser_width - stretched_image_width) / 2
 
       $('.marker').each(function () {
@@ -369,6 +359,14 @@ $(window).bind('load', function () {
         }
 
         //TODO::Fix it dynamically. It is temporary fix right now
+        // if (actual_width < in_browser_width)
+        //   var width_ratio = 1;
+        // else
+        //   var width_ratio = actual_width / in_browser_width;
+        // if (actual_height < in_browser_height)
+        //   var height_ratio = 1;
+        // else
+        //   var height_ratio = actual_height / in_browser_height;
         // if(actual_width > in_browser_width && actual_height > in_browser_height) {
         //   if(actual_width >= 5884){
         //     current_left = x_plot / width_ratio - 6;
@@ -421,6 +419,7 @@ $(window).bind('load', function () {
         // }
         // current_left = x_plot / width_ratio;
         // current_top = y_plot / height_ratio;
+        // $(this).css({"left": current_left, "top": current_top});
         x_plot = (((stretched_image_width / actual_image_width) * x_plot));
         y_plot = (((stretched_image_height / actual_image_height) * y_plot));
 
@@ -428,7 +427,6 @@ $(window).bind('load', function () {
         marker_width = $(this).width();
         marker_height = $(this).height();
         $(this).css({"left": ((x_plot - (marker_width/2)) + 4) +  left_diff, "top": (y_plot - marker_height) + 4});
-        // $(this).css({"left": current_left, "top": current_top});
       });
     }
 
@@ -1126,40 +1124,7 @@ function select_units_according_to_filters(floorplate_units) {
     rent_base_units = all_units
     price_filter_present = false
   }
-  // if(_now_units.length == 0)
-  // {$('#now-checkbox').parent().addClass('hidden');}
-  // else
-  // {$('#now-checkbox').parent().removeClass('hidden');}
 
-  // if(_now_to_30_units.length == 0)
-  // {$('#thirty-days-checkbox').parent().addClass('hidden');}
-  // else
-  // {$('#thirty-days-checkbox').parent().removeClass('hidden');}
-
-  // if(_30_to_60_units.length == 0)
-  // {$('#thirty-to-sixty-days-checkbox').parent().addClass('hidden');}
-  // else
-  // {$('#thirty-to-sixty-days-checkbox').parent().removeClass('hidden');}
-  
-
-  // if(_60_to_90_units.length == 0)
-  // {$('#sixty-to-ninty-days-checkbox').parent().addClass('hidden');}
-  // else
-  // {$('#sixty-to-ninty-days-checkbox').parent().removeClass('hidden');}
-  
-  // if(_90_to_120_units.length == 0)
-  // {$('#ninty-to-one-twenty-days-checkbox').parent().addClass('hidden');}
-  // else
-  // {$('#ninty-to-one-twenty-days-checkbox').parent().removeClass('hidden');}
-
-  // if(_120_units.length == 0)
-  // {$('#one-twenty-plus-days-checkbox').parent().addClass('hidden');}
-  // else
-  // {$('#one-twenty-plus-days-checkbox').parent().removeClass('hidden');}
-  // if(_now_units.length == 0 && _now_to_30_units.length == 0 && _90_to_120_units.length == 0 && _60_to_90_units.length == 0 && _120_units.length == 0 && _30_to_60_units.length == 0)
-  //   {$('.available_portion').addClass('hidden');}
-  // else
-  // {$('.available_portion').removeClass('hidden');}
   if (bedroom_filter_present || availability_filter_present || price_filter_present || area_filter_present) {
     var units_to_display = $.intersect(bedroom_base_units, availability_base_units, rent_base_units, square_feet_base_units);
     // var units_to_display = $.intersect(_now_units, _now_to_30_units, _90_to_120_units, _60_to_90_units, _120_units, _30_to_60_units);
@@ -1793,9 +1758,6 @@ function adjustMarkerPosition(marker) {
   /*adjusting markers according to screen size*/
   var in_browser_height = 0;
   var in_browser_width = 0;
-  var actual_height = 0;
-  var actual_width = 0;
-  var current_image_width = 0;
   var left_diff = 0;
   unit_id = $(marker).data('unit-id')
   in_browser_height = parseFloat($('#f_' + current_floor).parent().height());
@@ -1813,6 +1775,17 @@ function adjustMarkerPosition(marker) {
   x_plot = (((stretched_image_width / actual_image_width) * x_plot));
   y_plot = (((stretched_image_height / actual_image_height) * y_plot));
 
+  $(marker).removeClass('hidden');
+  marker_width = $('#m_' + unit_id).width();
+  marker_height = $('#m_' + unit_id).height();
+  $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
+  if($(window).width() >= 567 && $(window).width() <= 1360 ){
+    $(marker).css({"margin-left": -5, "margin-top": -2})       
+  }
+  if($(window).width() <= 567){
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+8), "margin-top": -($('#s_'+unit_id).height()+7)})       
+  }
+  //TODO::Remove this code after verifying the above
   // if (actual_width < in_browser_width)
   //   var width_ratio = 1;
   // else
@@ -1821,11 +1794,6 @@ function adjustMarkerPosition(marker) {
   //   var height_ratio = 1;
   // else
   //   var height_ratio = actual_height / in_browser_height;
-
-
-
-  // debugger
-  
   // if(actual_width > in_browser_width && actual_height > in_browser_height) {
   //   if(actual_width >= 5884){
   //     current_left = x_plot / width_ratio - 6;
@@ -1853,16 +1821,6 @@ function adjustMarkerPosition(marker) {
   // var current_top = (y_plot / height_ratio);
   // var current_left = x_plot; //+ left_diff
   // $(marker).css({"left": x_plot, "top": y_plot});
-  $(marker).removeClass('hidden');
-  marker_width = $('#m_' + unit_id).width();
-  marker_height = $('#m_' + unit_id).height();
-  $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
-  if($(window).width() >= 567 && $(window).width() <= 1360 ){
-    $(marker).css({"margin-left": -5, "margin-top": -2})       
-  }
-  if($(window).width() <= 567){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+8), "margin-top": -($('#s_'+unit_id).height()+7)})       
-  }
 }
 
 function adjustAmenitiesPosition() {
@@ -1897,9 +1855,7 @@ function adjustAmenitiesPosition() {
 
     x_plot = (((stretched_image_width / actual_image_width) * x_plot));
     y_plot = (((stretched_image_height / actual_image_height) * y_plot));
-    // $(this).removeClass('hidden');
-    // debugger
-    
+
     $(this).css({"left": (x_plot + 4) + left_diff , "top": (y_plot) + 4});
     // if(actual_width > in_browser_width && actual_height > in_browser_height) {
     //   if(actual_width >= 5884){
