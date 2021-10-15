@@ -756,6 +756,7 @@ json.tours @tours do |tour|
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
             json.igloohome_guest_pin ''
+            json.stop_lock_provider ''
           end
         else
           json.guest_pin ''
@@ -937,6 +938,7 @@ json.tours @tours do |tour|
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
             json.igloohome_guest_pin ''
+            json.stop_lock_provider ''
           end
 
         elsif stop_lock_provider == "Manual"
