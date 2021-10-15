@@ -165,11 +165,21 @@ class Community < ApplicationRecord
 
   def get_igloohome_lock stop
     igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
+    puts "------------------------------ Igloohome Stop -----------------------------"
+    puts stop
+    puts igloohome_stop
+    puts "------------------------------ Igloohome Stop -----------------------------"
+
     IgloohomeLock.where(igloohome_id: self.igloohome.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
   end
 
   def get_igloohome_guest stop
     igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
+    puts "------------------------------ Igloohome Stop -----------------------------"
+    puts stop
+    puts igloohome_stop
+    puts "------------------------------ Igloohome Stop -----------------------------"
+
     IgloohomeGuest.where(community_id: self.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
   end
   
