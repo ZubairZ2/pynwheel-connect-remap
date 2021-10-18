@@ -742,7 +742,7 @@ json.tours @tours do |tour|
           igloohome_lock = @community.get_igloohome_lock(stop)
           igloohome_guest = @community.get_igloohome_guest(stop)
          
-          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && igloohome_guest.guest_bluetooth_key.present? && igloohome_guest.guest_pin.present?
+          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && (igloohome_guest.guest_bluetooth_key.present? || igloohome_guest.guest_pin.present?)
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
@@ -756,6 +756,7 @@ json.tours @tours do |tour|
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
             json.igloohome_guest_pin ''
+            json.stop_lock_provider ''
           end
         else
           json.guest_pin ''
@@ -923,7 +924,7 @@ json.tours @tours do |tour|
           igloohome_lock = @community.get_igloohome_lock(stop)
           igloohome_guest = @community.get_igloohome_guest(stop)
          
-          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && igloohome_guest.guest_bluetooth_key.present? && igloohome_guest.guest_pin.present?
+          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && (igloohome_guest.guest_bluetooth_key.present? || igloohome_guest.guest_pin.present?)
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
@@ -937,6 +938,7 @@ json.tours @tours do |tour|
             json.igloohome_lock_id ''
             json.igloohome_guest_bluetooth_key ''
             json.igloohome_guest_pin ''
+            json.stop_lock_provider ''
           end
 
         elsif stop_lock_provider == "Manual"
