@@ -5253,7 +5253,7 @@ ul.location-items span {
     background: #e8e9e9;
     margin-left: 9px;
     vertical-align: middle;
-    width: 42px;
+    width: 46px;
     height: 38px;
     text-align: center;
     line-height: 48px;
@@ -5262,6 +5262,9 @@ ul.location-items span {
     align-items: center;
     justify-content: center;
  }
+.zooming-content-h{
+    height: 46px !important;
+}
 footer.c-footer {
      position: fixed;
     width: auto;

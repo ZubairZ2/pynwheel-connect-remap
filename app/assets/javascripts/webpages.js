@@ -14,21 +14,21 @@ $(document).ready(function () {
   showRequestedMap("2d-current-map")  
 });
 
-// $('.map-options').on('click', function(){
-//   currentMapType = $('.map-options').data('current-map-type');
-//   showRequestedMap(currentMapType);
-//   $('.3d-map-option').addClass('hidden');
-//   $('.2d-map-option').removeClass('hidden');
-// })
-
 function select2DCurrentMap(){
-  currentMapType = $('.2d-map-option').data('current-map-type');
-  showRequestedMap(currentMapType);
+  webCommunity = $("#communityWebpagesData").data("community");
+  // currentMapType = $('.2d-map-option').data('current-map-type');
+  // showRequestedMap(currentMapType);
+  display2DMap();
+  if(webCommunity.web_map_type === "2d-map"){
+    $(".divLoading").removeClass("hidden");
+    window.location.reload();
+  }
   $('.2d-map-option').addClass('hidden'); 
   $('.3d-map-option').removeClass('hidden');  
 }
 
 function select3DCurrentMap(){
+  // display3DMap();
   currentMapType = $('.3d-map-option').data('current-map-type');
   showRequestedMap(currentMapType);
   $('.3d-map-option').addClass('hidden');
@@ -50,7 +50,6 @@ function showRequestedMap(currentMapType){
 
   if(webCommunity) {
     selectMap = webCommunity.web_map_type;
-    debugger
     if(webCommunity.web_map_type === "3d-map" ||  currentMapType === '3d-current-map') {
       beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,
       "OWU3MWI0NDgzNzlkNGQ0OjYyNjEzNzY1MzgzODYxMzA2NDYxMzczMTM0Mzk2MzMyMzg2NTY0NjE=", 
