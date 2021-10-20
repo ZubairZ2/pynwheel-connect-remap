@@ -52,8 +52,8 @@ module KnockApisHelper
   end
 
   # get available time slots of a community
-  def get_community_available_times knock_api_key, community_id
-    url = "#{ENV["KNOCK_BASE_URL"]}/community/#{community_id}/available-times"
+  def get_community_available_times knock_api_key, community_id, self_guided
+    url = "#{ENV["KNOCK_BASE_URL"]}/community/#{community_id}/available-times?forSelfGuided=#{self_guided}"
 
     response = HTTParty.get(url, 
       headers: { 

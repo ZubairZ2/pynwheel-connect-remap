@@ -19,6 +19,16 @@ class KnockService < BaseService
     cancel_appointment(knock_api_key, @scheduled_tour.knock_appointment_id)  if is_knock_crm
   end
 
+  def available_slots
+    self_guided_available_time_slots = get_community_available_times(knock_api_key, get_knock_community_id, true) if is_knock_crm && @scheduled_tour.property_tour_type === "scheduled_tour"
+    in_person_available_time_slots = get_community_available_times(knock_api_key, get_knock_community_id, false) if is_knock_crm && @scheduled_tour.property_tour_type === "scheduled_tour"
+    self_guided_slots = formate_time_slots_array_to_hash(self_guided_available_time_slots["payload"]["acceptableTimes"]) if self_guided_available_time_slots["payload"]["acceptableTimes"].present?
+    in_person_slots = formate_time_slots_array_to_hash(in_person_available_time_slots["payload"]["acceptableTimes"]) if in_person_available_time_slots["payload"]["acceptableTimes"].present?
+    tour_available_date = get_tour_available_dates(self_guided_slots, in_person_slots) if (self_guided_slots.present? || in_person_slots.present?)
+  
+    {available_dates: tour_available_date, self_guided_available_time_slots: self_guided_slots, in_person_available_time_slots: in_person_slots }
+  end
+
   def knock_crm
     if is_knock_crm && @scheduled_tour.property_tour_type.present?
       create_knock_prospect
@@ -27,6 +37,23 @@ class KnockService < BaseService
   end
 
   private
+
+  def get_tour_available_dates self_guided_slots, in_person_slots
+    (self_guided_slots.keys | in_person_slots.keys).sort
+  end
+
+  def formate_time_slots_array_to_hash dates
+    hash = dates.group_by(&:to_date)
+    hash = hash.transform_keys{ |key| key.to_s }
+
+    available_time_slots = hash.transform_values do |v| 
+      v.map do |time| 
+        time.to_datetime.strftime("%l:%M %p").downcase.strip
+      end 
+    end
+
+    available_time_slots
+  end
 
   def add_knock_appointment_id appointment_id
     @scheduled_tour.update_attributes(knock_appointment_id: appointment_id)
@@ -44,9 +71,17 @@ class KnockService < BaseService
     @scheduled_tour&.community&.crm_credential&.knock_api_key
   end
 
+  def get_knock_community_id
+    @scheduled_tour&.community&.crm_credential&.knock_community_id
+  end
+
+  def get_knock_consent_url
+    @scheduled_tour&.community&.crm_credential&.knock_sms_consent_url
+  end
+
   def knock_prospect_payload
     {
-      "communityId": @scheduled_tour&.community&.crm_credential&.knock_community_id,
+      "communityId": get_knock_community_id,
       "firstName": @scheduled_tour&.tour_user&.first_name,
       "lastName": @scheduled_tour&.tour_user&.last_name,
       "email": @scheduled_tour&.tour_user&.email,
@@ -67,14 +102,14 @@ class KnockService < BaseService
       "firstContactType": "internet",
       "smsConsent": true,
       "smsConsentDisclaimer": "I consent to appointment updates via SMS communication",
-      "smsConsentUrl": @scheduled_tour&.community&.crm_credential&.knock_sms_consent_url,
+      "smsConsentUrl": get_knock_consent_url,
       "prospectIpAddress": @scheduled_tour.knock_prospect_ip_address
     }
   end
 
   def knock_appointment_payload
     {
-      "communityId": @scheduled_tour&.community&.crm_credential&.knock_community_id,
+      "communityId": get_knock_community_id,
       "requestedTimes": [
         {
           "startTime": "2021-09-29T09:00:00-07:00" #knock_tour_date_time
@@ -97,7 +132,7 @@ class KnockService < BaseService
       "firstContactType": "internet",
       "smsConsent": true,
       "smsConsentDisclaimer": "I consent to appointment updates via SMS communication",
-      "smsConsentUrl": @scheduled_tour&.community&.crm_credential&.knock_sms_consent_url,
+      "smsConsentUrl": get_knock_consent_url,
       "sourceTitle": "Property Website",
       "tourType": knock_tour_type
     }
