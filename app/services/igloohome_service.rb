@@ -22,11 +22,17 @@ class IgloohomeService < BaseService
     master_pin = nil
     guest_pin = get_guest_pin(lock)
 
+   
+
     if response.success? && response["payload"].present? && response["payload"]["bluetoothGuestKey"].present? && response["payload"]["keyId"].present?
       bluetooth_key = response["payload"]["bluetoothGuestKey"]
       master_pin = response["payload"]["keyId"]
     end
-    
+
+    puts "--------------------------------"*10
+    puts igloohome_guests.inspect
+    puts "--------------------------------"*10
+
 
     if igloohome_guests.present? && igloohome_guests.last.present?
       update_igloohome_guest(igloohome_guests.last, bluetooth_key, master_pin, guest_pin)

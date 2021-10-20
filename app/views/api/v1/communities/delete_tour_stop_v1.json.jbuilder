@@ -739,8 +739,8 @@ json.tours @tours do |tour|
           end
         
         elsif stop_lock_provider == "Igloohome"
-          igloohome_lock = @community.get_igloohome_lock(stop)
-          igloohome_guest = @community.get_igloohome_guest(stop)
+          igloohome_guest = IgloohomeGuest.where(community_id: @community.id, stop_id: stop.id, stop_type: stop.class.name).last
+          igloohome_lock = IgloohomeLock.where(igloohome_id:  @community.igloohome.id, stop_id: stop.id, stop_type: stop.class.name).last
          
           if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && (igloohome_guest.guest_bluetooth_key.present? || igloohome_guest.guest_pin.present?)
             json.guest_pin ''
