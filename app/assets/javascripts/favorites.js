@@ -1,6 +1,6 @@
 $(window).on('resize', function(){
-  $(".divLoading").removeClass("hidden");
-  window.location.reload();
+  // $(".divLoading").removeClass("hidden");
+  // window.location.reload();
   $('#sidebar-for-responsive').addClass("hidden");
   $('.h-class').removeClass('hidden');
   addAttributes();

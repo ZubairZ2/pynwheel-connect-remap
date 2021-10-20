@@ -283,7 +283,7 @@
                     - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
                       - coordinates_array.push([unit.x_plot,unit.y_plot])
                     - if @community_info.has_floorplates?
-                      = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y - 1}px; top:#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "font-size: #{fontsize}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community_info.data_provider,"data-website"=>@community_info.website,"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-community-property-id"=>(@community_info.credential.present? && @community_info.credential.property_id.present? ? @community_info.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id,"data-floorplan-name"=>floorplan.present? ? floorplan.name : '',"data-unit-marketing-name"=>unit.unit_market,"data-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-total-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-square-feet"=>unit.square_feet? ? hide_decimals(unit.square_feet) : (floorplan.present? ? hide_decimals(floorplan.square_feet) : nil),"data-availability"=>unit.availability,"data-available-date"=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil,"data-bedrooms"=>floorplan.present? ? floorplan.bedrooms.to_i : nil,"data-bathrooms"=>floorplan.present? ? hide_decimals(floorplan.bathrooms.to_i) : nil,"data-floorplan-image"=>unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg"),"data-unit-x-plot"=>unit.x_plot,"data-unit-y-plot"=>unit.y_plot,"data-title"=>unit.unit_market,"data-sold"=>unit.sold,"data-available"=>unit.available,"data-unit-lease-pricing"=>unit.lease_pricing,"data-unit-description"=>(unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : ""))
+                      = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='font-size: 22px; color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y - 1}px; top:#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "font-size: #{fontsize}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community_info.data_provider,"data-website"=>@community_info.website,"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-community-property-id"=>(@community_info.credential.present? && @community_info.credential.property_id.present? ? @community_info.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id,"data-floorplan-name"=>floorplan.present? ? floorplan.name : '',"data-unit-marketing-name"=>unit.unit_market,"data-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-total-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-square-feet"=>unit.square_feet? ? hide_decimals(unit.square_feet) : (floorplan.present? ? hide_decimals(floorplan.square_feet) : nil),"data-availability"=>unit.availability,"data-available-date"=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil,"data-bedrooms"=>floorplan.present? ? floorplan.bedrooms.to_i : nil,"data-bathrooms"=>floorplan.present? ? hide_decimals(floorplan.bathrooms.to_i) : nil,"data-floorplan-image"=>unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg"),"data-unit-x-plot"=>unit.x_plot,"data-unit-y-plot"=>unit.y_plot,"data-title"=>unit.unit_market,"data-sold"=>unit.sold,"data-available"=>unit.available,"data-unit-lease-pricing"=>unit.lease_pricing,"data-unit-description"=>(unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : ""))
                     - else
                       = link_to "<div id='s_#{unit.id}' class='fas fa-map-marker-alt fa-map-marker-alt-responsive unit_marker' style='color: #{map_marker_color};'> <span style = '#{coordinates_array.count([unit.x_plot,unit.y_plot]) > 9 ? "position: absolute; left:#{spanSize_y - 1}px; top:#{spanSize_x + 2}px; font-size: #{spanSize_size - 4}px;" : "position: absolute; left:#{spanSize_y}px; top:#{spanSize_x}px; font-size: #{spanSize_size}px;"}' ></span> </div>".html_safe, "##", :class => "marker #{coordinates_array.count([unit.x_plot,unit.y_plot]) > 1 ? 'overlapping-unit' : ''}", :id => "m_#{unit.id}", :style => "left:#{(unit.x_plot.to_f-(left_margin).to_f).to_s}px; top:#{(unit.y_plot.to_f-(right_margin).to_f)}px; font-size: #{fontsize}px; position:absolute;","data-target" => "#unitModal", "data-toggle" => "modal","data-community-id"=>@community.id,"data-unit-id"=>unit.id,"data-is-fav"=>unit_id_is_in_cookies?(cookies[:favorite_unit_ids],unit.id),"data-provider"=>@community_info.data_provider,"data-website"=>@community_info.website,"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-community-property-id"=>(@community_info.credential.present? && @community_info.credential.property_id.present? ? @community_info.credential.property_id : 0),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id,"data-floorplan-name"=>floorplan.present? ? floorplan.name : '',"data-unit-marketing-name"=>unit.unit_market,"data-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-total-market-rent"=> number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ','),"data-square-feet"=>unit.square_feet? ? hide_decimals(unit.square_feet) : (floorplan.present? ? hide_decimals(floorplan.square_feet) : nil),"data-availability"=>unit.availability,"data-available-date"=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil,"data-bedrooms"=>floorplan.present? ? floorplan.bedrooms.to_i : nil,"data-bathrooms"=>floorplan.present? ? hide_decimals(floorplan.bathrooms.to_i) : nil,"data-floorplan-image"=>unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg"),"data-unit-x-plot"=>unit.x_plot-left_margin,"data-unit-y-plot"=>unit.y_plot-right_margin,"data-title"=>unit.unit_market,"data-sold"=>unit.sold,"data-available"=>unit.available,"data-unit-lease-pricing"=>unit.lease_pricing,"data-unit-description"=>(unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : ""))
                 .hidden-units
@@ -496,6 +496,7 @@
 
 :javascript
 
+  var current_width = $(window).width();
   function iOSversion() {
 
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)
@@ -522,102 +523,41 @@
     $(".divLoading").addClass("hidden");
   }, 1000);
 
-  $('.mydiv').change(function() {
-
-    try {
-      localStorage.setItem("oneBedroom", document.getElementById('one-bedroom-checkbox').checked);
-    }
-    catch(err) {
-    }
-    try {
-      localStorage.setItem("twoBedroom", Boolean(document.getElementById('two-bedroom-checkbox').checked));
-    }
-    catch(err) {
-    }
-    try {
-      localStorage.setItem("threeBedroom", Boolean(document.getElementById('three-bedroom-checkbox').checked));
-    }
-    catch(err) {
-    }
-    try {
-      localStorage.setItem("fourBedroom", Boolean(document.getElementById('four-bedroom-checkbox').checked));
-    }
-    catch(err) {
-    }
-    try {
-      localStorage.setItem("fiveBedroom", Boolean(document.getElementById('five-bedroom-checkbox').checked));
-    }
-    catch(err) {
-    }
-
-    try {
-    localStorage.setItem("now", Boolean(document.getElementById('now-checkbox').checked));
-    }
-    catch(err) {
-    }
-    try {
-    localStorage.setItem("inNext30", Boolean(document.getElementById('thirty-days-checkbox').checked));
-    }
-    catch(err) {
-    }
-    try {
-    localStorage.setItem("31-60", Boolean(document.getElementById('thirty-tosixty-days-checkbox').checked));
-    }
-    catch(err) {
-    }
-    try {
-    localStorage.setItem("61-90", Boolean(document.getElementById('sixty-to-ninty-days-checkbox').checked));
-    }
-    catch(err) {
-    }
-    try {
-    localStorage.setItem("91-120", Boolean(document.getElementById('ninty-to-one-twenty-days-checkbox').checked));
-    }
-    catch(err) {
-    }
-    try {
-    localStorage.setItem("120+", Boolean(document.getElementById('one-twenty-plus-days-checkbox').checked));
-    }
-    catch(err) {
-    }
-    try {
-    localStorage.setItem("selectAll", Boolean(document.getElementById('select-all-filters-checkbox').checked));
-    }
-    catch(err) {
-    }
-
-  });
-
   var window_height = window.innerHeight;
-  var diff = 0// (8000/($(window).width()) * -1);
-  var diffL = 0// (2500/($(window).width()) * -1);
-  // diff = diff * 3.47;
-  // diffL = diffL * 3.47;
-  // alert($(window).width());
-  if ($(window).width() < 1500)
+  var diff = 0
+  var diffL = 0
+  var ele = document.getElementsByClassName('fa-map-marker-alt-responsive');
+  if (current_width < 993)
   {
-    var ele = document.getElementsByClassName('fa-map-marker-alt-responsive');
     for (var i = 0; i < ele.length; i++ ) {
-      ele[i].style.fontSize = ($(window).width() * .76) / 30 + ((#{fontsize} - 25) / 5)
+      ele[i].style.fontSize = (current_width * .76) / 30 + ((#{fontsize} - 25) / 5)
       ele[i].style.marginTop = diff - 3
       ele[i].style.marginLeft = diffL + 1
       ele[i].children[0].style.marginTop = -3
       ele[i].children[0].style.marginLeft = 1
-      ele[i].children[0].style.left = ($(window).width() * .20) / 30 + ((#{fontsize} - 25) / 9)
+      ele[i].children[0].style.left = (current_width * .20) / 30 + ((#{fontsize} - 25) / 9)
       factor = 0
       if ($(window).height() > 800)
       {
         factor = (($(window).height() ) / 800)
       }
-      ele[i].children[0].style.top = ($(window).width() * .15) / 30 + factor + ((#{fontsize} - 25) / 5)
-      ele[i].children[0].style.fontSize = ($(window).width() * .20) / 30 + ((#{fontsize} - 25) / 10)
+      ele[i].children[0].style.top = (current_width * .15) / 30 + factor + ((#{fontsize} - 25) / 5)
+      ele[i].children[0].style.fontSize = (current_width * .20) / 30 + ((#{fontsize} - 25) / 10)
     }
     var ele = document.getElementsByClassName('custom-icon-responsive');
     for (var i = 0; i < ele.length; i++ ) {
-      ele[i].style.height = (#{marker_font_size} / (1100 / $(window).width())  )
-      ele[i].style.width = (#{marker_font_size} / (1100 / $(window).width())  )
-      ele[i].children[0].style.marginTop = 1 * ( $(window).width() / 250)
-      ele[i].children[0].style.fontSize = (#{marker_font_size} / (2800 / $(window).width())  )
+      ele[i].style.height = (#{marker_font_size} / (1100 / current_width)  )
+      ele[i].style.width = (#{marker_font_size} / (1100 / current_width)  )
+      ele[i].children[0].style.marginTop = 1 * ( current_width / 250)
+      ele[i].children[0].style.fontSize = (#{marker_font_size} / (2800 / current_width)  )
+    }
+  }
+  else if(current_width > 993 < current_width < 1500){
+    for (var i = 0; i < ele.length; i++ ) {
+      ele[i].style.fontSize = 20
+      ele[i].children[0].style.left = 6
+      ele[i].children[0].style.top = 4
+      ele[i].children[0].style.fontSize = 6
     }
   }
   var slides_to_show = 4;
@@ -637,7 +577,6 @@
         slidesToShow: 4,
         slidesToScroll: 1,
         vertical: true,
-        //speed: 6,
         prevArrow:
           "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
         nextArrow:
@@ -660,7 +599,7 @@
   });
     
   if ($("#slider")[0]){
-    if ($(window).width() >= 568) {
+    if (current_width >= 568) {
       $slider.on('init', () => {
         mouseWheel($slider)
       }).slick({
@@ -717,7 +656,7 @@
   });
 
   $(document).ready(function () {
-    if($(window).width() >= 993){
+    if(current_width >= 993){
       let main_container_height = $('.c-body').height() - $('.c-footer').height();
       $('.floorplate-image ').attr("height", main_container_height - 100)
     }
@@ -731,7 +670,7 @@
       $(this).next('.mobile-filter-mega-menu').slideToggle();
     });
 
-    if ($(window).width() <= 767){
+    if (current_width <= 767){
       $('.modal-wrapper-mobile').removeClass("hidden");
       $('.c-modal-wrapper').addClass("hidden");
     }
@@ -760,104 +699,3 @@
   var units = "#{@units_with_floorplan_info}";
   units = units.replace(/&quot;/g,'"');
   units = JSON.parse(units);
-  console.log(units);
-  if (localStorage.getItem("oneBedroom") == "false")
-  {
-    $('#one-bedroom-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#one-bedroom-checkbox').prop('checked',true);
-  }
-  if (localStorage.getItem("twoBedroom") == "false")
-  {
-    $('#two-bedroom-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#two-bedroom-checkbox').prop('checked',true);
-  }if (localStorage.getItem("threeBedroom") == "false")
-  {
-    $('#three-bedroom-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#three-bedroom-checkbox').prop('checked',true);
-  }if (localStorage.getItem("fourBedroom") == "false")
-  {
-    $('#four-bedroom-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#four-bedroom-checkbox').prop('checked',true);
-  }if (localStorage.getItem("fiveBedroom") == "false")
-  {
-    $('#five-bedroom-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#five-bedroom-checkbox').prop('checked',true);
-  }
-
-  if (localStorage.getItem("now") == "false")
-  {
-    $('#now-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#now-checkbox').prop('checked',true);
-  }
-
-  if (localStorage.getItem("inNext30") == "false")
-  {
-    $('#thirty-days-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#thirty-days-checkbox').prop('checked',true);
-  }
-
-  if (localStorage.getItem("31-60") == "false")
-  {
-    $('#thirty-tosixty-days-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#thirty-tosixty-days-checkbox').prop('checked',true);
-  }
-
-  if (localStorage.getItem("61-90") == "false")
-  {
-    $('#sixty-to-ninty-days-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#sixty-to-ninty-days-checkbox').prop('checked',true);
-  }
-
-  if (localStorage.getItem("91-120") == "false")
-  {
-    $('#ninty-to-one-twenty-days-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#ninty-to-one-twenty-days-checkbox').prop('checked',true);
-  }
-
-  if (localStorage.getItem("120+") == "false")
-  {
-    $('#one-twenty-plus-days-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#one-twenty-plus-days-checkbox').prop('checked',true);
-  }
-
-  if (localStorage.getItem("selectAll") == "false")
-  {
-    $('#select-all-filters-checkbox').prop('checked',false);
-  }
-  else
-  {
-    $('#select-all-filters-checkbox').prop('checked',true);
-  }

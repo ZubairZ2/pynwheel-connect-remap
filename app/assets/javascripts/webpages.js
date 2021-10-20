@@ -1977,8 +1977,8 @@ function applyFilters(){
   selected_square_feet = $("#responsive_square_feet option:selected").text();
   selected_available_unit = $("#responsive_available_unit option:selected").text();
   selected_unit_bedrooms = $("#responsive_unit_bedroom option:selected").text();
-  $("#max_price_responsive").html("$"+selected_market_rent);
-  $("#sq_feet_responsive").html(selected_square_feet);
+  $("#max_price_responsive").html(selected_market_rent == "Select Max Price" ? "Max Price" : "$"+selected_market_rent);
+  $("#sq_feet_responsive").html(selected_square_feet == "Select Min Sq Ft" ? "Min Sq Feet" : selected_square_feet);
   $("#unit_availability").html(selected_available_unit);
   $("#bedroom_responsive").html(selected_unit_bedrooms);
   $('.mobile-filter-mega-menu').slideToggle()
