@@ -197,7 +197,7 @@
   
   <body>
     <div class="divLoading hidden"></div>
-    <%= content_tag(:div, "", id: 'knock-data', data: { available_time_slots: @knock_available_slots.to_json })%>
+    <%= content_tag(:div, "", id: 'knock-data', data: { available_time_slots: @knock_available_slots.to_json, is_knock_community: @is_knock_community })%>
 
     <%= link_to("#{@scheduler_widget_setting.btn_text}", "url",id: "schedule_btn", style: "width: #{@scheduler_widget_setting.btn_width}; height: #{@scheduler_widget_setting.btn_height}; font-size: #{@scheduler_widget_setting.btn_font_size}; background-color: #{@scheduler_widget_setting.btn_color}; border-color: #{@scheduler_widget_setting.btn_color}; font-family: #{@scheduler_widget_setting.btn_font}; align-items: center; display: inline-grid; margin: 10px; padding: 0px;",class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#modalLoginForm", backdrop: "static"}) %>
 
@@ -495,6 +495,7 @@
       var show_guided_tour_option = false;
       var hidden_tour_type_value;
       var knock_available_time_slots;
+      var is_knock_community = false;
       var knock_tour_types = []
       var schedule_tour_only = "<%= @community.tour.only_scheduled_tour %>";
       var community_id = <%= raw @community.id %>;
@@ -524,6 +525,8 @@
 
       $(document).ready(function(){
         knock_available_time_slots = $("#knock-data").data("availableTimeSlots");
+        is_knock_community = $("#knock-data").data("isKnockCommunity");
+
        debugger;
 
         if(form_for_reschedule_tour){
@@ -712,17 +715,18 @@
           day = (new Date($(this).val())).getDay()
           tour_time = '<%= @schedule_tour&.tour_time&.strftime("%I:%M %P") %>'
           options = '<option value="">Select Time Slot</option>'
-          if (use_yardi_as_lead && !is_virtual_on){
+
+          if(is_knock_community && !isEmpty(knock_available_time_slots) && !is_virtual_on) {
+            selected_day_slots = getKnockAvailableTimeSlots(knock_available_time_slots, moment($(this).val()).format("MM-DD-YYYY"))
+          }
+          else if (use_yardi_as_lead && !is_virtual_on){
             date_for_yardi = moment($(this).val()).format("M/D/YYYY")  
             selected_day_slots = time_slots[date_for_yardi] 
           }
           else {
-            if(knock_available_time_slots) {
-              selected_day_slots = getKnockAvailableTimeSlots(knock_available_time_slots, moment($(this).val()).format("MM-DD-YYYY"))
-            } else {
-              selected_day_slots = time_slots[day]
-            }
+            selected_day_slots = time_slots[day]
           }
+          
           selected_date = moment($(this).val()).format("YYYY/MM/DD")
           today_date = moment().format("YYYY/MM/DD")
           if (selected_date == today_date){
@@ -850,7 +854,21 @@
         var d = new Date();
         var currentDay = d.getDay();
         
-        if (use_yardi_as_lead && !is_virtual_on){
+        // Knock Date Picker
+        if(is_knock_community && !isEmpty(knock_available_time_slots) && !is_virtual_on) {
+          $('.schedule_datepicker').datetimepicker({
+              format : 'MM/DD/YYYY',
+              minDate: moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
+              showTodayButton: true,
+              showClear: true,
+              showClose: true,
+              useCurrent: true,
+              toolbarPlacement: "bottom",
+              stepping: steps,
+              enabledDates: knock_available_time_slots.available_dates
+          });
+        }
+        else if (use_yardi_as_lead && !is_virtual_on){
           var availableDates = <%= raw @yardi_enable_days %>;
           $('.schedule_datepicker').datetimepicker({
             format : 'MM/DD/YYYY',
@@ -866,33 +884,18 @@
           });
         }
         else {
-          // Knock Date Picker
-          if(knock_available_time_slots) {
-            $('.schedule_datepicker').datetimepicker({
-                format : 'MM/DD/YYYY',
-                minDate: moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
-                showTodayButton: true,
-                showClear: true,
-                showClose: true,
-                useCurrent: true,
-                toolbarPlacement: "bottom",
-                stepping: steps,
-                enabledDates: knock_available_time_slots.available_dates
-            });
-
-          } else {
-            $('.schedule_datepicker').datetimepicker({
-              format : 'MM/DD/YYYY',
-              minDate: moment(), //time_slots[currentDay].length ? moment()+1 : moment(),
-              showTodayButton: true,
-              showClear: true,
-              showClose: true,
-              useCurrent: true,//time_slots[currentDay].length ? false : true,
-              toolbarPlacement: "bottom",
-              stepping: steps,
-              daysOfWeekDisabled: days_disabled,
-            });
-          }
+          $('.schedule_datepicker').datetimepicker({
+            format : 'MM/DD/YYYY',
+            minDate: moment(), //time_slots[currentDay].length ? moment()+1 : moment(),
+            showTodayButton: true,
+            showClear: true,
+            showClose: true,
+            useCurrent: true,//time_slots[currentDay].length ? false : true,
+            toolbarPlacement: "bottom",
+            stepping: steps,
+            daysOfWeekDisabled: days_disabled,
+          });
+          
         }
 
         var today_day = moment().format("YYYY-MM-DD")
@@ -1014,6 +1017,16 @@
         }
 
       });
+
+      function isEmpty(obj) {
+        for(var prop in obj) {
+          if(Object.prototype.hasOwnProperty.call(obj, prop)) {
+            return false;
+          }
+        }
+
+        return JSON.stringify(obj) === JSON.stringify({});
+      }
 
       function getKnockAvailableTimeSlots(knockData, selectedDate) {
         let selfGuided = knockData.self_guided_available_time_slots
