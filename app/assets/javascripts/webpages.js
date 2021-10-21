@@ -357,69 +357,11 @@ $(window).bind('load', function () {
         if($(window).width() <= 567){
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()), "margin-top": -($('.fa-map-marker-alt-responsive').height()+7)})       
         }
-
-        //TODO::Fix it dynamically. It is temporary fix right now
-        // if (actual_width < in_browser_width)
-        //   var width_ratio = 1;
-        // else
-        //   var width_ratio = actual_width / in_browser_width;
-        // if (actual_height < in_browser_height)
-        //   var height_ratio = 1;
-        // else
-        //   var height_ratio = actual_height / in_browser_height;
-        // if(actual_width > in_browser_width && actual_height > in_browser_height) {
-        //   if(actual_width >= 5884){
-        //     current_left = x_plot / width_ratio - 6;
-        //     current_top = y_plot / height_ratio - 20;
-        //   }
-        //   if(actual_width >= 2824 && actual_width < 5884 ){
-        //     current_left = x_plot / width_ratio - 4;
-        //     current_top = y_plot / height_ratio - 13;
-        //   }
-        //   if(actual_width < 2824 && actual_width > 1568){
-        //     current_left = x_plot / width_ratio - 1;
-        //     current_top = y_plot / height_ratio - 6;
-        //   }
-        //   if(actual_width < 2824){
-        //     current_left = x_plot / width_ratio;
-        //     current_top = y_plot / height_ratio;
-        //   }
-        // }
-        // else {
-        //   current_left = x_plot / width_ratio;
-        //   current_top = y_plot / height_ratio;
-        // }
-        // $(this).css({"left": current_left, "top": current_top});
       });
 
       $('.sitemap-amenity-marker').each(function () {
         var x_plot = parseFloat($(this).data('amenity-x-plot'));
         var y_plot = parseFloat($(this).data('amenity-y-plot'));
-        // if(actual_width > in_browser_width && actual_height > in_browser_height) {
-        //   if(actual_width >= 5884){
-        //     current_left = x_plot / width_ratio - 6;
-        //     current_top = y_plot / height_ratio - 20;
-        //   }
-        //   if(actual_width >= 2824 && actual_width < 5884 ){
-        //     current_left = x_plot / width_ratio - 4;
-        //     current_top = y_plot / height_ratio - 6;
-        //   }
-        //   if(actual_width < 2824 && actual_width > 1568){
-        //     current_left = x_plot / width_ratio - 1;
-        //     current_top = y_plot / height_ratio - 6;
-        //   }
-        //   if(actual_width < 2824){
-        //     current_left = x_plot / width_ratio;
-        //     current_top = y_plot / height_ratio;
-        //   }
-        // }
-        // else {
-        //   current_left = x_plot / width_ratio;
-        //   current_top = y_plot / height_ratio;
-        // }
-        // current_left = x_plot / width_ratio;
-        // current_top = y_plot / height_ratio;
-        // $(this).css({"left": current_left, "top": current_top});
         x_plot = (((stretched_image_width / actual_image_width) * x_plot));
         y_plot = (((stretched_image_height / actual_image_height) * y_plot));
 
@@ -1774,53 +1716,25 @@ function adjustMarkerPosition(marker) {
   left_diff = (in_browser_width - stretched_image_width) / 2
   x_plot = (((stretched_image_width / actual_image_width) * x_plot));
   y_plot = (((stretched_image_height / actual_image_height) * y_plot));
-
-  $(marker).removeClass('hidden');
-  marker_width = $('#m_' + unit_id).width();
-  marker_height = $('#m_' + unit_id).height();
-  $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
+  
+  if(actual_image_width > 1412){
+    x_plot = x_plot - 6
+    y_plot = y_plot - 17 
+  }
+  else{
+    y_plot = y_plot-10
+  }
+  $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
+  // $(marker).removeClass('hidden');
+  // marker_width = $('#m_' + unit_id).width();
+  // marker_height = $('#m_' + unit_id).height();
+  // $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
   if($(window).width() >= 567 && $(window).width() <= 1360 ){
     $(marker).css({"margin-left": -5, "margin-top": -2})       
   }
   if($(window).width() <= 567){
     $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+8), "margin-top": -($('#s_'+unit_id).height()+7)})       
   }
-  //TODO::Remove this code after verifying the above
-  // if (actual_width < in_browser_width)
-  //   var width_ratio = 1;
-  // else
-  //   var width_ratio = actual_width / in_browser_width;
-  // if (actual_height < in_browser_height)
-  //   var height_ratio = 1;
-  // else
-  //   var height_ratio = actual_height / in_browser_height;
-  // if(actual_width > in_browser_width && actual_height > in_browser_height) {
-  //   if(actual_width >= 5884){
-  //     current_left = x_plot / width_ratio - 6;
-  //     current_top = y_plot / height_ratio - 20;
-  //   }
-  //   if(actual_width >= 2824 && actual_width < 5884 ){
-  //     current_left = x_plot / width_ratio - 4;
-  //     current_top = y_plot / height_ratio - 13;
-  //   }
-  //   if(actual_width < 2824 && actual_width > 1568){
-  //     current_left = x_plot / width_ratio - 1;
-  //     current_top = y_plot / height_ratio - 6;
-  //   }
-  //   if(actual_width < 1568){
-  //     current_left = x_plot / width_ratio;
-  //     current_top = y_plot / height_ratio;
-  //   }
-  // }
-  // else {
-  //   current_left = x_plot / width_ratio;
-  //   current_top = y_plot / height_ratio;
-  // }
-  
-  // var current_left = (x_plot / width_ratio);
-  // var current_top = (y_plot / height_ratio);
-  // var current_left = x_plot; //+ left_diff
-  // $(marker).css({"left": x_plot, "top": y_plot});
 }
 
 function adjustAmenitiesPosition() {
@@ -1839,15 +1753,6 @@ function adjustAmenitiesPosition() {
   amenity_width = $('#a_' + amenity_id).width();
   amenity_height = $('#a_' + amenity_id).height();
 
-  // if (actual_width < in_browser_width)
-  //   var width_ratio = 1;
-  // else
-  //   var width_ratio = actual_width / in_browser_width;
-  // if (actual_height < in_browser_height)
-  //   var height_ratio = 1;
-  // else
-  //   var height_ratio = actual_height / in_browser_height;
-
   // adjusting amenity markers
   $('.a_' + current_floor).each(function () {
     var x_plot = parseFloat($(this).data('amenity-x-plot'));
@@ -1857,31 +1762,6 @@ function adjustAmenitiesPosition() {
     y_plot = (((stretched_image_height / actual_image_height) * y_plot));
 
     $(this).css({"left": (x_plot + 4) + left_diff , "top": (y_plot) + 4});
-    // if(actual_width > in_browser_width && actual_height > in_browser_height) {
-    //   if(actual_width >= 5884){
-    //     current_left = x_plot / width_ratio - 6;
-    //     current_top = y_plot / height_ratio - 20;
-    //   }
-    //   if(actual_width >= 2824 && actual_width < 5884 ){
-    //     current_left = x_plot / width_ratio - 4;
-    //     current_top = y_plot / height_ratio - 6;
-    //   }
-    //   if(actual_width < 2824 && actual_width > 1568){
-    //     current_left = x_plot / width_ratio - 1;
-    //     current_top = y_plot / height_ratio - 6;
-    //   }
-    //   if(actual_width < 2824){
-    //     current_left = x_plot / width_ratio;
-    //     current_top = y_plot / height_ratio;
-    //   }
-    // }
-    // else {
-    //   current_left = x_plot / width_ratio;
-    //   current_top = y_plot / height_ratio;
-    // }
-    // current_left = x_plot / width_ratio;
-    // current_top = y_plot / height_ratio;
-    // $(this).css({"left": current_left, "top": current_top});
   });
 }
 
