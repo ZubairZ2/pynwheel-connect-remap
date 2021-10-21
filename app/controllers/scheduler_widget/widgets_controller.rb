@@ -37,6 +37,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @credit_card_required =  @community.tour.credit_card_required
     @bedroom_list = @community.fetch_bedroom_list()
     @marketing_source_required = @community.tour.marketing_source_required
+    
     if params[:direct].present?
       @direct =  true
       params[:message].present? ? @show_first = false : @show_first = true
@@ -66,6 +67,8 @@ class SchedulerWidget::WidgetsController < ApplicationController
       @time_slots = @reschedule_tour ? @community.collect_time_slots_for_rechedule_tours(@stepping,@tour_type) : @community.collect_time_slots(@stepping)
       @yardi_enable_days = []
     end
+    
+    @knock_available_slots = knock_available_tour_time_slots(@schedule_tour)
     community = Community.find params[:community_id]
     app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
     android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
@@ -100,6 +103,14 @@ class SchedulerWidget::WidgetsController < ApplicationController
   end
 
   private
+
+  def knock_available_tour_time_slots scheduled_tour, knock_available_slots = {}
+    if ( scheduled_tour&.community&.crm_credential&.crm_provider === "knock" && scheduled_tour&.community&.crm_credential&.knock_community_id.present? && scheduled_tour&.community&.crm_credential&.knock_api_key.present? )
+      knock_available_slots = KnockService.new(@schedule_tour).available_slots
+    end
+
+    knock_available_slots
+  end
   
   def allow_iframe
     response.headers.except! 'X-Frame-Options'

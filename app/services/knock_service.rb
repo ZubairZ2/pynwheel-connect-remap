@@ -20,10 +20,10 @@ class KnockService < BaseService
   end
 
   def available_slots
-    self_guided_available_time_slots = get_community_available_times(knock_api_key, get_knock_community_id, true) if is_knock_crm && @scheduled_tour.property_tour_type === "scheduled_tour"
-    in_person_available_time_slots = get_community_available_times(knock_api_key, get_knock_community_id, false) if is_knock_crm && @scheduled_tour.property_tour_type === "scheduled_tour"
-    self_guided_slots = formate_time_slots_array_to_hash(self_guided_available_time_slots["payload"]["acceptableTimes"]) if self_guided_available_time_slots["payload"]["acceptableTimes"].present?
-    in_person_slots = formate_time_slots_array_to_hash(in_person_available_time_slots["payload"]["acceptableTimes"]) if in_person_available_time_slots["payload"]["acceptableTimes"].present?
+    self_guided_available_time_slots = get_community_available_times(knock_api_key, get_knock_community_id, true) if is_knock_crm
+    in_person_available_time_slots = get_community_available_times(knock_api_key, get_knock_community_id, false) if is_knock_crm
+    self_guided_slots = formate_time_slots_array_to_hash(self_guided_available_time_slots["payload"]["acceptableTimes"]) if self_guided_available_time_slots.present? && self_guided_available_time_slots["payload"]["acceptableTimes"].present?
+    in_person_slots = formate_time_slots_array_to_hash(in_person_available_time_slots["payload"]["acceptableTimes"]) if in_person_available_time_slots.present? && in_person_available_time_slots["payload"]["acceptableTimes"].present?
     tour_available_date = get_tour_available_dates(self_guided_slots, in_person_slots) if (self_guided_slots.present? || in_person_slots.present?)
   
     {available_dates: tour_available_date, self_guided_available_time_slots: self_guided_slots, in_person_available_time_slots: in_person_slots }
@@ -44,7 +44,7 @@ class KnockService < BaseService
 
   def formate_time_slots_array_to_hash dates
     hash = dates.group_by(&:to_date)
-    hash = hash.transform_keys{ |key| key.to_s }
+    hash = hash.transform_keys{ |key| key.strftime('%m-%d-%Y') }
 
     available_time_slots = hash.transform_values do |v| 
       v.map do |time| 

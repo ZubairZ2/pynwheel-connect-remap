@@ -197,6 +197,7 @@
   
   <body>
     <div class="divLoading hidden"></div>
+    <%= content_tag(:div, "", id: 'knock-data', data: { available_time_slots: @knock_available_slots.to_json })%>
 
     <%= link_to("#{@scheduler_widget_setting.btn_text}", "url",id: "schedule_btn", style: "width: #{@scheduler_widget_setting.btn_width}; height: #{@scheduler_widget_setting.btn_height}; font-size: #{@scheduler_widget_setting.btn_font_size}; background-color: #{@scheduler_widget_setting.btn_color}; border-color: #{@scheduler_widget_setting.btn_color}; font-family: #{@scheduler_widget_setting.btn_font}; align-items: center; display: inline-grid; margin: 10px; padding: 0px;",class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#modalLoginForm", backdrop: "static"}) %>
 
@@ -493,6 +494,8 @@
       var show_self_tour_option = false;
       var show_guided_tour_option = false;
       var hidden_tour_type_value;
+      var knock_available_time_slots;
+      var knock_tour_types = []
       var schedule_tour_only = "<%= @community.tour.only_scheduled_tour %>";
       var community_id = <%= raw @community.id %>;
       var form_for_reschedule_tour = "<%= @reschedule_tour %>";
@@ -520,6 +523,8 @@
       }
 
       $(document).ready(function(){
+        knock_available_time_slots = $("#knock-data").data("availableTimeSlots");
+       debugger;
 
         if(form_for_reschedule_tour){
           $("#desired_move_in_date").val(move_in_date).attr('selected', true)
@@ -703,6 +708,7 @@
 
         $("#tour_date").on("dp.change", function() {
           $("#tour_type").attr("disabled", true);
+          debugger;
           var time_slots = JSON.parse( $('#time_slot_hash').val() )
           day = (new Date($(this).val())).getDay()
           tour_time = '<%= @schedule_tour&.tour_time&.strftime("%I:%M %P") %>'
@@ -711,8 +717,13 @@
             date_for_yardi = moment($(this).val()).format("M/D/YYYY")  
             selected_day_slots = time_slots[date_for_yardi] 
           }
-          else{
-            selected_day_slots = time_slots[day]
+          else {
+            debugger;
+            if(knock_available_time_slots) {
+              selected_day_slots = getKnockAvailableTimeSlots(knock_available_time_slots, moment($(this).val()).format("MM-DD-YYYY"))
+            } else {
+              selected_day_slots = time_slots[day]
+            }
           }
           selected_date = moment($(this).val()).format("YYYY/MM/DD")
           today_date = moment().format("YYYY/MM/DD")
@@ -823,6 +834,7 @@
             $('.tour_type_tip').addClass('hidden')
           }
         }
+
         if(credit_card_required == true){
         var cleave = new Cleave('#card_verification', {
             numericOnly: true,
@@ -856,17 +868,33 @@
           });
         }
         else {
-          $('.schedule_datepicker').datetimepicker({
-            format : 'MM/DD/YYYY',
-            minDate: moment(), //time_slots[currentDay].length ? moment()+1 : moment(),
-            showTodayButton: true,
-            showClear: true,
-            showClose: true,
-            useCurrent: true,//time_slots[currentDay].length ? false : true,
-            toolbarPlacement: "bottom",
-            stepping: steps,
-            daysOfWeekDisabled: days_disabled,
-          });
+          // Knock Date Picker
+          if(knock_available_time_slots) {
+            $('.schedule_datepicker').datetimepicker({
+                format : 'MM/DD/YYYY',
+                minDate: moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
+                showTodayButton: true,
+                showClear: true,
+                showClose: true,
+                useCurrent: true,
+                toolbarPlacement: "bottom",
+                stepping: steps,
+                enabledDates: knock_available_time_slots.available_dates
+            });
+
+          } else {
+            $('.schedule_datepicker').datetimepicker({
+              format : 'MM/DD/YYYY',
+              minDate: moment(), //time_slots[currentDay].length ? moment()+1 : moment(),
+              showTodayButton: true,
+              showClear: true,
+              showClose: true,
+              useCurrent: true,//time_slots[currentDay].length ? false : true,
+              toolbarPlacement: "bottom",
+              stepping: steps,
+              daysOfWeekDisabled: days_disabled,
+            });
+          }
         }
 
         var today_day = moment().format("YYYY-MM-DD")
@@ -988,6 +1016,27 @@
         }
 
       });
+
+      function getKnockAvailableTimeSlots(knockData, selectedDate) {
+        let selfGuided = knockData.self_guided_available_time_slots
+        let inPerson = knockData.in_person_available_time_slots
+        let selfGuidedTimes = selfGuided[selectedDate]
+        let inPersonTimes = inPerson[selectedDate]
+        
+        return mergeKnockTimeSlots(selfGuidedTimes, inPersonTimes)
+      }
+
+      function mergeKnockTimeSlots(sTime, iTime) {
+        let mergedTimes = sTime.concat(iTime)
+        let uniqTimes = mergedTimes.filter((item, pos) => mergedTimes.indexOf(item) === pos)
+
+        times = uniqTimes.sort(function (a, b) {
+          return new Date('1970/01/01 ' + a) - new Date('1970/01/01 ' + b);
+        });
+
+        return times
+      }
+      
 
       if(credit_card_required == true){
       jQuery(function ($) {
