@@ -184,9 +184,8 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community.save
       charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
       @tour_user.verified_by = params[:verfied_by_provider]
-      # @access_code = (SecureRandom.random_number * (10**6)).round.to_s
       @tour_type = params[:tour_status] rescue @tour_user.tour_type
-      @property_access = @community&.tour&.tour_setting&.enable_restricted_property_access
+      restrict_property_access_with_code(@community,@tour_user,@tour_type)
       time_zone = get_time_zone @community
       if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.tour.visual_id_verification #TODO:: change to 1 month after testing
         @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
@@ -210,6 +209,19 @@ class Api::V1::CommunitiesController < ActionController::Base
       else
         render :json=> {:success=>false, :message => "Access Denied"}, :status=>500
       end
+    end
+  end
+
+  def restrict_property_access_with_code(community,tour_user,tour_type)
+    enabled_property_access = community&.tour&.tour_setting&.enable_restricted_property_access
+    tour_length_stay_limit = community&.tour&.tour_setting&.length_stay_limit
+    access_code_generated_at = tour_user.property_access_code_generated_at
+    if enabled_property_access == true && tour_type != "virtual_tour" && (access_code_generated_at.nil? || Time.now > access_code_generated_at + tour_length_stay_limit.minutes) 
+      tour_user.property_access_code = community.generate_property_access_code
+      tour_user.property_access_code_generated_at = Time.now
+      @property_access = true
+    else
+      @property_access = false
     end
   end
   
@@ -614,7 +626,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     emails = community.email.gsub(" ","").split(',')
     schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
     emails.each do |email|
-      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}",email,"info@pynwheel.com",community,false,schedule_tour).deliver
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}. Visitor's property access code is #{tour_user.property_access_code}",email,"info@pynwheel.com",community,false,schedule_tour).deliver
     end
   end
   def check_lock_access
