@@ -624,9 +624,12 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   def tour_user_arrival_email(tour_user, community)
     emails = community.email.gsub(" ","").split(',')
+    tour_type = tour_user.tour_type
+    enabled_property_access = community&.tour&.tour_setting&.enable_restricted_property_access
+    access_code_text = tour_type != "virtual_tour" && enabled_property_access ? "Visitor's property access code is #{self.tour_user.property_access_code}" : ""
     schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
     emails.each do |email|
-      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}. Visitor's property access code is #{tour_user.property_access_code}",email,"info@pynwheel.com",community,false,schedule_tour).deliver
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}. #{access_code_text}",email,"info@pynwheel.com",community,false,schedule_tour).deliver
     end
   end
   def check_lock_access
