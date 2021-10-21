@@ -64,7 +64,7 @@ class KnockService < BaseService
   end
 
   def is_knock_crm
-    ( @scheduled_tour&.community&.crm_credential&.crm_provider === "knock" && @scheduled_tour&.community&.crm_credential&.knock_community_id.present? && @scheduled_tour&.community&.crm_credential&.knock_api_key.present? )
+    @scheduled_tour.community.is_knock_community?
   end
 
   def knock_api_key

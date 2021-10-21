@@ -105,11 +105,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
   private
 
   def knock_available_tour_time_slots scheduled_tour, knock_available_slots = {}
-    if ( scheduled_tour&.community&.crm_credential&.crm_provider === "knock" && scheduled_tour&.community&.crm_credential&.knock_community_id.present? && scheduled_tour&.community&.crm_credential&.knock_api_key.present? )
-      knock_available_slots = KnockService.new(@schedule_tour).available_slots
-    end
-
-    knock_available_slots
+    scheduled_tour.community.is_knock_community? ? KnockService.new(@schedule_tour).available_slots : {}
   end
   
   def allow_iframe
