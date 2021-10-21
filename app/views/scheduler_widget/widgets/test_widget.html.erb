@@ -708,7 +708,6 @@
 
         $("#tour_date").on("dp.change", function() {
           $("#tour_type").attr("disabled", true);
-          debugger;
           var time_slots = JSON.parse( $('#time_slot_hash').val() )
           day = (new Date($(this).val())).getDay()
           tour_time = '<%= @schedule_tour&.tour_time&.strftime("%I:%M %P") %>'
@@ -718,7 +717,6 @@
             selected_day_slots = time_slots[date_for_yardi] 
           }
           else {
-            debugger;
             if(knock_available_time_slots) {
               selected_day_slots = getKnockAvailableTimeSlots(knock_available_time_slots, moment($(this).val()).format("MM-DD-YYYY"))
             } else {

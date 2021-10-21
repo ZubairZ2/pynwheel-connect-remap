@@ -79,63 +79,12 @@ class KnockService < BaseService
     @scheduled_tour&.community&.crm_credential&.knock_sms_consent_url
   end
 
-  def knock_prospect_payload
-    {
-      "communityId": get_knock_community_id,
-      "firstName": @scheduled_tour&.tour_user&.first_name,
-      "lastName": @scheduled_tour&.tour_user&.last_name,
-      "email": @scheduled_tour&.tour_user&.email,
-      "phone": @scheduled_tour&.tour_user&.phone_number,
-      "address": @scheduled_tour&.community&.address,
-      "city": @scheduled_tour&.community&.city,
-      "state": @scheduled_tour&.community&.state.slice(0, 2).upcase,
-      "zip": @scheduled_tour&.community&.zip,
-      "autorespond": true,
-      "sourceTitle": "Property Website",
-      "moveDate": @scheduled_tour&.desired_move_in_date&.strftime("%F").to_s,
-      "bedrooms": desire_bedrooms,
-      "occupants": 1,
-      "leaseTermMonths": 12,
-      "minBudget": 1000,
-      "maxBudget": 2000,
-      "message": knock_message, 
-      "firstContactType": "internet",
-      "smsConsent": true,
-      "smsConsentDisclaimer": "I consent to appointment updates via SMS communication",
-      "smsConsentUrl": get_knock_consent_url,
-      "prospectIpAddress": @scheduled_tour.knock_prospect_ip_address
-    }
+  def prospect_move_in_date
+    @scheduled_tour&.desired_move_in_date&.strftime("%F").to_s
   end
-
-  def knock_appointment_payload
-    {
-      "communityId": get_knock_community_id,
-      "requestedTimes": [
-        {
-          "startTime": "2021-09-29T09:00:00-07:00" #knock_tour_date_time
-        }
-      ],
-      "profile": {
-        "firstName": @scheduled_tour&.tour_user&.first_name,
-        "lastName": @scheduled_tour&.tour_user&.last_name,
-        "email": @scheduled_tour&.tour_user&.email,
-        "phone": @scheduled_tour&.tour_user&.phone_number,
-        "moveDate": @scheduled_tour&.desired_move_in_date&.strftime("%F").to_s,
-        "bedrooms": desire_bedrooms,
-        "occupants": 1,
-        "leaseTermMonths": 12,
-        "minBudget": 1000,
-        "maxBudget": 2000,
-        "pets": []
-      },
-      "message": knock_message, 
-      "firstContactType": "internet",
-      "smsConsent": true,
-      "smsConsentDisclaimer": "I consent to appointment updates via SMS communication",
-      "smsConsentUrl": get_knock_consent_url,
-      "sourceTitle": "Property Website",
-      "tourType": knock_tour_type
-    }
+  
+  def sms_consent_disclaimer
+    "I consent to appointment updates via SMS communication for my self tour using Pynwheel mobile app."
   end
 
   def knock_tour_type
@@ -168,6 +117,65 @@ class KnockService < BaseService
     else
       "Error: No message"
     end
+  end
+
+  def knock_prospect_payload
+    {
+      "communityId": get_knock_community_id,
+      "firstName": @scheduled_tour&.tour_user&.first_name,
+      "lastName": @scheduled_tour&.tour_user&.last_name,
+      "email": @scheduled_tour&.tour_user&.email,
+      "phone": @scheduled_tour&.tour_user&.phone_number,
+      "address": @scheduled_tour&.community&.address,
+      "city": @scheduled_tour&.community&.city,
+      "state": @scheduled_tour&.community&.state.slice(0, 2).upcase,
+      "zip": @scheduled_tour&.community&.zip,
+      "autorespond": true,
+      "sourceTitle": "Property Website",
+      "moveDate": prospect_move_in_date,
+      "bedrooms": desire_bedrooms,
+      "occupants": 1,
+      "leaseTermMonths": 12,
+      "minBudget": 1000,
+      "maxBudget": 2000,
+      "message": knock_message, 
+      "firstContactType": "internet",
+      "smsConsent": true,
+      "smsConsentDisclaimer": sms_consent_disclaimer,
+      "smsConsentUrl": get_knock_consent_url,
+      "prospectIpAddress": @scheduled_tour.knock_prospect_ip_address
+    }
+  end
+
+  def knock_appointment_payload
+    {
+      "communityId": get_knock_community_id,
+      "requestedTimes": [
+        {
+          "startTime": "2021-09-29T09:00:00-07:00" #knock_tour_date_time
+        }
+      ],
+      "profile": {
+        "firstName": @scheduled_tour&.tour_user&.first_name,
+        "lastName": @scheduled_tour&.tour_user&.last_name,
+        "email": @scheduled_tour&.tour_user&.email,
+        "phone": @scheduled_tour&.tour_user&.phone_number,
+        "moveDate": prospect_move_in_date,
+        "bedrooms": desire_bedrooms,
+        "occupants": 1,
+        "leaseTermMonths": 12,
+        "minBudget": 1000,
+        "maxBudget": 2000,
+        "pets": []
+      },
+      "message": knock_message, 
+      "firstContactType": "internet",
+      "smsConsent": true,
+      "smsConsentDisclaimer": sms_consent_disclaimer,
+      "smsConsentUrl": get_knock_consent_url,
+      "sourceTitle": "Property Website",
+      "tourType": knock_tour_type
+    }
   end
 
   def knock_tour_date_time
