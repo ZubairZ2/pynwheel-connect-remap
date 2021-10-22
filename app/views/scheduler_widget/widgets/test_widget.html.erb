@@ -754,49 +754,57 @@
         $("#tour_type").attr("disabled", true);
         if(!form_for_reschedule_tour){
           $("#tour_time").on("change", function() {
-            if ($(this).val() != ""){
-              $("#tour_type").attr("disabled", false);
-              day = (new Date($("#tour_date").val())).getDay()
-              date = $("#tour_date").val()
-              time = $(this).val()
-              $.ajax({
-                type: "GET",
-                url: "/schedual_tours/get_tour_type",
-                data: {day: day, time: time, date: date, schedual_tour_id: tour_id, community_id: $('#community_id').val() },
-                success: function(data){
-                  tour_types = data["tour_types"]
-                  options = '<option value="">Select Tour Type</option>'
-                  tour_id = data["schedual_tour_id"];
-                  $('#sched_tour_id').val(tour_id)
-                  $('#limit_tour_type_error_arr').val(data["limit_exceded_tour_types"])
-                  if (tour_types.length > 1){
-                    for (let i = 0; i < tour_types.length; ++i) {
-                      options += `<option value="${tour_types[i][0]}" >${tour_types[i][1]}</option>`
+            // if(is_knock_community && !isEmpty(knock_available_time_slots) && !is_virtual_on) {
+            //   set_knock_tour_type(knock_available_time_slots, $(this).val())
+            //   debugger;
+            // } else {
+              debugger;
+              if ($(this).val() != ""){
+                debugger;
+
+                $("#tour_type").attr("disabled", false);
+                day = (new Date($("#tour_date").val())).getDay()
+                date = $("#tour_date").val()
+                time = $(this).val()
+                $.ajax({
+                  type: "GET",
+                  url: "/schedual_tours/get_tour_type",
+                  data: {day: day, time: time, date: date, schedual_tour_id: tour_id, community_id: $('#community_id').val()},
+                  success: function(data){
+                    tour_types = data["tour_types"]
+                    options = '<option value="">Select Tour Type</option>'
+                    tour_id = data["schedual_tour_id"];
+                    $('#sched_tour_id').val(tour_id)
+                    $('#limit_tour_type_error_arr').val(data["limit_exceded_tour_types"])
+                    if (tour_types.length > 1){
+                      for (let i = 0; i < tour_types.length; ++i) {
+                        options += `<option value="${tour_types[i][0]}" >${tour_types[i][1]}</option>`
+                      }
+                      $('#tour_type').html(options)
                     }
-                    $('#tour_type').html(options)
+                    else if(tour_types.length == 1){
+                      options += `<option value="${tour_types[0][0]}">${tour_types[0][1]}</option>`
+                      $('#tour_type').html(options)
+                      $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
+                      add_or_remove_question_mark(tour_types[0][0])
+                    }
+                    else{
+                      $('#tour_time').html(options)
+                      $('#tour_type').html('<option value="">Select Tour Type</option>')     
+                    }
+                    $("#tour_type").change();
+                  },
+                  fail: function(error){
+                    console.log(error)
                   }
-                  else if(tour_types.length == 1){
-                    options += `<option value="${tour_types[0][0]}">${tour_types[0][1]}</option>`
-                    $('#tour_type').html(options)
-                    $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
-                    add_or_remove_question_mark(tour_types[0][0])
-                  }
-                  else{
-                    $('#tour_time').html(options)
-                    $('#tour_type').html('<option value="">Select Tour Type</option>')     
-                  }
-                  $("#tour_type").change();
-                },
-                fail: function(error){
-                  console.log(error)
-                }
-              });
-            }
-          else
-          {
-            $('#tour_type').html('<option value="">Select Tour Type</option>')
-            $('.tour_type_tip').addClass('hidden');
-          }
+                });
+              }
+              else
+              {
+                $('#tour_type').html('<option value="">Select Tour Type</option>')
+                $('.tour_type_tip').addClass('hidden');
+              }
+            // }
           });
         }
 
@@ -996,24 +1004,24 @@
           });
 
           $("#cancel-visit").on('click', function(e) {
-          $.ajax({
-            type: "POST",
-            url: "/destroy_schedual_tours/<%= params[:scheduled_tour_id]%>.json",
-            data: {community_id: community_id},
-            cache: false,
-            success: function(data){
-              if(data.logged_in) {
-                window.location.href = `${window.location.origin}/communities/${community_id}/scheduled_tours`;
-              } else {
-                window.location.href = window.location.origin
+            $.ajax({
+              type: "POST",
+              url: "/destroy_schedual_tours/<%= params[:scheduled_tour_id]%>.json",
+              data: {community_id: community_id},
+              cache: false,
+              success: function(data){
+                if(data.logged_in) {
+                  window.location.href = `${window.location.origin}/communities/${community_id}/scheduled_tours`;
+                } else {
+                  window.location.href = window.location.origin
+                }
+              },
+              fail: function(error){
+                console.log(error)
               }
-            },
-            fail: function(error){
-              console.log(error)
-            }
+            });
+            e.preventDefault();
           });
-          e.preventDefault();
-        });
         }
 
       });

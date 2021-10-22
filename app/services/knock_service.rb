@@ -29,6 +29,10 @@ class KnockService < BaseService
     {available_dates: tour_available_date, self_guided_available_time_slots: self_guided_slots, in_person_available_time_slots: in_person_slots }
   end
 
+  def available_tour_types date, day, time
+    [["guided_tour", "Guided Tour"]]
+  end
+
   def knock_crm
     if is_knock_crm && @scheduled_tour.property_tour_type.present?
       create_knock_prospect

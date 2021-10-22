@@ -213,9 +213,10 @@ class SchedualToursController < ApplicationController
   def get_tour_type
     community = Community.find params[:community_id]
     @use_yardi_as_lead = @community.use_yardi_as_lead?
+    @is_knock_community = @community.is_knock_community?
+
     date_time = params[:date] + " " +params[:time]
     date = DateTime.strptime(date_time, '%m/%d/%Y %l:%M %p')
-    tour_types = @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
     
     tour_time, day_diff = get_tour_datetime_and_diff date
     before_30_mints = tour_time.to_time - 30.minutes
@@ -235,6 +236,9 @@ class SchedualToursController < ApplicationController
       @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, end_time: after_30_mints, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
       @schedual_tour.save
     end
+
+    tour_types = @is_knock_community ? KnockService.new(@schedual_tour).available_tour_types( params[:date], params[:day], params[:time]) : @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
+
     render json: {tour_types: tour_types.uniq,limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
   end
 
@@ -572,7 +576,7 @@ Get information about your tour here: #{confirmation_page_link}"
     
     # Use callbacks to share common setup or constraints between actions.
     def set_schedual_tour
-      @schedual_tour = SchedualTour.find(params[:id])
+      @schedual_tour = SchedualTour.find_by_id(params[:id])
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
