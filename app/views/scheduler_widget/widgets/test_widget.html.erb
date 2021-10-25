@@ -858,7 +858,7 @@
         // Knock Date Picker
         if(is_knock_community && !isEmpty(knock_available_time_slots) && !is_virtual_on) {
           let minimumDate = moment();
-          
+          debugger;
           if (knock_available_time_slots.available_dates.length > 0) {
             minimumDate = knock_available_time_slots.available_dates[0];
             minimumDate = minimumDate.replaceAll("-", "/");

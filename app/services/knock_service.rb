@@ -6,12 +6,17 @@ class KnockService < BaseService
   end
  
   def create_knock_prospect
-    knock_prospect_response = create_prospect(knock_api_key, knock_prospect_payload) if is_knock_crm
+    binding.pry
+    knock_prospect_response = create_prospect(knock_prospect_api_key, knock_prospect_payload) if is_knock_crm
+    binding.pry
+    
     add_knock_prospect_id(knock_prospect_response["payload"]["id"]) if knock_prospect_response.present? && knock_prospect_response.success? && knock_prospect_response["payload"]["id"].present?
   end
 
   def create_knock_appointment
+    binding.pry
     knock_appointment_response = create_appointment(knock_api_key, knock_appointment_payload) if is_knock_crm && @scheduled_tour.property_tour_type === "scheduled_tour"
+    binding.pry
     add_knock_appointment_id(knock_appointment_response["appointment"]["id"])
   end
 
@@ -34,6 +39,7 @@ class KnockService < BaseService
   end
 
   def knock_crm
+    binding.pry
     if is_knock_crm && @scheduled_tour.property_tour_type.present?
       create_knock_prospect
       create_knock_appointment if @scheduled_tour.property_tour_type === "scheduled_tour"
@@ -93,6 +99,10 @@ class KnockService < BaseService
     @scheduled_tour&.community&.crm_credential&.knock_api_key
   end
 
+  def knock_prospect_api_key
+    "syndication-prospect-TEST-KEY"
+  end
+
   def get_knock_community_id
     @scheduled_tour&.community&.crm_credential&.knock_community_id
   end
@@ -121,11 +131,17 @@ class KnockService < BaseService
   end
 
   def desire_bedrooms
-    if @scheduled_tour.desired_bedroom > 2
-      ["3_OR_MORE_BEDROOMS"]
-    else
-      ["#{@scheduled_tour.desired_bedroom}_BEDROOMS"]
-    end
+    binding.pry
+    # if @scheduled_tour.desired_bedroom.present?
+    #   if @scheduled_tour.desired_bedroom > 2
+    #     ["3_OR_MORE_BEDROOMS"]
+    #   else
+    #     ["#{@scheduled_tour.desired_bedroom}_BEDROOMS"]
+    #   end
+    # else
+    #   ["1_BEDROOM"]
+    # end
+    [ "STUDIO", "1_BEDROOM", "2_BEDROOMS", "3_OR_MORE_BEDROOMS" ]
   end
 
   def knock_message
@@ -174,7 +190,7 @@ class KnockService < BaseService
       "communityId": get_knock_community_id,
       "requestedTimes": [
         {
-          "startTime": "2021-09-29T09:00:00-07:00" #knock_tour_date_time
+          "startTime": knock_tour_date_time
         }
       ],
       "profile": {
@@ -204,6 +220,7 @@ class KnockService < BaseService
     timezone = get_community_time_zone(@scheduled_tour.community)
     tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
+    binding.pry
   end
 
   def get_community_time_zone(community)
