@@ -6,18 +6,25 @@ class KnockService < BaseService
   end
  
   def create_knock_prospect
-    binding.pry
     knock_prospect_response = create_prospect(knock_prospect_api_key, knock_prospect_payload) if is_knock_crm
-    binding.pry
     
+    puts "*************"*50
+    puts "----------------------------- Prospect Creation --------------------------"
+    puts knock_prospect_response
+    puts "*************"*50
+
     add_knock_prospect_id(knock_prospect_response["payload"]["id"]) if knock_prospect_response.present? && knock_prospect_response.success? && knock_prospect_response["payload"]["id"].present?
   end
 
   def create_knock_appointment
-    binding.pry
     knock_appointment_response = create_appointment(knock_api_key, knock_appointment_payload) if is_knock_crm && @scheduled_tour.property_tour_type === "scheduled_tour"
-    binding.pry
-    add_knock_appointment_id(knock_appointment_response["appointment"]["id"])
+
+    puts "*************"*50
+    puts "----------------------------- Appointment Creation --------------------------"
+    puts knock_appointment_response
+    puts "*************"*50
+
+    add_knock_appointment_id(knock_appointment_response["appointment"]["id"]) if knock_appointment_response["appointment"].present?
   end
 
   def cancel_knock_appointment
@@ -38,10 +45,9 @@ class KnockService < BaseService
     is_slot_present_in_self_guided_tour(available_slots, date, time)
   end
 
-  def knock_crm
-    binding.pry
+  def knock_crm reschedule
     if is_knock_crm && @scheduled_tour.property_tour_type.present?
-      create_knock_prospect
+      create_knock_prospect unless reschedule
       create_knock_appointment if @scheduled_tour.property_tour_type === "scheduled_tour"
     end
   end
@@ -131,17 +137,15 @@ class KnockService < BaseService
   end
 
   def desire_bedrooms
-    binding.pry
-    # if @scheduled_tour.desired_bedroom.present?
-    #   if @scheduled_tour.desired_bedroom > 2
-    #     ["3_OR_MORE_BEDROOMS"]
-    #   else
-    #     ["#{@scheduled_tour.desired_bedroom}_BEDROOMS"]
-    #   end
-    # else
-    #   ["1_BEDROOM"]
-    # end
-    [ "STUDIO", "1_BEDROOM", "2_BEDROOMS", "3_OR_MORE_BEDROOMS" ]
+    if @scheduled_tour.desired_bedroom.present?
+      if @scheduled_tour.desired_bedroom > 2
+        ["3_OR_MORE_BEDROOMS"]
+      else
+        ["#{@scheduled_tour.desired_bedroom}_BEDROOMS"]
+      end
+    else
+      ["1_BEDROOM"]
+    end
   end
 
   def knock_message
@@ -203,11 +207,8 @@ class KnockService < BaseService
         "occupants": 1,
         "leaseTermMonths": 12,
         "minBudget": 1000,
-        "maxBudget": 2000,
-        "pets": []
+        "maxBudget": 2000
       },
-      "message": knock_message, 
-      "firstContactType": "internet",
       "smsConsent": true,
       "smsConsentDisclaimer": sms_consent_disclaimer,
       "smsConsentUrl": get_knock_consent_url,
@@ -220,25 +221,26 @@ class KnockService < BaseService
     timezone = get_community_time_zone(@scheduled_tour.community)
     tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
-    binding.pry
+    tour_datetime || Time.now.in_time_zone(timezone)
   end
 
   def get_community_time_zone(community)
-    tz = Ziptz.new
-    timezone = nil
+    # tz = Ziptz.new
+    # timezone = nil
 
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    end
+    # if community.latitude.present? and community.longitude.present?
+    #   time_zone = Timezone.lookup(community.latitude, community.longitude)
+    #   timezone = time_zone.name
+    # end
 
-    if timezone.nil? and community.zip.present?
-      timezone = tz.time_zone_name(community.zip)
-    end
+    # if timezone.nil? and community.zip.present?
+    #   timezone = tz.time_zone_name(community.zip)
+    # end
 
-      return timezone
-    rescue
-      return "UTC"
+    #   return timezone
+    # rescue
+    #   return "UTC"
+    "MST"
   end
 
 end

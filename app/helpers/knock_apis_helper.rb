@@ -19,7 +19,6 @@ module KnockApisHelper
   # create an appointment of a prospect on knock crm
   def create_appointment knock_api_key, payload
     url = "#{ENV["KNOCK_BASE_URL"]}/appointment/request"
-
     response = HTTParty.post(url,
       body: payload.to_json,
       headers: {

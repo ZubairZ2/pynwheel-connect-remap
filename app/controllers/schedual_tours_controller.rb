@@ -123,13 +123,13 @@ class SchedualToursController < ApplicationController
       knock_prospect_ip = Rails.env.development? ? "127.0.0.0" : (request.ip || request.remote_ip)
       schedual_tour.update_attributes(knock_prospect_ip_address: knock_prospect_ip, tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code],yardirentcafe_prospect_id: response.present? ? response[0] : nil, yardirentcafe_appointment_id: response.present? ? response[1] : nil, realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
       
-      KnockService.new(schedual_tour).knock_crm
-
       if previous_tour[:is_rescheduled]
         is_rescheduled = true
         new_tour.delete
       end
       
+      KnockService.new(schedual_tour).knock_crm(is_rescheduled)
+
       begin
         sent_notifications = send_email_and_other_notifications(schedual_tour,previous_tour,is_rescheduled,property_tour_type)
       rescue Exception => e
@@ -329,8 +329,8 @@ class SchedualToursController < ApplicationController
     tu = @schedual_tour.tour_user
     respond_to do |format|
       if @schedual_tour.save 
-
         begin
+          KnockService.new(@schedual_tour).knock_crm(true)
           property_tour_type = @schedual_tour.property_tour_type.present? ? @schedual_tour.property_tour_type : "scheduled_tour"
           sent_notifications = send_email_and_other_notifications(@schedual_tour, previous_tour, true, property_tour_type)
     
