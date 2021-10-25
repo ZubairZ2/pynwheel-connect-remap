@@ -237,7 +237,7 @@ class SchedualToursController < ApplicationController
       @schedual_tour.save
     end
 
-    tour_types = @is_knock_community ? KnockService.new(@schedual_tour).available_tour_types( params[:date], params[:day], params[:time]) : @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
+    tour_types = @is_knock_community ? KnockService.new(@schedual_tour).knock_available_tour_types( params[:date], params[:day], params[:time]) : @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
 
     render json: {tour_types: tour_types.uniq,limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
   end

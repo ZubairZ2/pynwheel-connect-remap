@@ -29,8 +29,8 @@ class KnockService < BaseService
     {available_dates: tour_available_date, self_guided_available_time_slots: self_guided_slots, in_person_available_time_slots: in_person_slots }
   end
 
-  def available_tour_types date, day, time
-    [["guided_tour", "Guided Tour"]]
+  def knock_available_tour_types date, day, time
+    is_slot_present_in_self_guided_tour(available_slots, date, time)
   end
 
   def knock_crm
@@ -41,6 +41,24 @@ class KnockService < BaseService
   end
 
   private
+
+  def is_slot_present_in_self_guided_tour knock_slots, date, time
+    tour_type = []
+    date = date.gsub('/',"-")
+
+    is_self_guided_tour = knock_slots[:self_guided_available_time_slots][date]
+    is_in_person_tour = knock_slots[:in_person_available_time_slots][date]
+
+    if is_self_guided_tour.present? && is_self_guided_tour.include?(time)
+      tour_type << ["guided_tour", "Guided Tour"]
+    end
+
+    if is_in_person_tour.present? && is_in_person_tour.include?(time)
+      tour_type << ["self_tour", "Self Tour"]
+    end
+
+    tour_type
+  end
 
   def get_tour_available_dates self_guided_slots, in_person_slots
     (self_guided_slots.keys | in_person_slots.keys).sort

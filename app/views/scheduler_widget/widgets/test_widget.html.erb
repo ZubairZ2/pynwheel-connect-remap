@@ -754,57 +754,50 @@
         $("#tour_type").attr("disabled", true);
         if(!form_for_reschedule_tour){
           $("#tour_time").on("change", function() {
-            // if(is_knock_community && !isEmpty(knock_available_time_slots) && !is_virtual_on) {
-            //   set_knock_tour_type(knock_available_time_slots, $(this).val())
-            //   debugger;
-            // } else {
-              debugger;
-              if ($(this).val() != ""){
-                debugger;
-
-                $("#tour_type").attr("disabled", false);
-                day = (new Date($("#tour_date").val())).getDay()
-                date = $("#tour_date").val()
-                time = $(this).val()
-                $.ajax({
-                  type: "GET",
-                  url: "/schedual_tours/get_tour_type",
-                  data: {day: day, time: time, date: date, schedual_tour_id: tour_id, community_id: $('#community_id').val()},
-                  success: function(data){
-                    tour_types = data["tour_types"]
-                    options = '<option value="">Select Tour Type</option>'
-                    tour_id = data["schedual_tour_id"];
-                    $('#sched_tour_id').val(tour_id)
-                    $('#limit_tour_type_error_arr').val(data["limit_exceded_tour_types"])
-                    if (tour_types.length > 1){
-                      for (let i = 0; i < tour_types.length; ++i) {
-                        options += `<option value="${tour_types[i][0]}" >${tour_types[i][1]}</option>`
-                      }
-                      $('#tour_type').html(options)
+            if ($(this).val() != ""){
+              day = (new Date($("#tour_date").val())).getDay()
+              date = $("#tour_date").val()
+              time = $(this).val()
+              $.ajax({
+                type: "GET",
+                url: "/schedual_tours/get_tour_type",
+                data: {day: day, time: time, date: date, schedual_tour_id: tour_id, community_id: $('#community_id').val()},
+                success: function(data){
+                  $("#tour_type").attr("disabled", false);
+                  tour_types = data["tour_types"]
+                  options = '<option value="">Select Tour Type</option>'
+                  tour_id = data["schedual_tour_id"];
+                  $('#sched_tour_id').val(tour_id)
+                  $('#limit_tour_type_error_arr').val(data["limit_exceded_tour_types"])
+                  if (tour_types.length > 1){
+                    for (let i = 0; i < tour_types.length; ++i) {
+                      options += `<option value="${tour_types[i][0]}" >${tour_types[i][1]}</option>`
                     }
-                    else if(tour_types.length == 1){
-                      options += `<option value="${tour_types[0][0]}">${tour_types[0][1]}</option>`
-                      $('#tour_type').html(options)
-                      $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
-                      add_or_remove_question_mark(tour_types[0][0])
-                    }
-                    else{
-                      $('#tour_time').html(options)
-                      $('#tour_type').html('<option value="">Select Tour Type</option>')     
-                    }
-                    $("#tour_type").change();
-                  },
-                  fail: function(error){
-                    console.log(error)
+                    $('#tour_type').html(options)
                   }
-                });
-              }
-              else
-              {
-                $('#tour_type').html('<option value="">Select Tour Type</option>')
-                $('.tour_type_tip').addClass('hidden');
-              }
-            // }
+                  else if(tour_types.length == 1){
+                    options += `<option value="${tour_types[0][0]}">${tour_types[0][1]}</option>`
+                    $('#tour_type').html(options)
+                    $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
+                    add_or_remove_question_mark(tour_types[0][0])
+                  }
+                  else{
+                    $('#tour_time').html(options)
+                    $('#tour_type').html('<option value="">Select Tour Type</option>')     
+                  }
+                  $("#tour_type").change();
+                },
+                fail: function(error){
+                  $("#tour_type").attr("disabled", true);
+                  console.log(error)
+                }
+              });
+            }
+            else
+            {
+              $('#tour_type').html('<option value="">Select Tour Type</option>')
+              $('.tour_type_tip').addClass('hidden');
+            }
           });
         }
 
@@ -864,9 +857,16 @@
         
         // Knock Date Picker
         if(is_knock_community && !isEmpty(knock_available_time_slots) && !is_virtual_on) {
+          let minimumDate = moment();
+          
+          if (knock_available_time_slots.available_dates.length > 0) {
+            minimumDate = knock_available_time_slots.available_dates[0];
+            minimumDate = minimumDate.replaceAll("-", "/");
+          }
+
           $('.schedule_datepicker').datetimepicker({
               format : 'MM/DD/YYYY',
-              minDate: moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
+              minDate: minimumDate, // moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
               showTodayButton: true,
               showClear: true,
               showClose: true,
@@ -1039,9 +1039,8 @@
       function getKnockAvailableTimeSlots(knockData, selectedDate) {
         let selfGuided = knockData.self_guided_available_time_slots
         let inPerson = knockData.in_person_available_time_slots
-        let selfGuidedTimes = selfGuided[selectedDate]
-        let inPersonTimes = inPerson[selectedDate]
-        
+        let selfGuidedTimes = selfGuided[selectedDate] ?  selfGuided[selectedDate] : []
+        let inPersonTimes = inPerson[selectedDate] ? inPerson[selectedDate] : []
         return mergeKnockTimeSlots(selfGuidedTimes, inPersonTimes)
       }
 
