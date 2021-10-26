@@ -112,6 +112,12 @@
                               .col-lg-1{style: "float: right;"}
                                 - if (current_user.is_super_admin?)
                                   %i.fa.fa-remove{class: "history_cross","data-name"=>"visitor history", "data-href" => "/communities/#{@community.id}/tour_users/#{user.id}?history=true", "data-target" => "#confirm-delete-visitor", "data-toggle" => "modal"}
+                              - if user.property_access_code.present? && @community.tour.tour_setting.enable_restricted_property_access
+                                %div{style: "margin-top: inherit"}
+                                  Access Code: #{user.property_access_code}
+                                  - tour_length = @community.tour.tour_setting.length_stay_limit
+                                  - if Time.now > (user.property_access_code_generated_at + tour_length.minutes)
+                                    %i.fa.fa-exclamation-triangle.icon_size.expiredTourToolTip{"data-content" => "Access Code has expired", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"}
                             - else
                               Removed at Consumer Request
 

@@ -1162,10 +1162,6 @@ class Community < ApplicationRecord
     bedroom_list
   end
 
-  def generate_property_access_code
-    (SecureRandom.random_number * (10**6)).round.to_s
-  end
-
   private
 
     #return_time_slots("0:00", "01:00", 15)

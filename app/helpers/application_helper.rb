@@ -1227,4 +1227,8 @@ module ApplicationHelper
     arr.to_h
   end
 
+  def generate_six_digit_random_pin
+    (SecureRandom.random_number * (10**6)).round.to_s
+  end
+
 end

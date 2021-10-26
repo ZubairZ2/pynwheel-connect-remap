@@ -615,6 +615,7 @@ Rails.application.routes.draw do
       post :save_tour_history, to: 'tour_histories#save_tour_history'
       post :alerts_during_tour, to: 'tour_histories#alerts_during_tour'
       get :get_tour_history, to: 'tour_histories#get_tour_history'
+      post :verify_property_access_code, to: 'tour_histories#verify_property_access_code'
 
       # ID/Selfie get status
       get :get_id_selfie_mismatch_status, to: 'tours#get_id_selfie_mismatch'

@@ -212,17 +212,20 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
-  def restrict_property_access_with_code(community,tour_user,tour_type)
-    enabled_property_access = community&.tour&.tour_setting&.enable_restricted_property_access
-    tour_length_stay_limit = community&.tour&.tour_setting&.length_stay_limit
-    access_code_generated_at = tour_user.property_access_code_generated_at
-    if enabled_property_access == true && tour_type != "virtual_tour" && (access_code_generated_at.nil? || Time.now > access_code_generated_at + tour_length_stay_limit.minutes) 
-      tour_user.property_access_code = community.generate_property_access_code
+  def restrict_property_access_with_code(community,tour_user,tour_type)    
+    if tour_type != "virtual_tour" && tour_user.check_code_expiry(community) 
+      tour_user.property_access_code = generate_six_digit_random_pin
       tour_user.property_access_code_generated_at = Time.now
       @property_access = true
+      sleep 1
     else
       @property_access = false
     end
+  end
+
+  #TODO:: Incase if you need to create tourhistory here otherwise remove it.
+  def create_tour_history(tour_user,tour_type)
+    TourHistory.new(tour_user_id: tour_user.id, tour_type: tour_type) rescue TourHistory.new
   end
   
   def delete_tour_stop
