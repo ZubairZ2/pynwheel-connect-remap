@@ -7,28 +7,20 @@ class KnockService < BaseService
  
   def create_knock_prospect
     knock_prospect_response = create_prospect(knock_prospect_api_key, knock_prospect_payload) if is_knock_crm
-    
-    puts "*************"*50
-    puts "----------------------------- Prospect Creation --------------------------"
-    puts knock_prospect_response
-    puts "*************"*50
-
-    add_knock_prospect_id(knock_prospect_response["payload"]["id"]) if knock_prospect_response.present? && knock_prospect_response.success? && knock_prospect_response["payload"]["id"].present?
+    display_logs("Create Prospect", knock_prospect_response)
+    add_knock_prospect_id(knock_prospect_response["payload"]["id"]) if prospect_created(knock_prospect_response)
   end
 
   def create_knock_appointment
     knock_appointment_response = create_appointment(knock_api_key, knock_appointment_payload) if is_knock_crm && @scheduled_tour.property_tour_type === "scheduled_tour"
-
-    puts "*************"*50
-    puts "----------------------------- Appointment Creation --------------------------"
-    puts knock_appointment_response
-    puts "*************"*50
-
-    add_knock_appointment_id(knock_appointment_response["appointment"]["id"]) if knock_appointment_response["appointment"].present?
+    display_logs("Create Appointment", knock_appointment_response)
+    add_knock_appointment_id(knock_appointment_response["payload"]["appointment"]["id"]) if appointment_created(knock_appointment_response)
   end
 
   def cancel_knock_appointment
-    cancel_appointment(knock_api_key, @scheduled_tour.knock_appointment_id)  if is_knock_crm
+    cancel_appointment_response = cancel_appointment(knock_api_key, @scheduled_tour.knock_appointment_id)  if @scheduled_tour.knock_appointment_id.present?
+    display_logs("Cancel Appointment", cancel_appointment_response)
+    add_knock_appointment_id(nil) if appointment_canceled(cancel_appointment_response)
   end
 
   def available_slots
@@ -47,12 +39,25 @@ class KnockService < BaseService
 
   def knock_crm reschedule
     if is_knock_crm && @scheduled_tour.property_tour_type.present?
+      cancel_knock_appointment if reschedule && @scheduled_tour.property_tour_type === "scheduled_tour"
       create_knock_prospect unless reschedule
       create_knock_appointment if @scheduled_tour.property_tour_type === "scheduled_tour"
     end
   end
 
   private
+
+  def appointment_canceled resp
+    resp["payload"].present? && resp["payload"]["appointment"].present? && resp["payload"]["appointment"]["status"] === "CANCELLED" && resp["payload"]["appointment"]["id"].present?
+  end
+
+  def prospect_created resp
+    resp.present? && resp.success? && resp["payload"]["id"].present?
+  end
+
+  def appointment_created resp
+    resp["payload"].present? && resp["payload"]["appointment"].present? && resp["payload"]["appointment"]["status"] === "CONFIRMED" && resp["payload"]["appointment"]["id"].present?
+  end
 
   def is_slot_present_in_self_guided_tour knock_slots, date, time
     tour_type = []
@@ -222,6 +227,13 @@ class KnockService < BaseService
     tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
     tour_datetime || Time.now.in_time_zone(timezone)
+  end
+
+  def display_logs msg, resp
+    puts "*************"*50
+    puts "----------------------------- #{msg} --------------------------"
+    puts resp
+    puts "*************"*50
   end
 
   def get_community_time_zone(community)
