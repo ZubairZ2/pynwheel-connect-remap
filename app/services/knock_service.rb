@@ -48,7 +48,7 @@ class KnockService < BaseService
   private
 
   def appointment_canceled resp
-    resp["payload"].present? && resp["payload"]["appointment"].present? && resp["payload"]["appointment"]["status"] === "CANCELLED" && resp["payload"]["appointment"]["id"].present?
+    resp.present? && resp["payload"].present? && resp["payload"]["appointment"].present? && resp["payload"]["appointment"]["status"] === "CANCELLED" && resp["payload"]["appointment"]["id"].present?
   end
 
   def prospect_created resp
@@ -56,7 +56,7 @@ class KnockService < BaseService
   end
 
   def appointment_created resp
-    resp["payload"].present? && resp["payload"]["appointment"].present? && resp["payload"]["appointment"]["status"] === "CONFIRMED" && resp["payload"]["appointment"]["id"].present?
+    resp.present? && resp["payload"].present? && resp["payload"]["appointment"].present? && resp["payload"]["appointment"]["status"] === "CONFIRMED" && resp["payload"]["appointment"]["id"].present?
   end
 
   def is_slot_present_in_self_guided_tour knock_slots, date, time
