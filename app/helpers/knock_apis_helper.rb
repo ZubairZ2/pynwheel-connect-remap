@@ -72,7 +72,7 @@ module KnockApisHelper
     url = "#{ENV["KNOCK_BASE_URL"]}/visit"
 
     response = HTTParty.post(url,
-      body: payload,
+      body: payload.to_json,
       headers: {
       'Content-Type' => 'application/json',
       'x-api-key' => knock_api_key

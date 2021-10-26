@@ -45,7 +45,25 @@ class KnockService < BaseService
     end
   end
 
+  def save_prospect_visit
+
+  end
+
   private
+
+  def visit_payload
+    {
+      "appointmentId": "9990999",
+      "prospectId": "251",
+      "visitTime": "2020-03-30T23:22:06.214Z",
+      "isSelfGuided": true,
+      "sourceTitle": "Property Website",
+      "unitNames": [
+        "unit_1"
+      ],
+      "phone": "251"
+    }
+  end
 
   def appointment_canceled resp
     resp.present? && resp["payload"].present? && resp["payload"]["appointment"].present? && resp["payload"]["appointment"]["status"] === "CANCELLED" && resp["payload"]["appointment"]["id"].present?

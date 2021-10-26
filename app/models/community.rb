@@ -312,7 +312,7 @@ class Community < ApplicationRecord
   end
 
   def is_salesforce_community?
-    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.salesforce_username.present?
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.salesforce_username.present? && self.crm_credential.crm_provider === "salesforce"
   end
 
   def select_yardi_provider

@@ -45,29 +45,21 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both(@mail_content, community)
       end
 
-      # if self.id_mismatch and !self.is_left
-      #   community = (Tour.find_by_id self.tour_id).community
-      #   vs = self.tour_user
-      #   url = Rails.env.production? ? "https://pynwheelconnect.com/id_selfie_matching/#{vs.id }?community=#{community.id}" : "https://pynwheel-staging.herokuapp.com/id_selfie_matching/#{vs.id }?community=#{community.id}"
-      #   @mail_content = ["id_mismatch", "The photo ID/selfie for #{vs.name} were flagged as a mis-match <br/> <a href='#{url}' target='_blank'> Visitor's ID page </a>"] #get_alert_message('id_mismatch')
-      #   send_email_sms_or_both @mail_content
-      # end
-
       if self.left.present? and !self.is_left
         self.update_columns(is_left: true)
         @mail_content = ["tour_has_ended", "#{self.tour_user.name.capitalize} has completed a tour of #{community.name}"] #get_alert_message('tour_has_ended')
         url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
-        # @mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}" + "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
 
         touruser = self.tour_user
-        scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id).last #MaxDateScheduledTourService.new(touruser, community, false).get_scheduled_tour rescue community.schedual_tours.where(tour_user_id: touruser.id).last
+        scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id).last
+
         if touruser.tour_type == "self_tour" && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )         
           if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
             scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
           end
-        end 
+        end
+
         if touruser.tour_type == "virtual_tour" && (scheduled_tour&.property_tour_type.present? && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour"))
-          # scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id)
           scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
         end
 
@@ -76,68 +68,35 @@ class TourHistory < ApplicationRecord
         end
 
         tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}"
+
         @complete_tour_content = ["#{community.name} has been visited", "#{touruser.name.capitalize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.capitalize} Visitor Details</a> "]
+        
         if self.tour_user_id == 1445
           @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "completed Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         else
           @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         end
+
         tour_user_remotelock_data(community)
-
-        # tour = (Tour.find_by_id self.tour_id)
-        # assigned_pin = self.tour_user.as_guests.find_by(community_id: tour.community.id).edgestate_pin if tour.present? and self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
-        # ImportRemotelockEventsJob.perform_in(2.5.minute.seconds.to_i, self.tour_user, self, assigned_pin) if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
-        # ImportRemotelockEventsWorker.perform_at(30.minutes.from_now, self.tour_user.id.to_s, self.id.to_s, assigned_pin)
-        # email_content = "Events for #{self.tour_user.name} with tour id #{self.tour_user.id} are imported in pynwheel, while the tour history id is #{self.id} and the assigned pin is #{assigned_pin}" if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
-        # DelayedSchedulerMailerJob.perform_async("Remote Lock Events", email_content, "humza4142@gmail.com","Lock History has been imported","check the database, its ran in callback","humza4142@gmail.com") if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
-
         send_email_sms_or_both(@mail_content, community)
         send_email_sms_or_both(@complete_tour_content, community)
         send_email_sms_or_both_to_touruser(@thank_you_content, community)
-        # community.deleted_ids = []
 
         puts "----------------"*50
         puts "Tour Successfyly Completed"
         puts "----------------"*50
         
-        if community.credential.present? and community.crm_credential.present? and community.crm_credential.crm_provider == "salesforce"
-          save_salesforce_feedback_data(community, touruser)
-        else
-          save_prospect(self.left, community)
-        end
+        community.is_salesforce_community? ? save_salesforce_feedback_data(community, touruser) : save_prospect(self.left, community)
         community.save
       end
 
       if self.abandoned_tour_at_stop.present?
-
-        # @mail_content = ["abandoned_tour_at_stop", "A tour was abandoned before it was completed at "] #get_alert_message('abandoned_tour_at_stop')
-        # @mail_content[1] = "#{@mail_content.last} stop #{(TourStop.find self.abandoned_tour_at_stop.to_i).name rescue "Not Found"}."
-        # @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
-      #   touruser_remotelock_data
-
-      #   # tour = (Tour.find_by_id self.tour_id)
-      #   # assigned_pin = self.tour_user.as_guests.find_by(community_id: tour.community.id).edgestate_pin if tour.present? and self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
-      #   # ImportRemotelockEventsJob.perform_in(2.5.minute.seconds.to_i, self.tour_user, self, assigned_pin) if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
-      #   # ImportRemotelockEventsWorker.perform_at(30.minutes.from_now, self.tour_user.id.to_s, self.id.to_s, assigned_pin)
-
-      #   # email_content = "Events for #{self.tour_user.name} with tour id #{self.tour_user.id} are imported in pynwheel, while the tour history id is #{self.id} and the assigned pin is #{assigned_pin}" if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
-      #   # DelayedSchedulerMailerJob.perform_async("Remote Lock Events", email_content, "humza4142@gmail.com","Lock History has been imported","check the database, its ran in callback","humza4142@gmail.com") if self.tour_user.present? and self.tour_user.as_guests.find_by(community_id: tour.community.id).present?
-
-        # send_email_sms_or_both(@mail_content, community)
-        # send_email_sms_or_both_to_touruser(@thank_you_content, community)
         touruser = self.tour_user
-
         puts "----------------"*50
         puts "Tour Successfyly Abandoned"
         puts "----------------"*50
 
-        if community.credential.present? and community.crm_credential.present? and community.crm_credential.crm_provider == "salesforce"
-          save_salesforce_feedback_data(community, touruser)
-        end
-
-      #   # community.deleted_ids = []
-      #   save_prospect(self.lengthy_stay)
-      #     community.save
+        save_salesforce_feedback_data(community, touruser) if community.is_salesforce_community?
       end
 
     end
@@ -149,7 +108,6 @@ class TourHistory < ApplicationRecord
     puts current_tour
     puts "************"*100
     if current_tour.present?
-      # current_tour.tour_key = "450e96530bb8ae7af1b3f3d019a6a055" # testing line
       Prospect.where(community_id: community.id, tour_user_id: tour_user.id, crm_provider: "salesforce", sf_status: "active").update_all(tour_key: current_tour.tour_key)
       community.send_feedback_to_salesforce(tour_user, self)
     end
@@ -162,7 +120,6 @@ class TourHistory < ApplicationRecord
       if community.present? && community.latitude.present? && community.longitude.present?
         timezone = get_time_zone(community)
       end
-
 
       timezone = timezone || scheduled_tour.user_time_zone
       grace_period = tour.grace_period
