@@ -255,22 +255,21 @@ class KnockService < BaseService
   end
 
   def get_community_time_zone(community)
-    # tz = Ziptz.new
-    # timezone = nil
+    tz = Ziptz.new
+    timezone = nil
 
-    # if community.latitude.present? and community.longitude.present?
-    #   time_zone = Timezone.lookup(community.latitude, community.longitude)
-    #   timezone = time_zone.name
-    # end
+    if community.latitude.present? and community.longitude.present?
+      time_zone = Timezone.lookup(community.latitude, community.longitude)
+      timezone = time_zone.name
+    end
 
-    # if timezone.nil? and community.zip.present?
-    #   timezone = tz.time_zone_name(community.zip)
-    # end
+    if timezone.nil? and community.zip.present?
+      timezone = tz.time_zone_name(community.zip)
+    end
 
-    #   return timezone
-    # rescue
-    #   return "UTC"
-    "MST"
+      return timezone
+    rescue
+      return "MST"
   end
 
 end

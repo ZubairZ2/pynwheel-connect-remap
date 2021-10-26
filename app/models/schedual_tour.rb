@@ -27,12 +27,7 @@ class SchedualTour < ApplicationRecord
   # validates :tour_time, presence: true
 
   scope :desc_created_at, -> {order(tour_date: :desc)}
-  after_destroy :cancel_knock_appointment
   COUNTRY_CODES =  JSON.parse(File.read(Rails.root.join("app/assets/javascripts/country_codes.json")))
-  
-  def cancel_knock_appointment
-    KnockService.new(self).cancel_knock_appointment if self.knock_appointment_id.present?
-  end
 
   def add_user_in_zerv
     if self.tour_user_id.present? and community.enable_locks and community.multiple_locks_provider.include?("Zerv")
