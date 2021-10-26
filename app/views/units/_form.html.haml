@@ -118,7 +118,7 @@
       - @all_locks[:zerv_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
   - if locks_present_hash["Igloohome"]
-    = hidden_field_tag "igloohome_lock_input_value", (@community.auto_wayfinding and @door.present?) ? (@door.igloohome_lock.present? ? @door.igloohome_lock.device_name : '') : ( @unit.igloohome_locks.present? ? @unit.igloohome_locks.first.device_name : '' )
+    = hidden_field_tag "igloohome_lock_input_value", (@door.present?) ? (@door.igloohome_lock.present? ? @door.igloohome_lock.device_name : '') : ( @unit.igloohome_locks.present? ? @unit.igloohome_locks.first.device_name : '' )
     .igloohome_options.hide_it
       - @all_locks[:igloohome_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
@@ -128,7 +128,7 @@
       Select Lock Type
       %span Select the access provider for this stop
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), (@community.auto_wayfinding and @door.present?) ? @door.lock_provider : f.object.lock_provider),{},{:class=>"form-control lock_provider_input"}
+      = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), (@door.present?) ? @door.lock_provider : f.object.lock_provider),{},{:class=>"form-control lock_provider_input"}
 
   .form-group.hide_it#manual_access_code
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
