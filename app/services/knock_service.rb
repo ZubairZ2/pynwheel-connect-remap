@@ -42,7 +42,7 @@ class KnockService < BaseService
   def knock_crm reschedule
     if is_knock_crm && @scheduled_tour.property_tour_type.present?
       cancel_knock_appointment if reschedule && @scheduled_tour.property_tour_type === "scheduled_tour"
-      create_knock_prospect unless reschedule
+      create_knock_prospect unless @scheduled_tour.knock_prospect_id.present?
       create_knock_appointment if @scheduled_tour.property_tour_type === "scheduled_tour"
     end
   end
