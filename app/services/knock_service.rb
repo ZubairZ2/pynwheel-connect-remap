@@ -3,6 +3,8 @@ class KnockService < BaseService
 
   def initialize scheduled_tour
     @scheduled_tour = scheduled_tour
+    @community = @scheduled_tour.community
+    @tour_user = @scheduled_tour.tour_user
   end
  
   def create_knock_prospect
@@ -121,11 +123,11 @@ class KnockService < BaseService
   end
 
   def is_knock_crm
-    @scheduled_tour.community.is_knock_community?
+    @community.is_knock_community?
   end
 
   def knock_api_key
-    @scheduled_tour&.community&.crm_credential&.knock_api_key
+    @community&.crm_credential&.knock_api_key
   end
 
   def knock_prospect_api_key
@@ -133,11 +135,11 @@ class KnockService < BaseService
   end
 
   def get_knock_community_id
-    @scheduled_tour&.community&.crm_credential&.knock_community_id
+    @community&.crm_credential&.knock_community_id
   end
 
   def get_knock_consent_url
-    @scheduled_tour&.community&.crm_credential&.knock_sms_consent_url
+    @community&.crm_credential&.knock_sms_consent_url
   end
 
   def prospect_move_in_date
@@ -187,14 +189,14 @@ class KnockService < BaseService
   def knock_prospect_payload
     {
       "communityId": get_knock_community_id,
-      "firstName": @scheduled_tour&.tour_user&.first_name,
-      "lastName": @scheduled_tour&.tour_user&.last_name,
-      "email": @scheduled_tour&.tour_user&.email,
-      "phone": @scheduled_tour&.tour_user&.phone_number,
-      "address": @scheduled_tour&.community&.address,
-      "city": @scheduled_tour&.community&.city,
-      "state": @scheduled_tour&.community&.state.slice(0, 2).upcase,
-      "zip": @scheduled_tour&.community&.zip,
+      "firstName": @tour_user.first_name,
+      "lastName": @tour_user.last_name,
+      "email": @tour_user.email,
+      "phone": @tour_user.phone_number,
+      "address": @community.address,
+      "city": @community.city,
+      "state": @community&.state.slice(0, 2).upcase,
+      "zip": @community.zip,
       "autorespond": true,
       "sourceTitle": "Property Website",
       "moveDate": prospect_move_in_date,
@@ -221,10 +223,10 @@ class KnockService < BaseService
         }
       ],
       "profile": {
-        "firstName": @scheduled_tour&.tour_user&.first_name,
-        "lastName": @scheduled_tour&.tour_user&.last_name,
-        "email": @scheduled_tour&.tour_user&.email,
-        "phone": @scheduled_tour&.tour_user&.phone_number,
+        "firstName": @tour_user.first_name,
+        "lastName": @tour_user.last_name,
+        "email": @tour_user.email,
+        "phone": @tour_user.phone_number,
         "moveDate": prospect_move_in_date,
         "bedrooms": desire_bedrooms,
         "occupants": 1,
@@ -241,7 +243,7 @@ class KnockService < BaseService
   end
 
   def knock_tour_date_time
-    timezone = get_community_time_zone(@scheduled_tour.community)
+    timezone = get_community_time_zone()
     tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
     tour_datetime || Time.now.in_time_zone(timezone)
@@ -254,17 +256,17 @@ class KnockService < BaseService
     puts "*************"*50
   end
 
-  def get_community_time_zone(community)
+  def get_community_time_zone()
     tz = Ziptz.new
     timezone = nil
 
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
+    if @community.latitude.present? and @community.longitude.present?
+      time_zone = Timezone.lookup(@community.latitude, @community.longitude)
       timezone = time_zone.name
     end
 
-    if timezone.nil? and community.zip.present?
-      timezone = tz.time_zone_name(community.zip)
+    if timezone.nil? and @community.zip.present?
+      timezone = tz.time_zone_name(@community.zip)
     end
 
       return timezone
