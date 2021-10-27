@@ -117,7 +117,7 @@
                                   Access Code: #{user.property_access_code}
                                   - tour_length = @community.tour.tour_setting.length_stay_limit
                                   - if Time.now > (user.property_access_code_generated_at + tour_length.minutes)
-                                    %i.fa.fa-exclamation-triangle.icon_size.expiredTourToolTip{"data-content" => "Access Code has expired", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"}
+                                    %i.fa.fa-exclamation-triangle.expiredTourToolTip{style: "margin-left: 3px", "data-content" => "Access Code has expired", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"}
                                   - else
                                     %i.propertyDetailName.fa.fa-question-circle{"data-content" => "Will be expired after #{tour_length} minutes", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"}
                             - else

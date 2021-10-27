@@ -218,14 +218,16 @@ class Api::V1::CommunitiesController < ActionController::Base
       tour_user.property_access_code_generated_at = Time.now
       @property_access = true
       sleep 1
+      create_tour_history(tour_user,tour_type,community)
     else
       @property_access = false
     end
   end
 
-  #TODO:: Incase if you need to create tourhistory here otherwise remove it.
-  def create_tour_history(tour_user,tour_type)
-    TourHistory.new(tour_user_id: tour_user.id, tour_type: tour_type) rescue TourHistory.new
+  #TODO:: Incase if you need to create tourhistory here otherwise remove it later.
+  def create_tour_history(tour_user,tour_type,community)
+    tour_history = TourHistory.find_or_create_by(tour_user_id: tour_user.id) rescue TourHistory.new
+    tour_history.update_attributes(community_id: community.id, tour_type: tour_type, tour_user_id: tour_user.id, tour_id: community.tour.id)
   end
   
   def delete_tour_stop

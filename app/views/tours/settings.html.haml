@@ -295,6 +295,8 @@
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
                   %span#propertyDetailNameText
                     If a visitor stays on tour past the time allotted here, the property will get a notification to check in with them.
+                    - if @community.tour.tour_setting.enable_restricted_property_access
+                      Also, property access code will be expired after this time period.
               .col-sm-12.col-lg-2.col-md-2.col-xs-12
                 %input.day-list.max-users-v.form-control{type: "number", id: "length_stay_limit", name: "length_stay_limit", min: "10", max:"300", value: @community.tour.tour_setting.length_stay_limit} 
               .col-sm-12.col-lg-2.col-md-2.col-xs-12.add_minutes_span{:style => "margin-top: 13px;"}
