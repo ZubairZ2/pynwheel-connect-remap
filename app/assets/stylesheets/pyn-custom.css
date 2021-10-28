@@ -6297,4 +6297,7 @@ footer.c-footer {
 .text-p{
     position: absolute !important;
 }
-
+.description-text{
+    overflow: auto;
+    height: 100px;
+}

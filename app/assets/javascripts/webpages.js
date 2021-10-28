@@ -1470,7 +1470,8 @@ function setModalAttributes(element) {
         }
         else
         {
-            $('#unitModal').find('#unit-description').html($(element).data('unit-description'));
+          $('#unitModal').find('#unit-description').html($(element).data('unit-description'));
+          $('#unit-description').addClass("description-text");
         }
     }
 
