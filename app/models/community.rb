@@ -247,6 +247,21 @@ class Community < ApplicationRecord
     end
   end
 
+  def get_time_in_24_hours_format time
+    arr = time.split(" ")
+    arr = arr[0].split(":")
+    hours = arr[0].to_i 
+    minutes = arr[1]
+
+    if time.include?("pm") || time.include?("PM")
+      hours = (hours == 12) ? hours : (hours + 12)
+      "#{hours.to_s}:#{minutes}"
+    else
+      hours = (hours == 12) ? "00" : hours
+      "#{hours.to_s}:#{minutes}"
+    end
+  end
+
   def data_is_imported
     case data_provider
       when "psi"
