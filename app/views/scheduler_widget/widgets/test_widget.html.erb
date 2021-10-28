@@ -865,6 +865,7 @@
 
           $('.schedule_datepicker').datetimepicker({
               format : 'MM/DD/YYYY',
+              defaultDate: minimumDate, 
               minDate: minimumDate, // moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
               showTodayButton: true,
               showClear: true,
@@ -1040,7 +1041,7 @@
         let inPerson = knockData.in_person_available_time_slots
         let selfGuidedTimes = selfGuided[selectedDate] ?  selfGuided[selectedDate] : []
         let inPersonTimes = inPerson[selectedDate] ? inPerson[selectedDate] : []
-        
+
         return  mergeKnockTimeSlots(selfGuidedTimes, inPersonTimes)
       }
 
