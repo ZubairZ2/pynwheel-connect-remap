@@ -299,7 +299,7 @@
                     - @amenities.each do |amenity|
                       - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
 
-                        = link_to "<span class='custom-icon' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>amenity.name
+                        = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>amenity.name
 
               .w-100.d-flex-justify-content-center.beans-map-container
                 .beanswidget#beanswidget.some{:style => "width:100%; height:100%"}
@@ -497,6 +497,14 @@
 :javascript
 
   var current_width = $(window).width();
+  
+  if ((current_width > 767 && current_width < 993) && (window.matchMedia("(orientation: landscape)").matches)) {
+   $(".c-modal-dialog").css("margin-top", "12%")
+  }
+  else if (current_width < 767 && (window.matchMedia("(orientation: landscape)").matches)) {
+   $(".c-modal-dialog").css("margin-top", "27%")
+   $("#responsive-floorplan-image").css("max-height", '300px')
+  }
   function iOSversion() {
 
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)
@@ -527,7 +535,7 @@
   var diff = 0
   var diffL = 0
   var ele = document.getElementsByClassName('fa-map-marker-alt-responsive');
-  var amenityEle = document.getElementsByClassName('custom-icon');
+  var amenityEle = document.getElementsByClassName('custom-icon-responsive');
   if (current_width < 993)
   {
     for (var i = 0; i < ele.length; i++ ) {

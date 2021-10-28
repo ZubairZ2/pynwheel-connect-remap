@@ -3706,7 +3706,6 @@ a#favoriteclickme {
 }
 
 @media (max-width:767px) {
-	
     .c-modal-dialog {
         overflow: auto !important;
     }
@@ -5518,6 +5517,9 @@ footer.c-footer {
 }
 
 @media screen and (max-width:993px){
+    .per-month-price-text{
+        bottom: unset !important;
+    }
     .header-inner{
         padding: 2px 14px 5px 16px;
     }
