@@ -1761,7 +1761,14 @@ function adjustAmenitiesPosition() {
     x_plot = (((stretched_image_width / actual_image_width) * x_plot));
     y_plot = (((stretched_image_height / actual_image_height) * y_plot));
 
-    $(this).css({"left": (x_plot + 4) + left_diff , "top": (y_plot) + 4});
+    if(actual_image_width > 1412){
+      x_plot = x_plot - 6
+      y_plot = y_plot - 7 
+    }
+    else{
+      y_plot = y_plot
+    }
+    $(this).css({"left": (x_plot) + left_diff , "top": (y_plot)});
   });
 }
 
