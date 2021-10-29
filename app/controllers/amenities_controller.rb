@@ -27,7 +27,7 @@ class AmenitiesController < ApplicationController
   def edit
     @community = Community.find params[:community_id]
     @amenity = Amenity.find (params[:id])
-    @doors = @amenity.doors
+    @doors = @amenity.doors.order("created_at ASC")
     if params[:unit].present?
       @unit = Unit.find (params[:unit])
     end
