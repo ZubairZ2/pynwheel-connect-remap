@@ -223,9 +223,13 @@ class WebpagesController < ActionController::Base
   def clear_favorites
     cookies[:favorite_unit_ids] = { value: JSON.generate([]), expiry: 5.years.from_now, same_site: :none}
     favorite = Favorite.find_by_session_id(cookies[:webpages_session_id]) 
-    favorite.unit_ids = []
-    favorite.save
-    flash[:notice] = "Favorites cleared successfully."
+    if favorite.present?
+      favorite.unit_ids = []
+      favorite.save
+      flash[:notice] = "Favorites cleared successfully."
+    else
+      flash[:error] = "There are no favorites to delete."
+    end
     redirect_back(fallback_location:"/")
     #redirect_to favorites_community_webpages_path(@community.id)
   end

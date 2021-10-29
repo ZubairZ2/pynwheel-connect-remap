@@ -311,7 +311,7 @@ $(window).bind('load', function () {
 
                 var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
                 var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
-                $('#marker-popover').css({left: (new_dx + 100) + "px", top: (new_dy - 120) + "px"});
+                $('#marker-popover').css({left: (new_dx + 100) + "px", top: (new_dy - 100) + "px"});
                 $('#marker-popover').removeClass('hidden');
               })
               .mouseleave(function () {

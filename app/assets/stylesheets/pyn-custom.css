@@ -3099,7 +3099,7 @@ a#favoriteclickme {
     padding: 15px;
     position: fixed;
     left: 0;
-    z-index: 99999999;
+    /* z-index: 99999999; */
     top: 0;
     bottom: 0;
     overflow: auto;
@@ -5520,6 +5520,12 @@ html, .add-fav-body {
 }
 
 @media screen and (max-width:993px){
+    .alert_message{
+        margin-left: unset !important;
+        position: absolute;
+        width: 100%;
+        top: 0;
+    }
     .secondary-wrapper{
         margin-left: unset !important;
     }
@@ -6324,6 +6330,15 @@ ul.add-fav-options {
 .description-text{
     overflow: auto;
     height: 100px;
+}
+.alert_message{
+    margin-left: 290px;
+    position: absolute;
+    width: 100%;
+    top: 0;
+}
+.pt{
+    top: 15px !important
 }
 @media only screen and (max-width:993px) and (orientation : landscape){
     .secondary-wrapper{

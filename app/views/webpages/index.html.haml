@@ -713,3 +713,9 @@
   var units = "#{@units_with_floorplan_info}";
   units = units.replace(/&quot;/g,'"');
   units = JSON.parse(units);
+  
+  var community_logo = "#{@community.logo.present? ? true : false}"
+  if(community_logo == "false" && current_width < 567){
+    debugger
+    $(".mobile-trigger").addClass("pt");
+  }
