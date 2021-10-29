@@ -835,8 +835,11 @@ json.tours @tours do |tour|
           _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
           lch = ShortestPath.return_stop_lock(_stop_) if @community.latch.present?
           if lch.present?
-
-            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: stop.stop_type.classify, status: "active") if @tour_user.present?
+            if lch.stop_type == "Door"
+              latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: lch.stop.id, guest_of_stop_type: lch.stop.class.name, status: "active") if @tour_user.present?
+            else
+              latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: stop.stop_type.classify, status: "active") if @tour_user.present?
+            end
             if latch_guest.present?
               json.guest_pin ''
               json.latch_link latch_guest.latch_link

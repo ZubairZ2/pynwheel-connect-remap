@@ -317,17 +317,23 @@ module DweloDevicesHelper
 
       locks_data = []
       locks_data << community.tour.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.tour.latch_locks.present?
-      
+
       units.each do |unit|
-        lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        if unit.door.present?
+          lock_info = unit.door.latch_lock.present? ? unit.door.latch_lock.latch_lock_columns : []
+        else
+          lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
+        end
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
-      
       amenities.each do |amenity|
-        lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        if amenity.doors.any?
+          lock_info = amenity.doors.first.latch_lock.present? ? amenity.doors.first.latch_lock.latch_lock_columns : []
+        else
+          lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
+        end
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
-      end
-      
+      end  
       elevators.each do |elevator|
         lock_info = elevator.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
