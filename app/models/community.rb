@@ -168,9 +168,9 @@ class Community < ApplicationRecord
     IgloohomeLock.where(igloohome_id: self.igloohome.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
   end
 
-  def get_igloohome_guest stop
+  def get_igloohome_guest stop, tour_user_id
     igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
-    IgloohomeGuest.where(community_id: self.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
+    IgloohomeGuest.where(tour_user_id: tour_user_id, community_id: self.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
   end
   
   def create_tour_also
