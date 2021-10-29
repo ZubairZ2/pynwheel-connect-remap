@@ -15,31 +15,15 @@ class IgloohomeService < BaseService
 
   private
 
-  def update_igloohome_guest_key_pin response, lock
-    igloohome_guests = @tour_user.igloohome_guests.where(community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type)
-    
-    bluetooth_key = nil
-    master_pin = nil
+  def update_igloohome_guest_key_pin response, lock, bluetooth_key = nil, master_pin = nil
     guest_pin = get_guest_pin(lock)
-
-   
 
     if response.success? && response["payload"].present? && response["payload"]["bluetoothGuestKey"].present? && response["payload"]["keyId"].present?
       bluetooth_key = response["payload"]["bluetoothGuestKey"]
       master_pin = response["payload"]["keyId"]
     end
 
-    puts "--------------------------------"*10
-    puts igloohome_guests.inspect
-    puts "--------------------------------"*10
-
-
-    if igloohome_guests.present? && igloohome_guests.last.present?
-      update_igloohome_guest(igloohome_guests.last, bluetooth_key, master_pin, guest_pin)
-    else
-      create_gloohome_guest(lock, bluetooth_key, master_pin, guest_pin)
-    end
-
+    create_gloohome_guest(lock, bluetooth_key, master_pin, guest_pin)
   end
 
   def get_guest_pin lock
@@ -51,15 +35,13 @@ class IgloohomeService < BaseService
     end
   end
 
-  def update_igloohome_guest igloohome_guest, bluetooth_key, master_pin, guest_pin
-    igloohome_guest.update!(guest_pin: guest_pin, guest_bluetooth_key: bluetooth_key, guest_key: master_pin)
-  end
-
   def create_gloohome_guest lock, bluetooth_key, master_pin, guest_pin
     IgloohomeGuest.create!(guest_pin: guest_pin, tour_user_id: @tour_user.id, community_id: @community.id, stop_id: lock.stop_id, stop_type: lock.stop_type, guest_bluetooth_key: bluetooth_key, guest_key: master_pin)
   end
 
   def get_igloohome_locks_guest_key igloohome_locks
+    IgloohomeGuest.where(community_id: @community.id, tour_user_id: @tour_user.id).delete_all
+
     igloohome_locks.each do |lock|
       if lock.device_id.present?
         response = get_device_bluetooth_key(lock)
