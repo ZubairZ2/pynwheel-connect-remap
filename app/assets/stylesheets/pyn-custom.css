@@ -3706,6 +3706,9 @@ a#favoriteclickme {
 }
 
 @media (max-width:767px) {
+    .custom-iframe-modeule .app-logo {
+        width: 20% !important;
+      }
     .c-modal-dialog {
         overflow: auto !important;
     }
@@ -5564,9 +5567,6 @@ html, .add-fav-body {
     display: block;
     height: auto;
   }
-  .custom-iframe-modeule .app-logo {
-    width: 20%;
-  }
   .mobile-trigger img {
     width: 18px;
   }
@@ -5744,9 +5744,9 @@ ul.add-fav-options {
     padding: 6px 15px 0 15px;
     /* padding-bottom: 7px; */
   }
-  .custom-iframe-modeule .app-logo {
+  /* .custom-iframe-modeule .app-logo {
       width: 50%;
-  }
+  } */
   .custom-iframe-modeule .selection-fields {
       width: 100%;
       padding: 0 0px 0 1px;
@@ -6328,5 +6328,12 @@ ul.add-fav-options {
 @media only screen and (max-width:993px) and (orientation : landscape){
     .secondary-wrapper{
         margin-right: 145px !important;
+    }
+    .selected-data-mobile {
+        margin-top: unset !important;
+    }
+    .custom-iframe-modeule .app-logo{
+        width: 15% !important;
+        margin-top: 8px !important;
     }
 }

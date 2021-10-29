@@ -52,7 +52,6 @@
                 - if @community.community_logo
                   %a.logo{:href => "#{@community.website if @community.website}"}
                     %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
-                -# %img{:alt => "", :src => "/assets/logo_webpage.png", :title => ""}/
               .selection-fields
                 - if @unit_bedrooms.present?
                   .selectable-field
