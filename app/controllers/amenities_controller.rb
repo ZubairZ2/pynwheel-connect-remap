@@ -172,7 +172,17 @@ class AmenitiesController < ApplicationController
     if @community.enable_locks
       if @amenity.doors.present?
         @door = @amenity.doors.find_by id: params[:door_id]
-        @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code], updated_at: Time.now.utc)
+        lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
+        if params[:lock_provider] == "Manual" && params[:access_code] == ""
+          @door.update_column(:lock_provider, "")
+          @door.update_column(:access_code, "")
+          @door.update_column(:updated_at, Time.now.utc)
+        elsif params[:lock_provider] != "Manual" && !lock_id.present?
+          @door.update_column(:lock_provider, "")
+          @door.update_column(:updated_at, Time.now.utc)
+        else
+          @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code], updated_at: Time.now.utc)  
+        end
         assign_lock_to_door(@community, @door, params[:lock_id]) if params[:lock_id].present?
       else
         @amenity.update_attributes(lock_provider: params[:amenity][:lock_provider], access_code: params[:access_code])
