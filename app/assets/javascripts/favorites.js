@@ -1,6 +1,8 @@
 $(window).on('resize', function(){
-  // $(".divLoading").removeClass("hidden");
-  // window.location.reload();
+  if(window.location.href.includes('favorites')){
+    $(".divLoading").removeClass("hidden");
+    window.location.reload();
+  }
   $('#sidebar-for-responsive').addClass("hidden");
   $('.h-class').removeClass('hidden');
   addAttributes();

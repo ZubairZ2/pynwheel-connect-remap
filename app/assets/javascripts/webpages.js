@@ -1517,16 +1517,15 @@ function setModalAttributes(element) {
   $('#unitModal').find('#total-market-rent').html('$' + $(element).data('market-rent'));
   
   ///////////////////////////////////////////
+  var unit_id = $(element).data('unit-id');
   selectedUnit = units.filter(a => (a.id === $(element).data('unit-id')))[0]
   if ($(element).data('is-fav') || favoritesArr.includes($(element).data('unit-id'))) {
     var community_id = $(element).data('community-id');
-    var unit_id = $(element).data('unit-id');
     var url = "/communities/" + community_id + "/webpages/delete_favorite?unit_id=" + unit_id;
     var html = '<a href="' + url + '" data-remote="true"><i class="fa fa-heart"></i></a>';
     $('#fav-icon-tag').html(html);
   } else {
     var community_id = $(element).data('community-id');
-    var unit_id = $(element).data('unit-id');
     var url = "/communities/" + community_id + "/webpages/save_favorite?unit_id=" + unit_id;
     var html = '<a href="' + url + '" data-remote="true"><i class="far fa-heart"></i></a>';
     $('#fav-icon-tag').html(html);

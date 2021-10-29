@@ -5410,7 +5410,7 @@ footer.c-footer {
 .add-fav-options li a {
 	text-decoration: unset;
 }
-.add-fav-body {
+html, .add-fav-body {
 	height: 100%;
 	margin: 0;
 }
@@ -5486,7 +5486,7 @@ footer.c-footer {
       padding: 10px 0 10px 0px;
   }
   .c-body {
-      margin-bottom: 100px;
+    margin-bottom: 100px;
   }
   .custom-iframe-modeule .header-buttons-groups {
       width: 50%;
@@ -5517,6 +5517,9 @@ footer.c-footer {
 }
 
 @media screen and (max-width:993px){
+    .secondary-wrapper{
+        margin-left: unset !important;
+    }
     .per-month-price-text{
         bottom: unset !important;
     }
@@ -5641,6 +5644,25 @@ footer.c-footer {
   }
 }
 
+ul.add-fav-options {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin: 0;
+}
+.add-fav-options li {
+    list-style: none;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
 @media screen and (max-width:567px){
    .res-fav-footer{
       padding-top: 15px !important;
@@ -5753,29 +5775,29 @@ footer.c-footer {
       padding-right: 11px;
   }
 	.add-fav-body .secondary-sidebar-color {
-    bottom: 0;
-    display: block;
-    padding: 20px 0 20px 0px;
+        bottom: 0;
+        display: block;
+        padding: 20px 0 20px 0px;
 	}
 	ul.add-fav-options {
-    display: block;
-    height: auto;
-		width: auto;
-    margin: auto;
-    padding: 0;
+        display: block;
+        height: auto;
+        width: auto;
+        margin: auto;
+        padding: 0;
 	}
 	.add-fav-options li {
-			height: auto;
-			display: inline-block;
-			padding: 0px 5% 0 5%;
+        height: auto;
+        display: inline-block;
+        padding: 0px 5% 0 5%;
 	}
 	.want-to-add-fav-container {
-			height: auto !important;
-			display: block !important;
-			padding: 50px 20px !important;
+        height: auto !important;
+        display: block !important;
+        padding: 50px 20px !important;
 	}
 	.want-to-add-fav-container .add-fav-description br {
-			display: none !important;
+		display: none !important;
 	}
 }
 @media screen and (max-width:400px){
@@ -6302,4 +6324,9 @@ footer.c-footer {
 .description-text{
     overflow: auto;
     height: 100px;
+}
+@media only screen and (max-width:993px) and (orientation : landscape){
+    .secondary-wrapper{
+        margin-right: 145px !important;
+    }
 }
