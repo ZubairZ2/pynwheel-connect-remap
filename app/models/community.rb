@@ -262,6 +262,24 @@ class Community < ApplicationRecord
     end
   end
 
+  def get_community_time_zone()
+    tz = Ziptz.new
+    timezone = nil
+
+    if self.latitude.present? and self.longitude.present?
+      time_zone = Timezone.lookup(self.latitude, self.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and self.zip.present?
+      timezone = tz.time_zone_name(self.zip)
+    end
+
+      return timezone
+    rescue
+      return "UTC"
+  end
+
   def data_is_imported
     case data_provider
       when "psi"

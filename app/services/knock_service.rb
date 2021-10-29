@@ -269,7 +269,7 @@ class KnockService < BaseService
   end
 
   def knock_tour_date_time
-    timezone = get_community_time_zone()
+    timezone = @community.get_community_time_zone()
     tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
     tour_datetime || Time.now.in_time_zone(timezone)
@@ -281,23 +281,4 @@ class KnockService < BaseService
     puts resp
     puts "*************"*50
   end
-
-  def get_community_time_zone()
-    tz = Ziptz.new
-    timezone = nil
-
-    if @community.latitude.present? and @community.longitude.present?
-      time_zone = Timezone.lookup(@community.latitude, @community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and @community.zip.present?
-      timezone = tz.time_zone_name(@community.zip)
-    end
-
-      return timezone
-    rescue
-      return "MST"
-  end
-
 end
