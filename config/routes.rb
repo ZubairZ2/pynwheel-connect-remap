@@ -237,7 +237,6 @@ Rails.application.routes.draw do
         get :edit_amenity_gallery_image
         post :load_remotelock_data
         post :clear_locks
-        post :extract_floors
         get :show_amenity_image_in_modal
         put :crop_amenity_image
         put :update_amenity_door_lock
