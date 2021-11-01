@@ -52,6 +52,11 @@ class KnockService < BaseService
     end
   end
 
+  def create_knock_visit
+    knock_visit_response = create_visit(knock_visit_payload)
+    display_logs("Create Knock Visit", knock_visit_response)
+  end
+
   private
 
   def get_filtered_in_person_slots slots
@@ -176,6 +181,25 @@ class KnockService < BaseService
     "I consent to appointment updates via SMS communication for my self tour using Pynwheel mobile app."
   end
 
+  def get_visited_stops
+    [
+      "unit_1",
+      "unit_2",
+      "amenity_1"
+    ]
+  end
+
+  def is_self_guided_tour
+    case @scheduled_tour.tour_type
+    when "guided_tour"
+      false
+    when "self_tour"
+      true
+    when "virtual_tour"      
+      true
+    end
+  end
+
   def knock_tour_type
     case @scheduled_tour.tour_type
     when "guided_tour"
@@ -210,6 +234,17 @@ class KnockService < BaseService
     else
       "Error: No message"
     end
+  end
+
+  def knock_visit_payload
+    {
+      "appointmentId": @scheduled_tour.knock_appointment_id,
+      "prospectId": @scheduled_tour.knock_prospect_id,
+      "visitTime": knock_tour_date_time,
+      "isSelfGuided": is_self_guided_tour,
+      "sourceTitle": "Property Website",
+      "unitNames": get_visited_stops
+    }
   end
 
   def knock_prospect_payload
@@ -270,6 +305,7 @@ class KnockService < BaseService
 
   def knock_tour_date_time
     timezone = @community.get_community_time_zone()
+    
     tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
     tour_datetime || Time.now.in_time_zone(timezone)
