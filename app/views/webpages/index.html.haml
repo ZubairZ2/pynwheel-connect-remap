@@ -108,7 +108,7 @@
                     %strong#sq_feet_responsive
               .header-buttons-groups
                 - if @square_feet.present?
-                  %a.transparent-btn.header-action-btn{:href => "#{favorites_community_webpages_path(@community)}"}
+                  %a.transparent-btn.header-action-btn{:href => "#{favorites_community_webpages_path(@community)}",:target=>"_parent"}
                     View Favorites
                 -# = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"transparent-btn header-action-btn", :target=> "pynwheel_iframe", :style => "height: 43px;"
                 - provider = @community.crm_credential.crm_provider
