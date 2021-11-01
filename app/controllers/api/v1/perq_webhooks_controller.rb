@@ -52,7 +52,8 @@ class Api::V1::PerqWebhooksController < ActionController::Base
       user_time_zone: get_community_time_zone, 
       tour_date: get_tour_date(params["AppointmentDateTime"]), 
       tour_time: get_tour_time(params["AppointmentDateTime"]), 
-      tour_type: get_tour_type, 
+      tour_type: get_tour_type,
+      property_tour_type: get_property_tour_type,
       created_by: "PERQ"
     )
   end
@@ -61,8 +62,13 @@ class Api::V1::PerqWebhooksController < ActionController::Base
     tour.update_attributes!(
       tour_date: get_tour_date(params["AppointmentDateTime"]), 
       tour_time: get_tour_time(params["AppointmentDateTime"]), 
-      tour_type: get_tour_type
+      tour_type: get_tour_type,
+      property_tour_type: get_property_tour_type
     )
+  end
+
+  def get_property_tour_type
+    "scheduled_tour"
   end
 
   def get_tour_type
