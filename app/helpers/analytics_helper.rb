@@ -64,6 +64,7 @@ module AnalyticsHelper
     options = { legend: {display: false}, scales: {
         yAxes: [{
             ticks: {
+                beginAtZero: true,
                 precision: 0
             }
         }]
@@ -87,6 +88,7 @@ module AnalyticsHelper
     options = { legend: {display: false}, scales: {
         yAxes: [{
             ticks: {
+                beginAtZero: true,
                 precision: 0
             }
         }]
@@ -132,6 +134,7 @@ module AnalyticsHelper
       scales: {
         xAxes: [{
             ticks: {
+                beginAtZero: true,
                 beginAtZero: true
             }
         }]
@@ -161,6 +164,7 @@ module AnalyticsHelper
     options = { legend: {display: false}, scales: {
         yAxes: [{
             ticks: {
+                beginAtZero: true,
                 precision: 0
             }
         }]
