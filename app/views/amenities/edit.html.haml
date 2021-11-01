@@ -232,22 +232,6 @@
     }
   });
 
-  $('#amenity_building').change(function(){
-    $.ajax({
-      type: "POST",
-      url: 'extract_floors',
-      data: {building: $('#amenity_building').val()},
-      success: function(response) {
-        for(i=0; i < response.floors.length; i++ )
-        {
-          $('#amenity_floor').append('<option value='+response.floors[i]+'>  '+ response.floors[i] +' </option>')
-        }
-      }
-
-    });
-    event.preventDefault();
-  });
-
   $('#on_done').click(function(e){
     $('.edit_amenity').append('<input type="hidden" name="done_action" value="true">');
     submit_form()
