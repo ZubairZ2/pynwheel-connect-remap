@@ -278,7 +278,8 @@
 
   function submit_form(){
     var digital_lock = $("#lock_name")
-    if (digital_lock.length > 0 && !digital_lock.hasClass("hidden")){
+    var digital_lock_field = $('#digital_lock_field')
+    if (digital_lock.length > 0 && !digital_lock_field.hasClass("hidden")){
       var lock = digital_lock[0];
 
       if(lock.checkValidity() == true){
@@ -286,10 +287,10 @@
         $("#lock_id").val(lock_id)
         $('.edit_amenity').submit();
       }
-      else{
-        $('.edit_amenity').submit(); 
-        //lock.reportValidity();
-      }
+      else if ($(lock).val() == "")
+        $('.edit_amenity').submit();
+      else
+        lock.reportValidity();
     }
     else
       $('.edit_amenity').submit();
