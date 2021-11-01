@@ -130,17 +130,16 @@ private
   end
 
   def fetch_scheduled_tours
-    scheduled_tours = SchedualTour.where(community_id: @community).where.not(tour_user_id: nil).desc_tour_date rescue ""
-    # scheduled_tours = scheduled_tours.joins(joins_relation(sort_column)).order("#{sort_column} #{sort_direction}")
-    scheduled_tours = scheduled_tours.page(page).per_page(per_page)
-    if params[:sSearch].present?
-      scheduled_tours = scheduled_tours.joins(:tour_user).where("tour_users.email like :search or lower(tour_users.name) like :search or tour_users.phone_number like :search", search: "%#{params[:sSearch]}%")
+    unless params[:sSearch]
+      scheduled_tours = SchedualTour.where(community_id: @community).where.not(tour_user_id: nil).desc_tour_date rescue ""
+      # scheduled_tours = scheduled_tours.joins(joins_relation(sort_column)).order("#{sort_column} #{sort_direction}")
+      scheduled_tours = scheduled_tours.page(page).per_page(per_page)
+    else
+      scheduled_tours = SchedualTour.where(community_id: @community).where.not(tour_user_id: nil)
+      scheduled_tours = scheduled_tours.page(page).per_page(per_page)
+      scheduled_tours = scheduled_tours.joins(:tour_user).where("tour_users.email like :search or lower(tour_users.name) like :search or tour_users.phone_number like :search", search: "%#{params[:sSearch]}%")      
     end
-    # if params[:iSortCol_0].present?
-      # binding.pry
-    # end
-    
-    scheduled_tours #.order(:tour_date).reverse_order
+    scheduled_tours
   end
 
   def joins_relation(column)
