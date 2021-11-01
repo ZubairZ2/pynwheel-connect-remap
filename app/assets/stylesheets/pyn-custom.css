@@ -5670,6 +5670,9 @@ ul.add-fav-options {
 }
 
 @media screen and (max-width:567px){
+    .c-connect-map-wrapper .c-m-iframe-content img {
+        max-width: 350px !important;
+    }
    .res-fav-footer{
       padding-top: 15px !important;
       padding-bottom: 14px !important;
@@ -6122,7 +6125,7 @@ ul.add-fav-options {
     left: 0;
     width: 100%;
     padding: 31px 24px 21px 0px;
-    position: sticky;
+    position: absolute;
     background: white;
 }
 .show-more-option{
@@ -6183,32 +6186,22 @@ ul.add-fav-options {
 .c-connect-map-wrapper .c-modal-sidebar {
 	max-width: 100%;
 	width: 25%;
-	/* width: auto; */
 	position: relative;
 	background: white;
-    /* min-height: 770px; */
   min-height: 710px
 }
 .c-connect-map-wrapper .c-modal-wrapper {
     width: 75%;
-    /* min-height: 774px; */
-    /* min-height: 770px; */
     min-height: 710px;
+    position: relative;
 }
 
 .pynwheel-logo-at-sidebar-bottom{
-    /* width: 60%; */
     text-align: center;
-    /* margin-top: 15px; */
     display: block;
     margin: auto;
-    /* margin-left: auto; */
-    /* margin-right: auto; */
-    /* top: 0%; */
-    /* bottom: 0px; */
     bottom: 0px;
     padding: 50px 0px 0px 0px;
-    /* position: fixed;*/
 }
 .sitemap .c-wrapper {
     margin-right: 0 !important;
@@ -6278,21 +6271,6 @@ ul.add-fav-options {
          width: 35%;
     }
 }
-/* 
-@media only screen and (min-width: 990px) and (max-width: 1330px) {
-    .custom-iframe-modeule .selection-fields .selectable-field {
-        padding: 0 10px 0 6px;
-        width: auto;
-    }
-    .header-buttons-groups .transparent-btn{
-        margin-right: 2px;
-    }
-    .header-buttons-groups .header-action-btn{
-        font-size: 12px;
-        max-width: 133px;
-    }
-} */
-
 .disable_btn{
   pointer-events: none;
 }
