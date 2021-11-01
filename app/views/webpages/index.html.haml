@@ -111,9 +111,10 @@
                   %a.transparent-btn.header-action-btn{:href => "#{favorites_community_webpages_path(@community)}",:target=>"_parent"}
                     View Favorites
                 -# = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"transparent-btn header-action-btn", :target=> "pynwheel_iframe", :style => "height: 43px;"
-                - provider = @community.crm_credential.crm_provider
-                - if @community.self_tour && @community.scheduler_widget && provider != "yardirentcafe" 
-                  %a.colourd-btn.header-action-btn{:href => "#{@scheduler_widget_link}"}
+                - crm_provider = @community.crm_credential.crm_provider
+                - data_provider = @community.data_provider
+                - if @community.self_tour && @community.scheduler_widget && (data_provider != "yardirentcafe" || data_provider != "yardi" || crm_provider != "yardirentcafe") 
+                  %a.colourd-btn.header-action-btn{:href => "#{@scheduler_widget_link}",:target=>"_blank"}
                     Schedule Tour
               .mobile-trigger.responsive-content
                 %span.filter-btn Filters
