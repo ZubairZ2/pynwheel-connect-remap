@@ -14,7 +14,7 @@ class KnockService < BaseService
   end
 
   def create_knock_appointment
-    knock_appointment_response = create_appointment(knock_api_key, knock_appointment_payload) if is_knock_crm && @scheduled_tour.property_tour_type === "scheduled_tour"
+    knock_appointment_response = create_appointment(knock_api_key, knock_appointment_payload) if is_knock_crm
     display_logs("Create Appointment", knock_appointment_response)
     add_knock_appointment_id(knock_appointment_response["payload"]["appointment"]["id"]) if appointment_created(knock_appointment_response)
   end
@@ -53,8 +53,10 @@ class KnockService < BaseService
   end
 
   def create_knock_visit
-    knock_visit_response = create_visit(knock_visit_payload)
-    display_logs("Create Knock Visit", knock_visit_response)
+    if is_knock_crm && @scheduled_tour.property_tour_type.present?
+      knock_visit_response = create_visit(knock_api_key, knock_visit_payload)
+      display_logs("Create Knock Visit", knock_visit_response)
+    end
   end
 
   private
@@ -241,10 +243,20 @@ class KnockService < BaseService
     end
   end
 
+
+  def get_knock_appointment_id
+    @scheduled_tour.knock_appointment_id || create_knock_appointment()
+  end
+
+  def get_knock_prospect_id
+    @scheduled_tour.knock_prospect_id || create_knock_prospect()
+  end
+
+
   def knock_visit_payload
     {
-      "appointmentId": @scheduled_tour.knock_appointment_id,
-      "prospectId": @scheduled_tour.knock_prospect_id,
+      "appointmentId": get_knock_appointment_id,
+      "prospectId": get_knock_prospect_id,
       "visitTime": knock_tour_date_time,
       "isSelfGuided": is_self_guided_tour,
       "sourceTitle": "Property Website",
@@ -313,7 +325,7 @@ class KnockService < BaseService
     
     tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
-    tour_datetime || Time.now.in_time_zone(timezone)
+    tour_datetime || Time.now.in_time_zone(timezone).strftime("%FT%T%:z").to_s
   end
 
   def display_logs msg, resp
