@@ -37,6 +37,9 @@ class TourHistory < ApplicationRecord
 
   def send_update_notifications
     community = (Tour.find_by_id self.tour_id).community if self.tour_id.present?
+    touruser = self.tour_user
+    scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id).last
+
     if community.present? && self.history != true
       if time_difference >= 90 && self.lengthy_stay_email_sent == false
         @mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "#{self.tour_user.name.capitalize} has been on a Self Tour at #{community.name.gsub("(", "( ").split.map(&:capitalize).join(' ')} for more than"] #get_alert_message('lengthy_stay')
@@ -49,9 +52,6 @@ class TourHistory < ApplicationRecord
         self.update_columns(is_left: true)
         @mail_content = ["tour_has_ended", "#{self.tour_user.name.capitalize} has completed a tour of #{community.name}"] #get_alert_message('tour_has_ended')
         url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
-
-        touruser = self.tour_user
-        scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id).last
 
         if touruser.tour_type == "self_tour" && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )         
           if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
@@ -82,20 +82,14 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both(@complete_tour_content, community)
         send_email_sms_or_both_to_touruser(@thank_you_content, community)
 
-        puts "----------------"*50
-        puts "Tour Successfyly Completed"
-        puts "----------------"*50
-        
         community.is_salesforce_community? ? save_salesforce_feedback_data(community, touruser) : save_prospect(self.left, community)
+        KnockService.new(scheduled_tour).create_knock_visit(stop_marketing_names_visited_by_user, self.left) if community.is_knock_community?
+
         community.save
       end
 
       if self.abandoned_tour_at_stop.present?
-        touruser = self.tour_user
-        puts "----------------"*50
-        puts "Tour Successfyly Abandoned"
-        puts "----------------"*50
-
+        KnockService.new(scheduled_tour).create_knock_visit(stop_marketing_names_visited_by_user, Time.now) if community.is_knock_community?
         save_salesforce_feedback_data(community, touruser) if community.is_salesforce_community?
       end
 
@@ -104,9 +98,7 @@ class TourHistory < ApplicationRecord
 
   def save_salesforce_feedback_data community, tour_user
     current_tour = VisitedStop.where(tour_user_id: tour_user.id, tour_id: self.tour_id).last
-    puts "current_tour"
-    puts current_tour
-    puts "************"*100
+
     if current_tour.present?
       Prospect.where(community_id: community.id, tour_user_id: tour_user.id, crm_provider: "salesforce", sf_status: "active").update_all(tour_key: current_tour.tour_key)
       community.send_feedback_to_salesforce(tour_user, self)
@@ -149,7 +141,7 @@ class TourHistory < ApplicationRecord
     tour_time = self.arrived.in_time_zone(self.my_time_zone)
     tour_status = self.tour_status.present? ? self.tour_status : "virutal_tour"
 
-    available_stops = avail_stops_name_of_community
+    available_stops = []
     visited_stops = stop_marketing_names_visited_by_user
     data_provider = (community.use_crm_credentials? && community.crm_credential.present? && community.crm_credential.crm_provider.present?) ? community.crm_credential.crm_provider : community.data_provider
     
@@ -332,28 +324,6 @@ class TourHistory < ApplicationRecord
   def dwelo_active_user_exists(event,guest_id)
     return (event["event_type"] == "app_unlock"  and  event["access_person_id"] == guest_id)
   end
-  
-  def avail_stops_name_of_community
-    # stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
-    # allowed_stops = TourStop.where(id: stops_arr.ids).pluck(:stop_type, :stop_id)
-
-        tour_stops = []
-        # allowed_stops.each do |stop|
-        #   if stop[0] == "unit"
-        #     unit = stop[0].classify.constantize.find_by_id stop[1]
-        #     if unit.building.present?
-        #       name = unit.building + "-" + unit.name
-        #     else
-        #       name = unit.name
-        #     end
-        #     tour_stops << name if unit.present?
-        #   elsif stop[0] == "amenity"
-        #     amentiy = stop[0].classify.constantize.find_by_id stop[1]
-        #     tour_stops << amentiy.name if amentiy.present?
-        #   end
-    # end
-    return tour_stops
-  end
 
   def stop_marketing_names_visited_by_user
     sleep 2
@@ -366,20 +336,13 @@ class TourHistory < ApplicationRecord
       tour_stop_ids = VisitedStop.where(tour_key:  tour_key).pluck(:tour_stop_id)
       unit_stops = TourStop.where(id: tour_stop_ids, stop_type: "unit").pluck(:stop_id)
 
-      puts "unit_stops"
-      puts unit_stops
-
       unit_stops.each do |stop_id|
         unit = Unit.find_by_id stop_id
         marketing_name = unit.marketing_name
         visited_stops << marketing_name if unit.present?
-        puts "marketing_name"
-        puts marketing_name
       end
     end
 
-    puts "visited_stops"
-    puts visited_stops
     return visited_stops
   end
 end

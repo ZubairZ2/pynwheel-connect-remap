@@ -52,9 +52,9 @@ class KnockService < BaseService
     end
   end
 
-  def create_knock_visit
+  def create_knock_visit visited_stops, visit_time
     if is_knock_crm && @scheduled_tour.property_tour_type.present?
-      knock_visit_response = create_visit(knock_api_key, knock_visit_payload)
+      knock_visit_response = create_visit(knock_api_key, knock_visit_payload(visited_stops, visit_time))
       display_logs("Create Knock Visit", knock_visit_response)
     end
   end
@@ -186,14 +186,6 @@ class KnockService < BaseService
     end
   end
 
-  def get_visited_stops
-    [
-      "unit_1",
-      "unit_2",
-      "amenity_1"
-    ]
-  end
-
   def is_self_guided_tour
     case @scheduled_tour.tour_type
     when "guided_tour"
@@ -248,15 +240,19 @@ class KnockService < BaseService
     @scheduled_tour.knock_prospect_id || create_knock_prospect()
   end
 
+  def get_knock_visit_time visit_time
+    visit_time.in_time_zone(@community.get_community_time_zone()).strftime("%FT%T%:z").to_s
+  end
 
-  def knock_visit_payload
+
+  def knock_visit_payload visited_stops, visit_time
     {
       "appointmentId": get_knock_appointment_id,
       "prospectId": get_knock_prospect_id,
-      "visitTime": knock_tour_date_time,
+      "visitTime": get_knock_visit_time(visit_time),
       "isSelfGuided": is_self_guided_tour,
       "sourceTitle": "Property Website",
-      "unitNames": get_visited_stops
+      "unitNames": visited_stops
     }
   end
 
