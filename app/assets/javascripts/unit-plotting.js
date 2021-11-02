@@ -34,11 +34,19 @@ function savePlot(id, dx, dy, door_id = 0) {
 }
 
 function saveFloorplateUnit(id, dx, dy) {
-    debugger
+    var xPlot;
+    var yPlot;
+    if(addmode){
+        xPlot = dx;
+        yPlot = dy
+    }else{
+        xPlot = dx + left_margin;
+        yPlot = dy + right_margin
+    }
     $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunitforfloorplate",
         {
-            "x_plot": dx+left_margin,
-            "y_plot": dy+right_margin,
+            "x_plot": xPlot,
+            "y_plot": yPlot,
             "floorplate_id": floorplate_id
         },
         function (data, status, xhr) {
@@ -205,10 +213,19 @@ function saveAmenityPlotForUnit(id, dx, dy) {
 }
 
 function saveSiteMapUnit(id, dx, dy) {
+    var xPlot;
+    var yPlot;
+    if(addmode){
+        xPlot = dx;
+        yPlot = dy
+    }else{
+        xPlot = dx+left_margin;
+        yPlot = dy+right_margin
+    }
     $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunit",
         {
-            "x_plot": dx+left_margin,
-            "y_plot": dy+right_margin
+            "x_plot": xPlot,
+            "y_plot": yPlot
         },
         function (data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);

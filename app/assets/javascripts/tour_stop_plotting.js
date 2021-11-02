@@ -276,7 +276,6 @@ function getDeletionUrl(){
 }
 
 function getTagToPlot(url){
-    debugger
     if (typeof tour_id_for_stop !== 'undefined') {
         tag = "<a class='marker ui-draggable ui-draggable-handle' data-toggle='modal' title='" + selected[0][1] + "' style='left:" + dx + "px; top:" + dy + "px; position:absolute;' data-name='plot' data-target='#confirm-delete' data-href='" + url + "'>"
         tag += "<i class='custom-icon' style='width: " + marker_font_size + "px; height: " + marker_font_size + "px; border: 2px solid " + marker_color + "; '><i class='fa fa-star' style='color: " + marker_color + "; font-size: " + (parseInt(marker_font_size) / 2) + "px; margin-top:" + camera_margin + "px;'></i></i>";
@@ -292,7 +291,7 @@ function getTagToPlot(url){
         arr[0][2] = dy;
     }
     else if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined'){   
-        
+
         if(automate_wayfinding == true && self_tour == true) 
             plus_icon = returnPlusIconTag(selected[0][0], "unit", -6)
         else

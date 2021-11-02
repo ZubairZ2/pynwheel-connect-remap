@@ -135,7 +135,7 @@
                   - units_by_plotted_doors_order.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
                       - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
-                        - coordinates_array.push([unit.x_plot - left_margin ,unit.y_plot - right_margin])
+                        - coordinates_array.push([unit.x_plot - left_margin,unit.y_plot - right_margin])
                         - unit_door_exists = unit.door.present? ? true : false
                         - left = unit.x_plot - left_margin
                         - right = unit.y_plot - right_margin
