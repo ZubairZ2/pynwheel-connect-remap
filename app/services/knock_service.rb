@@ -178,7 +178,14 @@ class KnockService < BaseService
   end
   
   def sms_consent_disclaimer
-    "I consent to appointment updates via SMS communication for my self tour using Pynwheel mobile app."
+    case @scheduled_tour.tour_type
+    when "guided_tour"
+      "I consent to appointment updates via SMS communication for my self tour using Pynwheel mobile app."
+    when "self_tour"
+      "I consent to appointment updates via SMS communication for my self tour using Pynwheel mobile app."
+    when "virtual_tour"      
+      "I consent to appointment updates via SMS communication for my remote virtual tour using Pynwheel mobile app."
+    end
   end
 
   def get_visited_stops
@@ -219,20 +226,18 @@ class KnockService < BaseService
         ["#{@scheduled_tour.desired_bedroom}_BEDROOMS"]
       end
     else
-      ["1_BEDROOM"]
+      []
     end
   end
 
   def knock_message
     case @scheduled_tour.property_tour_type
     when "scheduled_tour"
-      "Pynwheel scheduled tour: "
+      @scheduled_tour.tour_type === "self_tour" ? "Pynwheel scheduled self-tour. Scheduled on: #{knock_tour_date_time}" : "Pynwheel guided in-person tour. Scheduled on: #{knock_tour_date_time}"
     when "unscheduled_self_tour"
       "Pynwheel unscheduled self-tour: Prospect will visit at his/her own convenience during property visiting hours and appointment will be created right after the tour and also visit will be registered."
     when "remote_tour"
       "Pynwheel remote/virtual tour: Prospect will visit at his/her own convenience anytime from the comfort of their home using self-tour app."
-    else
-      "Error: No message"
     end
   end
 
