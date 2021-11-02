@@ -113,7 +113,7 @@
                 -# = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"transparent-btn header-action-btn", :target=> "pynwheel_iframe", :style => "height: 43px;"
                 - crm_provider = @community.crm_credential.crm_provider
                 - data_provider = @community.data_provider
-                - if @community.self_tour && @community.scheduler_widget && (data_provider != "yardirentcafe" || data_provider != "yardi" || crm_provider != "yardirentcafe") 
+                - if @community.self_tour && @community.scheduler_widget && (data_provider != "yardirentcafe" || data_provider != "yardi") && crm_provider != "yardirentcafe" 
                   %a.colourd-btn.header-action-btn{:href => "#{@scheduler_widget_link}",:target=>"_blank"}
                     Schedule Tour
               .mobile-trigger.responsive-content
@@ -340,6 +340,9 @@
             .c-modal-dialog
               .c-modal-header
                 %h5.c-modal-title#unit-marketing-name
+                %i.propertyDetailName{style: "display: block"}
+                  %span#propertyDetailNameText
+                    Added to favorites.
                 %button#close-modal.c-close{"data-dismiss" => "modal", :type => "button"}
                   %span ×
               %aside.c-modal-sidebar
@@ -347,6 +350,7 @@
                   .modal-sidebar-title
                     %h1.section-title#floorplan-name
                     -# %img.wishlist-icon{:src => "/assets/heart-icon.png"}/
+                    
                     .plan-image-pop
                       .icon-heart#fav-icon-tag
                         %a{:href => "##", :id => "add-to-fav"}

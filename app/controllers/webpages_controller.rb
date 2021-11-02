@@ -200,7 +200,6 @@ class WebpagesController < ActionController::Base
     updated_unit_ids = []
     updated_unit_ids << favorite.unit_ids
     cookies[:favorite_unit_ids] = { value: updated_unit_ids, expiry: 5.years.from_now, same_site: :none}
-    # redirect_to favorites_community_webpages_path(:community_id=>@community.id)
   end
 
   def favorites
@@ -215,7 +214,7 @@ class WebpagesController < ActionController::Base
   end
 
   def favorites_share_link
-    @favorite = Favorite.find_by_session_id(params[:webpages_session_id])
+    @favorite = Favorite.find_by_session_id(params[:session_id])
     @units = Unit.where(id: @favorite&.unit_ids,community_id: params[:community_id]).where.not(available_date: nil)
     @floorplans = Floorplan.where(provider_floorplan_id: @units && @units.map(&:floorplan_id),community_id: params[:community_id])
   end

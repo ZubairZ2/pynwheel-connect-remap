@@ -10,6 +10,15 @@
     = stylesheet_link_tag    'application', media: 'all'
     = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
     = javascript_include_tag 'jquery.arrayUtilities'
+    = javascript_include_tag "update_session"
+    = stylesheet_link_tag 'slick.css'
+    = javascript_include_tag 'slick'
+    %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css", :rel => "stylesheet"}/
+    %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css", :rel => "stylesheet"}/
+    %link{:href => "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css", :rel => "stylesheet"}/
+    %link{:href => "https://fonts.googleapis.com", :rel => "preconnect"}/
+    %link{:crossorigin => "", :href => "https://fonts.gstatic.com", :rel => "preconnect"}/
+    %link{:href => "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap", :rel => "stylesheet"}/
     /%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
     /%link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
@@ -47,46 +56,48 @@
                 .plan-image.plan-image-pop
                   = image_tag @community.logo.present? ? @community.logo.url : "logo-small.png"
               .clear-fix
-      .container
+      .container{style: "width: 100%; display: inline-block; padding: inherit;"}
+        = render partial: "favorites_modal"  
+      -# .container
 
-        - @units.each do |unit|
-          - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
-          .modal-content.plan-modal.mb-30.mt-30
+      -#   - @units.each do |unit|
+      -#     - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
+      -#     .modal-content.plan-modal.mb-30.mt-30
           
-            .modal-body
-              .row
-                .col-md-6
-                  .plane-details
-                    .plan-modal
-                      .modal-header
-                        %h4.modal-title 
-                          = unit.marketing_name
-                    .name
-                      = floorplan.name rescue ""
-                    %ul
-                      %li
-                        %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil
-                        Sq Feet
-                      %li
-                        %b= floorplan.present? ? floorplan.bedrooms : nil
-                        = "#{bedroom_text(floorplan)}" if floorplan.present?
-                      %li
-                        %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
-                        = "#{bathroom_text(floorplan)}" if floorplan.present?
+      -#       .modal-body
+      -#         .row
+      -#           .col-md-6
+      -#             .plane-details
+      -#               .plan-modal
+      -#                 .modal-header
+      -#                   %h4.modal-title 
+      -#                     = unit.marketing_name
+      -#               .name
+      -#                 = floorplan.name rescue ""
+      -#               %ul
+      -#                 %li
+      -#                   %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil
+      -#                   Sq Feet
+      -#                 %li
+      -#                   %b= floorplan.present? ? floorplan.bedrooms : nil
+      -#                   = "#{bedroom_text(floorplan)}" if floorplan.present?
+      -#                 %li
+      -#                   %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
+      -#                   = "#{bathroom_text(floorplan)}" if floorplan.present?
                       
-                    .price-details
-                      .price-count.pull-left
-                        %span= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                      .available-now
-                        %p= unit.availability == "Unoccupied" ? "Available" : ""
-                    - if @community.data_provider == "psi"      
-                      .date-select
-                        %h5 Lease Start Date
-                        .form-group
-                          %input.form-control.datepicker#leasing-start-date{:type => "text",:value=>Date.today.strftime("%m/%d/%Y")}/ 
-                          %i.fa.fa-calendar
-                .col-md-6
-                  .plan-image.plan-image-pop
-                    = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")
-              .clear-fix      
+      -#               .price-details
+      -#                 .price-count.pull-left
+      -#                   %span= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+      -#                 .available-now
+      -#                   %p= unit.availability == "Unoccupied" ? "Available" : ""
+      -#               - if @community.data_provider == "psi"      
+      -#                 .date-select
+      -#                   %h5 Lease Start Date
+      -#                   .form-group
+      -#                     %input.form-control.datepicker#leasing-start-date{:type => "text",:value=>Date.today.strftime("%m/%d/%Y")}/ 
+      -#                     %i.fa.fa-calendar
+      -#           .col-md-6
+      -#             .plan-image.plan-image-pop
+      -#               = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")
+      -#         .clear-fix      
                                                       

@@ -191,7 +191,7 @@ $(window).bind('load', function () {
     var $area = document.getElementById('zoomable');
     webpagePanZoom = panzoom($area, 
       {
-        bounds: true, contain: 'automatic', smoothScroll: false,
+        bounds: true, contain: 'automatic', smoothScroll: true,
         maxZoom: 5,
         minZoom: 1,
         zoomDoubleClickSpeed: 1,
