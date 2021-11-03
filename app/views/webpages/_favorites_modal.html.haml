@@ -78,7 +78,7 @@
                 .filter-action
                   - if @community.data_provider == "realpagesvc"
                     - if @community.display_rent
-                      %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                      %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',', :value=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil)}"
                       %span.per-month-price-text.text-p /month
                     = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank", class: "apply-now apply_now"
                   - elsif @community.data_provider == "resman"
