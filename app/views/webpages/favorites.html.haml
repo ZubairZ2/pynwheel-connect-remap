@@ -21,21 +21,7 @@
     %link{:href => "https://fonts.googleapis.com", :rel => "preconnect"}/
     %link{:crossorigin => "", :href => "https://fonts.gstatic.com", :rel => "preconnect"}/
     %link{:href => "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap", :rel => "stylesheet"}/
-    /%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
-    /%link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
-    / %link{:href => "css/bootstrap.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/font-awesome.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/slider.css", :rel => "stylesheet"}/
-    / %link{:href => "css/pyn.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/skins/_all-pyn.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/jquery.mCustomScrollbar.css", :rel => "stylesheet"}/
-    / %link{:href => "css/pyn-custom.css", :rel => "stylesheet"}/
-    / HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries
-    / WARNING: Respond.js doesn't work if you view the page via file://
-    / /[if lt IE 9]
-    /   <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-    /   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     / Google Font
     %link{:href => "https://fonts.googleapis.com/css?family=Raleway:100,200,300,400,500,600,700,800,900", :rel => "stylesheet"}/
   %body.floor-plan{style: "background-color:#303a3c;"}
@@ -44,7 +30,6 @@
     %div.alert_message
       = render partial: "/messages"
     %section.is-favorites
-      -# %a#favoriteclickme{href: "#"} Share and Clear
       .mydiv-fav
         .select-list.select-list-fav
           = hidden_field_tag :maps_community_id, @community.id
@@ -55,7 +40,7 @@
             .need-to
               %h3 Want to add favorites?
               %p{:style => "margin-bottom: 20px"} Explore available floor plans on the interactive site map.
-              = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary apply-now btn-block btn-lg",:target => "pynwheel_iframe"
+              = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary apply-now btn-block btn-lg",:target => "_parent"
           .need-to
             %h3 Want to share your list?
             %p{:style => "margin-bottom: 20px"} Click the share button and share your favorites link
@@ -73,125 +58,9 @@
             %img{:alt => "", :src => '/assets/pynwheel-logo.png' , :title => "",:class => "pynwheel-logo-at-sidebar-bottom"}
         - if @units.nil? || !@units.present? && @units.count == 0
           = render partial: "empty_favorites_page"
-        .c-connect-map-wrapper
-          .c-modal-body-content
-            - @units = [] if @units.nil?
-            - @units.each do |unit|
-              - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
-              .map-slide-item
-                .c-modal-header
-                  %h5.c-modal-title 
-                    = unit.unit_market
-                  %div.c-close
-                    .plan-image-pop
-                      .icon-heart
-                        %a{"data-href"=> "/communities/#{@community.id}/webpages/delete_favorite?unit_id=#{unit.id}&from_favorites=true",href: "##",onclick: "deleteFavorite(this);"}
-                          %i.fa.fa-heart#fav-icon-tag
-                .c-modal-sidebar
-                  .c-modal-sidebar-inner
-                    .modal-sidebar-title
-                      %h1.section-title 
-                        = floorplan.present? ? floorplan.name : nil
-                    .c-modal-wrapper.modal-image-fav.hidden
-                      .c-modal-body{:id => "#{unit.id}-res-zoomable-image"}
-                        .c-m-iframe-content
-                          = image_tag unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
-                      .c-modal-footer-fav.zooming-content.zoomable-map-container
-                        %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-res-fav-zoom-in"}
-                          %img{:src => "/assets/plus.png"}/
-                        %a.minus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-res-fav-zoom-out"}
-                          %img{:src => "/assets/minus.png"}/
-                        %a.refresh-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-res-fav-reset-zoom"}
-                          %img{:src => "/assets/refresh.png"}/
-                    .module-info
-                      %ul.module-list
-                        %li
-                          %b
-                            %img{:src => "/assets/bedroom-icon.png"}/
-                            %b= floorplan.present? ? floorplan.bedrooms : nil
-                          = "#{bedroom_text(floorplan)}" if floorplan.present?
-                        %li
-                          %b
-                            %img{:src => "/assets/bathroom-icon.png"}/
-                            %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
-                          = "#{bathroom_text(floorplan)}" if floorplan.present?
-                        %li
-                          %b
-                            %img{:src => "/assets/sq-feet-icon.png"}/
-                            %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil 
-                          Sq Feet
-                    .availabilty-container-start
-                      %span.available-heading= unit.availability == "Unoccupied" ? "Available" : ""
-                      %b
-                        %span{style: "margin-left: 4%"}= unit.available_date.present? ? determine_available_date(unit.available_date) : nil
-                    .availabilty-container{:id => "#{unit.id}-unit-lease-pricing-text-li", :style=>"display: flex; flex-direction: column;"}               
-                      %span.available-info{:id => "#{unit.id}-leas-price-option"}
-                      - if @community.display_rent
-                        %span{:id => "#{unit.id}-first-unit-lease-pricing"}
-                      %div.show-pricing-options
-                        %span.available-info
-                          %a.show-more.show-more-option-fav{:id => "#{unit.id}-show-more-option-fav"} Show more prices
-                          %a.show-more.hide-more-option.hidden{:id => "#{unit.id}-hide-more-option"} Hide more prices
-                      .pricing-option-for-fav.hidden{:id => "#{unit.id}-pricing-option-for-fav"}
-                        %div{style: "max-height: 6em; overflow-y: auto;"}
-                          %span{:id => "#{unit.id}-lease-pricing"}= unit.lease_pricing
-                      
-                    .c-modal-sidebar-description
-                      %h4.des-heading Description
-                      %p.c-m-description= unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")
-                    - if @community.credential.present? and @community.credential.apply_now.to_s == "true"
-                      .c-modal-sidebar-filters.sidebar-footer
-                        .m-filters
-                          - if @community.data_provider == "resman"
-                            .m-filter-2.c-m-filter
-                              %label Lease Term
-                              = select_tag :lease_term , options_for_select([]),{:id => "#{unit.id}-lease_term", :class=>"lease-term-custom-select", "data-unit-id"=>(unit.id), onchange: 'changeEffectiveRent(this)', :include_blank => "All "}
-                          - if @community.data_provider == "psi" || @community.data_provider == "realpagesvc" || @community.data_provider == "resman"
-                            .m-filter-1.c-m-filter
-                              %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                              %input.c-m-input-control.datepicker.leasing-start-date{:id => "#{unit.id}-leasing-start-date", :type => "text", :style => "display: block !important", :readonly => "readonly", :value=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil, "data-available_date"=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil}/ 
-                        .filter-action
-                          - if @community.data_provider == "realpagesvc"
-                            - if @community.display_rent
-                              %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                              %span.per-month-price-text.text-p /month
-                            = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank", class: "apply-now apply_now"
-                          - elsif @community.data_provider == "resman"
-                            - if @community.display_rent
-                              %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                              %span.per-month-price-text.text-p /month
-                            = link_to "Apply Now", "##",:onclick=>"set_resman_url_on_favorites(this);",:id=>"psi-anchor-tag","data-unit-id"=>(unit.id),"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-community-property-id"=>@community.credential.property_id, class: "apply-now apply_now"
-                          - elsif @community.data_provider == "psi"
-                            - if @community.display_rent
-                              %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                              %span.per-month-price-text.text-p /month
-                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
-                    - elsif @community.credential.present? and @community.credential.apply_now.to_s == "separate_link"
-                      .m-filters
-                        .m-filter-1.c-m-filter
-                          %label= @community.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                          %input.m-filter-1.c-m-filter.datepicker.leasing-start-date{:id => "#{unit.id}-leasing-start-date", :type => "text", :readonly => "readonly", :value=>unit.available_date.present? ? determine_available_date(unit.available_date) : nil}/
-                      .filter-action
-                        - if @community.display_rent
-                          %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                          %span.per-month-price-text /month
-                        %a.apply-now.apply_now{:href => @community.credential.separate_link,:target => "_blank" } Apply Now
-                    - else
-                      .disabaled-apply-now
-                        - if @community.display_rent
-                          %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                          %span{style: 'font-size: 12px'} /month
-                .c-modal-wrapper.h-class
-                  .c-modal-body{:id => "#{unit.id}-zoomable-fav-image"}
-                    .c-m-iframe-content
-                      = image_tag unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
-                  .c-modal-footer-fav.zooming-content.zoomable-map-container
-                    %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-in"}
-                      %img{:src => "/assets/plus.png"}/
-                    %a.minus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-out"}
-                      %img{:src => "/assets/minus.png"}/
-                    %a.refresh-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-reset-zoom"}
-                      %img{:src => "/assets/refresh.png"}/
+        - else
+          = render partial: "favorites_modal"
+        
         .secondary-sidebar-color#sidebar-for-responsive{style: "text-align: center"}
           %ul.add-fav-options.res-fav-footer
             %li
@@ -234,7 +103,6 @@
   units = JSON.parse(units);
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
-
   $('.show-more-option-fav').click(function(){
       
     $('.show-more-option-fav').addClass('hidden');

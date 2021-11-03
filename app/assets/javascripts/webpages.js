@@ -191,7 +191,7 @@ $(window).bind('load', function () {
     var $area = document.getElementById('zoomable');
     webpagePanZoom = panzoom($area, 
       {
-        bounds: true, contain: 'automatic', smoothScroll: false,
+        bounds: true, contain: 'automatic', smoothScroll: true,
         maxZoom: 5,
         minZoom: 1,
         zoomDoubleClickSpeed: 1,
@@ -327,16 +327,14 @@ $(window).bind('load', function () {
       var in_browser_height = 0;
       var in_browser_width = 0;
       var left_diff = 0;
-      var actual_height = 0;
-      var actual_width = 0;
       var actual_image_width = 0;
       var actual_image_height = 0;
-      in_browser_height = parseFloat($('.floorplate-image').parent().height());
-      in_browser_width = parseFloat($('.floorplate-image').parent().width());
-      actual_image_height = parseInt($('.floorplate-image').data("height"));
-      actual_image_width = parseInt($('.floorplate-image').data("width"));
-      stretched_image_width = parseInt($('.floorplate-image').width());
-      stretched_image_height = parseInt($('.floorplate-image').height());
+      in_browser_height = parseFloat($('.sitemap-image').parent().height());
+      in_browser_width = parseFloat($('.sitemap-image').parent().width());
+      actual_image_height = parseInt($('.sitemap-image').data("height"));
+      actual_image_width = parseInt($('.sitemap-image').data("width"));
+      stretched_image_width = parseInt($('.sitemap-image').width());
+      stretched_image_height = parseInt($('.sitemap-image').height());
       left_diff = (in_browser_width - stretched_image_width) / 2
 
       $('.marker').each(function () {
@@ -346,10 +344,18 @@ $(window).bind('load', function () {
         x_plot = (((stretched_image_width / actual_image_width) * x_plot));
         y_plot = (((stretched_image_height / actual_image_height) * y_plot));
 
-        $(this).removeClass('hidden');
-        marker_width = $(this).width();
-        marker_height = $(this).height();
-        $(this).css({"left": ((x_plot - (marker_width/2)) + 6) +  left_diff, "top": (y_plot - marker_height) + 21});
+        if(actual_image_width > 1412){
+          x_plot = x_plot - 6
+          y_plot = y_plot - 17
+        }
+        else{
+          y_plot = y_plot
+        }
+        $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
+        // $(this).removeClass('hidden');
+        // marker_width = $(this).width();
+        // marker_height = $(this).height();
+        // $(this).css({"left": ((x_plot - (marker_width/2)) + 6) +  left_diff, "top": (y_plot - marker_height) + 21});
         // $(this).css({"left": ((x_plot - (marker_width/2)) + 4) +  left_diff, "top": (y_plot - marker_height) + 4});
         if($(window).width() >= 567 && $(window).width() <= 1360 ){
           $(this).css({"margin-left": -5, "margin-top": -7})       

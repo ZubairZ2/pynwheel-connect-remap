@@ -1,5 +1,5 @@
 $(window).on('resize', function(){
-  if(window.location.href.includes('favorites')){
+  if(window.location.href.includes('favorites') || window.location.href.includes('favorites_share_link')){
     $(".divLoading").removeClass("hidden");
     window.location.reload();
   }
@@ -10,6 +10,9 @@ $(window).on('resize', function(){
 
 $(document).ready(function(){
 	if ($('.is-favorites')[0]){
+    if($(window).width() > 993 && $(".c-connect-map-wrapper").data("action") == "favorites_share_link"){
+      $(".c-connect-map-wrapper").addClass("favorites_share_link_css")
+    }
     $('#sidebar-for-responsive').addClass("hidden");
     addAttributes();
     $('#favoriteclickme').click(function() {
@@ -32,7 +35,7 @@ $(document).ready(function(){
       nextArrow: "<div class='btn nextArrowBtn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right' style='font-size: 30px'></i></div>"
     });
 	}
-  if(window.location.href.includes('favorites') && units.length > 0){
+  if((window.location.href.includes('favorites') && units.length > 0) || window.location.href.includes('favorites_share_link')){
     setAttributes();
   }
   else{
@@ -189,8 +192,8 @@ function responsiveZoomInOut(unit_id){
 
 function set_psi_url_on_favorite(element){
 	var date = $(element).parent().parent().find('input').val();
-	var url = $(element).data('website')+"/Apartments/module/application_authentication/http_referer/"+$(element).data('uri')+"/popup/false/kill_session/1/property[id]/"+$(element).data('community-property-id')+"/property_floorplan[id]/"+$(element).data('floorplan-provider-id')+"/unit_space[id]/"+$(element).data('unit-provider-id')+"/show_in_popup/false/from_check_availability/1/term_month/"+$(element).data('lease-term')+"/?lease_start_date="+date;
-  // var url = $(element).data('availability-url');
+	// var url = $(element).data('website')+"/Apartments/module/application_authentication/http_referer/"+$(element).data('uri')+"/popup/false/kill_session/1/property[id]/"+$(element).data('community-property-id')+"/property_floorplan[id]/"+$(element).data('floorplan-provider-id')+"/unit_space[id]/"+$(element).data('unit-provider-id')+"/show_in_popup/false/from_check_availability/1/term_month/"+$(element).data('lease-term')+"/?lease_start_date="+date;
+  var url = $(element).data('availability-url');
   window.open(url, '_blank');
 }
 
@@ -205,16 +208,19 @@ function set_resman_url_on_favorites(element)
 function deleteFavorite(element){
   var url = $(element).data('href');
   $(element).html('<i class="fa fa-heart-o"></i>');
-  setTimeout(function(){ 
-    $.ajax({url: url});
-    // $(".divLoading").removeClass("hidden");
-    // window.location.reload();
-  }, 1000);
+  $.ajax({
+    url: url,
+    type: "GET",
+    success: function(data, status, xhr) {
+      if(status === "success"){
+        $(".divLoading").removeClass("hidden");
+        window.location.reload();
+      }
+    },
+    error: function(jqXhr, textStatus, errorMessage) {}
+  });
 }
 
-function sendAjaxToDeleteFavorite(url){
-  $.ajax({url: url});
-}
 
 function changeEffectiveRent(element){
   unitId = $(element).data('unit-id');

@@ -51,7 +51,7 @@
               .app-logo
                 - if @community.community_logo
                   %a.logo{:href => "#{@community.website if @community.website}"}
-                    %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
+                    %img{:alt => "", :style => "padding: 18px", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
               .selection-fields
                 - if @unit_bedrooms.present?
                   .selectable-field
@@ -111,9 +111,9 @@
                   %a.transparent-btn.header-action-btn{:href => "#{favorites_community_webpages_path(@community)}",:target=>"_parent"}
                     View Favorites
                 -# = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"transparent-btn header-action-btn", :target=> "pynwheel_iframe", :style => "height: 43px;"
-                - crm_provider = @community.crm_credential.crm_provider
-                - data_provider = @community.data_provider
-                - if @community.self_tour && @community.scheduler_widget && (data_provider != "yardirentcafe" || data_provider != "yardi" || crm_provider != "yardirentcafe") 
+                - crm_provider = @community&.crm_credential&.crm_provider
+                - data_provider = @community&.data_provider
+                - if @community.self_tour && @community.scheduler_widget && (data_provider != "yardirentcafe" || data_provider != "yardi") && crm_provider != "yardirentcafe" 
                   %a.colourd-btn.header-action-btn{:href => "#{@scheduler_widget_link}",:target=>"_blank"}
                     Schedule Tour
               .mobile-trigger.responsive-content
@@ -271,8 +271,8 @@
                     -# .iframe-content
                     = image_tag floorplate.standard_image_url, :class=>"floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.height}","data-width"=>"#{floorplate.width}"
                 - else
-                  %div{:style => "position: relative;"}
-                    %img.floorplate-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :id => "property-map-image", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
+                  -# %div{:style => "position: relative;"}
+                  %img.floorplate-image.sitemap-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :id => "property-map-image", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
 
                 - coordinates_array = []
                 - units.each do |unit|
@@ -340,6 +340,9 @@
             .c-modal-dialog
               .c-modal-header
                 %h5.c-modal-title#unit-marketing-name
+                %i.propertyDetailName{style: "display: block"}
+                  %span#propertyDetailNameText
+                    Added to favorites.
                 %button#close-modal.c-close{"data-dismiss" => "modal", :type => "button"}
                   %span ×
               %aside.c-modal-sidebar
@@ -347,6 +350,7 @@
                   .modal-sidebar-title
                     %h1.section-title#floorplan-name
                     -# %img.wishlist-icon{:src => "/assets/heart-icon.png"}/
+                    
                     .plan-image-pop
                       .icon-heart#fav-icon-tag
                         %a{:href => "##", :id => "add-to-fav"}
@@ -408,15 +412,15 @@
                   .c-modal-sidebar-filters
                     - if @community_info.credential.present? and @community_info.credential.apply_now.to_s == "true"
                       .m-filters
-                        - if @community_info.data_provider == "resman"
-                          .m-filter-2.c-m-filter
-                            %label Lease Term
-                            = select_tag :lease_term , options_for_select([]),{:id => "lease_term", :class=>"lease-term-custom-select", :include_blank => "All "}
                         - if @community_info.data_provider == "psi" || @community_info.data_provider == "realpagesvc" || @community_info.data_provider == "resman"
                           .m-filter-1.c-m-filter
                             %label= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
                             %input.c-m-input-control.datepicker#leasing-start-date{:type => "text", :style => "display: block !important", :readonly => "readonly"}/
                             -# %i.fa.fa-calendar#leasing-start-date-icon
+                        - if @community_info.data_provider == "resman"
+                          .m-filter-2.c-m-filter
+                            %label Lease Term
+                            = select_tag :lease_term , options_for_select([]),{:id => "lease_term", :class=>"lease-term-custom-select", :include_blank => "All "}
                       .filter-action
                         - if @community_info.data_provider == "realpagesvc"
                           - if @community.display_rent
@@ -673,7 +677,7 @@
   $(document).ready(function () {
     if(current_width >= 993){
       let main_container_height = $('.c-body').height() - $('.c-footer').height();
-      $('.floorplate-image ').attr("height", main_container_height - 100)
+      $('.floorplate-image').attr("height", main_container_height - 100)
     }
     //$('.image-map').attr("width", main_container_height)
     $("#max_price_responsive").html("Max Price");
