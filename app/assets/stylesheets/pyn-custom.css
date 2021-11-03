@@ -6318,6 +6318,10 @@ ul.add-fav-options {
 .pt{
     top: 15px !important
 }
+.favorites_share_link_css{
+    margin-right: 150px;
+    margin-left: 150px;
+}
 @media only screen and (max-width:993px) and (orientation : landscape){
     .secondary-wrapper{
         margin-right: 145px !important;

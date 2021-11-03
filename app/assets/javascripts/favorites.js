@@ -1,5 +1,5 @@
 $(window).on('resize', function(){
-  if(window.location.href.includes('favorites')){
+  if(window.location.href.includes('favorites') || window.location.href.includes('favorites_share_link')){
     $(".divLoading").removeClass("hidden");
     window.location.reload();
   }
@@ -10,6 +10,9 @@ $(window).on('resize', function(){
 
 $(document).ready(function(){
 	if ($('.is-favorites')[0]){
+    if($(window).width() > 993 && $(".c-connect-map-wrapper").data("action") == "favorites_share_link"){
+      $(".c-connect-map-wrapper").addClass("favorites_share_link_css")
+    }
     $('#sidebar-for-responsive').addClass("hidden");
     addAttributes();
     $('#favoriteclickme').click(function() {
@@ -32,7 +35,7 @@ $(document).ready(function(){
       nextArrow: "<div class='btn nextArrowBtn view-btn-arrow btn-sm btn-block product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-right' style='font-size: 30px'></i></div>"
     });
 	}
-  if(window.location.href.includes('favorites') && units.length > 0){
+  if((window.location.href.includes('favorites') && units.length > 0) || window.location.href.includes('favorites_share_link')){
     setAttributes();
   }
   else{

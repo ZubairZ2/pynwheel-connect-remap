@@ -1,4 +1,4 @@
-.c-connect-map-wrapper
+.c-connect-map-wrapper{"data-action": "#{params[:action]}"}
   .c-modal-body-content
     - @units = [] if @units.nil?
     - @units.each do |unit|
@@ -117,3 +117,22 @@
               %img{:src => "/assets/minus.png"}/
             %a.refresh-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-reset-zoom"}
               %img{:src => "/assets/refresh.png"}/
+
+:javascript
+  var data_provider = "#{@community.data_provider}"
+  var units = "#{@fav_units_info}";
+  units = units.replace(/&quot;/g,'"');
+  units = JSON.parse(units);
+  var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
+  var redirect_url = "#{community_webpages_url(@community)}"
+  $('.show-more-option-fav').click(function(){   
+    $('.show-more-option-fav').addClass('hidden');
+    $('.hide-more-option').removeClass('hidden');
+    $('.pricing-option-for-fav').removeClass('hidden');
+  });
+  
+  $('.hide-more-option').click(function(){
+    $('.hide-more-option').addClass('hidden');
+    $('.show-more-option-fav').removeClass('hidden');
+    $('.pricing-option-for-fav').addClass('hidden');
+  });
