@@ -51,7 +51,8 @@ module AssignLocksHelper
           latch_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
         end
       elsif lock_id == ""
-        door.latch_lock.update_attributes(stop_id: nil, stop_type: nil)
+        door.latch_lock.update_attributes(stop_id: nil, stop_type: nil) if door.latch_lock.present?
+        door.update_column(:lock_provider, "")
       end
     
     elsif door.lock_provider == "Dwelo"
@@ -68,7 +69,8 @@ module AssignLocksHelper
           dwelo_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
         end
       elsif lock_id == ""
-          door.dwelo_lock.update_attributes(stop_id: nil, stop_type: nil)
+          door.dwelo_lock.update_attributes(stop_id: nil, stop_type: nil) if door.dwelo_lock.present?
+          door.update_column(:lock_provider, "")
       end
     elsif door.lock_provider == "EdgeState"
 
@@ -84,7 +86,8 @@ module AssignLocksHelper
             edgestate_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
           end
         elsif lock_id == ""
-          door.edgestate_lock.update_attributes(stop_id: nil, stop_type: nil)
+          door.edgestate_lock.update_attributes(stop_id: nil, stop_type: nil) if door.edgestate_lock.present?
+          door.update_column(:lock_provider, "")
         end
     elsif door.lock_provider == "Zerv"
       if lock_id.present?
@@ -99,7 +102,8 @@ module AssignLocksHelper
           zerv_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
         end
       elsif lock_id == ""
-        door.zerv_lock.update_attributes(stop_id: nil, stop_type: nil)
+        door.zerv_lock.update_attributes(stop_id: nil, stop_type: nil) if door.zerv_lock.present?
+        door.update_column(:lock_provider, "")
       end
     elsif door.lock_provider == "Igloohome"
       assign_igloohome_lock_to_door(community, door, lock_id)
@@ -119,7 +123,8 @@ module AssignLocksHelper
         igloohome_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
       end
     elsif lock_id == ""
-      door.igloohome_lock.update_attributes(stop_id: nil, stop_type: nil)
+      door.igloohome_lock.update_attributes(stop_id: nil, stop_type: nil) if door.igloohome_lock.present?
+      door.update_column(:lock_provider, "")
     end
   end
 
@@ -137,7 +142,8 @@ module AssignLocksHelper
       end
 
     elsif lock_id == ""
-      stop.latch_locks.update_all(stop_id: nil, stop_type: nil)
+      stop.latch_locks.update_all(stop_id: nil, stop_type: nil) if stop.latch_locks.present?
+      stop.update_column(:lock_provider, "")
     end
   end
   
@@ -155,7 +161,8 @@ module AssignLocksHelper
       end
         
     elsif lock_id == ""
-      stop.remote_locks.dwelo_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+      stop.remote_locks.dwelo_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil) if stop.remote_locks.present?
+      stop.update_column(:lock_provider, "")
     end
   end
 
@@ -173,7 +180,8 @@ module AssignLocksHelper
       end
 
     elsif lock_id == ""
-      stop.remote_locks.edgestate_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+      stop.remote_locks.edgestate_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil) if stop.remote_locks.present?
+      stop.update_column(:lock_provider, "")
     end
   end
   
@@ -190,7 +198,8 @@ module AssignLocksHelper
         zerv_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name) rescue nil
       end
     elsif lock_id == ""
-      stop.zerv_locks.update_all(stop_id: nil, stop_type: nil)
+      stop.zerv_locks.update_all(stop_id: nil, stop_type: nil) if stop.zerv_locks.present?
+      stop.update_column(:lock_provider, "")
     end
   end
 
@@ -207,7 +216,8 @@ module AssignLocksHelper
         igloohome_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name) rescue nil
       end
     elsif lock_id == ""
-      stop.igloohome_locks.update_all(stop_id: nil, stop_type: nil)
+      stop.igloohome_locks.update_all(stop_id: nil, stop_type: nil) if stop.igloohome_locks.present?
+      stop.update_column(:lock_provider, "")
     end
   end
 end
