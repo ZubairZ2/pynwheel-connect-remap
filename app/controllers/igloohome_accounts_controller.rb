@@ -1,10 +1,13 @@
 class IgloohomeAccountsController < ApplicationController
-  before_action :set_community, :only => [:create, :remove_igloohome_locks]
+  before_action :set_community, :only => [:create, :remove_igloohome_locks, :import_single_lock]
   before_action :create_igloohome_account, :only => [:create, :import_single_lock] 
-  after_action :import_igloohome_locks, :update_community_lock_provider, :only => [:create]
+  # after_action :import_igloohome_locks, :update_community_lock_provider, :only => [:create]
 
   def create
     if params[:file].present?
+      import_igloohome_locks
+      update_community_lock_provider
+
       flash[:notice] = "Igloohome Locks imported successfully"
     else
       flash[:error] = "To import locks please upload CSV file"
@@ -20,6 +23,7 @@ class IgloohomeAccountsController < ApplicationController
       if igloohome_lock.present?
         flash[:alert] = "Igloohome Lock with this device id already present"
       else
+        update_community_lock_provider
         @igloohome.igloohome_locks.create(device_id: params["device_id"], device_name: params["device_name"])
         flash[:notice] = "Igloohome Lock added"
       end
@@ -50,7 +54,7 @@ class IgloohomeAccountsController < ApplicationController
     @igloohome = Igloohome.find_by(community_id: params[:community_id])
     
     unless @igloohome.present? 
-      @igloohome = Igloohome.create!(username: "testing igloohome lock", password: "igloohome password", community_id: @community.id)
+      @igloohome = Igloohome.create!(username: "testing igloohome lock", password: "igloohome password", community_id: params[:community_id])
     end
 
     @igloohome

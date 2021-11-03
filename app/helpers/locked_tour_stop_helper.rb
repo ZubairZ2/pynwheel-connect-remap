@@ -17,5 +17,4 @@ module LockedTourStopHelper
 
     new_stop
   end
-
 end

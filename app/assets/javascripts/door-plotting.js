@@ -550,7 +550,10 @@ $(document).ready(function(){
                 $("#lock_id").closest('form').submit()
                 setTimeout(function() { $(".save_lock").css('visibility', 'hidden') }, 1500);
             }
-            else{ lock.reportValidity(); }
+            else{ 
+                $("#lock_id").closest('form').submit()
+                // lock.reportValidity(); 
+            }
         }
         else{
             $(".save_lock").css('visibility', 'visible')

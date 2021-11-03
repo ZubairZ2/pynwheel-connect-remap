@@ -184,6 +184,7 @@ module DweloDevicesHelper
 
   def lock_access_by_type(params, community, tour_user, current_time)
     if community.multiple_locks_provider.include?("Igloohome")
+      puts "----------------------- Igloohome Lock ----------------------"
       igloohome_lock_access(params, community, current_time)
     end
     
@@ -204,6 +205,9 @@ module DweloDevicesHelper
     Thread.new do
       begin
         tour_user = TourUser.find params[:tour_user_id]
+        puts "----------------------- igloohome_lock_access ----------------------"
+        puts tour_user.inspect
+        
         tour_user.update_column 'igloohome_status' , 'in progress'
         
         IgloohomeService.new(community, current_time, tour_user).assign_guest_bluetooth_key

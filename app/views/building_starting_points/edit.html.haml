@@ -173,7 +173,10 @@
                 $("#" + lock.id).closest('form').append(input)
                 $('.save-building-starting-point-form').submit()
               }
-              else{ lock.reportValidity(); }
+              else{ 
+                //lock.reportValidity();
+                $('.save-building-starting-point-form').submit()
+              }
             }
           else{
             $('.save-building-starting-point-form').submit()
@@ -198,7 +201,10 @@
                 $('.save-building-starting-point-form').append('<input type="hidden" name="done_action" value="true">');
                 $('.save-building-starting-point-form').submit();
               }
-              else{ lock.reportValidity(); }
+              else{
+                $('.save-building-starting-point-form').submit()
+                //lock.reportValidity(); 
+              }
             }
           else{
             $('.save-building-starting-point-form').submit()

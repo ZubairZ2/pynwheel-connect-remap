@@ -1,6 +1,5 @@
 // save an individual unit (even if same x/y)
 function savePlot(id, dx, dy, door_id = 0) {
-    debugger
     if (typeof floorplan_id !== 'undefined') {
         saveFloorplanPlot(id, dx, dy);
     } else if (typeof floorplate_id !== 'undefined') {
@@ -35,11 +34,19 @@ function savePlot(id, dx, dy, door_id = 0) {
 }
 
 function saveFloorplateUnit(id, dx, dy) {
-    debugger
+    var xPlot;
+    var yPlot;
+    if(addmode){
+        xPlot = dx;
+        yPlot = dy
+    }else{
+        xPlot = dx + left_margin;
+        yPlot = dy + right_margin
+    }
     $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunitforfloorplate",
         {
-            "x_plot": dx,
-            "y_plot": dy,
+            "x_plot": xPlot,
+            "y_plot": yPlot,
             "floorplate_id": floorplate_id
         },
         function (data, status, xhr) {
@@ -206,10 +213,19 @@ function saveAmenityPlotForUnit(id, dx, dy) {
 }
 
 function saveSiteMapUnit(id, dx, dy) {
+    var xPlot;
+    var yPlot;
+    if(addmode){
+        xPlot = dx;
+        yPlot = dy
+    }else{
+        xPlot = dx+left_margin;
+        yPlot = dy+right_margin
+    }
     $.post("/communities/" + community_id + "/units/" + id + "/ajaxplotunit",
         {
-            "x_plot": dx,
-            "y_plot": dy
+            "x_plot": xPlot,
+            "y_plot": yPlot
         },
         function (data, status, xhr) {
             console.debug(status, "done with ajaxsave ajaxplotunit", id, dx, dy);
@@ -238,7 +254,6 @@ function saveSiteMapUnit(id, dx, dy) {
 }
 
 function plotMode(selected) {
-    debugger
     console.log("new marked is created")
     addmode = true;
     $("#newmsg").css({display: 'inline-block'});
@@ -327,7 +342,6 @@ function doDraggable() {
 
         },
         stop: function (event, ui) {
-            debugger
             if (is_ui_a_door(ui))
                 stop__door_work(event, ui)
             else if (is_ui_a_accesspoint(ui))
@@ -344,7 +358,6 @@ function doDraggable() {
 
 
 function reset() {
-    debugger
     addmode = false;
     adddoorsmode = false;
     accesspointplot = false;
@@ -401,6 +414,7 @@ function removeUnitFromSelectedArray(value) {
 
 
 function start__original_work(event, ui) {
+    // debugger
     // get the initial X and Y position when dragging starts
     xpos = Math.round(ui.position.left);
     ypos = Math.round(ui.position.top);
@@ -443,7 +457,6 @@ function stop__original_work(event, ui) {
                 }
             }
             // alert(temp[i]);
-            debugger
             savePlot(temp[i], Math.round(ui.position.left), Math.round(ui.position.top));
         }
     }
