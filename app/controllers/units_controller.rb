@@ -399,8 +399,13 @@ class UnitsController < ApplicationController
 
   def update_unit_door_lock
     @unit = @community.units.where(provider_unit_id: params[:id]).first
-    @unit.door.update_attributes(lock_provider: params[:lock_provider], access_code: params[:access_code])
-    assign_lock_to_door(@community, @unit.door, params[:lock_id]) if params[:lock_id].present?
+    @door = @unit.door
+    if params[:lock_provider] == "Manual" && params[:access_code] == ""
+      @door.update_columns(lock_provider: "", access_code: "")
+    else
+      @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code])
+    end
+    assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
   end
 
   def plot_multiple_units_door_for_floorplate
@@ -620,23 +625,16 @@ class UnitsController < ApplicationController
   def update_locks
     if @community.enable_locks
       if @unit.door.present?
-        lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
-        if params[:unit][:lock_provider] == "Manual" && params[:unit][:access_code].present?
-          @unit.door.update_column(:lock_provider, params[:unit][:lock_provider])
-          @unit.door.update_column(:access_code, params[:unit][:access_code])
+        @door = @unit.door
+        if params[:unit][:lock_provider] == "Manual" && params[:unit][:access_code] == ""
+          @door.update_columns(lock_provider: "", access_code: "", updated_at: Time.now.utc)
+        else
+          @door.update_columns(lock_provider: params[:unit][:lock_provider], access_code: params[:unit][:access_code], updated_at: Time.now.utc)
         end
-        if params[:unit][:lock_provider] == "Manual" && !params[:unit][:access_code].present?
-          @unit.door.update_column(:lock_provider, "")
-          @unit.door.update_column(:access_code, "")
-        end
-        @unit.door.update_column(:lock_provider, "") if params[:unit][:lock_provider] != "Manual" && (lock_id.nil? or params[:lock_id] == "")
-        @unit.door.update_column(:lock_provider, params[:unit][:lock_provider] ) if params[:unit][:lock_provider] != "Manual" && lock_id.present?
-        assign_lock_to_door(@community, @unit.door, params[:lock_id]) if params[:unit][:lock_provider] != "Manual" && params[:lock_id].present?
+        assign_lock_to_door(@community, @unit.door, params[:lock_id]) if params.has_key?("lock_id") && params[:unit][:lock_provider] != "Manual"
       else
         update_enable_locks()
-        # @unit.door.update_attributes(lock_provider: '') if @unit.door.present?  # secured, we should never have 2 locks in DB (1 for unit and 1 for door), in case only auto_wayfinding is turned off while Door is present in DB
       end
     end
   end
-
 end

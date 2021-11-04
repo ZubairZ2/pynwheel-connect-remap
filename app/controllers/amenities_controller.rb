@@ -136,8 +136,12 @@ class AmenitiesController < ApplicationController
   def update_amenity_door_lock
     @amenity = @community.amenities.find_by(id: params[:id])
     @door = @amenity.doors.find_by(id: params[:door_id])
-    @door.update_attributes(lock_provider: params[:lock_provider], access_code: params[:access_code])
-    assign_lock_to_door(@community, @door, params[:lock_id]) if params[:lock_id].present?
+    if params[:lock_provider] == "Manual" && params[:access_code] == ""
+      @door.update_columns(lock_provider: "", access_code: "")
+    else
+      @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code])
+    end
+    assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
   end
 
   def remove_amenity_door_plot
