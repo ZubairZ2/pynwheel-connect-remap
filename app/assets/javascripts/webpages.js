@@ -1911,7 +1911,12 @@ function apply3DFilters() {
 }
 
 function applyFilters(){
-  showMarkers();
+  if(selectMap === "3d-map") {
+    _3dMapViewMarkers();
+  }
+  else{
+    showMarkers();
+  }
   selected_market_rent = $("#responsive_market_rent option:selected").text();
   selected_square_feet = $("#responsive_square_feet option:selected").text();
   selected_available_unit = $("#responsive_available_unit option:selected").text();
@@ -1921,12 +1926,7 @@ function applyFilters(){
   $("#unit_availability").html(selected_available_unit);
   $("#bedroom_responsive").html(selected_unit_bedrooms);
   $('.mobile-filter-mega-menu').slideToggle()
-}
 
-function changeCurrentMapType(){
-  // $('.3d-map-option').addClass('hidden')
-  // debugger
-  $('#current-map-type').attr('value', "3d-current-map");
 }
 
 $(document).on('click','.share-favorite',function(){

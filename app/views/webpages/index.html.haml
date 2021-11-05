@@ -17,28 +17,15 @@
     = javascript_include_tag 'slick'
     = javascript_include_tag "update_session"
     = javascript_include_tag "moment"
-    %script{:src => "https://www.beans.ai/widgets/3d-maps/v1.3.0/beans-mapbox.min.js"}
+    %script{:src => "https://beans.ai/widgets/3d-maps/v2.0.0/beans-mapbox.min.js"}
     %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css", :rel => "stylesheet"}/
     %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css", :rel => "stylesheet"}/
     %link{:href => "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css", :rel => "stylesheet"}/
     %link{:href => "https://fonts.googleapis.com", :rel => "preconnect"}/
     %link{:crossorigin => "", :href => "https://fonts.gstatic.com", :rel => "preconnect"}/
     %link{:href => "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap", :rel => "stylesheet"}/
-    /%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
-    /%link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
-    -#%link{:crossorigin => "anonymous", :href => "https://use.fontawesome.com/releases/v5.7.2/css/all.css", :integrity => "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", :rel => "stylesheet"}/
     = render '/font_awesome_v5'    
-    / %link{:href => "css/bootstrap.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/font-awesome.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/slider.css", :rel => "stylesheet"}/
-    / %link{:href => "css/pyn.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/skins/_all-pyn.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/jquery.mCustomScrollbar.css", :rel => "stylesheet"}/
-    / %link{:href => "css/pyn-custom.css", :rel => "stylesheet"}/
-    / HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries
-    / WARNING: Respond.js doesn't work if you view the page via file://
-    /%link{:href => "https://fonts.googleapis.com/css?family=Raleway:100,200,300,400,500,600,700,800,900", :rel => "stylesheet"}/
   %body.custom-iframe-modeule
     .divLoading.hidden
     - unless @community_info.locked
@@ -681,6 +668,9 @@
       let main_container_height = $('.c-body').height() - $('.c-footer').height();
       $('.floorplate-image').attr("height", main_container_height - 100)
     }
+    if(current_width <= 993){
+      $("._3d-apply-filter-button").hide();
+    }
     //$('.image-map').attr("width", main_container_height)
     $("#max_price_responsive").html("Max Price");
     $("#sq_feet_responsive").html("Min Sq Feet");
@@ -723,6 +713,5 @@
   
   var community_logo = "#{@community.logo.present? ? true : false}"
   if(community_logo == "false" && current_width < 567){
-    debugger
     $(".mobile-trigger").addClass("pt");
   }

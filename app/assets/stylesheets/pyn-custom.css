@@ -3992,10 +3992,6 @@ a#favoriteclickme {
     visibility: visible;
 }
 
-/* ._3d-apply-filter-button {
-    margin-top: 16px;
-} */
-
 #logo_header {
     margin-bottom: 0px;
 }
@@ -6085,8 +6081,7 @@ ul.add-fav-options {
     text-transform: uppercase;
     font-weight: 500;
     font-family: 'Raleway', sans-serif;
-    width: 60%;
-    /* width: unset; */
+    width: 100%;
     border: transparent;
     cursor: pointer;
     color: white;
