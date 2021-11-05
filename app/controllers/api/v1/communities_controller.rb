@@ -617,7 +617,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     emails = community.email.gsub(" ","").split(',')
     schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
     emails.each do |email|
-      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}",email,"info@pynwheel.com",community,false,schedule_tour).deliver
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}",email,INFO_EMAIL,community,false,schedule_tour).deliver
     end
   end
   def check_lock_access
