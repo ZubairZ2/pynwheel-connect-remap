@@ -68,7 +68,7 @@ class TourUser < ApplicationRecord
     end
   end
 
-  def verify_property_access_code(access_code,is_property_access_enabled,tour_length_stay_limit)
+  def property_access_code_verification(access_code,is_property_access_enabled,tour_length_stay_limit)
     if access_code.present?
       if is_property_access_enabled
         if Time.now < self.property_access_code_generated_at + tour_length_stay_limit.minutes

@@ -85,13 +85,16 @@ class Api::V1::TourHistoriesController < ActionController::Base
     end
   end
   def verify_property_access_code
-    access_code = params[:access_code] rescue ""
-    is_property_access_enabled = @community&.tour&.tour_setting&.enable_restricted_property_access
-    tour_length_stay_limit = @community&.tour&.tour_setting&.length_stay_limit
-    if @tour_user.verify_property_access_code(access_code,is_property_access_enabled,tour_length_stay_limit)
-      render :json=> {success: true, error_code: 200, message: "Code has been verified successfully."}
-    else
-      render json: {success: false, error_code: 400, message: @tour_user.errors.full_messages.first, result: nil}
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      access_code = params[:access_code] rescue ""
+      is_property_access_enabled = @community&.tour&.tour_setting&.enable_restricted_property_access
+      tour_length_stay_limit = @community&.tour&.tour_setting&.length_stay_limit
+      if @tour_user.property_access_code_verification(access_code,is_property_access_enabled,tour_length_stay_limit)
+        render :json=> {success: true, error_code: 200, message: "Code has been verified successfully."}
+      else
+        render json: {success: false, error_code: 400, message: @tour_user.errors.full_messages.first, result: nil}
+      end
     end
   end
   def save_visitedStops params

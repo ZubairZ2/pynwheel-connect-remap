@@ -184,9 +184,11 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community.save
       charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
       @tour_user.verified_by = params[:verfied_by_provider]
+      @tour_user.lock_access_time = Time.now.utc
+      @tour_user.save
       @tour_type = params[:tour_status] rescue @tour_user.tour_type
       restrict_property_access_with_code(@community,@tour_user,@tour_type)
-      time_zone = get_time_zone @community
+      # time_zone = get_time_zone @community
       if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.tour.visual_id_verification #TODO:: change to 1 month after testing
         @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
         @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
