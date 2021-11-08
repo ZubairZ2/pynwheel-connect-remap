@@ -49,7 +49,7 @@ class Api::V1::PerqWebhooksController < ActionController::Base
       stops_list: tour.present? ? get_tour_stops_list(tour) : [], 
       community_id: @community.id, 
       tour_user_id: @tour_user.id,
-      user_time_zone: get_community_time_zone, 
+      user_time_zone: @community.get_time_zone(), 
       tour_date: get_tour_date(params["AppointmentDateTime"]), 
       tour_time: get_tour_time(params["AppointmentDateTime"]), 
       tour_type: get_tour_type,
@@ -145,23 +145,4 @@ class Api::V1::PerqWebhooksController < ActionController::Base
   def get_latest_tour
     MaxDateScheduledTourService.new(@tour_user, @community, false).get_scheduled_tour if @tour_user.present? &&  @community.present?
   end
-
-  def get_community_time_zone
-    tz = Ziptz.new
-    timezone = nil
-
-    if @community.latitude.present? and @community.longitude.present?
-      time_zone = Timezone.lookup(@community.latitude, @community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and @community.zip.present?
-      timezone = tz.time_zone_name(@community.zip)
-    end
-
-      return timezone
-    rescue
-      return "UTC"
-  end
-
 end

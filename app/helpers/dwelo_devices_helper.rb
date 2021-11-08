@@ -396,7 +396,7 @@ module DweloDevicesHelper
   end
 
   def current_community_time(community, params)
-    timezone = get_community_time_zone(community)
+    timezone = community.get_time_zone()
     (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
     rescue
     Time.now.utc
@@ -495,7 +495,7 @@ module DweloDevicesHelper
   end
 
   def total_scheduled_tour(community, property_time, limit, tour_user)
-    timezone = get_community_time_zone(community) rescue "UTC"
+    timezone = community.get_time_zone()
     total  = SchedualTour.where('tour_date = ?', Date.today.to_date).where.not(tour_user_id: nil).map{|x| x if ( ((((x.tour_date.to_s + " " + x.tour_time.to_s(:time)).in_time_zone(x.user_time_zone).in_time_zone(timezone)) - property_time.in_time_zone(timezone) ) / 3600).between?(-0.5,0.5) )}.compact
     if (total.map{|x| x.tour_user_id}.include? tour_user.id) || !geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude, 1)
       return 0
@@ -519,36 +519,7 @@ module DweloDevicesHelper
   end
 
   def get_community_time(community)
-    tz = Ziptz.new
-    if community.zip.present?
-        timezone = tz.time_zone_name(community.zip)
-        community_time = Time.now.in_time_zone(timezone) if timezone.present?
-    end
-
-    if community_time.nil? and community.latitude.present? and community.longitude.present?
-        timezone = Timezone.lookup(community.latitude, community.longitude)
-        community_time = timezone.utc_to_local(Time.now) if timezone.present?
-    end
-
-    community_time.present? ? community_time : nil
-  end
-
- def get_community_time_zone(community)
-    tz = Ziptz.new
-    timezone = nil
-
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and community.zip.present?
-        timezone = tz.time_zone_name(community.zip)
-    end
-
-    return timezone.present? ? timezone : "UTC"
-  rescue
-    return "UTC"
+    Time.now.in_time_zone(community.get_time_zone())
   end
 
   def is_sf_tour_on_time(current_time, scheduled_tours, grace_time, timezone)

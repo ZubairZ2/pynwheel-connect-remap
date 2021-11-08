@@ -248,6 +248,12 @@ class Community < ApplicationRecord
     CloneCommunityJob.perform_async community
   end
 
+  def get_time_zone
+    return "UTC" unless (self.latitude.present? && self.longitude.present?)
+
+    Timezone.lookup(self.latitude, self.longitude).name rescue "UTC"
+  end
+
   def has_temporary_images?
     temporary_images.size > 0
   end
@@ -1173,13 +1179,6 @@ class Community < ApplicationRecord
     bedroom_list = bedroom_list.sort.map {|bedroom| [bedroom, bedroom]}
     bedroom_list.unshift(["Number of Bedrooms", nil])
     bedroom_list
-  end
-
-  def get_time_zone
-    time_zone = Timezone.lookup(self.latitude, self.longitude)
-    timezone = time_zone.name
-    rescue
-      return "UTC"
   end
 
   private
