@@ -61,11 +61,11 @@ module ApplicationHelper
   def self_tour_icon_size
     [["19x25","0"],["17x23","1"],["15x21","2"],["13x19","3"],["11x17","4"]]
   end
+
   def get_time_zone community
-  time_zone = Timezone.lookup(community.latitude, community.longitude)
-  timezone = time_zone.name
-  rescue
-    return ""
+    return "UTC" unless (community.latitude.present? && community.longitude.present?)
+
+    Timezone.lookup(community.latitude, community.longitude).name rescue "UTC"
   end
 
   def font_families

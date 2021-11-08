@@ -86,7 +86,7 @@ private
   end
 
   def get_scheduled_tour_html_date_time(scheduled_tour,community)
-    timezone = get_time_zone community
+    timezone = get_time_zone(community)
     scheduler_date_time = scheduled_tour_date_time(scheduled_tour) ? scheduled_tour_date_time(scheduled_tour) : unscheduled_tour_date_time(scheduled_tour,community)
     '<div>'+ scheduler_date_time +''+scheduled_tour_icon_status(scheduled_tour,community) +'</div>' rescue ""
   end

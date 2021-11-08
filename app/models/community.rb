@@ -1175,13 +1175,6 @@ class Community < ApplicationRecord
     bedroom_list
   end
 
-  def get_time_zone
-    time_zone = Timezone.lookup(self.latitude, self.longitude)
-    timezone = time_zone.name
-    rescue
-      return "UTC"
-  end
-
   private
 
     #return_time_slots("0:00", "01:00", 15)
