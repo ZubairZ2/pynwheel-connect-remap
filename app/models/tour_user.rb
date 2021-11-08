@@ -88,7 +88,7 @@ class TourUser < ApplicationRecord
   end
 
   def is_code_valid(access_code)
-    if self.property_access_code == access_code
+    if self.property_access_code.to_s == access_code.to_s
       true
     else
       self.errors[:base] << "Please make sure code is valid and try again"
