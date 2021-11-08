@@ -154,7 +154,7 @@ module CommunitiesHelper
     checkpoint_verified_at = tour_user.checkpoint_verified_at
     is_authentiq_verified = tour_user.is_authentiq_verified
     is_checkpoint_verified = tour_user.is_checkpoint_verified
-    time_zone = get_time_zone(community)
+    time_zone = community.get_time_zone()
     current_tour_time = params[:current_time] if params[:current_time].present?
     if community.tour.visual_id_verification && tour_type != "virtual_tour"
       if community.tour.verification_type == "authenteq"

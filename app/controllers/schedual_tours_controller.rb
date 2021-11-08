@@ -367,7 +367,7 @@ class SchedualToursController < ApplicationController
     end
 
     def scheduled_tours_in_future(scheduled_tours, community, tour_user_ids = [], community_time_zone = nil)
-      community_time_zone = get_time_zone(community)
+      community_time_zone = community.get_time_zone()
       scheduled_tours.find_each do |tour|
         unless tour.is_tour_completed
           is_in_timezone = (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(community_time_zone) > Time.now.in_time_zone(community_time_zone)

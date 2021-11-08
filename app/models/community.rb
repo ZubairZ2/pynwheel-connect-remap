@@ -248,6 +248,12 @@ class Community < ApplicationRecord
     CloneCommunityJob.perform_async community
   end
 
+  def get_time_zone
+    return "UTC" unless (self.latitude.present? && self.longitude.present?)
+
+    Timezone.lookup(self.latitude, self.longitude).name rescue "UTC"
+  end
+
   def has_temporary_images?
     temporary_images.size > 0
   end

@@ -167,7 +167,7 @@ class TourHistory < ApplicationRecord
     tour = community.tour
 
     if  tour.only_scheduled_tour && tour.grace_period.present?
-      timezone = get_time_zone(community)
+      timezone = community.get_time_zone()
       
       grace_period = tour.grace_period
       current_time = Time.now.in_time_zone(timezone)
