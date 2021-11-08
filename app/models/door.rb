@@ -6,6 +6,7 @@ class Door < ApplicationRecord
     has_one :dwelo_lock, -> { where(edge_state_id: nil) },  class_name: 'RemoteLock', as: :stop
     has_one :latch_lock,  as: :stop
     has_one :zerv_lock,   as: :stop
+    has_one :igloohome_lock, as: :stop
 
     # after_create    :snatch_lock,             if: Proc.new { attached_with_type == "Unit" or attached_with_type == "Amenity" and lock_provider.blank? }          # To be on secure side for other developers, but I am not using Door.create any where
     after_save      :snatch_lock,             if: Proc.new { attached_with_type == "Unit" or attached_with_type == "Amenity" and lock_provider.blank? }

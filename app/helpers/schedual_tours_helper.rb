@@ -59,8 +59,7 @@ module SchedualToursHelper
   end
 
   def unscheduled_tour_date_time(scheduled_tour,community)
-    timezone = get_time_zone(community)
-    timezone = timezone || scheduled_tour.user_time_zone
+    timezone = community.get_time_zone()
     scheduled_tour.is_tour_completed && scheduled_tour&.tour_completed_at.present? ? (scheduled_tour.tour_completed_at.in_time_zone(timezone)).strftime("%Y-%m-%d %I:%M%p") : (scheduled_tour.created_at.in_time_zone(timezone)).strftime("%Y-%m-%d %I:%M%p")
   end
 
@@ -109,28 +108,14 @@ module SchedualToursHelper
   end
 
   def is_tour_in_future(community, tour, timezone = nil)
-    if community.present? && community.latitude.present? && community.longitude.present?
-      timezone = get_time_zone(community)
-    end
+    timezone = community.get_time_zone()
 
-    timezone = timezone || tour.user_time_zone
     if (tour.tour_date && tour.tour_time).present?
       (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) > Time.now.in_time_zone(timezone)
     else
       return true
     end
 
-  end
-
-  def get_time_zone community
-    if community.present? && community.latitude.present? && community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    else
-      timezone = nil
-    end
-
-    timezone
   end
 
   def get_visible_tour_stops(community, tour)

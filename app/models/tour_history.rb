@@ -64,19 +64,22 @@ class TourHistory < ApplicationRecord
 
         touruser = self.tour_user
         scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id).last #MaxDateScheduledTourService.new(touruser, community, false).get_scheduled_tour rescue community.schedual_tours.where(tour_user_id: touruser.id).last
+        
         if touruser.tour_type == "self_tour" && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )         
           if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
-            scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
+            complete_scheduled_tour(scheduled_tour)
           end
         end 
+
         if touruser.tour_type == "virtual_tour" && (scheduled_tour&.property_tour_type.present? && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour"))
-          # scheduled_tour = community.schedual_tours.where(tour_user_id: touruser.id)
-          scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
+          complete_scheduled_tour(scheduled_tour)
         end
 
         if (touruser.tour_type == "virtual_tour" && (scheduled_tour&.tour_type == "Virtual tour" || scheduled_tour&.tour_type == "Virtual Tour")) || (touruser.tour_type == "self_tour" && (scheduled_tour&.tour_type == "Self guided" || scheduled_tour&.tour_type == "Self Guided"))
-          scheduled_tour.update(is_tour_completed: true, tour_completed_at: Time.now) if scheduled_tour.present?
+          complete_scheduled_tour(scheduled_tour)
         end
+
+       complete_scheduled_tour(scheduled_tour) if scheduled_tour.tour_type.present? && scheduled_tour&.created_by === "PERQ"
 
         tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}"
         @complete_tour_content = ["#{community.name} has been visited", "#{touruser.name.capitalize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.capitalize} Visitor Details</a> "]
@@ -85,6 +88,7 @@ class TourHistory < ApplicationRecord
         else
           @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         end
+
         tour_user_remotelock_data(community)
 
         # tour = (Tour.find_by_id self.tour_id)
@@ -146,6 +150,10 @@ class TourHistory < ApplicationRecord
     end
   end
 
+  def complete_scheduled_tour tour
+    tour.update(is_tour_completed: true, tour_completed_at: Time.now) if tour.present?
+  end
+
   def save_salesforce_feedback_data community, tour_user
     current_tour = VisitedStop.where(tour_user_id: tour_user.id, tour_id: self.tour_id).last
     puts "current_tour"
@@ -162,12 +170,8 @@ class TourHistory < ApplicationRecord
     tour = community.tour
 
     if  tour.only_scheduled_tour && tour.grace_period.present?
-      if community.present? && community.latitude.present? && community.longitude.present?
-        timezone = get_time_zone(community)
-      end
-
-
-      timezone = timezone || scheduled_tour.user_time_zone
+      timezone = community.get_time_zone()
+      
       grace_period = tour.grace_period
       current_time = Time.now.in_time_zone(timezone)
       tour_date_time = (scheduled_tour.tour_date.to_s + " " + scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone)
@@ -183,11 +187,6 @@ class TourHistory < ApplicationRecord
     else
       true
     end
-  end
-
-  def get_time_zone(community)
-    time_zone = Timezone.lookup(community.latitude, community.longitude)
-    timezone = time_zone.name
   end
 
   def save_prospect(endtime, community)

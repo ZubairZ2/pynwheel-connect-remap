@@ -364,27 +364,32 @@ module ShortestPath
       planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
       @community_units = @community.units.are_ploted_units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
       @unit_with_door = @community_units.map do |unit| 
-        if planned_to_visit_units_ids.include?(unit.id) && unit.door.present?
-          planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
-          @planned_to_visit_units_and_doors_ids << unit.door.id
-          update_precedence('unit', unit.id, unit.door.id)
-        elsif planned_to_visit_units_ids.include?(unit.id)
-          @planned_to_visit_units_and_doors_ids << unit.id
-        end 
-        { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
+        if planned_to_visit_units_ids.include?(unit.id)
+          if unit.door.present?
+            planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
+            @planned_to_visit_units_and_doors_ids << unit.door.id
+            update_precedence('unit', unit.id, unit.door.id)
+          else
+            @planned_to_visit_units_and_doors_ids << unit.id
+          end 
+          { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
+        end
       end 
-
+      @unit_with_door.compact!
       @amenities_doors = @sitemap.amenities.includes(:doors)
       @amenity_with_doors = @amenities_doors.map do |amenity| 
-        if planned_to_visit_amenities_ids.include?(amenity.id) && amenity.doors.present?
-          planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
-          @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
-          update_precedence('amenity', amenity.id, amenity.doors.first.id)
-        elsif planned_to_visit_amenities_ids.include?(amenity.id)
-          @planned_to_visit_amenities_and_doors_ids << amenity.id
+        if planned_to_visit_amenities_ids.include?(amenity.id)
+          if amenity.doors.present?
+            planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
+            @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
+            update_precedence('amenity', amenity.id, amenity.doors.first.id)
+          else
+            @planned_to_visit_amenities_and_doors_ids << amenity.id
+          end
+          { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } 
         end
-        { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } 
       end
+      @amenity_with_doors.compact!
       @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
     end
     def fetch_related_data_according_to_mobile(new_stops_arr, community_id)
@@ -404,27 +409,32 @@ module ShortestPath
         planned_to_visit_amenities_ids = tour_stops.where(stop_type: "amenity",display_stop: true).pluck(:stop_id) rescue []
         @community_units = @community.units.are_ploted_units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
         @unit_with_door = @community_units.map do |unit| 
-          if planned_to_visit_units_ids.include?(unit.id) && unit.door.present?
-            planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
-            @planned_to_visit_units_and_doors_ids << unit.door.id
-            update_precedence('unit', unit.id, unit.door.id)
-          elsif planned_to_visit_units_ids.include?(unit.id)
-            @planned_to_visit_units_and_doors_ids << unit.id
+          if planned_to_visit_units_ids.include?(unit.id) 
+            if unit.door.present?
+              planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
+              @planned_to_visit_units_and_doors_ids << unit.door.id
+              update_precedence('unit', unit.id, unit.door.id)
+            else planned_to_visit_units_ids.include?(unit.id)
+              @planned_to_visit_units_and_doors_ids << unit.id
+            end 
+            { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
           end 
-          { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
-        end 
-
+        end
+        @unit_with_door.compact!
         @amenities_doors = @sitemap.amenities.includes(:doors)
         @amenity_with_doors = @amenities_doors.map do |amenity| 
-          if planned_to_visit_amenities_ids.include?(amenity.id) && amenity.doors.present?
-            planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
-            @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
-            update_precedence('amenity', amenity.id, amenity.doors.first.id)
-          elsif planned_to_visit_amenities_ids.include?(amenity.id)
-            @planned_to_visit_amenities_and_doors_ids << amenity.id
+          if planned_to_visit_amenities_ids.include?(amenity.id)
+            if amenity.doors.present?
+              planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
+              @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
+              update_precedence('amenity', amenity.id, amenity.doors.first.id)
+            else
+              @planned_to_visit_amenities_and_doors_ids << amenity.id
+            end
+            { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } 
           end
-          { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } } 
         end
+        @amenity_with_doors.compact!
         @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
       else
 
@@ -457,33 +467,37 @@ module ShortestPath
       @community_units = @community.units.are_ploted_units.where.not(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
       @unit_with_door = {}
       @community_units.each do |unit| 
-        if planned_to_visit_units_ids.include?(unit.id) && unit.door.present?
-          planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
-          @planned_to_visit_units_and_doors_ids << unit.door.id
-          update_precedence_for_floors(unit.floor, 'unit', unit.id, unit.door.id)
-        elsif planned_to_visit_units_ids.include?(unit.id)
-          @planned_to_visit_units_and_doors_ids << unit.id
-        end 
-        if @unit_with_door.has_key?(unit.floor)
-          @unit_with_door[unit.floor] << { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
-        else
-          @unit_with_door[unit.floor] = [{ unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }]
+        if planned_to_visit_units_ids.include?(unit.id)
+          if unit.door.present?
+            planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
+            @planned_to_visit_units_and_doors_ids << unit.door.id
+            update_precedence_for_floors(unit.floor, 'unit', unit.id, unit.door.id)
+          else
+            @planned_to_visit_units_and_doors_ids << unit.id
+          end 
+          if @unit_with_door.has_key?(unit.floor)
+            @unit_with_door[unit.floor] << { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
+          else
+            @unit_with_door[unit.floor] = [{ unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }]
+          end
         end
       end 
       @amenities_doors = Amenity.where(amenityable_type: "Floorplate", amenityable_id: @floorplates.ids).includes(:doors)
       @amenity_with_doors = {}
       @amenities_doors.each do |amenity| 
-        if planned_to_visit_amenities_ids.include?(amenity.id) && amenity.doors.present?
-          planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
-          @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
-          update_precedence_for_floors(amenity.floor, 'amenity', amenity.id, amenity.doors.first.id)
-        elsif planned_to_visit_amenities_ids.include?(amenity.id)
-          @planned_to_visit_amenities_and_doors_ids << amenity.id
-        end
-        if @amenity_with_doors.has_key?(amenity.floor)
-          @amenity_with_doors[amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
-        else
-          @amenity_with_doors[amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+        if planned_to_visit_amenities_ids.include?(amenity.id)
+          if amenity.doors.present?
+            planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
+            @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
+            update_precedence_for_floors(amenity.floor, 'amenity', amenity.id, amenity.doors.first.id)
+          else
+            @planned_to_visit_amenities_and_doors_ids << amenity.id
+          end
+          if @amenity_with_doors.has_key?(amenity.floor)
+            @amenity_with_doors[amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
+          else
+            @amenity_with_doors[amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+          end
         end
       end
       @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }
@@ -513,33 +527,37 @@ module ShortestPath
       @community_units = @community.units.are_ploted_units.where.not(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
       @unit_with_door = {}
       @community_units.each do |unit| 
-        if planned_to_visit_units_ids.include?(unit.id) && unit.door.present?
-          planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
-          @planned_to_visit_units_and_doors_ids << unit.door.id
-          update_precedence_for_floors(unit.floor, 'unit', unit.id, unit.door.id)
-        elsif planned_to_visit_units_ids.include?(unit.id)
-          @planned_to_visit_units_and_doors_ids << unit.id
-        end 
-        if @unit_with_door.has_key?(unit.floor)
-          @unit_with_door[unit.floor] << { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
-        else
-          @unit_with_door[unit.floor] = [{ unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }]
+        if planned_to_visit_units_ids.include?(unit.id)
+          if unit.door.present?
+            planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
+            @planned_to_visit_units_and_doors_ids << unit.door.id
+            update_precedence_for_floors(unit.floor, 'unit', unit.id, unit.door.id)
+          else
+            @planned_to_visit_units_and_doors_ids << unit.id
+          end 
+          if @unit_with_door.has_key?(unit.floor)
+            @unit_with_door[unit.floor] << { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
+          else
+            @unit_with_door[unit.floor] = [{ unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }]
+          end
         end
       end 
       @amenities_doors = Amenity.where(amenityable_type: "Floorplate", amenityable_id: @floorplates.ids).includes(:doors)
       @amenity_with_doors = {}
       @amenities_doors.each do |amenity| 
-        if planned_to_visit_amenities_ids.include?(amenity.id) && amenity.doors.present?
-          planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
-          @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
-          update_precedence_for_floors(amenity.floor, 'amenity', amenity.id, amenity.doors.first.id)
-        elsif planned_to_visit_amenities_ids.include?(amenity.id)
-          @planned_to_visit_amenities_and_doors_ids << amenity.id
-        end
-        if @amenity_with_doors.has_key?(amenity.floor)
-          @amenity_with_doors[amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
-        else
-          @amenity_with_doors[amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+        if planned_to_visit_amenities_ids.include?(amenity.id)
+          if amenity.doors.present?
+            planned_to_visit_amenities_ids = planned_to_visit_amenities_ids - [amenity.id]
+            @planned_to_visit_amenities_and_doors_ids << amenity.doors.first.id # currenly connected with one of multiple door
+            update_precedence_for_floors(amenity.floor, 'amenity', amenity.id, amenity.doors.first.id)
+          else
+            @planned_to_visit_amenities_and_doors_ids << amenity.id
+          end
+          if @amenity_with_doors.has_key?(amenity.floor)
+            @amenity_with_doors[amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
+          else
+            @amenity_with_doors[amenity.floor] = [{ amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }]
+          end
         end
       end
       @starting_point = {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot }

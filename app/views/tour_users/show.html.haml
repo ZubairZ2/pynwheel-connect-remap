@@ -6,7 +6,7 @@
 = javascript_include_tag 'moment'
 - content_for :title, "Visitor Details Page - Pynwheel"
 / Main content
-- time_zone = get_time_zone @community
+- time_zone = @community.get_time_zone()
 %section
   .content
     .title-heading

@@ -17,9 +17,7 @@ class MaxDateScheduledTourService < BaseService
   def filter_tour_with_max_date_time(scheduled_tours, timezone = nil)
     scheduled_tour = scheduled_tours.first
     
-    community_timezone = get_time_zone if @community.present? && @community.latitude.present? && @community.longitude.present?
-    timezone = community_timezone || scheduled_tour.user_time_zone if scheduled_tours.present?
-
+    timezone = @community.get_time_zone()
     max_date = scheduled_tour_date_time(scheduled_tour, timezone)
 
     scheduled_tours.each do |tour|
@@ -42,10 +40,4 @@ class MaxDateScheduledTourService < BaseService
   def scheduled_tour_date_time(tour, timezone)
     tour.present? ? (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) : "" if (tour.tour_date && tour.tour_time).present?
   end
-
-  def get_time_zone
-    time_zone = Timezone.lookup(@community.latitude, @community.longitude)
-    timezone = time_zone.name
-  end
-
 end

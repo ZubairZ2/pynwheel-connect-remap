@@ -9,13 +9,13 @@ class Api::V1::TourHistoriesController < ActionController::Base
     if api_access or access == true
       if params[:community_id].present? && params[:tour_user_id].present?
         params[:id].present? ? tour_history = TourHistory.find_or_create_by(id: params[:id]) : tour_history = TourHistory.new
-
+        community = set_community
         tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
         tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
         tour_history.tour_state = "completed" if params[:left].present?
         tour_history.tour_type = params[:tour_session_type] if params[:tour_session_type].present?
         tour_history.community_id = params[:community_id]
-        tour_history.community_time_zone = get_community_time_zone(set_community)
+        tour_history.community_time_zone = community.get_time_zone()
         if  params[:tour_site].present?
           if params[:tour_site] == "self_tour"
             tour_history.tour_site = "onsite"
@@ -263,27 +263,4 @@ class Api::V1::TourHistoriesController < ActionController::Base
   def set_community
     @community ||= Community.find_by_id params[:community_id] if params[:community_id].present?
   end
-
-  def set_touruser
-    @tour_user ||= TourUser.find_by_id params[:tour_user_id] if params[:tour_user_id].present?
-  end
-
-  def get_community_time_zone(community)
-    tz = Ziptz.new
-    timezone = nil
-
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and community.zip.present?
-      timezone = tz.time_zone_name(community.zip)
-    end
-
-    return timezone
-  rescue
-    return "UTC"
-  end
-
 end

@@ -131,6 +131,13 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :igloohome_accounts do
+      collection do
+        delete :remove_igloohome_locks
+        post :import_single_lock
+      end
+    end
+
     resources :dwelos do
       collection do
         get :test_dwelo_connection
@@ -230,7 +237,6 @@ Rails.application.routes.draw do
         get :edit_amenity_gallery_image
         post :load_remotelock_data
         post :clear_locks
-        post :extract_floors
         get :show_amenity_image_in_modal
         put :crop_amenity_image
         put :update_amenity_door_lock
@@ -572,6 +578,13 @@ Rails.application.routes.draw do
           post :portico_list_communities
           post :lincoln_list_communities
           post :update_version
+        end
+      end
+
+      resources :igloohomes do
+        collection do
+          get :timezone
+          post :pairing
         end
       end
 

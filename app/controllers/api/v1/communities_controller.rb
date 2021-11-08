@@ -188,7 +188,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @tour_user.save
       @tour_type = params[:tour_status] rescue @tour_user.tour_type
       restrict_property_access_with_code(@community,@tour_user,@tour_type)
-      # time_zone = get_time_zone @community
+      time_zone = @community.get_time_zone()
       if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.tour.visual_id_verification #TODO:: change to 1 month after testing
         @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
         @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
@@ -222,6 +222,8 @@ class Api::V1::CommunitiesController < ActionController::Base
       # @property_access = true
       sleep 1
       create_tour_history(tour_user,tour_type,community)
+      body = "#{tour_user.name.capitalize} wants to start the tour of #{community.name}. His proerty access code is #{tour_user.property_access_code}"
+      send_access_code_email("Property Access Verification Code", body, community)
     else
       tour_user.restricted_property_access = false
     end
@@ -232,7 +234,15 @@ class Api::V1::CommunitiesController < ActionController::Base
     tour_history = TourHistory.find_or_create_by(tour_user_id: tour_user.id) rescue TourHistory.new
     tour_history.update_columns(community_id: community.id, tour_type: tour_type, tour_user_id: tour_user.id, tour_id: community.tour.id)
   end
-  
+
+  def send_access_code_email subj, body, community
+    return if community.blank?
+    emails = community.email.gsub(" ","").split(',')
+    emails.each do |email|
+      NotificationMailer.tour_history_mail(subj, body, email,INFO_EMAIL,community,false,nil).deliver
+    end
+  end
+    
   def delete_tour_stop
     @community = Community.find params[:id]
     delete_array = params[:stop_id].split(",") if params[:stop_id].present?
@@ -637,7 +647,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     access_code_text = tour_type != "virtual_tour" && enabled_property_access ? "Visitor's property access code is #{self.tour_user.property_access_code}" : ""
     schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
     emails.each do |email|
-      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}. #{access_code_text}",email,"info@pynwheel.com",community,false,schedule_tour).deliver
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}",email,INFO_EMAIL,community,false,schedule_tour).deliver
     end
   end
   def check_lock_access
@@ -648,7 +658,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       tu = TourUser.find params[:tour_user_id]
       counter = check_lock_access_counter(tu)
       if (params[:tour_type] == "self_tour" && tu.tour_type != "guided_tour" && community.enable_locks)
-        if ((community.multiple_locks_provider.include?("Dwelo") && (tu.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (tu.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (tu.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (tu.zerv_status == "in progress")) && !(counter >= 20))
+        if ((community.multiple_locks_provider.include?("Igloohome") && (tu.igloohome_status == "in progress")) || (community.multiple_locks_provider.include?("Dwelo") && (tu.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (tu.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (tu.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (tu.zerv_status == "in progress")) && !(counter >= 20))
           render :json=> {success: "false", completed: false}
         else
           render :json=> {success: "true", completed: true}
