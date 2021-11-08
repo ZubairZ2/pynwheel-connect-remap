@@ -218,11 +218,12 @@ class Api::V1::CommunitiesController < ActionController::Base
     if tour_type != "virtual_tour" && tour_user.check_code_expiry(community) 
       tour_user.property_access_code = generate_six_digit_random_pin
       tour_user.property_access_code_generated_at = Time.now
-      @property_access = true
+      tour_user.restricted_property_access = true
+      # @property_access = true
       sleep 1
       create_tour_history(tour_user,tour_type,community)
     else
-      @property_access = false
+      tour_user.restricted_property_access = false
     end
   end
 

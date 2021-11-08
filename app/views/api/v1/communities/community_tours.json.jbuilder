@@ -12,8 +12,10 @@ json.tours @tours do |tour|
   json.is_sitemap @community.is_sitemap
   json.show_camera_button @community.show_camera_button
   json.show_notepad_button @community.show_notepad_button
-  json.property_access @property_access
-  json.property_access_code @tour_user.property_access_code
+  if @community&.tour&.tour_setting&.enable_restricted_property_access
+    json.property_access @tour_user.restricted_property_access
+    json.property_access_code @tour_user.property_access_code
+  end
   json.tour_setting do
     json.show_map @community.show_map
     json.mdu @community.mdu

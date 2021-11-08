@@ -93,6 +93,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
       if @tour_user.property_access_code_verification(access_code,is_property_access_enabled,tour_length_stay_limit)
         render :json=> {success: true, error_code: 200, message: "Code has been verified successfully."}
       else
+        @tour_user.update_columns(restricted_property_access: true)
         render json: {success: false, error_code: 400, message: @tour_user.errors.full_messages.first, result: nil}
       end
     end
