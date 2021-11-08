@@ -316,27 +316,9 @@ class WebpagesController < ActionController::Base
    current_datetime = fetch_datetime
    (current_datetime - session_datetime) > 10.minutes # return true to make a new record
   end
-  
-  def get_community_time_zone(community)
-    tz = Ziptz.new
-    timezone = nil
-
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and community.zip.present?
-      timezone = tz.time_zone_name(community.zip)
-    end
-
-    return timezone
-  rescue
-    return "UTC"
-  end
 
   def set_timezone
-    @timezone = get_community_time_zone(@community)
+    @timezone = @community.get_time_zone()
   end
 
   def fetch_datetime

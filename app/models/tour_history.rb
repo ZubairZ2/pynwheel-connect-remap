@@ -167,12 +167,8 @@ class TourHistory < ApplicationRecord
     tour = community.tour
 
     if  tour.only_scheduled_tour && tour.grace_period.present?
-      if community.present? && community.latitude.present? && community.longitude.present?
-        timezone = get_time_zone(community)
-      end
-
-
-      timezone = timezone || scheduled_tour.user_time_zone
+      timezone = community.get_time_zone()
+      
       grace_period = tour.grace_period
       current_time = Time.now.in_time_zone(timezone)
       tour_date_time = (scheduled_tour.tour_date.to_s + " " + scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone)
@@ -188,11 +184,6 @@ class TourHistory < ApplicationRecord
     else
       true
     end
-  end
-
-  def get_time_zone(community)
-    time_zone = Timezone.lookup(community.latitude, community.longitude)
-    timezone = time_zone.name
   end
 
   def save_prospect(endtime, community)
