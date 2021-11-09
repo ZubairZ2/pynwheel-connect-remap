@@ -38,7 +38,7 @@ class SchedulerWidgetService < BaseService
       end
     end
      
-    timezone = get_community_time_zone(@community) rescue "UTC"
+    timezone = @community.get_time_zone()
     today_datetime = Time.zone.now.utc.in_time_zone(timezone).strftime("%y/%m/%d %I:%M %A %p")
     d = Date.parse(tour_date) if tour_date.is_a? String 
     time_slots.flatten.each do |time|
@@ -51,24 +51,6 @@ class SchedulerWidgetService < BaseService
     # available_time_slots.each {|value_arr| value_arr.uniq}
     available_time_slots
   end 
-
-  def get_community_time_zone(community)
-    tz = Ziptz.new
-    timezone = nil
-
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and community.zip.present?
-      timezone = tz.time_zone_name(community.zip)
-    end
-
-      return timezone
-    rescue
-      return "UTC"
-  end
 
   # def return_2_hrs_time_interval_slots(opening_time, closing_time)
   # end

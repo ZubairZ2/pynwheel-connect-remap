@@ -1,0 +1,1 @@
+INFO_EMAIL = "info@pynwheel.com"
