@@ -67,19 +67,13 @@
                 - if @square_feet.present?
                   .selectable-field
                     %label Min Square Footage
-                    = select_tag :square_feet, options_for_select(@square_feet),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
-                    -# %div
-                    -#   = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"transparent-btn header-action-btn", :target=> "pynwheel_iframe", :style => "height: 43px;"
+                    = select_tag :square_feet, options_for_select(@square_feet),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}  
                 - else
                   .selectable-field
                     %label Min Square Footage
                     = select_tag :square_feet, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"} 
 
                 %button._3d-apply-filter-button{:type => "button", :onclick => "apply3DFilters();"} Apply Filters
-
-                -# - if @community.self_tour && @community.scheduler_widget
-                -#   = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"header-action-btn colourd-btn", :target=> "_blank", :style => ' width: -webkit-fill-available; margin-top: 15px; background #1385e8; height: 43px; padding-top: 10px; font-weight: bold;'
-
                 %ul.selected-data-mobile.responsive-content
                   %li
                     %span.data-title Bedrooms
@@ -97,7 +91,6 @@
                 - if @square_feet.present?
                   %a.transparent-btn.header-action-btn{:href => "#{favorites_community_webpages_path(@community)}",:target=>"_parent"}
                     View Favorites
-                -# = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"transparent-btn header-action-btn", :target=> "pynwheel_iframe", :style => "height: 43px;"
                 - crm_provider = @community&.crm_credential&.crm_provider
                 - data_provider = @community&.data_provider
                 - if @community.self_tour && @community.scheduler_widget && (data_provider != "yardirentcafe" || data_provider != "yardi") && crm_provider != "yardirentcafe" 
@@ -136,8 +129,6 @@
                   .selectable-field
                     %label Min Square Footage
                     = select_tag :responsive_square_feet, options_for_select(@square_feet),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
-                    -# %div
-                      -# = link_to "View Favorites", favorites_community_webpages_path(@community), :class=>"btn btn-primary btn-block view-btn", :target=> "pynwheel_iframe", :style => "height: 43px;"
                 - else
                   .selectable-field
                     %label Min Square Footage
@@ -156,7 +147,6 @@
                 - min_unit_floor = JSON.parse(@units_with_floorplan_info).map{|x| x["floor"]}.min rescue @floors.first
                 - @floors.each do |floor|
                   - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                  -# - binding.pry
                   %li.digits-list-item{:class => "#{floor == min_unit_floor ? 'selected' : ''}"}
                     = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "1245", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor      
                     %div.units-no{style: "margin-top: 11px"}
@@ -208,7 +198,6 @@
               - marker_font_size = @community.design.present? && @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : 30
             - else
               - fontsize = 30
-            -#- byebug
             - if fontsize.to_i > 33
               - margin_left_var = -2
             - elsif fontsize.to_i > 32
@@ -232,33 +221,27 @@
 
             - camera_margin = (marker_font_size.to_i <= 27 ? 3 : (marker_font_size.to_i <= 30 ? 4 : (marker_font_size.to_i <= 33 ? 5 : (marker_font_size.to_i <= 35 ? 6 : 6))))
 
-            -#- marker_font_size = @community.design.amenity_map_marker_size_integer
             - marker_font_size = (marker_font_size.to_i) -5
             - camera_font_size = (marker_font_size.to_i) / 2
 
             %ul.location-items.location-responsive.responsive-content.responsive-legends
               - if @community.enable_home_legend
                 %li
-                  -# %img{alt: "", :src => "/assets/location-icon.png", title: ""}/
                   %i.fas.fa-map-marker-alt{:style => "color: #{map_marker_color}; font-size: #{marker_font_size}px"}
                   %span Available home
               - if @community.enable_amenity_legend
                 %li
-                  -# %img{:src => "/assets/amenity-icon.png"}/
                   .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                     %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                   %span Amenity image
 
             .right-side.parent#panzomm-container
-              / %button.btn.btn-info.btn-lg{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button"} Open Modal
               .image-map#zoomable.zoomable-map-container{style: "text-align: center"}
                 - if @community_info.has_floorplates?
                   - @floors.each do |floor|
                     - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
-                    -# .iframe-content
                     = image_tag floorplate.standard_image_url, :class=>"floorplate-image #{floor == min_unit_floor ? '' : 'hidden'}",:id=>"f_#{floor}","data-height"=>"#{floorplate.height}","data-width"=>"#{floorplate.width}"
                 - else
-                  -# %div{:style => "position: relative;"}
                   %img.floorplate-image.sitemap-image{:alt => "", :src => "#{@community.sitemap.present? ? @community.image_src : "/assets/default.jpeg"}", :id => "property-map-image", :title => "","data-height"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.height : nil}","data-width"=>"#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"}/
 
                 - coordinates_array = []
@@ -319,6 +302,8 @@
                   %img{:src => "/assets/3D_modeling.svg"}/
                 %a.refresh-action.zooming-action.zoom-controls.map-options.2d-map-option{:href => "#", :onclick => "select2DCurrentMap(this)", "data-current-map-type"=>"2d-current-map"}
                   %img{:src => "/assets/2D_modeling.svg"}/
+                %a.refresh-action.zooming-action.reset-res-modal.zoom-controls.satelite-view-icon.hidden{:href => "#", style: "height: 45px", :onclick => "toggleToSateliteView()"}
+                  %img{:src => "/assets/satellite.png"}/
           
       / /.content
       / Trigger the modal with a button
@@ -338,7 +323,6 @@
                 .c-modal-sidebar-inner
                   .modal-sidebar-title
                     %h1.section-title#floorplan-name
-                    -# %img.wishlist-icon{:src => "/assets/heart-icon.png"}/
                     
                     .plan-image-pop
                       .icon-heart#fav-icon-tag
@@ -405,7 +389,6 @@
                           .m-filter-1.c-m-filter
                             %label= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
                             %input.c-m-input-control.datepicker#leasing-start-date{:type => "text", :style => "display: block !important", :readonly => "readonly"}/
-                            -# %i.fa.fa-calendar#leasing-start-date-icon
                         - if @community_info.data_provider == "resman"
                           .m-filter-2.c-m-filter
                             %label Lease Term
@@ -446,8 +429,7 @@
                 = render partial: "image_with_zoom_controls"
                 
     - else
-      .alert.alert-danger Community is Inactivated.    
--# %button.btn.btn-sm.btn-primary.top-arrow
+      .alert.alert-danger Community is Inactivated. 
 #marker-popover.media.hidden
   %b#popover-marketing-name
   %i.fa.fa-heart.fav-heart.hidden
@@ -671,7 +653,6 @@
     if(current_width <= 993){
       $("._3d-apply-filter-button").hide();
     }
-    //$('.image-map').attr("width", main_container_height)
     $("#max_price_responsive").html("Max Price");
     $("#sq_feet_responsive").html("Min Sq Feet");
     $("#unit_availability").html("All");
@@ -710,6 +691,7 @@
   var units = "#{@units_with_floorplan_info}";
   units = units.replace(/&quot;/g,'"');
   units = JSON.parse(units);
+  _beansApiKey = "#{ENV['BEANS_API_KEY']}"
   
   var community_logo = "#{@community.logo.present? ? true : false}"
   if(community_logo == "false" && current_width < 567){
