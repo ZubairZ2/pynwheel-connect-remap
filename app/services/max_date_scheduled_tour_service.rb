@@ -21,7 +21,7 @@ class MaxDateScheduledTourService < BaseService
     max_date = scheduled_tour_date_time(scheduled_tour, timezone)
 
     scheduled_tours.each do |tour|
-      timezone = community_timezone || scheduled_tour.user_time_zone 
+      timezone = timezone || scheduled_tour.user_time_zone 
       tour_date = scheduled_tour_date_time(tour, timezone)
 
       if max_date <  tour_date

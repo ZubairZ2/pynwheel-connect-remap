@@ -468,7 +468,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           @locks_thread = create_zerv_user(@community, @tour_user) if params[:second_time].present? and ( params[:second_time] == "false" || params[:second_time] == false )
           @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
           @verfication_type = params[:id_verification].present? ? @tour.verification_type : "email" rescue "email"
-          timezone = get_community_time_zone(@community) rescue "UTC"
+          timezone = @community.get_time_zone()
           current_time = (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
 
           @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
@@ -550,7 +550,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             @location_received = true
           end
 
-          timezone = get_community_time_zone(@community)
+          timezone = @community.get_time_zone()
           current_time = current_community_time(@community, params)
           @is_salesforce_crm = (@community.credential.present? and @community.credential.use_different_crm_provider and @community.crm_credential.present? and @community.crm_credential.crm_provider == "salesforce") ? true : false
 
@@ -652,13 +652,6 @@ class Api::V1::CommunitiesController < ActionController::Base
       begin
       tour_user.update_column 'zerv_status' , 'in progress'
       execution_context = Rails.application.executor.run!
-
-      # timezone = get_community_time_zone(community) rescue "UTC"
-      # current_time = (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone)) 
-      # tour = community.tour
-      # in_visiting_hours = is_tour_in_visiting_hours(current_time, community) if community.present?
-      # is_tour_virtual = check_community_type(in_visiting_hours, @tours, @community, @tour_user)
-
 
       if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and tour_user.tour_type != "virtual_tour"
         allowed_stops = zerv_multiple_stops_access(community)
