@@ -191,9 +191,10 @@ $(window).bind('load', function () {
     var $area = document.getElementById('zoomable');
     webpagePanZoom = panzoom($area, 
       {
-        bounds: true, contain: 'automatic', smoothScroll: true,
+        bounds: false, contain: 'automatic', smoothScroll: true,
         maxZoom: 5,
         minZoom: 1,
+        minScale: 1,
         zoomDoubleClickSpeed: 1,
        
         onTouch: function(e) {
@@ -1408,59 +1409,11 @@ function setModalAttributes(element) {
           $('#unit-lease-pricing-text-li').hide();
           $('#leas-price-option').addClass('hidden');
           $('#unitModal').find('#unit-lease-pricing').html("No more prices are available");
-          // $('#unitModal').find('#unit-lease-pricing').html($(element).data('unit-lease-pricing'));
         }
         else
         {
-            // var lease = "";
-            var lease = [];
-            var first_lease_item = "";
-            var smallest_lease_month = "";
-            var lease_price_arr = [];
-            var lease_months_arr = [];
-            // var filteredLeaseTermArray = "";
-            ss = $(element).data('unit-lease-pricing').split(';');
-            var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
-            ss = ss.sort(collator.compare).reverse();
-            for (var i = 0; i < ss.length -1; i++) {
-                var s = ss[i].split(':');
-                var sp;
-                if (s[2] && s[2] != "")
-                {
-                    sp = s[2] +" - "
-                }
-                else
-                {
-                    sp = ""
-                }
-                lease.push(s[0] + " months " + sp + '<b>'+"$"+ s[1]+ '<b>' + '<br>')
-                lease_price_arr.push(s[1])
-                lease_months_arr.push(s[0])
-            }
-            if(lease_price_arr.every(a => a === lease_price_arr[0])){
-              smallest_lease_month = Math.min(...lease_months_arr)
-              var indexOfMinMonth = lease_months_arr.indexOf(smallest_lease_month.toString())
-              first_lease_item = lease[indexOfMinMonth]
-              if (indexOfMinMonth > -1) {
-                lease.splice(indexOfMinMonth, 1);
-              }
-            }
-            else{
-              var smallest_lease_price = Math.min(...lease_price_arr)
-              var indexOfMinLease = lease_price_arr.indexOf(smallest_lease_price.toString())
-              first_lease_item = lease[indexOfMinLease]
-              if (indexOfMinLease > -1) {
-                lease.splice(indexOfMinLease, 1);
-              }
-            }
-            var leaseTermOptions = ""
-            for (let i = 0; i < lease_months_arr.length; ++i) {
-              leaseTermOptions += `<option value="${lease_months_arr[i]+" months"}" data-lease-price="${lease_price_arr[i]}" >${lease_months_arr[i]+" months"}</option>`
-            }
-            $('#unitModal').find('#unit-lease-pricing').html(lease);
-            $('#unitModal').find('#first-unit-lease-pricing').html(first_lease_item);
-            $('#unitModal').find('#lease_term').html(leaseTermOptions);
-            $(`#lease_term option[value="${first_lease_item[0]+first_lease_item[1]+" months"}"]`).attr("selected", true);
+          ss = $(element).data('unit-lease-pricing').split(';');
+          leaseTermPricingOptions(ss);
         }
     }
     catch(err) {
@@ -1471,8 +1424,7 @@ function setModalAttributes(element) {
     try {
         if ($(element).data('unit-description') == "")
         {
-            // $('#unit-description-text-li').hide();
-            $('#unitModal').find('#unit-description').html("Not Available");
+          $('#unitModal').find('#unit-description').html("Not Available");
         }
         else
         {
@@ -1512,7 +1464,7 @@ function setModalAttributes(element) {
       $('#unitModal').find('#availability').html("Available");
       $('#unitModal').find('#available-text').html('Available');
       $('#unitModal').find('#available-date').html($(element).data('available-date'));
-      $('#popup-available-date').html($(element).data('available-date'));
+      $('#available-date').html($(element).data('available-date'));
     } else {
       $('#unitModal').find('#availability').html($(element).data('availability') == "Unoccupied" ? "Available" : "Occupied");
       $('#unitModal').find('#available-text').html('Available');
@@ -1632,8 +1584,6 @@ function _3dUnitModalDisplay() {
     $('#fav-icon-tag').html(html);
   }
 
-  // debugger;
-
   $('#unitModal').find('#floorplan-image').attr('src', _3dSelectedUnit.floorplan_image);
 
   if (webCommunity.data_provider != 'realpagesvc') {
@@ -1654,26 +1604,8 @@ function _3dUnitModalDisplay() {
 
   if(_3dSelectedUnit.lease_pricing){
     $('#unit-lease-pricing-text-li').show();
-    var lease = "";
     ss = _3dSelectedUnit.lease_pricing.split(';');
-    var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
-
-    ss = ss.sort(collator.compare).reverse();
-    for (var i = 0; i < ss.length -1; i++) {
-      var s = ss[i].split(':');
-      var sp;
-      if (s[2] != "")
-      {
-          sp = s[2] +" - "
-      }
-      else
-      {
-          sp = ""
-      }
-      lease = lease + s[0] + " months - " + sp +"$"+ s[1] + '<br>'
-    }
-  
-  $('#unitModal').find('#unit-lease-pricing').html(lease);
+    leaseTermPricingOptions(ss);
   } else {
     $('#unit-lease-pricing-text-li').hide();
   }
@@ -1684,14 +1616,63 @@ function _3dUnitModalDisplay() {
   }
   else
   {
-    // $('#unit-description-text-li').hide();
     $('#unitModal').find('#unit-description').html("Not Available");
   }
 
 
 }
 
+function leaseTermPricingOptions(ss) {
+  var lease = [];
+  var first_lease_item = "";
+  var smallest_lease_month = "";
+  var lease_price_arr = [];
+  var lease_months_arr = [];
+  var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+  ss = ss.sort(collator.compare).reverse();
+  for (var i = 0; i < ss.length -1; i++) {
+      var s = ss[i].split(':');
+      var sp;
+      if (s[2] && s[2] != "")
+      {
+          sp = s[2] +" - "
+      }
+      else
+      {
+          sp = ""
+      }
+      lease.push(s[0] + " months " + sp + '<b>'+"$"+ s[1]+ '<b>' + '<br>')
+      lease_price_arr.push(s[1])
+      lease_months_arr.push(s[0])
+  }
+  if(lease_price_arr.every(a => a === lease_price_arr[0])){
+    smallest_lease_month = Math.min(...lease_months_arr)
+    var indexOfMinMonth = lease_months_arr.indexOf(smallest_lease_month.toString())
+    first_lease_item = lease[indexOfMinMonth]
+    if (indexOfMinMonth > -1) {
+      lease.splice(indexOfMinMonth, 1);
+    }
+  }
+  else{
+    var smallest_lease_price = Math.min(...lease_price_arr)
+    var indexOfMinLease = lease_price_arr.indexOf(smallest_lease_price.toString())
+    first_lease_item = lease[indexOfMinLease]
+    if (indexOfMinLease > -1) {
+      lease.splice(indexOfMinLease, 1);
+    }
+  }
+  var leaseTermOptions = ""
+  for (let i = 0; i < lease_months_arr.length; ++i) {
+    leaseTermOptions += `<option value="${lease_months_arr[i]+" months"}" data-lease-price="${lease_price_arr[i]}" >${lease_months_arr[i]+" months"}</option>`
+  }
+  $('#unitModal').find('#unit-lease-pricing').html(lease);
+  $('#unitModal').find('#first-unit-lease-pricing').html(first_lease_item);
+  $('#unitModal').find('#lease_term').html(leaseTermOptions);
+  $(`#lease_term option[value="${first_lease_item[0]+first_lease_item[1]+" months"}"]`).attr("selected", true);
+}
+
 function setUnitAttributes(element) {
+  // debugger
   $('.modal-unit-button').each(function () {
     $(this).removeClass('btn-primary');
     $(this).addClass('btn-default');
