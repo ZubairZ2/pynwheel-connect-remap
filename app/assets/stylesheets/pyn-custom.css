@@ -5136,8 +5136,8 @@ body {
     max-width: 100%;
 }
 .header-inner {
-    padding: 15px 14px 5px 16px;
     height: 89px;
+    padding: 15px 14px 8px 16px;
     display: flex;
     align-items: center;
 }
@@ -5179,7 +5179,7 @@ body {
 }
 .custom-iframe-modeule .app-logo {
     /* width: 7%; */
-    width: 90px;
+    /* width: 90px; */
     padding-bottom: inherit;
 }
 .custom-iframe-modeule .header-buttons-groups {
@@ -5725,9 +5725,9 @@ ul.add-fav-options {
       bottom: 71px;
   }
   .c-sidebar .c-sidebar-brand {
-      width: 20%;
-      height: 80px;
-  }
+    width: 20%;
+    height: auto;
+   }
   .floor-counts {
       display: flex !important;
       width: 80%;

@@ -51,7 +51,7 @@
               .app-logo
                 - if @community.community_logo
                   %a.logo{:href => "#{@community.website if @community.website}"}
-                    %img{:alt => "", :style => "padding: 18px", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
+                    %img{:alt => "", :style => "max-height: 75px", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
               .selection-fields
                 - if @unit_bedrooms.present?
                   .selectable-field
@@ -605,7 +605,7 @@
       $('#slider').slick('unslick');
       $slider.on('init', () => {mouseWheel($slider)}).slick({
         infinite: false,
-        slidesToShow: 3,
+        slidesToShow: 1,
         slidesToScroll: 1,
         vertical: false,
         speed: 6,
@@ -637,7 +637,7 @@
         mouseWheel($slider)
       }).slick({
         infinite: false,
-        slidesToShow: 3,
+        slidesToShow: 1,
         slidesToScroll: 1,
         vertical: false,
         speed: 6,
@@ -721,6 +721,5 @@
   
   var community_logo = "#{@community.logo.present? ? true : false}"
   if(community_logo == "false" && current_width < 567){
-    debugger
     $(".mobile-trigger").addClass("pt");
   }
