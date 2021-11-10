@@ -162,7 +162,7 @@ namespace :delayed_email_notifications do
 			change_appointment = (schedual_tour.created_by === "PERQ" ?  "" : change_appointment)
 			mobile_change_appointment = (schedual_tour.created_by === "PERQ" ?  "" : "Change appointment: #{reschedule_tour_link}#{"\n"}")
 		  
-			confirmation_page_link = "#{base_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}"
+			confirmation_page_link = ((schedual_tour.property_tour_type == "scheduled_tour") ? "Get information about your tour here: #{base_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}" : "" )
 		  if community.tour.tour_setting.enable_header_footer
 			  content = "Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive.<br>#{change_appointment}<br>#{community.one_day_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 		  else
@@ -209,7 +209,7 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 					content = "<div style='vertical-align:middle; font-family: Poppins; text-align:center'><img style='height: 55px;' src='#{community.logo.url}' data-title='#{community.name}' /></div><br/>Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a> <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 				end
 				sms_content = "Your tour starts soon!
-				Here are directions to #{community.name}  https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude} #{"\n"} When you arrive at the property, open the #{community_text} app to begin your tour. #{"\n"} #{"\n"} Open #{community_text} #{one_link} #{"\n"} #{"\n"} Get information about your tour here: #{confirmation_page_link}
+				Here are directions to #{community.name}  https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude} #{"\n"} When you arrive at the property, open the #{community_text} app to begin your tour. #{"\n"} #{"\n"} Open #{community_text} #{one_link} #{"\n"} #{"\n"} #{confirmation_page_link}
 				#{community.one_hour_email_text}"
 				schedual_tour.update_columns(hourly_email_sent: true)
 				emails = community_email.gsub(" ","").split(',')
