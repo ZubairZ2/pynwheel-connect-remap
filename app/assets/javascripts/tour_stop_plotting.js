@@ -160,7 +160,7 @@ $(document).ready(function () {
     };
 
     $("#map").bind("mouseup touchend", function (e) {
-        // debugger
+
         // first check if user is clicking on scrollbar
         if (e.target != $('#map').get(0)) {
             e.preventDefault();
@@ -175,7 +175,7 @@ $(document).ready(function () {
             dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : parseInt($('#active_y_plot').html());
 
             marker_color = $('#marker_color').html();
-            marker_font_size = ($('#font_size').html());
+            marker_font_size = ($('#font_size').html()) ? $('#font_size').html() : $('#marker_font_size').html();
             left_margin = parseInt($('#left_margin').html());
             right_margin = parseInt($('#right_margin').html());
 
@@ -216,7 +216,7 @@ $(document).ready(function () {
                         location.reload()
                     }
 
-                    if(adddoorsmode){
+                    if(typeof adddoorsmode !== 'undefined' && adddoorsmode){
                         tag = getDoorTag(selected[0][0])
                     }
                     else{
@@ -269,6 +269,9 @@ function getDeletionUrl(){
     }
     else if (typeof floorplate_id !== 'undefined'){
         return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot_from_floorplate?floorplate_id='+floorplate_id
+    }
+    else if (typeof unit_id_for_unit_amenities !== 'undefined'){
+        return '/communities/'+community_id+'/units/'+unit_id_for_unit_amenities+'/amenities/'+selected[0][0]+'/remove_amenity'
     }
     else{
         return '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'
