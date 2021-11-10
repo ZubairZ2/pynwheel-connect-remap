@@ -162,7 +162,7 @@ namespace :delayed_email_notifications do
 			change_appointment = (schedual_tour.created_by === "PERQ" ?  "" : change_appointment)
 			mobile_change_appointment = (schedual_tour.created_by === "PERQ" ?  "" : "Change appointment: #{reschedule_tour_link}#{"\n"}")
 		  
-			confirmation_page_link = ((schedual_tour.property_tour_type == "scheduled_tour") ? "Get information about your tour here: #{base_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}" : "" )
+			confirmation_page_link = "#{base_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}"
 		  if community.tour.tour_setting.enable_header_footer
 			  content = "Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive.<br>#{change_appointment}<br>#{community.one_day_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 		  else
