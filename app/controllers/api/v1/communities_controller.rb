@@ -218,14 +218,12 @@ class Api::V1::CommunitiesController < ActionController::Base
     if tour_type != "virtual_tour" && tour_user.check_code_expiry(community) 
       tour_user.property_access_code = generate_six_digit_random_pin
       tour_user.property_access_code_generated_at = Time.now
+      tour_length_stay_limit = community&.tour&.tour_setting&.length_stay_limit
       tour_user.restricted_property_access = true
-      # @property_access = true
       sleep 1
       create_tour_history(tour_user,tour_type,community)
-      body = "#{tour_user.name.capitalize} wants to start the tour of #{community.name}. His proerty access code is #{tour_user.property_access_code}"
+      body = "#{tour_user.name.capitalize} wants to start the tour of #{community.name}. His proerty access code is #{tour_user.property_access_code}. This code will be expired after #{tour_length_stay_limit} minutes"
       send_access_code_email("Property Access Verification Code", body, community)
-    else
-      tour_user.restricted_property_access = false
     end
   end
 

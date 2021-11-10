@@ -1,7 +1,7 @@
 class Api::V1::TourHistoriesController < ActionController::Base
   include ApplicationHelper
   require 'securerandom'
-  before_action :set_touruser, only: [:verify_property_access_code]
+  before_action :set_tour_user, only: [:verify_property_access_code]
   before_action :set_community, only: [:verify_property_access_code]
 
   def save_tour_history
@@ -91,6 +91,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
       is_property_access_enabled = @community&.tour&.tour_setting&.enable_restricted_property_access
       tour_length_stay_limit = @community&.tour&.tour_setting&.length_stay_limit
       if @tour_user.property_access_code_verification(access_code,is_property_access_enabled,tour_length_stay_limit)
+        @tour_user.update_columns(restricted_property_access: false)
         render :json=> {success: true, error_code: 200, message: "Code has been verified successfully."}
       else
         @tour_user.update_columns(restricted_property_access: true)
@@ -262,5 +263,9 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
   def set_community
     @community ||= Community.find_by_id params[:community_id] if params[:community_id].present?
+  end
+
+  def set_tour_user
+    @tour_user ||= TourUser.find_by_id params[:tour_user_id] if params[:tour_user_id].present?
   end
 end
