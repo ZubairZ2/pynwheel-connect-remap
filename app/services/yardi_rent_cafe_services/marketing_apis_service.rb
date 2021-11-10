@@ -9,19 +9,19 @@ module YardiRentCafeServices
     end
 
     def available_slots
-      yardi_rent_cafe_callback "/AvailableSlots?#{shared_query_params}"
+      https_callback "/AvailableSlots?#{shared_query_params}"
     end
 
     def schedule_tour schedule_tour, tour_user, desired_move_in_date
-      yardi_rent_cafe_callback "/createleadwithappointment?#{shared_query_params}&FirstName=#{tour_user.name.split(" ")[0]}&LastName=#{tour_user.name.split(" ")[1]}&Email=#{tour_user.email}&Phone=#{tour_user.phone_number}&ApptDate=#{schedule_tour.tour_date.strftime("%m/%d/%Y")}&ApptTime=#{schedule_tour.tour_time.strftime("%I:%M%p")}&Source=Website&DesiredMoveinDate=#{desired_move_in_date}&DesiredBedrooms=#{schedule_tour.desired_bedroom}&To u c h Po i n t=Appointment"
+      https_callback "/createleadwithappointment?#{shared_query_params}&FirstName=#{tour_user.name.split(" ")[0]}&LastName=#{tour_user.name.split(" ")[1]}&Email=#{tour_user.email}&Phone=#{tour_user.phone_number}&ApptDate=#{schedule_tour.tour_date.strftime("%m/%d/%Y")}&ApptTime=#{schedule_tour.tour_time.strftime("%I:%M%p")}&Source=Website&DesiredMoveinDate=#{desired_move_in_date}&DesiredBedrooms=#{schedule_tour.desired_bedroom}&To u c h Po i n t=Appointment"
     end
 
     def cancel_tour schedule_tour
-      yardi_rent_cafe_callback "/cancelappointment?#{shared_query_params}&VoyProspectId=#{schedule_tour.yardirentcafe_prospect_id}&VoyApptId=#{schedule_tour.yardirentcafe_appointment_id}&ApptDate=#{schedule_tour.tour_date.strftime("%m/%d/%Y")}&ApptTime=#{schedule_tour.tour_time.strftime("%I:%M%p")}"
+      https_callback "/cancelappointment?#{shared_query_params}&VoyProspectId=#{schedule_tour.yardirentcafe_prospect_id}&VoyApptId=#{schedule_tour.yardirentcafe_appointment_id}&ApptDate=#{schedule_tour.tour_date.strftime("%m/%d/%Y")}&ApptTime=#{schedule_tour.tour_time.strftime("%I:%M%p")}"
     end
 
     def lead_attribution
-      yardi_rent_cafe_callback "/AvailableSlots?#{shared_query_params}"
+      https_callback "/AvailableSlots?#{shared_query_params}"
     end
 
     private
