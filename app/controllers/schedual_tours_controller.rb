@@ -152,18 +152,14 @@ class SchedualToursController < ApplicationController
     end
     redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification],community_id: community.id,property_tour_type: property_tour_type,tour_type: tour_type)
   end
+
   def do_yardi_schedule_tour(schedual_tour,tu,desired_move_in_date)
     yardi_schedule_tour = @community.yardi_schedule_tour(schedual_tour, tu, desired_move_in_date)
     yardirentcafe_prospect_id = yardi_schedule_tour["Response"][0]["VoyProspectId"] rescue nil
     yardirentcafe_appointment_id = yardi_schedule_tour["Response"][0]["VoyProspectApptId"] rescue nil
     [yardirentcafe_prospect_id, yardirentcafe_appointment_id]
   end
-  def do_yardi_schedule_tour(schedual_tour,tu,desired_move_in_date)
-    yardi_schedule_tour = @community.yardi_schedule_tour(schedual_tour, tu, desired_move_in_date)
-    yardirentcafe_prospect_id = yardi_schedule_tour["Response"][0]["VoyProspectId"] rescue nil
-    yardirentcafe_appointment_id = yardi_schedule_tour["Response"][0]["VoyProspectApptId"] rescue nil
-    [yardirentcafe_prospect_id, yardirentcafe_appointment_id]
-  end
+
   # POST /schedual_tours
   # POST /schedual_tours.json
   def create
@@ -335,11 +331,9 @@ class SchedualToursController < ApplicationController
   def destroy
     if params[:delete_type].present? && params[:delete_type] == "page"
       schedual_tour = SchedualTour.find params[:id]
-      puts "*** yardi_cancel_tour ***", @schedual_tour.community.yardi_cancel_tour(@schedual_tour) if @schedual_tour.community.use_yardi_as_lead?
       schedual_tour.destroy
       redirect_to community_schedual_tours_path(@community), notice: 'Scheduled tour is successfully deleted'
     else
-      @schedual_tour.community.yardi_cancel_tour(@schedual_tour) if @schedual_tour.community.use_yardi_as_lead?
       @schedual_tour.destroy
 
       respond_to do |format|

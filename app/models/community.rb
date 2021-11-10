@@ -524,10 +524,6 @@ class Community < ApplicationRecord
   def yardi_schedule_tour(schedule_tour, tu, desired_move_in_date)
     YardiRentCafeServices::MarketingApisService.new(self).schedule_tour(schedule_tour, tu, desired_move_in_date)
   end
-  
-  def yardi_cancel_tour(schedule_tour)
-    YardiRentCafeServices::MarketingApisService.new(self).cancel_tour(schedule_tour)
-  end
 
   def credentials_are_present?
     credential.present?
