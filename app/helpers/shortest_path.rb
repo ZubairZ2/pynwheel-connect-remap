@@ -1,5 +1,6 @@
 module ShortestPath
   include DijkstraAlgo
+  HAVING_DOOR_STOPS = ["Unit", "Amenity"]
   extend self
   def return_path_for_sitemap(community_id, path_type)
     fetch_related_data_for_sitemap(community_id)
@@ -329,7 +330,36 @@ module ShortestPath
     end
     floorplate_mobile_stops
   end
+  def return_stop_lock(stop)
+    lock = nil
+    if HAVING_DOOR_STOPS.include?(stop.class.name)
+      if stop.class.name == "Unit"
+        lock = stop.door.present? ? return_lock(stop.door) : return_lock(stop)
+      elsif stop.class.name == "Amenity"
+        lock = stop.doors.present? ? return_lock(stop.doors.first) : return_lock(stop)
+      else
+        lock = return_lock(stop)
+      end
+    else
+      lock = return_lock(stop) 
+    end
+    lock
+  end
   private
+    def return_lock(stop_or_door)
+      lock = nil
+      if digital_lock_provider?(stop_or_door)
+        if stop_or_door.class.name == "Door"
+          lock = stop_or_door.public_send(stop_or_door.lock_provider.downcase + "_lock")
+        else
+          lock = stop_or_door.public_send(stop_or_door.lock_provider.downcase + "_locks").first
+        end
+      end
+      lock
+    end
+    def digital_lock_provider?(stop)
+      stop.lock_provider.present? and stop.lock_provider != "" and stop.lock_provider != "Manual"
+    end
     def update_precedence(stop_type, stop_id, door_id)
       @precedence_arr.each_with_index do |arr,index|
         if arr[1] == stop_type && arr[0] == stop_id
