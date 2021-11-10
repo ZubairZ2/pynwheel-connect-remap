@@ -27,7 +27,7 @@ module YardiRentCafeServices
     private
 
     def https_callback endpoint_url
-      response = HTTParty.post((ENV['YARDI_MARKETING_API_BASE_URL'] + url), :body => {}, :headers => { 'Content-Type' => 'application/json' } )
+      response = HTTParty.post((ENV['YARDI_MARKETING_API_BASE_URL'] + endpoint_url), :body => {}, :headers => { 'Content-Type' => 'application/json' } )
       JSON.parse(response.body)
     end
 
