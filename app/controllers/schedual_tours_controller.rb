@@ -354,13 +354,11 @@ class SchedualToursController < ApplicationController
     if params[:delete_type].present? && params[:delete_type] == "page"
       schedual_tour = SchedualTour.find params[:id]
       puts "*** yardi_cancel_tour ***", @schedual_tour.community.yardi_cancel_tour(@schedual_tour) if @schedual_tour.community.use_yardi_as_lead?
-      KnockService.new(@schedual_tour).cancel_knock_appointment if @schedual_tour.community.is_knock_community?
 
       schedual_tour.destroy
       redirect_to community_schedual_tours_path(@community), notice: 'Scheduled tour is successfully deleted'
     else
       @schedual_tour.community.yardi_cancel_tour(@schedual_tour) if @schedual_tour.community.use_yardi_as_lead?
-      KnockService.new(@schedual_tour).cancel_knock_appointment if @schedual_tour.community.is_knock_community?
       @schedual_tour.destroy
 
       respond_to do |format|
