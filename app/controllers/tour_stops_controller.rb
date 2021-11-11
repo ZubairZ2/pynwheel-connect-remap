@@ -28,10 +28,10 @@ class TourStopsController < ApplicationController
 
     VisitedStop.where(tour_stop_id: @tour_stop.id).destroy_all
     if @tour_stop.stop_type == "elevator"
-      (Elevator.find @tour_stop.stop_id).destroy if (Elevator.find @tour_stop.stop_id).present?
+      (Elevator.find @tour_stop.stop_id).destroy if Elevator.where(id: @tour_stop.stop_id).any?
     end
     if @tour_stop.stop_type == "building_starting_point"
-      (BuildingStartingPoint.find @tour_stop.stop_id).destroy if (BuildingStartingPoint.find @tour_stop.stop_id).present?
+      (BuildingStartingPoint.find @tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: @tour_stop.stop_id).any?
     end
     if @tour_stop.destroy
       redirect_to community_tours_path(current_community,floorNo = (params[:floorplate].present? ? params[:floorplate] : nil)), :notice => "Tour Stop deleted"
