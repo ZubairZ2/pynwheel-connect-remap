@@ -15,9 +15,7 @@ $(document).ready(function () {
   if(webCommunity) {
     selectMap = webCommunity.web_map_type;
     defaultMapType = webCommunity.web_map_type;
-    // if(selectMap === "3d-map") {
-      _3dUnitsToBeSelected = select_units_according_to_filters(units)
-    // }
+    _3dUnitsToBeSelected = select_units_according_to_filters(units)
     selected_units = _3dMapViewMarker()
     
     beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,_beansApiKey, 
@@ -32,74 +30,14 @@ $(document).ready(function () {
 });
 
 function _3dMapViewMarker() {
-  let _3dUnitsMarketingNames = getUnits();
-  let cleanedNames = clean3DMarker(_3dUnitsMarketingNames)
+  let _3dUnitsMarketingNames = getUnitsToBeSelected();
+  let cleanedNames = clean3DMarkers(_3dUnitsMarketingNames)
   return (cleanedNames + ',' + _3dSampleAmenities.join())
 }
 
-function clean3DMarker(unit_names) {
-  return unit_names.map(a => a.substr(0,3)).join()
-}
-
-function getUnits() {
+function getUnitsToBeSelected() {
   return _3dUnitsToBeSelected.map(a => a.marketing_name)
 }
-
-// $(document).ready(function () {
-//   // webCommunity = $("#communityWebpagesData").data("community");
-//   // _3dAmenities = $("#communityWebpagesData").data("amenities");
-//   showRequestedMap("2d-current-map")  
-// });
-
-// function select2DCurrentMap(){
-//   webCommunity = $("#communityWebpagesData").data("community");
-//   // currentMapType = $('.2d-map-option').data('current-map-type');
-//   // showRequestedMap(currentMapType);
-//   display2DMap();
-//   if(webCommunity.web_map_type === "2d-map"){
-//     $(".divLoading").removeClass("hidden");
-//     window.location.reload();
-//   }
-//   $('.2d-map-option').addClass('hidden'); 
-//   $('.3d-map-option').removeClass('hidden');  
-// }
-
-// function select3DCurrentMap(){
-//   currentMapType = $('.3d-map-option').data('current-map-type');
-//   showRequestedMap(currentMapType);
-//   $('.3d-map-option').addClass('hidden');
-//   $('.2d-map-option').removeClass('hidden');
-// }
-
-// function showRequestedMap(currentMapType){
-//   webCommunity = $("#communityWebpagesData").data("community");
-//   _3dAmenities = $("#communityWebpagesData").data("amenities");
-
-//   if(webCommunity.web_map_type === "2d-map") {
-//     $('.2d-map-option').addClass('hidden'); 
-//     $('.3d-map-option').removeClass('hidden');     
-//   }
-//   else{
-//     $('.3d-map-option').addClass('hidden');
-//     $('.2d-map-option').removeClass('hidden');
-//   }
-
-//   if(webCommunity) {
-//     selectMap = webCommunity.web_map_type;
-//     if(webCommunity.web_map_type === "3d-map" ||  currentMapType === '3d-current-map') {
-//       beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,_beansApiKey, 
-//       {
-//         'click-popup-listener' : polygonClickPopup, 'default-polygon-color' : webCommunity.default_polygon_color,
-//         'selected-polygon-color' : webCommunity.selected_polygon_color,'selected-unit-color' : webCommunity.selected_unit_color,
-//         'default-polygon-opacity': webCommunity.default_polygon_opacity,'selected-polygon-opacity': webCommunity.selected_polygon_opacity,
-//         'unit-color': webCommunity.unit_color , 'poi-color': webCommunity.poi_color
-//       });
-//     }
-
-//     handleMapControl()
-//   }
-// }
-
 
 $(window).bind('load', function () {
 
@@ -1890,8 +1828,6 @@ function display3DMap() {
   // $(".digits-list-item").css("width", w1+w2);
   $(".c-wrapper").css("margin-right", "0px");
   $(".satelite-view-icon").removeClass("hidden");
-  $("#slider").slick();
-
   let windowWidth = window.innerWidth;
   let sideBarWidth = $("div.mydiv").innerWidth();
   let mapWidth = windowWidth - sideBarWidth - 10;
