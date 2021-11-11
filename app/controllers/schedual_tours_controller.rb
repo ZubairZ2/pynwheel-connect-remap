@@ -150,6 +150,7 @@ class SchedualToursController < ApplicationController
     else
       render json: {message: "some errors occured"}, status: 'failed'
     end
+    binding.pry
     redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification],community_id: community.id,property_tour_type: property_tour_type,tour_type: tour_type)
   end
   def do_yardi_schedule_tour(schedual_tour,tu,desired_move_in_date)
