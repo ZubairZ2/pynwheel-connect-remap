@@ -13,7 +13,7 @@ class SchedualTour < ApplicationRecord
   
   def cancel_yardi_tour
     return unless self.community.use_yardi_as_lead?
-    YardiRentCafeServices::MarketingApisService.new(self.community).cancel_tour(self)
+    YardiRentCafeServices::MarketingApisService.new(self).cancel_tour
   end
 
   def add_user_in_zerv

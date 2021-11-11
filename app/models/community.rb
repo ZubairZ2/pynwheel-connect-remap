@@ -517,12 +517,8 @@ class Community < ApplicationRecord
     SalesforceSendFeedbackJob.perform_async self, tour_user, tour_history
   end
 
-  def available_slots
-    YardiRentCafeServices::MarketingApisService.new(self).available_slots
-  end
-
-  def yardi_schedule_tour(schedule_tour, tu, desired_move_in_date)
-    YardiRentCafeServices::MarketingApisService.new(self).schedule_tour(schedule_tour, tu, desired_move_in_date)
+  def available_slots scheduled_tour
+    YardiRentCafeServices::MarketingApisService.new(scheduled_tour).available_slots
   end
 
   def credentials_are_present?
@@ -1096,9 +1092,9 @@ class Community < ApplicationRecord
     tour_type
   end
 
-  def fetch_tour_type_according_to_time_for_yardi(date_str, tour_time)
+  def fetch_tour_type_according_to_time_for_yardi(scheduled_tour, date_str, tour_time)
     tour_type = []
-    yardi_time_slots = self.available_slots
+    yardi_time_slots = self.available_slots(scheduled_tour)
     yardi_self_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
     yardi_guided_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
     if self&.tour&.tour_setting.present?

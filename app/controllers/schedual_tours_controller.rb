@@ -99,8 +99,6 @@ class SchedualToursController < ApplicationController
 
       schedual_tour = (schedual_tour.present? && !schedual_tour.is_tour_completed) ? schedual_tour : new_tour
 
-      response = @community.use_yardi_as_lead? ? do_yardi_schedule_tour(schedual_tour,tu,params[:desired_move_in_date]) : nil
-
       previous_tour = {
         tour_date: schedual_tour.tour_date,
         tour_time: schedual_tour.tour_time,
@@ -120,13 +118,15 @@ class SchedualToursController < ApplicationController
       tour_type = params["tour_type"].present? ? params["tour_type"] : ""
       property_tour_type = params['tour_user']['property_tour_type'] if (params['tour_user'] && params['tour_user']['property_tour_type']).present? 
       # binding.pry
-      schedual_tour.update_attributes(tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code],yardirentcafe_prospect_id: response.present? ? response[0] : nil, yardirentcafe_appointment_id: response.present? ? response[1] : nil, realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
+      schedual_tour.update_attributes(tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code], realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
 
       if previous_tour[:is_rescheduled]
         is_rescheduled = true
         new_tour.delete
       end
       
+      YardiRentCafeServices::MarketingApisService.new(schedual_tour).schedule_tour
+
       begin
         sent_notifications = send_email_and_other_notifications(schedual_tour,previous_tour,is_rescheduled,property_tour_type)
       rescue Exception => e
@@ -151,13 +151,6 @@ class SchedualToursController < ApplicationController
       render json: {message: "some errors occured"}, status: 'failed'
     end
     redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification],community_id: community.id,property_tour_type: property_tour_type,tour_type: tour_type)
-  end
-
-  def do_yardi_schedule_tour(schedual_tour,tu,desired_move_in_date)
-    yardi_schedule_tour = @community.yardi_schedule_tour(schedual_tour, tu, desired_move_in_date)
-    yardirentcafe_prospect_id = yardi_schedule_tour["Response"][0]["VoyProspectId"] rescue nil
-    yardirentcafe_appointment_id = yardi_schedule_tour["Response"][0]["VoyProspectApptId"] rescue nil
-    [yardirentcafe_prospect_id, yardirentcafe_appointment_id]
   end
 
   # POST /schedual_tours
@@ -208,7 +201,6 @@ class SchedualToursController < ApplicationController
     @use_yardi_as_lead = @community.use_yardi_as_lead?
     date_time = params[:date] + " " +params[:time]
     date = DateTime.strptime(date_time, '%m/%d/%Y %l:%M %p')
-    tour_types = @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
     
     tour_time, day_diff = get_tour_datetime_and_diff date
     before_30_mints = tour_time.to_time - 30.minutes
@@ -228,6 +220,9 @@ class SchedualToursController < ApplicationController
       @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, end_time: after_30_mints, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
       @schedual_tour.save
     end
+
+    tour_types = @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(@schedual_tour, date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
+
     render json: {tour_types: tour_types.uniq,limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
   end
 

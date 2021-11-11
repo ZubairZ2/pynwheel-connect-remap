@@ -848,7 +848,6 @@
         // currentDay = (new Date($(this).val())).getDay()
         var d = new Date();
         var currentDay = d.getDay();
-        
         if (use_yardi_as_lead && !is_virtual_on){
           var availableDates = <%= raw @yardi_enable_days %>;
           $('.schedule_datepicker').datetimepicker({
