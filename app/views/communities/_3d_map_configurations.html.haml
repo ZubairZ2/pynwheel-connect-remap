@@ -12,8 +12,8 @@
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Default Polygon Color
-              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span.map-config-tooltip#propertyDetailNameText
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
                   unit polygon (floor-plans) color
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               .input-group.colorpicker-style.hex-format-colorpicker
@@ -23,8 +23,8 @@
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Selected Polygon Color
-              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span#propertyDetailNameText.map-config-tooltip
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
                   highlighted/selected unit polygon color
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               .input-group.colorpicker-style.hex-format-colorpicker
@@ -34,24 +34,24 @@
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Default Polygon Opacity
-              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span#propertyDetailNameText.map-config-tooltip
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
                   default polygon opacity
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               = f.text_field :default_polygon_opacity,{class: "form-control property-map-marker-field ", :id => "default_polygon_opacity",:max => 2,:min => 0,:style => "line-height: 3.2;"}
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Selected Polygon Opacity
-              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span#propertyDetailNameText.map-config-tooltip
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
                   highlighted/selected polygon opacity
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               = f.text_field :selected_polygon_opacity,{class: "form-control property-map-marker-field ", :id => "selected_polygon_opacity",:max => 2,:min => 0,:style => "line-height: 3.2;"}
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Unit Color
-              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span#propertyDetailNameText.map-config-tooltip
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
                   unit (text) color
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               .input-group.colorpicker-style.hex-format-colorpicker
@@ -61,8 +61,8 @@
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Selected Unit Color
-              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span#propertyDetailNameText.map-config-tooltip
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
                   selected unit (text) color
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               .input-group.colorpicker-style.hex-format-colorpicker

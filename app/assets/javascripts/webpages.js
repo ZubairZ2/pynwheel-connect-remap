@@ -6,24 +6,44 @@ var _3dSelectedUnit;
 var _3dFilteredAmenity;
 var _3dSampleAmenities = ["SWIMMINGPOOL", "GYM", "BBQ", "SPA", "OFFICE", "ST", "EL", "EN"]
 var favoritesArr = [];
-var currentMapType;
+var defaultMapType;
+var _3dUnitsToBeSelected;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
-  // showRequestedMap("2d-current-map")  
   if(webCommunity) {
     selectMap = webCommunity.web_map_type;
+    defaultMapType = webCommunity.web_map_type;
+    // if(selectMap === "3d-map") {
+      _3dUnitsToBeSelected = select_units_according_to_filters(units)
+    // }
+    selected_units = _3dMapViewMarker()
+    
     beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,_beansApiKey, 
       {
         'click-popup-listener' : polygonClickPopup, 'default-polygon-color' : webCommunity.default_polygon_color,
         'selected-polygon-color' : webCommunity.selected_polygon_color,'selected-unit-color' : webCommunity.selected_unit_color,
         'default-polygon-opacity': webCommunity.default_polygon_opacity,'selected-polygon-opacity': webCommunity.selected_polygon_opacity,
-        'unit-color': webCommunity.unit_color , 'poi-color': webCommunity.poi_color
+        'unit-color': webCommunity.unit_color , 'poi-color': webCommunity.poi_color, 'selected-units': selected_units
       });
     handleMapControl()
   }
 });
+
+function _3dMapViewMarker() {
+  let _3dUnitsMarketingNames = getUnits();
+  let cleanedNames = clean3DMarker(_3dUnitsMarketingNames)
+  return (cleanedNames + ',' + _3dSampleAmenities.join())
+}
+
+function clean3DMarker(unit_names) {
+  return unit_names.map(a => a.substr(0,3)).join()
+}
+
+function getUnits() {
+  return _3dUnitsToBeSelected.map(a => a.marketing_name)
+}
 
 // $(document).ready(function () {
 //   // webCommunity = $("#communityWebpagesData").data("community");
@@ -162,12 +182,15 @@ $(window).bind('load', function () {
     $('.3d-map-option').click(function () {
       selectMap = "3d-map"
       // debugger
-      handleMapControl()
+      display3DMap();
+      
     });
     $('.2d-map-option').click(function () {
       selectMap = "2d-map"
-      // debugger
-      display2DMap()
+      display2DMap();
+      if(defaultMapType != "3d-map"){
+        showMarkers();
+      }
     });
     $('#market_rent').change(function () {
       showMarkers(true);
@@ -251,7 +274,7 @@ $(window).bind('load', function () {
       });
 
     $(".reset-webpage").on('click', function (e) {
-      $(".divLoading").removeClass("hidden");
+      $(".webPageLoader").removeClass("hidden");
       window.location.reload()
     });
     
@@ -858,7 +881,7 @@ function select_units_according_to_filters(floorplate_units) {
   if(unit_availability == ""){
     unit_availability = "show_all_available_units"
   }
-  console.log("in filtered unit action !!!!!!!!!")
+
   for (var i = 0; i < floorplate_units.length; i++) {
     if(!(selectMap === "3d-map"))
       if(($('.floorplate-anchor.selected').attr('id') != undefined) && ($('.floorplate-anchor.selected').attr('id') != floorplate_units[i].floor.toString()))
@@ -1165,7 +1188,7 @@ function overall_filtered_units(floorplate_units) {
   }
   console.log("in filtered unit action for FLOOORSS !!!!!!!!!")
   for (var i = 0; i < floorplate_units.length; i++) {
-    // if(!(selectMap === "3d-map"))
+    //if(!(selectMap === "3d-map"))
       // if(($('.floorplate-anchor.selected').attr('id') != undefined))
       //   continue;
     
@@ -1558,7 +1581,7 @@ function setModalAttributes(element) {
       $('#unitModal').find('#availability').html("Available");
       $('#unitModal').find('#available-text').html('Available');
       $('#unitModal').find('#available-date').html($(element).data('available-date'));
-      $('#popup-available-date').html($(element).data('available-date'));
+      $('#available-date').html($(element).data('available-date'));
     } else {
       $('#unitModal').find('#availability').html($(element).data('availability') == "Unoccupied" ? "Available" : "Occupied");
       $('#unitModal').find('#available-text').html('Available');
@@ -1660,9 +1683,8 @@ function _3dUnitModalDisplay() {
       $('#unitModal').find('#available-date').html(_3dSelectedUnit.available_date);
     }
   }
-
   $('#unitModal').find('#market-rent').html("$" + _3dSelectedUnit.market_rent);
-  $('#unitModal').find('#total-market-rent').html("$" + _3dSelectedUnit.market_rent);
+  $('#unitModal').find('#total-market-rent').html("$" + _3dSelectedUnit.market_rent + ".00");
 
   if (!_3dSelectedUnit.is_fav) {
     var community_id = webCommunity.id;
@@ -1861,19 +1883,23 @@ function display3DMap() {
   $("#panzomm-container").css("width", "100%");
   $(".location-items").hide();
   $(".c-sidebar").hide();
-  $(".2d-map-option").removeClass("hidden")
-  $(".3d-map-option").addClass("hidden")
-  let w1 = $(".digits-list-item").width();
-  let w2 = $(".c-sidebar").width();
-  $(".digits-list-item").css("width", w1+w2);
+  $(".2d-map-option").removeClass("hidden");
+  $(".3d-map-option").addClass("hidden");
+  // let w1 = $(".digits-list-item").width();
+  // let w2 = $(".c-sidebar").width();
+  // $(".digits-list-item").css("width", w1+w2);
   $(".c-wrapper").css("margin-right", "0px");
   $(".satelite-view-icon").removeClass("hidden");
+  $("#slider").slick();
 
   let windowWidth = window.innerWidth;
   let sideBarWidth = $("div.mydiv").innerWidth();
   let mapWidth = windowWidth - sideBarWidth - 10;
 
-  $(".beans-map-container").css("width", mapWidth)
+  $(".beans-map-container").css("width", mapWidth);
+  if(defaultMapType != "3d-map"){
+    _3dMapViewMarkers();
+  }
 }
 
 function display2DMap() {
@@ -1885,12 +1911,12 @@ function display2DMap() {
   $("#panzomm-container").css("width", "");
   $(".c-wrapper").css("margin-right", "90px");
   $(".c-sidebar").show();
-  $(".digits-list-item").show()
   $(".satelite-view-icon").addClass("hidden");
   $(".3d-map-option").removeClass("hidden")
   $(".2d-map-option").addClass("hidden")
-  debugger
-  showMarkers()
+  if(defaultMapType == "3d-map"){
+    showMarkers();
+  }
 }
 
 function _3dFilterByFloor(floorNumber) {
