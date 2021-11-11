@@ -6402,3 +6402,9 @@ ul.add-fav-options {
 .mapConfigurationToolTip:hover #configDetailNameText {
     visibility: visible;
 }
+
+@media only screen and (min-width: 993px) and (max-width: 1301px) {
+    ._3d-apply-filter-button{
+        font-size: 9px !important;
+    }
+}
