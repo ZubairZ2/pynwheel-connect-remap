@@ -21,18 +21,17 @@ class TourStopsController < ApplicationController
       path.path_points.destroy_all
       path.destroy if path.present?
     end
-    
-    path = @tour_stop.stop_type.classify.constantize.find_by_id(@tour_stop.stop_id).paths.last
+
+    path = @tour_stop.stop_type.classify.constantize.find_by_id(@tour_stop.stop_id)&.paths&.last
     path.path_points.destroy_all if path.present?
     path.destroy if path.present?
-    # path = @tour_stop.stop_type.classify.constantize.find_by_id(@tour_stop.stop_id).paths.last
-    # path.path_points.destroy_all if path.present?
+
     VisitedStop.where(tour_stop_id: @tour_stop.id).destroy_all
     if @tour_stop.stop_type == "elevator"
-      (Elevator.find @tour_stop.stop_id).destroy
+      (Elevator.find @tour_stop.stop_id).destroy if (Elevator.find @tour_stop.stop_id).present?
     end
     if @tour_stop.stop_type == "building_starting_point"
-      (BuildingStartingPoint.find @tour_stop.stop_id).destroy
+      (BuildingStartingPoint.find @tour_stop.stop_id).destroy if (BuildingStartingPoint.find @tour_stop.stop_id).present?
     end
     if @tour_stop.destroy
       redirect_to community_tours_path(current_community,floorNo = (params[:floorplate].present? ? params[:floorplate] : nil)), :notice => "Tour Stop deleted"
