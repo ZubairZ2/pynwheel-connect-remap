@@ -31,9 +31,9 @@ class SchedualTour < ApplicationRecord
   scope :desc_created_at, -> {order(tour_date: :desc)}
   COUNTRY_CODES =  JSON.parse(File.read(Rails.root.join("app/assets/javascripts/country_codes.json")))
 
-
   def cancel_knock_appointment
-    KnockService.new(@schedual_tour).cancel_knock_appointment if @schedual_tour.community.is_knock_community?
+    return unless @schedual_tour.community.is_knock_community?
+    KnockService.new(@schedual_tour).cancel_knock_appointment
   end
 
   def add_user_in_zerv
