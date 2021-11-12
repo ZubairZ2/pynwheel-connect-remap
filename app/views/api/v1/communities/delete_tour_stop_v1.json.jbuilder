@@ -927,10 +927,9 @@ json.tours @tours do |tour|
           end
         
         elsif stop_lock_provider == "Igloohome"
-          _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
-          igloohome_lock = ShortestPath.return_stop_lock(_stop_) if @community.igloohome.present?
-          igloohome_guest = @tour_user.igloohome_guests.where(community_id: @community.id, stop_id: _stop_.id, stop_type: _stop_.class.name).last
-
+          igloohome_lock = @community.get_igloohome_lock(stop)
+          igloohome_guest = @community.get_igloohome_guest(stop, @tour_user.id)         
+          
           if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && (igloohome_guest.guest_bluetooth_key.present? || igloohome_guest.guest_pin.present?)
             json.guest_pin ''
             json.latch_link ''
