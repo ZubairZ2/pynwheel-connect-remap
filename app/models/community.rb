@@ -66,7 +66,6 @@ class Community < ApplicationRecord
   # has_paper_trail
   # mount_uploader :logo, AvatarUploader
   # attr_readonly :uuid
-  include LockedTourStopHelper
 
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
