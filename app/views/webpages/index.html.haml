@@ -25,13 +25,12 @@
     %link{:crossorigin => "", :href => "https://fonts.gstatic.com", :rel => "preconnect"}/
     %link{:href => "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
-    = render '/font_awesome_v5'    
+    = render '/font_awesome_v5'
   %body.custom-iframe-modeule
     .webPageLoader.hidden
     - unless @community_info.locked
       = hidden_field_tag :maps_community_id, @community_info.id
       %section.is-webpage
-        -# %a#clickme{:href => "#", :style => "position: sticky; top: 5px;"} Select Filter
         .c-wrapper
           %header.app-header
             .header-inner
@@ -581,7 +580,7 @@
       $('#slider').slick('unslick');
       $slider.on('init', () => {mouseWheel($slider)}).slick({
         infinite: false,
-        slidesToShow: 3,
+        slidesToShow: 1,
         slidesToScroll: 1,
         vertical: false,
         speed: 6,
@@ -613,7 +612,7 @@
         mouseWheel($slider)
       }).slick({
         infinite: false,
-        slidesToShow: 3,
+        slidesToShow: 1,
         slidesToScroll: 1,
         vertical: false,
         speed: 6,

@@ -5151,8 +5151,8 @@ body {
     max-width: 100%;
 }
 .header-inner {
-    padding: 15px 14px 5px 16px;
     height: 89px;
+    padding: 15px 14px 8px 16px;
     display: flex;
     align-items: center;
 }
@@ -5743,9 +5743,9 @@ ul.add-fav-options {
       bottom: 71px;
   }
   .c-sidebar .c-sidebar-brand {
-      width: 20%;
-      height: 80px;
-  }
+    width: 20%;
+    height: auto;
+   }
   .floor-counts {
       display: flex !important;
       width: 80%;
