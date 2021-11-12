@@ -21,7 +21,7 @@ namespace :email_property_before_tour do
                         end
                     end
                 end
-                ScheduledToursJob.perform_async("Sechduled Tours for #{Date.today.strftime("%Y-%m-%d")}", tours_data, community) if tours_data.present?
+                ScheduledToursJob.perform_async("Scheduled Tours for #{Date.today.strftime("%Y-%m-%d")}", tours_data, community) if tours_data.present?
             end
         end
     end
