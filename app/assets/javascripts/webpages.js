@@ -117,7 +117,6 @@ $(window).bind('load', function () {
     /////////////////////////////////////////
     $('.3d-map-option').click(function () {
       selectMap = "3d-map"
-      // debugger
       display3DMap();
       
     });
@@ -1718,9 +1717,6 @@ function display3DMap() {
   $(".c-sidebar").hide();
   $(".2d-map-option").removeClass("hidden");
   $(".3d-map-option").addClass("hidden");
-  // let w1 = $(".digits-list-item").width();
-  // let w2 = $(".c-sidebar").width();
-  // $(".digits-list-item").css("width", w1+w2);
   $(".c-wrapper").css("margin-right", "0px");
   $(".satelite-view-icon").removeClass("hidden");
   let windowWidth = window.innerWidth;
@@ -1729,6 +1725,9 @@ function display3DMap() {
 
   $(".beans-map-container").css("width", mapWidth);
   if(defaultMapType != "3d-map"){
+    let w1 = $(".digits-list-item").width();
+    let w2 = $(".c-sidebar").width();
+    $(".digits-list-item").css("width", w1+w2);
     _3dMapViewMarkers();
   }
 }
