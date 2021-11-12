@@ -5179,7 +5179,7 @@ body {
 }
 .custom-iframe-modeule .app-logo {
     /* width: 7%; */
-    /* width: 90px; */
+    width: 90px;
     padding-bottom: inherit;
 }
 .custom-iframe-modeule .header-buttons-groups {
