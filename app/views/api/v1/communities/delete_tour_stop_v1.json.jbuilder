@@ -928,8 +928,8 @@ json.tours @tours do |tour|
         
         elsif stop_lock_provider == "Igloohome"
           igloohome_lock = @community.get_igloohome_lock(stop)
-          igloohome_guest = @community.get_igloohome_guest(stop, @tour_user.id)
-         
+          igloohome_guest = @community.get_igloohome_guest(stop, @tour_user.id)         
+          
           if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && (igloohome_guest.guest_bluetooth_key.present? || igloohome_guest.guest_pin.present?)
             json.guest_pin ''
             json.latch_link ''
