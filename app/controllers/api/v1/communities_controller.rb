@@ -220,10 +220,15 @@ class Api::V1::CommunitiesController < ActionController::Base
       tour_user.property_access_code_generated_at = Time.now
       tour_length_stay_limit = community&.tour&.tour_setting&.length_stay_limit
       tour_user.restricted_property_access = true
+      visitor_name = tour_user.name.capitalize
       sleep 1
       create_tour_history(tour_user,tour_type,community)
-      body = "#{tour_user.name.capitalize} wants to start the tour of #{community.name}. His proerty access code is #{tour_user.property_access_code}. This code will be expired after #{tour_length_stay_limit} minutes"
-      send_access_code_email("Property Access Verification Code", body, community)
+      subject = "Property Access Code for #{visitor_name}"
+      body = "#{visitor_name} is ready to start a Self Tour at #{community.name}. 
+      Please instruct #{tour_user.first_name.capitalize} to enter this property access code into the Self Tour app:<br>
+      <br>#{tour_user.property_access_code}<br>
+      <br>This code will expire in #{tour_length_stay_limit} minutes"
+      send_access_code_email(subject, body, community)
     end
   end
 
@@ -640,9 +645,6 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   def tour_user_arrival_email(tour_user, community)
     emails = community.email.gsub(" ","").split(',')
-    tour_type = tour_user.tour_type
-    enabled_property_access = community&.tour&.tour_setting&.enable_restricted_property_access
-    access_code_text = tour_type != "virtual_tour" && enabled_property_access ? "Visitor's property access code is #{self.tour_user.property_access_code}" : ""
     schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
     emails.each do |email|
       NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}",email,INFO_EMAIL,community,false,schedule_tour).deliver
