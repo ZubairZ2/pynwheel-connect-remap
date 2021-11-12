@@ -5,7 +5,7 @@ module AllowedTourStopsHelper
     visible_stops.each do |stop|
       tour_stop = (stop[0].classify.constantize.find_by_id stop[1])
       
-      if tour_stop.lock_provider == "Igloohome"
+      if tour_stop.lock_provider == "Igloohome" || (tour_stop.doors.present? && tour_stop.doors.last.lock_provider === "Igloohome")
         if tour_stop.class.name === "Amenity"
           if tour_stop.present? && tour_stop.doors.present? && tour_stop.doors.last.lock_provider === "Igloohome"
             allowed_stops << tour_stop.doors.last.id
@@ -14,7 +14,7 @@ module AllowedTourStopsHelper
           end
 
         elsif tour_stop.class.name === "Unit"
-          if tour_stop.present? && tour_stop.door.present? && tour_stop.door.lock_provider === "Igloohome"
+          if tour_stop.present? && tour_stop.door.present? && tour_stop.doors.last.lock_provider === "Igloohome"
             allowed_stops << tour_stop.door.id
           else
             allowed_stops << tour_stop.id
