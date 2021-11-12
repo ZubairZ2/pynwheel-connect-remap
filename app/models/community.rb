@@ -162,16 +162,6 @@ class Community < ApplicationRecord
   amoeba do
     include_association :design
   end
-
-  def get_igloohome_lock stop
-    igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
-    IgloohomeLock.where(igloohome_id: self.igloohome.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
-  end
-
-  def get_igloohome_guest stop, tour_user_id
-    igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
-    IgloohomeGuest.where(tour_user_id: tour_user_id, community_id: self.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
-  end
   
   def create_tour_also
     tour = self.create_tour if self.tour.nil?
