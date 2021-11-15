@@ -207,7 +207,10 @@ module DweloDevicesHelper
         tour_user = TourUser.find params[:tour_user_id]
         puts "----------------------- igloohome_lock_access ----------------------"
         puts tour_user.inspect
-        current_time = Time.now.in_time_zone(params[:time_zone])
+
+        if params[:time_zone].present?
+          current_time = Time.now.in_time_zone(params[:time_zone])
+        end
         
         tour_user.update_column 'igloohome_status' , 'in progress'
         
