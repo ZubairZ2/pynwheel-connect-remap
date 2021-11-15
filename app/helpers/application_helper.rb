@@ -61,13 +61,7 @@ module ApplicationHelper
   def self_tour_icon_size
     [["19x25","0"],["17x23","1"],["15x21","2"],["13x19","3"],["11x17","4"]]
   end
-  def get_time_zone community
-  time_zone = Timezone.lookup(community.latitude, community.longitude)
-  timezone = time_zone.name
-  rescue
-    return ""
-  end
-
+  
   def font_families
     options_with_style = []
     families = [
@@ -1225,6 +1219,21 @@ module ApplicationHelper
   def companies_hash
     arr = Company.all.map { |c| [c.name , c.id] }
     arr.to_h
+  end
+
+  def lock_provider_type(actual_stop)
+    stop_lock_provider = ""
+    have_door = (actual_stop.class.name == "Unit" &&  actual_stop.door.present?) || (actual_stop.class.name == "Amenity" &&  actual_stop.doors.any?)
+    if have_door
+      if actual_stop.class.name == "Unit"
+        stop_lock_provider = actual_stop.door.lock_provider
+      elsif actual_stop.class.name == "Amenity"
+        stop_lock_provider = actual_stop.doors.first.lock_provider
+      end
+    else
+      stop_lock_provider = actual_stop.lock_provider
+    end
+    stop_lock_provider
   end
 
 end

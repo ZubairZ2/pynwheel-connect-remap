@@ -66,6 +66,8 @@ class Community < ApplicationRecord
   # has_paper_trail
   # mount_uploader :logo, AvatarUploader
   # attr_readonly :uuid
+  include LockedTourStopHelper
+  
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   mount_base64_uploader :self_tour_logo, AvatarUploader
@@ -92,6 +94,7 @@ class Community < ApplicationRecord
   has_many :igloo_guests, dependent: :destroy
   has_many :latch_guests, dependent: :destroy
   has_many :zerv_guests, dependent: :destroy
+  has_many :igloohome_guests, dependent: :destroy
   has_many :opening_hours, dependent: :destroy
   has_many :guided_opening_hours, dependent: :destroy
   has_many :schedual_tours, dependent: :destroy
@@ -113,7 +116,7 @@ class Community < ApplicationRecord
   has_one :dwelo, dependent: :destroy
   has_one :latch, dependent: :destroy
   has_one :zerv, dependent: :destroy
-
+  has_one :igloohome, dependent: :destroy
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
@@ -158,6 +161,16 @@ class Community < ApplicationRecord
   scope :desc_created_at, -> { order(created_at: :desc) }
   amoeba do
     include_association :design
+  end
+
+  def get_igloohome_lock stop
+    igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
+    IgloohomeLock.where(igloohome_id: self.igloohome.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
+  end
+
+  def get_igloohome_guest stop, tour_user_id
+    igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
+    IgloohomeGuest.where(tour_user_id: tour_user_id, community_id: self.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
   end
 
   def create_tour_also
@@ -233,6 +246,12 @@ class Community < ApplicationRecord
   end
   def clone_a_community(community)
     CloneCommunityJob.perform_async community
+  end
+
+  def get_time_zone
+    return "UTC" unless (self.latitude.present? && self.longitude.present?)
+
+    Timezone.lookup(self.latitude, self.longitude).name rescue "UTC"
   end
 
   def has_temporary_images?
@@ -1505,5 +1524,6 @@ class Community < ApplicationRecord
       self.update_column(:is_chat_available, false)
     end
   end
+
 
 end

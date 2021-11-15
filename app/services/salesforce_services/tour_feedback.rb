@@ -24,7 +24,7 @@ module SalesforceServices
                 puts "auth_header"
                 puts auth_header
                 puts "*******"*100
-                c_time_zone = get_community_time_zone(community)
+                c_time_zone = community.get_time_zone()
 
                 begin
                     arrival_time = tour_history.arrived.in_time_zone(c_time_zone)

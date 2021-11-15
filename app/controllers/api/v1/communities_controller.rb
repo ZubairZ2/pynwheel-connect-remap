@@ -186,7 +186,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community.save
       charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
       @tour_user.verified_by = params[:verfied_by_provider]
-      time_zone = get_time_zone @community
+      time_zone = @community.get_time_zone()
       if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.tour.visual_id_verification #TODO:: change to 1 month after testing
         @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
         @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
@@ -406,7 +406,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           @locks_thread = create_zerv_user(@community, @tour_user) if params[:second_time].present? and ( params[:second_time] == "false" || params[:second_time] == false )
           @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id )
           @verfication_type = params[:id_verification].present? ? @tour.verification_type : "email" rescue "email"
-          timezone = get_community_time_zone(@community) rescue "UTC"
+          timezone = @community.get_time_zone()
           current_time = (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
 
           @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
@@ -488,7 +488,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             @location_received = true
           end
 
-          timezone = get_community_time_zone(@community)
+          timezone = @community.get_time_zone()
           current_time = current_community_time(@community, params)
           @is_salesforce_crm = (@community.credential.present? and @community.credential.use_different_crm_provider and @community.crm_credential.present? and @community.crm_credential.crm_provider == "salesforce") ? true : false
 
@@ -555,7 +555,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     emails = community.email.gsub(" ","").split(',')
     schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
     emails.each do |email|
-      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}",email,"info@pynwheel.com",community,false,schedule_tour).deliver
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}",email,INFO_EMAIL,community,false,schedule_tour).deliver
     end
   end
   def check_lock_access
@@ -566,7 +566,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       tu = TourUser.find params[:tour_user_id]
       counter = check_lock_access_counter(tu)
       if (params[:tour_type] == "self_tour" && tu.tour_type != "guided_tour" && community.enable_locks)
-        if ((community.multiple_locks_provider.include?("Dwelo") && (tu.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (tu.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (tu.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (tu.zerv_status == "in progress")) && !(counter >= 20))
+        if ((community.multiple_locks_provider.include?("Igloohome") && (tu.igloohome_status == "in progress")) || (community.multiple_locks_provider.include?("Dwelo") && (tu.dwelo_status == "in progress")) || (community.multiple_locks_provider.include?("EdgeState")  && (tu.edge_state_status == "in progress")) || (community.multiple_locks_provider.include?("Latch")  && (tu.latch_status == "in progress")) || (community.multiple_locks_provider.include?("Zerv")  && (tu.zerv_status == "in progress")) && !(counter >= 20))
           render :json=> {success: "false", completed: false}
         else
           render :json=> {success: "true", completed: true}
@@ -590,13 +590,6 @@ class Api::V1::CommunitiesController < ActionController::Base
       begin
       tour_user.update_column 'zerv_status' , 'in progress'
       execution_context = Rails.application.executor.run!
-
-      # timezone = get_community_time_zone(community) rescue "UTC"
-      # current_time = (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone)) 
-      # tour = community.tour
-      # in_visiting_hours = is_tour_in_visiting_hours(current_time, community) if community.present?
-      # is_tour_virtual = check_community_type(in_visiting_hours, @tours, @community, @tour_user)
-
 
       if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and tour_user.tour_type != "virtual_tour"
         allowed_stops = zerv_multiple_stops_access(community)

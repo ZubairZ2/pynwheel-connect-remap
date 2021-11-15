@@ -28,6 +28,8 @@ class WebpagesController < ActionController::Base
         if @units_with_floorplan_info.present?
           build_square_feet_range
           build_market_rent_range
+          unit_bedrooms_for_webpages
+          unit_availability_for_webpages
           @units_with_floorplan_info = @units_with_floorplan_info.to_json
         end
       end
@@ -36,8 +38,8 @@ class WebpagesController < ActionController::Base
   end
   def get_scheduler_link
     community_code = get_community_code @community
-    base_url =  Rails.env.development? ? "http://localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/")
-    return "#{base_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
+    # base_url =  Rails.env.development? ? "http://localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/")
+    return "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
   end
 
   def normalize_units
@@ -75,6 +77,54 @@ class WebpagesController < ActionController::Base
     end
   end
 
+  def unit_bedrooms_for_webpages
+    units = @units_with_floorplan_info.pluck(:bedrooms).sort_by(&:to_i) rescue ""
+    @unit_bedrooms = []
+    units.present? && units.each do |unit|
+      bedroom_number = unit.to_i
+      if bedroom_number == 0 
+        @unit_bedrooms << ["Studio", "zero_bedrooms"] 
+      elsif bedroom_number == 1 
+        @unit_bedrooms << ["#{bedroom_number} Bedroom", "1_bedroom"] 
+      else
+        @unit_bedrooms << ["#{bedroom_number} Bedrooms", "#{bedroom_number}_bedrooms"]
+      end
+    end
+    @unit_bedrooms = @unit_bedrooms.uniq
+    @unit_bedrooms
+  end
+
+  def unit_availability_for_webpages
+    @available_units = []
+    today = DateTime.now.to_date
+    thirty_days = today + 30.days;
+    sixty_days = today + 60.days;
+    ninty_days = today + 90.days;
+    one_twenty_days = today + 120.days;
+    @units_with_floorplan_info.each do |available_unit|
+      available_date = available_unit[:available_date]
+      if (available_date <= today)
+        @available_units << ["Now", "now"]
+      end
+      if (available_date > today && available_date <= thirty_days) 
+        @available_units << ["In the next 30 days","in_next_30_days"]
+      end
+      if (available_date >= thirty_days && available_date <= sixty_days)
+        @available_units << ["In 31-60 days","in_30_to_60_days"]
+      end
+      if (available_date >= sixty_days && available_date <= ninty_days)
+        @available_units << ["In 61-90 days","in_61_to_90_days"]
+      end
+      if (available_date >= ninty_days && available_date <= one_twenty_days)
+        @available_units << ["In 91-120 days","in_91_to_120_days"]
+      end
+      if (available_date > one_twenty_days)
+        @available_units << ["In 121+ days","in_121_plus_days"]
+      end
+    end
+    @available_units = @available_units.uniq
+  end
+
   def build_square_feet_range
     maximum_square_feet = @units_with_floorplan_info.max_by{|k| k[:square_feet] }[:square_feet]
     minimum_square_feet = @units_with_floorplan_info.min_by{|k| k[:square_feet] }[:square_feet]
@@ -96,7 +146,6 @@ class WebpagesController < ActionController::Base
   def build_market_rent_range
     maximum_market_rent = @units_with_floorplan_info.max_by{|k| k[:market_rent] }[:market_rent]
     minimum_market_rent = @units_with_floorplan_info.min_by{|k| k[:market_rent] }[:market_rent]
-      
     @market_rent = []
     market_rent_range = minimum_market_rent.to_i..maximum_market_rent.to_i
     market_rent_range_hash = market_rent_range.each_slice((market_rent_range.last/4 > 0 ? market_rent_range.last/4 : 1)).with_index.with_object({}) { |(a,i),h| h[minimum_market_rent.to_i.to_s+'-'+a.last.to_s]=a.last }
@@ -116,11 +165,12 @@ class WebpagesController < ActionController::Base
     array << params[:unit_id] if params[:unit_id].present?
     cookies[:favorite_unit_ids] = { value: JSON.generate(array), expiry: 5.years.from_now, same_site: :none}
     favorite = Favorite.find_or_create_by(session_id: cookies[:webpages_session_id]) 
-    params[:unit_id].nil? ? (favorite.unit_ids << params[:unit_id]) :  (favorite.unit_ids = [params[:unit_id]])
+    favorite.unit_ids.present? ? (favorite.unit_ids << params[:unit_id]) :  (favorite.unit_ids = [params[:unit_id]])
     fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.create(community_id: @community.id) 
     fs.favorite_unit << params[:unit_id] unless fs.favorite_unit.include?(params[:unit_id])
     fs.save
-    favorite.save
+    favorite.save!
+    # redirect_back(fallback_location: root_path)
   end
 
   def sent_favorite
@@ -138,7 +188,6 @@ class WebpagesController < ActionController::Base
   def delete_favorite
     array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
     @unit = Unit.find params[:unit_id]
-
     cookies[:favorite_unit_ids] = { value: JSON.generate(array), expiry: 5.years.from_now, same_site: :none}
     favorite = Favorite.find_by_session_id(cookies[:webpages_session_id]) 
     fs = @community.favorite_stop if @community.favorite_stop.present?
@@ -158,23 +207,28 @@ class WebpagesController < ActionController::Base
       @scheduler_widget_link = get_scheduler_link
       @favorite = Favorite.find_by_session_id(cookies[:webpages_session_id])
       @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
+      @fav_units_info = @units.to_json 
       @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
     rescue => ex
     end
   end
 
   def favorites_share_link
-    @favorite = Favorite.find_by_session_id(params[:webpages_session_id])
-    @units = Unit.where(id: @favorite.unit_ids,community_id: params[:community_id]).where.not(available_date: nil)
-    @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
+    @favorite = Favorite.find_by_session_id(params[:session_id])
+    @units = Unit.where(id: @favorite&.unit_ids,community_id: params[:community_id]).where.not(available_date: nil)
+    @floorplans = Floorplan.where(provider_floorplan_id: @units && @units.map(&:floorplan_id),community_id: params[:community_id])
   end
 
   def clear_favorites
     cookies[:favorite_unit_ids] = { value: JSON.generate([]), expiry: 5.years.from_now, same_site: :none}
     favorite = Favorite.find_by_session_id(cookies[:webpages_session_id]) 
-    favorite.unit_ids = []
-    favorite.save
-    flash[:notice] = "Favorites cleared successfully."
+    if favorite.present?
+      favorite.unit_ids = []
+      favorite.save
+      flash[:notice] = "Favorites cleared successfully."
+    else
+      flash[:error] = "There are no favorites to delete."
+    end
     redirect_back(fallback_location:"/")
     #redirect_to favorites_community_webpages_path(@community.id)
   end
@@ -262,27 +316,9 @@ class WebpagesController < ActionController::Base
    current_datetime = fetch_datetime
    (current_datetime - session_datetime) > 10.minutes # return true to make a new record
   end
-  
-  def get_community_time_zone(community)
-    tz = Ziptz.new
-    timezone = nil
-
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and community.zip.present?
-      timezone = tz.time_zone_name(community.zip)
-    end
-
-    return timezone
-  rescue
-    return "UTC"
-  end
 
   def set_timezone
-    @timezone = get_community_time_zone(@community)
+    @timezone = @community.get_time_zone()
   end
 
   def fetch_datetime

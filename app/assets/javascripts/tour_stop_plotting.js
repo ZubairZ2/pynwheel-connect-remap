@@ -160,6 +160,7 @@ $(document).ready(function () {
     };
 
     $("#map").bind("mouseup touchend", function (e) {
+
         // first check if user is clicking on scrollbar
         if (e.target != $('#map').get(0)) {
             e.preventDefault();
@@ -174,7 +175,7 @@ $(document).ready(function () {
             dy = e.type === 'touchend' ? ((e.changedTouches[0].pageY - elemPos.top)) : parseInt($('#active_y_plot').html());
 
             marker_color = $('#marker_color').html();
-            marker_font_size = ($('#font_size').html());
+            marker_font_size = ($('#font_size').html()) ? $('#font_size').html() : $('#marker_font_size').html();
             left_margin = parseInt($('#left_margin').html());
             right_margin = parseInt($('#right_margin').html());
 
@@ -215,7 +216,7 @@ $(document).ready(function () {
                         location.reload()
                     }
 
-                    if(adddoorsmode){
+                    if(typeof adddoorsmode !== 'undefined' && adddoorsmode){
                         tag = getDoorTag(selected[0][0])
                     }
                     else{
@@ -269,6 +270,9 @@ function getDeletionUrl(){
     else if (typeof floorplate_id !== 'undefined'){
         return '/communities/'+community_id+'/units/'+selected[0][0]+'/remove_plot_from_floorplate?floorplate_id='+floorplate_id
     }
+    else if (typeof unit_id_for_unit_amenities !== 'undefined'){
+        return '/communities/'+community_id+'/units/'+unit_id_for_unit_amenities+'/amenities/'+selected[0][0]+'/remove_amenity'
+    }
     else{
         return '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot'
     }
@@ -290,12 +294,13 @@ function getTagToPlot(url){
         arr[0][2] = dy;
     }
     else if (typeof floorplate_id !== 'undefined' || typeof sitemap_id !== 'undefined'){   
+
         if(automate_wayfinding == true && self_tour == true) 
             plus_icon = returnPlusIconTag(selected[0][0], "unit", -6)
         else
             plus_icon = ''
 
-        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx}px; top:${dy}px; position:absolute">
+        tag =   `<p class="marker ui-draggable ui-draggable-handle" style="left:${dx - left_margin}px; top:${dy - right_margin}px; position:absolute">
                     <a id="m_${selected[0][0]}" style="font-size: ${marker_font_size}px" title="${selected[0][1]}" data-toggle="modal" data-name="plot" data-target="#confirm-delete" data-href="${url}" data-plotted-category="unit" href="javascript:void(0)">
                         <i class="fas fa-map-marker-alt" style="color: ${marker_color};"></i> </a>
                     ${plus_icon}

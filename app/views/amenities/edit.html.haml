@@ -58,7 +58,7 @@
 
             - if @community.enable_locks
               = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
-              - if @community.auto_wayfinding and @doors.present?
+              - if @doors.present?
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                     Select the door
@@ -69,7 +69,7 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Select Lock Provider
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  - if @community.auto_wayfinding and @doors.present?
+                  - if @doors.present?
                     = select_tag :lock_provider , options_for_select(@community.lock_options(@current_locks_provider), @doors.first.lock_provider),{:class=>"form-control"}
                   - else
                     = f.select :lock_provider , options_for_select(@community.lock_options(@current_locks_provider), f.object.lock_provider),{},{:id=> "lock_provider", :class=>"form-control"}
@@ -78,24 +78,26 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Access Code
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = text_field_tag :access_code, (@community.auto_wayfinding and @doors.present?) ? @doors.first.access_code : @amenity.access_code, :name => "access_code" , :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code",:maxLength => "6"
+                  = text_field_tag :access_code, (@doors.present?) ? @doors.first.access_code : @amenity.access_code, :name => "access_code" , :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code",:maxLength => "6"
 
               .form-group.hidden.mt-30#digital_lock_field
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   Select the lock
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   
-                  - if @community.auto_wayfinding and @doors.present?
+                  - if @doors.present?
                     = hidden_field_tag "dwelo_lock_name"     , @doors.first.dwelo_lock.present?     ?  @doors.first.dwelo_lock.name + " (" + @doors.first.dwelo_lock.remote_lock_type + ")" : ''
                     = hidden_field_tag "edgestate_lock_name" , @doors.first.edgestate_lock.present? ?  @doors.first.edgestate_lock.name + " (" + @doors.first.edgestate_lock.remote_lock_type + ")" : ''
                     = hidden_field_tag "latch_lock_name"     , @doors.first.latch_lock.present?     ?  @doors.first.latch_lock.lock_name : ''
                     = hidden_field_tag "zerv_lock_name"      , @doors.first.zerv_lock.present?      ?  @doors.first.zerv_lock.sub_location_name + " (" + @doors.first.zerv_lock.sub_location_friendly_name + ")" : ''
+                    = hidden_field_tag "igloohome_lock_name" , @doors.first.igloohome_lock.present? ?  @doors.first.igloohome_lock.device_name : ''
                   - else
                     = hidden_field_tag "dwelo_lock_name"     , @amenity.dwelo_locks.present?     ?  @amenity.dwelo_locks.first.name + " (" + @amenity.dwelo_locks.first.remote_lock_type + ")" : ''
                     = hidden_field_tag "edgestate_lock_name" , @amenity.edgestate_locks.present? ?  @amenity.edgestate_locks.first.name + " (" + @amenity.edgestate_locks.first.remote_lock_type + ")" : ''
                     = hidden_field_tag "latch_lock_name"     , @amenity.latch_locks.present?     ?  @amenity.latch_locks.first.lock_name : ''
                     = hidden_field_tag "zerv_lock_name"      , @amenity.zerv_locks.present?      ?  @amenity.zerv_locks.first.sub_location_name + " (" + @amenity.zerv_locks.first.sub_location_friendly_name + ")" : ''
-                  
+                    = hidden_field_tag "igloohome_lock_name" , @amenity.igloohome_locks.present? ? @amenity.igloohome_locks.first.device_name : ''
+
                   = text_field_tag :lock_name, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control amenity_edit_field"
                   %datalist#locks_list
                   = hidden_field_tag "lock_id", ""
@@ -230,22 +232,6 @@
     }
   });
 
-  $('#amenity_building').change(function(){
-    $.ajax({
-      type: "POST",
-      url: 'extract_floors',
-      data: {building: $('#amenity_building').val()},
-      success: function(response) {
-        for(i=0; i < response.floors.length; i++ )
-        {
-          $('#amenity_floor').append('<option value='+response.floors[i]+'>  '+ response.floors[i] +' </option>')
-        }
-      }
-
-    });
-    event.preventDefault();
-  });
-
   $('#on_done').click(function(e){
     $('.edit_amenity').append('<input type="hidden" name="done_action" value="true">');
     submit_form()
@@ -267,12 +253,11 @@
 
         $("#lock_provider").val(res.lock_provider)
         $('#access_code').val(res.access_code.length === 0 ? '' : res.access_code)
-
         $('#edgestate_lock_name').val(res.digital_lock.edgestate_lock === null ? '' : res.digital_lock.edgestate_lock.name + " (" + res.digital_lock.edgestate_lock.remote_lock_type + ")")
         $('#dwelo_lock_name').val(res.digital_lock.dwelo_lock === null ? '' : res.digital_lock.dwelo_lock.name + " (" + res.digital_lock.dwelo_lock.remote_lock_type + ")")
         $('#latch_lock_name').val(res.digital_lock.latch_lock === null ? '' : res.digital_lock.latch_lock.lock_name)
         $('#zerv_lock_name').val(res.digital_lock.zerv_lock === null ? '' : res.digital_lock.zerv_lock.sub_location_name + " (" + res.digital_lock.zerv_lock.sub_location_friendly_name + ")")
-
+        $('#igloohome_lock_name').val(res.digital_lock.igloohome_lock === null ? '' : res.digital_lock.igloohome_lock.device_name)
         if(res.lock_provider == "EdgeState")
           $('#lock_id').val(res.digital_lock.edgestate_lock === null ? '' : res.digital_lock.edgestate_lock.device_id)
         else if(res.lock_provider == "Dwelo")
@@ -281,6 +266,8 @@
           $('#lock_id').val(res.digital_lock.latch_lock === null ? '' : res.digital_lock.latch_lock.door_uuid)
         else if(res.lock_provider == "Zerv")
           $('#lock_id').val(res.digital_lock.zerv_lock === null ? '' : res.digital_lock.zerv_lock.mac_id)
+        else if(res.lock_provider == "Igloohome")
+          $('#lock_id').val(res.digital_lock.igloohome_lock === null ? '' : res.digital_lock.igloohome_lock.device_id)
         else if(res.lock_provider == "Manual" || res.lock_provider == "")
           $('#lock_id').val('')
 
@@ -292,7 +279,8 @@
 
   function submit_form(){
     var digital_lock = $("#lock_name")
-    if (digital_lock.length > 0 && !digital_lock.hasClass("hidden")){
+    var digital_lock_field = $('#digital_lock_field')
+    if (digital_lock.length > 0 && !digital_lock_field.hasClass("hidden")){
       var lock = digital_lock[0];
 
       if(lock.checkValidity() == true){
@@ -300,7 +288,12 @@
         $("#lock_id").val(lock_id)
         $('.edit_amenity').submit();
       }
-      else{ lock.reportValidity(); }
+      else if ($(lock).val() == ""){
+        $("#lock_id").val("")
+        $('.edit_amenity').submit();
+      }
+      else
+        lock.reportValidity();
     }
     else
       $('.edit_amenity').submit();

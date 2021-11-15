@@ -5,58 +5,61 @@ var _3dAmenities;
 var _3dSelectedUnit;
 var _3dFilteredAmenity;
 var _3dSampleAmenities = ["SWIMMINGPOOL", "GYM", "BBQ", "SPA", "OFFICE", "ST", "EL", "EN"]
-
+var favoritesArr = [];
+var defaultMapType;
+var _3dUnitsToBeSelected;
+var enable3DMaps;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
-
-
   if(webCommunity) {
     selectMap = webCommunity.web_map_type;
-
-    if(webCommunity.web_map_type === "3d-map") {
-      beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`, "OWU3MWI0NDgzNzlkNGQ0OjYyNjEzNzY1MzgzODYxMzA2NDYxMzczMTM0Mzk2MzMyMzg2NTY0NjE=", {'click-popup-listener' : polygonClickPopup, 'polygon-color' : '#f4f4f4', 'selected-polygon-color' : '#f4f4f4', 'selected-unit-color' : '#0000ff'});    
-    }
-
+    enable3DMaps = webCommunity.enable_three_d_maps
+    defaultMapType = webCommunity.web_map_type;
+    _3dUnitsToBeSelected = select_units_according_to_filters(units)
+    selected_units = _3dMapViewMarker()
+    
+    beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,_beansApiKey, 
+      {
+        'click-popup-listener' : polygonClickPopup, 'default-polygon-color' : webCommunity.default_polygon_color,
+        'selected-polygon-color' : webCommunity.selected_polygon_color,'selected-unit-color' : webCommunity.selected_unit_color,
+        'default-polygon-opacity': webCommunity.default_polygon_opacity,'selected-polygon-opacity': webCommunity.selected_polygon_opacity,
+        'unit-color': webCommunity.unit_color , 'poi-color': webCommunity.poi_color, 'selected-units': selected_units
+      });
     handleMapControl()
   }
 });
 
+function _3dMapViewMarker() {
+  let _3dUnitsMarketingNames = getUnitsToBeSelected();
+  let cleanedNames = clean3DMarkers(_3dUnitsMarketingNames)
+  return (cleanedNames + ',' + _3dSampleAmenities.join())
+}
+
+function getUnitsToBeSelected() {
+  return _3dUnitsToBeSelected.map(a => a.marketing_name)
+}
 
 $(window).bind('load', function () {
-    // $( window ).on( "orientationchange", function( event ) {
-    //     $(".divLoading").removeClass("hidden");
-    //     window.location.reload();
-    // });
 
   if ($('.is-webpage')[0]) {
-    // $(".panzoom").addClass("transform-none");
-    // $(document).on("click touchstart", ".zoom-controls", function () {
-    //   $(".panzoom").removeClass("transform-none");
-    // });
-    $('[data-toggle="tooltip"]').tooltip({trigger: "hover"}); // initialize bootstrap tooltip
-    ////////////// Disable browser zoom for webpage  starts here ////////////////
+    showMarkeronLoad();
+    $('[data-toggle="tooltip"]').tooltip({trigger: "hover"});
     $(document).keydown(function (event) {
       if (event.ctrlKey == true && (event.which == '61' || event.which == '107' || event.which == '173' || event.which == '109' || event.which == '187' || event.which == '189')) {
         event.preventDefault();
       }
-      // 107 Num Key  +
-      // 109 Num Key  -
-      // 173 Min Key  hyphen/underscor Hey
-      // 61 Plus key  +/= key
     });
 
     $(window).bind('mousewheel DOMMouseScroll', function (event) {
       if (event.ctrlKey == true) {
-        // event.preventDefault();
       }
     });
     ////////////// Disable browser zoom for webpage  ends here ////////////////
     $('#clickme').click(function () {
       $("#clickme").html($("#clickme").html() == 'Select Filter' ? 'Hide Filter' : 'Select Filter');
       var $slider = $('.mydiv');
-      //$('.right-side').css('margin-left', '0');
       $slider.animate({
         left: parseInt($slider.css('left'), 10) == -331 ?
                 0 : -331
@@ -65,17 +68,12 @@ $(window).bind('load', function () {
     ////////////////////////////////////////////////
     $('#leasing-start-date-icon').click(function (event) {
       event.preventDefault();
-      // console.log('********************');
       $('#leasing-start-date').focus();
     });
     ////////////////////////////////////////////////
-    // $('.panzoom a').on('mousedown touchstart', function (e) {
-    //   e.stopImmediatePropagation();
-    // });
-    ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('show.bs.modal', function (e) {
-      if(selectMap === "3d-map") {
+      if(selectMap === "3d-map" && enable3DMaps) {
         _3dUnitModalDisplay();
         $('.unit-buttons').addClass('hidden');
       }
@@ -86,21 +84,25 @@ $(window).bind('load', function () {
           $('.h-' + $(e.relatedTarget).data('unit-x-plot') + '-' + $(e.relatedTarget).data('unit-y-plot')).each(function () {
             console.log('CLick on marker for displaying multiple units');
             var target_id = $(e.relatedTarget).attr('id');
-            var underneath_unit_id = $(this).attr('id');
+            var underneath_unit_id = $(this).data().unitId
             var button_style = ""
-            if (target_id.split('_')[1] == underneath_unit_id.split('-')[1]) {
+            if (parseInt(target_id.split('_')[1]) == underneath_unit_id) {
               button_style = "btn-primary"
             } else {
               button_style = "btn-default"
             }
             $('.unit-buttons').removeClass('hidden');
-            $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" data-title="' + $(this).data('title') + '" data-community-id="' + $(this).data('community-id') + '" data-unit-id="' + $(this).data('unit-id') + '" data-is-fav="' + $(this).data('is-fav') + '" data-provider="' + $(this).data('provider') + '" data-website="' + $(this).data('website') + '" data-community-property-id="' + $(this).data('community-property-id') + '" data-unit-provider-id="' + $(this).data('unit-provider-id') + '" data-floorplan-provider-id="' + $(this).data('floorplan-provider-id') + '" data-floorplan-name="' + $(this).data('floorplan-name') + '" data-unit-description="' + $(this).data('unit-description') + '" data-unit-marketing-name="' + $(this).data('unit-marketing-name') + '" data-market-rent="' + $(this).data('market-rent') + '" data-square-feet="' + $(this).data('square-feet') + '" data-availability="' + $(this).data('availability') + '" data-available-date="' + $(this).data('available-date') + '" data-bedrooms="' + $(this).data('bedrooms') + '" data-bathrooms="' + $(this).data('bathrooms') + '" data-floorplan-image="' + $(this).data('floorplan-image') + '" data-lease-term="' + $(this).data('lease-term') + '" onclick="setUnitAttributes(this);">' + $(this).data('title') + '</button>');
+            $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" data-title="' + $(this).data('title') + '" data-community-id="' + $(this).data('community-id') + '" data-unit-id="' + $(this).data('unit-id') + '" data-is-fav="' + $(this).data('is-fav') + '" data-provider="' + $(this).data('provider') + '" data-website="' + $(this).data('website') + '" data-community-property-id="' + $(this).data('community-property-id') + '" data-unit-provider-id="' + $(this).data('unit-provider-id') + '" data-floorplan-provider-id="' + $(this).data('floorplan-provider-id') + '" data-floorplan-name="' + $(this).data('floorplan-name') + '" data-unit-description="' + $(this).data('unit-description') + '" data-unit-marketing-name="' + $(this).data('unit-marketing-name') + '" data-market-rent="' + $(this).data('market-rent') + '" data-square-feet="' + $(this).data('square-feet') + '" data-availability="' + $(this).data('availability') + '" data-available-date="' + $(this).data('available-date') + '" data-bedrooms="' + $(this).data('bedrooms') + '" data-bathrooms="' + $(this).data('bathrooms') + '" data-floorplan-image="' + $(this).data('floorplan-image') + '" data-lease-term="' + $(this).data('lease-term') + '" data-unit-lease-pricing="' + $(this).data('unit-lease-pricing') +  '" onclick="setUnitAttributes(this);">' + $(this).data('title') + '</button>');
           });
         }
         setModalAttributes(e.relatedTarget);
       }
     });
 
+    function showMarkeronLoad(){
+      console.log("in show marker load function")
+      showMarkers();
+    }
     /////////////////////////////////////////
     setFilters();
     /////////////////////////////////////////
@@ -115,14 +117,36 @@ $(window).bind('load', function () {
       showMarkers();
     });
     /////////////////////////////////////////
+    $('.3d-map-option').click(function () {
+      selectMap = "3d-map"
+      display3DMap();
+      
+    });
+    $('.2d-map-option').click(function () {
+      selectMap = "2d-map"
+      display2DMap();
+      if(defaultMapType != "3d-map"){
+        showMarkers();
+      }
+    });
     $('#market_rent').change(function () {
-      console.log('market_rent is changed')
       showMarkers(true);
     });
     $('#square_feet').change(function () {
       showMarkers();
     });
-    ////////////////////////////////////////
+    $('#unit_bedroom').change(function () {
+      showMarkers();
+    });
+    $('#available_unit').change(function () {
+      showMarkers();
+    });
+    $('#lease_term').change(function () {
+      var select = document.getElementById('lease_term');
+      var option = select.options[select.selectedIndex];
+      $('#unitModal').find('#total-market-rent').html('$' + option.dataset.leasePrice);
+    });
+
     $('#select-all-filters-checkbox').click(function () {
       if ($(this).is(':checked')) {
         $(this).parent().addClass('active');
@@ -142,12 +166,8 @@ $(window).bind('load', function () {
     });
     ///////////////////////////////////////////
     $('.floorplate-anchor').click(function () {
-      // $(".panzoom").addClass("transform-none");
-      // console.log('clicking on anchor tag');
-      // var $section = $('#panzomm-container');
-      // $panzoom = $section.find('.panzoom').panzoom("reset");
       var floor_for_showing_image = $(this).attr('id');
-      if (floor_for_showing_image != current_floor) { // && !$(this).hasClass('no-units')
+      if (floor_for_showing_image != current_floor) { 
         $('.floorplate-image').addClass('hidden');
         $('#f_' + floor_for_showing_image).removeClass('hidden');
         $('.floorplate-anchor').removeClass('selected');
@@ -155,7 +175,8 @@ $(window).bind('load', function () {
         current_floor = floor_for_showing_image
         populate_current_units();
         if ($(this).hasClass('no-units'))
-          $(".alert").show()
+        {
+          $(".alert").show()}
         else
           $(".alert").hide()
         setTimeout(function () {
@@ -173,11 +194,12 @@ $(window).bind('load', function () {
       e.stopImmediatePropagation();
     });
     var $area = document.getElementById('zoomable');
-    window.pz = panzoom($area, 
+    webpagePanZoom = panzoom($area, 
       {
-        bounds: true, contain: 'automatic', smoothScroll: false,
+        bounds: false, contain: 'automatic', smoothScroll: true,
         maxZoom: 5,
         minZoom: 1,
+        minScale: 1,
         zoomDoubleClickSpeed: 1,
        
         onTouch: function(e) {
@@ -188,27 +210,74 @@ $(window).bind('load', function () {
           return false; // tells the library to not preventDefault.
         }
       });
-    
-    $(".reset").on('click', function (e) {
-      $(".divLoading").removeClass("hidden");
+
+    $(".reset-webpage").on('click', function (e) {
+      $(".webPageLoader").removeClass("hidden");
       window.location.reload()
     });
     
-    $(".zoom-in").on('click', function (e) {
-      window.pz.zoomInOut(187);
+    $(".zoom-in-webpage").on('click', function (e) {
+      webpagePanZoom.zoomInOut(187);
     });
 
-
-    $(".zoom-out").on('click', function (e) {
-      window.pz.zoomInOut(189);
+    $(".zoom-out-webpage").on('click', function (e) {
+      webpagePanZoom.zoomInOut(189);
+    });
+    $("#zoomable-modal-image a").on("touchstart", function (e) {
+      e.stopImmediatePropagation();
+    });
+    var $marea = document.getElementById('zoomable-modal-image') 
+    modalPanZoom = panzoom($marea,{bounds: true, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
+      onTouch: function(e) {
+        e.preventDefault();
+        return false;
+      }
     });
 
+    $(".zoom-in-modal").on('click', function (e) {
+      $($marea).removeClass("transform-none");
+      modalPanZoom.zoomInOut(187);
+    });
+    $(".zoom-out-modal").on('click', function (e) {
+      $($marea).removeClass("transform-none");
+      modalPanZoom.zoomInOut(189);
+    });
+    $(".reset-modal").on('click', function (e) {
+      $($marea).addClass("transform-none");
+    });
+
+    $('#zoomable-modal-image').on('wheel', function(e) {
+      $($marea).removeClass("transform-none"); 
+    })
+
+    $("#zoomable-modal-image-responsive a").on("touchstart", function (e) {e.stopImmediatePropagation();});
+    var imageArea = document.getElementById('zoomable-modal-image-responsive');
+    responsiveModalPanZoom = panzoom(imageArea,{bounds: true, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
+      onTouch: function(e) {
+        e.preventDefault();
+        return false;
+      }
+    });
+    $(".zoom-in-res-modal").on('click', function (e) {
+      $(imageArea).removeClass("transform-none");
+      responsiveModalPanZoom.zoomInOut(187);
+    });
+    $(".zoom-out-res-modal").on('click', function (e) {
+      $(imageArea).removeClass("transform-none");
+      responsiveModalPanZoom.zoomInOut(189);
+    });
+    $(".reset-res-modal").on('click', function (e) {
+      $(imageArea).addClass("transform-none");
+    });
+    $('#zoomable-modal-image-responsive').on('wheel', function(e) {
+      $(imageArea).removeClass("transform-none"); 
+    })
     /////////////////////////////////////////////
     /*popover*/
     if (!hasTouch()) {
       $(".marker")
               .mouseenter(function (event) {
-                if ($(this).data('is-fav')) {
+                if ($(this).data('is-fav') || favoritesArr.includes($(this).data('unit-id'))) {
                   $('.fav-heart').removeClass('hidden')
                 } else {
                   $('.fav-heart').addClass('hidden')
@@ -248,7 +317,7 @@ $(window).bind('load', function () {
 
                 var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
                 var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
-                $('#marker-popover').css({left: (new_dx + 100) + "px", top: (new_dy - 120) + "px"});
+                $('#marker-popover').css({left: (new_dx + 100) + "px", top: (new_dy - 100) + "px"});
                 $('#marker-popover').removeClass('hidden');
               })
               .mouseleave(function () {
@@ -263,108 +332,56 @@ $(window).bind('load', function () {
     if (!(has_floorplate == 'true')) {
       var in_browser_height = 0;
       var in_browser_width = 0;
-      var actual_height = 0;
-      var actual_width = 0;
-      var extra_width = 0;
-      var extra_hieght = 0;
-      in_browser_height = parseFloat($('.floorplate-image').parent().height());
-      in_browser_width = parseFloat($('.floorplate-image').parent().width());
-      actual_height = parseInt($('.floorplate-image').data("height"));
-      actual_width = parseInt($('.floorplate-image').data("width"));
-
-      // var propertyMapImg = document.getElementById('property-map-image');
-      // if(actual_width > in_browser_width && actual_height > in_browser_height) {
-      //   actual_width = propertyMapImg.clientWidth;
-      //   actual_height = propertyMapImg.clientHeight;
-      // }
-      // setTimeout(function(){ 
-      //   // debugger
-      //   actual_width = propertyMapImg.clientWidth;
-      //   actual_height = propertyMapImg.clientHeight; 
-      // }, 3000);
-      
-      // if( actual_height > in_browser_height && actual_width > in_browser_width){
-      //   actual_width = propertyMapImg.clientWidth;
-      //   actual_height = propertyMapImg.clientHeight;
-      //   // extra_width = actual_width - in_browser_width
-      //   // extra_hieght = actual_height - in_browser_height
-      //   // actual_width = actual_width - extra_width
-      //   // actual_height = actual_height - extra_hieght
-      // }
-      if (actual_width < in_browser_width)
-        var width_ratio = 1;
-      else
-        var width_ratio = actual_width / in_browser_width;
-      if (actual_height < in_browser_height)
-        var height_ratio = 1;
-      else
-        var height_ratio = actual_height / in_browser_height;
+      var left_diff = 0;
+      var actual_image_width = 0;
+      var actual_image_height = 0;
+      in_browser_height = parseFloat($('.sitemap-image').parent().height());
+      in_browser_width = parseFloat($('.sitemap-image').parent().width());
+      actual_image_height = parseInt($('.sitemap-image').data("height"));
+      actual_image_width = parseInt($('.sitemap-image').data("width"));
+      stretched_image_width = parseInt($('.sitemap-image').width());
+      stretched_image_height = parseInt($('.sitemap-image').height());
+      left_diff = (in_browser_width - stretched_image_width) / 2
 
       $('.marker').each(function () {
         var x_plot = parseFloat($(this).data('unit-x-plot'));
         var y_plot = parseFloat($(this).data('unit-y-plot'));
 
-        //TODO::Fix it dynamically. It is temporary fix right now
-        if(actual_width > in_browser_width && actual_height > in_browser_height) {
-          if(actual_width >= 5884){
-            current_left = x_plot / width_ratio - 6;
-            current_top = y_plot / height_ratio - 20;
-          }
-          if(actual_width >= 2824 && actual_width < 5884 ){
-            current_left = x_plot / width_ratio - 4;
-            current_top = y_plot / height_ratio - 13;
-          }
-          if(actual_width < 2824 && actual_width > 1568){
-            current_left = x_plot / width_ratio - 1;
-            current_top = y_plot / height_ratio - 6;
-          }
-          if(actual_width < 2824){
-            current_left = x_plot / width_ratio;
-            current_top = y_plot / height_ratio;
-          }
+        x_plot = (((stretched_image_width / actual_image_width) * x_plot));
+        y_plot = (((stretched_image_height / actual_image_height) * y_plot));
+
+        if(actual_image_width > 1412){
+          x_plot = x_plot - 6
+          y_plot = y_plot - 17
         }
-        else {
-          current_left = x_plot / width_ratio;
-          current_top = y_plot / height_ratio;
+        else{
+          y_plot = y_plot
         }
-        // $(this).css({"left": current_left-4, "top": current_top-14});
-        $(this).css({"left": current_left, "top": current_top});
+        $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
+        if($(window).width() >= 567 && $(window).width() <= 1360 ){
+          $(this).css({"margin-left": -5, "margin-top": -7})       
+        }
+        if($(window).width() <= 567){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()), "margin-top": -($('.fa-map-marker-alt-responsive').height()+7)})       
+        }
       });
 
       $('.sitemap-amenity-marker').each(function () {
         var x_plot = parseFloat($(this).data('amenity-x-plot'));
         var y_plot = parseFloat($(this).data('amenity-y-plot'));
-        if(actual_width > in_browser_width && actual_height > in_browser_height) {
-          if(actual_width >= 5884){
-            current_left = x_plot / width_ratio - 6;
-            current_top = y_plot / height_ratio - 20;
-          }
-          if(actual_width >= 2824 && actual_width < 5884 ){
-            current_left = x_plot / width_ratio - 4;
-            current_top = y_plot / height_ratio - 6;
-          }
-          if(actual_width < 2824 && actual_width > 1568){
-            current_left = x_plot / width_ratio - 1;
-            current_top = y_plot / height_ratio - 6;
-          }
-          if(actual_width < 2824){
-            current_left = x_plot / width_ratio;
-            current_top = y_plot / height_ratio;
-          }
-        }
-        else {
-          current_left = x_plot / width_ratio;
-          current_top = y_plot / height_ratio;
-        }
-        // current_left = x_plot / width_ratio;
-        // current_top = y_plot / height_ratio;
-        $(this).css({"left": current_left, "top": current_top});
+        x_plot = (((stretched_image_width / actual_image_width) * x_plot));
+        y_plot = (((stretched_image_height / actual_image_height) * y_plot));
+
+        $(this).removeClass('hidden');
+        marker_width = $(this).width();
+        marker_height = $(this).height();
+        $(this).css({"left": ((x_plot - (marker_width/2)) + 4) +  left_diff, "top": (y_plot - marker_height) + 4});
       });
     }
 
   } // if condition ending curl
 
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     _3dMapViewMarkers();
   }
 });
@@ -434,7 +451,6 @@ function setFilters() {
   var one_twenty_days = new Date(today).setDate(today.getDate() + 120);
   //In below for loop hide and show filters on the basis of units data available
   for (var i = 0; i < units.length; i++) {
-    //console.log(units[i]);
     if (parseInt(units[i]['bedrooms']) == 0) {
       zero_bedroom = true
     }
@@ -456,7 +472,6 @@ function setFilters() {
     if (parseInt(units[i]['bedrooms']) == 6) {
       six_bedroom = true
     }
-    // if (units[i]['available_date'] != '2099-01-01'){
     var available_date = new Date(units[i]['available_date']);
     if (available_date <= today) {
       units_available_now = true;
@@ -524,7 +539,6 @@ function setFilters() {
     $('#zero-bedroom-checkbox').addClass('active-filter');
     $('#zero-bedroom-checkbox').parent().removeClass('disabled');
   } else {
-    //$('#zero-bedroom-checkbox').prop('checked', false);
     $('#zero-bedroom-checkbox').parent().hide();
   }
 
@@ -532,7 +546,6 @@ function setFilters() {
     $('#one-bedroom-checkbox').addClass('active-filter');
     $('#one-bedroom-checkbox').parent().removeClass('disabled');
   } else {
-    //$('#one-bedroom-checkbox').prop('checked', false);
     $('#one-bedroom-checkbox').parent().hide();
   }
 
@@ -540,7 +553,6 @@ function setFilters() {
     $('#two-bedroom-checkbox').addClass('active-filter');
     $('#two-bedroom-checkbox').parent().removeClass('disabled');
   } else {
-    //$('#two-bedroom-checkbox').prop('checked', false);
     $('#two-bedroom-checkbox').parent().hide();
   }
 
@@ -548,7 +560,6 @@ function setFilters() {
     $('#three-bedroom-checkbox').addClass('active-filter');
     $('#three-bedroom-checkbox').parent().removeClass('disabled');
   } else {
-    //$('#three-bedroom-checkbox').prop('checked', false);
     $('#three-bedroom-checkbox').parent().hide();
   }
 
@@ -556,7 +567,6 @@ function setFilters() {
     $('#four-bedroom-checkbox').addClass('active-filter');
     $('#four-bedroom-checkbox').parent().removeClass('disabled');
   } else {
-    //$('#four-bedroom-checkbox').prop('checked', false);
     $('#four-bedroom-checkbox').parent().hide();
   }
 
@@ -564,7 +574,6 @@ function setFilters() {
     $('#five-bedroom-checkbox').addClass('active-filter');
     $('#five-bedroom-checkbox').parent().removeClass('disabled');
   } else {
-    //$('#five-bedroom-checkbox').prop('checked', false);
     $('#five-bedroom-checkbox').parent().hide();
   }
 
@@ -572,24 +581,14 @@ function setFilters() {
     $('#six-bedroom-checkbox').addClass('active-filter');
     $('#six-bedroom-checkbox').parent().removeClass('disabled');
   } else {
-    //$('#six-bedroom-checkbox').prop('checked', false);
     $('#six-bedroom-checkbox').parent().hide();
   }
   $(".disabled input").attr('data-original-title', 'none available');
   $(".disabled").click(false);
   $(".disabled").hide();
-  //var today = new Date();
-  //console.log(today);
-  //var thirty_days = new Date(today).setDate(today.getDate()+30); 
-
-  //console.log(thirty_days);
-  //console.log(today.setHours(0,0,0,0) < thirty_days);
-  //var curr = new Date();
-  //console.log(today.setHours(0,0,0,0) == curr.setHours(0,0,0,0));
 }
 
 function showMarkers(market_rent_change = false) {
-  // console.log('showing units on the basis of filters');
 
   $('.marker').addClass('hidden');
   $('.hidden-units').empty();
@@ -597,19 +596,15 @@ function showMarkers(market_rent_change = false) {
   var units_to_display = select_units_according_to_filters(units)
  
   console.log("units_to_display: ", units_to_display);
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     _3dFilteredUnits = units_to_display;
   }
-  // set_prices_according_to_units_to_display(units_to_display, market_rent_change)
-
   set_prices_according_to_units_to_display(units, market_rent_change)
 
   if (!(has_floorplate == 'true')) {
-    // var min_rent = Math.min.apply(Math, units_to_display.map(function (o) {
     var min_rent = Math.min.apply(Math, units.map(function (o) {
       return o.market_rent;
     }))
-    // var max_area = Math.max.apply(Math, units_to_display.map(function (o) {
     var max_area = Math.max.apply(Math, units.map(function (o) {
       return o.square_feet;
     }))
@@ -678,17 +673,13 @@ function disabled_enabled_anchors() {
   var max_area = 0
   for (var i = 0; i < floors.length; i++) {
     var floorplate_units = [];
-
-    for (var j = 0; j < units.length; j++) {
+    for (let j = 0; j < units.length; j++) {
       if (units[j]['floor'] == floors[i]) {
         floorplate_units.push(units[j]);
       }
     }
-    //console.log(floorplate_units);
     var units_to_display = select_units_according_to_filters(units)
-    // console.log(units_to_display.length);
     if (units_to_display.length == 0) {
-      //console.log(floors[i]);
       $('#' + floors[i]).addClass('no-units');
       if ($('#' + floors[i]).hasClass('selected')) {
         $('.alert').show()
@@ -710,14 +701,25 @@ function disabled_enabled_anchors() {
         max_area = max_area_floorplate
     }
     if (floorplate_units.length == 1)
-      var str = " match"
+      var str = " unit"
     else
-      var str = " matches"
-    $('#' + floors[i]).attr('data-original-title', (floorplate_units.length.toString() + str));
+    var str = " units"
+    filtered_floorplate_units = overall_filtered_units(floorplate_units);
+    $('#u_' + floors[i]).html((filtered_floorplate_units.length.toString() + str));
   }
+  $('#' + floors[0]).parent().css("border-top", "1px solid #2b3537");
   if ((floors.length > 0)) {
     disable_rent_filter_options(min_market_rent)
     disable_area_filter_options(max_area)
+    if($(window).width() <= 993 && $(window).width() >= 568 ){
+      $('.mobile-filter-mega-menu').addClass('filters-alignment');
+    }
+  }
+  else{
+    $('.custom-iframe-modeule').addClass('sitemap');
+    if($(window).width() < 993){
+      $('.c-footer').css({"bottom": 70});
+    }    
   }
 }
 
@@ -753,22 +755,23 @@ function set_prices_according_to_units_to_display(floorplate_units, is_market_re
   }
 }
 
+
 function select_units_according_to_filters(floorplate_units) {
   var bedroom_base_units = [];
   var availability_base_units = [];
   var rent_base_units = [];
   var square_feet_base_units = [];
-  //var sold_units = [];
   _now_units = [];
   _now_to_30_units = [];
   _30_to_60_units = [];
   _60_to_90_units = [];
   _90_to_120_units = [];
   _120_units = [];
-  //var are_available_units = [];
   var all_units = [];
-  var market_rent = $('#market_rent').val();
-  var square_feet = $('#square_feet').val();
+  var market_rent = $('#market_rent').val() || $('#responsive_market_rent').val();
+  var square_feet = $('#square_feet').val() || $('#responsive_square_feet').val();
+  var unit_bedroom = $('#unit_bedroom').val() || $('#responsive_unit_bedroom').val();
+  var unit_availability = $('#available_unit').val() || $('#responsive_available_unit').val();
   market_rent = market_rent.split('-');
   square_feet = square_feet.split('-');
   var minimum_market_rent = parseFloat(market_rent[0]);
@@ -780,20 +783,39 @@ function select_units_according_to_filters(floorplate_units) {
   var sixty_days = new Date(today).setDate(today.getDate() + 60);
   var ninty_days = new Date(today).setDate(today.getDate() + 90);
   var one_twenty_days = new Date(today).setDate(today.getDate() + 120);
-  if (units.length == 0)
-    $('.available_portion').addClass('hidden');
-  
+
+  if(unit_bedroom == ""){
+    unit_bedroom = "show_all_unit_bedrooms"
+    
+  }
+  if(unit_availability == ""){
+    unit_availability = "show_all_available_units"
+  }
+
   for (var i = 0; i < floorplate_units.length; i++) {
-    if(!(selectMap === "3d-map"))
-      if(($('.floorplate-anchor.selected').attr('id') != undefined) && ($('.floorplate-anchor.selected').attr('id') != floorplate_units[i].floor.toString()) )
+    if(!(selectMap === "3d-map" && enable3DMaps))
+      if(($('.floorplate-anchor.selected').attr('id') != undefined) && ($('.floorplate-anchor.selected').attr('id') != floorplate_units[i].floor.toString()))
         continue;
     
     all_units.push(floorplate_units[i]);
-    //show zero bedroom markers  
 
-    if ($('#zero-bedroom-checkbox').is(':checked')) {
+    if(unit_bedroom == "show_all_unit_bedrooms"){
+      bedroom_base_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) <= today)
+        _now_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+        _now_to_30_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+        _30_to_60_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+        _60_to_90_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+        _90_to_120_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+        _120_units.push(floorplate_units[i]);
+    }
+    if(unit_bedroom == "zero_bedrooms") {
       if (parseInt(floorplate_units[i]['bedrooms']) == 0) {
-        //$('#m_'+units[i]['marketing_name']).removeClass('hidden');
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) <= today)
           _now_units.push(floorplate_units[i]);
@@ -809,10 +831,8 @@ function select_units_according_to_filters(floorplate_units) {
           _120_units.push(floorplate_units[i]);
       }
     }
-    //show one bedroom markers  
-    if ($('#one-bedroom-checkbox').is(':checked')) {
+    if (unit_bedroom == "1_bedroom"){
       if (parseInt(floorplate_units[i]['bedrooms']) == 1) {
-        //$('#m_'+units[i]['marketing_name']).removeClass('hidden');
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) <= today)
           _now_units.push(floorplate_units[i]);
@@ -828,8 +848,7 @@ function select_units_according_to_filters(floorplate_units) {
           _120_units.push(floorplate_units[i]);
       }
     }
-    //show two bedroom markers
-    if ($('#two-bedroom-checkbox').is(':checked')) {
+    if (unit_bedroom == "2_bedrooms"){
       if (parseInt(floorplate_units[i]['bedrooms']) == 2) {
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) <= today)
@@ -844,10 +863,10 @@ function select_units_according_to_filters(floorplate_units) {
           _90_to_120_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
           _120_units.push(floorplate_units[i]);
+
       }
     }
-    //show three bedroom markers
-    if ($('#three-bedroom-checkbox').is(':checked')) {
+    if (unit_bedroom == "3_bedrooms"){
       if (parseInt(floorplate_units[i]['bedrooms']) == 3) {
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) <= today)
@@ -864,8 +883,7 @@ function select_units_according_to_filters(floorplate_units) {
           _120_units.push(floorplate_units[i]);
       }
     }
-    //show four bedroom markers
-    if ($('#four-bedroom-checkbox').is(':checked')) {
+    if (unit_bedroom == "4_bedrooms"){
       if (parseInt(floorplate_units[i]['bedrooms']) == 4) {
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) <= today)
@@ -882,16 +900,14 @@ function select_units_according_to_filters(floorplate_units) {
           _120_units.push(floorplate_units[i]);
       }
     }
-    //show five bedroom markers
-    if ($('#five-bedroom-checkbox').is(':checked')) {
+    if (unit_bedroom == "5_bedrooms"){
       if (parseInt(floorplate_units[i]['bedrooms']) == 5) {
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) >= ninty_days && available_date <= one_twenty_days)
           _90_to_120_units.push(floorplate_units[i]);
       }
     }
-    //show six bedroom markers
-    if ($('#six-bedroom-checkbox').is(':checked')) {
+    if (unit_bedroom == "6_bedrooms"){
       if (parseInt(floorplate_units[i]['bedrooms']) == 6) {
         bedroom_base_units.push(floorplate_units[i]);
         if (new Date(floorplate_units[i]['available_date']) <= today)
@@ -908,80 +924,70 @@ function select_units_according_to_filters(floorplate_units) {
           _120_units.push(floorplate_units[i]);
       }
     }
-    //show available now
-    if ($('#now-checkbox').is(':checked')) {
+
+    if(unit_availability == "show_all_available_units"){
+      var available_date = new Date(floorplate_units[i]['available_date']);
+      if((available_date <= today) || (available_date > today && available_date < thirty_days) || (available_date >= thirty_days && available_date <= sixty_days) || (available_date >= sixty_days && available_date <= ninty_days) || (available_date >= ninty_days && available_date <= one_twenty_days) || (available_date > one_twenty_days))
+      {
+        availability_base_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_availability == "now") {
       var available_date = new Date(floorplate_units[i]['available_date']);
       if (available_date <= today) {
         availability_base_units.push(floorplate_units[i]);
       }
     }
-    //show available 30 in 30 days
-    if ($('#thirty-days-checkbox').is(':checked')) {
+    if (unit_availability == "in_next_30_days") {
       var available_date = new Date(floorplate_units[i]['available_date']);
       if (available_date > today && available_date < thirty_days) {
         availability_base_units.push(floorplate_units[i]);
       }
     }
-    //show available units in 30 to 60 days
-    if ($('#thirty-to-sixty-days-checkbox').is(':checked')) {
+    if (unit_availability == "in_30_to_60_days") {
       var available_date = new Date(floorplate_units[i]['available_date']);
       if (available_date >= thirty_days && available_date <= sixty_days) {
         availability_base_units.push(floorplate_units[i]);
       }
     }
-    //show available units in 60 to 90 days
-    if ($('#sixty-to-ninty-days-checkbox').is(':checked')) {
+    if (unit_availability == "in_61_to_90_days"){
       var available_date = new Date(floorplate_units[i]['available_date']);
       if (available_date >= sixty_days && available_date <= ninty_days) {
         availability_base_units.push(floorplate_units[i]);
       }
     }
-    //show available units in 90 to 120 days
-    if ($('#ninty-to-one-twenty-days-checkbox').is(':checked')) {
+    if (unit_availability == "in_91_to_120_days"){
       var available_date = new Date(floorplate_units[i]['available_date']);
       if (available_date >= ninty_days && available_date <= one_twenty_days) {
         availability_base_units.push(floorplate_units[i]);
       }
     }
-    //show available units in 120+ days
-    if ($('#one-twenty-plus-days-checkbox').is(':checked')) {
+    if (unit_availability == "in_121_plus_days"){
       var available_date = new Date(floorplate_units[i]['available_date']);
       if (available_date > one_twenty_days) {
         availability_base_units.push(floorplate_units[i]);
       }
     }
-    //show units on the basis of minimum and maximum rent value
     var unit_market_rent = parseFloat(floorplate_units[i]['market_rent']);
     if (unit_market_rent >= minimum_market_rent && unit_market_rent <= maximum_market_rent) {
       rent_base_units.push(floorplate_units[i]);
     }
-    //show units on the basis of minimum and maximum rent value
     
     var unit_square_feet = parseFloat(floorplate_units[i]['square_feet']);
     if (unit_square_feet >= minimum_square_feet && unit_square_feet <= maximum_square_feet) {
       square_feet_base_units.push(floorplate_units[i]);
     }
 
-//    if (floorplate_units[i]['sold']) {
-//      sold_units.push(floorplate_units[i]);
-//    }
-//
-//    if (floorplate_units[i]['available'] && !floorplate_units[i]['sold']) {
-//      are_available_units.push(floorplate_units[i]);
-//    }
-
-
   } //for loop block ending curl
   var bedroom_filter_present = true
   var availability_filter_present = true
   var price_filter_present = true
   var area_filter_present = true
-  if (!($('#zero-bedroom-checkbox').is(':checked') || $('#one-bedroom-checkbox').is(':checked') || $('#two-bedroom-checkbox').is(':checked') || $('#three-bedroom-checkbox').is(':checked') || $('#four-bedroom-checkbox').is(':checked') || $('#five-bedroom-checkbox').is(':checked') || $('#six-bedroom-checkbox').is(':checked'))) {
+  if (!(unit_bedroom == "show_all_unit_bedrooms" || unit_bedroom == "zero_bedrooms" || unit_bedroom == "1_bedroom" || unit_bedroom == "2_bedrooms" || unit_bedroom == "3_bedrooms" || unit_bedroom == "4_bedrooms" || unit_bedroom == "5_bedrooms" || unit_bedroom == "6_bedrooms")) {
     bedroom_base_units = all_units
     bedroom_filter_present = false
   }
-
-  if (!($('#now-checkbox').is(':checked') || $('#thirty-days-checkbox').is(':checked') || $('#thirty-to-sixty-days-checkbox').is(':checked') || $('#sixty-to-ninty-days-checkbox').is(':checked') || $('#ninty-to-one-twenty-days-checkbox').is(':checked') || $('#one-twenty-plus-days-checkbox').is(':checked'))) {
+  if (!(unit_availability == "show_all_available_units" || unit_availability == "now" || unit_availability == "in_next_30_days" || unit_availability == "in_30_to_60_days" || unit_availability == "in_61_to_90_days" || unit_availability == "in_91_to_120_days" || unit_availability == "in_121_plus_days")) {
     availability_base_units = all_units
     availability_filter_present = false
   }
@@ -996,46 +1002,252 @@ function select_units_according_to_filters(floorplate_units) {
     price_filter_present = false
   }
 
-  if(_now_units.length == 0)
-  {$('#now-checkbox').parent().addClass('hidden');}
-  else
-  {$('#now-checkbox').parent().removeClass('hidden');}
-
-  if(_now_to_30_units.length == 0)
-  {$('#thirty-days-checkbox').parent().addClass('hidden');}
-  else
-  {$('#thirty-days-checkbox').parent().removeClass('hidden');}
-
-  if(_30_to_60_units.length == 0)
-  {$('#thirty-to-sixty-days-checkbox').parent().addClass('hidden');}
-  else
-  {$('#thirty-to-sixty-days-checkbox').parent().removeClass('hidden');}
-  
-
-  if(_60_to_90_units.length == 0)
-  {$('#sixty-to-ninty-days-checkbox').parent().addClass('hidden');}
-  else
-  {$('#sixty-to-ninty-days-checkbox').parent().removeClass('hidden');}
-  
-  if(_90_to_120_units.length == 0)
-  {$('#ninty-to-one-twenty-days-checkbox').parent().addClass('hidden');}
-  else
-  {$('#ninty-to-one-twenty-days-checkbox').parent().removeClass('hidden');}
-
-  if(_120_units.length == 0)
-  {$('#one-twenty-plus-days-checkbox').parent().addClass('hidden');}
-  else
-  {$('#one-twenty-plus-days-checkbox').parent().removeClass('hidden');}
-  if(_now_units.length == 0 && _now_to_30_units.length == 0 && _90_to_120_units.length == 0 && _60_to_90_units.length == 0 && _120_units.length == 0 && _30_to_60_units.length == 0)
-    {$('.available_portion').addClass('hidden');}
-  else
-  {$('.available_portion').removeClass('hidden');}
-
   if (bedroom_filter_present || availability_filter_present || price_filter_present || area_filter_present) {
-    
     var units_to_display = $.intersect(bedroom_base_units, availability_base_units, rent_base_units, square_feet_base_units);
-    // var units_to_display = $.intersect(_now_units, _now_to_30_units, _90_to_120_units, _60_to_90_units, _120_units, _30_to_60_units);
-    //units_to_display = $.union(units_to_display, sold_units, are_available_units);
+    return units_to_display;
+    
+  } else {
+    return [];
+  }
+}
+
+//TODO:: should be done with a generic method as it is being repeated
+function overall_filtered_units(floorplate_units) {
+  var bedroom_base_units = [];
+  var availability_base_units = [];
+  var rent_base_units = [];
+  var square_feet_base_units = [];
+  _now_units = [];
+  _now_to_30_units = [];
+  _30_to_60_units = [];
+  _60_to_90_units = [];
+  _90_to_120_units = [];
+  _120_units = [];
+  var all_units = [];
+  var market_rent = $('#market_rent').val() || $('#responsive_market_rent').val();
+  var square_feet = $('#square_feet').val() || $('#responsive_square_feet').val();
+  var unit_bedroom = $('#unit_bedroom').val() || $('#responsive_unit_bedroom').val();
+  var unit_availability = $('#available_unit').val() || $('#responsive_available_unit').val();
+  market_rent = market_rent.split('-');
+  square_feet = square_feet.split('-');
+  var minimum_market_rent = parseFloat(market_rent[0]);
+  var maximum_market_rent = parseFloat(market_rent[1]);
+  var minimum_square_feet = parseFloat(square_feet[0]);
+  var maximum_square_feet = parseFloat(square_feet[1]);
+  var today = new Date();
+  var thirty_days = new Date(today).setDate(today.getDate() + 30);
+  var sixty_days = new Date(today).setDate(today.getDate() + 60);
+  var ninty_days = new Date(today).setDate(today.getDate() + 90);
+  var one_twenty_days = new Date(today).setDate(today.getDate() + 120);
+  if(unit_bedroom == ""){
+    unit_bedroom = "show_all_unit_bedrooms"
+    
+  }
+  if(unit_availability == ""){
+    unit_availability = "show_all_available_units"
+  }
+  console.log("in filtered unit action for FLOOORSS !!!!!!!!!")
+  for (var i = 0; i < floorplate_units.length; i++) {
+    all_units.push(floorplate_units[i]);
+    if(unit_bedroom == "show_all_unit_bedrooms"){
+      bedroom_base_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) <= today)
+        _now_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+        _now_to_30_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+        _30_to_60_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+        _60_to_90_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+        _90_to_120_units.push(floorplate_units[i]);
+      if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+        _120_units.push(floorplate_units[i]);
+    }
+    if(unit_bedroom == "zero_bedrooms") {
+      if (parseInt(floorplate_units[i]['bedrooms']) == 0) {
+        bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_bedroom == "1_bedroom"){
+      if (parseInt(floorplate_units[i]['bedrooms']) == 1) {
+        bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_bedroom == "2_bedrooms"){
+      if (parseInt(floorplate_units[i]['bedrooms']) == 2) {
+        bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
+
+      }
+    }
+    if (unit_bedroom == "3_bedrooms"){
+      if (parseInt(floorplate_units[i]['bedrooms']) == 3) {
+        bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_bedroom == "4_bedrooms"){
+      if (parseInt(floorplate_units[i]['bedrooms']) == 4) {
+        bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_bedroom == "5_bedrooms"){
+      if (parseInt(floorplate_units[i]['bedrooms']) == 5) {
+        bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && available_date <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_bedroom == "6_bedrooms"){
+      if (parseInt(floorplate_units[i]['bedrooms']) == 6) {
+        bedroom_base_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) <= today)
+          _now_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= today && new Date(floorplate_units[i]['available_date']) <= thirty_days)
+          _now_to_30_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= thirty_days && new Date(floorplate_units[i]['available_date']) <= sixty_days)
+          _30_to_60_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= sixty_days && new Date(floorplate_units[i]['available_date']) <= ninty_days)
+          _60_to_90_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >= ninty_days && new Date(floorplate_units[i]['available_date']) <= one_twenty_days)
+          _90_to_120_units.push(floorplate_units[i]);
+        if (new Date(floorplate_units[i]['available_date']) >=  one_twenty_days)
+          _120_units.push(floorplate_units[i]);
+      }
+    }
+    if(unit_availability == "show_all_available_units"){
+      var available_date = new Date(floorplate_units[i]['available_date']);
+      if((available_date <= today) || (available_date > today && available_date < thirty_days) || (available_date >= thirty_days && available_date <= sixty_days) || (available_date >= sixty_days && available_date <= ninty_days) || (available_date >= ninty_days && available_date <= one_twenty_days) || (available_date > one_twenty_days))
+      {
+        availability_base_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_availability == "now") {
+      var available_date = new Date(floorplate_units[i]['available_date']);
+      if (available_date <= today) {
+        availability_base_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_availability == "in_next_30_days") {
+      var available_date = new Date(floorplate_units[i]['available_date']);
+      if (available_date > today && available_date < thirty_days) {
+        availability_base_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_availability == "in_30_to_60_days") {
+      var available_date = new Date(floorplate_units[i]['available_date']);
+      if (available_date >= thirty_days && available_date <= sixty_days) {
+        availability_base_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_availability == "in_61_to_90_days"){
+      var available_date = new Date(floorplate_units[i]['available_date']);
+      if (available_date >= sixty_days && available_date <= ninty_days) {
+        availability_base_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_availability == "in_91_to_120_days"){
+      var available_date = new Date(floorplate_units[i]['available_date']);
+      if (available_date >= ninty_days && available_date <= one_twenty_days) {
+        availability_base_units.push(floorplate_units[i]);
+      }
+    }
+    if (unit_availability == "in_121_plus_days"){
+      var available_date = new Date(floorplate_units[i]['available_date']);
+      if (available_date > one_twenty_days) {
+        availability_base_units.push(floorplate_units[i]);
+      }
+    }
+    var unit_market_rent = parseFloat(floorplate_units[i]['market_rent']);
+    if (unit_market_rent >= minimum_market_rent && unit_market_rent <= maximum_market_rent) {
+      rent_base_units.push(floorplate_units[i]);
+    }
+    var unit_square_feet = parseFloat(floorplate_units[i]['square_feet']);
+    if (unit_square_feet >= minimum_square_feet && unit_square_feet <= maximum_square_feet) {
+      square_feet_base_units.push(floorplate_units[i]);
+    }
+  }
+  var bedroom_filter_present = true
+  var availability_filter_present = true
+  var price_filter_present = true
+  var area_filter_present = true
+  if (!(unit_bedroom == "show_all_unit_bedrooms" || unit_bedroom == "zero_bedrooms" || unit_bedroom == "1_bedroom" || unit_bedroom == "2_bedrooms" || unit_bedroom == "3_bedrooms" || unit_bedroom == "4_bedrooms" || unit_bedroom == "5_bedrooms" || unit_bedroom == "6_bedrooms")) {
+    bedroom_base_units = all_units
+    bedroom_filter_present = false
+  }
+  if (!(unit_availability == "show_all_available_units" || unit_availability == "now" || unit_availability == "in_next_30_days" || unit_availability == "in_30_to_60_days" || unit_availability == "in_61_to_90_days" || unit_availability == "in_91_to_120_days" || unit_availability == "in_121_plus_days")) {
+    availability_base_units = all_units
+    availability_filter_present = false
+  }
+  if (isNaN(minimum_square_feet)) {
+    square_feet_base_units = all_units
+    area_filter_present = false
+  }
+  if (isNaN(minimum_market_rent)) {
+    rent_base_units = all_units
+    price_filter_present = false
+  }
+  if (bedroom_filter_present || availability_filter_present || price_filter_present || area_filter_present) {
+    var units_to_display = $.intersect(bedroom_base_units, availability_base_units, rent_base_units, square_feet_base_units);
     return units_to_display;
   } else {
     return [];
@@ -1044,10 +1256,9 @@ function select_units_according_to_filters(floorplate_units) {
 
 
 function set_psi_url(element) {
-  //var url = $(element).data('website')+"/Apartments/module/application_authentication/http_referer/"+$(element).data('uri')+"/popup/false/kill_session/1/property[id]/"+$(element).data('community-property-id')+"/property_floorplan[id]/"+$(element).data('floorplan-provider-id')+"/unit_space[id]/"+$(element).data('unit-provider-id')+"/show_in_popup/false/from_check_availability/1/term_month/"+$(element).data('lease-term')+"/?lease_start_date="+$('#leasing-start-date').val();
   var url = $(element).data('availability-url');
 
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     url = _3dSelectedUnit.availability_url
   }
 
@@ -1055,11 +1266,12 @@ function set_psi_url(element) {
 }
 function set_resman_url(element)
 {
+  leaseTerm = $('#unitModal').find('#lease_term').val().split(' months')[0]
   date = new Date($('#leasing-start-date').val())
-  var url = $(element).data('availability-url') + "&leaseTerm=" + $('#lease-term').val() + "&moveInDate=" + date.toISOString().split('T')[0]
+  var url = $(element).data('availability-url') + "&leaseTerm=" + leaseTerm + "&moveInDate=" + date.toISOString().split('T')[0]
 
   
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     date = new Date();
     url = _3dSelectedUnit.availability_url + "&leaseTerm=" + _3dSelectedUnit.lease_term + "&moveInDate=" + date.toISOString().split('T')[0]
   }
@@ -1068,10 +1280,9 @@ function set_resman_url(element)
 }
 
 function set_realpagesvc_url(element) {
-  //http://localhost:3000/communities/25/webpages/apply_now?MoveInDate=12/15/2017&UnitId=346&SearchUrl=https%3A//localhost:3000#k=70697
   var url = apply_now_url + "?MoveInDate=" + $('#leasing-start-date').val() + "&UnitId=" + $(element).data('unit-provider-id') + "&SearchUrl=" + redirect_url;
   
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     apply_now_url = `/communities/${webCommunity.id}/webpages/apply_now`;
     redirect_url = `/communities/${webCommunity.id}/webpages`
     date = new Date()
@@ -1113,56 +1324,39 @@ function disable_area_filter_options(max_area) {
 }
 
 function setModalAttributes(element) {
-
     try {
-        if ($(element).data('unit-lease-pricing') == "")
+        if ($(element).data('unit-lease-pricing') == "" || $(element).data('unit-lease-pricing') == undefined)
         {
-            $('#unit-lease-pricing-text-li').hide();
-            // $('#unitModal').find('#unit-lease-pricing').html($(element).data('unit-lease-pricing'));
+          $('#unit-lease-pricing-text-li').hide();
+          $('#leas-price-option').addClass('hidden');
+          $('#unitModal').find('#unit-lease-pricing').html("No more prices are available");
         }
         else
         {
-            var lease = "";
-            ss = $(element).data('unit-lease-pricing').split(';');
-            var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
-
-            ss = ss.sort(collator.compare).reverse();
-            for (var i = 0; i < ss.length -1; i++) {
-                var s = ss[i].split(':');
-                var sp;
-                if (s[2] && s[2] != "")
-                {
-                    sp = s[2] +" - "
-                }
-                else
-                {
-                    sp = ""
-                }
-                lease = lease + s[0] + " months - " + sp +"$"+ s[1] + '<br>'
-            }
-            $('#unitModal').find('#unit-lease-pricing').html(lease);
+          ss = $(element).data('unit-lease-pricing').split(';');
+          leaseTermPricingOptions(ss);
         }
     }
     catch(err) {
         $('#unit-lease-pricing-text-li').hide();
-
+        $('#leas-price-option').addClass('hidden');
+        $('#unitModal').find('#unit-lease-pricing').html("No more prices are available");
     }
     try {
         if ($(element).data('unit-description') == "")
         {
-            $('#unit-description-text-li').hide();
+          $('#unitModal').find('#unit-description').html("Not Available");
         }
         else
         {
-            $('#unitModal').find('#unit-description').html($(element).data('unit-description'));
+          $('#unitModal').find('#unit-description').html($(element).data('unit-description'));
+          $('#unit-description').addClass("description-text");
         }
     }
 
     catch(err) {
         $('#unit-description-text-li').hide();
     }
-
-
 
 
     $('#unitModal').find('#unit-marketing-name').html($(element).data('unit-marketing-name'));
@@ -1189,9 +1383,9 @@ function setModalAttributes(element) {
   } else {
     if ($(element).data('available')) {
       $('#unitModal').find('#availability').html("Available");
-
       $('#unitModal').find('#available-text').html('Available');
       $('#unitModal').find('#available-date').html($(element).data('available-date'));
+      $('#available-date').html($(element).data('available-date'));
     } else {
       $('#unitModal').find('#availability').html($(element).data('availability') == "Unoccupied" ? "Available" : "Occupied");
       $('#unitModal').find('#available-text').html('Available');
@@ -1199,32 +1393,44 @@ function setModalAttributes(element) {
     }
   }
   $('#unitModal').find('#market-rent').html('$' + $(element).data('market-rent'));
+  $('#unitModal').find('#total-market-rent').html('$' + $(element).data('market-rent'));
+  
   ///////////////////////////////////////////
-  if (!$(element).data('is-fav')) {
+  var unit_id = $(element).data('unit-id');
+  selectedUnit = units.filter(a => (a.id === $(element).data('unit-id')))[0]
+  if ($(element).data('is-fav') || favoritesArr.includes($(element).data('unit-id'))) {
     var community_id = $(element).data('community-id');
-    var unit_id = $(element).data('unit-id');
-    var url = "/communities/" + community_id + "/webpages/save_favorite?unit_id=" + unit_id;
-    var html = '<a href="' + url + '" data-remote="true"><i class="far fa-heart"></i></a>';
-    $('#fav-icon-tag').html(html);
-  } else {
-    var community_id = $(element).data('community-id');
-    var unit_id = $(element).data('unit-id');
     var url = "/communities/" + community_id + "/webpages/delete_favorite?unit_id=" + unit_id;
     var html = '<a href="' + url + '" data-remote="true"><i class="fa fa-heart"></i></a>';
     $('#fav-icon-tag').html(html);
+  } else {
+    var community_id = $(element).data('community-id');
+    var url = "/communities/" + community_id + "/webpages/save_favorite?unit_id=" + unit_id;
+    var html = '<a href="' + url + '" data-remote="true"><i class="far fa-heart"></i></a>';
+    $('#fav-icon-tag').html(html);
   }
+  $('#fav-icon-tag a').unbind('click').bind('click', function (e) {
+    var unit_id = $(element).data('unit-id');
+     if(favoritesArr.indexOf(unit_id) === -1){
+      favoritesArr.push(unit_id)
+    }
+    else{
+      var favIndex = favoritesArr.indexOf($(element).data('unit-id'));
+      favoritesArr.splice(favIndex, 1);
+    }
+  });
   /////////////////////////////////////////
   if ($(element).data('floorplan-image') != '') {
     $('#unitModal').find('#floorplan-image').attr('src', $(element).data('floorplan-image'));
+    $('#unitModal').find('#responsive-floorplan-image').attr('src', $(element).data('floorplan-image'));
   } else {
     $('#unitModal').find('#floorplan-image').attr('src', '/assets/default.jpeg');
+    $('#unitModal').find('#responsive-floorplan-image').attr('src', $(element).data('floorplan-image'));
   }
   //////////////////////////////////////////
   if ($(element).data('provider') != 'realpagesvc') {
     var website = $(element).data('website');
-    // console.log(website);
     var uri = website.replace(/^https?\:\/\//, '');
-    // console.log(uri);
     $('#psi-anchor-tag').attr('data-community-property-id', $(element).data('community-property-id'));
     $('#psi-anchor-tag').attr('data-website', website);
     $('#psi-anchor-tag').attr('data-uri', uri);
@@ -1232,10 +1438,17 @@ function setModalAttributes(element) {
     $('#psi-anchor-tag').attr('data-floorplan-provider-id', $(element).data('floorplan-provider-id'));
     $('#psi-anchor-tag').attr('data-lease-term', $(element).data('lease-term'));
     $('#psi-anchor-tag').attr('data-availability-url', $(element).data('availability-url'));
-    $("#leasing-start-date").datepicker('setDate', new Date());
+    $("#leasing-start-date").datepicker('setDate', new Date($(element).data('available-date')));
+    $('#leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: $(element).data('available-date') == "Now" ? new Date() : new Date($(element).data('available-date'))})
   } else if (($(element).data('provider') === 'realpagesvc')) {
-    // console.log($(e.relatedTarget).data('unit-provider-id'));
     $('#realpagesvc-anchor-tag').attr('data-unit-provider-id', $(element).data('unit-provider-id'));
+    $("#leasing-start-date").datepicker('setDate', new Date($(element).data('available-date')));
+    $('#leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: $(element).data('available-date') == "Now" ? new Date() : new Date($(element).data('available-date'))})
+  } 
+  if ($(element).data('provider') === 'yardi'){
+    $('#floorplan-image').css({"max-width": 310});
+    $('.c-modal-footer').css({"padding-bottom": 7});
+
   }
 }
 
@@ -1274,8 +1487,8 @@ function _3dUnitModalDisplay() {
       $('#unitModal').find('#available-date').html(_3dSelectedUnit.available_date);
     }
   }
-
-  $('#unitModal').find('#market-rent').html(`$ ${_3dSelectedUnit.market_rent}`);
+  $('#unitModal').find('#market-rent').html("$" + _3dSelectedUnit.market_rent);
+  $('#unitModal').find('#total-market-rent').html("$" + _3dSelectedUnit.market_rent + ".00");
 
   if (!_3dSelectedUnit.is_fav) {
     var community_id = webCommunity.id;
@@ -1291,8 +1504,6 @@ function _3dUnitModalDisplay() {
     $('#fav-icon-tag').html(html);
   }
 
-  // debugger;
-
   $('#unitModal').find('#floorplan-image').attr('src', _3dSelectedUnit.floorplan_image);
 
   if (webCommunity.data_provider != 'realpagesvc') {
@@ -1305,33 +1516,16 @@ function _3dUnitModalDisplay() {
     $('#psi-anchor-tag').attr('data-floorplan-provider-id', _3dSelectedUnit.provider_floorplan_id);
     $('#psi-anchor-tag').attr('data-lease-term', _3dSelectedUnit.lease_term);
     $('#psi-anchor-tag').attr('data-availability-url', _3dSelectedUnit.availability_url);
-    $("#leasing-start-date").datepicker('setDate', new Date());
+    $("#leasing-start-date").datepicker('setDate', new Date(`${_3dDate[2]}/${_3dDate[1]}/${_3dDate[0]}`));
+    $('#leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: new Date(`${_3dDate[2]}/${_3dDate[1]}/${_3dDate[0]}`)})
   } else if (webCommunity.data_provider === 'realpagesvc') {
     $('#realpagesvc-anchor-tag').attr('data-unit-provider-id', _3dSelectedUnit.provider_unit_id);
   }
 
   if(_3dSelectedUnit.lease_pricing){
     $('#unit-lease-pricing-text-li').show();
-    var lease = "";
     ss = _3dSelectedUnit.lease_pricing.split(';');
-    var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
-
-    ss = ss.sort(collator.compare).reverse();
-    for (var i = 0; i < ss.length -1; i++) {
-      var s = ss[i].split(':');
-      var sp;
-      if (s[2] != "")
-      {
-          sp = s[2] +" - "
-      }
-      else
-      {
-          sp = ""
-      }
-      lease = lease + s[0] + " months - " + sp +"$"+ s[1] + '<br>'
-    }
-  
-  $('#unitModal').find('#unit-lease-pricing').html(lease);
+    leaseTermPricingOptions(ss);
   } else {
     $('#unit-lease-pricing-text-li').hide();
   }
@@ -1342,10 +1536,59 @@ function _3dUnitModalDisplay() {
   }
   else
   {
-    $('#unit-description-text-li').hide();
+    $('#unitModal').find('#unit-description').html("Not Available");
   }
 
 
+}
+
+function leaseTermPricingOptions(ss) {
+  var lease = [];
+  var first_lease_item = "";
+  var smallest_lease_month = "";
+  var lease_price_arr = [];
+  var lease_months_arr = [];
+  var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+  ss = ss.sort(collator.compare).reverse();
+  for (var i = 0; i < ss.length -1; i++) {
+      var s = ss[i].split(':');
+      var sp;
+      if (s[2] && s[2] != "")
+      {
+          sp = s[2] +" - "
+      }
+      else
+      {
+          sp = ""
+      }
+      lease.push(s[0] + " months " + sp + '<b>'+"$"+ s[1]+ '<b>' + '<br>')
+      lease_price_arr.push(s[1])
+      lease_months_arr.push(s[0])
+  }
+  if(lease_price_arr.every(a => a === lease_price_arr[0])){
+    smallest_lease_month = Math.min(...lease_months_arr)
+    var indexOfMinMonth = lease_months_arr.indexOf(smallest_lease_month.toString())
+    first_lease_item = lease[indexOfMinMonth]
+    if (indexOfMinMonth > -1) {
+      lease.splice(indexOfMinMonth, 1);
+    }
+  }
+  else{
+    var smallest_lease_price = Math.min(...lease_price_arr)
+    var indexOfMinLease = lease_price_arr.indexOf(smallest_lease_price.toString())
+    first_lease_item = lease[indexOfMinLease]
+    if (indexOfMinLease > -1) {
+      lease.splice(indexOfMinLease, 1);
+    }
+  }
+  var leaseTermOptions = ""
+  for (let i = 0; i < lease_months_arr.length; ++i) {
+    leaseTermOptions += `<option value="${lease_months_arr[i]+" months"}" data-lease-price="${lease_price_arr[i]}" >${lease_months_arr[i]+" months"}</option>`
+  }
+  $('#unitModal').find('#unit-lease-pricing').html(lease);
+  $('#unitModal').find('#first-unit-lease-pricing').html(first_lease_item);
+  $('#unitModal').find('#lease_term').html(leaseTermOptions);
+  $(`#lease_term option[value="${first_lease_item[0]+first_lease_item[1]+" months"}"]`).attr("selected", true);
 }
 
 function setUnitAttributes(element) {
@@ -1363,110 +1606,83 @@ function adjustMarkerPosition(marker) {
   /*adjusting markers according to screen size*/
   var in_browser_height = 0;
   var in_browser_width = 0;
-  var actual_height = 0;
-  var actual_width = 0;
+  var left_diff = 0;
+  unit_id = $(marker).data('unit-id')
   in_browser_height = parseFloat($('#f_' + current_floor).parent().height());
   in_browser_width = parseFloat($('#f_' + current_floor).parent().width());
 
-  actual_height = parseInt($('#f_' + current_floor).data("height"))
-  actual_width = parseInt($('#f_' + current_floor).data("width"))
-
-  if (actual_width < in_browser_width)
-    var width_ratio = 1;
-  else
-    var width_ratio = actual_width / in_browser_width;
-  if (actual_height < in_browser_height)
-    var height_ratio = 1;
-  else
-    var height_ratio = actual_height / in_browser_height;
-
+  actual_image_height = parseInt($('#f_' + current_floor).data("height"))
+  actual_image_width = parseInt($('#f_' + current_floor).data("width"))
+  
+  stretched_image_width = $('#f_' + current_floor).width();
+  stretched_image_height = $('#f_' + current_floor).height();
   var x_plot = parseFloat($(marker).data('unit-x-plot'));
   var y_plot = parseFloat($(marker).data('unit-y-plot'));
+
+  left_diff = (in_browser_width - stretched_image_width) / 2
+  x_plot = (((stretched_image_width / actual_image_width) * x_plot));
+  y_plot = (((stretched_image_height / actual_image_height) * y_plot));
   
-  if(actual_width > in_browser_width && actual_height > in_browser_height) {
-    if(actual_width >= 5884){
-      current_left = x_plot / width_ratio - 6;
-      current_top = y_plot / height_ratio - 20;
-    }
-    if(actual_width >= 2824 && actual_width < 5884 ){
-      current_left = x_plot / width_ratio - 4;
-      current_top = y_plot / height_ratio - 13;
-    }
-    if(actual_width < 2824 && actual_width > 1568){
-      current_left = x_plot / width_ratio - 1;
-      current_top = y_plot / height_ratio - 6;
-    }
-    if(actual_width < 2824){
-      current_left = x_plot / width_ratio;
-      current_top = y_plot / height_ratio;
-    }
+  if(actual_image_width > 1412){
+    x_plot = x_plot - 6
+    y_plot = y_plot - 17 
   }
-  else {
-    current_left = x_plot / width_ratio;
-    current_top = y_plot / height_ratio;
+  else{
+    y_plot = y_plot-10
   }
-  // var current_left = x_plot / width_ratio;
-  // var current_top = y_plot / height_ratio;
-  $(marker).css({"left": current_left, "top": current_top});
+  $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
+  // $(marker).removeClass('hidden');
+  // marker_width = $('#m_' + unit_id).width();
+  // marker_height = $('#m_' + unit_id).height();
+  // $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
+  if($(window).width() >= 567 && $(window).width() <= 1360 ){
+    $(marker).css({"margin-left": -5, "margin-top": -2})       
+  }
+  if($(window).width() <= 567){
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+8), "margin-top": -($('#s_'+unit_id).height()+7)})       
+  }
 }
 
 function adjustAmenitiesPosition() {
   /*adjusting markers according to screen size*/
-
+  amenity_id = $(this).data('amenity-id')
+  
   in_browser_height = parseFloat($('#f_' + current_floor).parent().height());
   in_browser_width = parseFloat($('#f_' + current_floor).parent().width());
 
-  actual_height = parseInt($('#f_' + current_floor).data("height"))
-  actual_width = parseInt($('#f_' + current_floor).data("width"))
+  actual_image_height = parseInt($('#f_' + current_floor).data("height"));
+  actual_image_width = parseInt($('#f_' + current_floor).data("width"));
 
-  if (actual_width < in_browser_width)
-    var width_ratio = 1;
-  else
-    var width_ratio = actual_width / in_browser_width;
-  if (actual_height < in_browser_height)
-    var height_ratio = 1;
-  else
-    var height_ratio = actual_height / in_browser_height;
+  stretched_image_width = $('#f_' + current_floor).width();
+  stretched_image_height = $('#f_' + current_floor).height();
+  left_diff = (in_browser_width - stretched_image_width) / 2
+  amenity_width = $('#a_' + amenity_id).width();
+  amenity_height = $('#a_' + amenity_id).height();
 
   // adjusting amenity markers
   $('.a_' + current_floor).each(function () {
     var x_plot = parseFloat($(this).data('amenity-x-plot'));
     var y_plot = parseFloat($(this).data('amenity-y-plot'));
-    if(actual_width > in_browser_width && actual_height > in_browser_height) {
-      if(actual_width >= 5884){
-        current_left = x_plot / width_ratio - 6;
-        current_top = y_plot / height_ratio - 20;
-      }
-      if(actual_width >= 2824 && actual_width < 5884 ){
-        current_left = x_plot / width_ratio - 4;
-        current_top = y_plot / height_ratio - 6;
-      }
-      if(actual_width < 2824 && actual_width > 1568){
-        current_left = x_plot / width_ratio - 1;
-        current_top = y_plot / height_ratio - 6;
-      }
-      if(actual_width < 2824){
-        current_left = x_plot / width_ratio;
-        current_top = y_plot / height_ratio;
-      }
+
+    x_plot = (((stretched_image_width / actual_image_width) * x_plot));
+    y_plot = (((stretched_image_height / actual_image_height) * y_plot));
+
+    if(actual_image_width > 1412){
+      x_plot = x_plot - 6
+      y_plot = y_plot - 7 
     }
-    else {
-      current_left = x_plot / width_ratio;
-      current_top = y_plot / height_ratio;
+    else{
+      y_plot = y_plot
     }
-    // current_left = x_plot / width_ratio;
-    // current_top = y_plot / height_ratio;
-    $(this).css({"left": current_left, "top": current_top});
+    $(this).css({"left": (x_plot) + left_diff , "top": (y_plot)});
   });
 }
 
 function _3dMapViewMarkers() {
   let _3dUnitsMarketingNames = getUnitsMarketingNames();
   let cleanedNames = clean3DMarkers(_3dUnitsMarketingNames)
-  console.log("cleanedNames:  ", cleanedNames);
-  
   if(cleanedNames.length > 0)
-    _3dFilterByUnits(cleanedNames + _3dSampleAmenities.join());
+    _3dFilterByUnits(cleanedNames + ',' + _3dSampleAmenities.join());
   else
     _3dFilterByUnits(cleanedNames);
 }
@@ -1480,14 +1696,11 @@ function getUnitsMarketingNames() {
 }
 
 function set3DSelectedUnit(unitName, floor) {
-  // unitName = "431";
-  // floor = "2"
-  // _3dFilteredUnits.filter(a => (a.floor == floor && a.marketing_name.substr(0,3) === unitName) )[0];
   return _3dFilteredUnits.filter(a => (a.marketing_name.substr(0,3) === unitName) )[0];;
 }
 
 function handleMapControl() {
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     display3DMap();
   } else {
     display2DMap();
@@ -1497,26 +1710,45 @@ function handleMapControl() {
 function display3DMap() {
   $("._3d-apply-filter-button").css("display", "block");
   $(".beans-map-container").show();
-  $(".zoomable-map-container").hide();
+  $('.zooming-content').css("float", "right");
+  $('.image-map').hide();
+  $('.plus-action').hide();
+  $('.minus-action').hide();
   $("#panzomm-container").css("width", "100%");
-  $(".select-floorP").hide();
-  let w1 = $(".select-list").width();
-  let w2 = $(".select-floorP").width();
-  $(".select-list").css("width", w1+w2);
-
+  $(".location-items").hide();
+  $(".c-sidebar").hide();
+  $(".2d-map-option").removeClass("hidden");
+  $(".3d-map-option").addClass("hidden");
+  $(".c-wrapper").css("margin-right", "0px");
+  $(".satelite-view-icon").removeClass("hidden");
   let windowWidth = window.innerWidth;
   let sideBarWidth = $("div.mydiv").innerWidth();
   let mapWidth = windowWidth - sideBarWidth - 10;
 
-  $(".beans-map-container").css("width", mapWidth)
+  $(".beans-map-container").css("width", mapWidth);
+  if(defaultMapType != "3d-map"){
+    let w1 = $(".digits-list-item").width();
+    let w2 = $(".c-sidebar").width();
+    $(".digits-list-item").css("width", w1+w2);
+    _3dMapViewMarkers();
+  }
 }
 
 function display2DMap() {
   $("._3d-apply-filter-button").css("display", "none");
   $(".beans-map-container").hide();
-  $(".zoomable-map-container").show();
+  $('.image-map').show();
+  $('.plus-action').show();
+  $('.minus-action').show();
   $("#panzomm-container").css("width", "");
-  $(".select-floorP").show();
+  $(".c-wrapper").css("margin-right", "90px");
+  $(".c-sidebar").show();
+  $(".satelite-view-icon").addClass("hidden");
+  $(".3d-map-option").removeClass("hidden")
+  $(".2d-map-option").addClass("hidden")
+  if(defaultMapType == "3d-map"){
+    showMarkers();
+  }
 }
 
 function _3dFilterByFloor(floorNumber) {
@@ -1527,10 +1759,33 @@ function _3dFilterByUnits(_3dUnits) {
   beansWidget.filterByUnit(_3dUnits)
 }
 
+function toggleToSateliteView(){
+  beansWidget.toggleMap();
+}
+
 function apply3DFilters() {
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     _3dMapViewMarkers();
   }
+}
+
+function applyFilters(){
+  if(selectMap === "3d-map" && enable3DMaps) {
+    _3dMapViewMarkers();
+  }
+  else{
+    showMarkers();
+  }
+  selected_market_rent = $("#responsive_market_rent option:selected").text();
+  selected_square_feet = $("#responsive_square_feet option:selected").text();
+  selected_available_unit = $("#responsive_available_unit option:selected").text();
+  selected_unit_bedrooms = $("#responsive_unit_bedroom option:selected").text();
+  $("#max_price_responsive").html(selected_market_rent == "Select Max Price" ? "Max Price" : "$"+selected_market_rent);
+  $("#sq_feet_responsive").html(selected_square_feet == "Select Min Sq Ft" ? "Min Sq Feet" : selected_square_feet);
+  $("#unit_availability").html(selected_available_unit);
+  $("#bedroom_responsive").html(selected_unit_bedrooms);
+  $('.mobile-filter-mega-menu').slideToggle()
+
 }
 
 $(document).on('click','.share-favorite',function(){

@@ -6,6 +6,7 @@ module ShortestPath
   # so totally we have three types communities. Most of the time this file reuse code but in some places you will think we need some optimization 
   # Actually I've added a space for some future improvements and one algo change/update will not affect oher algo so thats why complete optimazation is not achieved here.
   include DijkstraAlgo
+  HAVING_DOOR_STOPS = ["Unit", "Amenity"]
   extend self
   def return_path_for_sitemap(community_id, path_type)
     fetch_related_data_for_sitemap(community_id)
@@ -697,7 +698,36 @@ module ShortestPath
   def fetch_tour_stops_which_are_required_from_mobile_side_for_multiple(new_stops_arr, community_id)
     fetch_multiple_stops(['elevator', 'building_starting_point'], new_stops_arr, community_id)
   end
+  def return_stop_lock(stop)
+    lock = nil
+    if HAVING_DOOR_STOPS.include?(stop.class.name)
+      if stop.class.name == "Unit"
+        lock = stop.door.present? ? return_lock(stop.door) : return_lock(stop)
+      elsif stop.class.name == "Amenity"
+        lock = stop.doors.present? ? return_lock(stop.doors.first) : return_lock(stop)
+      else
+        lock = return_lock(stop)
+      end
+    else
+      lock = return_lock(stop) 
+    end
+    lock
+  end
   private
+    def return_lock(stop_or_door)
+      lock = nil
+      if digital_lock_provider?(stop_or_door)
+        if stop_or_door.class.name == "Door"
+          lock = stop_or_door.public_send(stop_or_door.lock_provider.downcase + "_lock")
+        else
+          lock = stop_or_door.public_send(stop_or_door.lock_provider.downcase + "_locks").first
+        end
+      end
+      lock
+    end
+    def digital_lock_provider?(stop)
+      stop.lock_provider.present? and stop.lock_provider != "" and stop.lock_provider != "Manual"
+    end
     def update_precedence(stop_type, stop_id, door_id)
       @precedence_arr.each_with_index do |arr,index|
         if arr[1] == stop_type && arr[0] == stop_id

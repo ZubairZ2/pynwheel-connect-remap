@@ -4,17 +4,8 @@ namespace :email_property_before_tour do
     desc 'email to the property all today tour'
     task :send_email => :environment do
         Community.where(self_tour: true).each do |community|
-            tz = Ziptz.new
-
-            if community.zip.present?
-                timezone = tz.time_zone_name(community.zip)
-                community_time = Time.now.in_time_zone(timezone) if timezone.present?
-            end
-
-            if community_time.nil? and community.latitude.present? and community.longitude.present?
-                timezone = Timezone.lookup(community.latitude, community.longitude)
-                community_time = timezone.utc_to_local(Time.now) if timezone.present?
-            end
+            
+            community_time = Time.now.in_time_zone(community.get_time_zone())
 
             if community_time.present? and community_time.strftime("%H:%M") > "04:30" and community_time.strftime("%H:%M") < "05:30"
                 tours_data = []
@@ -30,7 +21,7 @@ namespace :email_property_before_tour do
                         end
                     end
                 end
-                ScheduledToursJob.perform_async("Sechduled Tours for #{Date.today.strftime("%Y-%m-%d")}", tours_data, community) if tours_data.present?
+                ScheduledToursJob.perform_async("Scheduled Tours for #{Date.today.strftime("%Y-%m-%d")}", tours_data, community) if tours_data.present?
             end
         end
     end
