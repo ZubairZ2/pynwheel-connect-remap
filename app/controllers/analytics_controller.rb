@@ -548,7 +548,8 @@ class AnalyticsController < ApplicationController
       stops.each do |arr|
         stop = arr.first.camelcase.constantize.find arr.last
         if arr.first == "unit"
-          visites_stops_hash[stop.unit_type] = visites_stops_hash[stop.unit_type].nil? ? (1) : (visites_stops_hash[stop.unit_type] + 1)
+          unit_type_or_name = stop.unit_type_or_name
+          visites_stops_hash[unit_type_or_name] = visites_stops_hash[unit_type_or_name].nil? ? (1) : (visites_stops_hash[unit_type_or_name] + 1)
         elsif arr.first == "amenity"
           if stop.amenity_type == ""
             visites_stops_hash["other amenity"] = visites_stops_hash["other amenity"].nil? ? (1) : (visites_stops_hash["other amenity"] + 1)

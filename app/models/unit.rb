@@ -189,4 +189,14 @@ class Unit < ApplicationRecord
     self.lock_provider.present? and self.lock_provider != "" and self.lock_provider != "Manual"
   end
 
+  def unit_type_or_name
+    unit_type_name = "other unit"
+    if self.unit_type.present?
+      unit_type_name = self.unit_type
+    elsif self.marketing_name.present?
+      unit_type_name = self.marketing_name
+    end
+    unit_type_name
+  end
+  
 end
