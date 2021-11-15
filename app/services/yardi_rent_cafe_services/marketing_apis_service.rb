@@ -6,16 +6,16 @@ module YardiRentCafeServices
       response = https_callback "/AvailableSlots?#{shared_query_params}"
     end
 
-    def schedule_tour
+    def schedule_tour previous_tour = nil
       return unless @community.use_yardi_as_lead?
-      cancel_tour  
+      cancel_tour previous_tour
       response = https_callback "/createleadwithappointment?#{shared_query_params}&FirstName=#{prospect_first_name}&LastName=#{prospect_last_name}&Email=#{prospect_email}&Phone=#{prospect_phone}&ApptDate=#{get_scheduled_tour_date}&ApptTime=#{get_scheduled_tour_time}&Source=Website&DesiredMoveinDate=#{prospect_move_in_date}&DesiredBedrooms=#{prospect_desired_bedroorms}&To u c h Po i n t=Appointment"
       yardi_scheduled_tour_response response      
     end
 
-    def cancel_tour
-      return unless @community.use_yardi_as_lead?
-      https_callback "/cancelappointment?#{shared_query_params}&VoyProspectId=#{prospect_id}&VoyApptId=#{appointment_id}&ApptDate=#{get_scheduled_tour_date}&ApptTime=#{get_scheduled_tour_time}"
+    def cancel_tour previous_tour = nil
+      return unless @community.use_yardi_as_lead? && @scheduled_tour.yardirentcafe_prospect_id.present? && @scheduled_tour.yardirentcafe_appointment_id.present?
+      https_callback "/cancelappointment?#{shared_query_params}&VoyProspectId=#{prospect_id}&VoyApptId=#{appointment_id}&ApptDate=#{get_scheduled_tour_cancel_date(previous_tour)}&ApptTime=#{get_scheduled_tour_cancel_time(previous_tour)}"
       update_yardi_scheduled_tour
     end
 
@@ -84,5 +84,22 @@ module YardiRentCafeServices
     def get_scheduled_tour_time
       @scheduled_tour&.tour_time&.strftime("%I:%M%p")
     end
+
+    def get_scheduled_tour_cancel_date previous_tour
+      if previous_tour.present? && previous_tour[:tour_date].present?
+        previous_tour[:tour_date]&.strftime("%m/%d/%Y")
+      else
+        @scheduled_tour&.tour_date&.strftime("%m/%d/%Y")
+      end
+    end
+
+    def get_scheduled_tour_cancel_time previous_tour
+      if previous_tour.present? && previous_tour[:tour_time].present?
+        previous_tour[:tour_time]&.strftime("%I:%M%p")
+      else
+        @scheduled_tour&.tour_time&.strftime("%I:%M%p")
+      end
+    end
+
   end
 end

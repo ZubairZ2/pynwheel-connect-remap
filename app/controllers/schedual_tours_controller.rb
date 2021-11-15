@@ -117,7 +117,7 @@ class SchedualToursController < ApplicationController
       is_rescheduled = false
       tour_type = params["tour_type"].present? ? params["tour_type"] : ""
       property_tour_type = params['tour_user']['property_tour_type'] if (params['tour_user'] && params['tour_user']['property_tour_type']).present? 
-      # binding.pry
+
       schedual_tour.update_attributes(tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code], realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
 
       if previous_tour[:is_rescheduled]
@@ -125,7 +125,7 @@ class SchedualToursController < ApplicationController
         new_tour.delete
       end
       
-      YardiRentCafeServices::MarketingApisService.new(schedual_tour).schedule_tour
+      YardiRentCafeServices::MarketingApisService.new(schedual_tour).schedule_tour(previous_tour)
 
       begin
         sent_notifications = send_email_and_other_notifications(schedual_tour,previous_tour,is_rescheduled,property_tour_type)
@@ -297,6 +297,8 @@ class SchedualToursController < ApplicationController
       tour_time: @schedual_tour.tour_time,
     }
 
+    YardiRentCafeServices::MarketingApisService.new(@schedual_tour).schedule_tour(previous_tour)
+
     @schedual_tour.update_attributes(tour_date: date, tour_time: tour_time, day_diff: day_diff)
     
     set_daily_email_sent = false
@@ -348,6 +350,7 @@ class SchedualToursController < ApplicationController
   end
 
   private
+
 
     def scheduled_tour_users community
       scheduled_tours = SchedualTour.where(community_id: community.id).where.not(tour_user_id: nil)
