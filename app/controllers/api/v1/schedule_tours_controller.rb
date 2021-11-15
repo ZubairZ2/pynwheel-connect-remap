@@ -135,7 +135,7 @@ class Api::V1::ScheduleToursController < ActionController::Base
         desired_move_in_date = ""
       end
 
-      timezone = get_community_time_zone(@community) rescue "UTC"
+      timezone = @community.get_time_zone()
       # new_tour = SchedualTour.find(params[:sched_tour_id])
       tour_type = params[:tour_type] if params[:tour_type].present?
       tour_date = params[:tour_date] if params[:tour_date].present?
@@ -236,23 +236,4 @@ class Api::V1::ScheduleToursController < ActionController::Base
   def vender_api_access_key
     ENV['APPARTMENTS_API_KEY_ACCESS']
   end
-
-  def get_community_time_zone(community)
-    tz = Ziptz.new
-    timezone = nil
-
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and community.zip.present?
-      timezone = tz.time_zone_name(community.zip)
-    end
-
-      return timezone
-    rescue
-      return "UTC"
-  end
-
 end

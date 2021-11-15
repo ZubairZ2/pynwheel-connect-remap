@@ -21,7 +21,7 @@ module ZervServices
 
             list_add_user_access = []
             if stop_list.present?
-                timezone = get_community_time_zone(community)
+                timezone = community.get_time_zone()
                 tour_time = Time.now.in_time_zone(timezone)
                 stop_list.each do |stop|
                     attached_lock = stop.zerv_locks.last

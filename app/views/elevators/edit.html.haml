@@ -218,7 +218,10 @@
                   $("#" + lock.id).closest('form').append(input)
                   $('.edit_elevator').submit(); 
                 }
-                else{ lock.reportValidity(); }
+                else{ 
+                  //lock.reportValidity(); 
+                  $('.edit_elevator').submit();
+                }
               }
               else{
                   $('.edit_elevator').submit(); 
@@ -251,7 +254,10 @@
           $("#" + lock.id).closest('form').append(input)
           $('.edit_elevator').submit(); 
         }
-        else{ lock.reportValidity(); }
+        else{ 
+          //lock.reportValidity(); 
+          $('.edit_elevator').submit();
+        }
       }
       else
         $('.edit_elevator').submit();

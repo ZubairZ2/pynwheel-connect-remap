@@ -168,9 +168,9 @@ class Community < ApplicationRecord
     IgloohomeLock.where(igloohome_id: self.igloohome.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
   end
 
-  def get_igloohome_guest stop
+  def get_igloohome_guest stop, tour_user_id
     igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
-    IgloohomeGuest.where(community_id: self.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
+    IgloohomeGuest.where(tour_user_id: tour_user_id, community_id: self.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
   end
   
   def create_tour_also
@@ -246,6 +246,12 @@ class Community < ApplicationRecord
   end
   def clone_a_community(community)
     CloneCommunityJob.perform_async community
+  end
+
+  def get_time_zone
+    return "UTC" unless (self.latitude.present? && self.longitude.present?)
+
+    Timezone.lookup(self.latitude, self.longitude).name rescue "UTC"
   end
 
   def has_temporary_images?
@@ -1501,5 +1507,6 @@ class Community < ApplicationRecord
       self.update_column(:is_chat_available, false)
     end
   end
+
 
 end

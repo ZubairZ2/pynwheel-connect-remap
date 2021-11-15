@@ -59,26 +59,8 @@ class PynwheelAccessUser < ApplicationRecord
 
   def current_community_time(access_time)
     community = self.community
-    timezone = get_community_time_zone(community)
+    timezone = community.get_time_zone()
     access_time.in_time_zone(timezone).strftime("%a, %d %b %Y %I:%M %p")
-  end
-
-  def get_community_time_zone(community)
-    tz = Ziptz.new
-    timezone = nil
-
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and community.zip.present?
-        timezone = tz.time_zone_name(community.zip)
-    end
-
-    return timezone.present? ? timezone : "UTC"
-  rescue
-    return "UTC"
   end
 
   def generate_access_hash access, stop

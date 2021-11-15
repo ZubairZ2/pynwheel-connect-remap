@@ -7,7 +7,7 @@ namespace :triggered_email do
       community = Community.find tour.community_id
       schedule_tour = SchedualTour.find_by community_id: community.id
       tu = TourUser.find tour.tour_user_id
-      timezone = time_zone community
+      timezone = community.get_time_zone()
       current_time = Time.now.in_time_zone(timezone)
       diff = current_time.to_s(:time).to_time - tour.tour_time.to_s(:time).to_time 
       th = TourHistory.where(arrived: [(current_time - 3600)..current_time], tour_id: community.tour.id, tour_user_id: tu.id)
@@ -79,22 +79,6 @@ namespace :triggered_email do
     end
   end
 
-  def time_zone community
-    unless @time_hash[community.id].present?
-      if(community.latitude.present? && community.longitude.present?)
-
-        time_zone = Timezone.lookup(community.latitude, community.longitude)
-        timezone = time_zone.name
-        @time_hash[community.id] = timezone
-        return timezone
-      else
-        return nil
-      end
-    else
-      @time_hash[community.id]
-    end
-    
-  end
   def get_community_code community
     (JWT.encode ({"community_id" => community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
   end
