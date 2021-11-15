@@ -8,12 +8,14 @@ var _3dSampleAmenities = ["SWIMMINGPOOL", "GYM", "BBQ", "SPA", "OFFICE", "ST", "
 var favoritesArr = [];
 var defaultMapType;
 var _3dUnitsToBeSelected;
+var enable3DMaps;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
   if(webCommunity) {
     selectMap = webCommunity.web_map_type;
+    enable3DMaps = webCommunity.enable_three_d_maps
     defaultMapType = webCommunity.web_map_type;
     _3dUnitsToBeSelected = select_units_according_to_filters(units)
     selected_units = _3dMapViewMarker()
@@ -73,7 +75,7 @@ $(window).bind('load', function () {
     ////////////////////////////////////////////////
     /* unit modal*/
     $('#unitModal').on('show.bs.modal', function (e) {
-      if(selectMap === "3d-map") {
+      if(selectMap === "3d-map" && enable3DMaps) {
         _3dUnitModalDisplay();
         $('.unit-buttons').addClass('hidden');
       }
@@ -386,7 +388,7 @@ $(window).bind('load', function () {
 
   } // if condition ending curl
 
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     _3dMapViewMarkers();
   }
 });
@@ -619,7 +621,7 @@ function showMarkers(market_rent_change = false) {
   var units_to_display = select_units_according_to_filters(units)
  
   console.log("units_to_display: ", units_to_display);
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     _3dFilteredUnits = units_to_display;
   }
   // set_prices_according_to_units_to_display(units_to_display, market_rent_change)
@@ -821,7 +823,7 @@ function select_units_according_to_filters(floorplate_units) {
   }
 
   for (var i = 0; i < floorplate_units.length; i++) {
-    if(!(selectMap === "3d-map"))
+    if(!(selectMap === "3d-map" && enable3DMaps))
       if(($('.floorplate-anchor.selected').attr('id') != undefined) && ($('.floorplate-anchor.selected').attr('id') != floorplate_units[i].floor.toString()))
         continue;
     
@@ -1341,7 +1343,7 @@ function set_psi_url(element) {
   //var url = $(element).data('website')+"/Apartments/module/application_authentication/http_referer/"+$(element).data('uri')+"/popup/false/kill_session/1/property[id]/"+$(element).data('community-property-id')+"/property_floorplan[id]/"+$(element).data('floorplan-provider-id')+"/unit_space[id]/"+$(element).data('unit-provider-id')+"/show_in_popup/false/from_check_availability/1/term_month/"+$(element).data('lease-term')+"/?lease_start_date="+$('#leasing-start-date').val();
   var url = $(element).data('availability-url');
 
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     url = _3dSelectedUnit.availability_url
   }
 
@@ -1355,7 +1357,7 @@ function set_resman_url(element)
   var url = $(element).data('availability-url') + "&leaseTerm=" + leaseTerm + "&moveInDate=" + date.toISOString().split('T')[0]
 
   
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     date = new Date();
     url = _3dSelectedUnit.availability_url + "&leaseTerm=" + _3dSelectedUnit.lease_term + "&moveInDate=" + date.toISOString().split('T')[0]
   }
@@ -1367,7 +1369,7 @@ function set_realpagesvc_url(element) {
   //http://localhost:3000/communities/25/webpages/apply_now?MoveInDate=12/15/2017&UnitId=346&SearchUrl=https%3A//localhost:3000#k=70697
   var url = apply_now_url + "?MoveInDate=" + $('#leasing-start-date').val() + "&UnitId=" + $(element).data('unit-provider-id') + "&SearchUrl=" + redirect_url;
   
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     apply_now_url = `/communities/${webCommunity.id}/webpages/apply_now`;
     redirect_url = `/communities/${webCommunity.id}/webpages`
     date = new Date()
@@ -1804,7 +1806,7 @@ function set3DSelectedUnit(unitName, floor) {
 }
 
 function handleMapControl() {
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     display3DMap();
   } else {
     display2DMap();
@@ -1868,13 +1870,13 @@ function toggleToSateliteView(){
 }
 
 function apply3DFilters() {
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     _3dMapViewMarkers();
   }
 }
 
 function applyFilters(){
-  if(selectMap === "3d-map") {
+  if(selectMap === "3d-map" && enable3DMaps) {
     _3dMapViewMarkers();
   }
   else{
