@@ -468,8 +468,7 @@
       
       .modal-body
         %img#_3DAmenityImage{:src => ""}
-
-#communityWebpagesData{ data: {community: @community.to_json, amenities: @amenities.to_json} }
+#communityWebpagesData{ data: {community: @community.to_json, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json} }
 
 :javascript
 

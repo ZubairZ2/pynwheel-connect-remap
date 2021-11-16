@@ -88,7 +88,7 @@ class CommunitiesController < ApplicationController
     # end
   end
   def update_web_maps_configurations
-    @community.update_attributes(maps_configuration_params)
+    ThreeDMapsConfiguration.find_or_initialize_by(:community_id => params[:community_id]).update!(maps_configuration_params)
     sleep(1)
   end
   def update_billing_rate

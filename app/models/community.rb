@@ -1,67 +1,3 @@
-# == Schema Information
-#
-# Table name: communities
-#
-#  id                             :integer          not null, primary key
-#  name                           :string
-#  logo                           :string
-#  address                        :string
-#  city                           :string
-#  state                          :string
-#  zip                            :string
-#  email                          :string
-#  phone                          :string
-#  description                    :string
-#  latitude                       :decimal(, )
-#  longitude                      :decimal(, )
-#  locked                         :boolean
-#  data_provider                  :string
-#  company_id                     :integer
-#  created_at                     :datetime         not null
-#  updated_at                     :datetime         not null
-#  theme_name                     :string
-#  website                        :string
-#  code                           :string
-#  is_sitemap                     :boolean          default(TRUE)
-#  secondary_logo                 :string
-#  show_gallery                   :boolean          default(TRUE)
-#  gallery_page_name              :string           default("Gallery")
-#  show_apartment                 :boolean          default(TRUE)
-#  apartment_page_name            :string           default("Apartments")
-#  equal_housing_opportunity_logo :boolean          default(TRUE)
-#  handicap_accessible_logo       :boolean          default(TRUE)
-#  display_rent                   :boolean          default(TRUE)
-#  display_sitemap                :boolean          default(TRUE)
-#  display_floorplan_gallery      :boolean          default(TRUE)
-#  display_unit_on_homepage       :boolean          default(TRUE)
-#  display_gallery_on_homepage    :boolean          default(TRUE)
-#  realpage_pricing_data          :string
-#  realpage_pricing_data_uploaded :boolean          default(TRUE)
-#  powered_by_btn                 :boolean          default(TRUE)
-#  is_vertical_app                :boolean          default(FALSE)
-#  entrata_exception_logs         :string
-#  show_tour_page                 :boolean
-#  display_available_date         :boolean          default(TRUE)
-#  show_gesture_icons             :boolean          default(TRUE)
-#  self_tour                      :boolean          default(FALSE)
-#  crop_x                         :float
-#  crop_y                         :float
-#  crop_w                         :float
-#  crop_h                         :float
-#  crop_x_secondary               :float
-#  crop_y_secondary               :float
-#  crop_w_secondary               :float
-#  crop_h_secondary               :float
-#  community_group_id             :integer
-#  alert_contact                  :integer          default("both")
-#  floorplan_name_order           :boolean          default(FALSE)
-#  image_bit                      :boolean
-#  do_crop                        :boolean          default(FALSE)
-#  do_crop_secondary              :boolean          default(FALSE)
-#  number_of_units                :integer
-#  tour_setup_visible             :boolean          default(FALSE)
-#
-
 class Community < ApplicationRecord
   # has_paper_trail
   # mount_uploader :logo, AvatarUploader
@@ -117,6 +53,7 @@ class Community < ApplicationRecord
   has_one :latch, dependent: :destroy
   has_one :zerv, dependent: :destroy
   has_one :igloohome, dependent: :destroy
+  has_one :three_d_maps_configuration, dependent: :destroy
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design

@@ -2,73 +2,74 @@
   .modal-dialog
     .modal-content
       .modal-header#modal-title.config-modal-title
-      = form_for @community,url: community_update_web_maps_configurations_path(@community),:html=>{:id=>"web_maps_configurations_form"},:remote=>true  do |f|
+      = form_for @community,url: community_update_web_maps_configurations_path(@community),:html=>{:id=>"web_maps_configurations_form"}  do |f|
         %alert.alert.alert-success.map-configurations-alert.hidden
           %span 3D Maps Configuartions has been updated suceessfully
         .modal-body
+          - map_config = @community&.three_d_maps_configuration
           .form-group
             .col-md-12.mb-10
               %p.title-box Customize colors & opacity for Beans.ai 3D map renderings from options below.
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Default Polygon Color
-              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span#configDetailNameText
+              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span.map-config-tooltip#propertyDetailNameText
                   unit polygon (floor-plans) color
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i.addon-i
-                  = f.text_field :default_polygon_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>@community.default_polygon_color
+                  = f.text_field :default_polygon_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>map_config&.default_polygon_color.present? ? map_config&.default_polygon_color : "#3ca832" 
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Selected Polygon Color
-              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span#configDetailNameText
+              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#propertyDetailNameText.map-config-tooltip
                   highlighted/selected unit polygon color
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i.addon-i
-                  = f.text_field :selected_polygon_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>@community.selected_polygon_color
+                  = f.text_field :selected_polygon_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>map_config&.selected_polygon_color.present? ? map_config&.selected_polygon_color : "#5ca904"
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Default Polygon Opacity
-              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span#configDetailNameText
+              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#propertyDetailNameText.map-config-tooltip
                   default polygon opacity
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
-              = f.text_field :default_polygon_opacity,{class: "form-control property-map-marker-field ", :id => "default_polygon_opacity",:max => 2,:min => 0,:style => "line-height: 3.2;"}
+              = f.text_field :default_polygon_opacity,{class: "form-control property-map-marker-field ", :id => "default_polygon_opacity",:max => 2,:min => 0,:style => "line-height: 3.2;",value: map_config&.default_polygon_opacity.present? ? map_config&.default_polygon_opacity : 0.5 }
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Selected Polygon Opacity
-              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span#configDetailNameText
+              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#propertyDetailNameText.map-config-tooltip
                   highlighted/selected polygon opacity
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
-              = f.text_field :selected_polygon_opacity,{class: "form-control property-map-marker-field ", :id => "selected_polygon_opacity",:max => 2,:min => 0,:style => "line-height: 3.2;"}
+              = f.text_field :selected_polygon_opacity,{class: "form-control property-map-marker-field ", :id => "selected_polygon_opacity",:max => 2,:min => 0,:style => "line-height: 3.2;",value: map_config&.selected_polygon_opacity.present? ? map_config&.selected_polygon_opacity : 0.8 }
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Unit Color
-              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span#configDetailNameText
+              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#propertyDetailNameText.map-config-tooltip
                   unit (text) color
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i.addon-i
-                  = f.text_field :unit_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>@community.unit_color
+                  = f.text_field :unit_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>map_config&.unit_color.present? ? map_config&.unit_color : "#202"
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               Selected Unit Color
-              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
-                %span#configDetailNameText
+              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#propertyDetailNameText.map-config-tooltip
                   selected unit (text) color
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i.addon-i
-                  = f.text_field :selected_unit_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>@community.selected_unit_color
+                  = f.text_field :selected_unit_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>map_config&.selected_unit_color.present? ? map_config&.selected_unit_color : "#5ca904"
           .form-group.mt-30
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
               POI Color
@@ -79,7 +80,7 @@
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
                   %i.addon-i
-                  = f.text_field :poi_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>@community.poi_color
+                  = f.text_field :poi_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>map_config&.poi_color.present? ? map_config&.poi_color : "#008000"
         .modal-footer
           = f.submit "Update",:class=>"btn btn-primary submit-click"
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel

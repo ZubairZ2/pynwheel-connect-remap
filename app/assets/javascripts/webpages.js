@@ -13,19 +13,23 @@ var enable3DMaps;
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
+  _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
   if(webCommunity) {
     selectMap = webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps
     defaultMapType = webCommunity.web_map_type;
     _3dUnitsToBeSelected = select_units_according_to_filters(units)
     selected_units = _3dMapViewMarker()
-    
     beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,_beansApiKey, 
       {
-        'click-popup-listener' : polygonClickPopup, 'default-polygon-color' : webCommunity.default_polygon_color,
-        'selected-polygon-color' : webCommunity.selected_polygon_color,'selected-unit-color' : webCommunity.selected_unit_color,
-        'default-polygon-opacity': webCommunity.default_polygon_opacity,'selected-polygon-opacity': webCommunity.selected_polygon_opacity,
-        'unit-color': webCommunity.unit_color , 'poi-color': webCommunity.poi_color, 'selected-units': selected_units
+        'click-popup-listener' : polygonClickPopup,
+        'default-polygon-color' : _3dConfigurations && _3dConfigurations.default_polygon_color ? _3dConfigurations.default_polygon_color : '#3ca832',
+        'selected-polygon-color' : _3dConfigurations && _3dConfigurations.selected_polygon_color ? _3dConfigurations.selected_polygon_color : '#5ca904',
+        'selected-unit-color' : _3dConfigurations && _3dConfigurations.selected_unit_color ? _3dConfigurations.selected_unit_color : '#5ca904',
+        'default-polygon-opacity': _3dConfigurations && _3dConfigurations.default_polygon_opacity ? _3dConfigurations.default_polygon_opacity : 0.5,
+        'selected-polygon-opacity': _3dConfigurations && _3dConfigurations.selected_polygon_opacity ? _3dConfigurations.selected_polygon_opacity : 0.8,
+        'unit-color': _3dConfigurations && _3dConfigurations.unit_color ? _3dConfigurations.unit_color : '#202',
+        'poi-color': _3dConfigurations && _3dConfigurations.poi_color ? _3dConfigurations.poi_color : '#008000','selected-units': selected_units
       });
     handleMapControl()
   }
