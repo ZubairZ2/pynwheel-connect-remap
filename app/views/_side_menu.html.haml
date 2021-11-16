@@ -217,7 +217,7 @@
               %li.loader_class{:class=>"#{controller_name =='automate_plotting' && params[:action] == "index" ? 'active' : ''}"}
                 %a{:href => "#{automate_plotting_index_path(community_id:current_community)}"}
                   %i.fa.fa-robot
-                  %span Automate Plotting
+                  %span Auto Wayfinding
                   %span.pull-right-container
 
       - if (current_community.self_tour) && (current_user.is_admin? || current_user.is_view_visitor_details_page? || current_user.is_community_assistant?)

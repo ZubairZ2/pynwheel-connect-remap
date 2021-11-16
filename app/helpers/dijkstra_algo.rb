@@ -165,14 +165,16 @@ module DijkstraAlgo
         @complete_path << @path
         @source = dest
       end
-      @graph_paths
-      @graph_paths = []
-      dijkstra @source
-      @path=[]
-      min_distance_node = return_minimum_distance_node(elevator_arr)
-      find_path min_distance_node # traverse back to every node from selected node
-      @complete_path << @path
-      @source = min_distance_node
+      if elevator_arr.present?
+        @graph_paths
+        @graph_paths = []
+        dijkstra @source
+        @path=[]
+        min_distance_node = return_minimum_distance_node(elevator_arr)
+        find_path min_distance_node # traverse back to every node from selected node
+        @complete_path << @path
+        @source = min_distance_node
+      end
     end
 
     def traverse_back(source, elevator_arr)

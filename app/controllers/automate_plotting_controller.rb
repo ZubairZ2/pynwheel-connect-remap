@@ -23,7 +23,7 @@ class AutomatePlottingController < ApplicationController
       end
       add_breadcrumb "Floor plates", community_floorplates_path(current_community)
     end
-    add_breadcrumb "Automate plotting"
+    add_breadcrumb "Auto Wayfinding"
   end
 
   def shortest_path
