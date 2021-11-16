@@ -171,12 +171,7 @@ module AnalyticsHelper
       } }
     return labels, options
   end
-
-  def product_type
-      #[ ["Maps","maps"], ["Self Tour", "self_tour"], ["Touch", "touch"], ["All", "all"] ]
-      [ ["Self Tour", "self_tour"]]
-  end
-
+  
   def admin_type
     [ ["All pynwheel", "all_pynwheel"], ["All dwelo", "all_dwello"] ]
   end

@@ -68,7 +68,6 @@ function disable_another_selects(current_select){
 function set_url(){
   params = {}
   params["community"] = $('#communities').val()
-  params["product_type"] = $('#product_type').val()
   params["timeframe"] = $('#timeframe').val()
   if ($('#companies').val())
     params["company"] = $('#companies').val()

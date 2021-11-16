@@ -4865,11 +4865,8 @@ div.mydiv {
 }
 
 #lock_tabs {
-    border-bottom: none;
-}
-
-#lock_tabs {
     margin-bottom: 10px;
+    border-bottom: none;
 }
 
 .add-new-lock a.disabled {

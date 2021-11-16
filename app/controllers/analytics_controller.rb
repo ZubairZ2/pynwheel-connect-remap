@@ -17,7 +17,7 @@ class AnalyticsController < ApplicationController
     apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
     # For Webpage
-    if false && @maps_records.any? && (@product_type == "all" || @product_type == "maps")
+    if @maps_records.any? && (@product_type == "all" || @product_type == "maps")
       collect_session_each_day_data(start_date, @days_count, @maps_records, :start_datetime, "maps")
       collect_session_each_day_data_in_minutes(start_date, @days_count, @pesent_end_dattime_maps_records, :start_datetime, :end_datetime, "maps")
       collect_session_each_day_data_in_hours(@maps_records, :start_datetime, "maps")
@@ -29,7 +29,7 @@ class AnalyticsController < ApplicationController
       price_opened_track_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
     end
     # For Metro 
-    if false && @metro_records.any? && (@product_type == "all" || @product_type == "touch")
+    if @metro_records.any? && (@product_type == "all" || @product_type == "touch")
       collect_session_each_day_data(start_date, @days_count, @metro_records, :start_datetime, "metro")
       collect_session_each_day_data_in_minutes(start_date, @days_count, @pesent_end_dattime_metro_records, :start_datetime, :end_datetime, "metro")
       collect_session_each_day_data_in_hours(@metro_records, :start_datetime, "metro")
@@ -72,7 +72,7 @@ class AnalyticsController < ApplicationController
   private
     
     def apply_filters(params)
-      @product_type = params[:product_type].present? ? params[:product_type] : "all"
+      @product_type = params[:product_type].present? ? params[:product_type] : "self_tour"
       @admin_type = params[:admin_type] if params[:admin_type]
       @community_id = params[:community] if params[:community].present?
       @company_id = params[:company] if params[:company].present?
