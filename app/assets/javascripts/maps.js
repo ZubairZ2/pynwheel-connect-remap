@@ -859,14 +859,14 @@ function initialize_map_click(map_id){
               if (with_animation)
                 draw_shortest_path_for_floorplate_multiple_building_with_animation(path_object, floor_ids)
               else
-                draw_shortest_path_for_floorplate_multiple_building(path_object, floor_ids)
+                draw_shortest_path_for_floorplate_multiple_building(path_object, floor_ids) // This function funtionality is OnHold for now
             }
             else{
               floor_ids = JSON.parse(data["floor_ids"])
               if (with_animation)
                 draw_shortest_path_for_floorplate_with_animation(path_object, floor_ids)
               else
-                draw_shortest_path_for_floorplate(path_object, floor_ids)
+                draw_shortest_path_for_floorplate(path_object, floor_ids) // for now its useless
             }
           }
         }

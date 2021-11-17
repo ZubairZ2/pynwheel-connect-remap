@@ -1346,16 +1346,22 @@ module ShortestPath
         actual_path += update_path_by_removing_floor_for_buildings(path, "upstair")
         path = []
         #for downstair
-        source_type = "TourStop"
-        from = "elevator"
-        source_id = path_object_in_order[building]["downside_path_objects"][@floors_ids[building].reverse.first][0]["elevator_id"]
+        if @floors_ids[building][0..@floors_ids[building].length-2].size > 2 # if community have 1 builidng and 1 stop on first floor
+          source_type = "TourStop"
+          from = "elevator"
+          source_id = path_object_in_order[building]["downside_path_objects"][@floors_ids[building].reverse.first][0]["elevator_id"]
+        else
+          source_type = "TourStop"
+          from = "TourStop"
+          source_id = fetch_destination_stop_id(path_object_in_order[building]["downside_path_objects"][@floors_ids[building].reverse.first][0], stops_id_hash_reverse)
+        end
         path_points = []
         @floors_ids[building][0..@floors_ids[building].length-2].reverse().each do |floor, indx|
           len = path_object_in_order[building]["downside_path_objects"][floor].keys().length - 1
           path_object_keys = path_object_in_order[building]["downside_path_objects"][floor].keys()[0..len]
           path_object_keys.each do |key|
             point = path_object_in_order[building]["downside_path_objects"][floor][key]
-            if point.has_key?("point_type")
+            if point.has_key?("point_type") && !point.has_key?("is_door")
               if point["point_type"] == "elevator" # if its a elevator
                 stop = point["point_type"].classify.constantize.find point["elevator_id"]
                 dest_id = point["elevator_id"]
@@ -1374,6 +1380,9 @@ module ShortestPath
               source_id = dest_id
               from = to
               path_points = []
+            elsif point.has_key?("point_type") && point.has_key?("is_door")
+              stop = point["is_door"] ? ((Door.find(point["door_id"])).attached_with) : (point["point_type"].classify.constantize.find point["door_id"])
+              path_points << {"x_plot" => stop.x_plot, "y_plot" => stop.y_plot}
             else
               path_points << {"x_plot" => point["x_plot"], "y_plot" => point["y_plot"]}
             end
