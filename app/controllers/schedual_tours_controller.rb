@@ -321,6 +321,8 @@ class SchedualToursController < ApplicationController
       tour_time: @schedual_tour.tour_time,
     }
 
+    KnockService.new(@schedual_tour).knock_crm(true)
+
     @schedual_tour.update_attributes(tour_date: date, tour_time: tour_time, day_diff: day_diff)
     
     set_daily_email_sent = false
@@ -330,7 +332,6 @@ class SchedualToursController < ApplicationController
     respond_to do |format|
       if @schedual_tour.save 
         begin
-          KnockService.new(@schedual_tour).knock_crm(true)
           property_tour_type = @schedual_tour.property_tour_type.present? ? @schedual_tour.property_tour_type : "scheduled_tour"
           sent_notifications = send_email_and_other_notifications(@schedual_tour, previous_tour, true, property_tour_type)
     
