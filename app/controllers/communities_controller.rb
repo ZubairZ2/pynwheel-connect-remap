@@ -730,24 +730,15 @@ class CommunitiesController < ApplicationController
         @tour.max_self_tour_users = params[:max_self_tour_users]
         @tour.max_guided_tour_users = params[:max_guided_tour_users]   
         @tour_setting.do_limit_max_tour = params[:do_limit_max_tour]   
-        # @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication] if params[:charge_user_for_id_verfication] .present?
         @tour_setting.limit_max_tour_type = params[:limit_max_tour_type]   
         @tour_setting.limit_max_tour = params[:limit_max_tour]
         @tour_setting.length_stay_limit = params[:length_stay_limit].to_i
-        @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication].present? ? params[:charge_user_for_id_verfication] : false    
-        # @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
-        # @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
-
-        # @tour.marker_icon_size = params[:marker_icon_size]
+        @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication].present? ? params[:charge_user_for_id_verfication] : false
+        @tour_setting.enable_restricted_property_access = params[:enable_restricted_property_access].present? ? params[:enable_restricted_property_access] : false
         @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
         @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
       end
       @tour.save
-      # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
-      # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
-      # @tour_setting.show_last_name = params[:show_last_name].present? ? params[:show_last_name] : false
-      # @tour_setting.show_email = params[:show_email].present? ? params[:show_email] : false
-      
       @tour_setting.save
 
     else

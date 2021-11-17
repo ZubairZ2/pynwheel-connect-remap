@@ -70,7 +70,8 @@
         </section>
         <section class="mt-15">
           <div class="container how_it_works">
-            <%= render 'shared/instruction_card',:obj => {property_tour_type: property_tour_type,community_name: community_name,tour_type: tour_type,id_verification: @community.tour.visual_id_verification} %>
+            <%= render 'shared/instruction_card',:obj => {property_tour_type: property_tour_type,community_name: community_name,tour_type: tour_type,
+            id_verification: @community.tour.visual_id_verification,property_access: @community.tour.tour_setting.enable_restricted_property_access} %>
           </div>
         </section>
     </div>

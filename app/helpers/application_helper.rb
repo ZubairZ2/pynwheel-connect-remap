@@ -540,5 +540,9 @@ module ApplicationHelper
     end
     stop_lock_provider
   end
+  
+  def generate_six_digit_random_pin
+    (SecureRandom.random_number * (10**6)).round.to_s
+  end
 
 end

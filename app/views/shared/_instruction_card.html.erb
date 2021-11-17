@@ -82,18 +82,20 @@
     background: "#fcf0ff"
   }
   ] %>
-<% unschedSelfTour = SchedulerWidgetConstants::UNSCHED_SELF_TOUR_DATA%>
+<% unschedSelfTour = SchedulerWidgetConstants::UNSCHED_SELF_TOUR_DATA %>
+<% accessCodeText = SchedulerWidgetConstants::ACCESS_CODE_TEXT %>
+<% unschedSelfTourText = SchedulerWidgetConstants::UNSCHED_SELF_TOUR_TITLE %>
 
 <div>
-  <h2 class="mt-40 mb-20"><b>How It Works</b></h2>
+  <h2 class="mt-30 mb-20"><b>How It Works</b></h2>
   <%if obj[:property_tour_type] == "remote_tour"%>
     <p class="how_it_works_p"><%= SchedulerWidgetConstants::REMOTE_TOUR_TITLE %></p>
   <%elsif obj[:property_tour_type] == "unscheduled_self_tour"%>
-    <p class="how_it_works_p"><%= SchedulerWidgetConstants::UNSCHED_SELF_TOUR_TITLE %></p>
+    <p class="how_it_works_p"><%= "#{unschedSelfTourText}"%> <br/> <%= obj[:property_access] ? "#{accessCodeText}" : "" %>  </p>
   <%elsif obj[:property_tour_type] == "scheduled_tour" && obj[:tour_type] == "guided_tour" %>
-    <p class="how_it_works_p">Check-in at leasing center on the day your tour is scheduled within <b>10</b> minutes of your scheduled time </p>
+    <p class="how_it_works_p">Check-in at leasing center on the day your tour is scheduled within <b>10</b> minutes of your scheduled time <br> <%= obj[:property_access] ? accessCodeText : "" %></p>
   <%else%>
-    <p class="how_it_works_p">Be at the property on the day your tour is scheduled within <b>10</b> minutes of your scheduled time</p>
+    <p class="how_it_works_p">Be at the property on the day your tour is scheduled within <b>10</b> minutes of your scheduled time <br> <%= obj[:property_access] ? accessCodeText : "" %></p>
   <%end%>
 </div>
 <div class="container col-md-12 mt-10 card-main">

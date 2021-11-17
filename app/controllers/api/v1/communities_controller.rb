@@ -169,7 +169,6 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def community_tours
-    puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
       require 'securerandom'
@@ -179,13 +178,16 @@ class Api::V1::CommunitiesController < ActionController::Base
       @tours = []
       @tours << Tour.find_by_id(params[:tour_id]) if params[:tour_id].present?
       @tours <<  @community.tour unless @tours.present?
-
       @community.deleted_ids = []
       @tour_user.tour_key = @random_string
       @tour_user.tour_type = params[:tour_status]
       @community.save
       charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
       @tour_user.verified_by = params[:verfied_by_provider]
+      @tour_user.lock_access_time = Time.now.utc
+      @tour_user.save
+      @tour_type = params[:tour_status] rescue @tour_user.tour_type
+      restrict_property_access_with_code(@community,@tour_user,@tour_type)
       time_zone = @community.get_time_zone()
       if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.tour.visual_id_verification #TODO:: change to 1 month after testing
         @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
@@ -203,9 +205,6 @@ class Api::V1::CommunitiesController < ActionController::Base
         @floor_list_temp = (@floor_list - [@community.tour.starting_floor]).unshift(@community.tour.starting_floor) if @community.tour.starting_floor.present? rescue []
         #####
         current_time = current_community_time(@community, params)
-
-        # in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
-        # is_tour_virtual = check_community_type(in_visiting_hours, @tours, @community, @tour_user)
         lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
         @tour_user.lock_access_time = current_time
         @tour_user.save
@@ -214,7 +213,39 @@ class Api::V1::CommunitiesController < ActionController::Base
       end
     end
   end
-  
+
+  def restrict_property_access_with_code(community,tour_user,tour_type)    
+    if tour_type != "virtual_tour" && tour_user.check_code_expiry(community) 
+      tour_user.property_access_code = generate_six_digit_random_pin
+      tour_user.property_access_code_generated_at = Time.now
+      tour_length_stay_limit = community&.tour&.tour_setting&.length_stay_limit
+      tour_user.restricted_property_access = true
+      visitor_name = tour_user.name.capitalize
+      sleep 1
+      create_tour_history(tour_user,tour_type,community)
+      subject = "Property Access Code for #{visitor_name}"
+      body = "#{visitor_name} is ready to start a Self Tour at #{community.name}. 
+      Please instruct #{tour_user.first_name.capitalize} to enter this property access code into the Self Tour app:<br>
+      <br>#{tour_user.property_access_code}<br>
+      <br>This code will expire in #{tour_length_stay_limit} minutes"
+      send_access_code_email(subject, body, community)
+    end
+  end
+
+  #TODO:: Incase if you need to create tourhistory here otherwise remove it later.
+  def create_tour_history(tour_user,tour_type,community)
+    tour_history = TourHistory.find_or_create_by(tour_user_id: tour_user.id) rescue TourHistory.new
+    tour_history.update_columns(community_id: community.id, tour_type: tour_type, tour_user_id: tour_user.id, tour_id: community.tour.id)
+  end
+
+  def send_access_code_email subj, body, community
+    return if community.blank?
+    emails = community.email.gsub(" ","").split(',')
+    emails.each do |email|
+      NotificationMailer.tour_history_mail(subj, body, email,INFO_EMAIL,community,false,nil).deliver
+    end
+  end
+    
   def delete_tour_stop
     @community = Community.find params[:id]
     delete_array = params[:stop_id].split(",") if params[:stop_id].present?
@@ -530,7 +561,6 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def tour_configrations_v1
-    puts params
     access = grant_access (decoded(params[:token])) rescue false
     @tour_session_type = "unscheduled"
     if api_access or access == true
