@@ -55,6 +55,7 @@ class CommunitiesController < ApplicationController
         redirect_to community_design_index_path(@community)
       end
     else
+      @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
       flash[:error] = @community.errors.full_messages.join(',')
       render :new
     end
@@ -118,6 +119,7 @@ class CommunitiesController < ApplicationController
         @community.update(creator_id: "")
       end
     end
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
     if params[:community][:image]
       @community.crop_x = nil
     end
