@@ -62,18 +62,6 @@
       %span Select communities
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = select_tag :enable_community_id, options_for_select('',f.object.communities.map(&:id)),{class: "form-control",:multiple=>true, id: "chat_enable_com"}
-      -# = form.select :day_time, options_for_select(Reminder.timings), {:include_blank => 'Please select day time'}, {class: "form-control selectpicker d_time_2nd", data: {"live-search": true}}
-      -#%select#enable_selected.form-control{:class => "validate[required]", :multiple => "multiple", :style => "background-color: #fff;height: 200px;width: 23%;"}
-      -#%select.enable_communities.form-control{:multiple => "multiple", :name => "community_user[community_ids][]", :style => "position: absolute; left: -9999px;"}
-      -#%select.custom-select{:multiple => "multiple"}
-      -#  %option{:value => "1"} One
-      -#  %option{:value => "2"} Two
-      -#  %option{:value => "3"} Three
-      -#.ms-enable_communities.ms-container
-      -#  .ms-enable-selectable
-      -#    %ul.enable_li{:tabindex => "-1"}
-      -#  .ms-enable-selection
-      -#    %ul.enable_seleted_li{:tabindex => "-1"}
 - else 
   = hidden_field_tag "action_name","profile"       
 .form-group
