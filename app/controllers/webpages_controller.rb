@@ -16,7 +16,7 @@ class WebpagesController < ActionController::Base
     unless @community_info.locked
       if @community_info.has_floorplates?
         @floorplates = @community_info.floorplates
-        @floors = @floorplates.map{|f| f.floors}.flatten.sort
+        @floors = @floorplates.map{|f| f.floors}.flatten.sort_by { |f| -f }
         @amenities =  @community_info.floorplates.collect{|c| c.amenities}
         @amenities = @amenities.flatten
       else
