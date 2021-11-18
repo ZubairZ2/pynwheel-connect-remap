@@ -29,7 +29,8 @@ $(document).ready(function () {
         'default-polygon-opacity': _3dConfigurations && _3dConfigurations.default_polygon_opacity ? _3dConfigurations.default_polygon_opacity : 0.5,
         'selected-polygon-opacity': _3dConfigurations && _3dConfigurations.selected_polygon_opacity ? _3dConfigurations.selected_polygon_opacity : 0.8,
         'unit-color': _3dConfigurations && _3dConfigurations.unit_color ? _3dConfigurations.unit_color : '#202',
-        'poi-color': _3dConfigurations && _3dConfigurations.poi_color ? _3dConfigurations.poi_color : '#008000','selected-units': selected_units
+        'poi-color': _3dConfigurations && _3dConfigurations.poi_color ? _3dConfigurations.poi_color : '#008000',
+        'selected-units': selected_units, 'faded-polygon-opacity' : 0.3
       });
     handleMapControl()
   }
@@ -1709,7 +1710,7 @@ function display3DMap() {
   $('.zoom-out-webpage').hide();
   $("#panzomm-container").css("width", "100%");
   $(".location-items").hide();
-  $(".c-wrapper").css("margin-right", "0px");
+  // $(".c-wrapper").css("margin-right", "0px");
   $(".2d-map-option").removeClass("hidden");
   $(".3d-map-option").addClass("hidden");
   $(".satelite-view-icon").removeClass("hidden");
@@ -1722,16 +1723,17 @@ function display3DMap() {
     let w2 = $(".c-sidebar").width();
     $(".digits-list-item").css("width", w1+w2);
     _3dMapViewMarkers();
-  } else {
-    //TODO:: will be fixed with floor selection in 3dMaps without using setTimeout
-    setTimeout(function () {
-      $(".c-sidebar").hide();
-      // let windowWidth = window.innerWidth;
-      // let sideBarWidth = $(".c-sidebar").innerWidth();
-      // let mapWidth = windowWidth - sideBarWidth;
-      // $(".beans-map-container").css("width", mapWidth);
-    }, 300);
-  }
+  } 
+  // else {
+  //   //TODO:: will be fixed with floor selection in 3dMaps without using setTimeout
+  //   setTimeout(function () {
+  //     $(".c-sidebar").hide();
+  //     // let windowWidth = window.innerWidth;
+  //     // let sideBarWidth = $(".c-sidebar").innerWidth();
+  //     // let mapWidth = windowWidth - sideBarWidth;
+  //     // $(".beans-map-container").css("width", mapWidth);
+  //   }, 300);
+  // }
   
 }
 
