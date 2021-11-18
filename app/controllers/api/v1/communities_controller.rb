@@ -227,7 +227,8 @@ class Api::V1::CommunitiesController < ActionController::Base
       body = "#{visitor_name} is ready to start a Self Tour at #{community.name}. 
       Please instruct #{tour_user.first_name.capitalize} to enter this property access code into the Self Tour app:<br>
       <br>#{tour_user.property_access_code}<br>
-      <br>This code will expire in #{tour_length_stay_limit} minutes"
+      <br>This code will expire in #{tour_length_stay_limit} minutes<br> 
+      <br>Thanks!"
       send_access_code_email(subject, body, community)
     end
   end
