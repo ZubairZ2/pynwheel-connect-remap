@@ -884,7 +884,7 @@ private
   end
 
   def maps_configuration_params
-    params.require(:three_d_maps_configuration).permit(:default_polygon_color,:selected_polygon_color,:default_polygon_opacity,:selected_polygon_opacity,:unit_color,:selected_unit_color,:poi_color,
+    params.require(:community).permit(:default_polygon_color,:selected_polygon_color,:default_polygon_opacity,:selected_polygon_opacity,:unit_color,:selected_unit_color,:poi_color,
     :faded_ploygon_opacity,:show_unit_numbers,:hide_floors)
   end
 

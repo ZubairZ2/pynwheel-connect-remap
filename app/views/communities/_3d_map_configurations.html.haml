@@ -2,7 +2,7 @@
   .modal-dialog
     .modal-content
       .modal-header#modal-title.config-modal-title
-      = form_for @community.three_d_maps_configuration,url: community_update_web_maps_configurations_path(@community),:html=>{:id=>"web_maps_configurations_form"}  do |f|
+      = form_for @community,url: community_update_web_maps_configurations_path(@community),:html=>{:id=>"web_maps_configurations_form"}  do |f|
         %alert.alert.alert-success.map-configurations-alert.hidden
           %span 3D Maps Configuartions has been updated suceessfully
         .modal-body
@@ -98,8 +98,8 @@
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               .TriSea-technologies-Switch
                 %span.pr-15 No
-                = f.check_box :show_unit_numbers
-                %label.label-primary{:for=>"three_d_maps_configuration_show_unit_numbers"}
+                = f.check_box :show_unit_numbers, :checked => map_config.present? ? map_config.show_unit_numbers : true
+                %label.label-primary{:for=>"community_show_unit_numbers"}
                 %span.pl-15 Yes
           .form-group
             %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
@@ -110,8 +110,8 @@
             .col-sm-12.col-lg-7.col-md-7.col-xs-12
               .TriSea-technologies-Switch
                 %span.pr-15 No
-                = f.check_box :hide_floors
-                %label.label-primary{:for => "three_d_maps_configuration_hide_floors"}
+                = f.check_box :hide_floors, :checked => map_config.present? ? map_config.hide_floors : true
+                %label.label-primary{:for=>"community_hide_floors"}
                 %span.pl-15 Yes
         .modal-footer
           = f.submit "Update",:class=>"btn btn-primary submit-click"
