@@ -20,6 +20,7 @@ $(document).ready(function () {
     defaultMapType = webCommunity.web_map_type;
     _3dUnitsToBeSelected = select_units_according_to_filters(units)
     selected_units = _3dMapViewMarker()
+    debugger
     beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,_beansApiKey, 
       {
         'click-popup-listener' : polygonClickPopup,
@@ -29,8 +30,10 @@ $(document).ready(function () {
         'default-polygon-opacity': _3dConfigurations && _3dConfigurations.default_polygon_opacity ? _3dConfigurations.default_polygon_opacity : 0.5,
         'selected-polygon-opacity': _3dConfigurations && _3dConfigurations.selected_polygon_opacity ? _3dConfigurations.selected_polygon_opacity : 0.8,
         'unit-color': _3dConfigurations && _3dConfigurations.unit_color ? _3dConfigurations.unit_color : '#202',
-        'poi-color': _3dConfigurations && _3dConfigurations.poi_color ? _3dConfigurations.poi_color : '#008000',
-        'selected-units': selected_units, 'faded-polygon-opacity' : 0.3
+        'poi-color': _3dConfigurations && _3dConfigurations.poi_color ? _3dConfigurations.poi_color : '#008000','selected-units': selected_units,
+        'faded-polygon-opacity': _3dConfigurations && _3dConfigurations.faded_polygon_opacity ? _3dConfigurations.faded_polygon_opacity : 0.3,
+        'show-unit-numbers': _3dConfigurations ? _3dConfigurations.show_unit_numbers : true,
+        'hide-floors': _3dConfigurations ? _3dConfigurations.hide_floors : true,
       });
     handleMapControl()
   }
@@ -1715,26 +1718,21 @@ function display3DMap() {
   $(".3d-map-option").addClass("hidden");
   $(".satelite-view-icon").removeClass("hidden");
   let windowWidth = window.innerWidth;
-  let mapWidth = windowWidth
-  $(".beans-map-container").css("width", mapWidth);
+  let sideBarWidth = $(".c-sidebar").innerWidth();
+  if($(window).width() <= 567){
+    $(".beans-map-container").css("width", windowWidth);
+  }
+  else {
+    let mapWidth = (windowWidth - sideBarWidth)
+    $(".beans-map-container").css("width", mapWidth);
+  }
   if(defaultMapType != "3d-map"){
     $(".c-sidebar").hide();
     let w1 = $(".digits-list-item").width();
     let w2 = $(".c-sidebar").width();
     $(".digits-list-item").css("width", w1+w2);
     _3dMapViewMarkers();
-  } 
-  // else {
-  //   //TODO:: will be fixed with floor selection in 3dMaps without using setTimeout
-  //   setTimeout(function () {
-  //     $(".c-sidebar").hide();
-  //     // let windowWidth = window.innerWidth;
-  //     // let sideBarWidth = $(".c-sidebar").innerWidth();
-  //     // let mapWidth = windowWidth - sideBarWidth;
-  //     // $(".beans-map-container").css("width", mapWidth);
-  //   }, 300);
-  // }
-  
+  }  
 }
 
 function display2DMap() {

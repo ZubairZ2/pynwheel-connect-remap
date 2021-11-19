@@ -6408,6 +6408,11 @@ ul.add-fav-options {
         font-size: 9px !important;
     }
 }
+@media only screen and (min-width: 1301px) and (max-width: 1390px) {
+    ._3d-apply-filter-button{
+        font-size: 9px !important;
+    }
+}
 
 .slick-disabled {
     opacity: 0.5;
