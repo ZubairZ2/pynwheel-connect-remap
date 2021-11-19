@@ -166,7 +166,7 @@
                         %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
                           - if stop.stop_type == "unit"
                             - u = Unit.find stop.stop_id
-                            = u.building.present? ? (u.building + "-" + stop.name) : stop.name
+                            = u.building.present? ? (u.building + "-" + u.name) : u.name
                           - else
                             = stop.name
                         %td
