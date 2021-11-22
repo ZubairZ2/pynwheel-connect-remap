@@ -27,7 +27,7 @@ class AmenitiesController < ApplicationController
   def edit
     @community = Community.find params[:community_id]
     @amenity = Amenity.find (params[:id])
-    @doors = @amenity.doors.order("updated_at DESC")
+    @doors = @amenity.doors.order("created_at ASC")
     if params[:unit].present?
       @unit = Unit.find (params[:unit])
     end
@@ -136,8 +136,12 @@ class AmenitiesController < ApplicationController
   def update_amenity_door_lock
     @amenity = @community.amenities.find_by(id: params[:id])
     @door = @amenity.doors.find_by(id: params[:door_id])
-    @door.update_attributes(lock_provider: params[:lock_provider], access_code: params[:access_code])
-    assign_lock_to_door(@community, @door, params[:lock_id]) if params[:lock_id].present?
+    if params[:lock_provider] == "Manual" && params[:access_code] == ""
+      @door.update_columns(lock_provider: "", access_code: "")
+    else
+      @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code])
+    end
+    assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
   end
 
   def remove_amenity_door_plot
@@ -153,8 +157,8 @@ class AmenitiesController < ApplicationController
   end
 
   def return_door_lock
-    door = Door.where(id: params[:door_id]).includes(:dwelo_lock, :edgestate_lock, :latch_lock, :zerv_lock).first
-    digital_lock = { edgestate_lock: door.edgestate_lock, dwelo_lock: door.dwelo_lock, latch_lock: door.latch_lock, zerv_lock: door.zerv_lock }
+    door = Door.where(id: params[:door_id]).includes(:dwelo_lock, :edgestate_lock, :latch_lock, :zerv_lock, :igloohome_lock).first
+    digital_lock = { edgestate_lock: door.edgestate_lock, dwelo_lock: door.dwelo_lock, latch_lock: door.latch_lock, zerv_lock: door.zerv_lock, igloohome_lock: door.igloohome_lock }
     render json: {lock_provider: door.lock_provider, access_code: door.access_code, digital_lock: digital_lock}
   end
 
@@ -170,13 +174,17 @@ class AmenitiesController < ApplicationController
 
   def update_locks
     if @community.enable_locks
-      if @community.auto_wayfinding and @amenity.doors.present?
+      if @amenity.doors.present?
         @door = @amenity.doors.find_by id: params[:door_id]
-        @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code], updated_at: Time.now.utc)
-        assign_lock_to_door(@community, @door, params[:lock_id]) if params[:lock_id].present?
+        if params[:lock_provider] == "Manual" && params[:access_code] == ""
+          @door.update_columns(lock_provider: "", access_code: "", updated_at: Time.now.utc)
+        else
+          @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code], updated_at: Time.now.utc)
+        end
+        assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
       else
         @amenity.update_attributes(lock_provider: params[:amenity][:lock_provider], access_code: params[:access_code])
-        assign_lock(@community, @amenity, params[:lock_id]) if params[:lock_id].present?
+        assign_lock(@community, @amenity, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
       end
     end
   end

@@ -1,0 +1,11 @@
+.modal{:role => "dialog", :id => "3DAmenityModal", :tabindex => "-1", "aria-hidden" => "true"}
+  .modal-dialog.modal-lg{:role => "document"}
+    .modal-content
+      .modal-header
+        %h5.modal-title 
+          %strong#3DAmenityName amenity name
+        %button.close._3d-modal-close-amenity{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"} ×
+      
+      .modal-body
+        %img#_3DAmenityImage{:src => ""}

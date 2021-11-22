@@ -6,7 +6,7 @@
             @community.scheduler_widget         = false
         end
 
-        json.visual_id_verification    check_visual_id_verification(@tour_user,@community) #@tour_user.tour_type != "virtual_tour" ? @community.tour.visual_id_verification : false # can't confirm here
+        json.visual_id_verification    check_visual_id_verification(@tour_user,@community)
         json.tour_type                 @tour_user.tour_type
         json.verification_type         @verfication_type
         json.with_in_radius            @within_one_km

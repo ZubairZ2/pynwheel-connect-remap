@@ -223,26 +223,7 @@
                   = check_box_tag :show_camera_button, true, @community.show_camera_button, class: "show-camera-button"
                   %label.label-primary{:for => "show_camera_button"}
                   %span.pl-15 Yes
-            / .form-group
-            /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            /     Visual id verification
-            /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            /     .TriSea-technologies-Switch
-            /       %span.pr-15 No
-            /       = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
-            /       %label.label-primary{:for => "visual_id_verification"}
-            /       %span.pl-15 Yes 
-            / .form-group
-            /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            /     Add fields to the registration page
-            /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            /     .TriSea-technologies-Switch
-            /       %span.pr-15 No
-            /       = check_box_tag :show_checklist, true, @tour_setting.show_checklist, class: "show_checklist"
-            /       %label.label-primary{:for => "show_checklist"}
-            /       %span.pl-15 Yes 
-            -# {:class => "#{(@community.is_salesforce_community?) ? 'hidden' : ''}"}
-            -unless @community&.credential&.use_different_crm_provider && @community&.crm_credential&.crm_provider == "salesforce"              
+            - unless @community&.credential&.use_different_crm_provider && @community&.crm_credential&.crm_provider == "salesforce"              
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Scheduler Tool
@@ -255,6 +236,18 @@
                     = check_box_tag :scheduler_widget, true, @community.scheduler_widget.nil? ? true : @community.scheduler_widget  , class: "scheduler_widget"
                     %label.label-primary{:for => "scheduler_widget"}
                     %span.pl-15 Yes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Allow Restricted Access
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Enabling this toggle will restricts self tour visitors to start their tour without property access code, only visitors with property code will be able to start tour. 
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :enable_restricted_property_access, true, @community.tour.tour_setting.enable_restricted_property_access, class: "enable_restricted_property_access" 
+                  %label.label-primary{:for => "enable_restricted_property_access"}
+                  %span.pl-15 Yes
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
 
@@ -298,73 +291,17 @@
                   %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.tour.max_guided_tour_users}    
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Lengthy Stay
+                Length of tour
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
                   %span#propertyDetailNameText
                     If a visitor stays on tour past the time allotted here, the property will get a notification to check in with them.
+                    - if @community.tour.tour_setting.enable_restricted_property_access
+                      Also, property access code will be expired after this time period.
               .col-sm-12.col-lg-2.col-md-2.col-xs-12
                 %input.day-list.max-users-v.form-control{type: "number", id: "length_stay_limit", name: "length_stay_limit", min: "10", max:"300", value: @community.tour.tour_setting.length_stay_limit} 
               .col-sm-12.col-lg-2.col-md-2.col-xs-12.add_minutes_span{:style => "margin-top: 13px;"}
                 %span
                   Minutes
-            
-            
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display name
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_first_name, true, @tour_setting.show_first_name, class: "show_first_name"
-              /       %label.label-primary{:for => "show_first_name"}
-              /       %span.pl-15 Yes
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display last name
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_last_name, true, @tour_setting.show_last_name, class: "show_last_name"
-              /       %label.label-primary{:for => "show_last_name"}
-              /       %span.pl-15 Yes
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display phone
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_phone, true, @tour_setting.show_phone, class: "show_phone"
-              /       %label.label-primary{:for => "show_phone"}
-              /       %span.pl-15 Yes
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display email
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_email, true, @tour_setting.show_email, class: "show_email"
-              /       %label.label-primary{:for => "show_email"}
-              /       %span.pl-15 Yes
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display desired bedroom
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_desired_bedroom, true, @tour_setting.show_desired_bedroom, class: "show_desired_bedroom"
-              /       %label.label-primary{:for => "show_desired_bedroom"}
-              /       %span.pl-15 Yes
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Display desired move in date
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     .TriSea-technologies-Switch
-              /       %span.pr-15 No
-              /       = check_box_tag :show_desired_move_in_date, true, @tour_setting.show_desired_move_in_date, class: "show_desired_move_in_date"
-              /       %label.label-primary{:for => "show_desired_move_in_date"}
-              /       %span.pl-15 Yes
-
-              /       %span.pl-15 Yes
             - if current_user.is_super_admin?
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -377,43 +314,14 @@
                     %span.pr-15 No
                     = check_box_tag :automate_unit_stop, true, @community.automate_unit_stop, class: "automate-unit-stop"
                     %label.label-primary{:for => "automate_unit_stop"}
-                    %span.pl-15 Yes 
-          
-
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /     Max Virtual Tour At One Time
-              /     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
-              /       %span#propertyDetailNameText
-              /         Enter the maximum number of Virtual Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     %input.day-list.max-users-v.form-control{type: "number", id: "max_virtual_tour_users", name: "max_virtual_tour_users", min: "1", max:"10", value: @community.tour.max_virtual_tour_users}
+                    %span.pl-15 Yes
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Dotted line color
                 .col-sm-12.col-lg-6.col-md-6.col-xs-12
                   = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
-                           
-              
-              / .form-group
-              /   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              /   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              /     = submit_tag 'Save', class: "btn btn-success btn-sm pull-right"        
-            -#.form-groups
-            -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            -#    Show Notepad Button
-            -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-            -#    .TriSea-technologies-Switch
-            -#      %span.pr-15 No
-            -#      = check_box_tag :show_notepad_button, true, @community.show_notepad_button, class: "show-notepad-button"
-            -#      %label.label-primary{:for => "show_notepad_button"}
-            -#      %span.pl-15 Yes
-            -#.form-group.mt-30
-            -#  %label.col-sm-16.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-            -#    Self Tour icon size
-            -#  .col-sm-12.col-lg-6.col-md-6.col-xs-12
-            -#    = select_tag :marker_icon_size , options_for_select(self_tour_icon_size,@community.tour.marker_icon_size ), :class => "form-control"
+
             
             .box-footer  
               = submit_tag 'Save', class: "btn btn-success pull-right mr-10", style: "margin-bottom: -36px;"
@@ -513,17 +421,8 @@
                           Grace period
                         .col-sm-12.col-lg-9.col-md-9.col-xs-12
                           %input.day-list.max-users-v.form-control{type: "number", id: "grace_time", name: "grace_time", min: "5", max: "60", step: "5", onkeydown: "return false", value: @community.tour.grace_period}              
-                  / - if (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
-                  /   .form-group
-                  /     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  /       Max Tours per Day
-                  /       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
-                  /         %span#propertyDetailNameText
-                  /           Limit the number of tours that can be taken in a given day.  
-                  /     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  /       %input.day-list.max-users-v.form-control{type: "number", id: "max_tour_users", name: "max_tour_users", min: "1", max:"10", value: @community.tour.max_tour_users}       
+                  
                   .form-group
-
                     %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
                       Allow Visitors to Schedule Tours in the following time increments:
                       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "8Popover","data-content" => " "}

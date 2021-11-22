@@ -207,6 +207,10 @@ module DweloDevicesHelper
         tour_user = TourUser.find params[:tour_user_id]
         puts "----------------------- igloohome_lock_access ----------------------"
         puts tour_user.inspect
+
+        if params[:time_zone].present?
+          current_time = Time.now.in_time_zone(params[:time_zone])
+        end
         
         tour_user.update_column 'igloohome_status' , 'in progress'
         
@@ -321,17 +325,23 @@ module DweloDevicesHelper
 
       locks_data = []
       locks_data << community.tour.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.tour.latch_locks.present?
-      
+
       units.each do |unit|
-        lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        if unit.door.present?
+          lock_info = unit.door.latch_lock.present? ? unit.door.latch_lock.latch_lock_columns : []
+        else
+          lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
+        end
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
-      
       amenities.each do |amenity|
-        lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        if amenity.doors.any?
+          lock_info = amenity.doors.first.latch_lock.present? ? amenity.doors.first.latch_lock.latch_lock_columns : []
+        else
+          lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
+        end
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
-      end
-      
+      end  
       elevators.each do |elevator|
         lock_info = elevator.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
@@ -385,7 +395,8 @@ module DweloDevicesHelper
     available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
 
     available_stops.each do |stop|
-      if (stop[0].classify.constantize.find_by_id stop[1]).lock_provider == "Zerv"
+      actual_stop = stop[0].classify.constantize.find_by_id stop[1]
+      if lock_provider_type(actual_stop) == "Zerv"
         allowed_stops << [stop[0], stop[1]]
       end
     end
