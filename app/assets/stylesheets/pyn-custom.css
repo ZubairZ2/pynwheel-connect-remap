@@ -6259,6 +6259,9 @@ ul.add-fav-options {
         bottom: 0%;
         width: 40%;
     }
+    .c-m-iframe-content{
+        margin-bottom: 65px;
+    }
 }
 .slick-disabled {
     opacity: 0.5;

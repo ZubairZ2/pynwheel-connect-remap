@@ -196,6 +196,7 @@ $(window).bind('load', function () {
     ////////////////////////////////////////////
     
     $('#zoomable a').on('touchstart', function (e) {
+      debugger
       e.stopImmediatePropagation();
     });
     var $area = document.getElementById('zoomable');
@@ -208,6 +209,7 @@ $(window).bind('load', function () {
         zoomDoubleClickSpeed: 1,
        
         onTouch: function(e) {
+          debugger
           // `e` - is current touch event.
           // $.get('/api/v1/communities/3/test_panzoom?keyCode='+$(e.path[1]))
           e.preventDefault();
@@ -242,6 +244,7 @@ $(window).bind('load', function () {
     $(".zoom-in-modal").on('click', function (e) {
       $($marea).removeClass("transform-none");
       modalPanZoom.zoomInOut(187);
+      $(".reset-modal").removeClass("hidden")
     });
     $(".zoom-out-modal").on('click', function (e) {
       $($marea).removeClass("transform-none");
@@ -249,9 +252,11 @@ $(window).bind('load', function () {
     });
     $(".reset-modal").on('click', function (e) {
       $($marea).addClass("transform-none");
+      $(".reset-modal").addClass("hidden")
     });
 
     $('#zoomable-modal-image').on('wheel', function(e) {
+      $(".reset-modal").removeClass("hidden")
       $($marea).removeClass("transform-none"); 
     })
 
