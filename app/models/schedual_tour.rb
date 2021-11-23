@@ -33,8 +33,8 @@ class SchedualTour < ApplicationRecord
   COUNTRY_CODES =  JSON.parse(File.read(Rails.root.join("app/assets/jsons/country_codes.json")))
   
   def cancel_knock_appointment
-    return unless @schedual_tour.community.is_knock_community?
-    KnockService.new(@schedual_tour).cancel_knock_appointment
+    return unless self.community.is_knock_community?
+    KnockService.new(self).cancel_knock_appointment
   end
 
   def add_user_in_zerv

@@ -8,7 +8,7 @@ class KnockService < BaseService
   end
  
   def create_knock_prospect
-    knock_prospect_response = create_prospect(knock_api_key, knock_prospect_payload) if is_knock_crm
+    knock_prospect_response = create_prospect(knock_prospect_api_key, knock_prospect_payload) if is_knock_crm
     display_logs("Create Prospect", knock_prospect_response)
     add_knock_prospect_id(knock_prospect_response["payload"]["id"]) if prospect_created(knock_prospect_response)
   end
@@ -157,6 +157,10 @@ class KnockService < BaseService
 
   def is_knock_crm
     @community.is_knock_community?
+  end
+
+  def knock_prospect_api_key
+    ENV["KNOCK_PROSPECT_KEY"] || @community&.crm_credential&.knock_api_key
   end
 
   def knock_api_key
