@@ -183,6 +183,11 @@ module DweloDevicesHelper
   end
 
   def lock_access_by_type(params, community, tour_user, current_time)
+    if community.multiple_locks_provider.include?("Igloohome")
+      puts "----------------------- Igloohome Lock ----------------------"
+      igloohome_lock_access(params, community, current_time)
+    end
+    
     if community.multiple_locks_provider.include?("Dwelo")
       dwelo_lock_access(params, community, current_time)
     end
@@ -193,6 +198,30 @@ module DweloDevicesHelper
     
     if community.multiple_locks_provider.include?("Latch")
       create_latch_reservation(community, tour_user, DateTime.now.utc)
+    end
+  end
+
+  def igloohome_lock_access params, community, current_time
+    Thread.new do
+      begin
+        tour_user = TourUser.find params[:tour_user_id]
+        puts "----------------------- igloohome_lock_access ----------------------"
+        puts tour_user.inspect
+
+        if params[:time_zone].present?
+          current_time = Time.now.in_time_zone(params[:time_zone])
+        end
+        
+        tour_user.update_column 'igloohome_status' , 'in progress'
+        
+        IgloohomeService.new(community, current_time, tour_user).assign_guest_bluetooth_key
+        
+        tour_user.update_column 'igloohome_status' , 'complete'
+
+      rescue => ex
+        tour_user.update_column 'igloohome_status' , 'complete'
+        puts "--------- Igloohome error -------- ", ex
+      end
     end
   end
 
@@ -296,17 +325,23 @@ module DweloDevicesHelper
 
       locks_data = []
       locks_data << community.tour.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.tour.latch_locks.present?
-      
+
       units.each do |unit|
-        lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        if unit.door.present?
+          lock_info = unit.door.latch_lock.present? ? unit.door.latch_lock.latch_lock_columns : []
+        else
+          lock_info = unit.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
+        end
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
-      
       amenities.each do |amenity|
-        lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
+        if amenity.doors.any?
+          lock_info = amenity.doors.first.latch_lock.present? ? amenity.doors.first.latch_lock.latch_lock_columns : []
+        else
+          lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
+        end
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
-      end
-      
+      end  
       elevators.each do |elevator|
         lock_info = elevator.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
@@ -331,7 +366,7 @@ module DweloDevicesHelper
           latch_link = response["payload"]["message"]["link"]
 
           if latch_link.present?
-            LatchLock.where(lock_id: lock_info[0]).map{|stop_data| tour_user.latch_guests.create(community_id: community.id, latch_link: latch_link, guest_of_stop_type: stop_data.stop_type , guest_of_stop_id: stop_data.stop_id, start_time: start_time.to_i, end_time: end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
+            LatchLock.where(lock_id: lock_info[0]).map{|stop_data| tour_user.latch_guests.create(community_id: community.id, latch_link: latch_link, guest_of_stop_type: stop_data.stop_type.classify , guest_of_stop_id: stop_data.stop_id, start_time: start_time.to_i, end_time: end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
           end
         end
       end
@@ -360,7 +395,8 @@ module DweloDevicesHelper
     available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
 
     available_stops.each do |stop|
-      if (stop[0].classify.constantize.find_by_id stop[1]).lock_provider == "Zerv"
+      actual_stop = stop[0].classify.constantize.find_by_id stop[1]
+      if lock_provider_type(actual_stop) == "Zerv"
         allowed_stops << [stop[0], stop[1]]
       end
     end
@@ -371,7 +407,7 @@ module DweloDevicesHelper
   end
 
   def current_community_time(community, params)
-    timezone = get_community_time_zone(community)
+    timezone = community.get_time_zone()
     (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
     rescue
     Time.now.utc
@@ -470,7 +506,7 @@ module DweloDevicesHelper
   end
 
   def total_scheduled_tour(community, property_time, limit, tour_user)
-    timezone = get_community_time_zone(community) rescue "UTC"
+    timezone = community.get_time_zone()
     total  = SchedualTour.where('tour_date = ?', Date.today.to_date).where.not(tour_user_id: nil).map{|x| x if ( ((((x.tour_date.to_s + " " + x.tour_time.to_s(:time)).in_time_zone(x.user_time_zone).in_time_zone(timezone)) - property_time.in_time_zone(timezone) ) / 3600).between?(-0.5,0.5) )}.compact
     if (total.map{|x| x.tour_user_id}.include? tour_user.id) || !geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude, 1)
       return 0
@@ -494,36 +530,7 @@ module DweloDevicesHelper
   end
 
   def get_community_time(community)
-    tz = Ziptz.new
-    if community.zip.present?
-        timezone = tz.time_zone_name(community.zip)
-        community_time = Time.now.in_time_zone(timezone) if timezone.present?
-    end
-
-    if community_time.nil? and community.latitude.present? and community.longitude.present?
-        timezone = Timezone.lookup(community.latitude, community.longitude)
-        community_time = timezone.utc_to_local(Time.now) if timezone.present?
-    end
-
-    community_time.present? ? community_time : nil
-  end
-
- def get_community_time_zone(community)
-    tz = Ziptz.new
-    timezone = nil
-
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and community.zip.present?
-        timezone = tz.time_zone_name(community.zip)
-    end
-
-    return timezone.present? ? timezone : "UTC"
-  rescue
-    return "UTC"
+    Time.now.in_time_zone(community.get_time_zone())
   end
 
   def is_sf_tour_on_time(current_time, scheduled_tours, grace_time, timezone)
@@ -598,7 +605,7 @@ module DweloDevicesHelper
     emails = community.email.gsub(" ","").split(',')
     schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
     emails.each do |email|
-      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email,"info@pynwheel.com",community,false,schedule_tour).deliver
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}", email,INFO_EMAIL,community,false,schedule_tour).deliver
     end
   end
 
@@ -668,4 +675,3 @@ module DweloDevicesHelper
     # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1148/1577209294-floorplates_2.png"
   end
 end
-

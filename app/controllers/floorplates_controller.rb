@@ -1,4 +1,5 @@
 class FloorplatesController < ApplicationController
+  include AssignLocksHelper
   # include Error::ErrorHandler
   add_breadcrumb "Home", :root_path
   before_action :authenticate_user!
@@ -76,6 +77,11 @@ class FloorplatesController < ApplicationController
     if params[:floor].present?
       redirect_to plot_amenities_community_floorplate_amenities_path(current_community, @floorplate, floor: params[:floor])
     end
+  end
+
+  def select_many_floors
+    @community = Community.find params[:community_id]
+    @floorplate = Floorplate.find params[:floorplate_id]
   end
 
   def update
@@ -166,15 +172,24 @@ class FloorplatesController < ApplicationController
 
   def plotexp
     @floorplate = Floorplate.find params[:floorplate_id]
+
     unless current_community.units.size > 0
       flash[:error] = "Please import unit data first"
+      return
     end
-    @community_units = @floorplate.fetch_units
+    @community_units = @floorplate.fetch_units.includes(:door)
     
     @map_ocr_data = @floorplate.is_ocr_enabled ? @floorplate.map_ocr_data : []
     @dimensions = @floorplate.is_ocr_enabled ? s3_img_dimensions(floorplate_image_url(@floorplate)) : {}
     
     @test_units = @community_units.to_json
+
+    @current_locks_provider = existing_locks_provider(@community)
+    @all_locks = all_locks(@community)
+    @hallways = make_sure_one_selected_hallway(@floorplate.hallways.order("id ASC"))
+    @access_points = @floorplate.access_points # @floorplate.access_points.select('DISTINCT ON (x_plot, y_plot) *')
+    @unit_with_door = @community_units.map { |unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } } }
+
     add_breadcrumb "Floor plates", community_floorplates_path(current_community)
     add_breadcrumb "Plot Floor Plate Units", community_floorplate_plotexp_path(current_community, @floorplate)
   end

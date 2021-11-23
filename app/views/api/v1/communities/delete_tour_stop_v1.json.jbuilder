@@ -450,25 +450,35 @@ json.tours @tours do |tour|
   skip_1_path = false
 
   # ///////////////////////////////////////////////////////////////////// Stop data //////////////////////////////////////////////////////
+  if @community.auto_wayfinding
+    if @community.is_sitemap
+      mobile_path = ShortestPath.return_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+    else
+      new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, @community.id) # I add extra elevator for shortest path making
+      mobile_path, new_stops_arr = ShortestPath.return_floorplate_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+    end
+  end
   json.tour_stop new_stops_arr.compact do |stop|
 
-    begin
-      if skip_1
-        i += 1
-        counter += 1
-        skip_1 = false
-        next
+    unless @community.auto_wayfinding
+      begin
+        if skip_1
+          i += 1
+          counter += 1
+          skip_1 = false
+          next
+        end
+        
+        if (stop.is_a? TourStop) and (new_stops_arr[counter + 2].is_a? TourStop) and (stop.building != new_stops_arr[counter + 2].building) and (new_stops_arr[counter + 1].stop_type == "elevator") and (stop.floor == new_stops_arr[counter + 2].floor) 
+          skip_1 = true
+        end
+        skip_bool = (new_stops_arr[counter + 2].is_a? Tour) ? (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].starting_floor) : (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].floor)
+        if skip_bool
+          skip_1 = true
+        end 
+        skip_1 = true if ((new_stops_arr[counter + 1].is_a? TourStop) and new_stops_arr[counter + 1].stop_type == "elevator" and (new_stops_arr[counter + 2].floor rescue new_stops_arr[counter + 2].starting_floor) == (stop.floor rescue stop.starting_floor))
+      rescue => ex
       end
-      
-      if (stop.is_a? TourStop) and (new_stops_arr[counter + 2].is_a? TourStop) and (stop.building != new_stops_arr[counter + 2].building) and (new_stops_arr[counter + 1].stop_type == "elevator") and (stop.floor == new_stops_arr[counter + 2].floor) 
-        skip_1 = true
-      end
-      skip_bool = (new_stops_arr[counter + 2].is_a? Tour) ? (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].starting_floor) : (new_stops_arr[counter + 1].stop_type == "elevator" and new_stops_arr[counter + 1].building != new_stops_arr[counter + 2].building and stop.floor == new_stops_arr[counter+2].floor)
-      if skip_bool
-        skip_1 = true
-      end 
-      skip_1 = true if ((new_stops_arr[counter + 1].is_a? TourStop) and new_stops_arr[counter + 1].stop_type == "elevator" and (new_stops_arr[counter + 2].floor rescue new_stops_arr[counter + 2].starting_floor) == (stop.floor rescue stop.starting_floor))
-    rescue => ex
     end
     # if counter == 0
     #   json.navigation_title "First Stop " + new_stops_arr[counter].name if new_stops_arr[counter].present?
@@ -526,6 +536,9 @@ json.tours @tours do |tour|
       json.guest_pin  ""
       json.latch_link ''
       json.unit_dwelo_lock_id ''
+      json.igloohome_lock_id ''
+      json.igloohome_guest_bluetooth_key ''
+      json.igloohome_guest_pin ''
       json.navigation_title navigation_title
       json.id stop.id
       json.x_plot stop.x_plot
@@ -558,18 +571,28 @@ json.tours @tours do |tour|
           # end
           @existing_path_points = []
         else
-          path = Path.where(map_path_to_id: nil, map_path_from_id: new_stops_arr[i-1].stop_id).first
-          if path.blank?
-            path = Path.where(map_path_to_id:  new_stops_arr[i-1].stop_id, map_path_from_id: nil).first
-            @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+          if @community.auto_wayfinding
+            stop_id = TourStop.find(new_stops_arr[i-1].id).stop_type == "elevator" ? TourStop.find(new_stops_arr[i-1].id).stop_id : new_stops_arr[i-1].id
+            path_points = ShortestPath.return_path_points_to_mobile(mobile_path, "TourStop", "Tour", stop_id, 0)
+            @existing_path_points = path_points if path_points.present?
           else
-            @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+            path = Path.where(map_path_to_id: nil, map_path_from_id: new_stops_arr[i-1].stop_id).first
+            if path.blank?
+              path = Path.where(map_path_to_id:  new_stops_arr[i-1].stop_id, map_path_from_id: nil).first
+              @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+            else
+              @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+            end
           end
         end
       rescue => ex
         @existing_path_points = []
       end
-      json.path_points @existing_path_points[0].present? ? @existing_path_points[0] : @existing_path_points
+      if @community.auto_wayfinding
+        json.path_points @existing_path_points
+      else
+        json.path_points @existing_path_points[0].present? ? (@existing_path_points[0].class == Hash ? [@existing_path_points[0]] : @existing_path_points[0]) : @existing_path_points
+      end
       json.stop_description ((new_stops_arr.size - 1) == counter ? "Your Tour Has Ended" : "Starting point")
       counter = counter + 1
       i += 1
@@ -581,7 +604,7 @@ json.tours @tours do |tour|
         json.stop_lock_provider stop_lock_provider
         
         if stop_lock_provider == "Latch" and @community.latch.present? and stop.latch_locks.present?
-          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.latch_locks.first.stop_id)
+          lch = ShortestPath.return_stop_lock(stop) if @community.latch.present?
           if lch.present?
   
             latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active") if @tour_user.present?
@@ -589,41 +612,59 @@ json.tours @tours do |tour|
               json.guest_pin ''
               json.latch_link latch_guest.latch_link
               json.unit_dwelo_lock_id ''
+              json.igloohome_lock_id ''
+              json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             else
               json.guest_pin ''
               json.latch_link ''
               json.unit_dwelo_lock_id ''
+              json.igloohome_lock_id ''
+              json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             end
           end
 
-        elsif stop_lock_provider == "EdgeState" and @community.edge_state.present? and stop.remote_locks.present?
-          rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.remote_locks.last.stop_id) if @community.edge_state.present?
+        elsif stop_lock_provider == "EdgeState" and @community.edge_state.present? and stop.edgestate_locks.present?
+          rml = ShortestPath.return_stop_lock(stop) if @community.edge_state.present?
           if rml.present?
             if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
-              igloo_guest = IglooGuest.find_by(stop_id: stop.remote_locks.last.stop_id, tour_user_id: @tour_user.id, status: "active")
+              igloo_guest = IglooGuest.find_by(stop_id: stop.edgestate_locks.first.stop_id, tour_user_id: @tour_user.id, status: "active")
               if igloo_guest.nil? 
                 pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
                 json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
+                json.igloohome_lock_id ''
+                json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               else
                 json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
+                json.igloohome_lock_id ''
+                json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               end
             else
               json.guest_pin ''
               json.latch_link ''
               json.unit_dwelo_lock_id ''
+              json.igloohome_lock_id ''
+              json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             end
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Zerv" and @community.zerv.present? and stop.zerv_locks.present?
-          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: "Tour", stop_id: stop.id) if @community.zerv.present?
+          zrv = ShortestPath.return_stop_lock(stop) if @community.zerv.present?
           if zrv.present?
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: "Tour", guest_of_stop_id: stop.id, status: "active")
             if zrv_guest.present?
@@ -631,6 +672,9 @@ json.tours @tours do |tour|
               json.guest_pin 'Your tour has started. The door will automatically unlock when your mobile device is within range. Enjoy your tour!'
               json.latch_link ''
               json.unit_dwelo_lock_id ''
+              json.igloohome_lock_id ''
+              json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
@@ -638,28 +682,43 @@ json.tours @tours do |tour|
                 json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["error_position"]
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
+                json.igloohome_lock_id ''
+                json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               else
                 json.guest_pin ''
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
+                json.igloohome_lock_id ''
+                json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               end
             end
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Dwelo"
-          dwelo_lock = stop.remote_locks.where.not(dwelo_id: nil).last rescue nil
+          dwelo_lock = ShortestPath.return_stop_lock(stop)
           if dwelo_lock.present?
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id dwelo_lock.device_id
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Manual"
@@ -667,15 +726,45 @@ json.tours @tours do |tour|
             json.guest_pin "Use code " + stop.access_code + " to enter."
             json.latch_link ''
             json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
+          end
+        
+        elsif stop_lock_provider == "Igloohome"
+          igloohome_guest = IgloohomeGuest.where(tour_user_id: @tour_user.id, community_id: @community.id, stop_id: stop.id, stop_type: stop.class.name).last
+          igloohome_lock = IgloohomeLock.where(igloohome_id:  @community.igloohome.id, stop_id: stop.id, stop_type: stop.class.name).last
+         
+          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && (igloohome_guest.guest_bluetooth_key.present? || igloohome_guest.guest_pin.present?)
+            json.guest_pin ''
+            json.latch_link ''
+            json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id igloohome_lock.device_id
+            json.igloohome_guest_bluetooth_key igloohome_guest.guest_bluetooth_key
+            json.igloohome_guest_pin igloohome_guest.guest_pin
+          else
+            json.guest_pin ''
+            json.latch_link ''
+            json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
+            json.stop_lock_provider ''
           end
         else
           json.guest_pin ''
           json.latch_link ''
           json.unit_dwelo_lock_id ''
+          json.igloohome_lock_id ''
+          json.igloohome_guest_bluetooth_key ''
+          json.igloohome_guest_pin ''
         end
 
 
@@ -683,11 +772,17 @@ json.tours @tours do |tour|
         json.guest_pin ''
         json.latch_link ''
         json.unit_dwelo_lock_id ''
+        json.igloohome_lock_id ''
+        json.igloohome_guest_bluetooth_key ''
+        json.igloohome_guest_pin ''
       end
       rescue => exception
         json.guest_pin ''
         json.latch_link ''
         json.unit_dwelo_lock_id ''
+        json.igloohome_lock_id ''
+        json.igloohome_guest_bluetooth_key ''
+        json.igloohome_guest_pin ''
       end
 
       next
@@ -695,11 +790,12 @@ json.tours @tours do |tour|
     begin
       
       if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
-        stop_lock_provider = (stop.stop_type.classify.constantize.find_by_id stop.stop_id).lock_provider
+        stop_lock_provider = stop.fetch_lock_stop_provider
         json.stop_lock_provider stop_lock_provider
 
         if stop_lock_provider == "EdgeState"
-          rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id) if @community.edge_state.present?
+          _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
+          rml = ShortestPath.return_stop_lock(_stop_) if @community.edge_state.present?
           if rml.present?
             if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
               igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
@@ -708,65 +804,100 @@ json.tours @tours do |tour|
                 json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
+                json.igloohome_lock_id ''
+                json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               else
                 json.guest_pin "Use code " + igloo_guest.guest_code + " to enter." if igloo_guest.guest_code.present?
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
+                json.igloohome_lock_id ''
+                json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               end
             else
               json.guest_pin ''
               json.latch_link ''
               json.unit_dwelo_lock_id ''
+              json.igloohome_lock_id ''
+              json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             end
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Latch"
-          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.stop_id) if @community.latch.present?
+          _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
+          lch = ShortestPath.return_stop_lock(_stop_) if @community.latch.present?
           if lch.present?
-
-            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, status: "active") if @tour_user.present?
+            if lch.stop_type == "Door"
+              latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: lch.stop.id, guest_of_stop_type: lch.stop.class.name, status: "active") if @tour_user.present?
+            else
+              latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: stop.stop_type.classify, status: "active") if @tour_user.present?
+            end
             if latch_guest.present?
               json.guest_pin ''
               json.latch_link latch_guest.latch_link
               json.unit_dwelo_lock_id ''
+              json.igloohome_lock_id ''
+              json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             else
               json.guest_pin ''
               json.latch_link ''
               json.unit_dwelo_lock_id ''
+              json.igloohome_lock_id ''
+              json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             end
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Dwelo"
           _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
-          dwelo_lock = _stop_.remote_locks.where.not(dwelo_id: nil).last rescue nil
+          dwelo_lock = ShortestPath.return_stop_lock(_stop_)
           
           if dwelo_lock.present?
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id dwelo_lock.device_id
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
 
         elsif stop_lock_provider == "Zerv"
-          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: stop.stop_type.camelcase, stop_id: stop.stop_id) if @community.zerv.present?
+          _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
+          zrv = ShortestPath.return_stop_lock(_stop_) if @community.zerv.present?
           if zrv.present?
-            zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: stop.stop_type.camelcase, guest_of_stop_id: stop.stop_id, status: "active")
+            zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: stop.stop_type.classify, guest_of_stop_id: stop.stop_id, status: "active")
             if zrv_guest.present?
               is_zerv_lock_present = true
               json.guest_pin 'The door will automatically unlock when your mobile device is within range'
               json.latch_link ''
               json.unit_dwelo_lock_id ''
+              json.igloohome_lock_id ''
+              json.igloohome_guest_bluetooth_key ''
+              json.igloohome_guest_pin ''
             else
               zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, status: "active")
               if zrv_guest.present?
@@ -774,43 +905,91 @@ json.tours @tours do |tour|
                 json.guest_pin zrv_guest.res_errors.nil? ? '' : zrv_guest.res_errors["error_position"]
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
+                json.igloohome_lock_id ''
+                json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               else
                 json.guest_pin ''
                 json.latch_link ''
                 json.unit_dwelo_lock_id ''
+                json.igloohome_lock_id ''
+                json.igloohome_guest_bluetooth_key ''
+                json.igloohome_guest_pin ''
               end
             end
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
-
-        elsif stop_lock_provider == "Manual"
-          _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
-          if _stop_.present? and _stop_.access_code.present?
-            json.guest_pin "Use code " + _stop_.access_code + " to enter."
+        
+        elsif stop_lock_provider == "Igloohome"
+          igloohome_lock = @community.get_igloohome_lock(stop)
+          igloohome_guest = @community.get_igloohome_guest(stop, @tour_user.id)         
+          
+          if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && (igloohome_guest.guest_bluetooth_key.present? || igloohome_guest.guest_pin.present?)
+            json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id igloohome_lock.device_id
+            json.igloohome_guest_bluetooth_key igloohome_guest.guest_bluetooth_key
+            json.igloohome_guest_pin igloohome_guest.guest_pin
           else
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
+            json.stop_lock_provider ''
+          end
+
+        elsif stop_lock_provider == "Manual"
+          _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
+          if (defined?(_stop_.door).present? && _stop_.door.present?) ||  (defined?(_stop_.doors).present? && _stop_.doors.any?)
+            _stop_ = defined?(_stop_.door).present? ? _stop_.door : (_stop_.doors.order("created_at ASC").first)
+          end
+          if _stop_.present? and _stop_.access_code.present?
+            json.guest_pin "Use code " + _stop_.access_code + " to enter."
+            json.latch_link ''
+            json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
+          else
+            json.guest_pin ''
+            json.latch_link ''
+            json.unit_dwelo_lock_id ''
+            json.igloohome_lock_id ''
+            json.igloohome_guest_bluetooth_key ''
+            json.igloohome_guest_pin ''
           end
         else
           json.guest_pin ''
           json.latch_link ''
           json.unit_dwelo_lock_id ''
+          json.igloohome_lock_id ''
+          json.igloohome_guest_bluetooth_key ''
+          json.igloohome_guest_pin ''
         end
       else
         json.guest_pin ''
         json.latch_link ''
         json.unit_dwelo_lock_id ''
+        json.igloohome_lock_id ''
+        json.igloohome_guest_bluetooth_key ''
+        json.igloohome_guest_pin ''
       end
     rescue => pin
       json.guest_pin ''
       json.latch_link ''
       json.unit_dwelo_lock_id ''
+      json.igloohome_lock_id ''
+      json.igloohome_guest_bluetooth_key ''
+      json.igloohome_guest_pin ''
     end
     
     json.navigation_title navigation_title
@@ -848,6 +1027,8 @@ json.tours @tours do |tour|
       json.floorplate_image floorplate_image.image.url  rescue ""
       json.image_width floorplate_image.width  rescue 0
       json.image_height floorplate_image.height  rescue 0
+      json.update_apply ((unit.provider == "resman" || unit.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
+      json.provider unit.provider
 
       unit_directional_text = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
 
@@ -910,6 +1091,8 @@ json.tours @tours do |tour|
       floorplan_for_name = Floorplan.find_by(id: unit&.floorplan&.id)
       stop_dat = {"floorplan" => (floorplan_for_name.name rescue ""),"floorplan_full_name" => (floorplan_for_name.name + "- #{(floorplan_for_name.bedrooms.present? ? (floorplan_for_name.bedrooms.to_i.to_s + " BR") : "") } / #{(floorplan_for_name.bathrooms.present? ? (floorplan_for_name.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
       json.stop_data stop_dat
+      json.availability_url unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url
+
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       unit_amenities_hit = true
 
@@ -1076,38 +1259,49 @@ json.tours @tours do |tour|
       json.directional_text elevator.directional_text
       json.video_link_button_label ""
       json.video_link ""
-
-      if new_stops_arr.compact[counter + 1].present?
-        next_stop = new_stops_arr.compact[counter + 1]
-        next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id rescue nil
-        if next_stop.is_a? Elevator
-          next_floor = current_floor
-          elevator_stop_description = ""
-
-          if hit
-            current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
-            elevator_stop_description = current_stop.floors.present? ? "Go to floor " + (plates_name[current_stop.floors.max.to_s].present? ? plates_name[current_stop.floors.max.to_s] : current_stop.floors.max.to_s rescue current_stop.floors.max.to_s) : "" rescue ""
-          else
-            current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
-            elevator_stop_description =  current_stop.floors.present? ? "Go to floor " + (plates_name[current_stop.floors.min.to_s].present? ? plates_name[current_stop.floors.min.to_s] : current_stop.floors.min.to_s rescue current_stop.floors.min.to_s) : "" rescue ""
-          end
-          if current_stop.present? and next_stop.present? and current_stop.building.present? and next_stop.building.present? and current_stop.building != next_stop.building
-            elevator_stop_description =  "Go to floor " + (plates_name[next_stop.floors.min.to_s].present? ? plates_name[next_stop.floors.min.to_s] : next_stop.floors.min.to_s rescue next_stop.floors.min.to_s) rescue elevator_stop_description           
-          end
-        else
-          elevator_stop_description =  next_stop.floor.present? ? "Go to floor " + (plates_name[next_stop.floor.to_s].present? ? plates_name[next_stop.floor.to_s] : next_stop.floor.to_s rescue next_stop.floor.to_s) : "" rescue ""
-          next_floor  = next_stop.floor.to_i rescue current_floor
-        end
-        if new_stops_arr.compact[counter + 1].is_a? Tour
-          fl_text = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : min_floor).to_s
-          elevator_stop_description = "Go to floor " + (plates_name[fl_text].present? ? plates_name[fl_text] : fl_text rescue fl_text)
-          next_floor  = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : current_floor).to_i
-        end
-
+      if @community.auto_wayfinding
+        from_type = (new_stops_arr[i-1].is_a? Tour) ? "Tour" : "TourStop"
+        to_type = (new_stops_arr[i].is_a? Tour) ? "Tour" : "TourStop"
+        from_id = (new_stops_arr[i-1].is_a? Tour) ? 0 : new_stops_arr[i - 1].id
+        to_id = (new_stops_arr[i].is_a? Tour) ? 0 : new_stops_arr[i].id
+        from_id = (from_type == "TourStop" && TourStop.find(from_id).stop_type == "elevator") ? TourStop.find(from_id).stop_id : from_id
+        to_id = (to_type == "TourStop" && TourStop.find(to_id).stop_type == "elevator") ? TourStop.find(to_id).stop_id : to_id
+        next_floor = ShortestPath.return_next_floor_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
+        elevator_stop_description = "Go to floor " + next_floor.to_s
       else
-        
-        elevator_stop_description = "Go to floor " + (plates_name[min_floor.to_s].present? ? plates_name[min_floor.to_s] : min_floor.to_s rescue min_floor.to_s)
+        if new_stops_arr.compact[counter + 1].present?
+          next_stop = new_stops_arr.compact[counter + 1]
+          next_stop = next_stop.stop_type.classify.constantize.find next_stop.stop_id rescue nil
+          if next_stop.is_a? Elevator
+            next_floor = current_floor
+            elevator_stop_description = ""
+
+            if hit
+              current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
+              elevator_stop_description = current_stop.floors.present? ? "Go to floor " + (plates_name[current_stop.floors.max.to_s].present? ? plates_name[current_stop.floors.max.to_s] : current_stop.floors.max.to_s rescue current_stop.floors.max.to_s) : "" rescue ""
+            else
+              current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
+              elevator_stop_description =  current_stop.floors.present? ? "Go to floor " + (plates_name[current_stop.floors.min.to_s].present? ? plates_name[current_stop.floors.min.to_s] : current_stop.floors.min.to_s rescue current_stop.floors.min.to_s) : "" rescue ""
+            end
+            if current_stop.present? and next_stop.present? and current_stop.building.present? and next_stop.building.present? and current_stop.building != next_stop.building
+              elevator_stop_description =  "Go to floor " + (plates_name[next_stop.floors.min.to_s].present? ? plates_name[next_stop.floors.min.to_s] : next_stop.floors.min.to_s rescue next_stop.floors.min.to_s) rescue elevator_stop_description           
+            end
+          else
+            elevator_stop_description =  next_stop.floor.present? ? "Go to floor " + (plates_name[next_stop.floor.to_s].present? ? plates_name[next_stop.floor.to_s] : next_stop.floor.to_s rescue next_stop.floor.to_s) : "" rescue ""
+            next_floor  = next_stop.floor.to_i rescue current_floor
+          end
+          if new_stops_arr.compact[counter + 1].is_a? Tour
+            fl_text = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : min_floor).to_s
+            elevator_stop_description = "Go to floor " + (plates_name[fl_text].present? ? plates_name[fl_text] : fl_text rescue fl_text)
+            next_floor  = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : current_floor).to_i
+          end
+
+        else
+          
+          elevator_stop_description = "Go to floor " + (plates_name[min_floor.to_s].present? ? plates_name[min_floor.to_s] : min_floor.to_s rescue min_floor.to_s)
+        end
       end
+
       if current_floor.present?
         floor_image = @community.floorplates.map{|x| x if x.floors.include?(current_floor)}.compact.last rescue nil
         floor_image = (floor_image || elevator.floorplate) rescue nil
@@ -1251,7 +1445,6 @@ json.tours @tours do |tour|
         end
       end
     end
-    # binding.pry
 
     stop.stop_details.each do |sd|
       json.stop_description sd.description
@@ -1264,45 +1457,58 @@ json.tours @tours do |tour|
     @existing_path_points = []
     
     if @community.show_map
-      
-      if new_stops_arr[i-1].present? and new_stops_arr[i-1].is_a? Tour
-        @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
-        path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
-        if path.blank?
-          path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
-          @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+      if @community.auto_wayfinding
+        from_type = (new_stops_arr[i-1].is_a? Tour) ? "Tour" : "TourStop"
+        to_type = (new_stops_arr[i].is_a? Tour) ? "Tour" : "TourStop"
+        from_id = (new_stops_arr[i-1].is_a? Tour) ? 0 : new_stops_arr[i - 1].id
+        to_id = (new_stops_arr[i].is_a? Tour) ? 0 : new_stops_arr[i].id
+        if @community.is_sitemap
+          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
         else
-          @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+          from_id = (from_type == "TourStop" && TourStop.find(from_id).stop_type == "elevator") ? TourStop.find(from_id).stop_id : from_id
+          to_id = (to_type == "TourStop" && TourStop.find(to_id).stop_type == "elevator") ? TourStop.find(to_id).stop_id : to_id
+          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
         end
-         
+        @existing_path_points = path_points if path_points.present?
       else
-        unless skip_1_path
-          path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
+        if new_stops_arr[i-1].present? and new_stops_arr[i-1].is_a? Tour
+          @existing_path_points << {x_plot: tour.x_plot, y_plot: tour.y_plot} if i == 0
+          path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
           if path.blank?
-            path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
+            path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
             @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
           else
             @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
           end
+           
         else
-          path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-2].stop_id).first
-          if path.blank?
-            path = Path.where(map_path_to_id: new_stops_arr[i-2].stop_id, map_path_from_id: stop.stop_id).first
-            @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+          unless skip_1_path
+            path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-1].stop_id).first
+            if path.blank?
+              path = Path.where(map_path_to_id: new_stops_arr[i-1].stop_id, map_path_from_id: stop.stop_id).first
+              @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+            else
+              @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+            end
           else
-            @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+            path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: new_stops_arr[i-2].stop_id).first
+            if path.blank?
+              path = Path.where(map_path_to_id: new_stops_arr[i-2].stop_id, map_path_from_id: stop.stop_id).first
+              @existing_path_points << path&.path_points.reorder('id DESC') if path.present?
+            else
+              @existing_path_points << path&.path_points.reorder('id ASC') if path.present?
+            end
           end
+          
+          # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
         end
-        
-        # @existing_path_points << path.path_points.reorder('id ASC') if path.present?
       end
       skip_1_path = skip_1
     end  
 
-    @existing_path_points.flatten!
+    @existing_path_points.flatten! unless @community.auto_wayfinding
     json.path_points @existing_path_points
 
-    # binding.pry
     i+=1
     counter += 1
   end
@@ -1314,9 +1520,9 @@ json.tours @tours do |tour|
     json.locks_provider (@community.enable_locks and @community.locks_provider.present?) ? @community.locks_provider : ''
     if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
       if @community.locks_provider == "EdgeState"
-        json.starting_point_locked tour.remote_locks.where(dwelo_id: nil).present? ? true : false
+        json.starting_point_locked tour.edgestate_locks.present? ? true : false
       elsif @community.locks_provider == "Dwelo"
-        json.starting_point_locked tour.remote_locks.where.not(dwelo_id: nil).present? ? true : false
+        json.starting_point_locked tour.dwelo_locks.present? ? true : false
       elsif  @community.locks_provider == "Latch"
         json.starting_point_locked tour.latch_locks.present? ? (@tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: tour.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active").present?) : false
       else

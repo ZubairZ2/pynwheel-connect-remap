@@ -1,0 +1,118 @@
+#configurations-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#modal-title.config-modal-title
+      = form_for @community,url: community_update_web_maps_configurations_path(@community),:html=>{:id=>"web_maps_configurations_form"}  do |f|
+        %alert.alert.alert-success.map-configurations-alert.hidden
+          %span 3D Maps Configuartions has been updated suceessfully
+        .modal-body
+          - map_config = @community&.three_d_maps_configuration
+          .form-group
+            .col-md-12.mb-10
+              %p.title-box Customize colors & opacity for Beans.ai 3D map renderings from options below.
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+              Default Polygon Color
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
+                  Unit polygon (floor-plans) color
+            .col-sm-12.col-lg-7.col-md-7.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i.addon-i
+                  = f.text_field :default_polygon_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>map_config&.default_polygon_color.present? ? map_config&.default_polygon_color : "#3ca832" 
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+              Selected Polygon Color
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
+                  Highlighted/Selected unit polygon color
+            .col-sm-12.col-lg-7.col-md-7.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i.addon-i
+                  = f.text_field :selected_polygon_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>map_config&.selected_polygon_color.present? ? map_config&.selected_polygon_color : "#5ca904"
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+              Default Polygon Opacity
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
+                  Default polygon opacity
+            .col-sm-12.col-lg-7.col-md-7.col-xs-12
+              = f.text_field :default_polygon_opacity,{type: "number", step: "0.1", :max => 1, :min => 0, class: "form-control property-map-marker-field ", :id => "default_polygon_opacity",:style => "line-height: 3.2;",value: map_config&.default_polygon_opacity.present? ? map_config&.default_polygon_opacity : 0.5 }
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+              Selected Polygon Opacity
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
+                  Highlighted/Selected polygon opacity
+            .col-sm-12.col-lg-7.col-md-7.col-xs-12
+              = f.text_field :selected_polygon_opacity,{type: "number", step: "0.1", :max => 1, :min => 0, class: "form-control property-map-marker-field ", :id => "selected_polygon_opacity",:style => "line-height: 3.2;",value: map_config&.selected_polygon_opacity.present? ? map_config&.selected_polygon_opacity : 0.8 }
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+              Faded Polygon Opacity
+              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#propertyDetailNameText
+                  This will be applied to all non-selected floors when at-least 1 floor is selected.
+            .col-sm-12.col-lg-7.col-md-7.col-xs-12
+              = f.text_field :faded_polygon_opacity,{type: "number", step: "0.1", :max => 1, :min => 0, class: "form-control property-map-marker-field ", :id => "faded_polygon_opacity",:style => "line-height: 3.2;",value: map_config&.faded_polygon_opacity.present? ? map_config&.faded_polygon_opacity : 0.3 }
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+              Unit Color
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
+                  unit (text) color
+            .col-sm-12.col-lg-7.col-md-7.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i.addon-i
+                  = f.text_field :unit_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>map_config&.unit_color.present? ? map_config&.unit_color : "#202"
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+              Selected Unit Color
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
+                  selected unit (text) color
+            .col-sm-12.col-lg-7.col-md-7.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i.addon-i
+                  = f.text_field :selected_unit_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>map_config&.selected_unit_color.present? ? map_config&.selected_unit_color : "#5ca904"
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+              POI Color
+              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#propertyDetailNameText
+                  Points-of-Interest color (amenities,entrances, stairs, elevators etc) 
+            .col-sm-12.col-lg-7.col-md-7.col-xs-12
+              .input-group.colorpicker-style.hex-format-colorpicker
+                .input-group-addon
+                  %i.addon-i
+                  = f.text_field :poi_color, class: "form-control property-map-marker-field",autocomplete: true,:value=>map_config&.poi_color.present? ? map_config&.poi_color : "#008000"
+          .form-group.mt-30
+            %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+              Show Unit Numbers
+              %i.mapConfigurationToolTip.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#configDetailNameText
+                  Show/Hide unit numbers
+            .col-sm-12.col-lg-7.col-md-7.col-xs-12
+              .TriSea-technologies-Switch
+                %span.pr-15 No
+                = f.check_box :show_unit_numbers, :checked => map_config.present? ? map_config.show_unit_numbers : true
+                %label.label-primary{:for=>"community_show_unit_numbers"}
+                %span.pl-15 Yes
+          .form-group
+            %label.col-sm-12.col-lg-5.col-md-5.col-xs-12.control-label.font-size-15
+              Hide Floors
+              %i.propertyDetailName.fa.fa-question-circle{"data-toggle"=>"tooltip","data-placement"=>"top","data-content"=>" "}
+                %span#propertyDetailNameText
+                  When true, shows only the filtered/selected floors, otherwise it will fade out unselected floors
+            .col-sm-12.col-lg-7.col-md-7.col-xs-12
+              .TriSea-technologies-Switch
+                %span.pr-15 No
+                = f.check_box :hide_floors, :checked => map_config.present? ? map_config.hide_floors : true
+                %label.label-primary{:for=>"community_hide_floors"}
+                %span.pl-15 Yes
+        .modal-footer
+          = f.submit "Update",:class=>"btn btn-primary submit-click"
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel 

@@ -27,6 +27,7 @@ class TourUser < ApplicationRecord
   has_many :igloo_guests, dependent: :destroy
   has_many :latch_guests, dependent: :destroy
   has_many :zerv_guests, dependent: :destroy
+  has_many :igloohome_guests, dependent: :destroy
   has_many :lock_histories, dependent: :destroy
   has_many :prospects, dependent: :destroy
   has_many :user_stripes, dependent: :destroy
@@ -56,4 +57,44 @@ class TourUser < ApplicationRecord
   def crop_image_bit
     @crop_image_bit
   end
+
+  def check_code_expiry(community)
+    access_code_generated_at = self.property_access_code_generated_at
+    tour_length_stay_limit = community&.tour&.tour_setting&.length_stay_limit
+    enabled_property_access = community&.tour&.tour_setting&.enable_restricted_property_access
+    if enabled_property_access && (access_code_generated_at.nil? || Time.now > access_code_generated_at + tour_length_stay_limit.minutes)
+      true
+    else
+      false
+    end
+  end
+
+  def property_access_code_verification(access_code,is_property_access_enabled,tour_length_stay_limit)
+    if access_code.present?
+      if is_property_access_enabled
+        if Time.now < self.property_access_code_generated_at + tour_length_stay_limit.minutes
+          self.is_code_valid(access_code)
+        else
+          self.errors[:base] << "Access Code has been expired."
+          false
+        end
+      else
+        self.errors[:base] << "Please enable the property access restriction from tour settings."
+        false
+      end
+    else
+      self.errors[:base] << "Access code cannot be blank"
+      false
+    end
+  end
+
+  def is_code_valid(access_code)
+    if self.property_access_code.to_s == access_code.to_s
+      true
+    else
+      self.errors[:base] << "Please make sure code is valid and try again"
+      false
+    end
+  end
+
 end

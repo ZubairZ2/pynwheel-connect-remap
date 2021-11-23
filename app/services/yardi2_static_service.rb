@@ -3,6 +3,7 @@ class Yardi2StaticService < BaseService
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
+        property_id = property_id.strip
         sleep 3
         external_property_id = ""
         ils_units = []
@@ -52,7 +53,6 @@ class Yardi2StaticService < BaseService
           #     ils_units << u[1]
           #   end
           # end
-
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
           #else

@@ -3,7 +3,10 @@ class AmenitiesController < ApplicationController
   include AssignLocksHelper
   before_action :authenticate_user!
   before_action :check_community
+  after_filter "previous_url", only: [:edit]
+
   add_breadcrumb "Home", :root_path
+
   def index
     @amenities = current_community.amenities.order(id: :desc)
     add_breadcrumb "Amenity Images", community_amenities_path(current_community)
@@ -24,11 +27,13 @@ class AmenitiesController < ApplicationController
   def edit
     @community = Community.find params[:community_id]
     @amenity = Amenity.find (params[:id])
+    @doors = @amenity.doors.order("created_at ASC")
     if params[:unit].present?
       @unit = Unit.find (params[:unit])
     end
     @from_unit =  (params[:from] == "unit" and @amenity.amenityable_type == "Unit") ?  @amenity.amenityable_id : "0"
     @floors = @amenity.building.present? ? @community.floorplates.where(building: @amenity.building).map{|x| x.floors}.flatten.sort : (@community.floorplates.map{|x| x.floors}.flatten.uniq).sort
+    @current_locks_provider = existing_locks_provider(@community)
     @all_locks = all_locks(@community)
   end
 
@@ -63,7 +68,7 @@ class AmenitiesController < ApplicationController
   def update
     @amenity = Amenity.find(params[:id]) 
     if @amenity.update_attributes(amenity_params)
-      update_enable_locks()
+      update_locks()
       begin
         ts = TourStop.find_by(stop_id: @amenity.id)
         if ts.present? && params[:amenity][:name].present?
@@ -79,9 +84,7 @@ class AmenitiesController < ApplicationController
           end
       else
       if params[:done_action].present?
-        from_unit = params[:from_id]
-        done_action = (params[:floorNo].nil? and params[:from].nil?) ? community_tours_path(current_community) : ( params[:floorNo].present? ? community_tours_path(current_community) << '?floorNo=' + params[:floorNo] : edit_community_unit_path(current_community,from_unit) )
-        redirect_to done_action , notice: "Unit's Amenity updated successfully"
+        redirect_to session[:go_back] , notice: "Amenity updated successfully"
       else
         unless params[:amenity_modal].present?
           @unit = Unit.find(params[:unit]) if params[:unit].present?
@@ -92,11 +95,16 @@ class AmenitiesController < ApplicationController
       end
       end
     else
-      unless params[:amenity_modal].present?
-        @unit = Unit.find(params[:unit]) if params[:unit].present?
-        redirect_to (params[:floorNo].nil? and params[:from].nil?) ? edit_community_amenity_path(current_community,@amenity) : ( params[:floorNo].present? ? edit_community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  "?floorNo=#{params[:floorNo]}" : edit_community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  '?from=unit'+ (@unit.present? ? '?&unit='+@unit.id.to_s : '')) , notice: "Amenity updated successfully"
+      unless @amenity.image.present?
+        flash[:error] = @amenity.errors.full_messages.join(',')
+        redirect_to edit_community_amenity_path(current_community,@amenity)
       else
-        redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
+        unless params[:amenity_modal].present?
+          @unit = Unit.find(params[:unit]) if params[:unit].present?
+          redirect_to (params[:floorNo].nil? and params[:from].nil?) ? edit_community_amenity_path(current_community,@amenity) : ( params[:floorNo].present? ? edit_community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  "?floorNo=#{params[:floorNo]}" : edit_community_amenity_path(:id=>@amenity.id,:community_id=>@community.id) <<  '?from=unit'+ (@unit.present? ? '?&unit='+@unit.id.to_s : '')) , notice: "Amenity updated successfully"
+        else
+          redirect_to community_amenities_path(current_community), notice: "Amenity updated successfully"
+        end
       end
     end
   end
@@ -124,22 +132,61 @@ class AmenitiesController < ApplicationController
       redirect_to community_amenities_path(current_community), error: @amenity.errors.full_messages.join(',')
     end
   end
+
+  def update_amenity_door_lock
+    @amenity = @community.amenities.find_by(id: params[:id])
+    @door = @amenity.doors.find_by(id: params[:door_id])
+    if params[:lock_provider] == "Manual" && params[:access_code] == ""
+      @door.update_columns(lock_provider: "", access_code: "")
+    else
+      @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code])
+    end
+    assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
+  end
+
+  def remove_amenity_door_plot
+    @amenity = @community.amenities.find_by(id: params[:id])
+    @door = @amenity.doors.find_by(id: params[:door_id])
+    @door.destroy
+    redirect_to plot_amenities_community_floorplate_amenities_path(@community, @amenity) + "?floor=" + params["floor"]
+    # render json: {amenity: @amenity, door: @door, success: true}
+    # @door.destroy
+
+  rescue
+    render json: {unit: {}, door: {}, success: false}
+  end
+
+  def return_door_lock
+    door = Door.where(id: params[:door_id]).includes(:dwelo_lock, :edgestate_lock, :latch_lock, :zerv_lock, :igloohome_lock).first
+    digital_lock = { edgestate_lock: door.edgestate_lock, dwelo_lock: door.dwelo_lock, latch_lock: door.latch_lock, zerv_lock: door.zerv_lock, igloohome_lock: door.igloohome_lock }
+    render json: {lock_provider: door.lock_provider, access_code: door.access_code, digital_lock: digital_lock}
+  end
+
+  def previous_url
+    session[:go_back] = request.referer if request.referer != request.url
+  end
+
   private
 
   def amenity_params
     params.require(:amenity).permit!
   end
 
-  def update_enable_locks()
+  def update_locks
     if @community.enable_locks
-        lock_id = (params.has_key?("lock_id") or params[:lock_id] == "") ? params[:lock_id] : nil
-        assign_lock(@community, @amenity, lock_id) unless lock_id.nil?
-        if params[:amenity][:lock_provider] == "Manual"
-          @amenity.update_column(:lock_provider, "") if params[:amenity][:access_code] == ""
+      if @amenity.doors.present?
+        @door = @amenity.doors.find_by id: params[:door_id]
+        if params[:lock_provider] == "Manual" && params[:access_code] == ""
+          @door.update_columns(lock_provider: "", access_code: "", updated_at: Time.now.utc)
         else
-          @amenity.update_column(:lock_provider, "") if lock_id.nil? or params[:lock_id] == ""
+          @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code], updated_at: Time.now.utc)
         end
-      end 
+        assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
+      else
+        @amenity.update_attributes(lock_provider: params[:amenity][:lock_provider], access_code: params[:access_code])
+        assign_lock(@community, @amenity, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
+      end
+    end
   end
 
 end

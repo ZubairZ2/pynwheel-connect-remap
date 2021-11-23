@@ -1,4 +1,5 @@
 class SitemapsController < ApplicationController
+  include AssignLocksHelper
   # include Error::ErrorHandler
   before_action :set_community
   before_action :check_community
@@ -54,7 +55,6 @@ class SitemapsController < ApplicationController
   end
 
   def plotexp
-    add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
     if @community.sitemap.present?
       @sitemap = @community.sitemap
     else
@@ -65,7 +65,7 @@ class SitemapsController < ApplicationController
       flash[:error] = "Please import unit data first"
     end
     
-    @units = @community.units.where(floorplate_id: nil).order(:building, :unit_type)
+    @units = @community.units.where(floorplate_id: nil).order(:building, :unit_type).includes(:door)
     @dimensions = @sitemap.is_ocr_enabled ? s3_img_dimensions(sitemap_image_url(@sitemap)) : {}
     @map_ocr_data = @sitemap.is_ocr_enabled ? @sitemap.map_ocr_data : []
 
@@ -91,6 +91,14 @@ class SitemapsController < ApplicationController
 			
     #   erb :'sitemap/plotexp'
     # end
+
+    @all_locks              =   all_locks(@community)
+    @current_locks_provider =   existing_locks_provider(@community)
+    @hallways               =   make_sure_one_selected_hallway(@sitemap.hallways.order("id ASC"))
+    @access_points          =   @sitemap.access_points     # @sitemap.access_points.select('DISTINCT ON (x_plot, y_plot) *')
+    @unit_with_door         =   @units.map{|unit| { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.x_plot }, door: unit.door.present? ? unit.door : {} }}}
+
+    add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
   end
 
   def list_amenities
@@ -101,8 +109,26 @@ class SitemapsController < ApplicationController
   def plot_amenities
     add_breadcrumb "Plot Property Map Units", plotexp_community_sitemaps_path
     add_breadcrumb "Plot Property Map Amenities", plot_amenities_community_sitemaps_path(current_community) 
+    
     @sitemap = @community.sitemap
     @amenities = @community.amenities
+    @current_locks_provider =   existing_locks_provider(@community)
+    @hallways = make_sure_one_selected_hallway(@sitemap.hallways.order("id ASC"))
+    @all_locks = all_locks(@community)
+
+    if @sitemap.image.blank? 
+      flash[:error] = "Kindly add Sitemap image first"
+      redirect_to community_sitemaps_path(@community)
+    end
+
+    @amenity_with_doors = []
+    @amenities_doors = @sitemap.amenities.includes(:doors)
+
+    @amenities_doors.each do |amenity|    # following json is created same as with unit to reuse the unit's code.
+        response = amenity.doors.map { |door| { unit_info: { unit: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.id, x_plot: amenity.x_plot, y_plot: amenity.x_plot }, door: door }}}
+        @amenity_with_doors << response
+    end
+    @amenity_with_doors = @amenity_with_doors.flatten
   end
 
   def plot_elevators

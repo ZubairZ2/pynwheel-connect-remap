@@ -8,7 +8,6 @@ class SchedualToursController < ApplicationController
   # GET /schedual_tours
   # GET /schedual_tours.json
   def index
-    @schedual_tours = SchedualTour.where(community_id: @community.id).where.not(tour_user_id: nil).order! 'tour_date DESC' rescue ""
     community_id = params['community'] if params['community'].present?
     community = community_id rescue @community.id
     respond_to do |format|
@@ -153,6 +152,7 @@ class SchedualToursController < ApplicationController
     else
       render json: {message: "some errors occured"}, status: 'failed'
     end
+    binding.pry
     redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification],community_id: community.id,property_tour_type: property_tour_type,tour_type: tour_type)
   end
   def do_yardi_schedule_tour(schedual_tour,tu,desired_move_in_date)
@@ -283,20 +283,13 @@ class SchedualToursController < ApplicationController
   def check_limit(tour_type, total_count,total_count_per_day,self_tour_count,guided_count, community )
     
     limit_type = []
-    # if (community.tour.max_tour_users.present? && total_count_per_day >= community.tour.max_tour_users.to_i)
-    #   # return true, "max tour users limit reached for the day", (limit_type << "total")
-    #   limit_type << "total"
-    # end
     if (community.tour.tour_setting.do_limit_max_tour && community.tour.tour_setting.limit_max_tour.present? && total_count >= community.tour.tour_setting.limit_max_tour.to_i)
-      #return true, "max tour users limit reached for the selected time", (limit_type << "total")
       limit_type << "virtual_tour"
     end
     if community.tour.tour_setting.do_limit_max_tour && community.tour.max_self_tour_users.present? && community.tour.max_self_tour_users.present? && !(self_tour_count < community.tour.max_self_tour_users.to_i)
-      # return true, "max self tour tour users limit reached for the selected time", (limit_type << "self_tour")
       limit_type << "self_tour"
     end
     if community.tour.tour_setting.do_limit_max_tour && community.tour.max_guided_tour_users.present? && community.tour.max_guided_tour_users.present? && !(guided_count < community.tour.max_guided_tour_users.to_i)
-      # return true, "max guided tour users limit reached for the selected time", (limit_type << "guided_tour")
       limit_type << "guided_tour"
     end
     return limit_type
@@ -307,7 +300,6 @@ class SchedualToursController < ApplicationController
   def update
     tu = @schedual_tour.tour_user
     tu.is_sms_enabled = params[:tour_user][:is_sms_enabled] == "0" ? false : true
-    # date = DateTime.strptime(params[:tour_time], '%m/%d/%Y %l:%M %p')
     date = Date.strptime(params[:tour_date], '%m/%d/%Y') if params[:tour_date].is_a? String
     time = Time.zone.parse(params[:tour_time]) if params[:tour_time].is_a? String
     date_time = DateTime.new(date.year, date.month, date.day, time.hour, time.min).strftime('%m/%d/%Y %l:%M %p')
@@ -337,9 +329,6 @@ class SchedualToursController < ApplicationController
     
         rescue Exception => e
         end
-        # format.html { redirect_to @schedual_tour, notice: 'Schedual tour was successfully created.' }
-        # format.json { render :json, status: :updated, message: web_notification }
-        # format.json { render json: @schedual_tour, status: :updated, location: @schedual_tour }
         msg = { :status => "ok", :message => sent_notifications[:web_notification] }
         format.json  { render :json => msg }
       else
@@ -387,21 +376,15 @@ class SchedualToursController < ApplicationController
     end
 
     def scheduled_tours_in_future(scheduled_tours, community, tour_user_ids = [], community_time_zone = nil)
-      community_time_zone = get_time_zone(community) if community.present? && community.latitude.present? && community.longitude.present?
+      community_time_zone = community.get_time_zone()
       scheduled_tours.find_each do |tour|
         unless tour.is_tour_completed
-          community_time_zone = community_time_zone || tour.user_time_zone
           is_in_timezone = (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(community_time_zone) > Time.now.in_time_zone(community_time_zone)
           tour_user_ids << tour.tour_user_id if is_in_timezone
         end
       end
     
       tour_user_ids
-    end
-
-    def get_time_zone(community)
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
     end
 
     def get_tour_datetime_and_diff date
@@ -473,8 +456,6 @@ class SchedualToursController < ApplicationController
       end 
       confirmation_page_link = "#{root_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}"
       (is_rescheduled && property_tour_type == "scheduled_tour") ? schedual_tour.update_attributes(reschedule_notification: web_notification) : schedual_tour.update_attributes(confirmation_notification: web_notification)
-      # iPhone Users: Download #{community_text} from the App Store #{app_link}
-      # Android Users: Download #{community_text} from Google Play #{android_link}
       sms_content = (is_rescheduled && property_tour_type == "scheduled_tour") ? 
       "Thank you for rescheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")} instead of #{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")} at #{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}.#{"\n"} When you go to the property, you will need 
       - A photo ID 
@@ -528,7 +509,7 @@ Get information about your tour here: #{confirmation_page_link}"
 
       DelayedSchedulerMailerJob.perform_async(subject1, email_content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both")
       emails.each do |email|
-        DelayedSchedulerMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,nil,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
+        DelayedSchedulerMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,INFO_EMAIL,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
       end
       # DelayedSchedulerMailerJob.perform_async("A Self Tour has been scheduled!",community_mail,community.email,nil,nil,nil,nil)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
 

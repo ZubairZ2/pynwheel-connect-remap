@@ -91,37 +91,38 @@ $(document).ready(function () {
     //   $(this).attr('data-href' , '/communities/'+community_id+'/units/'+$(this).attr("title")+'/remove_plot');
     // });
 
-    $("#map").mouseup(function (e) {
-      // first check if user is clicking on scrollbar
-      if (e.target != $('#map').get(0)) {
-        e.preventDefault();
-        left_margin = parseInt($('#left_margin').html());
-        right_margin = parseInt($('#right_margin').html());
+    // $("#map").mouseup(function (e) {
+    //   debugger
+    //   // first check if user is clicking on scrollbar
+    //   if (e.target != $('#map').get(0)) {
+    //     e.preventDefault();
+    //     left_margin = parseInt($('#left_margin').html());
+    //     right_margin = parseInt($('#right_margin').html());
 
-        dx = parseInt($('#active_x_plot').html()) - 8;
-        dy = parseInt($('#active_y_plot').html() - 10);
-        // dx = dx - left_margin;
-        // dy = dy -right_margin;
-        fontSize = $('#font_size').html();
-        marker_color = $('#marker_color').html();
-        if (addmode) {
-          // save plotting for each selected unit
-          for (i = 0; i < selected.length; i++) {
-            savePlot(selected[i][0], dx, dy);
-          }
-          // add new marker to display
-          tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + (dx - left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: "+ fontSize+"px;'>";
+    //     dx = parseInt($('#active_x_plot').html()) - 8;
+    //     dy = parseInt($('#active_y_plot').html() - 10);
+    //     // dx = dx - left_margin;
+    //     // dy = dy -right_margin;
+    //     fontSize = $('#font_size').html();
+    //     marker_color = $('#marker_color').html();
+    //     if (addmode) {
+    //       // save plotting for each selected unit
+    //       for (i = 0; i < selected.length; i++) {
+    //         savePlot(selected[i][0], dx, dy);
+    //       }
+    //       // add new marker to display
+    //       tag = "<a class='marker' data-toggle='tooltip' title='" + selected[0][1] + "' style='left:" + (dx - left_margin) + "px; top:" + (dy - right_margin) + "px; position:absolute; font-size: "+ fontSize+"px;'>";
 
-          tag += "<i class='fas fa-map-marker-alt' style='color: "+marker_color+";'></i>";
-          tag += "</a>"
-          $('#map').append(tag);
-          // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
-          //$(".marker:last").trigger("click") 
-          reset();
-          doDraggable();
-        }
-      }
-    });
+    //       tag += "<i class='fas fa-map-marker-alt' style='color: "+marker_color+";'></i>";
+    //       tag += "</a>"
+    //       $('#map').append(tag);
+    //       // TODO Fix below line, if you remove it you will have to click 2 times on marker for deletion
+    //       //$(".marker:last").trigger("click") 
+    //       reset();
+    //       doDraggable();
+    //     }
+    //   }
+    // });
 
 
     if ($("#sitemap-image-upload-holder").length) {
@@ -199,4 +200,22 @@ function addMarker(){
   $('#add_horizontal_position').val($('#horizontal_position').val());
   $('#add_vertical_position').val($('#vertical_position').val());
   $('#add-marker-modal').modal('show');
+}
+
+function start_access_point_plot(event){
+    accesspointplot = true
+    selected = [null]
+    plotMode()
+
+    $(".multi-select-units").css({"pointer-events": "none"})
+    $("#map").css('cursor', 'crosshair')
+    $("<div id='overlay'></div>").css({
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+      top: 0,
+      left: 0,
+      background: "#000000",
+      opacity: 0.5
+    }).appendTo($(".multi-select-units").css("position", "relative"));
 }

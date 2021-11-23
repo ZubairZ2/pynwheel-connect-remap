@@ -395,28 +395,9 @@ class Api::V1::PynwheelAccessUsersController < ActionController::Base
   end
 
   def current_community_time(community)
-    timezone = get_community_time_zone(community)
+    timezone = community.get_time_zone()
     (timezone != "UTC") ? Time.now.in_time_zone(timezone) : Time.now.utc
   end
-
-  def get_community_time_zone(community)
-    tz = Ziptz.new
-    timezone = nil
-
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and community.zip.present?
-        timezone = tz.time_zone_name(community.zip)
-    end
-
-    return timezone.present? ? timezone : "UTC"
-  rescue
-    return "UTC"
-  end
-
 
   def base_url
     @pynwheel_access_user&.community&.dwelo&.api_url

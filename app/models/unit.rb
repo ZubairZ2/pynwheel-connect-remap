@@ -66,23 +66,34 @@ class Unit < ApplicationRecord
 
   has_many :paths, as: :map_path
   has_many :path_points, through: :paths
-  has_many :remote_locks,  -> { for_units }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
-  has_many :latch_locks, as: :stop, dependent: :destroy
+  # has_many :remote_locks,  -> { for_units }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy  # was being handled manually
+  has_many :remote_locks, as: :stop     # remove it only after confirm refactoring, as it is being used
+  has_many :edgestate_locks, -> { where(dwelo_id: nil) },  class_name: 'RemoteLock', as: :stop
+  has_many :dwelo_locks, -> { where(edge_state_id: nil) },  class_name: 'RemoteLock', as: :stop
+  has_many :latch_locks, as: :stop
+  has_many :zerv_locks, as: :stop
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
-  has_many :zerv_locks, as: :stop, dependent: :destroy
   has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
+  has_many :igloohome_locks, as: :stop, dependent: :destroy
+  has_many :igloohome_guests, as: :guest_of_stop, dependent: :destroy
   
+
+  has_one :door, as: :attached_with, dependent: :destroy
+  has_one :tour_stop, as: :stop, dependent: :destroy
+
   scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
   #scope :are_available, -> { where("available = ? and sold = ?", true,false) }
   scope :past_available_units, -> { where("availability = ? and available_date <= ? and x_plot > ?", "Unoccupied", Date.today, 0) }
   scope :has_x_plot, -> { where("x_plot > ? and available_date > ? and available_date < ? and available = ?", 0, Date.today, Date.today+2.year,true) }
   scope :has_y_plot, -> { where("y_plot > ? and available_date > ? and available_date < ? and available = ?", 0, Date.today, Date.today+2.year,true) }
   scope :ploted_units, -> { has_x_plot.or(has_y_plot) }
+  scope :are_ploted_units, -> { where("(x_plot > ? or y_plot > ?)", 0, 0) }
   #scope :available_units, -> { ploted_units.or(past_available_units).where.not(available: true) }
   scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true) } #Don't fetch units where are sold
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_unit_image
   after_update :crop_unit_secondary_image
+  after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   before_destroy :delete_data
 
 
@@ -169,4 +180,13 @@ class Unit < ApplicationRecord
   def self.path_data
     [{x: 1025, y: 503}, {x: 1000, y: 603}, {x: 980, y: 300}]
   end
+
+  def remove_doors_plotting
+    door.destroy if door.present?
+  end
+
+  def digital_lock_provider?
+    self.lock_provider.present? and self.lock_provider != "" and self.lock_provider != "Manual"
+  end
+
 end

@@ -28,9 +28,10 @@ class SchedualTour < ApplicationRecord
   # validates :tour_type, presence: true
   # validates :tour_time, presence: true
 
-  scope :desc_created_at, -> {order(tour_date: :desc)}
-  COUNTRY_CODES =  JSON.parse(File.read(Rails.root.join("app/assets/javascripts/country_codes.json")))
-
+  scope :desc_tour_date, -> {order('coalesce(tour_date, created_at) desc')}
+  scope :scheduled_tours, -> {where.not(tour_user_id: nil,tour_date: nil,tour_time: nil)}
+  COUNTRY_CODES =  JSON.parse(File.read(Rails.root.join("app/assets/jsons/country_codes.json")))
+  
   def cancel_knock_appointment
     return unless @schedual_tour.community.is_knock_community?
     KnockService.new(@schedual_tour).cancel_knock_appointment

@@ -9,33 +9,18 @@ class ToursController < ApplicationController
     @tour_stops = @tours.present? ? @tours.tour_stops : nil
     @tour_setting = @tours.tour_setting ||  @tours.create_tour_setting
     @community_opening_hours = @community.opening_hours.order(:sort).all
-
-
     @tour_elevator_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "elevator").map{|x| x.stop_id}
-
     @floorplates = @community.floorplates unless @community.is_sitemap
-    @existing_stops = []
-
-
-    @existing_path_points = []
-    @building_list = []
-    floor_choice = []
-    @building_choice = []
+    @existing_stops, @existing_path_points, @building_list, floor_choice, @building_choice = [],[],[],[],[]
     @sorted_building = @tours.building_order
-
-
     @floor = nil
-    
-    
-    # @floor_list = @community.floorplates.where(building: @building).map{|x| x.floors}.flatten!.sort rescue nil
     @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
     params[:floorNo] = params[:floorNo].present? ? params[:floorNo] : @floor_list.first rescue nil
     #########################################################################
-    # @tour_stops.where.not(stop_type: "elevator").map{|x| @building_list << x.stop_type.classify.constantize.find_by_id(x.stop_id).building}
     @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-
     @building_list = @building_list.compact.reject { |c| c.empty? }.uniq
     @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+    
     if @sorted_building.present?
       if (@building_list - @sorted_building != [] )
         @building_list = (@sorted_building) + (@building_list - @sorted_building) 
@@ -56,18 +41,16 @@ class ToursController < ApplicationController
     
     if params[:floorNo].present? && !@community.is_sitemap && @floor_list.present?
       
-    floor_choice = (params[:floorNo].to_i == @floor_list[0]) ? [nil,params[:floorNo].to_i] : [params[:floorNo].to_i]
+      floor_choice = (params[:floorNo].to_i == @floor_list[0]) ? [nil,params[:floorNo].to_i] : [params[:floorNo].to_i]
       @floor = params[:floorNo]
       @sitemap =  @community.floorplates.select{|f| f.floors.include?(params[:floorNo].to_i)}.first
-      if @community.show_map
-        
+      if @community.show_map       
         @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id} & @sitemap.amenities.where(floor: floor_choice, building: @building_choice).map{|x| x.id}
       else
         @tour_amenity_array =  TourStop.where(tour_id: @community.tour.id,stop_type: "amenity").map{|x| x.stop_id} & @community.amenities.where(floor: floor_choice,building: @building_choice).map{|x| x.id}
       end
 
       if @community.show_map
-        
         @tour_unit_array =  @community.mdu ? TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @sitemap.units.map{|x| x.id if (floor_choice.include? x.floor)  && (@building_choice.include? x.building ) } | @community.units.where( floor: floor_choice,building: @building_choice,modal_unit:  true).ids : []
       else
         @tour_unit_array =  @community.mdu ? TourStop.where(tour_id: @community.tour.id,stop_type: "unit").map{|x| x.stop_id}  & @community.units.map{|x| x.id if (floor_choice.include? x.floor) && (@building_choice.include? x.building ) } | @community.units.where(floor: floor_choice,building: @building_choice,modal_unit:  true).ids : []
@@ -90,41 +73,32 @@ class ToursController < ApplicationController
     rescue
       floorplate_elevators = nil
     end
-    # f = floorplate_elevators.each{|z| Elevator.find(z).id}
 
-    # floorplate_elevators.each{|z| Elevator.find(z).paths.each{|path| @existing_path_points << path.path_points.reorder('id ASC') if (@tour_unit_array.include?(path.map_path_from_id) || @tour_amenity_array.include?(path.map_path_from_id) ||  @tour_unit_array.include?(path.map_path_to_id) || floorplate_elevators.include?(path.map_path_from_id)) }}
     ele_ids = []
     @community.floorplates.map{|x|  ele_ids << x.id if x.floors.include?(1)}
 
     @community.tour.tour_stops.order(:sort).each do |stop|
-      
+
       next if !@community.mdu && stop.stop_type == "unit"
       if !@community.is_sitemap
         next if  !(@all_stops.include?(stop.stop_id)) && !(floorplate_elevators.include?(stop.stop_id))  rescue ''
       
         begin
           
-
         if (floor_choice.include?(@tours.starting_floor) && @building_choice.include?(@tours.building))       
           from_sp_path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
           from_sp_path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first unless from_sp_path.present?
-          @existing_path_points << from_sp_path.path_points.reorder('id ASC') if (from_sp_path.present?)
-          # @community.tour.tour_stops.where(stop_id: @all_stops).map{|x|           @existing_path_points <<           Path.find_by(map_path_from_id: nil, map_path_to_id: x.stop_id).path_points rescue next} 
-          # @community.tour.tour_stops.where(stop_id: @all_stops).map{|x|           @existing_path_points <<           Path.find_by(map_path_from_id: x.stop_id, map_path_to_id: nil).path_points rescue next}
-        
+          @existing_path_points << from_sp_path.path_points.reorder('id ASC') if (from_sp_path.present?)      
         end
         rescue
           floorplate_elevators = nil
         end
-        # from_sp_path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first if ( (@floor.to_i == (@tours.starting_floor.present? ? @tours.starting_floor : @community.floorplates.map{|f| f.floors}.flatten.min.to_i)))
       else
         
         from_sp_path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
         from_sp_path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first unless from_sp_path.present?
         @existing_path_points << from_sp_path.path_points.reorder('id ASC') if (from_sp_path.present?)
       end
-      # @existing_path_points << from_sp_path.path_points.reorder('id ASC') if (from_sp_path.present?)
-      # @existing_path_points << to_sp_path.path_points.reorder('id ASC') if (to_sp_path.present?)
     end
     
     @community.tour.tour_stops.where(stop_id: @all_stops).map{|x|           @existing_path_points <<            @community.tour.tour_stops.where(stop_id: @all_stops).map{|y| Path.find_by(map_path_from_id: x.stop_id, map_path_to_id: y.stop_id).path_points.reorder('id ASC') unless x == y rescue next}.compact                              }
@@ -132,8 +106,6 @@ class ToursController < ApplicationController
     
     @all_stops
 
-
-    # @existing_path_points << @tours.path_points.reorder('id ASC') if @tours.path.present?
     @existing_path_points.flatten!
     @existing_path_points
     @existing_stops << Unit.where(id: @tour_unit_array) if @community.mdu
@@ -158,67 +130,8 @@ class ToursController < ApplicationController
       @units = @community.is_sitemap ? (@community.units - un.compact) : (@community.units.where(floor: @floor.to_i,building: @building_choice) - un.compact)
     end
 
-    #/////////////////////////////////// new
-    # @units = []
-    # @amenities = []
-    # @elevators = []
-    # @tour_stops_list  = []
-    # @all_stops = []
-    # @existing_path_points = []
-    # default_first_floor = @community.floorplates.map{|f| f.floors}.flatten.sort.first unless @community.is_sitemap
-    # start_point_floor = @tours.starting_floor.present? ? @tours.starting_floor : @community.floorplates.map{|f| f.floors}.flatten.sort.first unless @community.is_sitemap
-    # all = @tours.tour_stops.map{|x| [x , (x.stop_type.classify.constantize.find_by_id x.stop_id)]}
-    # all.each do |stop|
-      
-    #   if stop[1].is_a? Unit
-    #     if ([@floor.to_i,nil].include? stop[1].floor)  && ([@building,nil].include? stop[1].building) || @community.is_sitemap
-    #       @tour_stops_list << stop[0]
-    #       @units << stop[1]
-    #       @all_stops << stop[0].stop_id
-    #     end
-    #   end
-    #   if stop[1].is_a? Elevator
-    #     if stop[1].floors.include?(@floor.to_i) && ([@building,nil].include? stop[1].building) || @community.is_sitemap
-    #       @tour_stops_list << stop[0]
-    #       @elevators << stop[1] 
-    #       @all_stops << stop[0].stop_id
-    #     end
-    #   end
-    #   if stop[1].is_a? Amenity
-    #     if ([@floor.to_i,nil].include? stop[1].floor) &&([@building,nil].include? stop[1].building) || @community.is_sitemap
-    #       @tour_stops_list << stop[0]
-    #       @amenities << stop[1]
-    #       @all_stops << stop[0].stop_id
-    #     end
-    #   end
-    # end
-    
-    # @tour_stops_list.each_with_index do |st,i|
-    #   if (start_point_floor.to_i == @floor.to_i) || @community.is_sitemap
-    #     from_sp_path = Path.where(map_path_to_id: st.stop_id, map_path_from_id: nil).first
-    #     from_sp_path = Path.where(map_path_to_id: nil, map_path_from_id: st.stop_id).first unless from_sp_path.present?
-    #     @existing_path_points << from_sp_path.path_points.reorder('id ASC') if (from_sp_path.present?)
-    #   end
-    #   @tour_stops_list.each_with_index do |st1,j|
-    #     next if j >= i
-    #     from_sp_path = nil
-    #     from_sp_path = Path.where(map_path_to_id: st.stop_id, map_path_from_id: st1.stop_id).first
-    #     from_sp_path = Path.where(map_path_to_id: st1.stop_id, map_path_from_id: st.stop_id).first unless from_sp_path.present?
-    #     @existing_path_points << from_sp_path.path_points.reorder('id ASC') if (from_sp_path.present?)
-        
-    #   end
-
-    # end
-    # @existing_path_points.flatten!
-    
-    # puts "grgr"
-
-  
-
-
-    # @modal_unit = @community.is_sitemap ? @community.units.where(modal_unit: true) : @community.units.where( floor: @floor.to_i, modal_unit: true)
-    # @units = @units + @modal_unit
   end
+
   def settings
     @community = Community.find params[:community_id]
     @tours = @community.tour || @community.create_tour
@@ -516,12 +429,17 @@ class ToursController < ApplicationController
     render json: {path: path, path_points: path.path_points.reorder('id DESC')}, status: 200
   end
   def building_starting_point
-    
-    bsp = BuildingStartingPoint.create(community_id: @community.id,x_plot: 40,y_plot: 10, building: params[:building], floor: params[:floor].to_i, name: "Building " + (params[:building].present? ? params[:building] : "") + " Entry / Exit")
-    tour_stop = TourStop.create tour_id: @community.tour.id, stop_id: bsp.id, stop_type: 'building_starting_point', name: bsp.name, latitude: 40, longitude: 10 unless bsp.errors.present?
-    # render json: {path: tour_stop}, status: 200
-    
-    flash[:error] = bsp.errors.full_messages.join(',') if bsp.errors.present?
+    is_bsp_exist = BuildingStartingPoint.exists?(community_id: @community.id, building: params[:building], floor: params[:floor].to_i, name: "Building " + (params[:building].present? ? params[:building] : "") + " Entry / Exit")
+    if is_bsp_exist
+      bsp = BuildingStartingPoint.where(community_id: @community.id, building: params[:building], floor: params[:floor].to_i, name: "Building " + (params[:building].present? ? params[:building] : "") + " Entry / Exit").first
+    else
+      bsp = BuildingStartingPoint.create(community_id: @community.id,x_plot: 40,y_plot: 10, building: params[:building], floor: params[:floor].to_i, name: "Building " + (params[:building].present? ? params[:building] : "") + " Entry / Exit")
+    end
+    is_tour_stop_exist = TourStop.exists?(tour_id: @community.tour.id, stop_id: bsp.id, stop_type: 'building_starting_point', name: bsp.name)
+    tour_stop = TourStop.find_or_create_by tour_id: @community.tour.id, stop_id: bsp.id, stop_type: 'building_starting_point', name: bsp.name, latitude: 40, longitude: 10 unless is_tour_stop_exist
+    if bsp.errors.present? || is_bsp_exist
+      flash[:error] = is_bsp_exist ? "Building Starting Point is already exists" : bsp.errors.full_messages.join(',')
+    end
     redirect_to community_tours_path(floorNo: params[:floor].to_i,building: params[:building])
   end
   def update_building_starting_point

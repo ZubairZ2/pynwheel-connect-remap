@@ -34,16 +34,26 @@ class Amenity < ApplicationRecord
   
   has_many :paths, as: :map_path
   has_many :path_points, through: :paths
-  has_many :remote_locks,  -> { for_amenties }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy
-  has_many :latch_locks, as: :stop, dependent: :destroy
+  # has_many :remote_locks,  -> { for_amenties }, class_name: 'RemoteLock', foreign_key: 'stop_id', dependent: :destroy  # was being handled manually
+  has_many :remote_locks, as: :stop     # remove it only after confirm refactoring, as it is being used
+  has_many :edgestate_locks, -> { where(dwelo_id: nil) },  class_name: 'RemoteLock', as: :stop
+  has_many :dwelo_locks, -> { where(edge_state_id: nil) },  class_name: 'RemoteLock', as: :stop
+  has_many :latch_locks, as: :stop
+  has_many :zerv_locks, as: :stop
   has_many :latch_guests, as: :guest_of_stop, dependent: :destroy
-  has_many :zerv_locks, as: :stop, dependent: :destroy
   has_many :zerv_guests, as: :guest_of_stop, dependent: :destroy
+  has_many :igloohome_locks, as: :stop, dependent: :destroy
+  has_many :igloohome_guests, as: :guest_of_stop, dependent: :destroy
+
+  
+  has_many :doors, as: :attached_with, dependent: :destroy
+  has_one :tour_stop, as: :stop, dependent: :destroy
   
   scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
   validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_amenity_image
+  after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   # validate :url_validity
   # validate :image_size
   AMENITY_TYPE = [["Select an amenity type",""],["Pool", "Pool"], ["Fitness Center","Fitness Center"],["Dog Park","Dog Park"],
@@ -78,5 +88,13 @@ class Amenity < ApplicationRecord
 
   def self.path_data
     [{x: 120, y: 455}, {x: 165, y: 655}, {x: 400, y: 155}]
+  end
+
+  def remove_doors_plotting
+    doors.destroy_all
+  end
+
+  def digital_lock_provider?
+    self.lock_provider.present? and self.lock_provider != "" and self.lock_provider != "Manual"
   end
 end

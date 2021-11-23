@@ -1,19 +1,21 @@
 class Api::V1::TourHistoriesController < ActionController::Base
   include ApplicationHelper
   require 'securerandom'
+  before_action :set_tour_user, only: [:verify_property_access_code]
+  before_action :set_community, only: [:verify_property_access_code]
+
   def save_tour_history
-    puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
       if params[:community_id].present? && params[:tour_user_id].present?
         params[:id].present? ? tour_history = TourHistory.find_or_create_by(id: params[:id]) : tour_history = TourHistory.new
-
+        community = set_community
         tour_history.arrived = convert_epoch_to_datetime params[:arrived] if params[:arrived].present?
         tour_history.left = convert_epoch_to_datetime params[:left] if params[:left].present?
         tour_history.tour_state = "completed" if params[:left].present?
         tour_history.tour_type = params[:tour_session_type] if params[:tour_session_type].present?
         tour_history.community_id = params[:community_id]
-        tour_history.community_time_zone = get_community_time_zone(set_community)
+        tour_history.community_time_zone = community.get_time_zone()
         if  params[:tour_site].present?
           if params[:tour_site] == "self_tour"
             tour_history.tour_site = "onsite"
@@ -79,6 +81,21 @@ class Api::V1::TourHistoriesController < ActionController::Base
         end
       else
         render :json=> {:success=>false, :message => "Please provide community_id."}
+      end
+    end
+  end
+  def verify_property_access_code
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      access_code = params[:access_code] rescue ""
+      is_property_access_enabled = @community&.tour&.tour_setting&.enable_restricted_property_access
+      tour_length_stay_limit = @community&.tour&.tour_setting&.length_stay_limit
+      if @tour_user.property_access_code_verification(access_code,is_property_access_enabled,tour_length_stay_limit)
+        @tour_user.update_columns(restricted_property_access: false)
+        render :json=> {success: true, error_code: 200, message: "Code has been verified successfully."}
+      else
+        @tour_user.update_columns(restricted_property_access: true)
+        render json: {success: false, error_code: 400, message: @tour_user.errors.full_messages.first, result: nil}
       end
     end
   end
@@ -248,22 +265,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
     @community ||= Community.find_by_id params[:community_id] if params[:community_id].present?
   end
 
-  def get_community_time_zone(community)
-    tz = Ziptz.new
-    timezone = nil
-
-    if community.latitude.present? and community.longitude.present?
-      time_zone = Timezone.lookup(community.latitude, community.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and community.zip.present?
-      timezone = tz.time_zone_name(community.zip)
-    end
-
-    return timezone
-  rescue
-    return "UTC"
+  def set_tour_user
+    @tour_user ||= TourUser.find_by_id params[:tour_user_id] if params[:tour_user_id].present?
   end
-
 end

@@ -88,7 +88,7 @@ class UnitsController < ApplicationController
       @unit.available = false
     end
     if @unit.save
-      update_enable_locks()
+      update_locks()
       if @unit.floorplan.present? and @unit.floorplan.amenities.present? 
         floorplan_amenities = @unit.floorplan.amenities
         add_floorplan_amenities = "true"
@@ -110,6 +110,7 @@ class UnitsController < ApplicationController
     @community_info = Community.includes(:floorplans, :units).find(params[:community_id])
     @units = @community_info.units.map { |i| i.marketing_name.gsub(/\d+/) { |s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map { |x, y| y }
     @all_locks = all_locks(@community)
+    @door = @unit.door
   end
 
   def update
@@ -121,8 +122,9 @@ class UnitsController < ApplicationController
     end
     @unit.image_bit = nil
     unit_previous_floorplan_amenities = @unit.amenities.where.not(floorplan_amenity_id: nil) rescue nil
+
     if @community.enable_locks
-      lock_id = (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ((params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "") ? params[:dwelo_remote_lock] : ((params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ((params[:zerv_lock].present? or params[:zerv_lock] == "") ? params[:zerv_lock] : nil)))
+      lock_id = (params[:igloohome_lock].present? or params[:igloohome_lock] == "") ? params[:igloohome_lock] : (params[:remote_lock].present? or params[:remote_lock] == "") ? params[:remote_lock] : ((params[:dwelo_remote_lock].present? or params[:dwelo_remote_lock] == "") ? params[:dwelo_remote_lock] : ((params[:latch_lock].present? or params[:latch_lock] == "") ? params[:latch_lock] : ((params[:zerv_lock].present? or params[:zerv_lock] == "") ? params[:zerv_lock] : nil)))
       assign_lock(@community, @unit, lock_id) unless lock_id.nil?
     end
     respond_to do |format|
@@ -201,7 +203,7 @@ class UnitsController < ApplicationController
           params[:unit][:description] = add_padding_description params[:unit][:description]
         end
         if @unit.update(unit_params)
-          update_enable_locks()
+          update_locks()
           if params[:unit].present? and @unit.floorplan.present? and params[:unit][:floorplan_id] != @unit.floorplan.id
             delete_previous_floorplan_images = "delete previous"
             if unit_previous_floorplan_amenities.present?
@@ -232,7 +234,7 @@ class UnitsController < ApplicationController
       else
         if params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
           @unit.update(unit_params)
-          update_enable_locks()
+          update_locks()
           if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != @unit.floorplan.id
             delete_previous_floorplan_images = "delete previous"
             AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
@@ -263,7 +265,7 @@ class UnitsController < ApplicationController
           else
             @unit.update(unit_params)
 
-            update_enable_locks()
+            update_locks()
 
             if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != @unit.floorplan.id
               delete_previous_floorplan_images = "delete previous"
@@ -369,6 +371,58 @@ class UnitsController < ApplicationController
     else
       render json: {}, status: 404
     end
+  end
+
+  def plot_unit_door                                # create or update
+    unit = @community.units.where(provider_unit_id: params[:id]).first
+    if unit.present?
+      door ||= unit.door || unit.build_door
+      door.update_attributes(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
+      render json: {unit: unit, door: door.reload, success: true}
+    else
+      render json: {unit: {}, door: {}, success: false}
+    end
+  end
+
+  def remove_unit_door_plot
+    unit = @community.units.where(provider_unit_id: params[:id]).first
+    render json: {unit: unit, door: unit.door, success: true}
+    unit.door.destroy rescue return
+  rescue
+    render json: {unit: {}, door: {}, success: false}
+  end
+
+  def load_unit_door_lock
+    @unit = @community.units.where(provider_unit_id: params[:id]).first
+    @door = @unit.door
+  end
+
+  def update_unit_door_lock
+    @unit = @community.units.where(provider_unit_id: params[:id]).first
+    @door = @unit.door
+    if params[:lock_provider] == "Manual" && params[:access_code] == ""
+      @door.update_columns(lock_provider: "", access_code: "")
+    else
+      @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code])
+    end
+    assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
+  end
+
+  def plot_multiple_units_door_for_floorplate
+    params[:ids].each do |id|
+      unit = @community.units.where(provider_unit_id: id).first
+      door ||= unit.door || unit.build_door
+      door.update_attributes(community_id: @community.id, x_plot: params[:x_plot], y_plot: params[:y_plot])
+    end
+
+    data = []
+    units = @community.units.where(provider_unit_id: params[:ids]).includes(:door).each do |unit|
+      data << {id: unit.id, provider_id: unit.provider_unit_id, door: unit.door}
+    end
+    
+    render json: {data: data, success: true}
+  rescue
+    render json: {data: [{}], success: false}
   end
 
   def remove_plot
@@ -568,4 +622,19 @@ class UnitsController < ApplicationController
       end 
   end
 
+  def update_locks
+    if @community.enable_locks
+      if @unit.door.present?
+        @door = @unit.door
+        if params[:unit][:lock_provider] == "Manual" && params[:unit][:access_code] == ""
+          @door.update_columns(lock_provider: "", access_code: "", updated_at: Time.now.utc)
+        else
+          @door.update_columns(lock_provider: params[:unit][:lock_provider], access_code: params[:unit][:access_code], updated_at: Time.now.utc)
+        end
+        assign_lock_to_door(@community, @unit.door, params[:lock_id]) if params.has_key?("lock_id") && params[:unit][:lock_provider] != "Manual"
+      else
+        update_enable_locks()
+      end
+    end
+  end
 end

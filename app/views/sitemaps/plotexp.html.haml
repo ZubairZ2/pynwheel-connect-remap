@@ -223,15 +223,20 @@
           - else
             - fontsize = '30'
 
-          -#- fontsize = @community.design.property_map_size_integer
           - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i
           - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i
-          -#- marker_color = @community.theme_name.include?('gables') ? @community.design.property_map_color : (@community.theme_name == 'modernist' ? (@community.design.modernist_map_marker_color == 'no color' || @community.design.modernist_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernist_map_marker_color) : 'rgba(247, 0, 0, 0.61)')
-          %span.hidden#font_size #{fontsize}
+
           %span.hidden#left_margin #{left_margin}
           %span.hidden#right_margin #{right_margin}
+          %span.hidden#font_size #{fontsize}
           %span.hidden#marker_color #{marker_color}
-        
+
+          - door_fontsize     = fontsize
+          - door_marker_color = "#3153d2"
+
+          %span.hidden#door_fontsize      #{door_fontsize}
+          %span.hidden#door_marker_color  #{door_marker_color}
+
         .btn-btn-danger.mt-10
           = link_to "MANAGE AMENITIES <i class='propertyDetailName loader_class fa fa-question-circle' data-toggle='sitemapManageAmenitiesPopover' data-content='test' ><span id='propertyDetailNameText' style='font-weight: normal;'>Click on 'Manage Amenities' to switch from plotting units to uploading and plotting amenity images.</span></i>".html_safe , community_amenities_path(@community), :class=>"btn btn-success loader_class"
           
@@ -251,8 +256,18 @@
 
             %a.btn.btn-danger{"data-name" => "sitemap's plots", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/remove_plots"} RESET ALL PLOTS
 
+          - if @community.self_tour and @community.auto_wayfinding
+            %button.btn.btn-primary.grid-overlay{:type=>"button",id:"hallway_btn",:onclick=>'plotting_hallways($(this))'}Start Plotting Hallways
+          - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
+            %button.btn.btn-success{onclick: 'start_access_point_plot(event)'}
+              Add Access Point
+              %i.propertyDetailName.fa.fa-question-circle
+                %span#propertyDetailNameText{:style => "font-weight: normal;"}
+                  Add Access point in hallways that are not associated with any specific unit or amenity
+
       / /.box-header
       / form start
+      = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
       %form.form-horizontal
         .box-body.map-body-top
           .row
@@ -271,18 +286,48 @@
                     %object{:data => "your.svg", :type => "image/svg+xml"}
                       = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
                   - else
-                    = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img"
-                  - units = @units.sort_by{|u| u.marketing_name}
+                    = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "#map"}
+                    - if @community.tour.x_plot.to_i + @community.tour.y_plot.to_i > 0
+                      = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.tour.x_plot}px; top:#{@community.tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.tour.id}/resetStartingPoint"
+                  - community_units = @units.sort_by{|u| u.marketing_name}
+                  - units_by_plotted_doors_order = community_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
+
                   - coordinates_array = []
-                  
-                  - units.each do |unit|
+                  - units_by_plotted_doors_order.each do |unit|
                     - if unit.x_plot.to_i + unit.y_plot.to_i > 0
-                      - unless coordinates_array.include?([unit.x_plot,unit.y_plot])
-                        - coordinates_array.push([unit.x_plot - left_margin,unit.y_plot - right_margin])
-                        = link_to "<i class='fas fa-map-marker-alt' style='color: #{marker_color};'></i>".html_safe, "#", :class => "marker", 'data-toggle' => "tooltip", :title => (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, :id => "m_#{unit.provider_unit_id}", :style => "left:#{unit.x_plot - left_margin}px; top:#{unit.y_plot - right_margin}px; position:absolute; font-size: #{fontsize}px", "data-name" => "plot", "data-target" => "#markers-modal", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot","data-horizontal"=>unit.x_plot,"data-vertical"=>unit.y_plot,"data-unit-form-url"=>"/communities/#{@community.id}/units/#{unit.id}/adjust_position"
-                      
-                      
-                      .hidden{:class=>"h-#{unit.x_plot}-#{unit.y_plot}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name,:id=>"h-#{unit.provider_unit_id}", "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot","data-unit-form-url"=>"/communities/#{@community.id}/units/#{unit.id}/adjust_position"}
+                      - unless coordinates_array.include?([unit.x_plot, unit.y_plot])
+
+                        - coordinates_array.push([unit.x_plot - left_margin, unit.y_plot - right_margin])
+                        - unit_door_exists = unit.door.present? ? true : false
+
+                        %p{class: "marker", style: "left:#{unit.x_plot - left_margin}px; top:#{unit.y_plot - right_margin}px; position:absolute"}
+                          = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{@community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
+                            %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
+
+                          - if !unit_door_exists and @community.self_tour and @community.auto_wayfinding
+                            = link_to "javascript:void(0);", { id: "plus_#{unit.provider_unit_id}", style: "margin-left: -6px;", title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}, onclick: 'plot_entry_point(event)'} do
+                              %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize.to_i/2}px;" }
+                            - unit_door_exists = false
+
+                        - if unit_door_exists and @community.self_tour and @community.auto_wayfinding
+                          - unit_door = unit.door
+                          = link_to "javascript:void(0);", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "unit_door"}} do
+                            %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
+
+                      - else
+                        - puts "duplicated.........."
+                      .hidden{:class=>"h-#{unit.x_plot }-#{unit.y_plot}", :id=>"h-#{unit.provider_unit_id}","data-title"=>(unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, "data-name" => "plot", "data-href" => "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot","data-unit-form-url"=>"/communities/#{@community.id}/units/#{unit.id}/adjust_position"}
+                  
+                  - if false && @community.enable_locks and @community.self_tour and @community.auto_wayfinding
+                    - coordinates_array = []
+
+                    - @access_points.each do |access_point|
+                      - unless coordinates_array.include?([access_point.x_plot, access_point.y_plot])
+                        - coordinates_array.push([access_point.x_plot, access_point.y_plot])
+
+                        = link_to open_access_point_modal_community_sitemap_access_point_path(@community, @sitemap, access_point, x_plot: access_point.x_plot, y_plot: access_point.y_plot, plotted_id: access_point.id, locks_present_hash: @current_locks_provider.to_json), { id: "access_point_#{access_point.id}", class: "marker", style: "left:#{access_point.x_plot}px; top:#{access_point.y_plot}px; position:absolute; font-size: #{door_fontsize.to_i/2}px", title: "#{access_point.name}", data: {door_id: "#{access_point.id}", toggle: "tooltip", remote: true, plotted_category: "access_point"}} do
+                          %i{class: "fa fa-lock", style: "color: #66bf60"}
+
             .col-lg-3.multi-select-units.select-units-on-page{:style => "float: left;"}
               
               %h5.mt-40.mb-20
@@ -292,18 +337,17 @@
                     You can select one or multiple amenity images to plot in one position (with one marker) on the map. If no units appear in the list, that means that all units that have been imported or entered have already been plotted on the map.
               %select.amenities-list.form-control{:multiple=>"multiple"}
                 - arr = []
-                - if units.present?
-                  - units.each do |u|
+                - if community_units.present?
+                  - community_units.each do |u|
                     - u.building = "" if u.building == nil
-                  - units = units.sort_by {|obj| obj.marketing_name.to_i}
-                  - units = units.sort_by {|obj| obj.building.to_i}
-                - units.each do |unit|
+                  - community_units = community_units.sort_by {|obj| obj.marketing_name.to_i}
+                  - community_units = community_units.sort_by {|obj| obj.building.to_i}
+                - community_units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
                     - if unit.building != nil && unit.building != ""
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
                     - else
                       %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
-                  
                   
                   - arr.push([unit.provider_unit_id, unit.x_plot.to_i - left_margin, unit.y_plot.to_i - right_margin, true, unit.id.to_s, 5 , 0])
               %h5.mt-40 SELECTED UNITS
@@ -351,12 +395,12 @@
             %label.col-sm-2.col-form-label
             .col-sm-10.unit-selects-in-popup
               %select.amenities-list-on-popup.form-control{:multiple=>"multiple"}
-                - if units.present?
-                  - units.each do |u|
+                - if community_units.present?
+                  - community_units.each do |u|
                     - u.building = "" if u.building == nil
-                  - units = units.sort_by {|obj| obj.marketing_name.to_i}
-                  - units = units.sort_by {|obj| obj.building.to_i}
-                - units.each do |unit|
+                  - community_units = community_units.sort_by {|obj| obj.marketing_name.to_i}
+                  - community_units = community_units.sort_by {|obj| obj.building.to_i}
+                - community_units.each do |unit|
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
                     - if unit.building != nil && unit.building != ""
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
@@ -367,9 +411,38 @@
         .modal-footer
           = submit_tag "Add",:class=>"btn btn-primary" 
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
+#ajax-doors-detail-modal.modal.fade{"aria-hidden" => "true", "data-backdrop" => "static", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#door-name
+      .modal-loader.hidden
+      = form_tag "" , {method: :put, remote: true} do
+        .modal-body
+          %i.fa.fa-v.fa-check-circle.save_lock{style: "color: green; visibility: hidden; margin-left: 540px;margin-bottom: 12px;"}
+          .locks-section-in-modal
+          .door-buttons-in-door-modal.mt-30
+        .modal-footer
+          - if @community.enable_locks
+            = submit_tag "Update",:class=>"btn btn-primary locks-modal-submit"
+          %a.btn.btn-danger.delete-door-marker.ajax-btn-delete{data: {plotted_category: "unit_door"}} Delete Door
+          %a.btn.btn-primary{:onclick=>"addDoorsMarkerOnFloorplate()"} Add Doors
+          %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
 
+#ajax-remaining-doors-modal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header#add-marker-heading
+        Add Doors
+      .modal-body
+        = hidden_field_tag 'selected_doors_info',"[]"
+        .form-group.row
+          %label.col-sm-2.col-form-label
+          .col-sm-10.doors-selects-in-popup
+            %select.doors-list-on-popup.form-control{:multiple=>"multiple"}
+      .modal-footer
+        %a.btn.btn-primary{:id=> "add-unplotted-doors"} Add
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel   
 #ocrData{data: {ocr_data: @map_ocr_data.to_json, image_dimensions: @dimensions.to_json}}
-
 :javascript
   $(document).ready(function () {
   
@@ -421,11 +494,27 @@
   });
 
   var arr = #{raw arr};
-  var lmargin = #{raw left_margin}
-  var rmargin = #{raw right_margin}
+  var units_info = #{@unit_with_door.to_json.html_safe}
+  var access_points = #{@access_points.to_json.html_safe}
+
+  var left_margin = #{raw left_margin}
+  var right_margin = #{raw right_margin}
   var community_id = #{params[:community_id]};
-  var addmode = false;
   var sitemap_id = '#{@sitemap.id}';
+
+  var self_tour = #{@community.self_tour}
+  var enable_locks = #{@community.enable_locks}
+  var automate_wayfinding = #{@community.auto_wayfinding}
+
+  var addmode = false;
+  var adddoorsmode = false;
+  var accesspointplot = false;
+  
+  var sm_id = '#{@sitemap.id}';
+  hallways_coordinates = #{raw @hallways.to_json}
+  $( document ).ready(function() {
+    draw_initial_hallways(hallways_coordinates)
+  });
 
   function sitemap_goBack()
   {
@@ -539,3 +628,15 @@
         #{current_user.welcome_sitemap_page = true}
         #{current_user.save}
     });
+  
+:css
+  .overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #fff;
+    opacity: .9;
+    display:none;
+  }

@@ -166,7 +166,7 @@
                         %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
                           - if stop.stop_type == "unit"
                             - u = Unit.find stop.stop_id
-                            = u.building.present? ? (u.building + "-" + stop.name) : stop.name
+                            = u.building.present? ? (u.building + "-" + u.name) : u.name
                           - else
                             = stop.name
                         %td
@@ -255,24 +255,25 @@
                                   Click on the trash can to delete a stop.
                   - @building_starting_points.where.not(building: @building).each do |bsp1,index|
                     - stop = @tour_stops.find_by(stop_id: bsp1.id)
-                    %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
-                      - orderVar = orderVar + 1
-                      %td= orderVar
-                      %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
-                        = bsp1.name 
-                      %td
-                        = link_to draw_line_path(bsp1) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
-                          %i.fa.fa-road.icon_size.additionalPageAction
-                            %span#additionalPageActionText
-                              Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
-                        = link_to edit_community_building_starting_point_path(@community.id,bsp1) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
-                          %i.fa.fa-edit.icon_size.additionalPageAction
-                            %span#additionalPageActionText
-                              Click on the edit icon to edit the stop. Add photos, videos, and text. 
-                        %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
-                          %i.fa.fa-trash.icon_size.additionalPageAction
-                            %span#additionalPageActionText
-                              Click on the trash can to delete a stop.          
+                    - if stop.present? && stop.stop_type.present? 
+                      %tr{:id=> index,:class => "#{stop.stop_type + "_row"}"}
+                        - orderVar = orderVar + 1
+                        %td= orderVar
+                        %td{:class => "strike_#{stop.id}",:style => "text-decoration: #{stop.display_stop ? "" : "line-through;"}"}
+                          = bsp1.name 
+                        %td
+                          = link_to draw_line_path(bsp1) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => stop.id},  class: "text-warning ml-5" do
+                            %i.fa.fa-road.icon_size.additionalPageAction
+                              %span#additionalPageActionText
+                                Click two road icons in sequence to draw a path on the map below between the two stops you have selected.
+                          = link_to edit_community_building_starting_point_path(@community.id,bsp1) << "?floorNo=#{params[:floorNo].present? ? params[:floorNo] : 1}", class: "text-success ml-5" do
+                            %i.fa.fa-edit.icon_size.additionalPageAction
+                              %span#additionalPageActionText
+                                Click on the edit icon to edit the stop. Add photos, videos, and text. 
+                          %a.text-danger{"data-name"=>"Tour Stop","data-href" => "/communities/#{@community.id}/tours/#{@tours.id}/tour_stops/#{stop.id}?floorplate=" + (@community.is_sitemap ? "" : @floor.to_s), "data-target" => "#confirm-delete", "data-toggle" => "modal"}
+                            %i.fa.fa-trash.icon_size.additionalPageAction
+                              %span#additionalPageActionText
+                                Click on the trash can to delete a stop.          
 
         %input{:type=>"hidden", :value=>"", :id=>:drawing_path_for}
         - if @community.show_map
@@ -914,7 +915,7 @@
     var start_point_array = []
     var stop_point_array = []
     function drop_point_on_screen(db_data){
-
+    debugger;
       var size =  point_size.toString()+ 'px';
 
       id = "point_"+db_data.point.id.toString()
@@ -1213,7 +1214,6 @@
   });
 
   $(document).ready(function(){
-
     function hasDuplicates(array,times_hash) {
       var valuesSoFar = Object.create(null);
       for (var i = 0; i < array.length; ++i) {

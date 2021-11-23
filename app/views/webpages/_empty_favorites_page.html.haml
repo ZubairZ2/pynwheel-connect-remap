@@ -1,0 +1,26 @@
+.add-fav-body
+  .c-wrapper.secondary-wrapper
+    .c-body
+      .need-to.want-to-add-fav-container
+        -# - if @community.logo.present?
+        = image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :style => "width: 150px; padding: 1px 0px 5px 4px"
+        %h3.add-fav-heading Want to add favorites?
+        %p.add-fav-description 
+          Explore available floor plans on
+          %br/
+          the interactive site map.
+        = link_to "Take me there", community_webpages_path, :class=> "take-me-there-action",:target => "_parent"
+  .c-sidebar.secondary-large-width-sidebar.secondary-sidebar-color#sidebar-for-responsive
+    %ul.add-fav-options
+      %li
+        %a{:href => "#{community_webpages_path}",:target => "_parent"}
+          %img{:src => "/assets/map-icon.png"}/
+          %span.fav-option-icon-text View Map
+      %li
+        %a{"data-toggle"=>"modal","data-target"=>"#share-favorites"}
+          %img{:src => "/assets/share-icon.png"}/
+          %span.fav-option-icon-text Share Map
+      %li
+        %a{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"}
+          %img{:src => "/assets/clear-all.png"}/
+          %span.fav-option-icon-text Clear all

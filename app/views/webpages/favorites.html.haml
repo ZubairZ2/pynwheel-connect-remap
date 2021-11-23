@@ -5,136 +5,76 @@
     %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
     %title Pynwheel | Favorites
     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
+    %script{:src => "https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"}
+    %script{:src => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"}
     = csrf_meta_tags
     = stylesheet_link_tag 'jquery.mCustomScrollbar.css'
     = stylesheet_link_tag    'application', media: 'all'
     = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
     = javascript_include_tag 'jquery.arrayUtilities'
     = javascript_include_tag "update_session"
-    /%script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
-    /%link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
+    = stylesheet_link_tag 'slick.css'
+    = javascript_include_tag 'slick'
+    %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css", :rel => "stylesheet"}/
+    %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css", :rel => "stylesheet"}/
+    %link{:href => "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css", :rel => "stylesheet"}/
+    %link{:href => "https://fonts.googleapis.com", :rel => "preconnect"}/
+    %link{:crossorigin => "", :href => "https://fonts.gstatic.com", :rel => "preconnect"}/
+    %link{:href => "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
-    / %link{:href => "css/bootstrap.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/font-awesome.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/slider.css", :rel => "stylesheet"}/
-    / %link{:href => "css/pyn.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/skins/_all-pyn.min.css", :rel => "stylesheet"}/
-    / %link{:href => "css/jquery.mCustomScrollbar.css", :rel => "stylesheet"}/
-    / %link{:href => "css/pyn-custom.css", :rel => "stylesheet"}/
-    / HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries
-    / WARNING: Respond.js doesn't work if you view the page via file://
-    / /[if lt IE 9]
-    /   <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-    /   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     / Google Font
     %link{:href => "https://fonts.googleapis.com/css?family=Raleway:100,200,300,400,500,600,700,800,900", :rel => "stylesheet"}/
   %body.floor-plan{style: "background-color:#303a3c;"}
+    .divLoading.hidden
     / Main content
-    = render partial: "/messages"
+    %div.alert_message
+      = render partial: "/messages"
     %section.is-favorites
-      %a#favoriteclickme{href: "#"} Share and Clear
-      .left-side.mydiv
+      .mydiv-fav
         .select-list.select-list-fav
-          / .select-title
-          /   %h3.pull-left
-          /     Send A
-          /     %span Brochure
-          / .thank-u
-          /   %p
-          /     Thank you for exploring all the great features offered at Atelier
-          /     Apartments. Now it’s time to share. Email a customized brochure of your favorites by typing an email address below:
-          / %form.send-to
-          /   %label SEND TO:
-          /   .form-group
-          /     %input.form-control{type: "text"}/
-          /     %button.send-btn{type: "submit"}
-          /       %i.fa.fa-location-arrow
           = hidden_field_tag :maps_community_id, @community.id
-          .bg-bottom
-            .need-to{:style => "margin-bottom: 40px;"}
-              = image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :width => "288px"
-              -#%button.btn.btn-primary.btn-block.btn-lg{:href=>community_favorite_settings_path} Take me there
-          .bg-bottom
+          .need-to{:style=>"text-align: center;"}
+            -if @community.logo.present?
+              = image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :style => "width: 150px; padding: 1px 0px 5px 4px"
+          - if @units.present?
             .need-to
               %h3 Want to add favorites?
               %p{:style => "margin-bottom: 20px"} Explore available floor plans on the interactive site map.
-              = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary btn-block btn-lg",:target => "pynwheel_iframe"
-              -#%button.btn.btn-primary.btn-block.btn-lg{:href=>community_favorite_settings_path} Take me there
-          .bg-bottom
-            .need-to
-              %h3 Want to share your list?
-              %p{:style => "margin-bottom: 20px"} Click the share button and share your favorites link
-              %button.btn.btn-primary.btn-block.btn-lg.share-favorite{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share 
-          .bg-bottom
-            .need-to
-              %h3 Need to pare down your list?
-              %p{:style => "margin-bottom: 20px"} Tap the heart to remove an item from the page, or click the clear button below to remove all items.
-              %button.btn.btn-primary.btn-block.btn-lg{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
+              = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary apply-now btn-block btn-lg",:target => "_parent"
+          .need-to
+            %h3 Want to share your list?
+            %p{:style => "margin-bottom: 20px"} Click the share button and share your favorites link
+            %button.btn.btn-primary.btn-block.btn-lg.apply-now.share-favorite{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share 
+          .need-to
+            %h3 Need to pare down your list?
+            %p{:style => "margin-bottom: 20px"} Tap the heart to remove an item from the page, or click the clear button below to remove all items.
+            %button.btn.btn-primary.btn-block.btn-lg.apply-now{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"} Clear All   
           - if @community.self_tour && @community.scheduler_widget
-            .bg-bottom
-              .need-to
-                = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary", :target=> "_blank", :style => ' width: 290px; margin-top: 15px; height: 57px; font-size: 18px; padding-top: 17px; color: white;'
+            .need-to
+              %h3 Want to schedule a tour?
+              %p{:style => "margin-bottom: 20px"} Click the schedule a tour below button and schedule a tour.
+              = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary apply-now btn-block btn-lg", :target=> "_blank"
           %span.logo-lg{:style => "text-align: center;"}
-            %img{:alt => "", :src => '/assets/pynwheel-logo.png' , :title => "",:style => "width: 60%; text-align: center;  margin-top: 15px; display: block; margin-left: auto; margin-right: auto;"}
-      
-      .right-side
-        - if @units.nil?
-          %b{:style => "color: #FFFFFF; position: relative; top: 45%; left: 45%;"} You have no favorites
-        - if @units.present? && @units.count == 0
-          %b{:style => "color: #FFFFFF; position: relative; top: 45%; left: 45%;"} You have no favorites
-        - @units = [] if @units.nil?
-        - @units.each do |unit|
-          - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
-          .row{:id=>"row-#{unit.id}"}
-            .col-md-12
-              .modal-content.plan-modal
-                .modal-body
-                  .row
-                    .col-md-6
-                      .plane-details
-                        .plan-modal
-                          .modal-header
-                            %h4.modal-title 
-                              = unit.unit_market
-                        .name
-                          = floorplan.present? ? floorplan.name : nil
-                        %ul
-                          %li
-                            %b= floorplan.present? ? hide_decimals(floorplan.square_feet) : nil
-                            Sq Feet
-                          %li
-                            %b= floorplan.present? ? hide_decimals(floorplan.bathrooms) : nil
-                            = "#{bathroom_text(floorplan)}" if floorplan.present?
-                          %li
-                            %b= floorplan.present? ? floorplan.bedrooms : nil
-                            = "#{bedroom_text(floorplan)}" if floorplan.present?
-                          %li 
-                            %b= unit.available_date.strftime("%m/%d/%Y")
-                            Available Date  
-                          
-                        .price-details
-                          .price-count.pull-left
-                            %span= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}" 
-                          .available-now
-                            %p= unit.availability == "Unoccupied" ? "Available" : ""
-                        - if @community.data_provider == "psi"
-                          .date-select
-                            %h5{:style => "margin-top: 20px;"}
-                              Lease Start Date
-                            .form-group
-                              %input.form-control.datepicker.leasing-start-date{:type => "text", :readonly => "readonly",:value=>Date.today.strftime("%m/%d/%Y"),:style => "box-shadow: none;"}/
-                              %i.fa.fa-calendar
-                        .btn-apply
-                          - if @community.data_provider == "realpagesvc"
-                            = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank", class: "apply_now"
-                          - elsif @community.data_provider == "psi" and floorplan.present?
-                            = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply_now"
-                    .col-md-6
-                      .plan-image
-                        = image_tag unit.image.present? ? unit.image.url : (floorplan.present? && floorplan.image.present? ? floorplan.image.url : "/assets/default.jpeg")
-                        .icon-heart
-                          %a{"data-href"=> "/communities/#{@community.id}/webpages/delete_favorite?unit_id=#{unit.id}&from_favorites=true",href: "##",onclick: "deleteFavorite(this);"}
-                            %i.fa.fa-heart#fav-icon-tag
+            %img{:alt => "", :src => '/assets/pynwheel-logo.png' , :title => "",:class => "pynwheel-logo-at-sidebar-bottom"}
+        - if @units.nil? || !@units.present? && @units.count == 0
+          = render partial: "empty_favorites_page"
+        - else
+          = render partial: "favorites_modal"
+        
+        .secondary-sidebar-color#sidebar-for-responsive{style: "text-align: center"}
+          %ul.add-fav-options.res-fav-footer
+            %li
+              %a{:href => "#{community_webpages_path}",:target => "pynwheel_iframe"}
+                %img{:src => "/assets/map-icon.png"}/
+                %span.fav-option-icon-text View Map
+            %li
+              %a{"data-toggle"=>"modal","data-target"=>"#share-favorites"}
+                %img{:src => "/assets/share-icon.png"}/
+                %span.fav-option-icon-text Share Map
+            %li
+              %a{"data-toggle"=>"modal","data-target"=>"#confirm-favorites-delete"}
+                %img{:src => "/assets/clear-all.png"}/
+                %span.fav-option-icon-text Clear all
 #confirm-favorites-delete.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
   .modal-dialog
     .modal-content
@@ -154,4 +94,24 @@
         %input.form-control#url{:value => favorites_share_link_community_webpages_url(:community_id=>@community,:session_id=>(@favorite.present? ? @favorite.session_id : "" )  )}/
       .modal-footer
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} cancel
-        %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy to clipboard     
+        %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy to clipboard  
+
+:javascript
+  var data_provider = "#{@community.data_provider}"
+  var units = "#{@fav_units_info}";
+  units = units.replace(/&quot;/g,'"');
+  units = JSON.parse(units);
+  var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
+  var redirect_url = "#{community_webpages_url(@community)}"
+  $('.show-more-option-fav').click(function(){
+      
+    $('.show-more-option-fav').addClass('hidden');
+    $('.hide-more-option').removeClass('hidden');
+    $('.pricing-option-for-fav').removeClass('hidden');
+  });
+
+  $('.hide-more-option').click(function(){
+      $('.hide-more-option').addClass('hidden');
+      $('.show-more-option-fav').removeClass('hidden');
+      $('.pricing-option-for-fav').addClass('hidden');
+  });

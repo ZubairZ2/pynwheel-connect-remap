@@ -397,16 +397,25 @@
                               - elsif @property_tour_type == "unscheduled_self_tour"
                                 %p.textStyle{:style => "font-size: 18px;"}
                                   = SchedulerWidgetConstants::UNSCHED_SELF_TOUR_TITLE
+                                  %br/
+                                  - if @community.tour.tour_setting.enable_restricted_property_access
+                                    = SchedulerWidgetConstants::ACCESS_CODE_TEXT
                               - elsif @property_tour_type == "scheduled_tour" && @tour_type == "guided_tour"
                                 %p.textStyle{:style => "font-size: 18px;"}
                                   Check-in at leasing center on the day your tour is scheduled within
                                   %b 10
-                                  minutes of your scheduled time
+                                  minutes of your scheduled time 
+                                  %br/
+                                  - if @community.tour.tour_setting.enable_restricted_property_access
+                                    = SchedulerWidgetConstants::ACCESS_CODE_TEXT
                               - else
                                 %p.textStyle{:style => "font-size: 18px;"}
                                   Be at the property on the day your tour is scheduled within
                                   %b 10
                                   minutes of your scheduled time
+                                  %br/
+                                  - if @community.tour.tour_setting.enable_restricted_property_access
+                                    = SchedulerWidgetConstants::ACCESS_CODE_TEXT
                               .container.cardMain{:style => "display: flex; margin-top: 3%;margin-left: 2%;margin-right: 1%;"}
                                 - @data.each do |i|
                                   .col-md-3{:style => "display: flex; flex-wrap: wrap; margin-right: 1%"}

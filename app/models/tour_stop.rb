@@ -35,6 +35,8 @@ class TourStop < ApplicationRecord
 
   scope :visible, -> { where(display_stop: true) }
 
+  scope :visible, -> { where(display_stop: true) }
+
   def path_data
   	self.stop_type.classify.constantize.path_data
   end
@@ -48,4 +50,21 @@ class TourStop < ApplicationRecord
       end
     end
   end
+
+  def fetch_lock_stop_provider
+    stop_lock_provider = ""
+    actual_stop = (self.stop_type.classify.constantize.find_by_id self.stop_id)
+    have_door = (actual_stop.class.name == "Unit" &&  actual_stop.door.present?) || (actual_stop.class.name == "Amenity" &&  actual_stop.doors.any?)
+    if have_door
+      if actual_stop.class.name == "Unit"
+        stop_lock_provider = actual_stop.door.lock_provider
+      elsif actual_stop.class.name == "Amenity"
+        stop_lock_provider = actual_stop.doors.first.lock_provider
+      end
+    else
+      stop_lock_provider = actual_stop.lock_provider
+    end
+    stop_lock_provider
+  end
+
 end

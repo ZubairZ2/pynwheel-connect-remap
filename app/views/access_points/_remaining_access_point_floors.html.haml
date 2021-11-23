@@ -1,0 +1,27 @@
+.modal-dialog{:style=>"overflow-y: initial width: 400px !important; width: 300px;"}
+  .modal-content{:style => "margin-top: 50%;"}
+    .modal-body{:style => "text-align: center;"}
+
+      %label{style: "margin-bottom: 20px !important;"} 
+        Select other floors
+        %i.propertyDetailName.fa.fa-question-circle
+          %span#propertyDetailNameText{:style => "font-weight: normal;"}
+            It will plot a new access point(s) at the sames coordinate on other floors
+      %select{id: "remaining_floors", multiple: :true,  placeholder: "Select the floors"}>
+        -  session[:remaining_floors].each do |floor| 
+          %option{value: floor[0]}= "#{floor[1]}"
+      
+      = hidden_field_tag "active_access_point" , session[:active_id]
+      .form-group{style: "padding-bottom: 0px !important;"}
+        -#= link_to "fffffff", plot_amenities_community_floorplate_amenities_path(current_community,@floorplate),:class => "btn btn-success"
+        %button.btn.btn-success.btn-sm.mt-20{onclick: 'select_remaining_floors(event)'}
+          Confirm
+
+:javascript
+  remaining_floors = new SlimSelect({
+    select: '#remaining_floors',
+    placeholder: 'Select the floors',
+    showSearch: false,
+    deselectLabel: '<span style="color: #d04d4d;">✖</span>'
+  })
+  remaining_floors.open()
