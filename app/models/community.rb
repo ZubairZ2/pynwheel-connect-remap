@@ -318,6 +318,15 @@ class Community < ApplicationRecord
     end
 
   end
+
+  def community_crm_provider
+    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider.present?
+      self.crm_credential.crm_provider
+    else
+      ""
+    end
+  end
+
   def use_crm_credentials?
     if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
       (true)
