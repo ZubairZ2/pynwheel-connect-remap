@@ -1344,6 +1344,7 @@ function setModalAttributes(element) {
         if ($(element).data('unit-description') == "")
         {
           $('#unitModal').find('#unit-description').html("Not Available");
+          $('#unitModal').find('.c-modal-sidebar-description').hide();
         }
         else
         {
@@ -1354,6 +1355,7 @@ function setModalAttributes(element) {
 
     catch(err) {
         $('#unit-description-text-li').hide();
+        $('#unitModal').find('.c-modal-sidebar-description').hide();
     }
 
 
@@ -1424,8 +1426,9 @@ function setModalAttributes(element) {
     $('#unitModal').find('#floorplan-image').attr('src', '/assets/default.jpeg');
     $('#unitModal').find('#responsive-floorplan-image').attr('src', $(element).data('floorplan-image'));
   }
+  var dataProvider = $(element).data('provider')
   //////////////////////////////////////////
-  if ($(element).data('provider') != 'realpagesvc') {
+  if (dataProvider != 'realpagesvc') {
     var website = $(element).data('website');
     var uri = website.replace(/^https?\:\/\//, '');
     $('#psi-anchor-tag').attr('data-community-property-id', $(element).data('community-property-id'));
@@ -1437,14 +1440,15 @@ function setModalAttributes(element) {
     $('#psi-anchor-tag').attr('data-availability-url', $(element).data('availability-url'));
     $("#leasing-start-date").datepicker('setDate', new Date($(element).data('available-date')));
     $('#leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: $(element).data('available-date') == "Now" ? new Date() : new Date($(element).data('available-date'))})
-  } else if (($(element).data('provider') === 'realpagesvc')) {
+  } else if (dataProvider === 'realpagesvc') {
     $('#realpagesvc-anchor-tag').attr('data-unit-provider-id', $(element).data('unit-provider-id'));
     $("#leasing-start-date").datepicker('setDate', new Date($(element).data('available-date')));
     $('#leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: $(element).data('available-date') == "Now" ? new Date() : new Date($(element).data('available-date'))})
   } 
-  if ($(element).data('provider') === 'yardi'){
+  if (dataProvider == 'yardi' || dataProvider == 'yardirentcafe'){
     $('#floorplan-image').css({"max-width": 310});
     $('.c-modal-footer').css({"padding-bottom": 7});
+    $('.m-filters').hide();
 
   }
 }
