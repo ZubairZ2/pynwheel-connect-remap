@@ -670,7 +670,8 @@ module ShortestPath
     is_multiple_building = actual_building_list.uniq.count > 1
     building_list = (Unit.where(id: unit_ids).pluck(:building)).reject { |e| e.to_s.strip.empty? } rescue []
     building_list += Amenity.where(id: amenity_ids).pluck(:building).reject { |e| e.to_s.strip.empty? }
-    building_list.uniq!
+    building_list = building_list.compact.reject { |c| c.empty? }.uniq
+    building_list = building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(building_list).sort.map{|x,y| y}
     if sorted_building.present?
       if (building_list - sorted_building != [] )
         building_list = (sorted_building) + (building_list - sorted_building) 
