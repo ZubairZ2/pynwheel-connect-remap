@@ -86,7 +86,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
   end
 
   def set_tour_user
-    @tour_user ||= TourUser.where(email: params[:neighborEmail].downcase)
+    @tour_user ||= TourUser.where(email: params[:neighborEmail].downcase).last
   end
 
   def webhook_form_validate(tourBookingId, neighborEmail, phone_number, last_name, first_name,tourDate, tourTime, tourType)
