@@ -546,6 +546,7 @@ Rails.application.routes.draw do
       post '/schedule_tour', to: 'schedule_tours#schedule_tour'
       put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
       post :salesforce_tour_webhook, to: 'salesforce_webhooks#salesforce_tour_webhook'
+      post :salesforce_cancel_tour_webhook, to: 'salesforce_webhooks#salesforce_cancel_tour_webhook'
       post :perq_tour_webhook, to: 'perq_webhooks#perq_tour_webhook'
       post :save_data, to: 'dwelo_devices#load_data'
       post :device_lock_unlock, to: 'dwelo_devices#device_lock_or_unlock'

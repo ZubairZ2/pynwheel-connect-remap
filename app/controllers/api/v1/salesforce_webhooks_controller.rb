@@ -1,7 +1,7 @@
 class Api::V1::SalesforceWebhooksController < ActionController::Base
-  before_action :set_tour_user, only: :cancle_salesforce_tour
-  before_action :set_community_by_id, only: :cancle_salesforce_tour
-  before_action :set_community_by_name, only: :cancle_salesforce_tour
+  before_action :set_tour_user, only: :salesforce_cancel_tour_webhook
+  before_action :set_community_by_id, only: :salesforce_cancel_tour_webhook
+  before_action :set_community_by_name, only: :salesforce_cancel_tour_webhook
 
   def salesforce_tour_webhook
     begin
@@ -65,7 +65,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
   end
   end
 
-  def cancle_salesforce_tour
+  def salesforce_cancel_tour_webhook
     destroy_salesforce_scheduled_tour
   end
 
