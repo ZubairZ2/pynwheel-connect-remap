@@ -1429,7 +1429,7 @@ module ShortestPath
         if (need_to_ignore_stops.include?(path[source_stop]) && path[destination_stop] == "elevator")
           @upstair_elevator_hash[path[building_index]][path[floor_index]] = @upstair_elevator_hash[path[floor_index]].nil? ? ([path[dest_id]]) : (@upstair_elevator_hash[path[floor_index]] + [path[dest_id]]) if type == "upstair"
           @downstair_elevator_hash[path[building_index]][path[floor_index]] = @downstair_elevator_hash[path[floor_index]].nil? ? ([path[dest_id]]) : (@downstair_elevator_hash[path[floor_index]] + [path[dest_id]]) if type == "downstair"
-        elsif path[source_stop] == "elevator" && path[destination_stop] == "elevator" && path[source_id] == path[dest_id]
+        elsif (path[source_stop] == "elevator" || path[destination_stop] == "elevator") && path[source_id] == path[dest_id]
           stop_to_stop_path = stop_to_stop_path - [path]
         elsif path[source_stop] == "elevator" && path[destination_stop] == "elevator" && path[source_id] != path[dest_id]
           @upstair_elevator_hash[path[building_index]][path[floor_index]] = @upstair_elevator_hash[path[floor_index]].nil? ? ([path[dest_id]]) : (@upstair_elevator_hash[path[floor_index]] + [path[dest_id]]) if type == "upstair"
