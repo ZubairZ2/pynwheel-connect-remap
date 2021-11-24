@@ -1,4 +1,7 @@
 class Api::V1::SalesforceWebhooksController < ActionController::Base
+  before_action :set_tour_user, only: :cancle_salesforce_tour
+  before_action :set_community_by_id, only: :cancle_salesforce_tour
+  before_action :set_community_by_name, only: :cancle_salesforce_tour
 
   def salesforce_tour_webhook
     begin
@@ -9,7 +12,8 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
     tourDate =  params[:tourDate] if params[:tourDate].present?
     tourTime = params[:tourTime] if params[:tourTime].present?
     tourType = params[:tourType] if params[:tourType].present?
-    if webhook_form_validate(neighborEmail, phone_number, last_name, first_name,tourDate, tourTime, tourType)
+    tourBookingId = params[:tourBookingId] if params[:tourBookingId].present?
+    if webhook_form_validate(tourBookingId, neighborEmail, phone_number, last_name, first_name,tourDate, tourTime, tourType)
       @tour_user = TourUser.where(email: neighborEmail.downcase) if neighborEmail.present?
       @tour_user = @tour_user.last if @tour_user.present?
       if !@tour_user.present?
@@ -43,10 +47,10 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
           stops_list = scheduled_tours.last.stops_list rescue []
           tour_is_in_future = is_tour_in_future(@community,schedual_tour,timezone) 
           if schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future
-            schedual_tour.update_attributes(stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: tourTime , tour_type: tourType, created_by: "salesforce", created_at: Time.now)
+            schedual_tour.update_attributes(salesforce_tour_booking_id: tourBookingId, stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: tourTime , tour_type: tourType, created_by: "salesforce", created_at: Time.now)
           else
             puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN CREATE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-            schedual_tour = SchedualTour.create!(stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: tourTime, tour_type: tourType , created_by: "salesforce")
+            schedual_tour = SchedualTour.create!(salesforce_tour_booking_id: tourBookingId, stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: tourTime, tour_type: tourType , created_by: "salesforce")
             schedual_tour.save!
           end
 
@@ -61,10 +65,35 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
   end
   end
 
+  def cancle_salesforce_tour
+    destroy_salesforce_scheduled_tour
+  end
+
   private
 
-  def webhook_form_validate(neighborEmail, phone_number, last_name, first_name,tourDate, tourTime, tourType)
-    if !neighborEmail.present?
+  def destroy_salesforce_scheduled_tour
+    schedual_tour = @tour_user.schedual_tours.where(created_by: "salesforce", community_id: @community.id, salesforce_tour_booking_id: params[:tourBookingId]).last  if params[:tourBookingId].present?
+    schedual_tour.destroy if schedual_tour.present?
+  end
+
+  def set_community_by_id
+    credentials = Credential.where(salesforce_property_id: params[:neighborhoodId]).last if params[:neighborhoodId].present?
+    @community ||= credentials.community if credentials&.community.present?
+  end
+
+  def set_community_by_name
+    @community ||= Community.where(name: params[:neighborhoodName]).last
+  end
+
+  def set_tour_user
+    @tour_user ||= TourUser.where(email: params[:neighborEmail].downcase)
+  end
+
+  def webhook_form_validate(tourBookingId, neighborEmail, phone_number, last_name, first_name,tourDate, tourTime, tourType)
+    if !tourBookingId.present?
+      render :json => {:success=> false, :message => "Tour Booking cannot be empty", :status => 400}
+      return false
+    elsif !neighborEmail.present?
       render :json => {:success=> false, :message => "Email cannot be empty", :status => 400}
       return false
     elsif !phone_number.present?
