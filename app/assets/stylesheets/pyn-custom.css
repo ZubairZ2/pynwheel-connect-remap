@@ -5894,7 +5894,7 @@ ul.add-fav-options {
     text-align: center;
 }
 .disabaled-apply-now{
-    margin-top: 76px;
+    /* margin-top: 76px; */
     height: 80px;
     color: white;
     font-size: 20px;
@@ -6253,15 +6253,13 @@ ul.add-fav-options {
         font-size: 9px !important;
     }
 }
-@media only screen and (min-width: 767px){
-    .c-modal-sidebar-filters {
-        position: absolute;
-        bottom: 0%;
-        width: 40%;
-    }
-    .c-m-iframe-content{
-        margin-bottom: 65px;
-    }
+.c-modal-sidebar-filters-bottom {
+    position: absolute;
+    bottom: 0%;
+    width: 40%;
+}
+.c-m-iframe-content-bottom{
+    margin-bottom: 65px;
 }
 .slick-disabled {
     opacity: 0.5;

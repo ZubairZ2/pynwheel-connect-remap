@@ -109,7 +109,7 @@
                 .m-filters
                   .m-filter-1.c-m-filter
                     %label= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                    %input.m-filter-1.c-m-filter.datepicker#leasing-start-date{:type => "text", :readonly => "readonly"}/
+                    %input.c-m-input-control.datepicker#leasing-start-date{:type => "text", :style => "display: block !important", :readonly => "readonly"}/
                 .filter-action
                   - if @community.display_rent
                     %span.c-m-total-price#total-market-rent

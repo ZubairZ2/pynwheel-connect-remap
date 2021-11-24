@@ -1427,6 +1427,10 @@ function setModalAttributes(element) {
   if ($(element).data('floorplan-image') != '') {
     $('#unitModal').find('#floorplan-image').attr('src', $(element).data('floorplan-image'));
     $('#unitModal').find('#responsive-floorplan-image').attr('src', $(element).data('floorplan-image'));
+    if(current_width > 767 && $(element).data('floorplan-image') != "/assets/default.jpeg" ){
+      $('.c-modal-sidebar-filters').addClass("c-modal-sidebar-filters-bottom");
+      $('.c-m-iframe-content').addClass("c-m-iframe-content-bottom");
+    }
   } else {
     $('#unitModal').find('#floorplan-image').attr('src', '/assets/default.jpeg');
     $('#unitModal').find('#responsive-floorplan-image').attr('src', $(element).data('floorplan-image'));
