@@ -204,7 +204,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
       emails = community.email.gsub(" ","").split(',')
       schedule_tour = community.schedual_tours.where(tour_user_id: tu.id).last rescue nil
       emails.each do |email|
-        NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.capitalize}  has left #{community.name}", email,"info@pynwheel.com",community,false,schedule_tour).deliver
+        NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.titleize}  has left #{community.name}", email,"info@pynwheel.com",community,false,schedule_tour).deliver
         tu.update_column 'arrival_email_sent' , false 
       end
     end

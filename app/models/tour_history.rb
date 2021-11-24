@@ -32,7 +32,7 @@ class TourHistory < ApplicationRecord
     tour_type = self.tour_user.tour_type
   	verification_text = self.verified_by.present? ? "<br>They have successfully passed the ID verification process." : ""
     if community.present?
-      send_email_sms_or_both(["A tour has begun", "#{self.tour_user.name.capitalize} has begun a tour of #{community.name}." + verification_text] , community)
+      send_email_sms_or_both(["A tour has begun", "#{self.tour_user.name.titleize} has begun a tour of #{community.name}." + verification_text] , community)
     end
   end
 
@@ -40,7 +40,7 @@ class TourHistory < ApplicationRecord
     community = (Tour.find_by_id self.tour_id).community if self.tour_id.present?
     if community.present? && self.history != true
       if time_difference >= 90 && self.lengthy_stay_email_sent == false
-        @mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "#{self.tour_user.name.capitalize} has been on a Self Tour at #{community.name.gsub("(", "( ").split.map(&:capitalize).join(' ')} for more than"] #get_alert_message('lengthy_stay')
+        @mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "#{self.tour_user.name.titleize} has been on a Self Tour at #{community.name.gsub("(", "( ").split.map(&:capitalize).join(' ')} for more than"] #get_alert_message('lengthy_stay')
         @mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
         self.update_attributes(lengthy_stay_email_sent: true)
         send_email_sms_or_both(@mail_content, community)
@@ -56,7 +56,7 @@ class TourHistory < ApplicationRecord
 
       if self.left.present? and !self.is_left
         self.update_columns(is_left: true)
-        @mail_content = ["tour_has_ended", "#{self.tour_user.name.capitalize} has completed a tour of #{community.name}"] #get_alert_message('tour_has_ended')
+        @mail_content = ["tour_has_ended", "#{self.tour_user.name.titleize} has completed a tour of #{community.name}"] #get_alert_message('tour_has_ended')
         url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
         # @mail_content[1] = "#{@mail_content.last} \n #{self.tour_user.name} \n #{self.tour_user.email}" + "<br><br>See Tour Summary <a href='#{url}'>Click Here</a>"
 
@@ -80,7 +80,7 @@ class TourHistory < ApplicationRecord
        complete_scheduled_tour(scheduled_tour) if scheduled_tour.tour_type.present? && scheduled_tour&.created_by === "PERQ"
 
         tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}"
-        @complete_tour_content = ["#{community.name} has been visited", "#{touruser.name.capitalize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.capitalize} Visitor Details</a> "]
+        @complete_tour_content = ["#{community.name} has been visited", "#{touruser.name.titleize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.titleize} Visitor Details</a> "]
         if self.tour_user_id == 1445
           @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "completed Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         else

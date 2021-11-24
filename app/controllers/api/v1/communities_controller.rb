@@ -220,12 +220,12 @@ class Api::V1::CommunitiesController < ActionController::Base
       tour_user.property_access_code_generated_at = Time.now
       tour_length_stay_limit = community&.tour&.tour_setting&.length_stay_limit
       tour_user.restricted_property_access = true
-      visitor_name = tour_user.name.capitalize
+      visitor_name = tour_user.name.titleize
       sleep 1
       create_tour_history(tour_user,tour_type,community)
       subject = "Property Access Code for #{visitor_name}"
       body = "#{visitor_name} is ready to start a Self Tour at #{community.name}. 
-      Please instruct #{tour_user.first_name.capitalize} to enter this property access code into the Self Tour app:<br>
+      Please instruct #{tour_user.first_name.titleize} to enter this property access code into the Self Tour app:<br>
       <br>#{tour_user.property_access_code}<br>
       <br>This code will expire in #{tour_length_stay_limit} minutes<br> 
       <br>Thanks!"
@@ -588,7 +588,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     emails = community.email.gsub(" ","").split(',')
     schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
     emails.each do |email|
-      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.capitalize} has arrived at #{community.name}",email,INFO_EMAIL,community,false,schedule_tour).deliver
+      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.titleize} has arrived at #{community.name}",email,INFO_EMAIL,community,false,schedule_tour).deliver
     end
   end
   def check_lock_access
