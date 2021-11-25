@@ -66,19 +66,20 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
   end
 
   def salesforce_cancel_tour_webhook
+    return unless (@tour_user.present? &&  params[:tourBookingId].present?)
     destroy_salesforce_scheduled_tour
   end
 
   private
 
   def destroy_salesforce_scheduled_tour
-    schedual_tour = @tour_user.schedual_tours.where(created_by: "salesforce", community_id: @community.id, salesforce_tour_booking_id: params[:tourBookingId]).last  if params[:tourBookingId].present?
+    schedual_tour = @tour_user.schedual_tours.where(created_by: "salesforce", community_id: @community&.id, salesforce_tour_booking_id: params[:tourBookingId]).last
     schedual_tour.destroy if schedual_tour.present?
   end
-
+  
   def set_community_by_id
-    credentials = Credential.where(salesforce_property_id: params[:neighborhoodId]).last if params[:neighborhoodId].present?
-    @community ||= credentials.community if credentials&.community.present?
+    credentials = Credential.where(salesforce_property_id: params[:neighborhoodId]).last
+    @community ||= credentials&.community
   end
 
   def set_community_by_name
