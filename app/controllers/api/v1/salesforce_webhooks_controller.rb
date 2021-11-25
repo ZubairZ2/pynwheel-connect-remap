@@ -14,7 +14,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
     tourType = params[:tourType] if params[:tourType].present?
     tourBookingId = params[:tourBookingId] if params[:tourBookingId].present?
     tourBookingName = params[:tourBookingName] if params[:tourBookingName].present?
-    if webhook_form_validate(tourBookingName, tourBookingId, neighborEmail, phone_number, last_name, first_name,tourDate, tourTime, tourType)
+    if webhook_form_validate(tourBookingName, tourBookingId, neighborEmail, last_name, first_name,tourDate, tourTime, tourType)
       @tour_user = TourUser.where(email: neighborEmail.downcase) if neighborEmail.present?
       @tour_user = @tour_user.last if @tour_user.present?
       if !@tour_user.present?
@@ -91,7 +91,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
     @tour_user ||= TourUser.where(email: params[:neighborEmail].downcase).last
   end
 
-  def webhook_form_validate(tourBookingName, tourBookingId, neighborEmail, phone_number, last_name, first_name,tourDate, tourTime, tourType)
+  def webhook_form_validate(tourBookingName, tourBookingId, neighborEmail, last_name, first_name,tourDate, tourTime, tourType)
     if !tourBookingName.present?
       render :json => {:success=> false, :message => "Tour Booking Name cannot be empty", :status => 400}
       return false
@@ -100,9 +100,6 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       return false
     elsif !neighborEmail.present?
       render :json => {:success=> false, :message => "Email cannot be empty", :status => 400}
-      return false
-    elsif !phone_number.present?
-      render :json => {:success=> false, :message => "Phone number cannot be empty", :status => 400}
       return false
     elsif !last_name.present?
       render :json => {:success=> false, :message => "Last name cannot be empty", :status => 400}
