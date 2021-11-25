@@ -79,8 +79,8 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
   end
   
   def set_community_by_id
-    credentials = Credential.where(salesforce_property_id: params[:neighborhoodId]).last
-    @community ||= credentials&.community
+    crm_credentials = CrmCredential.where(salesforce_property_id: params[:neighborhoodId]).last
+    @community ||= crm_credentials&.community
   end
 
   def set_community_by_name
