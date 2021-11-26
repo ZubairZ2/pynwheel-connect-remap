@@ -705,7 +705,7 @@ module ShortestPath
       if stop.class.name == "Unit"
         lock = stop.door.present? ? return_lock(stop.door) : return_lock(stop)
       elsif stop.class.name == "Amenity"
-        lock = stop.doors.present? ? return_lock(stop.doors.first) : return_lock(stop)
+        lock = stop.doors.present? ? return_lock(stop.doors.order("created_at ASC").first) : return_lock(stop)
       else
         lock = return_lock(stop)
       end
