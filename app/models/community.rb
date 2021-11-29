@@ -186,9 +186,9 @@ class Community < ApplicationRecord
   end
 
   def get_time_zone
-    return "UTC" unless (self.latitude.present? && self.longitude.present?)
+    return "America/Los_Angeles" unless (self.latitude.present? && self.longitude.present?)
 
-    Timezone.lookup(self.latitude, self.longitude).name rescue "UTC"
+    Timezone.lookup(self.latitude, self.longitude).name rescue "America/Los_Angeles"
   end
 
   def has_temporary_images?

@@ -14,6 +14,7 @@ class KnockService < BaseService
   end
 
   def create_knock_appointment
+    binding.pry
     knock_appointment_response = create_appointment(knock_api_key, knock_appointment_payload) if is_knock_crm
     display_logs("Create Appointment", knock_appointment_response)
     add_knock_appointment_id(knock_appointment_response["payload"]["appointment"]["id"]) if appointment_created(knock_appointment_response)
