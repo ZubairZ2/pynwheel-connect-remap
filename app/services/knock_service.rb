@@ -245,7 +245,7 @@ class KnockService < BaseService
   end
 
   def get_knock_visit_time visit_time
-    visit_time.in_time_zone(@community.get_community_time_zone()).strftime("%FT%T%:z").to_s
+    visit_time.in_time_zone(@community.get_time_zone()).strftime("%FT%T%:z").to_s
   end
 
 
@@ -317,7 +317,7 @@ class KnockService < BaseService
   end
 
   def knock_tour_date_time
-    timezone = @community.get_community_time_zone()
+    timezone = @community.get_time_zone()
     
     tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
