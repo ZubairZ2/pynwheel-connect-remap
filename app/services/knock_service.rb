@@ -181,14 +181,7 @@ class KnockService < BaseService
   end
   
   def sms_consent_disclaimer
-    case @scheduled_tour.tour_type
-    when "guided_tour"
-      "I consent to appointment updates via SMS communication for my self tour using Pynwheel mobile app."
-    when "self_tour"
-      "I consent to appointment updates via SMS communication for my self tour using Pynwheel mobile app."
-    when "virtual_tour"      
-      "I consent to appointment updates via SMS communication for my remote virtual tour using Pynwheel mobile app."
-    end
+    "I consent to appointment updates via SMS communication for my self tour using Pynwheel mobile app."
   end
 
   def is_self_guided_tour
