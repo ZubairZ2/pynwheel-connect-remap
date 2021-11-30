@@ -208,7 +208,9 @@ class KnockService < BaseService
 
   def desire_bedrooms
     if @scheduled_tour.desired_bedroom.present?
-      if @scheduled_tour.desired_bedroom > 2
+      if@scheduled_tour.desired_bedroom.eql?(1)
+        ["1_BEDROOM"]
+      elsif @scheduled_tour.desired_bedroom > 2
         ["3_OR_MORE_BEDROOMS"]
       else
         ["#{@scheduled_tour.desired_bedroom}_BEDROOMS"]
