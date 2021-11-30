@@ -185,10 +185,10 @@ class Community < ApplicationRecord
     CloneCommunityJob.perform_async community
   end
 
-  def get_time_zone
-    return "America/Los_Angeles" unless (self.latitude.present? && self.longitude.present?)
+  def get_time_zone default_time_zone = "UTC"
+    return default_time_zone unless (self.latitude.present? && self.longitude.present?)
 
-    Timezone.lookup(self.latitude, self.longitude).name rescue "America/Los_Angeles"
+    Timezone.lookup(self.latitude, self.longitude).name rescue default_time_zone
   end
 
   def has_temporary_images?

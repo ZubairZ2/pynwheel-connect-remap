@@ -5,6 +5,7 @@ class KnockService < BaseService
     @scheduled_tour = scheduled_tour
     @community = @scheduled_tour.community
     @tour_user = @scheduled_tour.tour_user
+    @timezone = @community.get_time_zone("America/Los_Angeles")
   end
  
   def create_knock_prospect
@@ -14,7 +15,6 @@ class KnockService < BaseService
   end
 
   def create_knock_appointment
-    binding.pry
     knock_appointment_response = create_appointment(knock_api_key, knock_appointment_payload) if is_knock_crm
     display_logs("Create Appointment", knock_appointment_response)
     add_knock_appointment_id(knock_appointment_response["payload"]["appointment"]["id"]) if appointment_created(knock_appointment_response)
@@ -246,7 +246,7 @@ class KnockService < BaseService
   end
 
   def get_knock_visit_time visit_time
-    visit_time.in_time_zone(@community.get_time_zone()).strftime("%FT%T%:z").to_s
+    visit_time.in_time_zone(@timezone).strftime("%FT%T%:z").to_s
   end
 
 
@@ -318,11 +318,10 @@ class KnockService < BaseService
   end
 
   def knock_tour_date_time
-    timezone = @community.get_time_zone()
     
-    tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
+    tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(@timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
-    tour_datetime || Time.now.in_time_zone(timezone).strftime("%FT%T%:z").to_s
+    tour_datetime || Time.now.in_time_zone(@timezone).strftime("%FT%T%:z").to_s
   end
 
   def display_logs msg, resp
