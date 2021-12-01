@@ -1,3 +1,4 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"></script>
 - unless controller.action_name == "profile"
   = hidden_field_tag "current_user_role", current_user.role
   = hidden_field_tag "edit_user_role", f.object.role
@@ -14,7 +15,7 @@
       - else 
         .grey_bar
           %h3.h3_box_title= current_user.is_company_admin? ? 'Company admin' : 'Regional admin'
-  .form-group
+  .form-group.company_group
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Company
       - unless current_user.is_company_admin? or current_user.is_regional_admin?
@@ -165,9 +166,15 @@
     $('#user_role').change(function(){
       user_role = $('#user_role').val()
       if (is_regional_admin(user_role)){
+        $(".company_list").addClass('validate[required]')
         add_region()
+      }else if (is_company_admin(user_role)){
+        $(".company_list").addClass('validate[required]')
+        $('.region_select').addClass('hide_it')
+        $(".company_list").change()        
       }
       else{
+        $(".company_list").removeClass('validate[required]')
         $('.region_select').addClass('hide_it')
         $(".company_list").change()        
       }
@@ -177,6 +184,7 @@
   });
 
   $(".company_list, .region_list").change(function(e){
+    $('.company_group').find('.select_validation').empty()
     var selected_company =  $(".company_list").val()
     var userid = $(this).attr('data-user-id');
     if ($(e.target).hasClass('region_list')){

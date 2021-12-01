@@ -20,7 +20,6 @@ $(document).ready(function() {
     $('.date_range_filter').daterangepicker({
         startDate: start,
         endDate: end,
-        minDate: moment('04-04-2021', 'MM-DD-YYYY'),
         ranges: {
            'Today': [moment(), moment()],
            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
