@@ -77,7 +77,7 @@ class TourHistory < ApplicationRecord
           complete_scheduled_tour(scheduled_tour)
         end
 
-       complete_scheduled_tour(scheduled_tour) if scheduled_tour.tour_type.present? && scheduled_tour&.created_by === "PERQ"
+       complete_scheduled_tour(scheduled_tour) if scheduled_tour&.tour_type.present? && scheduled_tour&.created_by === "PERQ"
 
         tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}"
         @complete_tour_content = ["#{community.name} has been visited", "#{touruser.name.capitalize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.capitalize} Visitor Details</a> "]
