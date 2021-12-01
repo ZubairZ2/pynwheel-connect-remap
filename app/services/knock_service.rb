@@ -3,9 +3,10 @@ class KnockService < BaseService
 
   def initialize scheduled_tour
     @scheduled_tour = scheduled_tour
-    @community = @scheduled_tour.community
-    @tour_user = @scheduled_tour.tour_user
-    @timezone = @community.get_time_zone("America/Los_Angeles")
+    @tour_user = @scheduled_tour&.tour_user
+    @community = @scheduled_tour&.community
+    @crm_credentials = @community&.crm_credential
+    @timezone = @community&.get_time_zone("America/Los_Angeles")
   end
  
   def create_knock_prospect
@@ -161,19 +162,19 @@ class KnockService < BaseService
   end
 
   def knock_prospect_api_key
-    ENV["KNOCK_PROSPECT_KEY"] || @community&.crm_credential&.knock_api_key
+    ENV["KNOCK_PROSPECT_KEY"] || @crm_credentials&.knock_api_key
   end
 
   def knock_api_key
-    @community&.crm_credential&.knock_api_key
+    @crm_credentials&.knock_api_key
   end
 
   def get_knock_community_id
-    @community&.crm_credential&.knock_community_id
+    @crm_credentials&.knock_community_id
   end
 
   def get_knock_consent_url
-    @community&.crm_credential&.knock_sms_consent_url
+    @crm_credentials&.knock_sms_consent_url
   end
 
   def prospect_move_in_date
@@ -231,7 +232,6 @@ class KnockService < BaseService
     end
   end
 
-
   def get_knock_appointment_id
     @scheduled_tour.knock_appointment_id || create_knock_appointment()
   end
@@ -243,7 +243,6 @@ class KnockService < BaseService
   def get_knock_visit_time visit_time
     visit_time.in_time_zone(@timezone).strftime("%FT%T%:z").to_s
   end
-
 
   def knock_visit_payload visited_stops, visit_time
     {
@@ -313,7 +312,6 @@ class KnockService < BaseService
   end
 
   def knock_tour_date_time
-    
     tour_datetime = (@scheduled_tour.tour_date.to_s + " " + @scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(@timezone) if @scheduled_tour.tour_date.present? && @scheduled_tour.tour_time.present?
     tour_datetime = tour_datetime.strftime("%FT%T%:z").to_s if tour_datetime.present?
     tour_datetime || Time.now.in_time_zone(@timezone).strftime("%FT%T%:z").to_s
