@@ -196,7 +196,6 @@ $(window).bind('load', function () {
     ////////////////////////////////////////////
     
     $('#zoomable a').on('touchstart', function (e) {
-      alert("touch start")
       e.stopImmediatePropagation();
     });
     var $area = document.getElementById('zoomable');
@@ -209,7 +208,6 @@ $(window).bind('load', function () {
         zoomDoubleClickSpeed: 1,
        
         onTouch: function(e) {
-          alert("on touch")
           // `e` - is current touch event.
           // $.get('/api/v1/communities/3/test_panzoom?keyCode='+$(e.path[1]))
           e.preventDefault();
@@ -231,7 +229,6 @@ $(window).bind('load', function () {
       webpagePanZoom.zoomInOut(189);
     });
     $("#zoomable-modal-image a").on("touchstart", function (e) {
-      alert("touch start")
       e.stopImmediatePropagation();
     });
     var $marea = document.getElementById('zoomable-modal-image') 
@@ -261,9 +258,7 @@ $(window).bind('load', function () {
       $($marea).removeClass("transform-none"); 
     })
 
-      alert("touch start")
     $("#zoomable-modal-image-responsive a").on("touchstart", function (e) {
-      alert("touch start")
       e.stopImmediatePropagation();
     });
     var imageArea = document.getElementById('zoomable-modal-image-responsive');
@@ -1302,7 +1297,6 @@ function set_realpagesvc_url(element) {
 }
 
 function hasTouch() {
-  alert("on touch start")
   return 'ontouchstart' in document.documentElement || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 }
 
