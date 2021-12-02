@@ -144,7 +144,7 @@
                 %span= @percentage_session_with_counts_camera_opened_counter
               .pie_description
                 %span.dot.tour_counter_without
-                %span Session without Camera Opened
+                %span Sessions without Camera Opened
                 %span= @percentage_session_without_counts_camera_opened_counter
           .col-lg-8.pie_width
             = pie_chart @pie_notes_opened_counter_data_labels, @pie_notes_opened_counter_data_options
@@ -156,11 +156,11 @@
               .count_text= 'Total number of times notes was opened'
               .pie_description
                 %span.dot.tour_counter_with
-                %span Session with Notes Opened
+                %span Sessions with Notes Opened
                 %span= @percentage_session_with_counts_notes_opened_counter
               .pie_description
                 %span.dot.tour_counter_without
-                %span Session without Notes Opened
+                %span Sessions without Notes Opened
                 %span= @percentage_session_without_counts_notes_opened_counter
           .col-lg-8.pie_width
             = pie_chart @pie_camera_opened_counter_data_labels, @pie_camera_opened_counter_data_options
@@ -175,11 +175,11 @@
               .count_text= 'Total number of times price was opened'
               .pie_description
                 %span.dot.price_opened_with
-                %span Session with price opened
+                %span Sessions with price opened
                 %span= @percentage_session_with_price_opened_self_tour
               .pie_description
                 %span.dot.price_opened_without
-                %span Session without price opened
+                %span Sessions without price opened
                 %span= @percentage_session_without_price_opened_self_tour
           .col-lg-8.pie_width
             = pie_chart @pie_price_opened_data_labels_self_tour, @pie_price_opened_data_options_self_tour
@@ -193,11 +193,11 @@
               .count_text= 'Total number of unscheduled tours' 
               .pie_description
                 %span.dot.tour_scheduled
-                %span Scheduled Session
+                %span Scheduled Sessions
                 %span= @percentage_tour_scheduled_counts
               .pie_description
                 %span.dot.tour_unscheduled
-                %span Unscheduled Session
+                %span Unscheduled Sessions
                 %span= @percentage_tour_unscheduled_counts
           .col-lg-8.pie_width
             = pie_chart @pie_tour_type_data_labels, @pie_tour_type_data_options
@@ -211,11 +211,11 @@
             .center_it
               .pie_description
                 %span.dot.tour_site_true
-                %span Completed Session
+                %span Completed Sessions
                 %span= @percentage_tour_state_true_counts
               .pie_description
                 %span.dot.tour_site_false
-                %span Abandoned Session
+                %span Abandoned Sessions
                 %span= @percentage_tour_state_false_counts
           .col-lg-5.pie_width
             = pie_chart @pie_tour_state_data_labels, @pie_tour_state_data_options
