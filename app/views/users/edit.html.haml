@@ -6,7 +6,7 @@
         %h3.box-title
           Edit  
           %span User
-      = form_for @user,url: company_employee_path(current_company,@user),:html=>{:class=>"form-horizontal"} do |f|    
+      = form_for @user,url: company_employee_path(current_company,@user),:html=>{:class=>"form-horizontal edit_user_form"} do |f|    
         .box-body
           .row
             .col-lg-9.col-lg-offset-1

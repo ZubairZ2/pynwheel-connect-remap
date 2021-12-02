@@ -48,7 +48,7 @@ module AnalyticsHelper
     return labels, options
   end
 
-def make_bar_chart(session_each_day_labels, session_each_day_counts, label, background_color, border_color)
+  def make_bar_chart(session_each_day_labels, session_each_day_counts, label, background_color, border_color)
     labels = {
       labels: session_each_day_labels,
       datasets: [
@@ -61,7 +61,14 @@ def make_bar_chart(session_each_day_labels, session_each_day_counts, label, back
         }
       ]
     }
-    options = { legend: {display: false} }
+    options = { legend: {display: false}, scales: {
+        yAxes: [{
+            ticks: {
+                beginAtZero: true,
+                precision: 0
+            }
+        }]
+    } }
     return labels, options
   end
 
@@ -78,7 +85,14 @@ def make_bar_chart(session_each_day_labels, session_each_day_counts, label, back
         }
       ]
     }
-    options = { legend: {display: false} }
+    options = { legend: {display: false}, scales: {
+        yAxes: [{
+            ticks: {
+                beginAtZero: true,
+                precision: 0
+            }
+        }]
+      } }
     return labels, options
   end
 
@@ -120,6 +134,7 @@ def make_bar_chart(session_each_day_labels, session_each_day_counts, label, back
       scales: {
         xAxes: [{
             ticks: {
+                beginAtZero: true,
                 beginAtZero: true
             }
         }]
@@ -146,15 +161,17 @@ def make_bar_chart(session_each_day_labels, session_each_day_counts, label, back
         }
       ]
     }
-    options = { legend: {display: false} }
+    options = { legend: {display: false}, scales: {
+        yAxes: [{
+            ticks: {
+                beginAtZero: true,
+                precision: 0
+            }
+        }]
+      } }
     return labels, options
   end
-
-  def product_type
-      #[ ["Maps","maps"], ["Self Tour", "self_tour"], ["Touch", "touch"], ["All", "all"] ]
-      [ ["Self Tour", "self_tour"]]
-  end
-
+  
   def admin_type
     [ ["All pynwheel", "all_pynwheel"], ["All dwelo", "all_dwello"] ]
   end
@@ -194,7 +211,7 @@ def make_bar_chart(session_each_day_labels, session_each_day_counts, label, back
     else
       communities = user.communities
     end
-    communities
+    communities.active_communities.order(:name)
   end
 
   def fetch_regions(user)
