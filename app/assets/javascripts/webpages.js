@@ -48,6 +48,14 @@ function getUnitsToBeSelected() {
   return _3dUnitsToBeSelected.map(a => a.marketing_name)
 }
 
+function touchScreenEvent() {
+  $('#zoomable a').on('touchstart', function (e) {
+    e.stopImmediatePropagation();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', touchScreenEvent);
+
 $(window).bind('load', function () {
 
   if ($('.is-webpage')[0]) {
@@ -194,10 +202,11 @@ $(window).bind('load', function () {
       $(this).parent().find('input').click();
     });
     ////////////////////////////////////////////
-    
-    $('#zoomable a').on('touchstart', function (e) {
-      e.stopImmediatePropagation();
-    });
+  
+    // $('#zoomable a').on('touchstart', function (e) {
+    //   e.stopImmediatePropagation();
+    // });
+
     var $area = document.getElementById('zoomable');
     webpagePanZoom = panzoom($area, 
       {
