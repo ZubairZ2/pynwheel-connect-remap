@@ -211,7 +211,7 @@ module AnalyticsHelper
     else
       communities = user.communities
     end
-    communities
+    communities.active_communities.order(:name)
   end
 
   def fetch_regions(user)

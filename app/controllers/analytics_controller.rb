@@ -5,9 +5,9 @@ class AnalyticsController < ApplicationController
   def index
     start_date , end_date = (params[:start_date].present? && params[:end_date].present?) ? [(params[:start_date].split("/")[1] + "/" + params[:start_date].split("/")[0] + "/" + params[:start_date].split("/")[2]).to_date, ((params[:end_date].split("/")[1] + "/" + params[:end_date].split("/")[0] + "/" + params[:end_date].split("/")[2]).to_date)] : [Date.today - 7.day, Date.today]
     @days_count = return_total_days(start_date, end_date) > 0 ? return_total_days(start_date, end_date) : 1
-    communities_ids = fetch_communities(current_user).ids
-    track_sessions = TrackSession.where(community_id: communities_ids)
-    tour_histories = TourHistory.where(community_id: communities_ids)
+    communities = fetch_communities(current_user).active_communities
+    track_sessions = TrackSession.where(community_id: communities.ids)
+    tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
     @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @metro_records = track_sessions.where(track_session_type: "metro").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @pesent_end_dattime_maps_records = @maps_records.where.not(end_datetime: nil)
@@ -58,7 +58,7 @@ class AnalyticsController < ApplicationController
       opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :notes_opened_counter) 
       stops_per_tour(start_date, @days_count, @self_tour_records)
       visits_per_tour_stop(@self_tour_records)
-      @schedule_records = SchedualTour.where.not(tour_user_id: nil).where('tour_date > ? AND tour_date < ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
+      @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact).where.not(tour_user_id: nil).where('tour_date > ? AND tour_date < ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
       days_count_for_schedule_records = return_total_days(start_date, Date.today) > 0 ? return_total_days(start_date, Date.yesterday.end_of_day) : 1
       till_now_tour_histories = @self_tour_records_all.where('arrived < ?', Date.yesterday.end_of_day)
       no_shows(start_date, days_count_for_schedule_records, @schedule_records, till_now_tour_histories)

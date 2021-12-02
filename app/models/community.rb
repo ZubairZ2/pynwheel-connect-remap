@@ -93,7 +93,7 @@ class Community < ApplicationRecord
 
 
   enum alert_contact: [:email, :phone, :both]
-  
+  scope :active_communities, -> { where(locked: false) }
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
   scope :desc_created_at, -> { order(created_at: :desc) }
   amoeba do

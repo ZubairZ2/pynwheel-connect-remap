@@ -26,19 +26,19 @@
             - if current_user.is_super_admin? || current_user.is_dwelo_admin? || current_user.is_company_admin?
               - unless current_user.is_company_admin?
                 .col-xl-4.col-lg-4
-                  %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Companies
-                  = select_tag 'companies', options_for_select(companies_list(current_user), company_id),{ :class=>"form-control filter_select2", :include_blank => 'Select any company', :style => "width: 100%" }
+                  %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any company
+                  = select_tag 'companies', options_for_select(companies_list(current_user), company_id),{ :class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
               - if current_user.is_company_admin?
                 .col-xl-4.col-lg-4
-                  %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Communities
-                  = select_tag 'communities', options_for_select(communities_list(current_user), community_id), { :class=>"form-control filter_select2", :include_blank => 'Select any community', :style => "width: 100%" }
+                  %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any community
+                  = select_tag 'communities', options_for_select(communities_list(current_user), community_id), { :class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
               .col-xl-4.col-lg-4
-                %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Regions
-                = select_tag 'regions', options_for_select(regions_list(current_user), region_id),{:class=>"form-control filter_select2", :include_blank => 'Select any region', :style => "width: 100%" }
+                %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any region
+                = select_tag 'regions', options_for_select(regions_list(current_user), region_id),{:class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
             - if current_user.is_super_admin?
               .col-xl-4.col-lg-4
-                %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Admin Type
-                = select_tag 'admin_type', options_for_select(admin_type, admin_type_selected),{:class=>"form-control filter_select2", :include_blank => 'Select admin type', :style => "width: 100%" }
+                %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select admin type
+                = select_tag 'admin_type', options_for_select(admin_type, admin_type_selected),{:class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
             - if current_user.is_dwelo_admin? || current_user.is_company_admin?
               .col-xl-4.col-lg-4
                 %h4 TimeFrame
@@ -46,8 +46,8 @@
         .row
           - unless current_user.is_company_admin?
             .col-xl-4.col-lg-4
-              %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Communities
-              = select_tag 'communities', options_for_select(communities_list(current_user), community_id), { :class=>"form-control filter_select2", :include_blank => 'Select any community', :style => "width: 100%" }
+              %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any community
+              = select_tag 'communities', options_for_select(communities_list(current_user), community_id), { :class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
 
           - unless current_user.is_dwelo_admin? || current_user.is_company_admin?
             .col-xl-4.col-lg-4
