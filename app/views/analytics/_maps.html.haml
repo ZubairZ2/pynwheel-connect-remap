@@ -1,0 +1,156 @@
+.box.box-info.add-plan.mt-20
+  .box-header
+    %h3.box-title
+      Maps
+      %span Analytics
+    %h3.box-title.align-right
+      Sessions
+      %span= @date_range_text
+  .box-body.maps-box
+    - if @maps_records.any?
+      .row
+        .col-lg-6.col-md-12.h-500
+          %p.chart_heading Sessions
+          .col-lg-4.numbers_div
+            .center_it
+              .count_int= @track_session_count_maps
+              .count_text= 'Total Number Of Sessions'
+              .count_int= @avg_track_session_maps
+              .count_text= 'Average Number Of Sessions Per Day'
+          .col-lg-8
+            = bar_chart @session_each_day_data_maps, @session_each_day_options_maps
+        .col-lg-6.col-md-12.h-500
+          %p.chart_heading Session Duration
+          .col-lg-4.numbers_div
+            .center_it
+              .count_int= @average_duration_each_session_in_minutes_maps
+              .count_text= 'Average Duration Of Each Session In Minutes'
+          .col-lg-8
+            = line_chart @session_each_day_minutes_data_maps, @session_each_day_minutes_options_maps
+       
+      .row.mt-80
+        .col-lg-6.col-md-12.h-500
+          %p.chart_heading Sessions by Time of Day
+          .col-lg-4.numbers_div
+            .center_it
+              .count_int= @session_in_highest_hour_maps
+              .count_text= 'Maximum number of sessions at ' + @highest_hour_maps
+          .col-lg-8
+            = bar_chart @session_each_day_hour_data_maps, @session_each_day_hour_options_maps
+
+        .col-lg-6.col-md-12.h-500
+          %p.chart_heading Single vs Multiple Page Visits
+          .col-lg-4.numbers_div
+            .center_it
+              .pie_description
+                %span.dot.single_page
+                %span One page viewed sessions
+                %span= @percentage_single_page_visitor_maps
+              .pie_description
+                %span.dot.multiple_page
+                %span Multiple page viewed sessions
+                %span= @percentage_multiple_page_visitor_maps
+          .col-lg-8.pie_width
+            = pie_chart @bounce_data_labels_maps, @bounce_data_options_maps
+
+      .row.mt-80
+        .col-lg-12.h-500
+          %p.chart_heading Events
+          .col-lg-2.numbers_div
+            .center_it
+              .count_int= @total_number_of_events_maps
+              .count_text= 'Total number of events'
+              .pie_description
+                %span.dot.events_with
+                %span Sessions with events
+                %span= @percentage_session_with_events_maps
+              .pie_description
+                %span.dot.events_without
+                %span Sessions without events 
+                %span= @percentage_session_without_events_maps
+          .col-lg-5.pie_width
+            = pie_chart @pie_events_data_labels_maps, @pie_events_data_options_maps
+          .col-lg-5
+            = bar_chart @bar_events_data_labels_maps, @bar_events_data_options_maps
+
+
+      .row.mt-80
+        .col-lg-12.h-500
+          %p.chart_heading Apply Clicks
+          .col-lg-2.numbers_div
+            .center_it
+              .count_int= @total_number_of_apply_clicks_maps
+              .count_text= 'Total number of apply clicks' 
+              .pie_description
+                %span.dot.apply_clicks_with
+                %span Sessions with apply clicks
+                %span= @percentage_session_with_apply_clicks_maps
+              .pie_description
+                %span.dot.apply_clicks_without
+                %span Sessions without apply clicks
+                %span= @percentage_session_without_apply_clicks_maps
+          .col-lg-5.pie_width
+            = pie_chart @pie_apply_click_data_labels_maps, @pie_apply_click_data_options_maps
+          .col-lg-5
+            = line_chart @line_apply_click_data_labels_maps, @line_apply_click_data_options_maps
+
+      .row.mt-80
+        .col-lg-12.h-500
+          %p.chart_heading Favorite Saved
+          .col-lg-2.numbers_div
+            .center_it
+              .count_int= @total_number_of_favourite_saved_maps
+              .count_text= 'Total number of favorite saved' 
+              .pie_description
+                %span.dot.favourite_saved_with
+                %span Sessions with favorite saved
+                %span= @percentage_session_with_favourite_saved_maps
+              .pie_description
+                %span.dot.favourite_saved_without
+                %span Sessions without favorite saved
+                %span= @percentage_session_without_favourite_saved_maps
+          .col-lg-5.pie_width
+            = pie_chart @pie_favourite_saved_data_labels_maps, @pie_favourite_saved_data_options_maps
+          .col-lg-5
+            = bar_chart @bar_favourite_saved_data_labels_maps, @bar_favourite_saved_data_options_maps
+
+      .row.mt-80
+        .col-lg-12.h-500
+          %p.chart_heading Favorite Mailed
+          .col-lg-2.numbers_div
+            .center_it
+              .count_int= @total_number_of_favourite_sent_maps
+              .count_text= 'Total number of times favorite emailed' 
+              .pie_description
+                %span.dot.favourite_sent_with
+                %span Sessions with favorite mailed
+                %span= @percentage_session_with_favourite_sent_maps
+              .pie_description
+                %span.dot.favourite_sent_without
+                %span Sessions without favorite mailed
+                %span= @percentage_session_without_favourite_sent_maps
+          .col-lg-5.pie_width
+            = pie_chart @pie_favourite_sent_data_labels_maps, @pie_favourite_sent_data_options_maps
+          .col-lg-5
+            = bar_chart @bar_favourite_sent_data_labels_maps, @bar_favourite_sent_data_options_maps
+
+      .row.mt-80
+        .col-lg-6.col-md-12.h-500
+          %p.chart_heading Price Opened
+          .col-lg-4.numbers_div
+            .center_it
+              .count_int= @total_number_of_price_opened_maps
+              .count_text= 'Total number of times price was opened'
+              .pie_description
+                %span.dot.price_opened_with
+                %span Sessions with price opened
+                %span= @percentage_session_with_price_opened_maps
+              .pie_description
+                %span.dot.price_opened_without
+                %span Sessions without price opened
+                %span= @percentage_session_without_price_opened_maps
+          .col-lg-8.pie_width
+            = pie_chart @pie_price_opened_data_labels_maps, @pie_price_opened_data_options_maps
+
+    - else
+      %h3 There is no record found on selected date range

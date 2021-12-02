@@ -25,7 +25,7 @@
               = link_to "Communities", root_path
           - if current_user.is_admin?
             %li.loader_class{:class=>"#{controller_name =='analytics' && params[:action] =='index' ? 'active' : ''}"}
-              = link_to analytics_path do
+              = link_to analytics_path(community: current_community.id) do
                 %i.fa.fa-bar-chart
                 %span Analytics
       - if current_user.is_admin? || current_user.is_community_assistant?

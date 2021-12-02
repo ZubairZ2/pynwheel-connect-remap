@@ -20,7 +20,6 @@ $(document).ready(function() {
     $('.date_range_filter').daterangepicker({
         startDate: start,
         endDate: end,
-        minDate: moment('04-04-2021', 'MM-DD-YYYY'),
         ranges: {
            'Today': [moment(), moment()],
            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
@@ -68,7 +67,6 @@ function disable_another_selects(current_select){
 function set_url(){
   params = {}
   params["community"] = $('#communities').val()
-  params["product_type"] = $('#product_type').val()
   params["timeframe"] = $('#timeframe').val()
   if ($('#companies').val())
     params["company"] = $('#companies').val()
