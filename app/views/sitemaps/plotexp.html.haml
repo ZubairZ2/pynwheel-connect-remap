@@ -502,7 +502,7 @@
   var community_id = #{params[:community_id]};
   var sitemap_id = '#{@sitemap.id}';
 
-  var self_tour = #{@community.self_tour}
+  var self_tour = #{@community.self_tour || false}
   var enable_locks = #{@community.enable_locks}
   var automate_wayfinding = #{@community.auto_wayfinding}
 

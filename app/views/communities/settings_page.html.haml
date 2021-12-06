@@ -348,7 +348,7 @@
   = render partial: "3d_map_configurations"
           
   :javascript
-    var self_tour = #{@community.self_tour}
+    var self_tour = #{@community.self_tour || false}
     if(self_tour)
       $(".verification_type_field").removeClass("hidden")
     populate_multiselect()
