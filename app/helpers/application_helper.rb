@@ -224,7 +224,7 @@ module ApplicationHelper
   end
 
   def cards_formats
-    ["HID Prox 26-bit H10301", "HID Prox 33-bit D10202", "HID Prox 35-bit C1000", "HID Prox 37-bit H10304", "HID Prox 37-bit H10302"]
+    ["HID Prox 26-bit H10301", "HID Prox 35-bit C1000", "HID Prox 37-bit H10304", "HID Prox 37-bit H10302", "26-bit QuadReal Commerce Place", "HID Prox 36-bit C10202", "HID Prox 32-bit SNC", "HID Prox 48-bit", "HID Wiegand 33-bit D10202", "HID Prox 33-bit D10202"]
   end
 
   def convert_float_to_integer(x)
