@@ -47,7 +47,7 @@ class AnalyticsController < ApplicationController
       collect_session_each_day_data(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
       collect_session_each_day_data_in_minutes(start_date, @days_count, @self_tour_records, :arrived, :left, "self_tour")
       collect_session_each_day_data_in_hours(@self_tour_records, :arrived, "self_tour")
-      bounce_rate_on_pages(@self_tour_records, :visited_pages_counter, "self_tour")
+      bounce_rate_on_pages(@self_tour_records_all, :visited_pages_counter, "self_tour")
       events_per_session(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
       apply_clicks_track_session(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
       see_availability_session(start_date, @days_count, @self_tour_records)
@@ -151,7 +151,7 @@ class AnalyticsController < ApplicationController
             remove_index << ind
           end
         end
-        sessions_each_day_hash[uniq_start_date[i]] = minutes / count
+        sessions_each_day_hash[uniq_start_date[i]] = (minutes / count).negative?() ? 0 : (minutes / count)
         records_start_date = records_start_date - [uniq_start_date[i]]
         remove_index.each_with_index {|removing_index,j| start_end_datetime_arr.delete_at(removing_index - j) }
       end   
@@ -243,7 +243,7 @@ class AnalyticsController < ApplicationController
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       pie_chart_hash = {"Session with events" => percentage_session_with_counts, "Session without events" => percentage_session_without_counts}
       pie_events_data_labels, pie_events_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(176,223,229,0.5)", "rgba(255,252,187,0.5)"], ["rgba(176,223,229,1)","rgba(255,252,187,1)"])
-      bar_events_data_labels, bar_events_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values, "Total event", "rgba(176,223,229,0.5)", "rgba(176,223,229,1)")
+      bar_events_data_labels, bar_events_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Total event", "rgba(176,223,229,0.5)", "rgba(176,223,229,1)")
       instance_variable_set("@percentage_session_with_events_#{for_device_type}", percentage_session_with_counts.to_s + "%")
       instance_variable_set("@percentage_session_without_events_#{for_device_type}", percentage_session_without_counts.to_s + "%")
       instance_variable_set("@pie_events_data_labels_#{for_device_type}", pie_events_data_labels)
@@ -281,7 +281,7 @@ class AnalyticsController < ApplicationController
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       pie_chart_hash = {"Session with Apply clicks" => percentage_session_with_counts, "Session without Apply clicks" => percentage_session_without_counts}
       pie_apply_click_data_labels, pie_apply_click_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(209, 255, 213, 0.7)", "rgba(255,252,187,0.5)"], ["rgba(209, 255, 213, 1)","rgba(255,252,187,1)"])
-      line_apply_click_data_labels, line_apply_click_data_options = make_line_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values, "Apply clicks", "rgba(209, 255, 213, 0.5)", "rgba(209, 255, 213, 1)")
+      line_apply_click_data_labels, line_apply_click_data_options = make_line_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Apply clicks", "rgba(209, 255, 213, 0.5)", "rgba(209, 255, 213, 1)")
       instance_variable_set("@percentage_session_with_apply_clicks_#{for_device_type}", percentage_session_with_counts.to_s + "%")
       instance_variable_set("@percentage_session_without_apply_clicks_#{for_device_type}", percentage_session_without_counts.to_s + "%")
       instance_variable_set("@pie_apply_click_data_labels_#{for_device_type}", pie_apply_click_data_labels)
@@ -319,7 +319,7 @@ class AnalyticsController < ApplicationController
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       pie_chart_hash = {"Session with favorite saved" => percentage_session_with_counts, "Session without favorite saved" => percentage_session_without_counts}
       pie_favourite_saved_data_labels, pie_favourite_saved_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(205, 183, 246, 0.5)", "rgba(255,252,187,0.5)"], ["rgba(205, 183, 246, 1)","rgba(255,252,187,1)"])
-      bar_favourite_saved_data_labels, bar_favourite_saved_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values, "Favorite saved", "rgba(205, 183, 246, 0.5)", "rgba(205, 183, 246, 1)")
+      bar_favourite_saved_data_labels, bar_favourite_saved_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Favorite saved", "rgba(205, 183, 246, 0.5)", "rgba(205, 183, 246, 1)")
       instance_variable_set("@percentage_session_with_favourite_saved_#{for_device_type}", percentage_session_with_counts.to_s + "%")
       instance_variable_set("@percentage_session_without_favourite_saved_#{for_device_type}", percentage_session_without_counts.to_s + "%")
       instance_variable_set("@pie_favourite_saved_data_labels_#{for_device_type}", pie_favourite_saved_data_labels)
@@ -357,7 +357,7 @@ class AnalyticsController < ApplicationController
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       pie_chart_hash = {"Session with favorite emailed" => percentage_session_with_counts, "Session without favorite emailed" => percentage_session_without_counts}
       pie_favourite_sent_data_labels, pie_favourite_sent_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(255, 204, 203, 0.5)", "rgba(255,252,187,0.8)"], ["rgba(255, 204, 203, 1)","rgba(255,252,187,1)"])
-      bar_favourite_sent_data_labels, bar_favourite_sent_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values, "Favorite emailed", "rgba(255, 204, 203, 0.7)", "rgba(255, 204, 203, 1)")
+      bar_favourite_sent_data_labels, bar_favourite_sent_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Favorite emailed", "rgba(255, 204, 203, 0.7)", "rgba(255, 204, 203, 1)")
       instance_variable_set("@percentage_session_with_favourite_sent_#{for_device_type}", percentage_session_with_counts.to_s + "%")
       instance_variable_set("@percentage_session_without_favourite_sent_#{for_device_type}", percentage_session_without_counts.to_s + "%")
       instance_variable_set("@pie_favourite_sent_data_labels_#{for_device_type}", pie_favourite_sent_data_labels)
@@ -400,7 +400,7 @@ class AnalyticsController < ApplicationController
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       with_session_str = counter_attr_type == :camera_opened_counter ? "Session with camera opened" : "Session with noted opened"
-      without_session_str = counter_attr_type == :camera_opened_counter ? "Session without camera opened" : "Session with notes opened"
+      without_session_str = counter_attr_type == :camera_opened_counter ? "Session without camera opened" : "Session without notes opened"
       pie_chart_hash = {with_session_str => percentage_session_with_counts, without_session_str => percentage_session_without_counts}
       opened_data_labels, opened_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(255, 204, 203, 0.5)", "rgba(255,252,187,0.5)"], ["rgba(255, 204, 203, 1)","rgba(255,252,187,1)"])
       instance_variable_set("@percentage_session_with_counts#{counter_attr_type}", percentage_session_with_counts)
@@ -445,7 +445,7 @@ class AnalyticsController < ApplicationController
       hash_false_str = tour_site_or_tour_state_attr == :tour_site ? "offsite tours" : "abandoned tours"
       pie_chart_hash = {hash_true_str => percentage_true_session_counts, hash_false_str => percentage_false_session_counts}
       pie_tour_data_labels, pie_tour_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(176,223,229,0.5)", "rgba(255,252,187,0.5)"], ["rgba(176,223,229,1)","rgba(255,252,187,1)"])
-      bar_tour_data_labels, bar_tour_data_options = make_bar_chart_for_site_session(sessions_each_day_hash_onsite_completed.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash_onsite_completed.values, sessions_each_day_hash_offsite_abandoned.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash_offsite_abandoned.values, hash_true_str, hash_false_str, "rgba(176,223,229,0.8)", "rgba(176,223,229,1)", "rgba(255,252,187,1)", "rgba(255,252,187,1)")
+      bar_tour_data_labels, bar_tour_data_options = make_bar_chart_for_site_session(sessions_each_day_hash_onsite_completed.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash_onsite_completed.values, sessions_each_day_hash_offsite_abandoned.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash_offsite_abandoned.values, hash_true_str, hash_false_str, "rgba(176,223,229,0.8)", "rgba(176,223,229,1)", "rgba(255,252,187,1)", "rgba(255,252,187,1)")
       
       instance_variable_set("@pie_#{tour_site_or_tour_state_attr}_data_labels", pie_tour_data_labels)
       instance_variable_set("@pie_#{tour_site_or_tour_state_attr}_data_options", pie_tour_data_options)
@@ -505,7 +505,7 @@ class AnalyticsController < ApplicationController
       @percentage_session_without_see_availability = percentage_session_without_counts
       pie_chart_hash = {"tours with see availability" => percentage_session_with_counts, "tours without see availability" => percentage_session_without_counts}
       @pie_see_availbility_data_labels, @pie_see_availbility_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(205, 183, 246, 0.5)", "rgba(255,252,187,0.5)"], ["rgba(205, 183, 246, 1)","rgba(255,252,187,1)"])
-      @line_see_availbility_data_labels, @line_see_availbility_data_options = make_line_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y:%m:%d") }, sessions_each_day_hash.values, "See availability", "rgba(205, 183, 246, 0.5)", "rgba(205, 183, 246, 1)")
+      @line_see_availbility_data_labels, @line_see_availbility_data_options = make_line_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "See availability", "rgba(205, 183, 246, 0.5)", "rgba(205, 183, 246, 1)")
     end
 
     def stops_per_tour(start_date, days_count, total_records)

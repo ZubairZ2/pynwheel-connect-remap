@@ -124,7 +124,7 @@
                 %span= @percentage_session_with_see_availability
               .pie_description
                 %span.dot.see_availability_without
-                %span Sessions With "See Availability"
+                %span Sessions Without "See Availability"
                 %span= @percentage_session_without_see_availability
           .col-lg-5.pie_width
             = pie_chart @pie_see_availbility_data_labels, @pie_see_availbility_data_options
@@ -147,7 +147,7 @@
                 %span Sessions without Camera Opened
                 %span= @percentage_session_without_counts_camera_opened_counter
           .col-lg-8.pie_width
-            = pie_chart @pie_notes_opened_counter_data_labels, @pie_notes_opened_counter_data_options
+            = pie_chart @pie_camera_opened_counter_data_labels, @pie_camera_opened_counter_data_options
         .col-lg-6.col-md-12.h-500
           %p.chart_heading Notes Opened
           .col-lg-4.numbers_div
@@ -163,7 +163,7 @@
                 %span Sessions without Notes Opened
                 %span= @percentage_session_without_counts_notes_opened_counter
           .col-lg-8.pie_width
-            = pie_chart @pie_camera_opened_counter_data_labels, @pie_camera_opened_counter_data_options
+            = pie_chart @pie_notes_opened_counter_data_labels, @pie_notes_opened_counter_data_options
 
 
       .row.mt-80
