@@ -100,6 +100,16 @@ class Community < ApplicationRecord
     include_association :design
   end
 
+  def community_website
+    return unless self.website.present?
+
+    if self.website.include?("https" || "http")
+      self.website
+    else
+      "https://#{self.website}"
+    end
+  end
+
   def get_igloohome_lock stop
     igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
     IgloohomeLock.where(igloohome_id: self.igloohome.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
