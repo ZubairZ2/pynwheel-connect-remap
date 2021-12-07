@@ -1385,6 +1385,8 @@
 
       if($('#community_enable_three_d_maps').is(":checked")) {
         $('.map_type').removeClass("hidden")
+      } else {
+         $('.map_type').addClass("hidden")
       }
       
       $('#community_enable_three_d_maps').change(function() {
