@@ -110,6 +110,7 @@ class CommunitiesController < ApplicationController
     if params[:community][:billing_rate_touch].present? or params[:community][:lincoln_billing_rate].present? or params[:community][:dwelo_billing_rate].present? or params[:community][:billing_rate_selftour].present? or params[:community][:billing_rate_maps].present? or params[:community][:billing_rate_for_both].present?
       @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour], billing_rate_for_both: params[:community][:billing_rate_for_both])
     end
+
     if params[:community][:company_id].present?
       company = Company.find(params[:community][:company_id]) rescue nil
       if company.name.downcase.include?("dwelo")
@@ -204,6 +205,9 @@ class CommunitiesController < ApplicationController
         end
         if inner_check
           if @community.update(community_params)
+            
+            update_map_type(@community)
+
             @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
             if params[:community][:name].present?
               format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
@@ -225,6 +229,16 @@ class CommunitiesController < ApplicationController
       end
     end
   end
+
+  def update_map_type community
+    if community.enable_three_d_maps
+      community.update(web_map_type: "3d-map")
+      
+    else
+      community.update(web_map_type: "2d-map")
+    end
+  end
+
   def clone_community
     @community = Community.find params[:community_id]
     @community.clone_a_community(@community)
