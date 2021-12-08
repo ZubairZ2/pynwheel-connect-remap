@@ -506,7 +506,9 @@
     if(current_width >= 993){
       let main_container_height = $('.c-body').height() - $('.c-footer').height();
       $('.floorplate-image').attr("height", main_container_height - 100)
+      $('.floorplate-image').attr("width", $("#zoomable").innerWidth())
     }
+    
     if(current_width <= 993){
       $("._3d-apply-filter-button").hide();
     }
