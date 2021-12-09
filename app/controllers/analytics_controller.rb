@@ -58,7 +58,7 @@ class AnalyticsController < ApplicationController
       opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :notes_opened_counter) 
       stops_per_tour(start_date, @days_count, @self_tour_records)
       visits_per_tour_stop(@self_tour_records)
-      @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact).where.not(tour_user_id: nil).where('tour_date > ? AND tour_date < ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
+      @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact.uniq).where.not(tour_user_id: nil).where('tour_date > ? AND tour_date < ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
       days_count_for_schedule_records = return_total_days(start_date, Date.today) > 0 ? return_total_days(start_date, Date.yesterday.end_of_day) : 1
       till_now_tour_histories = @self_tour_records_all.where('arrived < ?', Date.yesterday.end_of_day)
       no_shows(start_date, days_count_for_schedule_records, @schedule_records, till_now_tour_histories)
@@ -399,7 +399,7 @@ class AnalyticsController < ApplicationController
       session_without_counts = records_count - session_with_counts
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
-      with_session_str = counter_attr_type == :camera_opened_counter ? "Sessions with Camera Opened" : "Sessions with Noted Opened"
+      with_session_str = counter_attr_type == :camera_opened_counter ? "Sessions with Camera Opened" : "Sessions with Notes Opened"
       without_session_str = counter_attr_type == :camera_opened_counter ? "Sessions without Camera Opened" : "Sessions without Notes Opened"
       pie_chart_hash = {with_session_str => percentage_session_with_counts, without_session_str => percentage_session_without_counts}
       opened_data_labels, opened_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(255, 204, 203, 0.5)", "rgba(255,252,187,0.5)"], ["rgba(255, 204, 203, 1)","rgba(255,252,187,1)"])
@@ -553,16 +553,16 @@ class AnalyticsController < ApplicationController
           visites_stops_hash[unit_type_or_name] = visites_stops_hash[unit_type_or_name].nil? ? (1) : (visites_stops_hash[unit_type_or_name] + 1)
         elsif arr.first == "amenity"
           if stop.amenity_type == ""
-            visites_stops_hash["other amenity"] = visites_stops_hash["other amenity"].nil? ? (1) : (visites_stops_hash["other amenity"] + 1)
+            visites_stops_hash["Other amenity"] = visites_stops_hash["Other amenity"].nil? ? (1) : (visites_stops_hash["Other amenity"] + 1)
           else
             visites_stops_hash[stop.amenity_type] = visites_stops_hash[stop.amenity_type].nil? ? (1) : (visites_stops_hash[stop.amenity_type] + 1)
           end
         else
-          visites_stops_hash["other than unit and amenity stop"] = visites_stops_hash["other than unit and amenity stop"].nil? ? (1) : (visites_stops_hash["other than unit and amenity stop"] + 1)
+          visites_stops_hash["Other than unit and amenity stop"] = visites_stops_hash["Other than unit and amenity stop"].nil? ? (1) : (visites_stops_hash["Other than unit and amenity stop"] + 1)
         end
       end
       visites_stops_hash = Hash[visites_stops_hash.sort_by{ |_, v| -v }]
-      @visited_per_tour_stop_data_labels, @visited_per_tour_stop_data_options = make_horizontal_chart(visites_stops_hash.keys, visites_stops_hash.values, "Total Sessions", "rgba(205, 183, 246, 0.5)", "rgba(205, 183, 246, 1)")
+      @visited_per_tour_stop_data_labels, @visited_per_tour_stop_data_options = make_horizontal_chart(visites_stops_hash.keys, visites_stops_hash.values, "Total Stops", "rgba(205, 183, 246, 0.5)", "rgba(205, 183, 246, 1)")
     end
 
     def visits_per_session_page(total_records)
