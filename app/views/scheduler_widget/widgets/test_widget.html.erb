@@ -244,16 +244,18 @@
                       </span>
                     </i>
                   </div>
-                  <div class="w-20-for-check">
-                    <%= f.radio_button :property_tour_type, 'remote_tour', :id => "remote_tour", :class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "remote_tour" ? true : false  %> 
-                    <%= label :select_property_tour, 'Tour remotely', value: 'remote_tour', for: "remote_tour" %>
-                    <%# <i class="fa fa-question-circle remote_tour_tip" data-toggle="tooltip" data-placement="top" ></i> %>
-                    <i class="propertyDetailName fa fa-question-circle" data-content=" " data-toggle="tooltip" data-placement="top">
-                      <span id="propertyDetailNameText" class="tooltip-pynwheel">
-                        Use an app to tour our property remotely at your convenience; we will send you instructions.
-                      </span>
-                    </i>
-                  </div>
+                  <% if current_community.tour.tour_setting.allow_virtual_tour %> 
+                    <div class="w-20-for-check">
+                      <%= f.radio_button :property_tour_type, 'remote_tour', :id => "remote_tour", :class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "remote_tour" ? true : false  %> 
+                      <%= label :select_property_tour, 'Tour remotely', value: 'remote_tour', for: "remote_tour" %>
+                      <%# <i class="fa fa-question-circle remote_tour_tip" data-toggle="tooltip" data-placement="top" ></i> %>
+                      <i class="propertyDetailName fa fa-question-circle" data-content=" " data-toggle="tooltip" data-placement="top">
+                        <span id="propertyDetailNameText" class="tooltip-pynwheel">
+                          Use an app to tour our property remotely at your convenience; we will send you instructions.
+                        </span>
+                      </i>
+                    </div>
+                  <% end %>
                 </div>
                 <div class="row">
                   <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-left-50 w-100 tour_date">
