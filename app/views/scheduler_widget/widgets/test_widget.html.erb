@@ -730,7 +730,7 @@
           tour_time = '<%= @schedule_tour&.tour_time&.strftime("%I:%M %P") %>'
           options = '<option value="">Select Time Slot</option>'
 
-          if(is_knock_community && !isEmpty(knock_available_time_slots) && !is_virtual_on) {
+          if(is_knock_community && !isEmpty(knock_available_time_slots)) {
             selected_day_slots = getKnockAvailableTimeSlots(knock_available_time_slots, moment($(this).val()).format("MM-DD-YYYY"))
           }
           else if (use_yardi_as_lead && !is_virtual_on){
@@ -874,7 +874,7 @@
         var currentDay = d.getDay();
         
         // Knock Date Picker
-        if(is_knock_community && !isEmpty(knock_available_time_slots) && !is_virtual_on) {
+        if(is_knock_community && !isEmpty(knock_available_time_slots)) {
           let minimumDate = moment();
           if (knock_available_time_slots.available_dates.length > 0) {
             minimumDate = knock_available_time_slots.available_dates[0];
