@@ -430,7 +430,17 @@
               <div class="<%= @community.data_provider == "realpagesvc" && @marketing_source_required ? "form-group w-100 w-right-checkbox" : "form-group w-100" %>">
                 <% privacy_policy_link = 'https://pynwheeltouchscreens.com/privacy-policy' %>
                 <%= f.check_box :is_sms_enabled, id: "text_instructions", class: "hidden" %>
-                <label for="text_instructions" class="inst_text_label"> By clicking on submit, you consent to receive delivery notification sent by text and/or email communications. Please visit our <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.</label>
+
+                <% if @community.is_knock_community? %>
+                  <label for="text_instructions" class="inst_text_label"> 
+                  By clicking "Submit," you agree to Knock's <a href="https://www.knock.com/terms-of-use" target="_blank">Terms of Use</a> and <a href="https://www.knock.com/privacy-policy" target="_blank">Privacy Policy</a> and consent to be contacted at this phone number by text message, and/or by autodialer for any purpose, including marketing, by the property and anyone acting on their behalf. Consent is not required to purchase or rent. Also, you consent to receive delivery notifications sent by text and/or email communications. Please visit Pynwheel's <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.
+                  </label>
+                  
+                <% else %>
+                  <label for="text_instructions" class="inst_text_label"> By clicking on submit, you consent to receive delivery notification sent by text and/or email communications. Please visit our <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.
+                  </label>
+                <% end %>
+
               </div>
 
               <span class="hidden" id="show-limit-error"></span>
