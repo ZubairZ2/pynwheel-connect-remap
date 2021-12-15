@@ -195,10 +195,10 @@ class Community < ApplicationRecord
     CloneCommunityJob.perform_async community
   end
 
-  def get_time_zone
-    return "UTC" unless (self.latitude.present? && self.longitude.present?)
+  def get_time_zone default_time_zone = "UTC"
+    return default_time_zone unless (self.latitude.present? && self.longitude.present?)
 
-    Timezone.lookup(self.latitude, self.longitude).name rescue "UTC"
+    Timezone.lookup(self.latitude, self.longitude).name rescue default_time_zone
   end
 
   def has_temporary_images?
@@ -213,6 +213,39 @@ class Community < ApplicationRecord
       when "psi"
         clean_data_psi
     end
+  end
+
+  def get_time_in_24_hours_format time
+    arr = time.split(" ")
+    arr = arr[0].split(":")
+    hours = arr[0].to_i 
+    minutes = arr[1]
+
+    if time.include?("pm") || time.include?("PM")
+      hours = (hours == 12) ? hours : (hours + 12)
+      "#{hours.to_s}:#{minutes}"
+    else
+      hours = (hours == 12) ? "00" : hours
+      "#{hours.to_s}:#{minutes}"
+    end
+  end
+
+  def get_community_time_zone()
+    tz = Ziptz.new
+    timezone = nil
+
+    if self.latitude.present? and self.longitude.present?
+      time_zone = Timezone.lookup(self.latitude, self.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and self.zip.present?
+      timezone = tz.time_zone_name(self.zip)
+    end
+
+      return timezone
+    rescue
+      return "UTC"
   end
 
   def data_is_imported
@@ -253,6 +286,15 @@ class Community < ApplicationRecord
     end
 
   end
+
+  def community_crm_provider
+    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider.present?
+      self.crm_credential.crm_provider
+    else
+      ""
+    end
+  end
+
   def use_crm_credentials?
     if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
       (true)
@@ -275,8 +317,12 @@ class Community < ApplicationRecord
     end
   end
 
+  def is_knock_community?
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential&.crm_provider === "knock" && self.crm_credential&.knock_community_id.present? && self.crm_credential&.knock_api_key.present?
+  end
+
   def is_salesforce_community?
-    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.salesforce_username.present?
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.salesforce_username.present? && self.crm_credential.crm_provider === "salesforce"
   end
 
   def select_yardi_provider
