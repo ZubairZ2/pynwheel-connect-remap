@@ -100,11 +100,16 @@
                       %span.c-m-total-price#total-market-rent
                       %span.per-month-price-text /month
                     = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
+                  - else
+                    .unit-total-pricing{style: 'text-align: center'}
+                      - if @community.display_rent
+                        %span.c-m-total-price#total-market-rent
+                        %span{style: 'font-size: 12px'} /month
               - elsif @community_info.credential.present? and @community_info.credential.apply_now.to_s == "separate_link"
                 .m-filters
                   .m-filter-1.c-m-filter
                     %label= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
-                    %input.m-filter-1.c-m-filter.datepicker#leasing-start-date{:type => "text", :readonly => "readonly"}/
+                    %input.c-m-input-control.datepicker#leasing-start-date{:type => "text", :style => "display: block !important", :readonly => "readonly"}/
                 .filter-action
                   - if @community.display_rent
                     %span.c-m-total-price#total-market-rent

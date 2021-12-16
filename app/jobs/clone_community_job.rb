@@ -42,7 +42,7 @@ class CloneCommunityJob < ApplicationJob
     copy_community.entrata_exception_logs = nil
     copy_community.show_tour_page = nil
     copy_community.show_gesture_icons = nil
-    copy_community.self_tour = nil
+    copy_community.self_tour = false
     copy_community.touchscreen_app = nil
 
     copy_community.number_of_units = nil

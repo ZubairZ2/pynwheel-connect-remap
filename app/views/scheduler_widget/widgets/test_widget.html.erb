@@ -200,6 +200,7 @@
   
   <body>
     <div class="divLoading hidden"></div>
+    <%= content_tag(:div, "", id: 'knock-data', data: { available_time_slots: @knock_available_slots.to_json, is_knock_community: @is_knock_community })%>
 
     <%= link_to("#{@scheduler_widget_setting.btn_text}", "url",id: "schedule_btn", style: "width: #{@scheduler_widget_setting.btn_width}; height: #{@scheduler_widget_setting.btn_height}; font-size: #{@scheduler_widget_setting.btn_font_size}; background-color: #{@scheduler_widget_setting.btn_color}; border-color: #{@scheduler_widget_setting.btn_color}; font-family: #{@scheduler_widget_setting.btn_font}; align-items: center; display: inline-grid; margin: 10px; padding: 0px;",class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#modalLoginForm", backdrop: "static"}) %>
 
@@ -244,16 +245,18 @@
                       </span>
                     </i>
                   </div>
-                  <div class="w-20-for-check">
-                    <%= f.radio_button :property_tour_type, 'remote_tour', :id => "remote_tour", :class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "remote_tour" ? true : false  %> 
-                    <%= label :select_property_tour, 'Tour remotely', value: 'remote_tour', for: "remote_tour" %>
-                    <%# <i class="fa fa-question-circle remote_tour_tip" data-toggle="tooltip" data-placement="top" ></i> %>
-                    <i class="propertyDetailName fa fa-question-circle" data-content=" " data-toggle="tooltip" data-placement="top">
-                      <span id="propertyDetailNameText" class="tooltip-pynwheel">
-                        Use an app to tour our property remotely at your convenience; we will send you instructions.
-                      </span>
-                    </i>
-                  </div>
+                  <% if current_community.tour.tour_setting.allow_virtual_tour %> 
+                    <div class="w-20-for-check">
+                      <%= f.radio_button :property_tour_type, 'remote_tour', :id => "remote_tour", :class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "remote_tour" ? true : false  %> 
+                      <%= label :select_property_tour, 'Tour remotely', value: 'remote_tour', for: "remote_tour" %>
+                      <%# <i class="fa fa-question-circle remote_tour_tip" data-toggle="tooltip" data-placement="top" ></i> %>
+                      <i class="propertyDetailName fa fa-question-circle" data-content=" " data-toggle="tooltip" data-placement="top">
+                        <span id="propertyDetailNameText" class="tooltip-pynwheel">
+                          Use an app to tour our property remotely at your convenience; we will send you instructions.
+                        </span>
+                      </i>
+                    </div>
+                  <% end %>
                 </div>
                 <div class="row">
                   <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-left-50 w-100 tour_date">
@@ -429,7 +432,17 @@
               <div class="<%= @community.data_provider == "realpagesvc" && @marketing_source_required ? "form-group w-100 w-right-checkbox" : "form-group w-100" %>">
                 <% privacy_policy_link = 'https://pynwheeltouchscreens.com/privacy-policy' %>
                 <%= f.check_box :is_sms_enabled, id: "text_instructions", class: "hidden" %>
-                <label for="text_instructions" class="inst_text_label"> By clicking on submit, you consent to receive delivery notification sent by text and/or email communications. Please visit our <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.</label>
+
+                <% if @community.is_knock_community? %>
+                  <label for="text_instructions" class="inst_text_label"> 
+                  By clicking "Submit," you agree to Knock's <a href="https://www.knock.com/terms-of-use" target="_blank">Terms of Use</a> and <a href="https://www.knock.com/privacy-policy" target="_blank">Privacy Policy</a> and consent to be contacted at this phone number by text message, and/or by autodialer for any purpose, including marketing, by the property and anyone acting on their behalf. Consent is not required to purchase or rent. Also, you consent to receive delivery notifications sent by text and/or email communications. Please visit Pynwheel's <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.
+                  </label>
+                  
+                <% else %>
+                  <label for="text_instructions" class="inst_text_label"> By clicking on submit, you consent to receive delivery notification sent by text and/or email communications. Please visit our <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.
+                  </label>
+                <% end %>
+
               </div>
 
               <span class="hidden" id="show-limit-error"></span>
@@ -495,6 +508,9 @@
       var show_self_tour_option = false;
       var show_guided_tour_option = false;
       var hidden_tour_type_value;
+      var knock_available_time_slots;
+      var is_knock_community = false;
+      var knock_tour_types = []
       var schedule_tour_only = "<%= @community.tour.only_scheduled_tour %>";
       var community_id = <%= raw @community.id %>;
       var form_for_reschedule_tour = "<%= @reschedule_tour %>";
@@ -524,6 +540,10 @@
       }
 
       $(document).ready(function(){
+        knock_available_time_slots = $("#knock-data").data("availableTimeSlots");
+        is_knock_community = $("#knock-data").data("isKnockCommunity");
+
+       debugger;
 
         if(form_for_reschedule_tour){
           $("#desired_move_in_date").val(move_in_date).attr('selected', true)
@@ -711,11 +731,15 @@
           day = (new Date($(this).val())).getDay()
           tour_time = '<%= @schedule_tour&.tour_time&.strftime("%I:%M %P") %>'
           options = '<option value="">Select Time Slot</option>'
-          if (use_yardi_as_lead && !is_virtual_on){
+
+          if(is_knock_community && !isEmpty(knock_available_time_slots)) {
+            selected_day_slots = getKnockAvailableTimeSlots(knock_available_time_slots, moment($(this).val()).format("MM-DD-YYYY"))
+          }
+          else if (use_yardi_as_lead && !is_virtual_on){
             date_for_yardi = moment($(this).val()).format("M/D/YYYY")  
             selected_day_slots = time_slots[date_for_yardi] 
           }
-          else{
+          else {
             selected_day_slots = time_slots[day]
           }
           selected_date = moment($(this).val()).zone(community_time_zone).format("YYYY/MM/DD")
@@ -751,15 +775,15 @@
         if(!form_for_reschedule_tour){
           $("#tour_time").on("change", function() {
             if ($(this).val() != ""){
-              $("#tour_type").attr("disabled", false);
               day = (new Date($("#tour_date").val())).getDay()
               date = $("#tour_date").val()
               time = $(this).val()
               $.ajax({
                 type: "GET",
                 url: "/schedual_tours/get_tour_type",
-                data: {day: day, time: time, date: date, schedual_tour_id: tour_id, community_id: $('#community_id').val() },
+                data: {day: day, time: time, date: date, schedual_tour_id: tour_id, community_id: $('#community_id').val()},
                 success: function(data){
+                  $("#tour_type").attr("disabled", false);
                   tour_types = data["tour_types"]
                   options = '<option value="">Select Tour Type</option>'
                   tour_id = data["schedual_tour_id"];
@@ -784,15 +808,16 @@
                   $("#tour_type").change();
                 },
                 fail: function(error){
+                  $("#tour_type").attr("disabled", true);
                   console.log(error)
                 }
               });
             }
-          else
-          {
-            $('#tour_type').html('<option value="">Select Tour Type</option>')
-            $('.tour_type_tip').addClass('hidden');
-          }
+            else
+            {
+              $('#tour_type').html('<option value="">Select Tour Type</option>')
+              $('.tour_type_tip').addClass('hidden');
+            }
           });
         }
 
@@ -832,6 +857,7 @@
             $('.tour_type_tip').addClass('hidden')
           }
         }
+
         if(credit_card_required == true){
         var cleave = new Cleave('#card_verification', {
             numericOnly: true,
@@ -849,7 +875,28 @@
         var d = new Date();
         var currentDay = d.getDay();
         
-        if (use_yardi_as_lead && !is_virtual_on){
+        // Knock Date Picker
+        if(is_knock_community && !isEmpty(knock_available_time_slots)) {
+          let minimumDate = moment();
+          if (knock_available_time_slots.available_dates.length > 0) {
+            minimumDate = knock_available_time_slots.available_dates[0];
+            minimumDate = minimumDate.replaceAll("-", "/");
+          }
+
+          $('.schedule_datepicker').datetimepicker({
+              format : 'MM/DD/YYYY',
+              defaultDate: minimumDate, 
+              minDate: minimumDate, // moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
+              showTodayButton: true,
+              showClear: true,
+              showClose: true,
+              useCurrent: true,
+              toolbarPlacement: "bottom",
+              stepping: steps,
+              enabledDates: knock_available_time_slots.available_dates
+          });
+        }
+        else if (use_yardi_as_lead && !is_virtual_on){
           var availableDates = <%= raw @yardi_enable_days %>;
           $('.schedule_datepicker').datetimepicker({
             format : 'MM/DD/YYYY',
@@ -876,6 +923,7 @@
             stepping: steps,
             daysOfWeekDisabled: days_disabled,
           });
+          
         }
 
         var today_day = moment().format("YYYY-MM-DD")
@@ -976,27 +1024,58 @@
           });
 
           $("#cancel-visit").on('click', function(e) {
-          $.ajax({
-            type: "POST",
-            url: "/destroy_schedual_tours/<%= params[:scheduled_tour_id]%>.json",
-            data: {community_id: community_id},
-            cache: false,
-            success: function(data){
-              if(data.logged_in) {
-                window.location.href = `${window.location.origin}/communities/${community_id}/scheduled_tours`;
-              } else {
-                window.location.href = window.location.origin
+            $.ajax({
+              type: "POST",
+              url: "/destroy_schedual_tours/<%= params[:scheduled_tour_id]%>.json",
+              data: {community_id: community_id},
+              cache: false,
+              success: function(data){
+                if(data.logged_in) {
+                  window.location.href = `${window.location.origin}/communities/${community_id}/scheduled_tours`;
+                } else {
+                  window.location.href = window.location.origin
+                }
+              },
+              fail: function(error){
+                console.log(error)
               }
-            },
-            fail: function(error){
-              console.log(error)
-            }
+            });
+            e.preventDefault();
           });
-          e.preventDefault();
-        });
         }
 
       });
+
+      function isEmpty(obj) {
+        for(var prop in obj) {
+          if(Object.prototype.hasOwnProperty.call(obj, prop)) {
+            return false;
+          }
+        }
+
+        return JSON.stringify(obj) === JSON.stringify({});
+      }
+
+      function getKnockAvailableTimeSlots(knockData, selectedDate) {
+        let selfGuided = knockData.self_guided_available_time_slots
+        let inPerson = knockData.in_person_available_time_slots
+        let selfGuidedTimes = selfGuided[selectedDate] ?  selfGuided[selectedDate] : []
+        let inPersonTimes = inPerson[selectedDate] ? inPerson[selectedDate] : []
+
+        return  mergeKnockTimeSlots(selfGuidedTimes, inPersonTimes)
+      }
+
+      function mergeKnockTimeSlots(sTime, iTime) {
+        let mergedTimes = sTime.concat(iTime)
+        let uniqTimes = mergedTimes.filter((item, pos) => mergedTimes.indexOf(item) === pos)
+
+        times = uniqTimes.sort(function (a, b) {
+          return new Date('1970/01/01 ' + a) - new Date('1970/01/01 ' + b);
+        });
+
+        return times
+      }
+      
 
       if(credit_card_required == true){
       jQuery(function ($) {

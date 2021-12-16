@@ -17,6 +17,8 @@ class BuildingStartingPoint < ApplicationRecord
   has_many :igloohome_guests, as: :guest_of_stop, dependent: :destroy
   
   has_one :tour_stop, as: :stop, dependent: :destroy
+  scope :fetch_building_starting_exit_points, -> (building_starting_exit_points_ids) { where(id: building_starting_exit_points_ids)}
+
   def validate_building
   	bsp = BuildingStartingPoint.where(community_id: attributes["community_id"], building: attributes["building"]).where.not(id: self.id)
   	errors[:base] << "Building Starting Point already exist." if bsp.count > 0

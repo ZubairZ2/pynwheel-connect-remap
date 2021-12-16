@@ -522,10 +522,6 @@ class PsiService < BaseService
                       unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
                     end
 
-                    puts "**************"*20
-                    puts "psi service UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
-                    puts "**************"*20
-
                     unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                       if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                         unit.availability = 'Unoccupied' if !unit.sold
@@ -646,10 +642,6 @@ class PsiService < BaseService
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
                         end
                         
-                        puts "**************"*20
-                        puts "psi service UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
-                        puts "**************"*20
-
                         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                           if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                             unit.availability = 'Unoccupied' if !unit.sold

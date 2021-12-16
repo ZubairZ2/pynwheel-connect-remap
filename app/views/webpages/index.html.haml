@@ -36,7 +36,7 @@
             .header-inner
               .app-logo
                 - if @community.community_logo
-                  %a.logo{:href => "#{@community.website if @community.website}"}
+                  %a.logo{:href => @community.community_website}
                     %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
               .selection-fields
                 - if @unit_bedrooms.present?
@@ -506,7 +506,9 @@
     if(current_width >= 993){
       let main_container_height = $('.c-body').height() - $('.c-footer').height();
       $('.floorplate-image').attr("height", main_container_height - 100)
+      $('.floorplate-image').attr("width", $("#zoomable").innerWidth())
     }
+    
     if(current_width <= 993){
       $("._3d-apply-filter-button").hide();
     }

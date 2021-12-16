@@ -48,6 +48,14 @@ function getUnitsToBeSelected() {
   return _3dUnitsToBeSelected.map(a => a.marketing_name)
 }
 
+function touchScreenEvent() {
+  $('#zoomable a').on('touchstart', function (e) {
+    e.stopImmediatePropagation();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', touchScreenEvent);
+
 $(window).bind('load', function () {
 
   if ($('.is-webpage')[0]) {
@@ -194,10 +202,11 @@ $(window).bind('load', function () {
       $(this).parent().find('input').click();
     });
     ////////////////////////////////////////////
-    
-    $('#zoomable a').on('touchstart', function (e) {
-      e.stopImmediatePropagation();
-    });
+  
+    // $('#zoomable a').on('touchstart', function (e) {
+    //   e.stopImmediatePropagation();
+    // });
+
     var $area = document.getElementById('zoomable');
     webpagePanZoom = panzoom($area, 
       {
@@ -242,6 +251,7 @@ $(window).bind('load', function () {
     $(".zoom-in-modal").on('click', function (e) {
       $($marea).removeClass("transform-none");
       modalPanZoom.zoomInOut(187);
+      $(".reset-modal").removeClass("hidden")
     });
     $(".zoom-out-modal").on('click', function (e) {
       $($marea).removeClass("transform-none");
@@ -249,13 +259,17 @@ $(window).bind('load', function () {
     });
     $(".reset-modal").on('click', function (e) {
       $($marea).addClass("transform-none");
+      $(".reset-modal").addClass("hidden")
     });
 
     $('#zoomable-modal-image').on('wheel', function(e) {
+      $(".reset-modal").removeClass("hidden")
       $($marea).removeClass("transform-none"); 
     })
 
-    $("#zoomable-modal-image-responsive a").on("touchstart", function (e) {e.stopImmediatePropagation();});
+    $("#zoomable-modal-image-responsive a").on("touchstart", function (e) {
+      e.stopImmediatePropagation();
+    });
     var imageArea = document.getElementById('zoomable-modal-image-responsive');
     responsiveModalPanZoom = panzoom(imageArea,{bounds: true, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
       onTouch: function(e) {
@@ -1344,6 +1358,7 @@ function setModalAttributes(element) {
         if ($(element).data('unit-description') == "")
         {
           $('#unitModal').find('#unit-description').html("Not Available");
+          $('#unitModal').find('.c-modal-sidebar-description').hide();
         }
         else
         {
@@ -1354,6 +1369,7 @@ function setModalAttributes(element) {
 
     catch(err) {
         $('#unit-description-text-li').hide();
+        $('#unitModal').find('.c-modal-sidebar-description').hide();
     }
 
 
@@ -1420,12 +1436,17 @@ function setModalAttributes(element) {
   if ($(element).data('floorplan-image') != '') {
     $('#unitModal').find('#floorplan-image').attr('src', $(element).data('floorplan-image'));
     $('#unitModal').find('#responsive-floorplan-image').attr('src', $(element).data('floorplan-image'));
+    if(current_width > 767 && $(element).data('floorplan-image') != "/assets/default.jpeg" ){
+      $('.c-modal-sidebar-filters').addClass("c-modal-sidebar-filters-bottom");
+      $('.c-m-iframe-content').addClass("c-m-iframe-content-bottom");
+    }
   } else {
     $('#unitModal').find('#floorplan-image').attr('src', '/assets/default.jpeg');
     $('#unitModal').find('#responsive-floorplan-image').attr('src', $(element).data('floorplan-image'));
   }
+  var dataProvider = $(element).data('provider')
   //////////////////////////////////////////
-  if ($(element).data('provider') != 'realpagesvc') {
+  if (dataProvider != 'realpagesvc') {
     var website = $(element).data('website');
     var uri = website.replace(/^https?\:\/\//, '');
     $('#psi-anchor-tag').attr('data-community-property-id', $(element).data('community-property-id'));
@@ -1437,14 +1458,15 @@ function setModalAttributes(element) {
     $('#psi-anchor-tag').attr('data-availability-url', $(element).data('availability-url'));
     $("#leasing-start-date").datepicker('setDate', new Date($(element).data('available-date')));
     $('#leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: $(element).data('available-date') == "Now" ? new Date() : new Date($(element).data('available-date'))})
-  } else if (($(element).data('provider') === 'realpagesvc')) {
+  } else if (dataProvider === 'realpagesvc') {
     $('#realpagesvc-anchor-tag').attr('data-unit-provider-id', $(element).data('unit-provider-id'));
     $("#leasing-start-date").datepicker('setDate', new Date($(element).data('available-date')));
     $('#leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: $(element).data('available-date') == "Now" ? new Date() : new Date($(element).data('available-date'))})
   } 
-  if ($(element).data('provider') === 'yardi'){
+  if (dataProvider == 'yardi' || dataProvider == 'yardirentcafe'){
     $('#floorplan-image').css({"max-width": 310});
     $('.c-modal-footer').css({"padding-bottom": 7});
+    $('.m-filters').hide();
 
   }
 }

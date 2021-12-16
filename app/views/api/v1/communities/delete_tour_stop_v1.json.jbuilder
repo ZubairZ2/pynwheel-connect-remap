@@ -9,7 +9,7 @@ def check_unit_occupied add_stop
 end
 i = 0
 description_limit = ENV["DESCRIPTION_LIMIT"].to_i
-
+need_original_id_arr = ["elevator", "building_starting_point"]
 is_zerv_lock_present = false
 
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
@@ -454,8 +454,14 @@ json.tours @tours do |tour|
     if @community.is_sitemap
       mobile_path = ShortestPath.return_path_for_mobile(new_stops_arr, @community.id, 'sorting')
     else
-      new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, @community.id) # I add extra elevator for shortest path making
-      mobile_path, new_stops_arr = ShortestPath.return_floorplate_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+      is_multiple_building, building_list = ShortestPath.check_stops_have_multiple_buildings(new_stops_arr, @community.id)
+      if is_multiple_building
+        new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side_for_multiple(new_stops_arr, @community.id) # Here we add this community elevator and building start/exit for shortest path making
+        mobile_path, new_stops_arr = ShortestPath.return_floorplate_mobile_path_for_multiple_buildings(new_stops_arr, building_list, @community.id, 'sorting')
+      else
+        new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, @community.id) # Here we add this community elevator for shortest path making
+        mobile_path, new_stops_arr = ShortestPath.return_floorplate_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+      end
     end
   end
   json.tour_stop new_stops_arr.compact do |stop|
@@ -1264,8 +1270,8 @@ json.tours @tours do |tour|
         to_type = (new_stops_arr[i].is_a? Tour) ? "Tour" : "TourStop"
         from_id = (new_stops_arr[i-1].is_a? Tour) ? 0 : new_stops_arr[i - 1].id
         to_id = (new_stops_arr[i].is_a? Tour) ? 0 : new_stops_arr[i].id
-        from_id = (from_type == "TourStop" && TourStop.find(from_id).stop_type == "elevator") ? TourStop.find(from_id).stop_id : from_id
-        to_id = (to_type == "TourStop" && TourStop.find(to_id).stop_type == "elevator") ? TourStop.find(to_id).stop_id : to_id
+        from_id = (from_type == "TourStop" && need_original_id_arr.include?( TourStop.find(from_id).stop_type ) ) ? TourStop.find(from_id).stop_id : from_id
+        to_id = (to_type == "TourStop" && need_original_id_arr.include?( TourStop.find(to_id).stop_type ) ) ? TourStop.find(to_id).stop_id : to_id
         next_floor = ShortestPath.return_next_floor_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
         elevator_stop_description = "Go to floor " + next_floor.to_s
       else
@@ -1465,9 +1471,9 @@ json.tours @tours do |tour|
         if @community.is_sitemap
           path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
         else
-          from_id = (from_type == "TourStop" && TourStop.find(from_id).stop_type == "elevator") ? TourStop.find(from_id).stop_id : from_id
-          to_id = (to_type == "TourStop" && TourStop.find(to_id).stop_type == "elevator") ? TourStop.find(to_id).stop_id : to_id
-          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
+          from_id = (from_type == "TourStop" && need_original_id_arr.include?( TourStop.find(from_id).stop_type) ) ? TourStop.find(from_id).stop_id : from_id
+          to_id = (to_type == "TourStop" && need_original_id_arr.include?( TourStop.find(to_id).stop_type ) ) ? TourStop.find(to_id).stop_id : to_id
+          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)     
         end
         @existing_path_points = path_points if path_points.present?
       else

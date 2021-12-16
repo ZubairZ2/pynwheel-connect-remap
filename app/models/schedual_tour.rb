@@ -22,6 +22,8 @@ class SchedualTour < ApplicationRecord
   belongs_to :tour, optional: true
   belongs_to :community, optional: true
 
+  before_destroy :cancel_knock_appointment
+
   # validates :tour_date, presence: true
   # validates :tour_type, presence: true
   # validates :tour_time, presence: true
@@ -30,6 +32,11 @@ class SchedualTour < ApplicationRecord
   scope :scheduled_tours, -> {where.not(tour_user_id: nil,tour_date: nil,tour_time: nil)}
   COUNTRY_CODES =  JSON.parse(File.read(Rails.root.join("app/assets/jsons/country_codes.json")))
   
+  def cancel_knock_appointment
+    return unless self.community.is_knock_community?
+    KnockService.new(self).cancel_knock_appointment
+  end
+
   def add_user_in_zerv
     if self.tour_user_id.present? and community.enable_locks and community.multiple_locks_provider.include?("Zerv")
       Thread.new do

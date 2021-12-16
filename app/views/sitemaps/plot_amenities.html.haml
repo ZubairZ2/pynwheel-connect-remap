@@ -102,7 +102,7 @@
                     %object{:data => "your.svg", :type => "image/svg+xml"}
                     = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
                   - else
-                    = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "#map"}
+                    = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
 
                   - coordinates_array = []
                   - @sitemap.amenities.each do |amenity|
