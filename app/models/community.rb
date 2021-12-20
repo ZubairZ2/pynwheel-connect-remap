@@ -302,13 +302,7 @@ class Community < ApplicationRecord
       (false)
     end
   end
-  def use_yardi_as_lead?
-    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
-      (true)
-    else
-      (false)
-    end
-  end
+  
   def use_yardi_as_lead?
     if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
       (true)
