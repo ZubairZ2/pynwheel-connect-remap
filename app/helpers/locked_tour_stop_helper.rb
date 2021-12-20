@@ -5,8 +5,8 @@ module LockedTourStopHelper
     new_stop = tour_stop
 
     if tour_stop.class.name === "Amenity"
-      if tour_stop.present? && tour_stop.doors.present? && tour_stop.doors.last.lock_provider === lock_provider
-        new_stop = tour_stop.doors.last
+      if tour_stop.present? && tour_stop.doors.present? && tour_stop.doors.first.lock_provider === lock_provider
+        new_stop = tour_stop.doors.first
       end
 
     elsif tour_stop.class.name === "Unit"

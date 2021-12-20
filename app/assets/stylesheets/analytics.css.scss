@@ -79,3 +79,16 @@
   color: red;
   padding-left: 2px;
 }
+.select2-selection__rendered{
+  margin-top: -7px !important;
+}
+#product_type_tabs{
+  padding-left: 0px !important;
+  border-bottom: none;
+}
+.product_tabs .tab-pane.fade{
+  display: none;
+}
+.product_tabs .tab-pane.fade.in.active{
+  display: block;
+}

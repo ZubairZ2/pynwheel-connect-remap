@@ -68,6 +68,10 @@ class SchedulerWidget::WidgetsController < ApplicationController
       @time_slots = @reschedule_tour ? @community.collect_time_slots_for_rechedule_tours(@stepping,@tour_type) : @community.collect_time_slots(@stepping)
       @yardi_enable_days = []
     end
+
+    @is_knock_community = @schedule_tour.community.is_knock_community?
+    @knock_available_slots =  @is_knock_community ? KnockService.new(@schedule_tour).available_slots : {}
+    
     community = Community.find params[:community_id]
     app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
     android_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
@@ -102,7 +106,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
   end
 
   private
-  
+
   def allow_iframe
     response.headers.except! 'X-Frame-Options'
   end

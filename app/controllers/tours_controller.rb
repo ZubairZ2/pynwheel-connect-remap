@@ -17,20 +17,7 @@ class ToursController < ApplicationController
     @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
     params[:floorNo] = params[:floorNo].present? ? params[:floorNo] : @floor_list.first rescue nil
     #########################################################################
-    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq
-    @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
-    
-    if @sorted_building.present?
-      if (@building_list - @sorted_building != [] )
-        @building_list = (@sorted_building) + (@building_list - @sorted_building) 
-      elsif @sorted_building - @building_list != []
-        @building_list = (@building_list & @sorted_building)
-      else
-        @building_list = @sorted_building
-      end
-    end
-    
+    @building_list = @community.fetch_building_list(@sorted_building)
     @building = params[:building].present? ? params[:building] : @building_list[0]
     ########################################################################
     
@@ -429,12 +416,17 @@ class ToursController < ApplicationController
     render json: {path: path, path_points: path.path_points.reorder('id DESC')}, status: 200
   end
   def building_starting_point
-    
-    bsp = BuildingStartingPoint.create(community_id: @community.id,x_plot: 40,y_plot: 10, building: params[:building], floor: params[:floor].to_i, name: "Building " + (params[:building].present? ? params[:building] : "") + " Entry / Exit")
-    tour_stop = TourStop.create tour_id: @community.tour.id, stop_id: bsp.id, stop_type: 'building_starting_point', name: bsp.name, latitude: 40, longitude: 10 unless bsp.errors.present?
-    # render json: {path: tour_stop}, status: 200
-    
-    flash[:error] = bsp.errors.full_messages.join(',') if bsp.errors.present?
+    is_bsp_exist = BuildingStartingPoint.exists?(community_id: @community.id, building: params[:building], floor: params[:floor].to_i, name: "Building " + (params[:building].present? ? params[:building] : "") + " Entry / Exit")
+    if is_bsp_exist
+      bsp = BuildingStartingPoint.where(community_id: @community.id, building: params[:building], floor: params[:floor].to_i, name: "Building " + (params[:building].present? ? params[:building] : "") + " Entry / Exit").first
+    else
+      bsp = BuildingStartingPoint.create(community_id: @community.id,x_plot: 40,y_plot: 10, building: params[:building], floor: params[:floor].to_i, name: "Building " + (params[:building].present? ? params[:building] : "") + " Entry / Exit")
+    end
+    is_tour_stop_exist = TourStop.exists?(tour_id: @community.tour.id, stop_id: bsp.id, stop_type: 'building_starting_point', name: bsp.name)
+    tour_stop = TourStop.find_or_create_by tour_id: @community.tour.id, stop_id: bsp.id, stop_type: 'building_starting_point', name: bsp.name, latitude: 40, longitude: 10 unless is_tour_stop_exist
+    if bsp.errors.present? || is_bsp_exist
+      flash[:error] = is_bsp_exist ? "Building Starting Point is already exists" : bsp.errors.full_messages.join(',')
+    end
     redirect_to community_tours_path(floorNo: params[:floor].to_i,building: params[:building])
   end
   def update_building_starting_point

@@ -1,0 +1,124 @@
+#unitModal.modal.fade{:role => "dialog"}
+  .c-popup
+    .c-modal
+      .c-modal-dialog
+        .c-modal-header
+          %h5.c-modal-title#unit-marketing-name
+          %i.propertyDetailName{style: "display: block"}
+            %span#propertyDetailNameText
+              Added to favorites.
+          %button#close-modal.c-close{"data-dismiss" => "modal", :type => "button"}
+            %span ×
+        %aside.c-modal-sidebar
+          .c-modal-sidebar-inner
+            .modal-sidebar-title
+              %h1.section-title#floorplan-name
+              
+              .plan-image-pop
+                .icon-heart#fav-icon-tag
+                  %a{:href => "##", :id => "add-to-fav"}
+                    %i.far.fa-heart
+                  %a.hide{:href => "##", :id => "add-to-fav"}
+                    %i.fa.fa-heart
+            .modal-wrapper-mobile.hidden{style: "overflow: hidden"}
+              .c-modal-body#zoomable-modal-image-responsive
+                .c-m-iframe-content
+                  %img#responsive-floorplan-image{:src => "/assets/default.jpeg", :title => ""}/
+            .c-modal-footer.zooming-content.zoomable-map-container
+              %a.plus-action.zooming-action.zoom-in-res-modal.zoom-controls{:href => "#"}
+                %img{:src => "/assets/plus.png"}/
+              %a.minus-action.zooming-action.zoom-out-res-modal.zoom-controls{:href => "#"}
+                %img{:src => "/assets/minus.png"}/
+              %a.refresh-action.zooming-action.reset-res-modal.zoom-controls{:href => "#"}
+                %img{:src => "/assets/refresh.png"}/
+            .module-info
+              %ul.module-list
+                %li
+                  %b
+                    %img{:src => "/assets/bedroom-icon.png"}/
+                    %span#bedrooms
+                  %span.bedrooms
+                    Bedrooms
+                %li
+                  %b
+                    %img{:src => "/assets/bathroom-icon.png"}/
+                    %span#bathrooms
+                  %span.bathrooms
+                    Bathrooms
+                %li
+                  %b
+                    %img{:src => "/assets/sq-feet-icon.png"}/
+                    %span#square-feet 
+                  Sq Feet
+
+            .availabilty-container-start
+              %span.available-heading#available-text
+              %b
+                %span#available-date
+            
+            #unit-lease-pricing-text-li.availabilty-container
+              %span.text-left.available-info
+              - if @community.display_rent
+                %span#first-unit-lease-pricing
+                #pricing-option.hidden
+                  %div{style: "max-height: 6em; overflow-y: auto;"}
+                    %span#unit-lease-pricing
+              %span.text-right.show-more-option.available-info#leas-price-option
+                %a.show-more#show-more-price Show more prices
+                %a.show-more#hide-more-price.hidden Hide more prices
+            .c-modal-sidebar-description
+              %h4.des-heading Description
+              %p.c-m-description#unit-description
+
+            %div{style: "padding: 0px 0px 8px 7px"}
+              .unit-buttons
+            .c-modal-sidebar-filters
+              - if @community_info.credential.present? and @community_info.credential.apply_now.to_s == "true"
+                .m-filters
+                  - if @community_info.data_provider == "psi" || @community_info.data_provider == "realpagesvc" || @community_info.data_provider == "resman"
+                    .m-filter-1.c-m-filter
+                      %label= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
+                      %input.c-m-input-control.datepicker#leasing-start-date{:type => "text", :style => "display: block !important", :readonly => "readonly"}/
+                  - if @community_info.data_provider == "resman"
+                    .m-filter-2.c-m-filter
+                      %label Lease Term
+                      = select_tag :lease_term , options_for_select([]),{:id => "lease_term", :class=>"lease-term-custom-select", :include_blank => "All "}
+                .filter-action
+                  - if @community_info.data_provider == "realpagesvc"
+                    - if @community.display_rent
+                      %span.c-m-total-price#total-market-rent
+                      %span.per-month-price-text /month
+                    = link_to "Apply Now","##",:onclick=>"set_realpagesvc_url(this);",:id=>"realpagesvc-anchor-tag", class: "apply-now apply_now"
+                  - elsif @community_info.data_provider == "resman"
+                    - if @community.display_rent
+                      %span.c-m-total-price#total-market-rent
+                      %span.per-month-price-text /month
+                    = link_to "Apply Now", "##",:onclick=>"set_resman_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
+                    
+                  - elsif @community_info.data_provider == "psi"
+                    - if @community.display_rent
+                      %span.c-m-total-price#total-market-rent
+                      %span.per-month-price-text /month
+                    = link_to "Apply Now", "##",:onclick=>"set_psi_url(this);",:id=>"psi-anchor-tag", class: "apply-now apply_now"
+                  - else
+                    .unit-total-pricing{style: 'text-align: center'}
+                      - if @community.display_rent
+                        %span.c-m-total-price#total-market-rent
+                        %span{style: 'font-size: 12px'} /month
+              - elsif @community_info.credential.present? and @community_info.credential.apply_now.to_s == "separate_link"
+                .m-filters
+                  .m-filter-1.c-m-filter
+                    %label= @community_info.data_provider == "psi" ? 'Lease Start Date' : "Move In Date"
+                    %input.c-m-input-control.datepicker#leasing-start-date{:type => "text", :style => "display: block !important", :readonly => "readonly"}/
+                .filter-action
+                  - if @community.display_rent
+                    %span.c-m-total-price#total-market-rent
+                    %span.per-month-price-text /month
+                  %a.apply-now.apply_now{:href => @community_info.credential.separate_link,:target => "_blank" } Apply Now
+              - else
+                .disabaled-apply-now{style: 'text-align: center'}
+                  - if @community.display_rent
+                    %span.c-m-total-price#total-market-rent
+                    %span{style: 'font-size: 12px'} /month                         
+        .c-modal-wrapper
+          = render partial: "image_with_zoom_controls"

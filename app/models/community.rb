@@ -1,73 +1,9 @@
-# == Schema Information
-#
-# Table name: communities
-#
-#  id                             :integer          not null, primary key
-#  name                           :string
-#  logo                           :string
-#  address                        :string
-#  city                           :string
-#  state                          :string
-#  zip                            :string
-#  email                          :string
-#  phone                          :string
-#  description                    :string
-#  latitude                       :decimal(, )
-#  longitude                      :decimal(, )
-#  locked                         :boolean
-#  data_provider                  :string
-#  company_id                     :integer
-#  created_at                     :datetime         not null
-#  updated_at                     :datetime         not null
-#  theme_name                     :string
-#  website                        :string
-#  code                           :string
-#  is_sitemap                     :boolean          default(TRUE)
-#  secondary_logo                 :string
-#  show_gallery                   :boolean          default(TRUE)
-#  gallery_page_name              :string           default("Gallery")
-#  show_apartment                 :boolean          default(TRUE)
-#  apartment_page_name            :string           default("Apartments")
-#  equal_housing_opportunity_logo :boolean          default(TRUE)
-#  handicap_accessible_logo       :boolean          default(TRUE)
-#  display_rent                   :boolean          default(TRUE)
-#  display_sitemap                :boolean          default(TRUE)
-#  display_floorplan_gallery      :boolean          default(TRUE)
-#  display_unit_on_homepage       :boolean          default(TRUE)
-#  display_gallery_on_homepage    :boolean          default(TRUE)
-#  realpage_pricing_data          :string
-#  realpage_pricing_data_uploaded :boolean          default(TRUE)
-#  powered_by_btn                 :boolean          default(TRUE)
-#  is_vertical_app                :boolean          default(FALSE)
-#  entrata_exception_logs         :string
-#  show_tour_page                 :boolean
-#  display_available_date         :boolean          default(TRUE)
-#  show_gesture_icons             :boolean          default(TRUE)
-#  self_tour                      :boolean          default(FALSE)
-#  crop_x                         :float
-#  crop_y                         :float
-#  crop_w                         :float
-#  crop_h                         :float
-#  crop_x_secondary               :float
-#  crop_y_secondary               :float
-#  crop_w_secondary               :float
-#  crop_h_secondary               :float
-#  community_group_id             :integer
-#  alert_contact                  :integer          default("both")
-#  floorplan_name_order           :boolean          default(FALSE)
-#  image_bit                      :boolean
-#  do_crop                        :boolean          default(FALSE)
-#  do_crop_secondary              :boolean          default(FALSE)
-#  number_of_units                :integer
-#  tour_setup_visible             :boolean          default(FALSE)
-#
-
 class Community < ApplicationRecord
   # has_paper_trail
   # mount_uploader :logo, AvatarUploader
   # attr_readonly :uuid
   include LockedTourStopHelper
-
+  
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   mount_base64_uploader :self_tour_logo, AvatarUploader
@@ -117,6 +53,7 @@ class Community < ApplicationRecord
   has_one :latch, dependent: :destroy
   has_one :zerv, dependent: :destroy
   has_one :igloohome, dependent: :destroy
+  has_one :three_d_maps_configuration, dependent: :destroy
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
@@ -156,11 +93,21 @@ class Community < ApplicationRecord
 
 
   enum alert_contact: [:email, :phone, :both]
-  
+  scope :active_communities, -> { where(locked: false) }
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
   scope :desc_created_at, -> { order(created_at: :desc) }
   amoeba do
     include_association :design
+  end
+
+  def community_website
+    return unless self.website.present?
+
+    if self.website.include?("https" || "http")
+      self.website
+    else
+      "https://#{self.website}"
+    end
   end
 
   def get_igloohome_lock stop
@@ -172,7 +119,7 @@ class Community < ApplicationRecord
     igloohome_stop = get_door_or_stop_lock(stop, "Igloohome")
     IgloohomeGuest.where(tour_user_id: tour_user_id, community_id: self.id, stop_id: igloohome_stop.id, stop_type: igloohome_stop.class.name).last if self.igloohome.present?
   end
-  
+
   def create_tour_also
     tour = self.create_tour if self.tour.nil?
     tour.create_tour_setting if tour.present? and tour.tour_setting.nil?
@@ -248,10 +195,10 @@ class Community < ApplicationRecord
     CloneCommunityJob.perform_async community
   end
 
-  def get_time_zone
-    return "UTC" unless (self.latitude.present? && self.longitude.present?)
+  def get_time_zone default_time_zone = "UTC"
+    return default_time_zone unless (self.latitude.present? && self.longitude.present?)
 
-    Timezone.lookup(self.latitude, self.longitude).name rescue "UTC"
+    Timezone.lookup(self.latitude, self.longitude).name rescue default_time_zone
   end
 
   def has_temporary_images?
@@ -266,6 +213,39 @@ class Community < ApplicationRecord
       when "psi"
         clean_data_psi
     end
+  end
+
+  def get_time_in_24_hours_format time
+    arr = time.split(" ")
+    arr = arr[0].split(":")
+    hours = arr[0].to_i 
+    minutes = arr[1]
+
+    if time.include?("pm") || time.include?("PM")
+      hours = (hours == 12) ? hours : (hours + 12)
+      "#{hours.to_s}:#{minutes}"
+    else
+      hours = (hours == 12) ? "00" : hours
+      "#{hours.to_s}:#{minutes}"
+    end
+  end
+
+  def get_community_time_zone()
+    tz = Ziptz.new
+    timezone = nil
+
+    if self.latitude.present? and self.longitude.present?
+      time_zone = Timezone.lookup(self.latitude, self.longitude)
+      timezone = time_zone.name
+    end
+
+    if timezone.nil? and self.zip.present?
+      timezone = tz.time_zone_name(self.zip)
+    end
+
+      return timezone
+    rescue
+      return "UTC"
   end
 
   def data_is_imported
@@ -306,6 +286,15 @@ class Community < ApplicationRecord
     end
 
   end
+
+  def community_crm_provider
+    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider.present?
+      self.crm_credential.crm_provider
+    else
+      ""
+    end
+  end
+
   def use_crm_credentials?
     if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
       (true)
@@ -328,8 +317,12 @@ class Community < ApplicationRecord
     end
   end
 
+  def is_knock_community?
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential&.crm_provider === "knock" && self.crm_credential&.knock_community_id.present? && self.crm_credential&.knock_api_key.present?
+  end
+
   def is_salesforce_community?
-    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.salesforce_username.present?
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.salesforce_username.present? && self.crm_credential.crm_provider === "salesforce"
   end
 
   def select_yardi_provider
@@ -1169,6 +1162,23 @@ class Community < ApplicationRecord
     bedroom_list = bedroom_list.sort.map {|bedroom| [bedroom, bedroom]}
     bedroom_list.unshift(["Number of Bedrooms", nil])
     bedroom_list
+  end
+
+  def fetch_building_list(sorted_building)
+    building_list = []
+    building_list = self.units.map{|x| x.building rescue next}.uniq.compact + self.amenities.map{|x| x.building rescue next}.uniq.compact
+    building_list = building_list.compact.reject { |c| c.empty? }.uniq
+    building_list = building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(building_list).sort.map{|x,y| y}
+    if sorted_building.present?
+      if (building_list - sorted_building != [] )
+        building_list = (sorted_building) + (building_list - sorted_building) 
+      elsif sorted_building - building_list != []
+        building_list = (building_list & sorted_building)
+      else
+        building_list = sorted_building
+      end
+    end
+    building_list.compact
   end
 
   private

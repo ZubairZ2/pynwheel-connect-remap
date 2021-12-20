@@ -5,9 +5,9 @@ class AnalyticsController < ApplicationController
   def index
     start_date , end_date = (params[:start_date].present? && params[:end_date].present?) ? [(params[:start_date].split("/")[1] + "/" + params[:start_date].split("/")[0] + "/" + params[:start_date].split("/")[2]).to_date, ((params[:end_date].split("/")[1] + "/" + params[:end_date].split("/")[0] + "/" + params[:end_date].split("/")[2]).to_date)] : [Date.today - 7.day, Date.today]
     @days_count = return_total_days(start_date, end_date) > 0 ? return_total_days(start_date, end_date) : 1
-    communities_ids = fetch_communities(current_user).ids
-    track_sessions = TrackSession.where(community_id: communities_ids)
-    tour_histories = TourHistory.where(community_id: communities_ids)
+    communities = fetch_communities(current_user).active_communities
+    track_sessions = TrackSession.where(community_id: communities.ids)
+    tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
     @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @metro_records = track_sessions.where(track_session_type: "metro").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @pesent_end_dattime_maps_records = @maps_records.where.not(end_datetime: nil)
@@ -58,9 +58,10 @@ class AnalyticsController < ApplicationController
       opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :notes_opened_counter) 
       stops_per_tour(start_date, @days_count, @self_tour_records)
       visits_per_tour_stop(@self_tour_records)
-      @schedule_records = SchedualTour.where(is_tour_completed: false).where('tour_date > ? AND tour_date < ?',start_date.beginning_of_day, DateTime.now)
-      @days_count_for_schedule_records = return_total_days(start_date, Date.today) > 0 ? return_total_days(start_date, end_date) : 1
-      no_shows(start_date, @days_count_for_schedule_records, @schedule_records)
+      @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact).where.not(tour_user_id: nil).where('tour_date > ? AND tour_date < ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
+      days_count_for_schedule_records = return_total_days(start_date, Date.today) > 0 ? return_total_days(start_date, Date.yesterday.end_of_day) : 1
+      till_now_tour_histories = @self_tour_records_all.where('arrived < ?', Date.yesterday.end_of_day)
+      no_shows(start_date, days_count_for_schedule_records, @schedule_records, till_now_tour_histories)
     end
     if @self_tour_records_all.any? && (@product_type == "all" || @product_type == "self_tour")
       tour_site_or_tour_state_session(start_date, @days_count, @self_tour_records_all, :tour_state)
@@ -72,7 +73,7 @@ class AnalyticsController < ApplicationController
   private
     
     def apply_filters(params)
-      @product_type = params[:product_type].present? ? params[:product_type] : "all"
+      @product_type = params[:product_type].present? ? params[:product_type] : "self_tour"
       @admin_type = params[:admin_type] if params[:admin_type]
       @community_id = params[:community] if params[:community].present?
       @company_id = params[:company] if params[:company].present?
@@ -153,8 +154,8 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = minutes / count
         records_start_date = records_start_date - [uniq_start_date[i]]
         remove_index.each_with_index {|removing_index,j| start_end_datetime_arr.delete_at(removing_index - j) }
-      end    
-      instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", total_minutes / total_count)
+      end   
+      instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", (total_minutes / total_count).negative?() ? 0 : (total_minutes / total_count) )
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
 
@@ -510,7 +511,7 @@ class AnalyticsController < ApplicationController
     def stops_per_tour(start_date, days_count, total_records)
       tour_keys = total_records.where.not(tour_key: nil).pluck(:tour_key)
       visited_stops = VisitedStop.where(tour_key: tour_keys)
-      @average_number_of_stops_per_session = visited_stops.uniq.size / tour_keys.size
+      @average_number_of_stops_per_session = visited_stops.uniq.size / (tour_keys.size rescue 1)
       sessions_each_day_hourly_hash = return_empty_hash_hourly
       records_start_date_hours = visited_stops.pluck(:created_at).map {|dt| dt.strftime("%H").to_i }
       uniq_hours = records_start_date_hours.uniq
@@ -548,7 +549,8 @@ class AnalyticsController < ApplicationController
       stops.each do |arr|
         stop = arr.first.camelcase.constantize.find arr.last
         if arr.first == "unit"
-          visites_stops_hash[stop.unit_type] = visites_stops_hash[stop.unit_type].nil? ? (1) : (visites_stops_hash[stop.unit_type] + 1)
+          unit_type_or_name = stop.unit_type_or_name
+          visites_stops_hash[unit_type_or_name] = visites_stops_hash[unit_type_or_name].nil? ? (1) : (visites_stops_hash[unit_type_or_name] + 1)
         elsif arr.first == "amenity"
           if stop.amenity_type == ""
             visites_stops_hash["other amenity"] = visites_stops_hash["other amenity"].nil? ? (1) : (visites_stops_hash["other amenity"] + 1)
@@ -598,16 +600,22 @@ class AnalyticsController < ApplicationController
       @session_each_day_hour_pages_data, @session_each_day_hour_pages_options = make_chart(hour_labels, hour_values, "Total Sessions", "rgba(255,252,187,0.8)", "rgba(255,252,187,1)")
     end
 
-    def no_shows(start_date, days_count, total_records)
-      sessions_each_day_hash = return_empty_hash(days_count,start_date)      
-      records_start_date = total_records.where(is_tour_completed: false).pluck(:tour_date)
+    def no_shows(start_date, days_count, scheduled_tours, tour_histories)
+      sessions_each_day_hash = return_empty_hash(days_count,start_date) # Initialization
+      scheduled_tours_date_with_user = scheduled_tours.pluck(:tour_date, :tour_user_id, :tour_type)
+      tour_histories_date_with_user = tour_histories.where(tour_status: ["self_tour", "virtual_tour", "guided_tour"]).pluck(:arrived, :tour_user_id, :tour_status).map do |arr| 
+        arr[2] == "virtual_tour" ? [arr[0].to_date, arr[1], "Virtual Tour"] : [arr[0].to_date, arr[1], arr[2]]
+      end
+      no_shows_schedule_records = scheduled_tours_date_with_user - tour_histories_date_with_user
+      records_start_date = no_shows_schedule_records.map {|arr| arr.first}
       uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
       uniq_start_date_size.times do |i|
         sessions_each_day_hash[uniq_start_date[i]] = records_start_date.count(uniq_start_date[i])
         records_start_date = records_start_date - [uniq_start_date[i]]
       end
-      @no_show_count = total_records.where(is_tour_completed: false).count
+      @no_show_count = no_shows_schedule_records.count
       @session_each_day_no_show_data, @session_each_day_no_show_options = make_bar_chart(sessions_each_day_hash.keys.map(&:to_s), sessions_each_day_hash.values, "Total Sessions", "rgba(255, 204, 203, 0.8)", "rgba(255, 204, 203, 1)")
     end
+
 end

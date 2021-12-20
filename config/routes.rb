@@ -180,6 +180,7 @@ Rails.application.routes.draw do
     get :show_realpage_pricing_data
     post :save_temporary_image
     delete :delete_temporary_image
+    patch :update_web_maps_configurations
     resources :schedual_tours, path: 'scheduled_tours' do
       post :update_tour_type
       # post :create_tour_user_from
@@ -545,6 +546,7 @@ Rails.application.routes.draw do
       post '/schedule_tour', to: 'schedule_tours#schedule_tour'
       put :update_dwelo_access_guest, to: 'dwelo_devices#update_dwelo_access_guest'
       post :salesforce_tour_webhook, to: 'salesforce_webhooks#salesforce_tour_webhook'
+      post :salesforce_cancel_tour_webhook, to: 'salesforce_webhooks#salesforce_cancel_tour_webhook'
       post :perq_tour_webhook, to: 'perq_webhooks#perq_tour_webhook'
       post :save_data, to: 'dwelo_devices#load_data'
       post :device_lock_unlock, to: 'dwelo_devices#device_lock_or_unlock'
@@ -628,6 +630,7 @@ Rails.application.routes.draw do
       post :save_tour_history, to: 'tour_histories#save_tour_history'
       post :alerts_during_tour, to: 'tour_histories#alerts_during_tour'
       get :get_tour_history, to: 'tour_histories#get_tour_history'
+      post :verify_property_access_code, to: 'tour_histories#verify_property_access_code'
 
       # ID/Selfie get status
       get :get_id_selfie_mismatch_status, to: 'tours#get_id_selfie_mismatch'

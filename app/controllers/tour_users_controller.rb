@@ -75,7 +75,6 @@ class TourUsersController < ApplicationController
  end
 
   def lock_ploting
-    binding.pry
     community_id = params[:community_id]
     tour_user_id = params[:tour_user_id]
     tour_history_id = params[:tour_history_id]

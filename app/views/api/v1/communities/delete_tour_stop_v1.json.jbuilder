@@ -9,7 +9,7 @@ def check_unit_occupied add_stop
 end
 i = 0
 description_limit = ENV["DESCRIPTION_LIMIT"].to_i
-
+need_original_id_arr = ["elevator", "building_starting_point"]
 is_zerv_lock_present = false
 
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
@@ -454,8 +454,14 @@ json.tours @tours do |tour|
     if @community.is_sitemap
       mobile_path = ShortestPath.return_path_for_mobile(new_stops_arr, @community.id, 'sorting')
     else
-      new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, @community.id) # I add extra elevator for shortest path making
-      mobile_path, new_stops_arr = ShortestPath.return_floorplate_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+      is_multiple_building, building_list = ShortestPath.check_stops_have_multiple_buildings(new_stops_arr, @community.id)
+      if is_multiple_building
+        new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side_for_multiple(new_stops_arr, @community.id) # Here we add this community elevator and building start/exit for shortest path making
+        mobile_path, new_stops_arr = ShortestPath.return_floorplate_mobile_path_for_multiple_buildings(new_stops_arr, building_list, @community.id, 'sorting')
+      else
+        new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, @community.id) # Here we add this community elevator for shortest path making
+        mobile_path, new_stops_arr = ShortestPath.return_floorplate_path_for_mobile(new_stops_arr, @community.id, 'sorting')
+      end
     end
   end
   json.tour_stop new_stops_arr.compact do |stop|
@@ -604,7 +610,7 @@ json.tours @tours do |tour|
         json.stop_lock_provider stop_lock_provider
         
         if stop_lock_provider == "Latch" and @community.latch.present? and stop.latch_locks.present?
-          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.latch_locks.first.stop_id)
+          lch = ShortestPath.return_stop_lock(stop) if @community.latch.present?
           if lch.present?
   
             latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active") if @tour_user.present?
@@ -626,7 +632,7 @@ json.tours @tours do |tour|
           end
 
         elsif stop_lock_provider == "EdgeState" and @community.edge_state.present? and stop.edgestate_locks.present?
-          rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.edgestate_locks.first.stop_id) if @community.edge_state.present?
+          rml = ShortestPath.return_stop_lock(stop) if @community.edge_state.present?
           if rml.present?
             if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
               igloo_guest = IglooGuest.find_by(stop_id: stop.edgestate_locks.first.stop_id, tour_user_id: @tour_user.id, status: "active")
@@ -664,7 +670,7 @@ json.tours @tours do |tour|
           end
 
         elsif stop_lock_provider == "Zerv" and @community.zerv.present? and stop.zerv_locks.present?
-          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: "Tour", stop_id: stop.id) if @community.zerv.present?
+          zrv = ShortestPath.return_stop_lock(stop) if @community.zerv.present?
           if zrv.present?
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: "Tour", guest_of_stop_id: stop.id, status: "active")
             if zrv_guest.present?
@@ -704,7 +710,7 @@ json.tours @tours do |tour|
           end
 
         elsif stop_lock_provider == "Dwelo"
-          dwelo_lock = stop.dwelo_locks.first rescue nil
+          dwelo_lock = ShortestPath.return_stop_lock(stop)
           if dwelo_lock.present?
             json.guest_pin ''
             json.latch_link ''
@@ -790,11 +796,12 @@ json.tours @tours do |tour|
     begin
       
       if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
-        stop_lock_provider = (stop.stop_type.classify.constantize.find_by_id stop.stop_id).lock_provider
+        stop_lock_provider = stop.fetch_lock_stop_provider
         json.stop_lock_provider stop_lock_provider
 
         if stop_lock_provider == "EdgeState"
-          rml = RemoteLock.find_by(edge_state_id: @community.edge_state.id , stop_id: stop.stop_id, stop_type: stop.stop_type.classify) if @community.edge_state.present?
+          _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
+          rml = ShortestPath.return_stop_lock(_stop_) if @community.edge_state.present?
           if rml.present?
             if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
               igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
@@ -832,10 +839,14 @@ json.tours @tours do |tour|
           end
 
         elsif stop_lock_provider == "Latch"
-          lch = LatchLock.find_by(latch_id: @community.latch.id, stop_id: stop.stop_id, stop_type: stop.stop_type.classify) if @community.latch.present?
+          _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
+          lch = ShortestPath.return_stop_lock(_stop_) if @community.latch.present?
           if lch.present?
-
-            latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: stop.stop_type.classify, status: "active") if @tour_user.present?
+            if lch.stop_type == "Door"
+              latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: lch.stop.id, guest_of_stop_type: lch.stop.class.name, status: "active") if @tour_user.present?
+            else
+              latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: stop.stop_type.classify, status: "active") if @tour_user.present?
+            end
             if latch_guest.present?
               json.guest_pin ''
               json.latch_link latch_guest.latch_link
@@ -862,7 +873,7 @@ json.tours @tours do |tour|
 
         elsif stop_lock_provider == "Dwelo"
           _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
-          dwelo_lock = _stop_.dwelo_locks.first rescue nil
+          dwelo_lock = ShortestPath.return_stop_lock(_stop_)
           
           if dwelo_lock.present?
             json.guest_pin ''
@@ -881,7 +892,8 @@ json.tours @tours do |tour|
           end
 
         elsif stop_lock_provider == "Zerv"
-          zrv = ZervLock.find_by(zerv_id: @community.zerv.id, stop_type: stop.stop_type.classify, stop_id: stop.stop_id) if @community.zerv.present?
+          _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
+          zrv = ShortestPath.return_stop_lock(_stop_) if @community.zerv.present?
           if zrv.present?
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: stop.stop_type.classify, guest_of_stop_id: stop.stop_id, status: "active")
             if zrv_guest.present?
@@ -922,8 +934,8 @@ json.tours @tours do |tour|
         
         elsif stop_lock_provider == "Igloohome"
           igloohome_lock = @community.get_igloohome_lock(stop)
-          igloohome_guest = @community.get_igloohome_guest(stop, @tour_user.id)
-         
+          igloohome_guest = @community.get_igloohome_guest(stop, @tour_user.id)         
+          
           if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && (igloohome_guest.guest_bluetooth_key.present? || igloohome_guest.guest_pin.present?)
             json.guest_pin ''
             json.latch_link ''
@@ -943,6 +955,9 @@ json.tours @tours do |tour|
 
         elsif stop_lock_provider == "Manual"
           _stop_ = stop.stop_type.classify.constantize.find_by_id stop.stop_id
+          if (defined?(_stop_.door).present? && _stop_.door.present?) ||  (defined?(_stop_.doors).present? && _stop_.doors.any?)
+            _stop_ = defined?(_stop_.door).present? ? _stop_.door : (_stop_.doors.order("created_at ASC").first)
+          end
           if _stop_.present? and _stop_.access_code.present?
             json.guest_pin "Use code " + _stop_.access_code + " to enter."
             json.latch_link ''
@@ -1255,8 +1270,8 @@ json.tours @tours do |tour|
         to_type = (new_stops_arr[i].is_a? Tour) ? "Tour" : "TourStop"
         from_id = (new_stops_arr[i-1].is_a? Tour) ? 0 : new_stops_arr[i - 1].id
         to_id = (new_stops_arr[i].is_a? Tour) ? 0 : new_stops_arr[i].id
-        from_id = (from_type == "TourStop" && TourStop.find(from_id).stop_type == "elevator") ? TourStop.find(from_id).stop_id : from_id
-        to_id = (to_type == "TourStop" && TourStop.find(to_id).stop_type == "elevator") ? TourStop.find(to_id).stop_id : to_id
+        from_id = (from_type == "TourStop" && need_original_id_arr.include?( TourStop.find(from_id).stop_type ) ) ? TourStop.find(from_id).stop_id : from_id
+        to_id = (to_type == "TourStop" && need_original_id_arr.include?( TourStop.find(to_id).stop_type ) ) ? TourStop.find(to_id).stop_id : to_id
         next_floor = ShortestPath.return_next_floor_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
         elevator_stop_description = "Go to floor " + next_floor.to_s
       else
@@ -1456,9 +1471,9 @@ json.tours @tours do |tour|
         if @community.is_sitemap
           path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
         else
-          from_id = (from_type == "TourStop" && TourStop.find(from_id).stop_type == "elevator") ? TourStop.find(from_id).stop_id : from_id
-          to_id = (to_type == "TourStop" && TourStop.find(to_id).stop_type == "elevator") ? TourStop.find(to_id).stop_id : to_id
-          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
+          from_id = (from_type == "TourStop" && need_original_id_arr.include?( TourStop.find(from_id).stop_type) ) ? TourStop.find(from_id).stop_id : from_id
+          to_id = (to_type == "TourStop" && need_original_id_arr.include?( TourStop.find(to_id).stop_type ) ) ? TourStop.find(to_id).stop_id : to_id
+          path_points = ShortestPath.return_path_points_to_mobile(mobile_path, from_type, to_type, from_id, to_id)     
         end
         @existing_path_points = path_points if path_points.present?
       else

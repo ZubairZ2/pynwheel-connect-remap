@@ -6,11 +6,21 @@
       %span=# @floorplate.name + " Units"
       = hidden_field_tag "floor_to_floorplate_id" , @floor_to_floorplate_id.to_json
       = hidden_field_tag "floors" , @floors
+      - if @building_list.length > 1
+        - building_list_underscore = @building_list.map {|building| building.parameterize.underscore }
+        = hidden_field_tag "building_list" , building_list_underscore
       = hidden_field_tag "hallways" , @hallways.to_json
+
 
       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "plotUnitOnFloorplatePopover","data-content" => " "}
         %span#propertyDetailNameText
           Once you have selected unit(s) to plot, click on the correct position on the map to place the marker. You can drag and drop each marker to reposition it. You can also click on a marker to see which units are associated with it; add a unit; or delete the marker.
+
+    - unless @building_list.count < 2
+      %h3 Select a Building
+      .building_sortable#building_buttons
+        - @building_list.each do |b|
+          %a.btn-default.building_btn_in_auto{:href => "javascript:void(0)", :style => "display: inline-block;width: auto; min-width: 33px; height: 25px;background: #{(@building_list.first == b ? "#49d849;" : "#e0e0e0;")} padding: 3px;text-align: center;border-radius: 5px;color: black;font-weight: bold; margin-left: 5px;", "data-building_id" => "#{b.parameterize.underscore}" } #{b}
 
     - begin
       %h3 Select a Floor
@@ -36,8 +46,13 @@
         %button.btn.btn-primary.grid-overlay.header_map_btn{:type=>"button",:onclick=>"run_algo(true, 'sorting', false, 'up')"}Run Algo(Animated)
   = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
   - # render map of each floor
-  - @floors.each do |floor|
-    = render :partial=>'show_map', :locals => {floor: floor}
+  - if @building_list.count < 2
+    - @floors.each do |floor|
+      = render :partial=>'show_map', :locals => {floor: floor}
+  - else
+    - @building_list.each do |building|
+      - @floors.each do |floor|
+        = render :partial=>'show_map', :locals => {floor: floor, building: building}
 
 :javascript
   function apply_zoom_functionality_against_floor(map_id_for_zoom ,elem){
@@ -80,8 +95,6 @@
   }
 
   var multi_floors;
-  var units_info = #{@unit_with_door.to_json.html_safe}
-  var amenities_info = #{@amenity_with_doors.to_json.html_safe}
   // var access_points = #{@access_points.to_json.html_safe}
   var building_starting_point = {x_plot: #{@community.tour.x_plot.to_json.html_safe}, y_plot: #{@community.tour.y_plot.to_json.html_safe} };
 
@@ -98,35 +111,63 @@
   var addmode = false;
   var adddoorsmode = false;
   var accesspointplot = false;
+  var building_list = ( $("#building_list").length > 0 ) && $("#building_list").val().split(' ') 
 
   $( document ).ready(function() {
     document.addEventListener("touchstart", touchHandler, true);
     document.addEventListener("touchmove", touchHandler, true);
     document.addEventListener("touchend", touchHandler, true);
     document.addEventListener("touchcancel", touchHandler, true);
-    map_id_for_zoom = "#map_" + floors[0]
-    let elem = document.querySelector(map_id_for_zoom);
-    apply_zoom_functionality_against_floor(map_id_for_zoom, elem)
+
+    map_id = building_list ? ("#" + building_list[0] + "_map_" + floors[0]) : ("#map_" + floors[0])
+    let elem = document.querySelector(map_id);
+    apply_zoom_functionality_against_floor(map_id, elem)
     fp_id = floor_to_floorplate_id[floors[0]]
-    map_id = "#map_" + floors[0]
-    hallways_coordinates = hallways[floors[0]]
+    hallways_coordinates = building_list ? hallways[building_list[0]][floors[0]] : hallways[floors[0]]
     floor_id = floors[0]
+    if (building_list){
+      $($('.building_btn_in_auto')[0]).addClass('autoway_selected')
+      $($('.floor_btn')[0]).addClass('autoway_selected')
+    }
     draw_initial_hallways(hallways_coordinates, map_id)
     $('.floor_btn').click(function(){
+      var building_id;
+      $('.floor_btn').removeClass('autoway_selected')
+      $(this).addClass('autoway_selected')
+      if ($('.building_btn_in_auto.autoway_selected').length > 0 )
+        building_id = $('.building_btn_in_auto.autoway_selected').data('building_id')
       floor_id = $(this).data('floor_id')
       fp_id = floor_to_floorplate_id[floor_id]
-      map_id = "#map_" + floor_id
-      hallways_coordinates = hallways[floor_id]
+      map_id = building_list ? ("#" + building_id + "_map_" + floor_id)  : "#map_" + floor_id
+      hallways_coordinates = building_id ? hallways[building_id][floor_id] : hallways[floor_id]
       $('.floor_map').addClass('hidden')
-      floor_map_id = '#floor_' + floor_id
+      floor_map_id = building_list ? ("#" + building_id + "_floor_" + floor_id) : ("#floor_" + floor_id);
       $(floor_map_id).removeClass('hidden')
       $('.floor_btn').css('background', '#e0e0e0')
       $(this).css('background', "#49d849")
-      $('#floor_1 *').unbind('click')
-      $('#floor_1 *').off()
       initialize_variables()
       let elem = document.querySelector(map_id);
       apply_zoom_functionality_against_floor(map_id, elem)
       draw_initial_hallways(hallways_coordinates, map_id)
-    })
+    });
+    if (building_list){
+      $('.building_btn_in_auto').click(function(){
+        building_id = $(this).data('building_id')
+        $('.building_btn_in_auto').removeClass('autoway_selected')
+        $(this).addClass('autoway_selected')
+        floor_id = $('.floor_btn.autoway_selected').data('floor_id')
+        fp_id = floor_to_floorplate_id[floor_id]
+        map_id = ("#" + building_id + "_map_" + floor_id)
+        hallways_coordinates = hallways[building_id][floor_id]
+        $('.floor_map').addClass('hidden')
+        floor_map_id = ("#" + building_id + "_floor_" + floor_id);
+        $(floor_map_id).removeClass('hidden');
+        $('.building_btn_in_auto').css('background', '#e0e0e0')
+        $(this).css('background', "#49d849")
+        initialize_variables()
+        let elem = document.querySelector(map_id);
+        apply_zoom_functionality_against_floor(map_id, elem)
+        draw_initial_hallways(hallways_coordinates, map_id)
+      });
+    }
   });

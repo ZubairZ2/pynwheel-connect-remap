@@ -98,27 +98,27 @@
 
   // load options and input values start
   - if locks_present_hash["Dwelo"]
-    = hidden_field_tag "dwelo_lock_input_value", (@community.auto_wayfinding and @door.present?) ? (@door.dwelo_lock.present? ? @door.dwelo_lock.name + " (" + @door.dwelo_lock.remote_lock_type + ")"  : '') : ( @unit.dwelo_locks.present? ? @unit.dwelo_locks.first.name + " (" + @unit.dwelo_locks.first.remote_lock_type + ")" : '' )
+    = hidden_field_tag "dwelo_lock_input_value", (@door.present?) ? (@door.dwelo_lock.present? ? @door.dwelo_lock.name + " (" + @door.dwelo_lock.remote_lock_type + ")"  : '') : ( @unit.dwelo_locks.present? ? @unit.dwelo_locks.first.name + " (" + @unit.dwelo_locks.first.remote_lock_type + ")" : '' )
     .dwelo_options.hide_it
       - @all_locks[:dwelo_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
   - if locks_present_hash["EdgeState"]
-    = hidden_field_tag "edgestate_lock_input_value", (@community.auto_wayfinding and @door.present?) ? (@door.edgestate_lock.present? ? @door.edgestate_lock.name + " (" + @door.edgestate_lock.remote_lock_type + ")"  : '') : ( @unit.edgestate_locks.present? ? @unit.edgestate_locks.first.name + " (" + @unit.edgestate_locks.first.remote_lock_type + ")" : '' )
+    = hidden_field_tag "edgestate_lock_input_value", (@door.present?) ? (@door.edgestate_lock.present? ? @door.edgestate_lock.name + " (" + @door.edgestate_lock.remote_lock_type + ")"  : '') : ( @unit.edgestate_locks.present? ? @unit.edgestate_locks.first.name + " (" + @unit.edgestate_locks.first.remote_lock_type + ")" : '' )
     .edgestate_options.hide_it
       - @all_locks[:edgestate_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
   - if locks_present_hash["Latch"]
-    = hidden_field_tag "latch_lock_input_value", (@community.auto_wayfinding and @door.present?) ? (@door.latch_lock.present? ? @door.latch_lock.lock_name : '') : ( @unit.latch_locks.present? ? @unit.latch_locks.first.lock_name : '' )
+    = hidden_field_tag "latch_lock_input_value", (@door.present?) ? (@door.latch_lock.present? ? @door.latch_lock.lock_name : '') : ( @unit.latch_locks.present? ? @unit.latch_locks.first.lock_name : '' )
     .latch_options.hide_it
       - @all_locks[:latch_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
   - if locks_present_hash["Zerv"]
-    = hidden_field_tag "zerv_lock_input_value", (@community.auto_wayfinding and @door.present?) ? (@door.zerv_lock.present? ? @door.zerv_lock.sub_location_name + " (" + @door.zerv_lock.sub_location_friendly_name + ")" : '') : ( @unit.zerv_locks.present? ?  @unit.zerv_locks.first.sub_location_name + " (" + @unit.zerv_locks.first.sub_location_friendly_name + ")" : '' )
+    = hidden_field_tag "zerv_lock_input_value", (@door.present?) ? (@door.zerv_lock.present? ? @door.zerv_lock.sub_location_name + " (" + @door.zerv_lock.sub_location_friendly_name + ")" : '') : ( @unit.zerv_locks.present? ?  @unit.zerv_locks.first.sub_location_name + " (" + @unit.zerv_locks.first.sub_location_friendly_name + ")" : '' )
     .zerv_options.hide_it
       - @all_locks[:zerv_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}
   - if locks_present_hash["Igloohome"]
-    = hidden_field_tag "igloohome_lock_input_value", (@community.auto_wayfinding and @door.present?) ? (@door.igloohome_lock.present? ? @door.igloohome_lock.device_name : '') : ( @unit.igloohome_locks.present? ? @unit.igloohome_locks.first.device_name : '' )
+    = hidden_field_tag "igloohome_lock_input_value", (@door.present?) ? (@door.igloohome_lock.present? ? @door.igloohome_lock.device_name : '') : ( @unit.igloohome_locks.present? ? @unit.igloohome_locks.first.device_name : '' )
     .igloohome_options.hide_it
       - @all_locks[:igloohome_locks].each do |lock|
         %option{value: "#{lock[:name]}", 'data-value'=> "#{lock[:id]}"}  
@@ -128,13 +128,14 @@
       Select Lock Type
       %span Select the access provider for this stop
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), (@community.auto_wayfinding and @door.present?) ? @door.lock_provider : f.object.lock_provider),{},{:class=>"form-control lock_provider_input"}
+      = f.select :lock_provider , options_for_select(@community.lock_options(locks_present_hash), (@door.present?) ? @door.lock_provider : f.object.lock_provider),{},{:class=>"form-control lock_provider_input"}
 
   .form-group.hide_it#manual_access_code
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
       Access Code
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6"
+      - access_code_value = f.object.door.present? ? f.object.door.access_code : f.object.access_code
+      = f.text_field :access_code, :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control", :placeholder=>"Access Code",:maxLength => "6", :value => access_code_value
 
   .form-group#lock_access_code.hide_it
     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label

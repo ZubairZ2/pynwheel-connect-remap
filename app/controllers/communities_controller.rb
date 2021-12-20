@@ -55,6 +55,7 @@ class CommunitiesController < ApplicationController
         redirect_to community_design_index_path(@community)
       end
     else
+      @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
       flash[:error] = @community.errors.full_messages.join(',')
       render :new
     end
@@ -87,6 +88,10 @@ class CommunitiesController < ApplicationController
     #   end
     # end
   end
+  def update_web_maps_configurations
+    ThreeDMapsConfiguration.find_or_initialize_by(:community_id => params[:community_id]).update!(maps_configuration_params)
+    sleep(1)
+  end
   def update_billing_rate
     # @community = Community.find(params[:community_id]) rescue nil
     # if @community.company.name.downcase == "lincoln"
@@ -105,6 +110,7 @@ class CommunitiesController < ApplicationController
     if params[:community][:billing_rate_touch].present? or params[:community][:lincoln_billing_rate].present? or params[:community][:dwelo_billing_rate].present? or params[:community][:billing_rate_selftour].present? or params[:community][:billing_rate_maps].present? or params[:community][:billing_rate_for_both].present?
       @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour], billing_rate_for_both: params[:community][:billing_rate_for_both])
     end
+
     if params[:community][:company_id].present?
       company = Company.find(params[:community][:company_id]) rescue nil
       if company.name.downcase.include?("dwelo")
@@ -114,6 +120,7 @@ class CommunitiesController < ApplicationController
         @community.update(creator_id: "")
       end
     end
+    @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
     if params[:community][:image]
       @community.crop_x = nil
     end
@@ -198,6 +205,9 @@ class CommunitiesController < ApplicationController
         end
         if inner_check
           if @community.update(community_params)
+            
+            update_map_type(@community)
+
             @community.credential.import_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
             if params[:community][:name].present?
               format.html { redirect_to company_communities_path(current_company),notice: 'Community updated successfully.' }
@@ -219,6 +229,16 @@ class CommunitiesController < ApplicationController
       end
     end
   end
+
+  def update_map_type community
+    if community.enable_three_d_maps
+      community.update(web_map_type: "3d-map")
+      
+    else
+      community.update(web_map_type: "2d-map")
+    end
+  end
+
   def clone_community
     @community = Community.find params[:community_id]
     @community.clone_a_community(@community)
@@ -707,7 +727,7 @@ class CommunitiesController < ApplicationController
         @tour_setting.time_intervel = "2 hrs" if params[:time_intervel_2] == "true"
         @tour.credit_card_required = params[:credit_card_required].present? ? true : false
         # @tour.max_tour_users = params[:max_tour_users]
-        @tour.only_scheduled_tour = @community.scheduler_widget ? params[:only_scheduled_tour].present? ? true : false : false
+        @tour.only_scheduled_tour = params[:only_scheduled_tour].present?
         @tour.grace_period = params[:grace_time] if params[:grace_time].present?
         @tour.marketing_source_required = params[:marketing_source_required].present? ? true : false
 
@@ -717,31 +737,21 @@ class CommunitiesController < ApplicationController
         @community.show_camera_button = params[:show_camera_button].present? ? true : false
         @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
         # @community.tour.update_attributes(max_tour_users: params[:max_tour_users], max_virtual_tour_users: params[:max_virtual_tour_users],max_self_tour_users: params[:max_self_tour_users],max_guided_tour_users: params[:max_guided_tour_users])
-        
         @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
         @tour.enable_auto_zoom = params[:enable_auto_zoom].present? ? params[:enable_auto_zoom] : false
         @tour.max_virtual_tour_users = params[:max_virtual_tour_users]
         @tour.max_self_tour_users = params[:max_self_tour_users]
         @tour.max_guided_tour_users = params[:max_guided_tour_users]   
         @tour_setting.do_limit_max_tour = params[:do_limit_max_tour]   
-        # @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication] if params[:charge_user_for_id_verfication] .present?
         @tour_setting.limit_max_tour_type = params[:limit_max_tour_type]   
         @tour_setting.limit_max_tour = params[:limit_max_tour]
         @tour_setting.length_stay_limit = params[:length_stay_limit].to_i
-        @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication].present? ? params[:charge_user_for_id_verfication] : false    
-        # @community.sms_text = params[:community][:sms_text] if params[:community][:sms_text].present?
-        # @community.show_notepad_button = params[:show_notepad_button].present? ? true : false
-
-        # @tour.marker_icon_size = params[:marker_icon_size]
+        @tour_setting.charge_user_for_id_verfication = params[:charge_user_for_id_verfication].present? ? params[:charge_user_for_id_verfication] : false
+        @tour_setting.enable_restricted_property_access = params[:enable_restricted_property_access].present? ? params[:enable_restricted_property_access] : false
         @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
         @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
       end
       @tour.save
-      # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
-      # @tour_setting.show_checklist = params[:show_checklist].present? ? params[:show_checklist] : false
-      # @tour_setting.show_last_name = params[:show_last_name].present? ? params[:show_last_name] : false
-      # @tour_setting.show_email = params[:show_email].present? ? params[:show_email] : false
-      
       @tour_setting.save
 
     else
@@ -836,7 +846,7 @@ private
  
   def community_params
 
-    params.require(:community).permit(:web_map_type,:pynwheel_access,:name,:creator_id,:default_community_id, :region_id,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
+    params.require(:community).permit(:enable_three_d_maps,:web_map_type,:enable_amenity_legend,:enable_home_legend,:community_logo,:pynwheel_access,:name,:creator_id,:default_community_id, :region_id,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :auto_wayfinding, :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:enable_locks,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:id,:url,:entrata_url,:username,:password, :perq_property_id, :is_perq_allowed, :property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
       :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_api_version, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:crm_credential_attributes=>[:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id, :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username, :yardirentcafe_marketing_api_key, :yardirentcafe_company_code, :yardirentcafe_property_id, :yardirentcafe_property_code,:salesforce_password, :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :salesforce_grant_type],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
@@ -885,6 +895,11 @@ private
         :favourite_btn_off_image, :global_navigation_btn_on_for_all,:global_navigation_btn_off_for_all,:home_page_background_image,
         :global_nav_background_image],:filter_panel_attributes=>[:id,:button_border_color,:text_font_size,:button_text_font_size,:gallery_button_on_font_color,:display_gallery_button_on_background_color,:gallery_button_on_background_color,:display_filter_panel_icon,:filter_panel_icon_color,:icon_background_color,
         :filter_panel_buttons_show_backround_color,:filter_buttons_icons_position,:icon_background_color_opacity,:gallery_button_on_background_color_opacity]])
+  end
+
+  def maps_configuration_params
+    params.require(:community).permit(:default_polygon_color,:selected_polygon_color,:default_polygon_opacity,:selected_polygon_opacity,:unit_color,:selected_unit_color,:poi_color,
+    :faded_ploygon_opacity,:show_unit_numbers,:hide_floors)
   end
 
 end
