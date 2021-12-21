@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+
+  <body>
+    Someone has cancelled a <b> <%= @tour_type %> </b> at your property <b> <%= @community.name %> </b>. <br> <br>
+
+    <b>Name: </b> <%= @tour_user&.name%> <br>
+
+    <b>Date: </b><%= (@scheduled_tour&.tour_date || @scheduled_tour.created_at.to_date).strftime("%m-%d-%Y") %> <br>
+
+    <b>Time: </b><%= (@scheduled_tour&.tour_time || @scheduled_tour.created_at).strftime("%H:%M %P") %> <br>
+    
+    <b>Email: </b><%= @tour_user.email %> <br>
+    
+    <b>Phone: </b><%= @tour_user.phone_number %> <br>
+  
+  </body>
+</html
