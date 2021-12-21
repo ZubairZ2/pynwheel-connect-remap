@@ -16,6 +16,7 @@ json.tours @tours do |tour|
     json.property_access @tour_user.restricted_property_access
     json.property_access_code @tour_user.property_access_code
   end
+  json.allow_tours_customization @community&.tour&.tour_setting&.enable_tour_customization
   json.tour_setting do
     json.show_map @community.show_map
     json.mdu @community.mdu

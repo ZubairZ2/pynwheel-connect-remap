@@ -302,6 +302,18 @@
               .col-sm-12.col-lg-2.col-md-2.col-xs-12.add_minutes_span{:style => "margin-top: 13px;"}
                 %span
                   Minutes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Allow Customize Tours in Self Tour
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Enabling this toggle will allow prospects to choose available units and amenities of their own choice to customize their tours 
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :enable_tour_customization, true, @community.tour.tour_setting.enable_tour_customization, class: "enable_tour_customization" 
+                  %label.label-primary{:for => "enable_tour_customization"}
+                  %span.pl-15 Yes
             - if current_user.is_super_admin?
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
