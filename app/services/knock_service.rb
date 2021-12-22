@@ -6,7 +6,7 @@ class KnockService < BaseService
     @tour_user = @scheduled_tour&.tour_user
     @community = @scheduled_tour&.community
     @crm_credentials = @community&.crm_credential
-    @timezone = @community&.get_time_zone("America/Los_Angeles")
+    @timezone = @community&.get_time_zone(DEFAULT_TIME_ZONE)
   end
  
   def create_knock_prospect
