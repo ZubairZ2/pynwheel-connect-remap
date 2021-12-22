@@ -323,6 +323,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         edge_state = EdgeState.find_by(community_id: params[:id])
         # @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
 
+        @floorplans = FloorplanUnitsService.new(@community).get_floorplans
         if @community.enable_locks and @community.multiple_locks_provider.include?("EdgeState") and edge_state.present? and @tour_user.tour_type != "virtual_tour"
           Thread.new do
             access_token = RemoteLockService.new(@community).client_credentials
