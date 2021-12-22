@@ -17,6 +17,15 @@ json.tours @tours do |tour|
     json.property_access_code @tour_user.property_access_code
   end
   json.allow_tours_customization @community&.tour&.tour_setting&.enable_tour_customization
+  if @community&.tour&.tour_setting&.enable_tour_customization
+    ind = 1
+    json.unit_bedrooms @floorplans do |floorplan|
+      json.id ind
+      json.value (floorplan.bedrooms.present? ? (floorplan.bedrooms.to_i == 0 ? "Studio" : floorplan.bedrooms.to_i) : "")
+      json.is_selected false
+      ind = ind + 1
+    end
+  end
   json.tour_setting do
     json.show_map @community.show_map
     json.mdu @community.mdu

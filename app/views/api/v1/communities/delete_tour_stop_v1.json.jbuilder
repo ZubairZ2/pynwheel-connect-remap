@@ -1553,13 +1553,7 @@ json.tours @tours do |tour|
     json.mdu @community.mdu
     json.pynwheel_access_username @community&.zerv&.username
     json.pynwheel_access_password @community&.zerv&.password
-    ind = 0
-    json.unit_bedrooms @floorplans do |floorplan|
-      json.id ind
-      json.title (floorplan.bedrooms.present? ? (floorplan.bedrooms.to_i == 0 ? "Studio" : floorplan.bedrooms.to_i) : "")
-      json.is_selected false
-      ind = ind + 1
-    end
+    
   end
 
 

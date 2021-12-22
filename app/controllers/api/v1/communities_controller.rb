@@ -193,6 +193,8 @@ class Api::V1::CommunitiesController < ActionController::Base
         @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
         @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
       end
+      all_floorplans = FloorplanUnitsService.new(@community).get_floorplans
+      @floorplans = all_floorplans.uniq { |b| b.bedrooms }
 
       unless @tour_user.email == "Removed at Consumer Request"
         #####
@@ -323,7 +325,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         edge_state = EdgeState.find_by(community_id: params[:id])
         # @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
 
-        @floorplans = FloorplanUnitsService.new(@community).get_floorplans
+        
         if @community.enable_locks and @community.multiple_locks_provider.include?("EdgeState") and edge_state.present? and @tour_user.tour_type != "virtual_tour"
           Thread.new do
             access_token = RemoteLockService.new(@community).client_credentials

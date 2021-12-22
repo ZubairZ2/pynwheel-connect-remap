@@ -618,6 +618,7 @@ Rails.application.routes.draw do
           post :feedback
         end
       end
+      resources :floorplans, only: :index
       post :save_shared_tour, to: 'tours#save_shared_tour'
       post :checkpoint_verification_response, to: 'tours#checkpoint_verification_response'
       get '/get_floorplan_units', to: 'tours#floorplan_units'
