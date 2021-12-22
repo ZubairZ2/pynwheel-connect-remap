@@ -52,8 +52,20 @@ class SchedualTour < ApplicationRecord
   end
 
   def notify_community_on_cancel_tour
-    return unless check_tour_status()
-    CancelTourMailer.cancel_tour_email(self).deliver_now
+    if is_unscheduled_tour() 
+      CancelTourMailer.cancel_tour_email(self).deliver_now
+    else
+      if check_tour_status()
+        CancelTourMailer.cancel_tour_email(self).deliver_now
+      end
+    end
+  end
+
+  def is_unscheduled_tour
+    tour_type = self.tour_type.split('_').map(&:capitalize).join(' ')
+    p_tour_type = self.property_tour_type == "scheduled_tour" ? tour_type : self.property_tour_type.present? ? self.property_tour_type.split('_').map(&:capitalize).join(' ') : tour_type 
+    
+    (p_tour_type == "Unscheduled Self Tour" || p_tour_type == "Remote Tour" || p_tour_type == "Virtual tour")
   end
 
   def check_tour_status
