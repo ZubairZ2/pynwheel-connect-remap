@@ -70,12 +70,56 @@ class CompaniesController < ApplicationController
     end
   end
 
+  def generate_csv
+    # property id, property name, visitor name, visitor email, visitor phone, is abandoned tour, tour type, tour month, tour date, tour time
+    @communities = fetch_communities_hash(params[:id])
+    company = Company.find params[:id]
+    tour_users = TourUser.includes(:tour_histories).where(tour_histories: {community_id: @communities.keys}).order('tour_histories.arrived ASC')
+    headers = %w{Property\ Id Property\ Name Visitor\ Name Visitor\ Email Visitor\ Phone Is\ Abandoned\ Tour Tour\ Type Tour\ Month Tour\ Date Tour\ Time}
+    csv_file = CSV.generate(headers: true) do |csv|
+      csv << headers
+      tour_users.each do |tu|
+        if tu.tour_histories.any?
+          tu.tour_histories.each do |th|
+            csv << fetch_tour_hitory_data(tu, th)
+          end
+        end
+      end
+    end
+    send_data(csv_file, :type => 'application/xlsx', :filename => "#{company.name}.csv")
+  end
+
   private
   def set_company
     @company = Company.find params[:id]
   end
   def company_params
     params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo,:inactivate, :creator_id)
+  end
+  def fetch_communities_hash(company_id)
+    communities = Community.where(company_id: params[:id]).pluck(:id, :name)
+    communities.to_h
+  end
+  def fetch_tour_status(tour_status)
+    type = "Virtual Tour"
+    type = "Self Tour" if ["self_tour", "Self Guided"].include?(tour_status)
+    type = "Guided Tour" if ["guided_tour"].include?(tour_status)
+    type
+  end
+  def fetch_tour_hitory_data(tour_user, tour_history)
+    obj = []
+    arrived = tour_history.arrived.in_time_zone((tour_history.community_time_zone rescue 'UTC'))
+    obj << tour_history.community_id # Community Id
+    obj << @communities[tour_history.community_id] # Community Name
+    obj << tour_user.name
+    obj << tour_user.email
+    obj << tour_user.phone_number
+    obj << (tour_history.tour_state == "abandoned") # is abandoned tour
+    obj << fetch_tour_status(tour_history.tour_status) # Is Self Guided, OR Virtual Tour
+    obj << arrived.strftime('%B')
+    obj << arrived.to_date
+    obj << arrived.strftime("%I:%M %p")
+    obj
   end
 
 end

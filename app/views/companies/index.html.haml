@@ -44,3 +44,6 @@
                   %i.fa.fa-edit.icon_size
                 %a.text-danger{"data-name"=>"Company","data-href" => "/companies/#{company.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"}
                   %i.fa.fa-trash.icon_size
+                - if ["development@intagleo.com", "awais@pynwheel.com", "jennifer@pynwheel.com", "kellie@pynwheel.com"].include?(current_user.email)
+                  %a.text-success{:href => "/companies/#{company.id}/generate_csv", :format => "csv"}
+                    %i.fa.fa-file-excel-o.icon_size
