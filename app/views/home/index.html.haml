@@ -34,7 +34,7 @@
                 %h4.h4
                   - if current_user.is_view_visitor_details_page?
                     = link_to community.name, community_tour_users_path(community),:title=>community.data_provider
-                  - else
+                  - elsif community&.company.present?
                     = link_to community.name, edit_company_community_path(community.company,community),:title=>community.data_provider
                 %h6.h6 Updated: #{community.updated_at.to_date}  
               %td
