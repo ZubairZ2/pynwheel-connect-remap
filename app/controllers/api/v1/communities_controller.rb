@@ -194,7 +194,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
       end
       all_floorplans = FloorplanUnitsService.new(@community).get_floorplans
-      @floorplans = all_floorplans.uniq { |b| b.bedrooms }
+      @floorplans = all_floorplans.compact.sort_by {|f| f.bedrooms}.uniq { |b| b.bedrooms }
 
       unless @tour_user.email == "Removed at Consumer Request"
         #####
