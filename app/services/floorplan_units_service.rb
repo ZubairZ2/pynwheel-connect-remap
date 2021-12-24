@@ -9,7 +9,7 @@ class FloorplanUnitsService < BaseService
     units.each do |u|
       floorplans << u.floorplan
     end
-    floorplans.present? ? floorplans.compact.sort_by { |f| f.bedrooms } : []
+    floorplans
   end
 
 end

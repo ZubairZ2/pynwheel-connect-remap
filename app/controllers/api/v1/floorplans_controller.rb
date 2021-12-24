@@ -6,8 +6,33 @@ class Api::V1::FloorplansController < ActionController::Base
     if api_access or access == true
       @community = Community.find params[:community_id]
       floorplans = FloorplanUnitsService.new(@community).get_floorplans
-      @floorplans = Kaminari.paginate_array(floorplans).page(params[:page]).per(params[:per_page])
+      filtered_floorplans = floorplans.select {|b| b.bedrooms.eql?(params[:bedrooms]) }.compact unless params[:bedrooms].eql?("any") or params[:bedrooms].blank?
+      floorplans_to_be_sorted = filtered_floorplans.present? ? filtered_floorplans : floorplans
+      sorting_param = params[:sort_by].present? ? params[:sort_by] : "default" 
+      sorted_floorplans = floorplans_to_be_sorted.present? ? sort_floorplans(floorplans_to_be_sorted,sorting_param).uniq : []     
+      @floorplans = Kaminari.paginate_array(sorted_floorplans).page(params[:page]).per(params[:per_page])
     end
+  end
+
+  private
+
+  def sort_floorplans(floorplans_to_be_sorted,sorting_param)
+    case sorting_param
+    when "floors_asc"
+      floorplans_to_be_sorted.sort_by { |f| Unit.where(floorplan_id: f.provider_floorplan_id, available: true).pluck(:floor).count } 
+    when "floors_desc"
+      floorplans_to_be_sorted.sort_by { |f| -Unit.where(floorplan_id: f.provider_floorplan_id, available: true).pluck(:floor).count }
+    when "sq_ft_asc"
+      floorplans_to_be_sorted.sort_by { |f| f.square_feet } 
+    when "sq_ft_desc"
+      floorplans_to_be_sorted.sort_by { |f| -f.square_feet }
+    when "price_asc"
+      floorplans_to_be_sorted.sort_by { |f| f.market_rent } 
+    when "price_desc"
+      floorplans_to_be_sorted.sort_by { |f| -f.market_rent }
+    else
+      floorplans_to_be_sorted.sort_by { |f| -Unit.where(floorplan_id: f.provider_floorplan_id, available: true).count }
+    end      
   end
 
 end
