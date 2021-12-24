@@ -7,7 +7,7 @@ json.floorplans @floorplans do |floorplan|
 	json.square_footage (floorplan.square_feet.present? ? floorplan.square_feet.to_i.to_s + " Square Feet" : "")
   if available_units.present?
     json.vacant_units available_units.count
-    availability = available_units.pluck(:available_date).max
+    availability = available_units.pluck(:available_date).compact.max
     json.availability availability <= Date.today ? "Now" : availability
     json.up_to "$"+available_units.pluck(:min_effective_rent).compact.min.to_i.to_s+"/month"
     available_buildings = available_units.pluck(:building).reject { |c| c.empty? }
