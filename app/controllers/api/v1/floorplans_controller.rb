@@ -5,8 +5,9 @@ class Api::V1::FloorplansController < ActionController::Base
   def index
     @community = Community.find params[:community_id]
     floorplans = FloorplanUnitsService.new(@community).get_floorplans
-    filtered_floorplans = floorplans.select {|b| b.bedrooms.eql?(params[:bedrooms]) }.compact unless params[:bedrooms].eql?("any") or params[:bedrooms].blank?
-    floorplans_to_be_sorted = filtered_floorplans.present? ? filtered_floorplans : floorplans
+    bedroom = params[:bedrooms].present? ? params[:bedrooms] : "any"
+    filtered_floorplans = floorplans.present? ? floorplans.select {|b| b.bedrooms.eql?(bedroom.eql?("studio") ? "0" : bedroom) } : [] unless params[:bedrooms].eql?("any") or params[:bedrooms].blank?
+    floorplans_to_be_sorted = params[:bedrooms].eql?("any") ? floorplans : filtered_floorplans 
     sorting_param = params[:sort_by].present? ? params[:sort_by] : "default" 
     sorted_floorplans = floorplans_to_be_sorted.present? ? sort_floorplans(floorplans_to_be_sorted,sorting_param).uniq : []     
     @floorplans = Kaminari.paginate_array(sorted_floorplans).page(params[:page]).per(params[:per_page])

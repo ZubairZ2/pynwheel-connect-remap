@@ -9,7 +9,7 @@ class FloorplanUnitsService < BaseService
     units.each do |u|
       floorplans << u.floorplan
     end
-    floorplans
+    floorplans.compact
   end
 
 end
