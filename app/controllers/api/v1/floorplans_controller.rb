@@ -1,9 +1,9 @@
 class Api::V1::FloorplansController < ActionController::Base
   include ApplicationHelper
   before_action :authorize_access, only: [:index, :floorplan_units]
+  before_action :set_community, only: [:index, :floorplan_units]
 
   def index
-    @community = Community.find params[:community_id]
     floorplans = FloorplanUnitsService.new(@community).get_floorplans
     bedrooms = params[:bedrooms].present? ? params[:bedrooms] : "any"
     filtered_floorplans = floorplans.present? ? floorplans.select {|b| bedrooms.split(',').include?(b.bedrooms) } : [] unless bedrooms.eql?("any") or bedrooms.blank?
@@ -13,7 +13,14 @@ class Api::V1::FloorplansController < ActionController::Base
     @floorplans = Kaminari.paginate_array(sorted_floorplans).page(params[:page]).per(params[:per_page])
   end
 
+  def floorplan_units
+  end
+
   private
+
+  def set_community
+    @community = Community.find params[:community_id]
+  end
 
   def sort_floorplans(floorplans_to_be_sorted,sorting_param)
     case sorting_param

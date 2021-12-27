@@ -619,6 +619,7 @@ Rails.application.routes.draw do
         end
       end
       resources :floorplans, only: :index
+      get '/floorplans/:floorplan_id/units', to: 'floorplans#floorplan_units'
       post :save_shared_tour, to: 'tours#save_shared_tour'
       post :checkpoint_verification_response, to: 'tours#checkpoint_verification_response'
       get '/get_floorplan_units', to: 'tours#floorplan_units'
