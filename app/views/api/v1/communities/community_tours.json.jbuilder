@@ -21,7 +21,8 @@ json.tours @tours do |tour|
     ind = 1
     json.unit_bedrooms @floorplans do |floorplan|
       json.id ind
-      json.value (floorplan.bedrooms.present? ? (floorplan.bedrooms.to_i == 0 ? "Studio" : floorplan.bedrooms.to_i) : "")
+      json.title (floorplan.bedrooms.present? ? (floorplan.bedrooms.to_i == 0 ? "Studio" : floorplan.bedrooms.to_i) : "")
+      json.value floorplan.bedrooms.present? ? floorplan.bedrooms.to_i : ""
       json.is_selected false
       ind = ind + 1
     end

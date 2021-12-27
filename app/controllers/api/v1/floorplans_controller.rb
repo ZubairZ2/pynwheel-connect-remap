@@ -5,15 +5,24 @@ class Api::V1::FloorplansController < ActionController::Base
 
   def index
     floorplans = FloorplanUnitsService.new(@community).get_floorplans
-    bedrooms = params[:bedrooms].present? ? params[:bedrooms] : "any"
-    filtered_floorplans = floorplans.present? ? floorplans.select {|b| bedrooms.split(',').include?(b.bedrooms) } : [] unless bedrooms.eql?("any") or bedrooms.blank?
-    floorplans_to_be_sorted = params[:bedrooms].eql?("any") ? floorplans : filtered_floorplans 
+    bedrooms = params[:bedrooms].present? ? params[:bedrooms].split(',') : "any"
+    requested_bedrooms = bedrooms.map {|x| x.downcase.eql?("studio") ? "0" : x}
+    any_option = bedrooms.map {|b| b.downcase.eql?("any")}
+    filtered_floorplans = floorplans.present? ? floorplans.select {|b| requested_bedrooms.include?(b.bedrooms) } : [] unless any_option.include?(true) or bedrooms.blank?
+    floorplans_to_be_sorted = any_option.include?(true) ? floorplans : filtered_floorplans 
     sorting_param = params[:sort_by].present? ? params[:sort_by] : "default" 
     sorted_floorplans = floorplans_to_be_sorted.present? ? sort_floorplans(floorplans_to_be_sorted,sorting_param).uniq : []
     @floorplans = Kaminari.paginate_array(sorted_floorplans).page(params[:page]).per(params[:per_page])
   end
 
   def floorplan_units
+    floorplan_id = params[:floorplan_id]
+    if floorplan_id.present?
+      @units = FloorplanUnitsService.new(@community).get_floorplan_units(floorplan_id)      
+    else
+      success = false
+      message = 'Please provide floorplan id'
+    end
   end
 
   private
