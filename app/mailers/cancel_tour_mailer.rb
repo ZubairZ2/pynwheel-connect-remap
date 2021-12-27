@@ -11,7 +11,9 @@ class CancelTourMailer < ApplicationMailer
     email_bcc = @community.email
     email_from = INFO_EMAIL
 
-    mail(to: email_bcc, from: email_from, subject: "A #{@tour_type} has been cancelled!")
+    if email_bcc.present? && email_from.present? && @tour_type.present?
+      mail(to: email_bcc, from: email_from, subject: "A #{@tour_type} has been cancelled!")
+    end
   end
 
   private
