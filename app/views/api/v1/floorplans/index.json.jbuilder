@@ -21,3 +21,12 @@ json.floorplans @floorplans do |floorplan|
 	floorplan.secondary_image.present? ? (floorplan_images << {imageURL: floorplan.secondary_image.url}) : ""
 	json.floorplan_images floorplan_images
 end
+json.pagination do
+  current, total, per_page = @floorplans.current_page, @floorplans.total_pages, @floorplans.limit_value
+  json.current_page current
+  json.previous (current > 1 ? (current - 1) : nil)
+  json.next (current == total ? nil : (current + 1))
+  json.per_page per_page
+  json.pages total
+  json.total_records @floorplans.total_count
+end
