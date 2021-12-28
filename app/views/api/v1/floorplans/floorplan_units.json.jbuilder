@@ -2,60 +2,30 @@ json.success true
 json.message "success"
 json.data @units do |u|
   json.id u.id
-  if @community.credential.present? and @community.credential.apply_now == "separate_link"
-    json.availability_url @community.credential.separate_link
-  elsif u.provider == "resman"
-    begin
-      json.availability_url u.availability_url
-    rescue Exception => e
-      json.availability_url ""
-    end
-  elsif u.provider == "psi"
-    json.availability_url u.availability_url_deep_linking.present? ? u.availability_url_deep_linking : u.availability_url
-  else
-    json.availability_url u.availability_url.present? ? u.availability_url : ""
-  end
-  if @community.credential.present? and @community.credential.apply_now.to_s == "separate_link"
-    json.availability_url @community.credential.separate_link
-  end
+  
   json.community_id u.community_id
   json.provider u.provider
   json.property_id u.property_id
   json.provider_unit_id u.provider_unit_id
   json.unit_type u.unit_type
-  json.marketing_name u.building.present? ? u.building + '-'+ u.marketing_name : u.marketing_name rescue u.marketing_name
   json.floorplan_id u.floorplan_id
-  json.market_rent u.market_rent
-  json.effective_rent u.effective_rent
-  json.rent u.effective_rent
-  json.availability u.availability
+  json.floorplan_name u&.floorplan&.name
+  json.bedrooms u.floorplan.bedrooms rescue 0
+  json.bathrooms u.floorplan.bathrooms rescue 0
+  json.square_feet u.square_feet
+  json.x_plot u.x_plot
+  json.y_plot u.y_plot
+  json.unit_name u.name
+  json.floor u.floor
   begin
     json.available_date u.available_date < Date.today + 1 ? "Now" : u.available_date.strftime("%m").to_i.to_s + "/" + u.available_date.strftime("%d").to_i.to_s
-
   rescue => ex
     json.available_date "N/A"
   end
   json.building u.building
-  json.created_at u.created_at
-  json.updated_at u.updated_at
-  json.x_plot u.x_plot
-  json.y_plot u.y_plot
-  json.floorplate_id u.floorplate_id
-  json.floor u.floor
-  json.standard_image_url u.standard_image_url
-  json.updated_by_admin u.updated_by_admin
   json.available u.available
-  json.sold u.sold
-  json.sitemap_image_url @sitemap_image_url
-  json.manually_updated u.manually_updated
-  json.manual_override u.manual_override
-  json.square_feet u.square_feet
-  json.description u.description
-  json.bedrooms u.floorplan.bedrooms rescue 0
-  json.bathrooms u.floorplan.bathrooms rescue 0
-  json.image (u.image.present? ? u.image.url : u.floorplan.image.url) rescue ""
-  json.update_apply ((u.provider == "resman" || u.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
-  
+  json.availability u.availability
+  json.effective_rent u.effective_rent
   lease_pricing = []
   begin
     if u.lease_pricing.present?
@@ -79,4 +49,5 @@ json.data @units do |u|
   rescue => ex
   end
   json.lease_pricing lease_pricing
+  json.description u.description
 end

@@ -17,8 +17,8 @@ json.floorplans @floorplans do |floorplan|
   end
 	json.thumbnail_image floorplan.image.present? ? floorplan.image.url : ""
 	floorplan_images = []
-	floorplan.image.present? ? (floorplan_images << {imageURL: floorplan.image.url}) : ""
-	floorplan.secondary_image.present? ? (floorplan_images << {imageURL: floorplan.secondary_image.url}) : ""
+	floorplan.image.present? ? (floorplan_images << {id: 1, url: floorplan.image.url}) : ""
+	floorplan.secondary_image.present? ? (floorplan_images << {id: 2, url: floorplan.secondary_image.url}) : ""
 	json.floorplan_images floorplan_images
 end
 json.pagination do
