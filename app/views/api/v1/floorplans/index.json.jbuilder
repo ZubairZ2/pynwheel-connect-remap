@@ -10,7 +10,7 @@ json.floorplans @floorplans do |floorplan|
     availability = available_units.pluck(:available_date).compact.max
     json.availability availability <= Date.today ? "Now" : availability
     json.up_to "$"+available_units.pluck(:min_effective_rent).compact.min.to_i.to_s+"/month"
-    available_buildings = available_units.pluck(:building).reject { |c| c.empty? }
+    available_buildings = available_units.pluck(:building).compact.reject { |c| c.empty? }
     available_floors = available_units.pluck(:floor).compact.uniq.sort
     json.buildings available_buildings.present? ? available_buildings.uniq.join(', ') : "" 
     json.floors available_floors.present? ? available_floors.join(', ') : ""

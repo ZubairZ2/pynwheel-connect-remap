@@ -4,7 +4,7 @@ class Api::V1::FloorplansController < ActionController::Base
   before_action :set_community, only: [:index, :floorplan_units]
 
   def index
-    floorplans = FloorplanUnitsService.new(@community).get_floorplans
+    floorplans = floorplan_units_service(@community).get_floorplans
     bedrooms = params[:bedrooms].present? ? params[:bedrooms].split(',') : "any"
     requested_bedrooms = bedrooms.map {|x| x.downcase.eql?("studio") ? "0" : x}
     any_option = bedrooms.map {|b| b.downcase.eql?("any")}
@@ -18,7 +18,9 @@ class Api::V1::FloorplansController < ActionController::Base
   def floorplan_units
     floorplan_id = params[:floorplan_id]
     if floorplan_id.present?
-      @units = FloorplanUnitsService.new(@community).get_floorplan_units(floorplan_id)      
+      @floorplan = Floorplan.find_by_id(floorplan_id)
+      @units = floorplan_units_service(@community).get_floorplan_units(@floorplan)
+      @floorplates = floorplan_units_service(@community).get_floorplates
     else
       success = false
       message = 'Please provide floorplan id'
@@ -59,4 +61,7 @@ class Api::V1::FloorplansController < ActionController::Base
     end
   end
 
+  def floorplan_units_service(community)
+    FloorplanUnitsService.new(community)
+  end
 end
