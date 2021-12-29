@@ -3,7 +3,6 @@ namespace :delayed_email_notifications do
 	default_url_options[:host] = 'https://pynwheelconnect.com' 
 
 	desc "This delayed email task is called every day by the Heroku scheduler add-on"
-
 	task :one_day_before => :environment do
 	  schedule_tours = SchedualTour.scheduled_tours
 	  coming_from = "on_day_before"
@@ -14,8 +13,9 @@ namespace :delayed_email_notifications do
 	task :one_hour_before => :environment do
 		schedule_tours = SchedualTour.scheduled_tours
 		coming_from = "on_hour_before"
-		get_follow_up_tours(schedule_tours,coming_from)
+		get_follow_up_tours(schedule_tours, coming_from)
 	end
+
 	desc "This delayed email task is called every 10 mins by the Heroku scheduler add-on"
 	task :abandoned_tour_email => :environment do
 	  	
@@ -23,6 +23,7 @@ namespace :delayed_email_notifications do
 	 	abandoned_tour tour_histories
 
 	end
+
 	def get_follow_up_tours(schedule_tours,coming_from)
 		schedule_tours.each do |schedule_tour|
 			community = schedule_tour.community
@@ -35,6 +36,7 @@ namespace :delayed_email_notifications do
 			one_day_before_emails schedule_tour if coming_from == "on_day_before" and tour_date > current_day and !daily_email_sent and tour_date < (current_day + 2)
 		end
 	end
+
 	def abandoned_tour tour_histories
 		tour_histories.each do |th|
 			
@@ -63,6 +65,7 @@ namespace :delayed_email_notifications do
 		end
 		
 	end
+
 	def send_email_sms_or_both mail_content, community
 		
 	  	if community.alert_contact == "email"
@@ -87,13 +90,8 @@ namespace :delayed_email_notifications do
 				end
 	  	end
 	end
-	def send_sms message_body
-	    # begin
-	    #   DelayedSchedulerTextJob.perform_async(message_body, community.phone) if community.phone.present?
-	    # rescue
-	    # end
- 	end
-  	def send_email_sms_or_both_to_touruser thank_you_msg, community, th
+
+  def send_email_sms_or_both_to_touruser thank_you_msg, community, th
 
 		if community.alert_contact == "email"
 			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
@@ -103,7 +101,8 @@ namespace :delayed_email_notifications do
 			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
 			send_sms_tour_user thank_you_msg ,th
 		end
-		end
+	end
+
 	def send_email_to_user_without_humanize subj, body, th=nil, comm_email=nil,community
 		begin
 			emails = comm_email.gsub(" ","").split(',')
@@ -112,6 +111,7 @@ namespace :delayed_email_notifications do
 
 		end
 	end
+
 	def send_email subj, body, community
 		begin
 			emails = community.email.gsub(" ","").split(',')
@@ -130,13 +130,15 @@ namespace :delayed_email_notifications do
 
 		end
 	end
-  	def send_email_tour_user subj, body, th, comm_email, community
+
+  def send_email_tour_user subj, body, th, comm_email, community
 		begin
 			emails = comm_email.gsub(" ","").split(',')
 			NotificationMailer.tour_history_mail(subj.humanize, body, th.tour_user.email,emails[0],community,false,nil).deliver 
 		rescue
 		end
 	end
+
 	def send_sms_tour_user message_body,th
 		begin
 			DelayedSchedulerTextJob.perform_async(message_body, th.tour_user.phone_number) if th.tour_user.phone_number.present? && th.tour_user.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
