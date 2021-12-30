@@ -8,14 +8,23 @@ json.floorplan do
   json.square_feet @floorplan.square_feet
 end
 json.floorplates @floorplates do |floorplate|
-  json.id floorplate.id
   json.name floorplate.name
-  json.floor floorplate.number
+  json.floor_number floorplate.number
   json.image floorplate.image
   json.height floorplate.height
   json.width floorplate.width
   json.floor_range floorplate.range
   json.floor_name floorplate.floor_name
+  floorplate_range = floorplate.range.gsub('-', ',').split(',')
+  units = @units.where('floor >= ? AND floor <= ?', floorplate_range.first, floorplate_range.last)
+  # units = @units.where(floorplate_id: floorplate.id)
+  json.floorplate_units units do |u|
+    json.unit_name u.name
+    json.unit_type u.unit_type
+    json.x_plot u.x_plot
+    json.y_plot u.y_plot
+    json.floor u.floor
+  end
 end
 json.units @units do |u|
   json.id u.id
