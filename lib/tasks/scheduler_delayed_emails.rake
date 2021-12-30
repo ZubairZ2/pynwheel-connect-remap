@@ -187,9 +187,9 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 		return if schedual_tour.blank?
 
 		if (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(schedual_tour.user_time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y"))) == 0
-
+			time_zone = schedual_tour.community.get_time_zone()
 			tour_time = Time.parse(schedual_tour.tour_time.strftime("%k:%M"))
-			server_time = Time.parse(Time.current.in_time_zone(schedual_tour.user_time_zone).strftime("%k:%M"))
+			server_time = Time.parse(Time.current.in_time_zone(time_zone).strftime("%k:%M"))
 
 			time_left_to_email = (tour_time - server_time)/1.minute
 			
