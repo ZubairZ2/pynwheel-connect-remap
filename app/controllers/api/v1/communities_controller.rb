@@ -514,13 +514,14 @@ class Api::V1::CommunitiesController < ActionController::Base
           should_range_be_checked = true
           @tour_user.tour_type = "virtual_tour"                                           # initilize by virtual tour
           @location_received = false
-          @within_one_km = false
 
           if params[:latitude].present? and params[:latitude].present?
             @tour_user.latitude = params[:latitude]
             @tour_user.longitude = params[:longitude]
             @location_received = true
           end
+
+          @within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1)
 
           timezone = @community.get_time_zone()
           current_time = current_community_time(@community, params)
@@ -566,6 +567,7 @@ class Api::V1::CommunitiesController < ActionController::Base
               end
             end
           end
+
           if (@within_one_km && ( @tour_user.tour_type == "self_tour"))
             tour_user_arrival_email(@tour_user, @community)
             @tour_user.arrival_email_sent = true
@@ -1305,10 +1307,8 @@ class Api::V1::CommunitiesController < ActionController::Base
   private
 
   def send_user_arrival_email tour_user, community
-    unless tour_user&.latitude.present? && tour_user&.longitude.present?
-      unless tour_user&.tour_type === "virtual_tour"
-        tour_user_arrival_email(tour_user, community)
-      end
+    unless (tour_user&.tour_type === "virtual_tour" || tour_user.arrival_email_sent)
+      tour_user_arrival_email(tour_user, community)
     end
   end
 
