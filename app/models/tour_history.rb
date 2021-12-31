@@ -77,7 +77,7 @@ class TourHistory < ApplicationRecord
         else
           @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         end
-
+        
         tour_user_remotelock_data(community)
         send_email_sms_or_both(@mail_content, community)
         send_email_sms_or_both(@complete_tour_content, community)
@@ -295,7 +295,7 @@ class TourHistory < ApplicationRecord
   def send_email_tour_user subj, body, community_email, community
     begin
       emails = community_email.gsub(" ","").split(',')
-      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0],community,true,nil).deliver
+      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0],community,false,nil).deliver
     rescue
     end
   end
