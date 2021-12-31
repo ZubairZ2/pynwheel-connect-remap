@@ -44,7 +44,7 @@ namespace :delayed_email_notifications do
 		
 		time_diff = time_difference(tour_date_time, current_date_time)
 		# if coming_from == "on_hour_before" and tour_date >= (current_day-1) and !hourly_email_sent and tour_date < (current_day+1)
-		if ( time_diff >= 0 && time_diff =< 60)
+		if ( time_diff >= 0 && time_diff <= 60)
 			one_hour_before_emails schedule_tour if !schedule_tour.hourly_email_sent
 		end
 		
