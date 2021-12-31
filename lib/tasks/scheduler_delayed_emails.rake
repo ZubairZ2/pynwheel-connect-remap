@@ -92,14 +92,12 @@ namespace :delayed_email_notifications do
 				send_email mail_content[0], mail_content[1], community
 			end
 	  	elsif community.alert_contact == "phone"
-	  		send_sms mail_content[1]
 				if mail_content[0] == "#{community.name} has been visited"
 					send_email_without_humanize mail_content[0], mail_content[1], community
 				else
 					send_email mail_content[0], mail_content[1], community
 				end
 	  	else
-	  		send_sms mail_content[1]
 				if mail_content[0] == "#{community.name} has been visited"
 					send_email_without_humanize mail_content[0], mail_content[1], community
 				else
