@@ -33,22 +33,23 @@ namespace :delayed_email_notifications do
 			daily_email_sent = schedule_tour.daily_email_sent
 			hourly_email_sent = schedule_tour.hourly_email_sent
 
-			send_on_hour_email(schedule_tour, timezone)
+			# send_on_hour_email(schedule_tour, timezone)
+			one_hour_before_emails schedule_tour if !schedule_tour.hourly_email_sent
 			one_day_before_emails schedule_tour if coming_from == "on_day_before" and tour_date > current_day and !daily_email_sent and tour_date < (current_day + 2)
 		end
 	end
 
-	def send_on_hour_email schedule_tour, timezone
-		current_date_time = Time.now.in_time_zone(timezone)
-		tour_date_time = (schedule_tour.tour_date.to_s + " " + schedule_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone)
+	# def send_on_hour_email schedule_tour, timezone
+	# 	current_date_time = Time.now.in_time_zone(timezone)
+	# 	tour_date_time = (schedule_tour.tour_date.to_s + " " + schedule_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone)
 		
-		time_diff = time_difference(tour_date_time, current_date_time)
-		# if coming_from == "on_hour_before" and tour_date >= (current_day-1) and !hourly_email_sent and tour_date < (current_day+1)
-		if ( time_diff >= 0 && time_diff <= 60)
-			one_hour_before_emails schedule_tour if !schedule_tour.hourly_email_sent
-		end
+	# 	time_diff = time_difference(tour_date_time, current_date_time)
+	# 	# if coming_from == "on_hour_before" and tour_date >= (current_day-1) and !hourly_email_sent and tour_date < (current_day+1)
+	# 	if ( time_diff > 0 && time_diff <= 60)
+	# 		one_hour_before_emails schedule_tour if !schedule_tour.hourly_email_sent
+	# 	end
 		
-	end
+	# end
 
 	def time_difference tour_time, current_time
     ((tour_time - current_time) / 1.minute).round
@@ -208,7 +209,7 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 
 			time_left_to_email = (tour_time - server_time)/1.minute
 			
-			time_left_to_email = time_left_to_email * -1 if time_left_to_email < 0
+			# time_left_to_email = time_left_to_email * -1 if time_left_to_email < 0
 			if time_left_to_email <= 60 && time_left_to_email > 0
 				tu = schedual_tour.tour_user
 				community = schedual_tour.community

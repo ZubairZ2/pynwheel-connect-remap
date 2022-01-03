@@ -196,9 +196,11 @@ class Community < ApplicationRecord
   end
 
   def get_time_zone default_time_zone = "UTC"
-    return default_time_zone unless (self.latitude.present? && self.longitude.present?)
-
-    Timezone.lookup(self.latitude, self.longitude).name rescue default_time_zone
+    if self.latitude.present? && self.longitude.present?
+      Timezone.lookup(self.latitude, self.longitude).name rescue default_time_zone
+    else
+      default_time_zone
+    end
   end
 
   def has_temporary_images?
