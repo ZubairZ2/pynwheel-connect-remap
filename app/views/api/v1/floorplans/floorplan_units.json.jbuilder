@@ -23,6 +23,7 @@ json.floorplates @floorplates do |floorplate|
     units << floorplate.units.available_units.where(floor: f, floorplan_id: @floorplan.provider_floorplan_id, community_id: @community.id)
   end
   json.floorplate_units units.flatten do |u|
+    json.id u.id
     json.unit_name u.name
     json.unit_type u.unit_type
     json.x_plot u.x_plot

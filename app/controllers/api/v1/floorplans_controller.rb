@@ -21,9 +21,6 @@ class Api::V1::FloorplansController < ActionController::Base
       @floorplan = Floorplan.find_by_id(floorplan_id)
       @units = floorplan_units_service(@community).get_floorplan_units(@floorplan)
       @floors = floorplan_units_service(@community).fetch_floors()
-      @floors.each do |floor|
-        @floorplate_units = @units.where(floor: floor)
-      end
       @floorplates = floorplan_units_service(@community).get_floorplates
     else
       success = false
