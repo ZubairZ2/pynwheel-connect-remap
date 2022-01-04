@@ -35,6 +35,7 @@ class Floorplate < ApplicationRecord
   has_many :elevators, dependent: :destroy
   has_many :hallways, as: :parent
   has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
+  has_one :status, as: :statusable
 
   validates_uniqueness_of :name, scope: :community_id
   validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}
