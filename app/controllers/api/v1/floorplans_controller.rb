@@ -20,10 +20,10 @@ class Api::V1::FloorplansController < ActionController::Base
     if floorplan_id.present?
       @floorplan = Floorplan.find_by_id(floorplan_id)
       @units = floorplan_units_service(@community).get_floorplan_units(@floorplan)
-      # @floors = floorplan_service.fetch_floors()
-      # @floors.each do |floor|
-      #   @floorplate_units = @units.where(floor: floor)
-      # end
+      @floors = floorplan_units_service(@community).fetch_floors()
+      @floors.each do |floor|
+        @floorplate_units = @units.where(floor: floor)
+      end
       @floorplates = floorplan_units_service(@community).get_floorplates
     else
       success = false

@@ -4,7 +4,7 @@ class FloorplanUnitsService < BaseService
   end
 
   def get_floorplans
-    units = @community.units.where(available: true)
+    units = @community.units.available_units
     floorplans = []
     units.each do |u|
       floorplans << u.floorplan
@@ -13,7 +13,7 @@ class FloorplanUnitsService < BaseService
   end
 
   def get_floorplan_units(floorplan)
-    Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', floorplan.provider_floorplan_id,@community.id,true) if floorplan.present?
+    Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', floorplan.provider_floorplan_id,@community.id,true).available_units if floorplan.present?
   end
 
   def get_floorplates
