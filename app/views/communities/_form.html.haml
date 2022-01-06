@@ -86,6 +86,24 @@
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
     = f.text_field :email, :class=>"form-control", :placeholder=>"Email",:maxlength=>"200", :style => "background: #f6f6f6; color: black;"
 
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Property Manager Name
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :property_manager_name, :class=>"form-control", :placeholder=>"Property Manager Name"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Property Manager Phone
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :property_manager_phone, :class=>"form-control", :placeholder=>"Property Manager Phone",:maxlength=>"15"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Property Manager Email
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    = f.text_field :property_manager_email, :class=>"form-control", :placeholder=>"Property Manager Email",:maxlength=>"200", :style => "background: #f6f6f6; color: black;"
+
 
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
