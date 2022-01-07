@@ -3,7 +3,6 @@ namespace :delayed_email_notifications do
 	default_url_options[:host] = 'https://pynwheelconnect.com' 
 
 	desc "This delayed email task is called every day by the Heroku scheduler add-on"
-
 	task :one_day_before => :environment do
 	  schedule_tours = SchedualTour.scheduled_tours
 	  coming_from = "on_day_before"
@@ -14,8 +13,9 @@ namespace :delayed_email_notifications do
 	task :one_hour_before => :environment do
 		schedule_tours = SchedualTour.scheduled_tours
 		coming_from = "on_hour_before"
-		get_follow_up_tours(schedule_tours,coming_from)
+		get_follow_up_tours(schedule_tours, coming_from)
 	end
+
 	desc "This delayed email task is called every 10 mins by the Heroku scheduler add-on"
 	task :abandoned_tour_email => :environment do
 	  	
@@ -23,6 +23,7 @@ namespace :delayed_email_notifications do
 	 	abandoned_tour tour_histories
 
 	end
+
 	def get_follow_up_tours(schedule_tours,coming_from)
 		schedule_tours.each do |schedule_tour|
 			community = schedule_tour.community
@@ -31,10 +32,29 @@ namespace :delayed_email_notifications do
 			tour_date = schedule_tour&.tour_date if schedule_tour.tour_date.present?
 			daily_email_sent = schedule_tour.daily_email_sent
 			hourly_email_sent = schedule_tour.hourly_email_sent
-			one_hour_before_emails schedule_tour if coming_from == "on_hour_before" and tour_date >= (current_day-1) and !hourly_email_sent and tour_date < (current_day+1)
+
+			# send_on_hour_email(schedule_tour, timezone)
+			one_hour_before_emails schedule_tour if !schedule_tour.hourly_email_sent
 			one_day_before_emails schedule_tour if coming_from == "on_day_before" and tour_date > current_day and !daily_email_sent and tour_date < (current_day + 2)
 		end
 	end
+
+	# def send_on_hour_email schedule_tour, timezone
+	# 	current_date_time = Time.now.in_time_zone(timezone)
+	# 	tour_date_time = (schedule_tour.tour_date.to_s + " " + schedule_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone)
+		
+	# 	time_diff = time_difference(tour_date_time, current_date_time)
+	# 	# if coming_from == "on_hour_before" and tour_date >= (current_day-1) and !hourly_email_sent and tour_date < (current_day+1)
+	# 	if ( time_diff > 0 && time_diff <= 60)
+	# 		one_hour_before_emails schedule_tour if !schedule_tour.hourly_email_sent
+	# 	end
+		
+	# end
+
+	def time_difference tour_time, current_time
+    ((tour_time - current_time) / 1.minute).round
+  end
+
 	def abandoned_tour tour_histories
 		tour_histories.each do |th|
 			
@@ -63,6 +83,7 @@ namespace :delayed_email_notifications do
 		end
 		
 	end
+
 	def send_email_sms_or_both mail_content, community
 		
 	  	if community.alert_contact == "email"
@@ -72,14 +93,12 @@ namespace :delayed_email_notifications do
 				send_email mail_content[0], mail_content[1], community
 			end
 	  	elsif community.alert_contact == "phone"
-	  		send_sms mail_content[1]
 				if mail_content[0] == "#{community.name} has been visited"
 					send_email_without_humanize mail_content[0], mail_content[1], community
 				else
 					send_email mail_content[0], mail_content[1], community
 				end
 	  	else
-	  		send_sms mail_content[1]
 				if mail_content[0] == "#{community.name} has been visited"
 					send_email_without_humanize mail_content[0], mail_content[1], community
 				else
@@ -87,13 +106,8 @@ namespace :delayed_email_notifications do
 				end
 	  	end
 	end
-	def send_sms message_body
-	    # begin
-	    #   DelayedSchedulerTextJob.perform_async(message_body, community.phone) if community.phone.present?
-	    # rescue
-	    # end
- 	end
-  	def send_email_sms_or_both_to_touruser thank_you_msg, community, th
+
+  def send_email_sms_or_both_to_touruser thank_you_msg, community, th
 
 		if community.alert_contact == "email"
 			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
@@ -103,7 +117,8 @@ namespace :delayed_email_notifications do
 			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}","<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
 			send_sms_tour_user thank_you_msg ,th
 		end
-		end
+	end
+
 	def send_email_to_user_without_humanize subj, body, th=nil, comm_email=nil,community
 		begin
 			emails = comm_email.gsub(" ","").split(',')
@@ -112,6 +127,7 @@ namespace :delayed_email_notifications do
 
 		end
 	end
+
 	def send_email subj, body, community
 		begin
 			emails = community.email.gsub(" ","").split(',')
@@ -130,13 +146,15 @@ namespace :delayed_email_notifications do
 
 		end
 	end
-  	def send_email_tour_user subj, body, th, comm_email, community
+
+  def send_email_tour_user subj, body, th, comm_email, community
 		begin
 			emails = comm_email.gsub(" ","").split(',')
 			NotificationMailer.tour_history_mail(subj.humanize, body, th.tour_user.email,emails[0],community,false,nil).deliver 
 		rescue
 		end
 	end
+
 	def send_sms_tour_user message_body,th
 		begin
 			DelayedSchedulerTextJob.perform_async(message_body, th.tour_user.phone_number) if th.tour_user.phone_number.present? && th.tour_user.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
@@ -185,13 +203,13 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 		return if schedual_tour.blank?
 
 		if (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(schedual_tour.user_time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y"))) == 0
-
+			time_zone = schedual_tour.community.get_time_zone()
 			tour_time = Time.parse(schedual_tour.tour_time.strftime("%k:%M"))
-			server_time = Time.parse(Time.current.in_time_zone(schedual_tour.user_time_zone).strftime("%k:%M"))
+			server_time = Time.parse(Time.current.in_time_zone(time_zone).strftime("%k:%M"))
 
 			time_left_to_email = (tour_time - server_time)/1.minute
 			
-			time_left_to_email = time_left_to_email * -1 if time_left_to_email < 0
+			# time_left_to_email = time_left_to_email * -1 if time_left_to_email < 0
 			if time_left_to_email <= 60 && time_left_to_email > 0
 				tu = schedual_tour.tour_user
 				community = schedual_tour.community

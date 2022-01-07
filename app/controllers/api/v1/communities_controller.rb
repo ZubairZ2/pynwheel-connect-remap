@@ -187,6 +187,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @tour_user.lock_access_time = Time.now.utc
       @tour_user.save
       @tour_type = params[:tour_status] rescue @tour_user.tour_type
+      send_user_arrival_email(@tour_user, @community)
       restrict_property_access_with_code(@community,@tour_user,@tour_type)
       time_zone = @community.get_time_zone()
       if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.tour.visual_id_verification #TODO:: change to 1 month after testing
@@ -513,13 +514,14 @@ class Api::V1::CommunitiesController < ActionController::Base
           should_range_be_checked = true
           @tour_user.tour_type = "virtual_tour"                                           # initilize by virtual tour
           @location_received = false
-          @within_one_km = false
 
           if params[:latitude].present? and params[:latitude].present?
             @tour_user.latitude = params[:latitude]
             @tour_user.longitude = params[:longitude]
             @location_received = true
           end
+
+          @within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1)
 
           timezone = @community.get_time_zone()
           current_time = current_community_time(@community, params)
@@ -565,6 +567,7 @@ class Api::V1::CommunitiesController < ActionController::Base
               end
             end
           end
+
           if (@within_one_km && ( @tour_user.tour_type == "self_tour"))
             tour_user_arrival_email(@tour_user, @community)
             @tour_user.arrival_email_sent = true
@@ -579,18 +582,13 @@ class Api::V1::CommunitiesController < ActionController::Base
       end
     end
   end
+  
   def charge_for_id_verfication(tour_user, amount)
     if tour_user.strip_customer_id.present?
       charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
     end
   end
-  def tour_user_arrival_email(tour_user, community)
-    emails = community.email.gsub(" ","").split(',')
-    schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
-    emails.each do |email|
-      NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.titleize} has arrived at #{community.name}",email,INFO_EMAIL,community,false,schedule_tour).deliver
-    end
-  end
+
   def check_lock_access
     puts params
     access = grant_access (decoded(params[:token])) rescue false
@@ -1307,6 +1305,12 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   private
+
+  def send_user_arrival_email tour_user, community
+    unless (tour_user&.tour_type === "virtual_tour" || tour_user.arrival_email_sent)
+      tour_user_arrival_email(tour_user, community)
+    end
+  end
 
   def set_community
     @community = Community.find(params[:id])

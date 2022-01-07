@@ -196,9 +196,11 @@ class Community < ApplicationRecord
   end
 
   def get_time_zone default_time_zone = "UTC"
-    return default_time_zone unless (self.latitude.present? && self.longitude.present?)
-
-    Timezone.lookup(self.latitude, self.longitude).name rescue default_time_zone
+    if self.latitude.present? && self.longitude.present?
+      Timezone.lookup(self.latitude, self.longitude).name rescue default_time_zone
+    else
+      default_time_zone
+    end
   end
 
   def has_temporary_images?
@@ -302,13 +304,7 @@ class Community < ApplicationRecord
       (false)
     end
   end
-  def use_yardi_as_lead?
-    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
-      (true)
-    else
-      (false)
-    end
-  end
+  
   def use_yardi_as_lead?
     if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
       (true)
@@ -510,18 +506,8 @@ class Community < ApplicationRecord
     SalesforceSendFeedbackJob.perform_async self, tour_user, tour_history
   end
 
-  def available_slots
-    available_slots = YardirentcafeMarketingApi.new(community_id: self.id)
-    available_slots.available_slots(self)
-  end
-  def yardi_schedule_tour(schedule_tour, tu, desired_move_in_date)
-    st = YardirentcafeMarketingApi.new(community_id: self.id)
-    st.schedule_tour(self,schedule_tour,tu,desired_move_in_date)
-  end
-  def yardi_cancel_tour(schedule_tour)
-    # byebug
-    st = YardirentcafeMarketingApi.new(community_id: self.id)
-    st.cancel_tour(self,schedule_tour)
+  def available_slots scheduled_tour
+    YardiRentCafeServices::MarketingApisService.new(scheduled_tour).available_slots
   end
 
   def credentials_are_present?
@@ -1095,9 +1081,9 @@ class Community < ApplicationRecord
     tour_type
   end
 
-  def fetch_tour_type_according_to_time_for_yardi(date_str, tour_time)
+  def fetch_tour_type_according_to_time_for_yardi(scheduled_tour, date_str, tour_time)
     tour_type = []
-    yardi_time_slots = self.available_slots
+    yardi_time_slots = self.available_slots(scheduled_tour)
     yardi_self_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
     yardi_guided_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
     if self&.tour&.tour_setting.present?

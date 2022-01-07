@@ -5,7 +5,6 @@ json.communities @communities do |community|
   if !(community.locked == true) && community.company.inactivate == false
     json.id community.id
     json.crm_provider community.community_crm_provider
-    # json.name community.name
     json.name (community.name.include?(CommunityConstants::DWELO_TAG) ? community.name.split(" ", 2)[1] : community.name) + (community.city.present? ? " - " + community.city : " - ")  + (community.state.present? ? + ", "  + community.state  : "")
     json.email community.email.present? ? community.email : "" 
     json.phone community.phone.present? ? community.phone : ""

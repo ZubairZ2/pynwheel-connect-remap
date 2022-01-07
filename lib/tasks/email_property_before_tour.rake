@@ -16,7 +16,7 @@ namespace :email_property_before_tour do
           
           unless scheduled_tour.community_inform_email
             name = (tour_user.first_name.present? and tour_user.last_name.present?) ? (tour_user.first_name.capitalize + " " + tour_user.last_name.capitalize) :  tour_user.name.titleize
-            text = name + " has a scheduled tour at " + scheduled_tour.tour_time.strftime("%l:%M %P") + "on #{today_date}"
+            text = name + " has a scheduled tour at " + scheduled_tour.tour_time.strftime("%l:%M %P") + " on #{today_date}"
             tours_data << text
             mark_tour_user(scheduled_tour)
           end

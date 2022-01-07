@@ -31,7 +31,7 @@
   height: 330px !important;
 }
 .row .pie_width .chartjs-render-monitor, .row .pie_width .chartjs-size-monitor{
-  width: 330px !important;
+  /*width: 330px !important;*/
   margin-left: 35px;
 }
 .align-right{
@@ -91,4 +91,7 @@
 }
 .product_tabs .tab-pane.fade.in.active{
   display: block;
+}
+.date_range_filter{
+  padding-left: 15px !important;
 }

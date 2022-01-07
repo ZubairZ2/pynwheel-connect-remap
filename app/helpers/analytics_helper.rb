@@ -44,7 +44,15 @@ module AnalyticsHelper
         }
       ]
     }
-    options = { legend: {display: false} }
+    options = { legend: {display: false}, responsive: true, maintainAspectRatio: false, scales: {
+        xAxes: charts_styling,
+        yAxes: [{
+            ticks: {
+                beginAtZero: true,
+                precision: 0
+            }
+        }]
+    } }
     return labels, options
   end
 
@@ -61,7 +69,8 @@ module AnalyticsHelper
         }
       ]
     }
-    options = { legend: {display: false}, scales: {
+    options = { legend: {display: false}, responsive: true, maintainAspectRatio: false, scales: {
+        xAxes: charts_styling,
         yAxes: [{
             ticks: {
                 beginAtZero: true,
@@ -80,12 +89,12 @@ module AnalyticsHelper
             label: label,
             backgroundColor: background_color,
             borderColor: border_color,
-            borderWidth: 4,
+            borderWidth: 3,
             data: session_each_day_counts
         }
       ]
     }
-    options = { legend: {display: false}, scales: {
+    options = { legend: {display: false}, responsive: true, maintainAspectRatio: false, scales: {
         yAxes: [{
             ticks: {
                 beginAtZero: true,
@@ -114,7 +123,7 @@ module AnalyticsHelper
         }
       ]
     }
-    options = { legend: {display: false}, title: { fontSize: 18, fontStyle: 'bold'} }
+    options = { legend: {display: false}, responsive: true, maintainAspectRatio: false, title: { fontSize: 18, fontStyle: 'bold'} }
     return labels, options
   end
 
@@ -130,7 +139,7 @@ module AnalyticsHelper
         }
       ]
     }
-    options = { legend: {display: false}, 
+    options = { legend: {display: false}, responsive: true, maintainAspectRatio: false, 
       scales: {
         xAxes: [{
             ticks: {
@@ -161,7 +170,8 @@ module AnalyticsHelper
         }
       ]
     }
-    options = { legend: {display: false}, scales: {
+    options = { legend: {display: false}, responsive: true, maintainAspectRatio: false, scales: {
+        xAxes: charts_styling,
         yAxes: [{
             ticks: {
                 beginAtZero: true,
@@ -249,4 +259,14 @@ module AnalyticsHelper
     return (Time.zone.parse(datetime.to_s).in_time_zone(community_time_zone).to_datetime)
   end
 
+  def charts_styling
+    styling_arr = []
+    if @days_count > 30
+      styling_arr = [{
+          barPercentage: 0.5,
+          barThickness: 10,
+        }]
+    end
+    styling_arr
+  end
 end
