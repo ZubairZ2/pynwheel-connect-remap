@@ -96,7 +96,7 @@ class CompaniesController < ApplicationController
     
     tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
     scheduled_records = SchedualTour.where(community_id: tour_histories.pluck(:community_id).compact.uniq).where.not(tour_user_id: nil).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
-    headers = %w{Property\ Id Property\ Name Visitor\ Name Visitor\ Email Visitor\ Phone Tour\ Status Tour \ Type Tour\ Month Tour\ Date Tour\ Time Region}
+    headers = %w{Property\ Id Property\ Name Visitor\ Name Visitor\ Email Visitor\ Phone Tour\ Status Tour\ Type Tour\ Month Tour\ Date Tour\ Time Region}
     csv_file = CSV.generate(headers: true) do |csv|
       csv << headers
       scheduled_records.each do |sr|
@@ -143,7 +143,7 @@ class CompaniesController < ApplicationController
 
   def fetch_tour_hitory_data_for_scheduled(scheduled_tour)
     obj = []
-    
+    # %w{Property\ Id Property\ Name Visitor\ Name Visitor\ Email Visitor\ Phone Tour\ Status Tour\Type Tour\ Month Tour\ Date Tour\ Time Region}
     obj << scheduled_tour.community_id #Community Id
     obj << Community.find(scheduled_tour.community_id).name #@communities[scheduled_tour.community_id] # Community Name
     obj << scheduled_tour.tour_user.name
