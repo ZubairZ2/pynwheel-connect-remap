@@ -12,7 +12,7 @@ class AnalyticsController < ApplicationController
     @metro_records = track_sessions.where(track_session_type: "metro").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @pesent_end_dattime_maps_records = @maps_records.where.not(end_datetime: nil)
     @pesent_end_dattime_metro_records = @metro_records.where.not(end_datetime: nil)
-    @self_tour_records = tour_histories.where.not(left: nil).where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
+    @self_tour_records = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
@@ -117,20 +117,22 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = records_start_date.count(uniq_start_date[i])
         records_start_date = records_start_date - [uniq_start_date[i]]
       end
+      visited_days_count = total_records.pluck(:arrived).map {|x| x.strftime("%d")}.uniq.count
+      binding.pry
       instance_variable_set("@track_session_count_#{for_device_type}", total_records.count)
-      instance_variable_set("@avg_track_session_#{for_device_type}", total_records.count / days_count)
+      instance_variable_set("@avg_track_session_#{for_device_type}", total_records.count / visited_days_count)
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
       session_each_day_data, session_each_day_options = make_bar_chart(session_each_day_labels, session_each_day_counts, "Total Sessions", "rgba(209, 255, 213, 0.5)", "rgba(209, 255, 213, 1)")
       instance_variable_set("@session_each_day_data_#{for_device_type}", session_each_day_data)
       instance_variable_set("@session_each_day_options_#{for_device_type}", session_each_day_options)
     end
-
     def collect_session_each_day_data_in_minutes(start_date, days_count, total_records, start_attr_name, end_attr_name, for_device_type)
       
       sessions_each_day_hash = return_empty_hash(days_count,start_date)
-      start_end_datetime_arr = total_records.pluck(start_attr_name, end_attr_name)
+      total_records_with_abondoned = total_records.pluck(end_attr_name)
 
+      start_end_datetime_arr = total_records_with_abondoned.include?(nil) ? total_records.pluck(start_attr_name, :updated_at) : total_records.pluck(start_attr_name, end_attr_name)
       records_start_date = total_records.pluck(start_attr_name).map(&:to_date)
       uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
