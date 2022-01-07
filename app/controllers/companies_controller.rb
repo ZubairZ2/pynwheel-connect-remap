@@ -75,7 +75,7 @@ class CompaniesController < ApplicationController
     @communities = fetch_communities_hash(params[:id])
     company = Company.find params[:id]
     tour_users = TourUser.includes(:tour_histories).where(tour_histories: {community_id: @communities.keys}).order('tour_histories.arrived ASC')
-    headers = %w{Property\ Id Property\ Name Visitor\ Name Visitor\ Email Visitor\ Phone Is\ Abandoned\ Tour Tour\ Type Tour\ Month Tour\ Date Tour\ Time}
+    headers = %w{Property\ Id Property\ Name Visitor\ Name Visitor\ Email Visitor\ Phone Is\ Abandoned\ Tour Tour\ Type Tour\ Month Tour\ Date Tour\ Time Region}
     csv_file = CSV.generate(headers: true) do |csv|
       csv << headers
       tour_users.each do |tu|
@@ -106,10 +106,10 @@ class CompaniesController < ApplicationController
     type = "Guided Tour" if ["guided_tour"].include?(tour_status)
     type
   end
-  def fetch_tour_hitory_data(tour_user, tour_history)
+  def fetch_tour_hitory_data(tour_user,tour_history)
     obj = []
     arrived = tour_history.arrived.in_time_zone((tour_history.community_time_zone rescue 'UTC'))
-    obj << tour_history.community_id # Community Id
+    obj << tour_history.community_id #Community Id
     obj << @communities[tour_history.community_id] # Community Name
     obj << tour_user.name
     obj << tour_user.email
@@ -119,6 +119,7 @@ class CompaniesController < ApplicationController
     obj << arrived.strftime('%B')
     obj << arrived.to_date
     obj << arrived.strftime("%I:%M %p")
+    obj << Community.find(tour_history.community_id).region&.name
     obj
   end
 
