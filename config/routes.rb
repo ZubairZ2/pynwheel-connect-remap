@@ -67,6 +67,7 @@ Rails.application.routes.draw do
     end
     member do 
       get :generate_csv
+      get :generate_csv_for_scheduled_records
     end
   end
   resources :community_groups do

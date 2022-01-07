@@ -5,6 +5,7 @@ class CompaniesController < ApplicationController
   add_breadcrumb "Companies", :root_path
   before_action :set_company , only: [:edit,:update,:destroy]
   before_action :check_community
+  # include SchedualToursHelper
   #before_action :check_current_company , except: [:new,:create]
   def index
     if current_user.is_super_admin?
@@ -89,6 +90,23 @@ class CompaniesController < ApplicationController
     send_data(csv_file, :type => 'application/xlsx', :filename => "#{company.name}.csv")
   end
 
+  def generate_csv_for_scheduled_records
+    company = Company.find params[:id]
+    communities = company.communities
+    
+    tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
+    scheduled_records = SchedualTour.where(community_id: tour_histories.pluck(:community_id).compact.uniq).where.not(tour_user_id: nil).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
+    headers = %w{Property\ Id Property\ Name Visitor\ Name Visitor\ Email Visitor\ Phone Tour\ Status Tour \ Type Tour\ Month Tour\ Date Tour\ Time Region}
+    csv_file = CSV.generate(headers: true) do |csv|
+      csv << headers
+      scheduled_records.each do |sr|
+        csv << fetch_tour_hitory_data_for_scheduled(sr)
+      end
+    end
+    send_data(csv_file, :type => 'application/xlsx', :filename => "#{company.name} - Scheduled Records.csv")
+  end
+  
+
   private
   def set_company
     @company = Company.find params[:id]
@@ -121,6 +139,45 @@ class CompaniesController < ApplicationController
     obj << arrived.strftime("%I:%M %p")
     obj << Community.find(tour_history.community_id).region&.name
     obj
+  end
+
+  def fetch_tour_hitory_data_for_scheduled(scheduled_tour)
+    obj = []
+    
+    obj << scheduled_tour.community_id #Community Id
+    obj << Community.find(scheduled_tour.community_id).name #@communities[scheduled_tour.community_id] # Community Name
+    obj << scheduled_tour.tour_user.name
+    obj << scheduled_tour.tour_user.email
+    obj << scheduled_tour.tour_user.phone_number
+    obj << fetch_schedule_tour_status(scheduled_tour.property_tour_type,scheduled_tour.tour_type) # is abandoned tour
+    obj << fetch_tour_type(scheduled_tour.tour_type) # Is Self Guided, OR Virtual Tour
+    obj << scheduled_tour.tour_date.strftime('%B')
+    obj << scheduled_tour.tour_date.to_date
+    obj << scheduled_tour.tour_time.strftime("%I:%M %p")
+    obj << Community.find(scheduled_tour.community_id).region&.name
+    obj
+  end
+
+  def fetch_schedule_tour_status(property_tour_type,tt)
+    if (property_tour_type == "scheduled_tour" || property_tour_type.blank?)  && tt == "self_tour"
+      "Self Tour - Scheduled"
+    elsif property_tour_type == "unscheduled_self_tour"
+      "Self Tour - Unscheduled"
+    elsif property_tour_type == "remote_tour"
+      "Remote"
+    else
+      if !property_tour_type.present? && (tt == "guided_tour")
+      "Scheduled"
+      else
+        "Remote"
+      end
+    end
+  end
+  def fetch_tour_type(tour_type)
+    type = "Virtual Tour"
+    type = "Self Tour" if ["self_tour", "Self Guided"].include?(tour_type)
+    type = "Guided Tour" if ["guided_tour"].include?(tour_type)
+    type
   end
 
 end
