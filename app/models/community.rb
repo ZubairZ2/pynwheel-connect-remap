@@ -86,7 +86,7 @@ class Community < ApplicationRecord
 
   def set_community_time_zone 
     if self.latitude.present? && self.longitude.present?
-      time_zone = Timezone.lookup(self.latitude, self.longitude).name rescue "UTC"
+      time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
       self.update_column :time_zone, time_zone
     end
   end
