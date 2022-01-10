@@ -7,7 +7,7 @@ namespace :email_property_before_tour do
       tours_data = []
 
       community_time = Time.now.in_time_zone(community.get_time_zone(DEFAULT_TIME_ZONE))
-      today_date =  community_time.to_date.strftime("%d/%m/%Y") 
+      today_date =  community_time.to_date.strftime("%m/%d/%Y") 
 
       SchedualTour.where(community_id: community.id, tour_date: community_time.to_date.strftime("%Y-%m-%d") ).order('tour_time').each do |scheduled_tour|
           

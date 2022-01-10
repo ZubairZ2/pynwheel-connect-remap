@@ -5,7 +5,7 @@ class ScheduledToursMailer < ApplicationMailer
   def schuduled_tours_email subject, data, community
     @community_name = community.name.split(' ').map(&:capitalize).join(' ')
     @tours_data = data
-    @today_date = Time.now.in_time_zone(DEFAULT_TIME_ZONE).to_date.strftime("%d/%m/%Y")
+    @today_date = Time.now.in_time_zone(DEFAULT_TIME_ZONE).to_date.strftime("%m/%d/%Y")
     emails = community.email.gsub(" ","").split(',')
 
     emails.each do |email|
