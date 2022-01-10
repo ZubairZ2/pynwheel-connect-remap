@@ -1,7 +1,4 @@
 class Community < ApplicationRecord
-  # has_paper_trail
-  # mount_uploader :logo, AvatarUploader
-  # attr_readonly :uuid
   include LockedTourStopHelper
   
   mount_base64_uploader :logo, AvatarUploader
@@ -65,39 +62,33 @@ class Community < ApplicationRecord
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
   
-  # validate :unique_community_code_on_create, on: [:create]
-  # validate :unique_community_code_on_update, on: [:update]
-
   after_create :set_default_theme
   after_create :create_default_gallery
   after_create :create_sms_email_content
 
   attr_accessor :default_community_id
-  # before_validation :gen_uuid, on: :create
-  # validates :uuid, presence: true, uniqueness: true
   
   after_update :crop_image
   after_update :crop_secondary_image
   after_create :create_tour_also
   after_create :change_touchscreen_app_for_dwelo
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
-  #
-  # phony_normalize :phone
-  # # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
-  # validates :phone, phony_plausible: true
-
-
-  # phony_normalize :phone
-  # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
-  # validates :phone, phony_plausible: true
-
+  after_save :set_community_time_zone, if: ->(obj){ (obj.latitude.present? and obj.latitude_changed?) ||  (obj.longitude.present? and obj.longitude_changed?) }
 
   enum alert_contact: [:email, :phone, :both]
   scope :active_communities, -> { where(locked: false) }
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
   scope :desc_created_at, -> { order(created_at: :desc) }
+
   amoeba do
     include_association :design
+  end
+
+  def set_community_time_zone 
+    if self.latitude.present? && self.longitude.present?
+      time_zone = Timezone.lookup(self.latitude, self.longitude).name rescue "UTC"
+      self.update_column :time_zone, time_zone
+    end
   end
 
   def community_website
@@ -196,11 +187,7 @@ class Community < ApplicationRecord
   end
 
   def get_time_zone default_time_zone = "UTC"
-    if self.latitude.present? && self.longitude.present?
-      Timezone.lookup(self.latitude, self.longitude).name rescue default_time_zone
-    else
-      default_time_zone
-    end
+    self.time_zone.eql?("UTC") ? default_time_zone : self.get_time_zone
   end
 
   def has_temporary_images?
@@ -230,24 +217,6 @@ class Community < ApplicationRecord
       hours = (hours == 12) ? "00" : hours
       "#{hours.to_s}:#{minutes}"
     end
-  end
-
-  def get_community_time_zone()
-    tz = Ziptz.new
-    timezone = nil
-
-    if self.latitude.present? and self.longitude.present?
-      time_zone = Timezone.lookup(self.latitude, self.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and self.zip.present?
-      timezone = tz.time_zone_name(self.zip)
-    end
-
-      return timezone
-    rescue
-      return "UTC"
   end
 
   def data_is_imported
