@@ -81,6 +81,8 @@ class Community < ApplicationRecord
   after_create :create_tour_also
   after_create :change_touchscreen_app_for_dwelo
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
+  before_save :set_community_time_zone, if: :latitude_changed?
+
   #
   # phony_normalize :phone
   # # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
@@ -98,6 +100,10 @@ class Community < ApplicationRecord
   scope :desc_created_at, -> { order(created_at: :desc) }
   amoeba do
     include_association :design
+  end
+
+  def set_community_time_zone
+    binding.pry
   end
 
   def community_website
