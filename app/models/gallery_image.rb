@@ -25,6 +25,7 @@
 class GalleryImage < ApplicationRecord
 	include RailsSortable::Model
   belongs_to :gallery
+  has_one :status, as: :statusable
   set_sortable :sort  
 	#mount_base64_uploader :image, GalleryUploader
 	mount_uploader :image, GalleryUploader
