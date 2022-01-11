@@ -100,6 +100,13 @@ class Community < ApplicationRecord
     include_association :design
   end
 
+  def set_community_time_zone 
+    if self.latitude.present? && self.longitude.present?
+      time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
+      self.update_column :time_zone, time_zone
+    end
+  end
+
   def community_website
     return unless self.website.present?
 
@@ -196,11 +203,7 @@ class Community < ApplicationRecord
   end
 
   def get_time_zone default_time_zone = "UTC"
-    if self.latitude.present? && self.longitude.present?
-      Timezone.lookup(self.latitude, self.longitude).name rescue default_time_zone
-    else
-      default_time_zone
-    end
+    self.time_zone.eql?("UTC") ? default_time_zone : self.time_zone
   end
 
   def has_temporary_images?
