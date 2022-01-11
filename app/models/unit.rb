@@ -168,6 +168,7 @@ class Unit < ApplicationRecord
       set_standard_url('Unit',id)
     end
   end
+
   def show_integer_rent
     self.effective_rent.to_i
   end
