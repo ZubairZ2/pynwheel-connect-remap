@@ -187,7 +187,7 @@ class Community < ApplicationRecord
   end
 
   def get_time_zone default_time_zone = "UTC"
-    self.time_zone.eql?("UTC") ? default_time_zone : self.get_time_zone
+    self.time_zone.eql?("UTC") ? default_time_zone : self.time_zone
   end
 
   def has_temporary_images?
