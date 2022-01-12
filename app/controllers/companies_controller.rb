@@ -5,7 +5,7 @@ class CompaniesController < ApplicationController
   add_breadcrumb "Companies", :root_path
   before_action :set_company , only: [:edit,:update,:destroy]
   before_action :check_community
-  # include SchedualToursHelper
+  
   #before_action :check_current_company , except: [:new,:create]
   def index
     if current_user.is_super_admin?
@@ -72,7 +72,6 @@ class CompaniesController < ApplicationController
   end
 
   def generate_csv
-    # property id, property name, visitor name, visitor email, visitor phone, is abandoned tour, tour type, tour month, tour date, tour time
     @communities = fetch_communities_hash(params[:id])
     company = Company.find params[:id]
     tour_users = TourUser.includes(:tour_histories).where(tour_histories: {community_id: @communities.keys}).order('tour_histories.arrived ASC')
@@ -95,8 +94,8 @@ class CompaniesController < ApplicationController
     communities = company.communities
     
     tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
-    scheduled_records = SchedualTour.where(community_id: tour_histories.pluck(:community_id).compact.uniq).where.not(tour_user_id: nil).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
-    headers = %w{Property\ Id Property\ Name Visitor\ Name Visitor\ Email Visitor\ Phone Tour\ Status Tour\ Type Tour\ Month Tour\ Date Tour\ Time Region}
+    scheduled_records = SchedualTour.where(community_id: communities.self_tour_enabled_only.ids).where.not(tour_user_id: nil).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour", "Self Guided"])
+    headers = %w{Property\ Id Property\ Name Visitor\ Name Visitor\ Email Visitor\ Phone Tour\ Status Tour\ Type Tour\ Month Tour\ Date Tour\ Time Region Tour\ Scheduled\ By}
     csv_file = CSV.generate(headers: true) do |csv|
       csv << headers
       scheduled_records.each do |sr|
@@ -105,7 +104,7 @@ class CompaniesController < ApplicationController
     end
     send_data(csv_file, :type => 'application/xlsx', :filename => "#{company.name} - Scheduled Records.csv")
   end
-  
+
 
   private
   def set_company
@@ -143,9 +142,8 @@ class CompaniesController < ApplicationController
 
   def fetch_tour_hitory_data_for_scheduled(scheduled_tour)
     obj = []
-    # %w{Property\ Id Property\ Name Visitor\ Name Visitor\ Email Visitor\ Phone Tour\ Status Tour\Type Tour\ Month Tour\ Date Tour\ Time Region}
     obj << scheduled_tour.community_id #Community Id
-    obj << Community.find(scheduled_tour.community_id).name #@communities[scheduled_tour.community_id] # Community Name
+    obj << Community.find(scheduled_tour.community_id).name # Community Name
     obj << scheduled_tour.tour_user.name
     obj << scheduled_tour.tour_user.email
     obj << scheduled_tour.tour_user.phone_number
@@ -155,6 +153,7 @@ class CompaniesController < ApplicationController
     obj << scheduled_tour.tour_date.to_date
     obj << scheduled_tour.tour_time.strftime("%I:%M %p")
     obj << Community.find(scheduled_tour.community_id).region&.name
+    obj << scheduled_tour.created_by
     obj
   end
 
