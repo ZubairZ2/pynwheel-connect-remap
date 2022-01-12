@@ -206,7 +206,7 @@ class AnalyticsController < ApplicationController
       pages_hash["Multiple"] = ((multiple_page_visior.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
       instance_variable_set("@percentage_single_page_visitor_#{for_device_type}", pages_hash["Single"].to_s + "%")
       instance_variable_set("@percentage_multiple_page_visitor_#{for_device_type}", pages_hash["Multiple"].to_s + "%")
-      bounce_data_labels, bounce_data_options = make_pie_chart(pages_hash.keys, pages_hash.values, "Total Sessions", ["rgba(240, 90, 142, 0.8)", "rgba(176,223,229,0.8)"], ["rgba(240, 90, 142, 0.8)","rgba(176,223,229,1)"])
+      bounce_data_labels, bounce_data_options = make_pie_chart(pages_hash.keys, pages_hash.values, "Total Sessions", ["rgba(240, 90, 142, 0.8)", "rgba(0, 143, 212,0.8)"], ["rgba(240, 90, 142, 0.8)","rgba(0, 143, 212,1)"])
       instance_variable_set("@bounce_data_labels_#{for_device_type}", bounce_data_labels)
       instance_variable_set("@bounce_data_options_#{for_device_type}", bounce_data_options)
     end
@@ -243,8 +243,8 @@ class AnalyticsController < ApplicationController
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       pie_chart_hash = {"Sessions with Events" => percentage_session_with_counts, "Sessions without Events" => percentage_session_without_counts}
-      pie_events_data_labels, pie_events_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(176,223,229,0.5)", "rgba(255,212,0,0.5)"], ["rgba(176,223,229,1)","rgba(255,212,0,1)"])
-      bar_events_data_labels, bar_events_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Total Events", "rgba(176,223,229,0.5)", "rgba(176,223,229,1)")
+      pie_events_data_labels, pie_events_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(0, 143, 212,0.5)", "rgba(255,212,0,0.5)"], ["rgba(0, 143, 212,1)","rgba(255,212,0,1)"])
+      bar_events_data_labels, bar_events_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Total Events", "rgba(0, 143, 212,0.5)", "rgba(0, 143, 212,1)")
       instance_variable_set("@percentage_session_with_events_#{for_device_type}", percentage_session_with_counts.to_s + "%")
       instance_variable_set("@percentage_session_without_events_#{for_device_type}", percentage_session_without_counts.to_s + "%")
       instance_variable_set("@pie_events_data_labels_#{for_device_type}", pie_events_data_labels)
@@ -445,8 +445,8 @@ class AnalyticsController < ApplicationController
       hash_true_str = tour_site_or_tour_state_attr == :tour_site ? "Onsite Sessions" : "Completed Sessions"
       hash_false_str = tour_site_or_tour_state_attr == :tour_site ? "Offsite Sessions" : "Abandoned Sessions"
       pie_chart_hash = {hash_true_str => percentage_true_session_counts, hash_false_str => percentage_false_session_counts}
-      pie_tour_data_labels, pie_tour_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(176,223,229,0.5)", "rgba(255,212,0,0.5)"], ["rgba(176,223,229,1)","rgba(255,212,0,1)"])
-      bar_tour_data_labels, bar_tour_data_options = make_bar_chart_for_site_session(sessions_each_day_hash_onsite_completed.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash_onsite_completed.values, sessions_each_day_hash_offsite_abandoned.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash_offsite_abandoned.values, hash_true_str, hash_false_str, "rgba(176,223,229,0.8)", "rgba(176,223,229,1)", "rgba(255,212,0,1)", "rgba(255,212,0,1)")
+      pie_tour_data_labels, pie_tour_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(0, 143, 212,0.5)", "rgba(255,212,0,0.5)"], ["rgba(0, 143, 212,1)","rgba(255,212,0,1)"])
+      bar_tour_data_labels, bar_tour_data_options = make_bar_chart_for_site_session(sessions_each_day_hash_onsite_completed.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash_onsite_completed.values, sessions_each_day_hash_offsite_abandoned.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash_offsite_abandoned.values, hash_true_str, hash_false_str, "rgba(0, 143, 212,0.8)", "rgba(0, 143, 212,1)", "rgba(255,212,0,1)", "rgba(255,212,0,1)")
       
       instance_variable_set("@pie_#{tour_site_or_tour_state_attr}_data_labels", pie_tour_data_labels)
       instance_variable_set("@pie_#{tour_site_or_tour_state_attr}_data_options", pie_tour_data_options)
