@@ -27,51 +27,53 @@
               .count_text= 'Average duration of each session in minutes'
           .col-lg-8
             = line_chart @session_each_day_minutes_data_self_tour, @session_each_day_minutes_options_self_tour
-       
-      .row.mt-80
-        .col-lg-6.col-md-12.h-500
-          %p.chart_heading Sessions by Time of Day
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @session_in_highest_hour_self_tour
-              .count_text= 'Maximum number of sessions at ' + @highest_hour_self_tour
-          .col-lg-8
-            = bar_chart @session_each_day_hour_data_self_tour, @session_each_day_hour_options_self_tour
+      
+      - if current_user.is_super_admin?
+        .row.mt-80
+          .col-lg-6.col-md-12.h-500
+            %p.chart_heading Sessions by Time of Day
+            .col-lg-4.numbers_div
+              .center_it
+                .count_int= @session_in_highest_hour_self_tour
+                .count_text= 'Maximum number of sessions at ' + @highest_hour_self_tour
+            .col-lg-8
+              = bar_chart @session_each_day_hour_data_self_tour, @session_each_day_hour_options_self_tour
 
-        .col-lg-6.col-md-12.h-500
-          %p.chart_heading Single vs Multiple Page Visits
-          .col-lg-4.numbers_div
-            .center_it
-              .pie_description
-                %span.dot.single_page
-                %span One page viewed sessions
-                %span= @percentage_single_page_visitor_self_tour
-              .pie_description
-                %span.dot.multiple_page
-                %span Multiple page viewed sessions
-                %span= @percentage_multiple_page_visitor_self_tour
-          .col-lg-8.pie_width
-            = pie_chart @bounce_data_labels_self_tour, @bounce_data_options_self_tour
-
-      .row.mt-80
-        .col-lg-12.h-500
-          %p.chart_heading Events
-          .col-lg-2.numbers_div
-            .center_it
-              .count_int= @total_number_of_events_self_tour
-              .count_text= 'Total number of events'
-              .pie_description
-                %span.dot.events_with
-                %span Sessions with events
-                %span= @percentage_session_with_events_self_tour
-              .pie_description
-                %span.dot.events_without
-                %span Sessions without events 
-                %span= @percentage_session_without_events_self_tour
-          .col-lg-5.pie_width
-            = pie_chart @pie_events_data_labels_self_tour, @pie_events_data_options_self_tour
-          .col-lg-5
-            = bar_chart @bar_events_data_labels_self_tour, @bar_events_data_options_self_tour
+          .col-lg-6.col-md-12.h-500
+            %p.chart_heading Single vs Multiple Page Visits
+            .col-lg-4.numbers_div
+              .center_it
+                .pie_description
+                  %span.dot.single_page
+                  %span One page viewed sessions
+                  %span= @percentage_single_page_visitor_self_tour
+                .pie_description
+                  %span.dot.multiple_page
+                  %span Multiple page viewed sessions
+                  %span= @percentage_multiple_page_visitor_self_tour
+            .col-lg-8.pie_width
+              = pie_chart @bounce_data_labels_self_tour, @bounce_data_options_self_tour
+      
+      - if current_user.is_super_admin?
+        .row.mt-80
+          .col-lg-12.h-500
+            %p.chart_heading Events
+            .col-lg-2.numbers_div
+              .center_it
+                .count_int= @total_number_of_events_self_tour
+                .count_text= 'Total number of events'
+                .pie_description
+                  %span.dot.events_with
+                  %span Sessions with events
+                  %span= @percentage_session_with_events_self_tour
+                .pie_description
+                  %span.dot.events_without
+                  %span Sessions without events 
+                  %span= @percentage_session_without_events_self_tour
+            .col-lg-5.pie_width
+              = pie_chart @pie_events_data_labels_self_tour, @pie_events_data_options_self_tour
+            .col-lg-5
+              = bar_chart @bar_events_data_labels_self_tour, @bar_events_data_options_self_tour
 
       .row.mt-80
         .col-lg-12.h-500
@@ -90,119 +92,120 @@
             = pie_chart @pie_tour_site_data_labels, @pie_tour_site_data_options
           .col-lg-5
             = bar_chart @bar_tour_site_data_labels, @bar_tour_site_data_options
+      
+      - if current_user.is_super_admin?
+        .row.mt-80
+          .col-lg-12.h-500
+            %p.chart_heading Apply Clicks
+            .col-lg-2.numbers_div
+              .center_it
+                .count_int= @total_number_of_apply_clicks_self_tour
+                .count_text= 'Total number of apply clicks' 
+                .pie_description
+                  %span.dot.apply_clicks_with
+                  %span Sessions with apply clicks
+                  %span= @percentage_session_with_apply_clicks_self_tour
+                .pie_description
+                  %span.dot.apply_clicks_without
+                  %span Sessions without apply clicks
+                  %span= @percentage_session_without_apply_clicks_self_tour
+            .col-lg-5.pie_width
+              = pie_chart @pie_apply_click_data_labels_self_tour, @pie_apply_click_data_options_self_tour
+            .col-lg-5
+              = line_chart @line_apply_click_data_labels_self_tour, @line_apply_click_data_options_self_tour
+      
+      - if current_user.is_super_admin?
+        .row.mt-80
+          .col-lg-12.h-500
+            %p.chart_heading See Availability
+            .col-lg-2.numbers_div
+              .center_it
+                .count_int= @total_number_of_see_availability
+                .count_text= 'Total number of See Availability' 
+                .pie_description
+                  %span.dot.see_availability_with
+                  %span Sessions With "See Availability"
+                  %span= @percentage_session_with_see_availability
+                .pie_description
+                  %span.dot.see_availability_without
+                  %span Sessions Without "See Availability"
+                  %span= @percentage_session_without_see_availability
+            .col-lg-5.pie_width
+              = pie_chart @pie_see_availbility_data_labels, @pie_see_availbility_data_options
+            .col-lg-5
+              = line_chart @line_see_availbility_data_labels, @line_see_availbility_data_options
 
-      .row.mt-80
-        .col-lg-12.h-500
-          %p.chart_heading Apply Clicks
-          .col-lg-2.numbers_div
-            .center_it
-              .count_int= @total_number_of_apply_clicks_self_tour
-              .count_text= 'Total number of apply clicks' 
-              .pie_description
-                %span.dot.apply_clicks_with
-                %span Sessions with apply clicks
-                %span= @percentage_session_with_apply_clicks_self_tour
-              .pie_description
-                %span.dot.apply_clicks_without
-                %span Sessions without apply clicks
-                %span= @percentage_session_without_apply_clicks_self_tour
-          .col-lg-5.pie_width
-            = pie_chart @pie_apply_click_data_labels_self_tour, @pie_apply_click_data_options_self_tour
-          .col-lg-5
-            = line_chart @line_apply_click_data_labels_self_tour, @line_apply_click_data_options_self_tour
+      - if current_user.is_super_admin?
+        .row.mt-80
+          .col-lg-6.col-md-12.h-500
+            %p.chart_heading Camera Opened
+            .col-lg-4.numbers_div
+              .center_it
+                .count_int= @total_number_of_camera_opened_counter
+                .count_text= "Total number of times camera was opened"
+                .pie_description
+                  %span.dot.tour_counter_with
+                  %span Sessions with Camera Opened
+                  %span= @percentage_session_with_counts_camera_opened_counter
+                .pie_description
+                  %span.dot.tour_counter_without
+                  %span Sessions without Camera Opened
+                  %span= @percentage_session_without_counts_camera_opened_counter
+            .col-lg-8.pie_width
+              = pie_chart @pie_camera_opened_counter_data_labels, @pie_camera_opened_counter_data_options
+          .col-lg-6.col-md-12.h-500
+            %p.chart_heading Notes Opened
+            .col-lg-4.numbers_div
+              .center_it
+                .count_int= @total_number_of_notes_opened_counter
+                .count_text= 'Total number of times notes was opened'
+                .pie_description
+                  %span.dot.tour_counter_with
+                  %span Sessions with Notes Opened
+                  %span= @percentage_session_with_counts_notes_opened_counter
+                .pie_description
+                  %span.dot.tour_counter_without
+                  %span Sessions without Notes Opened
+                  %span= @percentage_session_without_counts_notes_opened_counter
+            .col-lg-8.pie_width
+              = pie_chart @pie_notes_opened_counter_data_labels, @pie_notes_opened_counter_data_options
 
-      .row.mt-80
-        .col-lg-12.h-500
-          %p.chart_heading See Availability
-          .col-lg-2.numbers_div
-            .center_it
-              .count_int= @total_number_of_see_availability
-              .count_text= 'Total number of See Availability' 
-              .pie_description
-                %span.dot.see_availability_with
-                %span Sessions With "See Availability"
-                %span= @percentage_session_with_see_availability
-              .pie_description
-                %span.dot.see_availability_without
-                %span Sessions Without "See Availability"
-                %span= @percentage_session_without_see_availability
-          .col-lg-5.pie_width
-            = pie_chart @pie_see_availbility_data_labels, @pie_see_availbility_data_options
-          .col-lg-5
-            = line_chart @line_see_availbility_data_labels, @line_see_availbility_data_options
-
-      .row.mt-80
-        .col-lg-6.col-md-12.h-500
-          %p.chart_heading Camera Opened
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @total_number_of_camera_opened_counter
-              .count_text= "Total number of times camera was opened"
-              .pie_description
-                %span.dot.tour_counter_with
-                %span Sessions with Camera Opened
-                %span= @percentage_session_with_counts_camera_opened_counter
-              .pie_description
-                %span.dot.tour_counter_without
-                %span Sessions without Camera Opened
-                %span= @percentage_session_without_counts_camera_opened_counter
-          .col-lg-8.pie_width
-            = pie_chart @pie_camera_opened_counter_data_labels, @pie_camera_opened_counter_data_options
-        .col-lg-6.col-md-12.h-500
-          %p.chart_heading Notes Opened
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @total_number_of_notes_opened_counter
-              .count_text= 'Total number of times notes was opened'
-              .pie_description
-                %span.dot.tour_counter_with
-                %span Sessions with Notes Opened
-                %span= @percentage_session_with_counts_notes_opened_counter
-              .pie_description
-                %span.dot.tour_counter_without
-                %span Sessions without Notes Opened
-                %span= @percentage_session_without_counts_notes_opened_counter
-          .col-lg-8.pie_width
-            = pie_chart @pie_notes_opened_counter_data_labels, @pie_notes_opened_counter_data_options
-
-
-      .row.mt-80
-        .col-lg-6.col-md-12.h-500
-          %p.chart_heading Price Opened
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @total_number_of_price_opened_self_tour
-              .count_text= 'Total number of times price was opened'
-              .pie_description
-                %span.dot.price_opened_with
-                %span Sessions with price opened
-                %span= @percentage_session_with_price_opened_self_tour
-              .pie_description
-                %span.dot.price_opened_without
-                %span Sessions without price opened
-                %span= @percentage_session_without_price_opened_self_tour
-          .col-lg-8.pie_width
-            = pie_chart @pie_price_opened_data_labels_self_tour, @pie_price_opened_data_options_self_tour
-        .col-lg-6.col-md-12.h-500
-          %p.chart_heading Scheduled vs. Unscheduled
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @tour_scheduled_counts
-              .count_text= 'Total number of Scheduled Sessions' 
-              .count_int= @tour_unscheduled_counts
-              .count_text= 'Total number of Unscheduled Sessions' 
-              .pie_description
-                %span.dot.tour_scheduled
-                %span Scheduled Sessions
-                %span= @percentage_tour_scheduled_counts
-              .pie_description
-                %span.dot.tour_unscheduled
-                %span Unscheduled Sessions
-                %span= @percentage_tour_unscheduled_counts
-          .col-lg-8.pie_width
-            = pie_chart @pie_tour_type_data_labels, @pie_tour_type_data_options
-
-
+        .row.mt-80
+          - if current_user.is_super_admin?
+            .col-lg-6.col-md-12.h-500
+              %p.chart_heading Price Opened
+              .col-lg-4.numbers_div
+                .center_it
+                  .count_int= @total_number_of_price_opened_self_tour
+                  .count_text= 'Total number of times price was opened'
+                  .pie_description
+                    %span.dot.price_opened_with
+                    %span Sessions with price opened
+                    %span= @percentage_session_with_price_opened_self_tour
+                  .pie_description
+                    %span.dot.price_opened_without
+                    %span Sessions without price opened
+                    %span= @percentage_session_without_price_opened_self_tour
+              .col-lg-8.pie_width
+                = pie_chart @pie_price_opened_data_labels_self_tour, @pie_price_opened_data_options_self_tour
+          .col-lg-6.col-md-12.h-500
+            %p.chart_heading Scheduled vs. Unscheduled
+            .col-lg-4.numbers_div
+              .center_it
+                .count_int= @tour_scheduled_counts
+                .count_text= 'Total number of Scheduled Sessions' 
+                .count_int= @tour_unscheduled_counts
+                .count_text= 'Total number of Unscheduled Sessions' 
+                .pie_description
+                  %span.dot.tour_scheduled
+                  %span Scheduled Sessions
+                  %span= @percentage_tour_scheduled_counts
+                .pie_description
+                  %span.dot.tour_unscheduled
+                  %span Unscheduled Sessions
+                  %span= @percentage_tour_unscheduled_counts
+            .col-lg-8.pie_width
+              = pie_chart @pie_tour_type_data_labels, @pie_tour_type_data_options
 
       .row.mt-80
         .col-lg-12.h-500
@@ -231,14 +234,16 @@
               .count_text= "Average number of stops visited per session"
           .col-lg-8
             = bar_chart @session_each_day_stops_hour_data, @session_each_day_stops_hour_options
-        .col-lg-6.col-md-12.h-500
-          %p.chart_heading Top Stops
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @average_number_of_stops_per_session_tour_stop
-              .count_text= "Average number of stops visited per session"
-          .col-lg-8
-            = horizontal_bar_chart @visited_per_tour_stop_data_labels, @visited_per_tour_stop_data_options
+        
+        - if current_user.is_super_admin?
+          .col-lg-6.col-md-12.h-500
+            %p.chart_heading Top Stops
+            .col-lg-4.numbers_div
+              .center_it
+                .count_int= @average_number_of_stops_per_session_tour_stop
+                .count_text= "Average number of stops visited per session"
+            .col-lg-8
+              = horizontal_bar_chart @visited_per_tour_stop_data_labels, @visited_per_tour_stop_data_options
 
       .row.mt-80
         .col-lg-6.col-md-12.h-500
