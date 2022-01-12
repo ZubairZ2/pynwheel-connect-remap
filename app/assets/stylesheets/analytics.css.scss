@@ -59,20 +59,20 @@
   border: 2px solid rgba(176,223,229,1);
 }
 .events_without, .apply_clicks_without, .favourite_saved_without, .favourite_sent_without, .price_opened_without, .tour_site_false, .see_availability_without, .tour_counter_without, .tour_unscheduled{
-  background-color: rgba(255,252,187,0.5);
-  border: 2px solid rgba(255,252,187,1);
+  background-color: rgba(255,212,0,0.5);
+  border: 2px solid rgba(255,212,0,1);
 }
 .apply_clicks_with, .price_opened_with, .tour_scheduled{
-  background-color: rgba(209, 255, 213, 0.7);
-  border: 2px solid rgba(209, 255, 213, 1);
+  background-color: rgba(137, 199, 101, 0.7);
+  border: 2px solid rgba(137, 199, 101, 1);
 }
 .favourite_saved_with, .see_availability_with{
-  background-color: rgba(205, 183, 246, 0.5);
-  border: 2px solid rgba(205, 183, 246, 1); 
+  background-color: rgba(143, 73, 156, 0.5);
+  border: 2px solid rgba(143, 73, 156, 1); 
 }
 .favourite_sent_with, .single_page, .tour_counter_with{
- background-color: rgba(255, 204, 203, 0.8);
-  border: 2px solid rgba(255, 204, 203, 1);  
+ background-color: rgba(240, 90, 142, 0.8);
+  border: 2px solid rgba(240, 90, 142, 1);  
 }
 .empty_other::after {
   content: "*";
