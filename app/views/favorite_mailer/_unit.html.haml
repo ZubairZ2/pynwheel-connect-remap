@@ -96,10 +96,15 @@
                                   
                                   - if unit.community.display_rent
                                     %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                      - if unit.effective_rent.present? && unit.max_effective_rent.present? && !(unit&.effective_rent&.to_i == unit&.max_effective_rent&.to_i)
-                                        %b $ #{unit.effective_rent.to_i} - $ #{unit.max_effective_rent.to_i}
+                                      - if !unit.lease_pricing.nil?
+                                        %b From $ #{unit&.effective_rent&.to_i}
                                       - else
-                                        - if unit.effective_rent.present?
+                                        - if !unit.max_effective_rent.nil? &&  !unit.min_effective_rent.nil?
+                                          - if unit.max_effective_rent == unit.min_effective_rent
+                                            %b From $ #{unit&.effective_rent&.to_i}
+                                          - else
+                                            %b $ #{unit.effective_rent.to_i} - $ #{unit.max_effective_rent.to_i}
+                                        - else
                                           %b From $ #{unit&.effective_rent&.to_i}
 
                                   %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
