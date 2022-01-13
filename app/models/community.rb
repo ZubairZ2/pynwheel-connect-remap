@@ -115,7 +115,7 @@ class Community < ApplicationRecord
     set_touch_vidoes_status(current_user)
     set_data_provider_status(current_user)
     touch_installation_specification(current_user)
-    set_visiting_hours_status(current_user)
+    set_visiting_hours_status(current_user)  
   end
 
   def set_property_map_status(current_user)
@@ -265,7 +265,7 @@ class Community < ApplicationRecord
     return if self.community_users.blank?
     community_users = self.community_users
     community_users.each do |cu|
-      required_hardware = cu.product_options.present? ? check_required_hardware(cu.product_options) : false
+      required_hardware = cu.product_options.present? ? check_required_hardware(cu.product_options) : false 
       status_attr = status_string(required_hardware)
       set_status_for_all(cu,status_attr,current_user)
     end
