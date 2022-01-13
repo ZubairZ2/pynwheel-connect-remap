@@ -28,8 +28,9 @@
           .col-lg-8
             = line_chart @session_each_day_minutes_data_self_tour, @session_each_day_minutes_options_self_tour
       
-      - if current_user.is_super_admin?
-        .row.mt-80
+      
+      .row.mt-80
+        - if current_user.is_super_admin?
           .col-lg-6.col-md-12.h-500
             %p.chart_heading Sessions by Time of Day
             .col-lg-4.numbers_div
@@ -39,20 +40,20 @@
             .col-lg-8
               = bar_chart @session_each_day_hour_data_self_tour, @session_each_day_hour_options_self_tour
 
-          .col-lg-6.col-md-12.h-500
-            %p.chart_heading Single vs Multiple Page Visits
-            .col-lg-4.numbers_div
-              .center_it
-                .pie_description
-                  %span.dot.single_page
-                  %span One page viewed sessions
-                  %span= @percentage_single_page_visitor_self_tour
-                .pie_description
-                  %span.dot.multiple_page
-                  %span Multiple page viewed sessions
-                  %span= @percentage_multiple_page_visitor_self_tour
-            .col-lg-8.pie_width
-              = pie_chart @bounce_data_labels_self_tour, @bounce_data_options_self_tour
+        .col-lg-6.col-md-12.h-500
+          %p.chart_heading Single vs Multiple Page Visits
+          .col-lg-4.numbers_div
+            .center_it
+              .pie_description
+                %span.dot.single_page
+                %span One page viewed sessions
+                %span= @percentage_single_page_visitor_self_tour
+              .pie_description
+                %span.dot.multiple_page
+                %span Multiple page viewed sessions
+                %span= @percentage_multiple_page_visitor_self_tour
+          .col-lg-8.pie_width
+            = pie_chart @bounce_data_labels_self_tour, @bounce_data_options_self_tour
       
       - if current_user.is_super_admin?
         .row.mt-80
