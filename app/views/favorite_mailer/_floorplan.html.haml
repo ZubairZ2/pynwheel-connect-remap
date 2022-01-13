@@ -82,7 +82,7 @@
                                   
                                   - if unit.community.display_rent
                                     %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                      - if !unit.lease_pricing.nil?
+                                      - if !unit.lease_pricing.nil? && !unit.lease_pricing == ""
                                         %b From $ #{unit&.effective_rent&.to_i.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse}
                                       - else
                                         - if !unit.max_effective_rent.nil? &&  !unit.min_effective_rent.nil?
