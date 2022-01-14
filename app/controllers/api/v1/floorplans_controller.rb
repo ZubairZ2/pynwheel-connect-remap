@@ -1,7 +1,7 @@
 class Api::V1::FloorplansController < ActionController::Base
   include ApplicationHelper
-  before_action :authorize_access, only: [:index, :floorplan_units]
-  before_action :set_community, only: [:index, :floorplan_units]
+  before_action :authorize_access, only: [:index, :floorplan_units, :update_tour_stops_list]
+  before_action :set_community, only: [:index, :floorplan_units, :update_tour_stops_list]
 
   def index
     floorplans = floorplan_units_service(@community).get_floorplans
@@ -26,6 +26,67 @@ class Api::V1::FloorplansController < ActionController::Base
       success = false
       message = 'Please provide floorplan id'
     end
+  end
+
+  def update_tour_stops_list
+    @tour_stop = TourStop.find params[:id]
+    if @tour_stop.present?
+      remove_tour_stop(@tour_stop)
+    else
+      add_tour_stop(@tour_stop)
+    end
+  end
+
+  def remove_tour_stop(tour_stop)
+    # @tour_stop = TourStop.find params[:id]
+
+    paths = Path.where(map_path_from_id: tour_stop.stop_id)
+    paths.each do |path|
+      path.path_points.destroy_all
+      path.destroy if path.present?
+    end
+
+    path = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)&.paths&.last
+    path.path_points.destroy_all if path.present?
+    path.destroy if path.present?
+
+    VisitedStop.where(tour_stop_id: tour_stop.id).destroy_all
+    if @tour_stop.stop_type == "elevator"
+      (Elevator.find tour_stop.stop_id).destroy if Elevator.where(id: tour_stop.stop_id).any?
+    end
+    if @tour_stop.stop_type == "building_starting_point"
+      (BuildingStartingPoint.find tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: tour_stop.stop_id).any?
+    end
+  end
+
+  def add_tour_stop
+    stops = params[:data_to_add].each do |stop|
+      splitText = stop.split(':')
+      tour_stop = splitText[0].to_i
+      stop_type = splitText[1]
+      # ts = TourStop.find_by(stop_type: stop_type, stop_id: tour_stop)
+      # if ts.present?
+      #   ts.latitude = params[:x_plot]
+      #   ts.longitude = params[:y_plot]
+      #   ts.save
+      #   render json: {tour: ts}, status: 200
+      # else
+      if stop_type == "amenity"
+        st = Amenity.find tour_stop
+        st.floor = params[:floor].to_i unless @community.show_map
+        st.save
+        stName = st.name
+      elsif stop_type == "elevator"
+        st = Elevator.find tour_stop
+        stName = st.name
+      else
+        st = Unit.find tour_stop
+        stName = st.marketing_name
+      end
+      ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: current_community.tour.id,name: stName)
+      PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{current_community.id}'")
+    end
+    render json: {community: @community}, status: 200
   end
 
   private
