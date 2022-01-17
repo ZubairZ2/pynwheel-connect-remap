@@ -94,6 +94,10 @@ class PynwheelAccessUsersController < ApplicationController
       phoneNumber: user[:phone_number],
       email: user[:email],
       image: nil,
+      cardFormat: "HID Prox 26-bit H10301",
+      facilityId: "0",
+      accessCode: "1234",
+      addressAndRelationship: true,
       listAddUserAccess: zerv_user_access(user)
     }
   end
