@@ -374,8 +374,10 @@ $(window).bind('load', function () {
           y_plot = y_plot - 17
         }
         else{
-          y_plot = y_plot
+          y_plot = y_plot - 8
+          x_plot = x_plot - 4
         }
+
         $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
         if($(window).width() >= 567 && $(window).width() <= 1360 ){
           $(this).css({"margin-left": -5, "margin-top": -7})       
@@ -1640,14 +1642,16 @@ function adjustMarkerPosition(marker) {
   left_diff = (in_browser_width - stretched_image_width) / 2
   x_plot = (((stretched_image_width / actual_image_width) * x_plot));
   y_plot = (((stretched_image_height / actual_image_height) * y_plot));
-  
+
   if(actual_image_width > 1412){
     x_plot = x_plot - 6
     y_plot = y_plot - 17 
   }
   else{
-    y_plot = y_plot-10
+    y_plot = y_plot - 8
+    x_plot = x_plot - 4
   }
+
   $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
   // $(marker).removeClass('hidden');
   // marker_width = $('#m_' + unit_id).width();
@@ -1690,8 +1694,10 @@ function adjustAmenitiesPosition() {
       y_plot = y_plot - 7 
     }
     else{
-      y_plot = y_plot
+      y_plot = y_plot - 8
+      x_plot = x_plot - 4
     }
+
     $(this).css({"left": (x_plot) + left_diff , "top": (y_plot)});
   });
 }
