@@ -29,17 +29,15 @@ class Api::V1::FloorplansController < ActionController::Base
   end
 
   def update_tour_stops_list
-    @tour_stop = TourStop.find params[:id]
+    @tour_stop = TourStop.find_by_stop_id params[:stop_id]
     if @tour_stop.present?
       remove_tour_stop(@tour_stop)
     else
-      add_tour_stop(@tour_stop)
+      add_tour_stop()
     end
   end
 
   def remove_tour_stop(tour_stop)
-    # @tour_stop = TourStop.find params[:id]
-
     paths = Path.where(map_path_from_id: tour_stop.stop_id)
     paths.each do |path|
       path.path_points.destroy_all
@@ -57,36 +55,31 @@ class Api::V1::FloorplansController < ActionController::Base
     if @tour_stop.stop_type == "building_starting_point"
       (BuildingStartingPoint.find tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: tour_stop.stop_id).any?
     end
+    if @tour_stop.destroy
+      render json: { success: true, error_code: 200, message: "Tour stop has been deleted successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
+    else
+      render json: { success: false, status_code: 400, message: "Something went wrong, please try again later", data: nil }, status: 400
+    end
   end
 
   def add_tour_stop
-    stops = params[:data_to_add].each do |stop|
-      splitText = stop.split(':')
-      tour_stop = splitText[0].to_i
-      stop_type = splitText[1]
-      # ts = TourStop.find_by(stop_type: stop_type, stop_id: tour_stop)
-      # if ts.present?
-      #   ts.latitude = params[:x_plot]
-      #   ts.longitude = params[:y_plot]
-      #   ts.save
-      #   render json: {tour: ts}, status: 200
-      # else
-      if stop_type == "amenity"
-        st = Amenity.find tour_stop
-        st.floor = params[:floor].to_i unless @community.show_map
-        st.save
-        stName = st.name
-      elsif stop_type == "elevator"
-        st = Elevator.find tour_stop
-        stName = st.name
-      else
-        st = Unit.find tour_stop
-        stName = st.marketing_name
-      end
-      ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: current_community.tour.id,name: stName)
-      PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: '#{stName}' community_id: '#{current_community.id}'")
+    tour_stop = params[:stop_id] #tour_stop.id
+    stop_type = params[:stop_type] #tour_stop.stop_type
+    if stop_type == "amenity"
+      st = Amenity.find tour_stop
+      st.floor = params[:floor].to_i unless @community.show_map
+      st.save
+      stName = st.name
+    elsif stop_type == "elevator"
+      st = Elevator.find tour_stop
+      stName = st.name
+    else
+      st = Unit.find tour_stop
+      stName = st.marketing_name
     end
-    render json: {community: @community}, status: 200
+    ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: @community.tour.id,name: stName)
+    PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: @community&.users&.first&.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{stName}' community_id: '#{@community.id}'")
+    render json: { success: true, error_code: 200, message: "Tour stop has been added successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
   end
 
   private
