@@ -374,13 +374,13 @@ $(window).bind('load', function () {
           y_plot = y_plot - 17
         }
         else{
-          y_plot = y_plot - 8
+          y_plot = y_plot - 4
           x_plot = x_plot - 4
         }
 
         $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
         if($(window).width() >= 567 && $(window).width() <= 1360 ){
-          $(this).css({"margin-left": -5, "margin-top": -7})       
+          // $(this).css({"margin-left": -5, "margin-top": -7})
         }
         if($(window).width() <= 567){
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()), "margin-top": -($('.fa-map-marker-alt-responsive').height()+7)})       
@@ -1648,7 +1648,7 @@ function adjustMarkerPosition(marker) {
     y_plot = y_plot - 17 
   }
   else{
-    y_plot = y_plot - 8
+    y_plot = y_plot - 4
     x_plot = x_plot - 4
   }
 
@@ -1658,7 +1658,7 @@ function adjustMarkerPosition(marker) {
   // marker_height = $('#m_' + unit_id).height();
   // $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
   if($(window).width() >= 567 && $(window).width() <= 1360 ){
-    $(marker).css({"margin-left": -5, "margin-top": -2})       
+    // $(marker).css({"margin-left": -5, "margin-top": -2})       
   }
   if($(window).width() <= 567){
     $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+8), "margin-top": -($('#s_'+unit_id).height()+7)})       
@@ -1694,7 +1694,7 @@ function adjustAmenitiesPosition() {
       y_plot = y_plot - 7 
     }
     else{
-      y_plot = y_plot - 8
+      y_plot = y_plot - 4
       x_plot = x_plot - 4
     }
 
