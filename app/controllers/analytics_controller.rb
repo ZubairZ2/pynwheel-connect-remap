@@ -58,7 +58,8 @@ class AnalyticsController < ApplicationController
       opened_counter_session(start_date, @days_count, @self_tour_records, :arrived, :notes_opened_counter) 
       stops_per_tour(start_date, @days_count, @self_tour_records)
       visits_per_tour_stop(@self_tour_records)
-      @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact.uniq).where.not(tour_user_id: nil).where('tour_date > ? AND tour_date < ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
+
+      @schedule_records = SchedualTour.where(community_id: @self_tour_records_all.pluck(:community_id).compact.uniq).where.not(tour_user_id: nil).where('tour_date >= ? AND tour_date <= ?',start_date.beginning_of_day, DateTime.now).where(tour_type: ["self_tour", "guided_tour", "Virtual Tour"])
       days_count_for_schedule_records = return_total_days(start_date, Date.today) > 0 ? return_total_days(start_date, Date.yesterday.end_of_day) : 1
       till_now_tour_histories = @self_tour_records_all.where('arrived < ?', Date.yesterday.end_of_day)
       no_shows(start_date, days_count_for_schedule_records, @schedule_records, till_now_tour_histories)
@@ -603,18 +604,22 @@ class AnalyticsController < ApplicationController
 
     def no_shows(start_date, days_count, scheduled_tours, tour_histories)
       sessions_each_day_hash = return_empty_hash(days_count,start_date) # Initialization
+      
       scheduled_tours_date_with_user = scheduled_tours.pluck(:tour_date, :tour_user_id, :tour_type)
       tour_histories_date_with_user = tour_histories.where(tour_status: ["self_tour", "virtual_tour", "guided_tour"]).pluck(:arrived, :tour_user_id, :tour_status).map do |arr| 
         arr[2] == "virtual_tour" ? [arr[0].to_date, arr[1], "Virtual Tour"] : [arr[0].to_date, arr[1], arr[2]]
       end
+
       no_shows_schedule_records = scheduled_tours_date_with_user - tour_histories_date_with_user
       records_start_date = no_shows_schedule_records.map {|arr| arr.first}
       uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
+
       uniq_start_date_size.times do |i|
         sessions_each_day_hash[uniq_start_date[i]] = records_start_date.count(uniq_start_date[i])
         records_start_date = records_start_date - [uniq_start_date[i]]
       end
+
       @no_show_count = no_shows_schedule_records.count
       @session_each_day_no_show_data, @session_each_day_no_show_options = make_bar_chart(sessions_each_day_hash.keys.map(&:to_s), sessions_each_day_hash.values, "Total Sessions", "rgba(240, 90, 142, 0.8)", "rgba(240, 90, 142, 1)")
     end
