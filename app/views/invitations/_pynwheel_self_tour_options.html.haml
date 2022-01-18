@@ -1,0 +1,56 @@
+.pynwheel-self-tour-option
+  %input#pynwheel-self-tour{:name => "pynwheelSelfTour", :type => "checkbox"}
+  %label Self Tour
+
+  .sub-options.pynwheel-self-tour-sub-options
+    %input#pynwheel-self-tour-hardware{:name => "pynwheel-self-tour-hardware", :type => "checkbox"}
+    %label Hardware Required
+
+    .sub-options.pynwheel-self-tour-hardware-options
+      %input#pynwheel-access{:name => "pynwheel-access", :type => "checkbox"}
+      %label Pynwheel Access
+      %br
+
+      .sub-options.pynwheel-access-options
+        %label{:for => "Pyns"} Pyns:
+        %input#pyns-quantity{:max => "100", :min => "0", :name => "Pyns", :type => "number", :value=>"0"}/
+
+        %label{:for => "deadbolts"} Deadbolts:
+        %input#deadbolts-quantity{:max => "100", :min => "0", :name => "Deadbolts", :type => "number", :value=>"0"}/
+        %br
+
+        %input#pynwheel-access-other{:name => "pynwheel-access-other", :type => "checkbox"}
+        %label{:for => "Other"} Other
+        %br
+        .sub-options.pynwheel-access-other-options
+          %label{:for => "otherType"} Type:
+          %input#other-type{:name => "otherType", :type => "text"}/
+
+          %label{:for => "OtherQuantity"} Quantity:
+          %input#other-quantity{:max => "100", :min => "0", :name => "OtherQuantity", :type => "number", :value=>"0"}/
+
+        %br
+
+      %input#pynwheel-latch{:name => "pynwheel-latch", :type => "checkbox"}
+      %label Latch
+      %br
+
+      %input#pynwheel-igloo{:name => "pynwheel-igloo", :type => "checkbox"}
+      %label Igloo
+      %br
+
+      %input#pynwheel-remote-lock{:name => "pynwheel-remote-lock", :type => "checkbox"}
+      %label Remote Lock
+      %br
+
+      .sub-options.pynwheel-remote-lock-options
+        %label{:for => "Igloo"} Igloo:
+        %input#igloo-quantity{:max => "100", :min => "0", :name => "Igloo", :type => "number", :value=>"0"}/
+
+        %label{:for => "Yale"} Yale:
+        %input#yale-quantity{:max => "100", :min => "0", :name => "Yale", :type => "number", :value=>"0"}/
+
+        %label{:for => "Schlage"} Schlage:
+        %input#schlage-quantity{:max => "100", :min => "0", :name => "Schlage", :type => "number", :value=>"0"}/
+
+      %br

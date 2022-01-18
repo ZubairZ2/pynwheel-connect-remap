@@ -1,5 +1,9 @@
 Rails.application.routes.draw do
 
+  use_doorkeeper scope: 'api/v2/auth' do
+    skip_controllers :applications
+  end
+
   get 'crm_providers/update'
 
   get 'tutorial/index'
@@ -27,7 +31,7 @@ Rails.application.routes.draw do
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
 
   get 'tours/index'
-  post 'tours/customize_tour', to: 'tours#customize_tour' 
+  post 'tours/customize_tour', to: 'tours#customize_tour'
   delete 'tours/reset_to_standard_tour', to: 'tours#reset_to_standard_tour'
 
   namespace :scheduler_widget do
@@ -65,7 +69,7 @@ Rails.application.routes.draw do
     collection do
       get :get_regions
     end
-    member do 
+    member do
       get :generate_csv
       get :generate_csv_for_scheduled_records
     end
@@ -543,6 +547,25 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
+    namespace :v2 do
+      resources :user_details do
+        member do
+          put :update_company
+        end
+      end
+      resources :communities do
+        member do
+          post :add_comment
+          post :get_products
+          put :update_products
+        end
+      end
+      resources :access_token do
+        collection do
+          post :revoke
+        end
+      end
+    end
     namespace :v1 do
       post :authorize, to: 'schedule_tours#authorize_vendor'
       get :properties, to: 'schedule_tours#communities'
@@ -632,7 +655,7 @@ Rails.application.routes.draw do
       post '/mis_match_verification', to: 'tours#mis_match_verification'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
 
-      # 
+      #
       post :save_tour_history, to: 'tour_histories#save_tour_history'
       post :alerts_during_tour, to: 'tour_histories#alerts_during_tour'
       get :get_tour_history, to: 'tour_histories#get_tour_history'

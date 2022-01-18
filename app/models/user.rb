@@ -57,16 +57,24 @@ class User < ApplicationRecord
   mount_uploader :avatar, AvatarUploader
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable, :timeoutable, :timeout_in => 8.hours
-  #ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]  
+  #ROLES = ["super admin" , "company admin" , "community manager", "region admin" , "member"]
   ROLES = ["Community admin", "Community manager",["Company admin","Company admin"] ,["Regional admin", "Regional admin"], ["Pynwheel admin","Super admin"],["View Visitor Details","visitor_detail_page"], ["Dwelo admin","Dwelo admin"], ["Community Assistant (Self Tour)","Community assistant"]]
   ROLES_DWELO_ADMIN = [["Company admin","Company admin"] ,["Regional admin", "Regional admin"], ["Community admin", "Community admin"],["Community manager","Community manager"],["View Visitor Details","visitor_detail_page"], ["Community Assistant (Self Tour)","Community assistant"]]
-  ROLES_ADMIN = [ "Community manager"]   
+  ROLES_ADMIN = [ "Community manager"]
   belongs_to :company
   belongs_to :region
   has_many :community_users,dependent: :destroy
   has_many :communities ,through: :community_users
   # before_validation :gen_uuid, on: :create
   # validates :uuid, presence: true, uniqueness: true
+
+  def as_json
+    super(
+      :only => [:id , :first_name , :last_name , :email , :role] ,
+      include: [:company] ,
+      :methods => [:name]
+    )
+  end
 
   def all_companies
     Company.all.map(&:name).sort
@@ -81,7 +89,7 @@ class User < ApplicationRecord
   	else
   		first_name+" "+last_name
   	end
-  end  
+  end
 
   def is_super_admin?
     role == "Super admin"
@@ -129,6 +137,14 @@ class User < ApplicationRecord
 
   def is_regional_admin?
     role == "Regional admin"
+  end
+
+  def is_new_client?
+    role == "New Client"
+  end
+
+  def verified_portal_user?
+    is_new_client? || is_super_admin?
   end
 
   def is_admin?

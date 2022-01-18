@@ -1,2 +1,7 @@
 INFO_EMAIL = "info@pynwheel.com"
+NEW_CLIENT = "New Client"
 DEFAULT_TIME_ZONE = "America/Los_Angeles"
+SUBMITTED = "submitted"
+IN_PROGRESS = "in_progress"
+APPROVED = "approved"
+REJECTED = "rejected"

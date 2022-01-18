@@ -1,0 +1,13 @@
+.additional-services-option
+  %input#additional-services{:name => "AdditionalServices", :type => "checkbox"}
+  %label Additional Services
+
+  .sub-options.additional-services-options
+    %label{:for => "VirtualStaging"} Virtual Staging:
+    %input#virtual-staging-quantity{:max => "100", :min => "0", :name => "VirtualStaging", :type => "number", :value=>"0"}/
+    %br
+    %label{:for => "Photography"} Photography:
+    %input#photography-quantity{:max => "100", :min => "0", :name => "Photography", :type => "number", :value=>"0"}/
+    %br
+    %label{:for => "PanoskinTourPackage"} Panoskin Tour Package:
+    %input#panoskin-tour-package-quantity{:max => "100", :min => "0", :name => "PanoskinTourPackage", :type => "number", :value=>"0"}/
