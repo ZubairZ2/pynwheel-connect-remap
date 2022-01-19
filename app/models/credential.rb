@@ -41,6 +41,8 @@ class Credential < ApplicationRecord
   has_paper_trail
   belongs_to :community
   before_save :set_https_in_url
+  has_one :status, as: :statusable
+  
   after_update :change_to_scheduled_tours_for_sf
   
   def import_data_from_spreadsheet(file)

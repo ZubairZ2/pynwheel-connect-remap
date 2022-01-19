@@ -16,6 +16,7 @@ class Gallery < ApplicationRecord
 
 	has_many :gallery_images, dependent: :destroy
 	belongs_to :community
+	has_one :status, as: :statusable
 	validates :name, presence: true, uniqueness: {scope: :community}
 
 	def delete_gallery

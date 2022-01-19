@@ -27,6 +27,7 @@ class HomePageImage < ApplicationRecord
   #mount_base64_uploader :image, ImageUploader
   mount_uploader :image, ImageUploader
   belongs_to :design
+  has_one :status, as: :statusable
   before_create :set_image_name
   after_update :crop_image
   after_commit :populate_image_urls, on: [:create,:update]
