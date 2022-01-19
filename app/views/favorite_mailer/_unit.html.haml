@@ -97,7 +97,7 @@
                                   - if unit.community.display_rent
                                     %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
                                       - min_rent = unit.effective_rent.present? ? unit.effective_rent : nil
-                                      - max_rent = unit.max_effective_rent.present? ? unit.max_effective_rent : (unit.effective_rent.present? ? unit.effective_rent : nil)
+                                      - max_rent = (unit.max_effective_rent.present? && unit.max_effective_rent.to_i > 0) ? unit.max_effective_rent : (unit.effective_rent.present? ? unit.effective_rent : nil)
 
                                       - if !unit.lease_pricing.nil? && !(unit.lease_pricing == "")
                                         %b From $ #{min_rent.to_i.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse}
