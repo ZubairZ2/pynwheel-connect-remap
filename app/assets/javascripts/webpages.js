@@ -9,6 +9,7 @@ var favoritesArr = [];
 var defaultMapType;
 var _3dUnitsToBeSelected;
 var enable3DMaps;
+var image_width_2d;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -358,7 +359,7 @@ $(window).bind('load', function () {
       in_browser_width = parseFloat($('.sitemap-image').parent().width());
       actual_image_height = parseInt($('.sitemap-image').data("height"));
       actual_image_width = parseInt($('.sitemap-image').data("width"));
-      stretched_image_width = parseInt($('.sitemap-image').width());
+      stretched_image_width = image_width_2d || parseInt($('.sitemap-image').width());
       stretched_image_height = parseInt($('.sitemap-image').height());
       left_diff = (in_browser_width - stretched_image_width) / 2
 
@@ -374,7 +375,7 @@ $(window).bind('load', function () {
           y_plot = y_plot - 17
         }
         else{
-          y_plot = y_plot + 5
+          y_plot = y_plot - 1
           // x_plot = x_plot - 4
         }
 
@@ -1735,6 +1736,7 @@ function display3DMap() {
   $("._3d-apply-filter-button").css("display", "block");
   $(".beans-map-container").show();
   $('.zooming-content').css("float", "right");
+  image_width_2d = parseInt($('.sitemap-image').width());
   $('.image-map').hide();
   $('.zoom-in-webpage').hide();
   $('.zoom-out-webpage').hide();
