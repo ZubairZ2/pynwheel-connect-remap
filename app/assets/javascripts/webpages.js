@@ -1269,6 +1269,15 @@ function overall_filtered_units(floorplate_units) {
   }
 }
 
+function set_yardirentcafe_url(element){
+  var url = $(element).data('availability-url');
+  
+  if(selectMap === "3d-map" && enable3DMaps) {
+    url = _3dSelectedUnit.availability_url
+  }
+
+  window.open(url, '_blank');
+}
 
 function set_psi_url(element) {
   var url = $(element).data('availability-url');

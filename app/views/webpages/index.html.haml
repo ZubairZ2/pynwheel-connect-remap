@@ -39,38 +39,18 @@
                   %a.logo{:href => @community.community_website}
                     %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
               .selection-fields
-                - if @unit_bedrooms.present?
-                  .selectable-field
-                    %label Bedrooms
-                    = select_tag :unit_bedroom, options_for_select(@unit_bedrooms),{:class=>"custom-select", :include_blank => "All "}
-                - else
-                  .selectable-field
-                    %label Bedrooms
-                    = select_tag :unit_bedroom, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
-                - if @available_units.present?
-                  .selectable-field
-                    %label Availability
-                    = select_tag :available_unit, options_for_select(@available_units),{:class=>"custom-select", :include_blank => "All "}
-                - else
-                  .selectable-field
-                    %label Availability
-                    = select_tag :available_unit, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
-                - if @market_rent.present?
-                  .selectable-field
-                    %label Max Price
-                    = select_tag :market_rent, options_for_select(@market_rent),{:class=>"custom-select", :include_blank => "Select Max Price"}
-                - else
-                  .selectable-field
-                    %label Max Price
-                    = select_tag :market_rent, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Max Price"}      
-                - if @square_feet.present?
-                  .selectable-field
-                    %label Min Square Footage
-                    = select_tag :square_feet, options_for_select(@square_feet),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}  
-                - else
-                  .selectable-field
-                    %label Min Square Footage
-                    = select_tag :square_feet, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"} 
+                .selectable-field
+                  %label Bedrooms
+                  = select_tag :unit_bedroom, options_for_select(@unit_bedrooms),{:class=>"custom-select", :include_blank => "All "}
+                .selectable-field
+                  %label Availability
+                  = select_tag :available_unit, options_for_select(@available_units),{:class=>"custom-select", :include_blank => "All "}
+                .selectable-field
+                  %label Max Price
+                  = select_tag :market_rent, options_for_select(@market_rent),{:class=>"custom-select", :include_blank => "Select Max Price"}
+                .selectable-field
+                  %label Min Square Footage
+                  = select_tag :square_feet, options_for_select(@square_feet),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}  
 
                 %button._3d-apply-filter-button{:type => "button", :onclick => "apply3DFilters();"} Apply Filters
                 %ul.selected-data-mobile.responsive-content
@@ -99,39 +79,19 @@
                 %span.filter-btn Filters
                 %img{:src => "/assets/menu-icon.png"}/
               .mobile-filter-mega-menu.responsive-content
-                - if @unit_bedrooms.present?
-                  .selectable-field
-                    %label Bedrooms
-                    = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms),{:class=>"custom-select", :include_blank => "All "}
-                - else
-                  .selectable-field
-                    %label Bedrooms
-                    = select_tag :responsive_unit_bedroom, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
-                - if @available_units.present?
-                  .selectable-field
-                    %label Availability
-                    = select_tag :responsive_available_unit, options_for_select(@available_units),{:class=>"custom-select", :include_blank => "All "}
-                - else
-                  .selectable-field
-                    %label Availability
-                    = select_tag :responsive_available_unit, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
-                
-                - if @market_rent.present?
-                  .selectable-field
-                    %label Maximum Price
-                    = select_tag :responsive_market_rent, options_for_select(@market_rent),{:class=>"custom-select", :include_blank => "Select Max Price"}
-                - else
-                  .selectable-field
-                    %label Maxy Price
-                    = select_tag :responsive_market_rent, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Max Price"}      
-                - if @square_feet.present?
-                  .selectable-field
-                    %label Min Square Footage
-                    = select_tag :responsive_square_feet, options_for_select(@square_feet),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
-                - else
-                  .selectable-field
-                    %label Min Square Footage
-                    = select_tag :responsive_square_feet, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
+                .selectable-field
+                  %label Bedrooms
+                  = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms),{:class=>"custom-select", :include_blank => "All "}
+                .selectable-field
+                  %label Availability
+                  = select_tag :responsive_available_unit, options_for_select(@available_units),{:class=>"custom-select", :include_blank => "All "}
+                .selectable-field
+                  %label Maximum Price
+                  = select_tag :responsive_market_rent, options_for_select(@market_rent),{:class=>"custom-select", :include_blank => "Select Max Price"}
+                .selectable-field
+                  %label Min Square Footage
+                  = select_tag :responsive_square_feet, options_for_select(@square_feet),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
+
                 %div{:style => "text-align: center; padding-bottom: 9px;"}
                   %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"} Apply Filters
           
