@@ -25,6 +25,12 @@ class Company < ApplicationRecord
   has_many :regions
   validates_uniqueness_of :name
 
+  def as_json
+    super(
+      :only => [:id , :name , :phone , :email , :address , :zip , :state , :city]
+    )
+  end
+
   def delete_company
     DeleteCompanyJob.perform_async self
   end
