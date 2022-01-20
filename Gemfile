@@ -83,6 +83,7 @@ gem 'time_difference'
 #gem "fog"
 gem 'devise'
 gem 'devise_invitable'
+gem 'doorkeeper'
 gem 'cancancan', '~> 2.0'
 #gem 'themes_on_rails'
 gem 'rmagick', require: false

@@ -2,6 +2,7 @@ class Latch < ApplicationRecord
   require 'csv'
   belongs_to :community
   has_many :latch_locks, dependent: :destroy
+  has_one :status, as: :statusable
 
   def import_data(file)
       Thread.new do
