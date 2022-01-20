@@ -25,7 +25,7 @@ class CommunityUser < ApplicationRecord
                 }}
               }}
           },
-      :methods => [:invitation_date , :company_name , :community_products]
+      :methods => [:invitation_date , :company_name , :community_products, :status_in_percentage, :community_detail_forms]
     )
   end
 
@@ -90,6 +90,31 @@ class CommunityUser < ApplicationRecord
       obj.find{ |*a| r=nested_hash_value(a.last,key) }
       r
     end
+  end
+
+  def community_detail_forms
+    @community = self.community
+    products = community_products
+    community_detail_forms = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).get_community_detail_forms(products)
+    community_detail_forms.each do |form|
+      { name: form[:name], status: form[:status] }
+    end
+  end
+
+  def status_in_percentage
+    community_detail_sections = community_detail_forms
+    all_sections_with_status = community_detail_sections.map {|x| x[:status]}
+    total_number_of_sections = all_sections_with_status.count
+    number_of_submitted_sections = all_sections_with_status.pluck("submitted").compact.count rescue 0
+    number_of_approved_sections = all_sections_with_status.pluck("approved").compact.count rescue 0
+    submitted_percentage = percent_of(number_of_submitted_sections, total_number_of_sections).to_i
+    approved_percentage = percent_of(number_of_approved_sections, total_number_of_sections).to_i
+    status_percentage = {submitted: submitted_percentage, approved: approved_percentage}
+    status_percentage 
+  end
+
+  def percent_of(v,n)
+    v.to_f / n.to_f * 100.0
   end
 
 end

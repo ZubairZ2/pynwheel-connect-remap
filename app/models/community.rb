@@ -115,6 +115,8 @@ class Community < ApplicationRecord
     set_touch_vidoes_status(current_user)
     set_data_provider_status(current_user)
     touch_installation_specification(current_user)
+    set_lock_providers_status(current_user)
+    set_tour_stops_status(current_user)
     set_visiting_hours_status(current_user)  
   end
 
@@ -265,7 +267,7 @@ class Community < ApplicationRecord
     return if self.community_users.blank?
     community_users = self.community_users
     community_users.each do |cu|
-      required_hardware = cu.product_options.present? ? check_required_hardware(cu.product_options) : false 
+      required_hardware = cu.product_options.present? && check_required_hardware(cu.product_options) ? true : false 
       status_attr = status_string(required_hardware)
       set_status_for_all(cu,status_attr,current_user)
     end
@@ -282,6 +284,44 @@ class Community < ApplicationRecord
     tour_stops.each do |ts|
       status_attr = status_string(ts.name.present?)
       set_status_for_all(ts,status_attr,current_user)
+    end
+  end
+
+  def set_lock_providers_status(current_user)
+    return if self.zerv.blank? && self.latch.blank? && self.dwelo.blank? && self.edge_state.blank? && self&.edge_state&.remote_locks.blank?
+    pynwheel_access_status(current_user)
+    latch_locks_status(current_user)
+    dwelo_locks_status(current_user)
+    remote_lock_status(current_user)
+  end
+
+  def pynwheel_access_status(current_user)
+    return if self.zerv.blank?
+    zerv_lock = self.zerv
+    status_attr = status_string(zerv_lock.facility_id.present? && zerv_lock.badge_id.present? && zerv_lock.card_format.present?)
+    set_status_for_all(zerv_lock,status_attr,current_user)
+  end
+
+  def latch_locks_status(current_user)
+    return if self.latch.blank?
+    latch = self.latch
+    status_attr = status_string(latch.client_id.present? && latch.client_secret.present?)
+    set_status_for_all(latch,status_attr,current_user)
+  end
+
+  def dwelo_locks_status(current_user)
+    return if self.dwelo.blank?
+    dwelo = self.dwelo
+    status_attr = status_string(dwelo.community_id.present? && dwelo.client_id.present? && dwelo.client_secret.present?)
+    set_status_for_all(dwelo,status_attr,current_user)
+  end
+
+  def remote_lock_status(current_user)
+    return if self.edge_state.blank?
+    remote_locks = self.edge_state&.remote_locks
+    remote_locks.each do |remote_lock|
+      status_attr = status_string(remote_lock.present?)
+      set_status_for_all(remote_lock,status_attr,current_user)
     end
   end
 
