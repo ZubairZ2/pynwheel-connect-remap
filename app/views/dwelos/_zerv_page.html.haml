@@ -22,14 +22,14 @@
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               Facility ID
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = f.text_field :facility_id, :class=>"form-control", :placeholder=>"facility id", :value=> @community.zerv.present? ? @community.zerv.facility_id : ""
-              %span{:style => "color: red"} FacilityId should be in range of 0 to 255
+              = f.number_field :facility_id, :min => "0", :max => "255", :class=>"form-control", :placeholder=>"facility id", :value=> @community.zerv.present? ? @community.zerv.facility_id : ""
+              %span FacilityId should be in range of 0 to 255
           .form-group
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               Badge ID
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = f.text_field :badge_id, :class=>"form-control", :placeholder=>"badge id", :value=> @community.zerv.present? ? @community.zerv.badge_id : ""
-              %span{:style => "color: red"} BadgeId should be in range of 0 to 65535
+              = f.number_field :badge_id, :min => "0", :max => "65535", :class=>"form-control", :placeholder=>"badge id", :value=> @community.zerv.present? ? @community.zerv.badge_id : ""
+              %span BadgeId should be in range of 0 to 65535
           .form-group
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               Card Format
