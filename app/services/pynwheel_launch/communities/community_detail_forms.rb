@@ -73,7 +73,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   private
 
   def community_status
-    return "" if @community.status
+    return "" if @community.status.blank?
     @community.status.status rescue ""
   end
   
