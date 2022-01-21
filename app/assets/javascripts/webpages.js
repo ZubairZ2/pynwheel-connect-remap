@@ -10,6 +10,7 @@ var defaultMapType;
 var _3dUnitsToBeSelected;
 var enable3DMaps;
 var image_width_2d;
+var maxSelectedPrice;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -144,6 +145,7 @@ $(window).bind('load', function () {
       }
     });
     $('#market_rent').change(function () {
+      maxSelectedPrice = this.value;
       showMarkers(true);
     });
     $('#square_feet').change(function () {
@@ -760,7 +762,12 @@ function set_prices_according_to_units_to_display(floorplate_units, is_market_re
         end_value = end_value + partition
         text = Math.ceil(min_market_rent + end_value)
         val = min_market_rent + "-" + text
-        $('#market_rent').append(`<option value="${val}"> ${text} </option>`)
+
+        if (maxSelectedPrice == val)
+          $('#market_rent').append(`<option value="${val}" selected> ${text} </option>`)
+
+        else
+          $('#market_rent').append(`<option value="${val}"> ${text} </option>`)
       }
     }
     else{
