@@ -38,6 +38,7 @@ class Api::V1::FloorplansController < ActionController::Base
   end
 
   def remove_tour_stop(tour_stop)
+    floor = params[:floor]
     paths = Path.where(map_path_from_id: tour_stop.stop_id)
     paths.each do |path|
       path.path_points.destroy_all
@@ -55,6 +56,9 @@ class Api::V1::FloorplansController < ActionController::Base
     if @tour_stop.stop_type == "building_starting_point"
       (BuildingStartingPoint.find tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: tour_stop.stop_id).any?
     end
+    unless @community.is_sitemap
+      add_remove_stop_into_sort_hash(floor,@tour_stop,"remove")
+    end
     if @tour_stop.destroy
       render json: { success: true, error_code: 200, message: "Tour stop has been deleted successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
     else
@@ -63,8 +67,8 @@ class Api::V1::FloorplansController < ActionController::Base
   end
 
   def add_tour_stop
-    tour_stop = params[:stop_id] #tour_stop.id
-    stop_type = params[:stop_type] #tour_stop.stop_type
+    tour_stop = params[:stop_id]
+    stop_type = params[:stop_type]
     floor = params[:floor]
     if stop_type == "amenity"
       st = Amenity.find tour_stop
@@ -79,44 +83,30 @@ class Api::V1::FloorplansController < ActionController::Base
       stName = st.marketing_name
     end
     ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: @community.tour.id,name: stName)
-    
-    # unless @community.is_sitemap
-    #   add_stop_into_sort_hash(floor,ts)
-    # end
+    unless @community.is_sitemap
+      add_remove_stop_into_sort_hash(floor,ts,"add")
+    end
     PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: @community&.users&.first&.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{stName}' community_id: '#{@community.id}'")
     render json: { success: true, error_code: 200, message: "Tour stop has been added successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
-  end
-
-  def add_stop_into_sort_hash(floor_number,tour_stop)
-    
-    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
-    @building_list = building_list
-
-    @building_list << "" if @building_list == []
-      @building_list.each do |building|
-        @floor_list.each do |floor|
-          tour_sort_hash = @community.tour.sort_hash[building + ","+ floor.to_s]
-            if tour_sort_hash.present?
-              if floor.eql?(floor_number.to_i)
-                tour_sort_hash.push(tour_stop.id.to_s) 
-                @community.tour.sort_hash["#{building},#{floor.to_i}"] = tour_sort_hash
-              end
-            end
-        end
-      end
-  end
-
-  def building_list
-    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
-    @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
-    @building_list
   end
 
   private
 
   def set_community
     @community = Community.find params[:community_id]
+  end
+
+  def authorize_access
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access
+      true
+    else
+      render :json => { :success => false, status: 401, :message => "Unauthorized, token is invalid" }
+    end
+  end
+
+  def floorplan_units_service(community)
+    FloorplanUnitsService.new(community)
   end
 
   def sort_floorplans(floorplans_to_be_sorted,sorting_param)
@@ -138,16 +128,37 @@ class Api::V1::FloorplansController < ActionController::Base
     end      
   end
 
-  def authorize_access
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access
-      true
-    else
-      render :json => { :success => false, status: 401, :message => "Unauthorized, token is invalid" }
-    end
+  def add_remove_stop_into_sort_hash(floor_number,tour_stop,request)
+    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
+    @building_list = building_list
+    community_tour_stops_hash = []
+    @building_list << "" if @building_list == []
+      @building_list.each do |building|
+        @floor_list.each do |floor|
+          tour_sort_hash = @community.tour.sort_hash[building + ","+ floor.to_s]
+            if tour_sort_hash.present?
+              if floor.eql?(floor_number.to_i)
+                if request.eql?("add")
+                  tour_sort_hash.push(tour_stop.id.to_s)
+                elsif request.eql?("remove")
+                  tour_sort_hash.delete(tour_stop.id.to_s)
+                else
+                  tour_sort_hash
+                end
+                @community.tour.sort_hash["#{building},#{floor.to_i}"] = tour_sort_hash
+                community_tour_stops_hash = @community.tour.sort_hash
+              end
+            end
+        end
+      end
+    @community.tour.update_attributes(sort_hash: community_tour_stops_hash) if community_tour_stops_hash.present?
   end
 
-  def floorplan_units_service(community)
-    FloorplanUnitsService.new(community)
+  def building_list
+    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+    @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+    @building_list
   end
+
 end
