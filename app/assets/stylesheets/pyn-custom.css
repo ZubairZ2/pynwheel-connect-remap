@@ -4937,7 +4937,7 @@ input:checked+.slider:before {
 }
 
 .pyn-popover {
-    top: -25px !important;
+    top: -25px;
     width: max-content;
 }
 

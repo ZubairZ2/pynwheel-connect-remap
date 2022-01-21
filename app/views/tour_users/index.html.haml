@@ -46,10 +46,6 @@
                         %td.col-lg-2
                           .visitor_list.custom_label_color
                             #{(user.tour_histories.where(tour_id: @community.tour.id).last.arrived.in_time_zone(time_zone)).strftime("%Y-%m-%d") rescue nil} #{(user.tour_histories.where(tour_id: @community.tour.id).last.arrived.in_time_zone(time_zone)).strftime("%I:%M %p") rescue nil}
-                            -# - if user.tour_histories.present?
-                            -#   - if user.tour_histories.last.arrived.present?
-                            -#     - pii = 1
-                            -#     %i.fa.fa-remove{style: "color: red; font-size:18px; position:relative;", :onclick => "delete_user_information(#{user.id}, #{pii})"}
                         %td
                           .col-lg-1
                             - if user.image.present?
