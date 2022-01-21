@@ -240,7 +240,7 @@ class Community < ApplicationRecord
   end
 
   def set_visiting_hours_status(current_user)
-    return if self.opening_hours.blank? && self.guided_opening_hours.blank?
+    return unless self.self_tour
     self_tour_visiting_hours(current_user) if self&.tour&.tour_setting&.allow_self_tour
     guided_visiting_hours(current_user) if self&.tour&.tour_setting&.allow_guided_tour
   end
