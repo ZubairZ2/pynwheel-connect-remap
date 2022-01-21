@@ -65,9 +65,10 @@ class Api::V1::FloorplansController < ActionController::Base
   def add_tour_stop
     tour_stop = params[:stop_id] #tour_stop.id
     stop_type = params[:stop_type] #tour_stop.stop_type
+    floor = params[:floor]
     if stop_type == "amenity"
       st = Amenity.find tour_stop
-      st.floor = params[:floor].to_i unless @community.show_map
+      st.floor = floor.to_i unless @community.show_map
       st.save
       stName = st.name
     elsif stop_type == "elevator"
@@ -78,8 +79,38 @@ class Api::V1::FloorplansController < ActionController::Base
       stName = st.marketing_name
     end
     ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: @community.tour.id,name: stName)
+    
+    # unless @community.is_sitemap
+    #   add_stop_into_sort_hash(floor,ts)
+    # end
     PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: @community&.users&.first&.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{stName}' community_id: '#{@community.id}'")
     render json: { success: true, error_code: 200, message: "Tour stop has been added successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
+  end
+
+  def add_stop_into_sort_hash(floor_number,tour_stop)
+    
+    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
+    @building_list = building_list
+
+    @building_list << "" if @building_list == []
+      @building_list.each do |building|
+        @floor_list.each do |floor|
+          tour_sort_hash = @community.tour.sort_hash[building + ","+ floor.to_s]
+            if tour_sort_hash.present?
+              if floor.eql?(floor_number.to_i)
+                tour_sort_hash.push(tour_stop.id.to_s) 
+                @community.tour.sort_hash["#{building},#{floor.to_i}"] = tour_sort_hash
+              end
+            end
+        end
+      end
+  end
+
+  def building_list
+    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
+    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
+    @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
+    @building_list
   end
 
   private
