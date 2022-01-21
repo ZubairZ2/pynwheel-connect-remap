@@ -12,14 +12,14 @@ class ApplicationController < ActionController::Base
   helper_method :show_chat_support
   before_action :load_tour_users_chats
   # before_filter :redirect_to_pynwheelconnect
-  
+
   def current_community
   	if params[:community_id].present?
-      session[:community_id] = params[:community_id] 
+      session[:community_id] = params[:community_id]
 	  	@community ||= Community.find_by_id params[:community_id]
 	  elsif controller_name =='communities' && params[:id].present?
-		  @community ||= Community.find_by_id params[:id] 
-	  end  	
+		  @community ||= Community.find_by_id params[:id]
+	  end
   end
   def community_code
     if current_community.present?
@@ -28,7 +28,7 @@ class ApplicationController < ActionController::Base
       @community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
     end
   end
-  
+
   def info_for_paper_trail
     { community_id: (current_community.present? ? current_community.id : nil),company_id: (current_company.present? ? current_company.id : nil) }
   end
@@ -37,7 +37,7 @@ class ApplicationController < ActionController::Base
     if current_user.present? && (current_user.is_company_admin? || current_user.is_regional_admin?) && current_user.company.present?
       @company = current_user.company
     elsif params[:company_id].present?
-      session[:company_id] = params[:company_id] 
+      session[:company_id] = params[:company_id]
       @company = Company.find_by_id params[:company_id] if params[:company_id].present?
     elsif current_community.present? && !current_community.new_record?
       @company = current_community.company
@@ -64,9 +64,19 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(resource_or_scope)
-    # LoggedInUser.where(user_id: current_user).destroy_all
-    # cookies.permanent[:browser_id] = SecureRandom.hex(8) if cookies[:browser_id].nil?
-    root_url
+    get_redirection_link
+  end
+
+  def after_accept_path_for(resource_or_scope)
+    get_redirection_link
+  end
+
+  def get_redirection_link
+    if current_user.is_new_client?
+     ENV['PYNWHEEL_LUANCH']
+    else
+     root_url
+    end
   end
 
   def check_community
@@ -118,10 +128,10 @@ class ApplicationController < ActionController::Base
       RemoteLockService.new(current_community).get_access_token_after_refresh
     end
   end
- 
+
   def load_tour_users_chats
     # below code will not be executed if call made from browser is ajax
-    # request.xhr? => returns numeric or nil values not BOOLEAN values and 
+    # request.xhr? => returns numeric or nil values not BOOLEAN values and
     # it works with unless condition as suited with our case
     unless request.xhr?
       if current_user.present? and @community.present? and @community.tour.present?
@@ -134,19 +144,19 @@ class ApplicationController < ActionController::Base
       end
     end
   end
-  
+
   def notifications_by_chatroom(community,chatroom)
     all_community_members = community.users
     min_count = 99999
     all_community_members.each do |user|
       count = Chat.where("chatroom_id = ? AND  name != ? ", chatroom.id, "Support Team").unread_by(user).count
       if count < min_count
-        min_count = count 
+        min_count = count
       end
     end
     if all_community_members.count == 0
       min_count=0
-    end 
+    end
     [chatroom.id , min_count]
   end
 
@@ -176,7 +186,7 @@ class ApplicationController < ActionController::Base
       "application"
     end
   end
-    
+
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:region_id,:role,:community_ids=>[]])
     devise_parameter_sanitizer.permit(:accept_invitation, keys: [:first_name, :last_name, :avatar])
