@@ -43,6 +43,36 @@ class Floorplate < ApplicationRecord
   before_destroy :reset_units_plots
   after_commit :populate_image_urls, on: [:create,:update]
 
+  def get_floorplate_units_data floor, provider_floorplan_id, community_id
+    units = self.units.available_units.where(floor: floor, floorplan_id: provider_floorplan_id, community_id: community_id)
+    floorplate_units = []
+
+    units.each do |u|
+      floorplate_units << {
+        id: u.id,
+        unit_name: u.name,
+        unit_type: u.unit_type,
+        x_plot: u.x_plot,
+        y_plot: u.y_plot,
+        floor: u.floor,
+        building: u.building,
+        unique_floorplat_unit_identifier: "#{u&.id}-#{u&.floor}-#{u&.building}"
+      }
+    end
+
+    {
+      id: self.id,
+      name: self.name,
+      floor_number: self.number,
+      image: self.image,
+      height: self.height,
+      width: self.width,
+      floor_range: self.range,
+      floorplan_name: floor,
+      floorplate_units: floorplate_units
+    }
+  end
+
   def reset_units_plots
     self.units.update_all(x_plot: 0,y_plot: 0, floorplate_id: nil)
   end
