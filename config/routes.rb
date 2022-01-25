@@ -553,6 +553,10 @@ Rails.application.routes.draw do
           put :update_company
         end
       end
+
+      resources :community_property_map, only: %i[index update]
+
+      post :update_community_property_map, to: 'community_property_map#update_community_property_map'
       resources :communities do
         member do
           post :add_comment
