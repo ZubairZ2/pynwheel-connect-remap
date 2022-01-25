@@ -554,9 +554,8 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :community_property_map, only: %i[index update]
+      resources :community_property_map
 
-      post :update_community_property_map, to: 'community_property_map#update_community_property_map'
       resources :communities do
         member do
           post :add_comment

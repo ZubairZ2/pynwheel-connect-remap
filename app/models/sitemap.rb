@@ -22,4 +22,15 @@ class Sitemap < ApplicationRecord
   has_one :status, as: :statusable
 
   validates :image, :presence => {message: "cannot be blank. Please upload site map image first."}
+
+  def as_json
+    super(
+      :only => [:id , :image],
+      :methods => [:property_type]
+    )
+  end
+
+  def property_type
+    return "Garden Style Community"
+  end
 end

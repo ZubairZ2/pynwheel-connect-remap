@@ -44,6 +44,18 @@ class Floorplate < ApplicationRecord
   before_destroy :reset_units_plots
   after_commit :populate_image_urls, on: [:create,:update]
 
+
+  def as_json
+    super(
+      :only => [:id , :name , :range , :image],
+      :methods => [:property_type]
+    )
+  end
+
+  def property_type
+    return "Mid rise or High rise Building(s)"
+  end
+
   def reset_units_plots
     self.units.update_all(x_plot: 0,y_plot: 0, floorplate_id: nil)
   end

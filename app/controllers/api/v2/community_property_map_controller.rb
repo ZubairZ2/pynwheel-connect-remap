@@ -1,14 +1,14 @@
 class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationController
-  before_action :load_Community
+  before_action :load_Community , only: [:show , :update]
+  before_action :doorkeeper_authorize!
 
-  def index
+  def show
     if @community.is_sitemap
       property_map = @community.sitemap
     else
       property_map = @community.floorplates
     end
-    render :json => {data: property_map, type: @community.is_sitemap ? "Garben" : "Floorplates"}
-
+    render :json => {data: property_map.as_json}
   end
 
   # def update_community_property_map
@@ -18,8 +18,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
   # end
 
   def update
-    community = Community.find_by_id(params[:id])
-    sitemap = community.sitemap
+    sitemap = @community.sitemap
     if sitemap.update(property_map_params)
       render json: sitemap
     end
