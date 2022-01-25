@@ -32,7 +32,7 @@ json.units @units do |u|
   json.y_plot u.y_plot
   json.floor u.floor.present? ? u.floor : ""
   json.building u.building
-  json.unique_unit_identifier "#{u.id}-#{u.floor}-#{u.building}"
+  json.unique_unit_identifier "#{u&.floorplate&.id}-#{u.floor}"
 
   begin
     json.available_date u.available_date < Date.today + 1 ? "Now" : u.available_date.strftime("%d/%m/%y")

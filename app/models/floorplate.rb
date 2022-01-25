@@ -55,8 +55,7 @@ class Floorplate < ApplicationRecord
         x_plot: u.x_plot,
         y_plot: u.y_plot,
         floor: u.floor,
-        building: u.building,
-        unique_floorplat_unit_identifier: "#{u&.id}-#{u&.floor}-#{u&.building}"
+        building: u.building
       }
     end
 
@@ -69,6 +68,8 @@ class Floorplate < ApplicationRecord
       width: self.width,
       floor_range: self.range,
       floorplan_name: floor,
+      building: self.building,
+      unique_floorplat_unit_identifier: "#{self.id}-#{floor}",
       floorplate_units: floorplate_units
     }
   end
