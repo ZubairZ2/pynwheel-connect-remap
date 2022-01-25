@@ -559,6 +559,8 @@ Rails.application.routes.draw do
           post :get_products
           put :update_products
         end
+
+        resources :galleries
       end
       resources :access_token do
         collection do
