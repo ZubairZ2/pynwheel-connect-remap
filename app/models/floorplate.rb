@@ -53,7 +53,7 @@ class Floorplate < ApplicationRecord
   end
 
   def property_type
-    return "Mid rise or High rise Building(s)"
+    return FLOORPLATE
   end
 
   def reset_units_plots

@@ -31,6 +31,6 @@ class Sitemap < ApplicationRecord
   end
 
   def property_type
-    return "Garden Style Community"
+    return SITEMAP
   end
 end

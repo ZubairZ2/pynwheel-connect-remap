@@ -554,7 +554,11 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :community_property_map
+      resources :community_property_map do
+        member do
+          post :add_property_images
+        end
+      end
 
       resources :communities do
         member do
