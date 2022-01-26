@@ -350,26 +350,7 @@
                                   %td
                                     %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
                                       %p Welcome to Pynwheel, We are excited to work with you! The next step in our process is creating an account to provide information for your Pynwheel app(s). Services included in your plan are listed below.
-
-                                - product_options = JSON.parse(@resource.product_options)
-
-                                %tr
-                                  %td
-                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:10px;"}
-                                      - if product_options["product_options"]["self_tour"]["is_enabled"]
-                                        %p{:style => "color: #000000;"} - Self Tour
-
-                                      - if product_options["product_options"]["pynwheel_touch"]["is_enabled"]
-                                        %p{:style => "color: #000000;"} - Pynwheel Touch
-
-                                      - if product_options["product_options"]["pynwheel_maps"]
-                                        %p{:style => "color: #000000;"} - Pynwheel Maps
-
-                                      - if product_options["product_options"]["graphic_design_services"]["is_enabled"]
-                                        %p{:style => "color: #000000;"} - Graphic Design Services
-
-                                      - if product_options["product_options"]["additional_options"]["is_enabled"]
-                                        %p{:style => "color: #000000;"} - Additional Options
+                  
 
                                 %tr
                                   %td
