@@ -11,17 +11,21 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     render :json => {data: property_map.as_json}
   end
 
-  # def update_community_property_map
-  #   if @community.is_sitemap
-  #     redirect_to api_v2_community_property_map_url(@community.sitemap.id)
-  #   end
-  # end
-
   def update
+    if @community.is_sitemap
     sitemap = @community.sitemap
-    if sitemap.update(property_map_params)
-      render json: sitemap
+      if sitemap.update(property_map_params)
+        @property_map = sitemap
+      end
+    else
+      params[:floorplate].values.each do |f|
+        @community.floorplates.find_or_create_by!(id: f["id"]).update_attributes(name: f["name"], range: f["range"], image: f["image"])
+      end
+      @property_map = @community.floorplates
     end
+    @community.set_property_map_status(current_pynwheel_user)
+    render json: {data: @property_map.as_json}
+
   end
 
   private
