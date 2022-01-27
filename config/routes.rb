@@ -553,6 +553,13 @@ Rails.application.routes.draw do
           put :update_company
         end
       end
+
+      resources :community_property_map do
+        member do
+          post :add_property_images
+        end
+      end
+
       resources :communities do
         member do
           post :add_comment

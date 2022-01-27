@@ -24,8 +24,7 @@ class InvitationsController < Devise::InvitationsController
           :role => params[:user][:role],
           :company_id => params[:user][:company_id],
           :region_id => params[:user][:region_id],
-          :community_ids => params[:user][:community_ids],
-          :product_options => params[:product_options]
+          :community_ids => params[:user][:community_ids]
         },
         current_inviter)
 
@@ -49,7 +48,7 @@ class InvitationsController < Devise::InvitationsController
 
   def invite_for_new_company user
     company = Company.find_or_create_by(name: params[:user][:new_company_name].strip) if params[:user][:new_company_name].present?
-
+    user.update(company_id: company.id)
     create_community_users(user, company) if company.present?
   end
 
