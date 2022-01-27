@@ -61,6 +61,16 @@ class Amenity < ApplicationRecord
     ["Yoga Studio","Yoga Studio"],["Dog Wash","Dog Wash"],["Package Locker"],["Package Locker","Package Locker"],["Mail Room","Mail Room"],
     ["Conference Room","Conference Room"],["Business Center","Business Center"],["Rooftop Lounge","Rooftop Lounge"]]
 
+
+  def get_amenity_galleries
+    self&.amenity_galleries&.map{|gallery| {
+      id: gallery.id,
+      name: gallery.name,
+      amenity_id: gallery.amenity_id,
+      image: gallery.image
+    }} 
+  end
+
   def crop_amenity_image
     image.recreate_versions! if (crop_x.present?  && do_crop)
     self.update_columns(do_crop: false)

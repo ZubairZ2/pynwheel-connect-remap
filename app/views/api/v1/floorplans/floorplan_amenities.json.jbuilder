@@ -1,0 +1,31 @@
+json.success true
+json.message "success"
+
+floorplates_obj = []
+
+@floorplates.uniq.each do |floorplate|
+  floorplate.floors.each do |floor|
+    floorplates_obj << floorplate.get_floorplate_amenities_data(floor, @community.id)
+  end
+end
+
+json.floorplates floorplates_obj.compact
+
+json.amenities @amenities do |amenity|
+  tour_stop = TourStop.find_by(stop_id: amenity.id)
+
+  json.id amenity.id
+  json.community_id amenity.community_id
+  json.floorplate_id amenity.amenityable_id
+  json.is_amenity_already_available tour_stop.present? ? true : false
+  json.amenity_name amenity.name
+  json.amenity_type amenity.amenity_type
+  json.x_plot amenity.x_plot
+  json.y_plot amenity.y_plot
+  json.floor amenity.floor
+  json.unique_amenity_identifier "#{amenity&.amenityable_id}-#{amenity.floor}"
+  json.building amenity.building
+  json.description amenity.description
+  json.image amenity.image
+  json.amenity_galleries amenity.get_amenity_galleries()
+end

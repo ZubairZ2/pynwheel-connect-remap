@@ -1,7 +1,7 @@
 class Api::V1::FloorplansController < ActionController::Base
   include ApplicationHelper
   before_action :authorize_access, only: [:index, :floorplan_units, :update_tour_stops_list]
-  before_action :set_community, only: [:index, :floorplan_units, :update_tour_stops_list]
+  before_action :set_community, only: [:index, :floorplan_amenities, :floorplan_units, :update_tour_stops_list]
 
   def index
     floorplans = floorplan_units_service(@community).get_floorplans
@@ -16,9 +16,8 @@ class Api::V1::FloorplansController < ActionController::Base
   end
 
   def floorplan_units
-    floorplan_id = params[:floorplan_id]
-    if floorplan_id.present?
-      @floorplan = Floorplan.find_by_id(floorplan_id)
+    if params[:floorplan_id].present?
+      @floorplan = Floorplan.find_by_id(params[:floorplan_id])
       @units = floorplan_units_service(@community).get_floorplan_units(@floorplan)
       @floors = floorplan_units_service(@community).fetch_floors()
       @floorplates = floorplan_units_service(@community).get_floorplates
@@ -28,6 +27,13 @@ class Api::V1::FloorplansController < ActionController::Base
     end
   end
 
+  def floorplan_amenities
+    @amenities = floorplan_units_service(@community).get_floorplate_amenities
+    @floors = floorplan_units_service(@community).fetch_floors()
+    @floorplates = floorplan_units_service(@community).get_floorplates
+  end
+
+
   def update_tour_stops_list
     @tour_stop = TourStop.find_by_stop_id params[:stop_id]
     if @tour_stop.present?
@@ -36,6 +42,8 @@ class Api::V1::FloorplansController < ActionController::Base
       add_tour_stop()
     end
   end
+
+  private
 
   def remove_tour_stop(tour_stop)
     floor = params[:floor]
@@ -89,8 +97,6 @@ class Api::V1::FloorplansController < ActionController::Base
     PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: @community&.users&.first&.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{stName}' community_id: '#{@community.id}'")
     render json: { success: true, error_code: 200, message: "Tour stop has been added successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
   end
-
-  private
 
   def set_community
     @community = Community.find params[:community_id]
