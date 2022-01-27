@@ -47,18 +47,26 @@ class Floorplate < ApplicationRecord
     units = self.units.available_units.where(floor: floor, floorplan_id: provider_floorplan_id, community_id: community_id)
     floorplate_units = []
 
-    units.each do |u|
-      floorplate_units << {
-        id: u.id,
-        unit_name: u.name,
-        unit_type: u.unit_type,
-        x_plot: u.x_plot,
-        y_plot: u.y_plot,
-        floor: u.floor,
-        building: u.building
-      }
+    units.each do |unit|
+      floorplate_units << unit_info(unit)
     end
 
+    floorplate_units.present? ? floorpat_info(floor, floorplate_units) : nil
+  end
+
+  def unit_info unit
+    {
+      id: unit.id,
+      unit_name: unit.name,
+      unit_type: unit.unit_type,
+      x_plot: unit.x_plot,
+      y_plot: unit.y_plot,
+      floor: unit.floor,
+      building: unit.building
+    }
+  end
+
+  def floorpat_info floor, floorplate_units
     {
       id: self.id,
       name: self.name,

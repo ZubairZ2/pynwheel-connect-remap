@@ -17,7 +17,7 @@ floorplates_obj = []
   end
 end
 
-json.floorplates floorplates_obj
+json.floorplates floorplates_obj.compact
 
 json.units @units do |u|
   json.id u.id
