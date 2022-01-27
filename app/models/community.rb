@@ -348,18 +348,14 @@ class Community < ApplicationRecord
       end
     end
   end
+  
   def check_credentials
-    #psi_service = PsiService.new(credential.attributes)
-    #psi_service.perform
     psi_static_service = CredentialsValid.new(JSON.parse(credential.attributes.to_json))
     psi_static_service.perform
-    # ImportPsiDataJob.perform_async credential.attributes.to_json
   end
+
   def import_psi_data
-    #psi_service = PsiService.new(credential.attributes)
-    #psi_service.perform
     ImportPsiStaticDataJob.perform_async credential.attributes.to_json
-    # ImportPsiDataJob.perform_async credential.attributes.to_json
   end
 
   def clean_data_psi
@@ -368,12 +364,11 @@ class Community < ApplicationRecord
 
   def import_zaremba_provider
     ImportZarembaStaticDataJob.perform_async credential.attributes.to_json
-    # ImportZarembaDataJob.perform_async credential.attributes.to_json
   end
+
   def import_xml_provider
     ImportXmlStaticDataJob.perform_async credential.attributes.to_json
-    # ImportXmlDataJob.perform_async credential.attributes.to_json
-  end
+s  end
 
   def swap_psi_data
     ImportPsiSwapDataJob.perform_async credential.attributes.to_json
@@ -397,19 +392,13 @@ class Community < ApplicationRecord
     ImportXmlSwapDataJob.perform_async credential.attributes.to_json
   end
   def import_yardirentcafe_data
-      #yardi_rent_cafe_service = YardiRentCafeService.new(credential.attributes)
-      #yardi_rent_cafe_service.perform
-    # ImportYardirentcafeDataJob.perform_async credential.attributes.to_json
     ImportYardirentcafeStaticDataJob.perform_async credential.attributes.to_json
   end
   def swap_yardirentcafe_data
     ImportYardirentcafeSwapDataJob.perform_async credential.attributes.to_json
   end
   def import_yardi2_data
-    #yardi2_service = Yardi2Service.new(credential.attributes)
-    #yardi2_service.perform
     ImportYardi2StaticDataJob.perform_async credential.attributes.to_json
-    # ImportYardi2DataJob.perform_async credential.attributes.to_json
   end
 
   def import_yardi_users_data
@@ -423,20 +412,15 @@ class Community < ApplicationRecord
   end
 
   def import_yardi4_data
-    #yardi4_service = Yardi4Service.new(credential.attributes)
-    #yardi4_service.perform
     ImportYardi4StaticDataJob.perform_async credential.attributes.to_json
-    # ImportYardi4DataJob.perform_async credential.attributes.to_json
   end
 
   def swap_yardi4_data
     ImportYardi4SwapDataJob.perform_async credential.attributes.to_json
   end
+  
   def import_realpage_svc_data
-    #real_page_svc_service = RealPageSvcService.new(credential.attributes)
-    #real_page_svc_service.perform
     ImportRealpageSvcStaticDataJob.perform_async credential.attributes.to_json
-    # ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
   end
 
   def realpage_insert_prospect(tour_user, appointment_time, marketing_source, desired_move_in_date)
