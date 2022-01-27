@@ -62,7 +62,7 @@ class CommunitiesController < ApplicationController
   end
   def logs
     @community = Community.find params[:community_id]
-    @logs = PaperTrail::Version.where.not(whodunnit: nil).order(created_at: :desc)
+    @logs = PaperTrail::Version.where.not(whodunnit: nil).order(created_at: :desc).paginate(page: params[:page], per_page: 20)
   end
 
   def edit
