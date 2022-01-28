@@ -106,9 +106,7 @@ class Community < ApplicationRecord
   def set_community_status(current_user)
     return if self.blank?
 
-    community_status = status_string((self.name && self.email && self.phone && self.address && self.city && self.state && self.zip).present?)
-    set_status_for_all(self,community_status,current_user)
-
+    set_community_details_status(current_user)
     set_property_map_status(current_user)
     set_floorplan_status(current_user)
     set_gallery_images_status(current_user)
@@ -118,6 +116,13 @@ class Community < ApplicationRecord
     set_lock_providers_status(current_user)
     set_tour_stops_status(current_user)
     set_visiting_hours_status(current_user)  
+  end
+
+  def set_community_details_status(current_user)
+    return if self.blank?
+
+    community_status = status_string((self.name && self.email && self.phone && self.address && self.city && self.state && self.zip).present?)
+    set_status_for_all(self,community_status,current_user)
   end
 
   def set_property_map_status(current_user)
