@@ -5,11 +5,13 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
   def show
     if @community.is_sitemap
       property_map = @community.sitemap
+      type = SITEMAP
     else
       property_map = @community.floorplates
+      type = FLOORPLATE
     end
     if property_map
-      render :json => {:success =>  true, data: property_map.as_json}
+      render :json => {:success =>  true, data: render_property_maps(type , property_map)}
     else
       render :json => {:success => false , :message => "No property images found."}
     end
@@ -18,12 +20,14 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
   def add_property_images
     property_type = params["community"]["property_type"]
     if property_type.eql?(SITEMAP)
-      @property_map = add_sitemap_property(params)
+      property_map = add_sitemap_property(params)
+      type = SITEMAP
     else
-      @property_map = add_floorplate_property(params)
+      property_map = add_floorplate_property(params)
+      type = FLOORPLATE
     end
     @community.set_property_map_status(current_pynwheel_user)
-    render json: {data: @property_map.as_json}
+    render json: {:success =>  true , data: render_property_maps(type , property_map)}
   end
 
   private
@@ -84,12 +88,16 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     @community = Community.find(params[:id])
   end
 
+  def render_property_maps(type , property_map)
+    {type => property_map.as_json}
+  end
+
   def sitemap_params
-    params.require(:sitemap).permit(:image)
+    params.require(:sitemap).permit(:image , :label_image)
   end
 
   def floorplate_params
-    params.require(:floorplate).permit(:name , :range , :image)
+    params.require(:floorplate).permit(:name , :range , :image , :label_image)
   end
 
 
