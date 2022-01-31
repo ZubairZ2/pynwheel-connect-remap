@@ -548,6 +548,7 @@ Rails.application.routes.draw do
 
   namespace :api, constraints: { format: 'json' } do
     namespace :v2 do
+      post '/communities/:community_id/update_galleries', to: 'galleries#update_galleries'
       resources :user_details do
         member do
           put :update_company
