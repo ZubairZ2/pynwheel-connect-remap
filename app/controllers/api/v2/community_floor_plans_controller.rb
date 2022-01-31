@@ -1,5 +1,5 @@
-class Api::V2::CommunityFloorPlanController < Api::V2::ApiApplicationController
-  before_action :load_community, only: [:index]
+class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
+  before_action :load_community, only: [:index, :show]
   before_action :doorkeeper_authorize!
 
   def index
@@ -12,6 +12,7 @@ class Api::V2::CommunityFloorPlanController < Api::V2::ApiApplicationController
   end
 
   def show
+    # render  json: "yesss #{params}"
     @floorplan = @community.floorplans.find_by_id(params[:id])
     if @floorplan
       render json: {succcess: true, data: @floorplan.as_json}
@@ -20,13 +21,16 @@ class Api::V2::CommunityFloorPlanController < Api::V2::ApiApplicationController
     end
   end
 
-
   def create
 
   end
 
   private
   def load_community
-    @community = Community.find params[:id]
+    @community = Community.find params[:community_id]
+  end
+
+  def floorplan_params
+    params.require(:floorplan).permit(:id)
   end
 end
