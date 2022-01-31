@@ -19,6 +19,34 @@ class Gallery < ApplicationRecord
 	has_one :status, as: :statusable
 	validates :name, presence: true, uniqueness: {scope: :community}
 
+  def as_json
+    super(
+      :only => [:id, :name, :community_id], :methods => [:media]
+    )
+  end
+
+  def media
+    media_arr = []
+    self.gallery_images.each do |gallery_img|
+      media_arr << {
+        id: gallery_img.id,
+        name: gallery_img.name,
+        file_type: gallery_img.is_video? ? "video" : "image",
+        file: get_gallery_media(gallery_img)
+      }
+    end
+    media_arr
+  end
+
+  def get_gallery_media(gallery_img)
+    return {} if gallery_img.blank?
+    if gallery_img.is_video?
+      {url: gallery_img.video.path, thumb: {url: gallery_img.video.thumb.path}}
+    else
+      {url: gallery_img.image.path, thumb: {url: gallery_img.image.thumb.path}}
+    end    
+  end
+
 	def delete_gallery
 		DeleteGalleryJob.perform_async self
 	end
