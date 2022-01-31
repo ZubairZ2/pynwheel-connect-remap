@@ -119,11 +119,11 @@ class Api::V1::FloorplansController < ActionController::Base
 
     case sorting_param
     when "floors_asc"
-      list = floorplans_list.map { |f| [Unit.where(floorplan_id: f.provider_floorplan_id, available: true).pluck(:floor).compact.uniq.first, f] }
+      list = floorplans_list.map { |f| [FloorplanUnitsService.new(@community).get_floorplan_units(f).pluck(:floor).compact.uniq.sort.first, f] }
       sorted_floorplans = list.sort_by{|f| f[0] }
       sorted_floorplans = sorted_floorplans.map{|f| f[1]}
     when "floors_desc"
-      list = floorplans_list.map { |f| [Unit.where(floorplan_id: f.provider_floorplan_id, available: true).pluck(:floor).compact.uniq.first, f] }
+      list = floorplans_list.map { |f| [FloorplanUnitsService.new(@community).get_floorplan_units(f).pluck(:floor).compact.uniq.sort.first, f] }
       sorted_floorplans = list.sort_by{|f| f[0] }.reverse
       sorted_floorplans = sorted_floorplans.map{|f| f[1]}
     when "sq_ft_asc"
