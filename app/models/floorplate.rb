@@ -28,6 +28,7 @@ class Floorplate < ApplicationRecord
   serialize :map_ocr_data, Array
 
   mount_uploader :image, SiteMapUploader
+  mount_uploader :label_image, SiteMapUploader
 
   belongs_to :community
   has_many :units, dependent: :destroy
@@ -46,14 +47,9 @@ class Floorplate < ApplicationRecord
 
 
   def as_json
-    super(
-      :only => [:id , :name , :range , :image],
-      :methods => [:property_type]
+  super(
+      :only => [:id , :name , :range , :image , :label_image]
     )
-  end
-
-  def property_type
-    return FLOORPLATE
   end
 
   def reset_units_plots

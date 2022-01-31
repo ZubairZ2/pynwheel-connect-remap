@@ -13,6 +13,7 @@ class Sitemap < ApplicationRecord
   # has_paper_trail
   serialize :map_ocr_data, Array
   mount_uploader :image, SiteMapUploader
+  mount_uploader :label_image, SiteMapUploader
 
   belongs_to :community
   has_many :amenities, as: :amenityable
@@ -25,12 +26,8 @@ class Sitemap < ApplicationRecord
 
   def as_json
     super(
-      :only => [:id , :image],
-      :methods => [:property_type]
+      :only => [:id , :image , :label_image]
     )
   end
 
-  def property_type
-    return SITEMAP
-  end
 end
