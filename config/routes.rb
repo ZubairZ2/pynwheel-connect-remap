@@ -554,8 +554,8 @@ Rails.application.routes.draw do
         end
       end
       resources :communities do
+        resources :community_floor_plans
         member do
-          resources :community_floor_plan
           post :add_comment
           post :get_products
           put :update_products
