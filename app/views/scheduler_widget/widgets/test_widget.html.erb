@@ -262,12 +262,12 @@
                   <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-left-50 w-100 tour_date">
                     <label>Tour Date <span class="asterisk_color" >*</span></label>
                     <% tour_date_class = @reschedule_tour == "true" ? "form-control reschedule_datepicker" : "form-control schedule_datepicker" %>
-                    <%= text_field_tag :tour_date,"", :class=>tour_date_class, :placeholder=>"Tour Date",:maxlength=>"10",:autocomplete=>"off", required: false %>
+                    <%= text_field_tag :tour_date, "", :class=>tour_date_class, :placeholder=>"Tour Date",:maxlength=>"10",:autocomplete=>"off", :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
                   </div>
                   <%= hidden_field_tag 'time_slot_hash', @time_slots.to_json %>
                   <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_time">
                     <label>Tour Time <span class="asterisk_color" >*</span></label>
-                    <%= select_tag :tour_time , options_for_select([]),:class => "form-control", :include_blank => 'Select time slot', required: false %>
+                    <%= select_tag :tour_time , options_for_select([]),:class => "form-control", :include_blank => 'Select time slot', :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
                   </div>
                   <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_type">
                     <label>Tour Type <span class="asterisk_color" >*</span>
@@ -275,7 +275,7 @@
                         <span id="propertyDetailNameText" class="tooltip-pynwheel"></span>
                       </i>
                     </label>
-                    <%= select_tag :tour_type , options_for_select([]),:class => "form-control", :include_blank => 'Select tour type', required: false %>
+                    <%= select_tag :tour_type , options_for_select([]),:class => "form-control", :include_blank => 'Select tour type', :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
                   </div>
                 </div>
                 
