@@ -61,6 +61,11 @@ class Floorplan < ApplicationRecord
   after_update :crop_image
   after_update :crop_secondary_image
 
+  def as_json
+    super(
+      :only => [:id , :name, :community_id, :provider_floorplan_id, :provider,:market_rent, :image, :secondary_image]
+    )
+  end
 
   def populate_image_urls
     if image.present?
