@@ -575,6 +575,9 @@
         {
           $(".unschedule_tour").addClass("hidden");
           $("#scheduled_tour").attr('checked', "checked")
+          $("#tour_date").prop('required',true);
+          $("#tour_time").prop('required',true);
+          $("#tour_type").prop('required',true);
         }
         else if(!form_for_reschedule_tour){
           $("#unscheduled_self_tour").attr('checked', "checked")
@@ -583,6 +586,9 @@
           $(".tour_date").addClass('hidden');
           $(".tour_time").addClass('hidden');
           $(".tour_type").addClass('hidden');
+          $("#tour_date").prop('required',false);
+          $("#tour_time").prop('required',false);
+          $("#tour_type").prop('required',false);
         }
 
         if("<%= params['schedule_another_tour'] == "true" %>"){
