@@ -41,9 +41,9 @@ class Gallery < ApplicationRecord
   def get_gallery_media(gallery_img)
     return {} if gallery_img.blank?
     if gallery_img.is_video?
-      {url: gallery_img.video.path, thumb: {url: gallery_img.video.thumb.path}}
+      gallery_img.video
     else
-      {url: gallery_img.image.path, thumb: {url: gallery_img.image.thumb.path}}
+      {url: gallery_img.image.url, thumb: gallery_img.image.thumb}
     end    
   end
 
