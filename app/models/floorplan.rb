@@ -63,7 +63,7 @@ class Floorplan < ApplicationRecord
 
   def as_json
     super(
-      :only => [:id, :name, :community_id, :image, :secondary_image]
+      :only => [:id, :name, :image, :secondary_image]
     )
   end
 
