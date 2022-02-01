@@ -3,10 +3,15 @@ json.message "success"
 
 floorplates_obj = []
 
-@floorplates.uniq.each do |floorplate|
-  floorplate.floors.each do |floor|
-    floorplates_obj << floorplate.get_floorplate_amenities_data(floor, @community.id)
+unless @community.is_sitemap
+  @floorplates.uniq.each do |floorplate|
+    floorplate.floors.each do |f|
+      floorplates_obj << floorplate.get_floorplate_amenities_data(f, @community.id)
+    end
   end
+
+else
+  floorplates_obj << @community.sitemap.get_sitemap_amenities_data(@amenities)
 end
 
 json.floorplates floorplates_obj.compact

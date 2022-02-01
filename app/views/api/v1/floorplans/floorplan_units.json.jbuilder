@@ -11,10 +11,15 @@ end
 
 floorplates_obj = []
 
-@floorplates.uniq.each do |floorplate|
-  floorplate.floors.each do |f|
-    floorplates_obj << floorplate.get_floorplate_units_data(f, @floorplan.provider_floorplan_id, @community.id)
+unless @community.is_sitemap
+  @floorplates.uniq.each do |floorplate|
+    floorplate.floors.each do |f|
+      floorplates_obj << floorplate.get_floorplate_units_data(f, @floorplan.provider_floorplan_id, @community.id)
+    end
   end
+
+else
+  floorplates_obj << @community.sitemap.get_sitemap_units_data(@units)
 end
 
 json.floorplates floorplates_obj.compact
@@ -32,7 +37,7 @@ json.units @units do |u|
   json.y_plot u.y_plot
   json.floor u.floor.present? ? u.floor : ""
   json.building u.building
-  json.unique_unit_identifier "#{u&.floorplate&.id}-#{u.floor}"
+  json.unique_unit_identifier  @community.is_sitemap ? "#{@community&.sitemap&.id}" : "#{u&.floorplate&.id}-#{u.floor}"
 
   begin
     json.available_date u.available_date < Date.today + 1 ? "Now" : u.available_date.strftime("%d/%m/%y")

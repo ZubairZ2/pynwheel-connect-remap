@@ -17,7 +17,11 @@ class FloorplanUnitsService < BaseService
   end
 
   def get_floorplate_amenities
-    @community.amenities.where(amenityable_type: "Floorplate").where.not(x_plot: [0,nil], y_plot: [0,nil])
+    unless @community.is_sitemap
+      @community.amenities.where(amenityable_type: "Floorplate").where.not(x_plot: [0,nil], y_plot: [0,nil])
+    else
+      @community.amenities.where(amenityable_type: "Sitemap").where.not(x_plot: [0,nil], y_plot: [0,nil])
+    end
   end
 
   def get_floorplates
