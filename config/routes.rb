@@ -568,7 +568,12 @@ Rails.application.routes.draw do
           put :update_products
         end
 
-        resources :galleries
+        resources :galleries do
+          member do
+            delete :delete_gallery_image
+          end
+        end
+
       end
       resources :access_token do
         collection do
