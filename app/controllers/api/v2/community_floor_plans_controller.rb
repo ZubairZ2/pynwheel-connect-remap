@@ -31,7 +31,6 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
           end
         else
           @community.floorplans.create!(name: floorplan["name"], image: floorplan["image"], secondary_image: floorplan["secondary_image"])
-          PaperTrail::Version.create(item_type: "Floorplan", item_id: new_floorplan.id, event: "create", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{new_floorplan.name}' community_id: '#{@community.id}'")
         end
       end
       render json: { success: true, message: "floorplan has been updated successfully." }
