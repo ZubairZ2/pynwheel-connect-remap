@@ -18,7 +18,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
 
   def update
     if @community.update(community_params)
-      @community.set_community_status(current_pynwheel_user)
+      @community.set_community_details_status(current_pynwheel_user)
       render :json => {data: @community.as_json(@brand_pdf_feature) , :message => "Community Details updated succesfully."}
     else
       render :json => {:success => false, :message => @community.errors.full_messages}
