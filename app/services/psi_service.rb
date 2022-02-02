@@ -387,11 +387,11 @@ class PsiService < BaseService
           floorplan.name = f["Name"]
         end
 
-        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
-          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
-        else
-          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
-        end
+        # if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+        # else
+        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
+        # end
         floorplan.unit_count = f["UnitsAvailable"]
         floorplan.units_available = f["DisplayedUnitsAvailable"]
         floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
