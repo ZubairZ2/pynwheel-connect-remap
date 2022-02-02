@@ -29,6 +29,7 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
 
         end
       end
+      @community.set_floorplan_status(current_pynwheel_user)
       floorplans = @community.floorplans
       render json: { success: true, message: "floorplan has been updated successfully.", data: floorplans.as_json }
     rescue => ex
