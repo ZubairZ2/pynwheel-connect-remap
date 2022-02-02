@@ -562,6 +562,8 @@ Rails.application.routes.draw do
       end
 
       resources :communities do
+        resources :community_floor_plans
+        post :add_floorplan, to: 'community_floor_plans#add_floorplan'
         member do
           post :add_comment
           post :get_products
