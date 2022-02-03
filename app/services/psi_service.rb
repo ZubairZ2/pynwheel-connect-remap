@@ -21,7 +21,6 @@ class PsiService < BaseService
     puts credentials.community_id
     puts "Property Ids"
     puts property_ids.inspect
-    puts "\n\n\n"
 
     property_ids.each do |property_id|
       begin
@@ -65,8 +64,9 @@ class PsiService < BaseService
         sleep 2
         if response["response"]["code"] == 200
           puts "---------"*30
-          puts "Verified credentials for Community#{ credentials.community_id}"
+          puts "Verified credentials for Community #{credentials.community_id} #{property_id}"
           puts "---------"*30
+          puts "\n\n\n"
 
           units = []
           floorplans = []
@@ -108,6 +108,7 @@ class PsiService < BaseService
           puts "---------"*30
           puts "failed credentials for Community#{ credentials.community_id}"
           puts "---------"*30
+          puts "\n\n\n"
 
           begin
             cred = Credential.find credentials.id
