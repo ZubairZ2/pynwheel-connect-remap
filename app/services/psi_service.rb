@@ -13,6 +13,11 @@ class PsiService < BaseService
     end
 
     property_ids = credentials.property_id.split(',') rescue []
+    
+    puts "-------"*10
+    puts property_ids
+    puts "-------"*10
+
     property_ids.each do |property_id|
       begin
         # @@floorplanHash = {}

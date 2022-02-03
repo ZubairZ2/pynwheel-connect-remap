@@ -1,29 +1,22 @@
 namespace :import_unit_data_for_psi do
-  desc 'rake task for importing communities units and floorplans for realpage only'
+  desc 'rake task for importing communities units and floorplans for psi only'
   task :communities_of_psi => :environment do
+    communities = Community.where(data_provider: "psi")
+    entrata_list_logs_str  = ""
 
-    Community.where(data_provider: "psi").each do |community|
-      
-      begin
-      
-        next if (community.locked.present? && community.locked)
+    communities.each do |community|
+      next if (community.locked.present? && community.locked)
+      puts '****************************' , community.id
+      entrata_list_logs_str = entrata_list_logs_str + community.id.to_s + " , "
 
-        if community.credentials_are_present? && community.check_credentials
-          ImportPsiDataJob.perform_async community.credential.attributes.to_json
-          puts "--------------------------"*10
-          puts community.id
-          puts "--------------------------"*10
-
-          sleep 1000
-        else
-          next
-        end
-      
-      rescue
-        next
-      end
-
+      ImportPsiDataJob.perform_async community.credential.attributes.to_json if (community.credentials_are_present? && community.check_credentials)
+      sleep 45
     end
-    
+
+    current_user = User.find 10
+    entrata_list_logs = {Time.now => entrata_list_logs_str}
+    current_user.entrata_list_logs = current_user.entrata_list_logs + entrata_list_logs.to_s
+    current_user.save
+  
   end
 end
