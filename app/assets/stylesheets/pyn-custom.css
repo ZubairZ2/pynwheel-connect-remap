@@ -35,7 +35,7 @@ textarea {
 }
 
 .clean-data-btn {
-    display: none;
+    display: block;
 }
 
 .add-user-button {
