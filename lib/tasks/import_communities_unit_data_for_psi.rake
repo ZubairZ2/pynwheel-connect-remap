@@ -9,7 +9,7 @@ namespace :import_unit_data_for_psi do
       puts '****************************' , community.id
       entrata_list_logs_str = entrata_list_logs_str + community.id.to_s + " , "
 
-      ImportPsiDataJob.perform_async community.credential.attributes.to_json if (community.credentials_are_present? && community.check_credentials)
+      ImportPsiDataJob.perform_async community.credential.attributes.to_json
       sleep 45
     end
 
