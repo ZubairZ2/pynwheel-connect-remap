@@ -549,18 +549,17 @@ Rails.application.routes.draw do
   namespace :api, constraints: { format: 'json' } do
     namespace :v2 do
       post '/communities/:community_id/update_galleries', to: 'galleries#update_galleries'
+      get '/communities/:community_id/community_data_provider', to: 'data_providers#get_community_data_provider'
       resources :user_details do
         member do
           put :update_company
         end
       end
-
       resources :community_property_map do
         member do
           post :add_property_images
         end
       end
-
       resources :communities do
         resources :community_floor_plans
         post :add_floorplan, to: 'community_floor_plans#add_floorplan'
@@ -569,12 +568,12 @@ Rails.application.routes.draw do
           post :get_products
           put :update_products
         end
-
         resources :galleries do
           member do
             delete :delete_gallery_image
           end
         end
+        resources :data_providers
 
       end
       resources :access_token do
