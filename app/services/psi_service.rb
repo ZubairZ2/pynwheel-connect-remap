@@ -159,7 +159,7 @@ class PsiService < BaseService
         unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
       end
 
-      if unit.present?
+      if unit.present?  
         # unit.property_id = property_id
         # unit.unit_type = u["Units"]["Unit"]["UnitType"]
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
@@ -504,6 +504,10 @@ class PsiService < BaseService
             sleep 2
           end
 
+          puts "---------"*10
+          puts "PSI pricing"
+          puts "---------"*10
+
           if response["response"]["code"] == 200
             unless response["response"]["result"].include?('No records found')
               psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
@@ -512,6 +516,11 @@ class PsiService < BaseService
                 floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
               end
               psi_units.each do |u|
+                puts "*******"*10
+                puts "UnitSpace"
+                puts u['UnitSpace']
+                puts "*******"*10
+
                 u['UnitSpace'].each do |us|
 
                   begin
@@ -564,6 +573,11 @@ class PsiService < BaseService
 
                     unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                       if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                        puts "--------"*10
+                        puts "Update unit min pricing"
+                        puts (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
+                        puts "--------"*10
+
                         unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
                         unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
                       else
