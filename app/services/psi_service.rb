@@ -12,11 +12,16 @@ class PsiService < BaseService
     rescue => ex
     end
 
+
+
     property_ids = credentials.property_id.split(',') rescue []
     
     puts "-------"*10
-    puts property_ids
-    puts "-------"*10
+    puts "Community ID"
+    puts credentials.community_id
+    puts "Property Ids"
+    puts property_ids.inspect
+    puts "\n\n\n"
 
     property_ids.each do |property_id|
       begin
@@ -59,6 +64,10 @@ class PsiService < BaseService
         # end
         sleep 2
         if response["response"]["code"] == 200
+          puts "---------"*30
+          puts "Verified credentials for Community#{ credentials.community_id}"
+          puts "---------"*30
+
           units = []
           floorplans = []
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
@@ -96,6 +105,10 @@ class PsiService < BaseService
           #puts '-----------------------------' , response["response"]["error"]["message"]
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
         else
+          puts "---------"*30
+          puts "failed credentials for Community#{ credentials.community_id}"
+          puts "---------"*30
+
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."

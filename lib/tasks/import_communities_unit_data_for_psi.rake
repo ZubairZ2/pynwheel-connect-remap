@@ -6,7 +6,6 @@ namespace :import_unit_data_for_psi do
 
     communities.each do |community|
       next if (community.locked.present? && community.locked)
-      puts '****************************' , community.id
       entrata_list_logs_str = entrata_list_logs_str + community.id.to_s + " , "
 
       ImportPsiDataJob.perform_async community.credential.attributes.to_json
