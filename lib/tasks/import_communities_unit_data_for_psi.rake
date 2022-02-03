@@ -10,6 +10,11 @@ namespace :import_unit_data_for_psi do
 
         if community.credentials_are_present? && community.check_credentials
           ImportPsiDataJob.perform_async community.credential.attributes.to_json
+          puts "--------------------------"*10
+          puts community.id
+          puts "--------------------------"*10
+
+          sleep 1000
         else
           next
         end
