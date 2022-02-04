@@ -17,3 +17,5 @@ HARDWARE_SPECS = "Touchscreen Specifications and Installation for Pynwheel Touch
 TOUCH_HOME_PAGE_MEDIA = "Slideshow/Video for Pynwheel Touch Home Page"
 SITEMAP = "garden_style_community"
 FLOORPLATE = "mid_high_rise_community"
+HOMEPAGE_VIDEO = "video"
+HOMEPAGE_IMAGE = "images"
