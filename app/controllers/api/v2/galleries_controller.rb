@@ -14,34 +14,38 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   end
 
   def update_galleries
-    galleries = params["gallery"]
-    @gallery = ""
-    galleries.values.each do |gallery|
-      gallery_id = gallery["id"]
-      if gallery_id.present?
-        gallery_images = gallery["image"] rescue []
-        @gallery = @community.galleries.find_by_id(gallery_id)
-        if @gallery.update_attributes(name: gallery["name"])
-          PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "update",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
-        end
-        update_gallery_images(@gallery,gallery_images)
-      else
-        @gallery = @community.galleries.create(name: gallery["name"], community_id: @community.id)
-        gallery_images = gallery["image"] rescue []
-
-        if gallery_images.present?
-          gallery_images.values.each do |img|
-            create_gallery_images(@gallery,img)
+    begin
+      galleries = params["gallery"]
+      @gallery = ""
+      galleries.values.each do |gallery|
+        gallery_id = gallery["id"]
+        if gallery_id.present?
+          gallery_images = gallery["image"] rescue []
+          @gallery = @community.galleries.find_by_id(gallery_id)
+          if @gallery.update_attributes(name: gallery["name"])
+            PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "update",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
           end
+          update_gallery_images(@gallery,gallery_images)
+        else
+          @gallery = @community.galleries.create(name: gallery["name"], community_id: @community.id)
+          gallery_images = gallery["image"] rescue []
+
+          if gallery_images.present?
+            gallery_images.values.each do |img|
+              create_gallery_images(@gallery,img)
+            end
+          end
+          PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
         end
-        PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
       end
-    end
-    if @gallery.present?
-      @community.set_gallery_images_status(current_pynwheel_user)
-      render :json => {:success => true, data: @gallery.as_json}
-    else
-      render :json => {:success => false, :message => @gallery.errors.full_messages}
+      if @gallery.present?
+        @community.set_gallery_images_status(current_pynwheel_user)
+        render :json => {:success => true, data: @gallery.as_json}
+      else
+        render :json => {:success => false, :message => @gallery.errors.full_messages}
+      end
+    rescue => res
+      render json: { success: false, error_code: 400, message: "#{res.message}" }, status: 400
     end
 	end
 
@@ -81,14 +85,14 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   end
 
   def create_gallery_video(gallery,file)
-    @gallery_image = GalleryImage.new(community_id: @community.id)
-    if @gallery_image.save!
-      @gallery_image.remote_video_url = @gallery_image.video.direct_fog_url + file.path
-      @gallery_image.gallery_id = gallery.id
-      @gallery_image.name = file.original_filename
-      @gallery_image.standard_image_url = @gallery_image.remote_video_url
-      @gallery_image.save
-    end
+      @gallery_image = gallery.gallery_images.new
+      if @gallery_image.save
+        @gallery_image.name = file.original_filename
+        @gallery_image.video = file
+        @gallery_image.remote_video_url = @gallery_image.video.direct_fog_url + @gallery_image.video.key #file.path
+        @gallery_image.standard_image_url = @gallery_image.remote_video_url
+        @gallery_image.save
+      end
   end
 
   def destroy
