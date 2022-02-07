@@ -59,7 +59,8 @@ class Credential < ApplicationRecord
   end
 
   def use_different_crm
-    self.use_different_crm_provider
+    community = self.community
+    community.use_crm_credentials?
   end
 
   def crm_provider
