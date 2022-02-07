@@ -868,7 +868,11 @@ class Community < ApplicationRecord
   end
 
   def create_default_gallery
-    self.galleries.create(name: 'default')
+    default_galleries = ["appartments", "community"]
+    default_galleries.each do |gallery_name|
+      self.galleries.create(name: gallery_name, is_default: true)
+    end
+    # self.galleries.create(name: 'default')
   end
 
   def create_sms_email_content
