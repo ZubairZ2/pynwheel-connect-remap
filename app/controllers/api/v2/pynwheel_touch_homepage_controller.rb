@@ -24,25 +24,15 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
           if homepage_id.present?
             @community.design.home_page_video.update(name: homepage["name"], video: homepage["file"])
           else
-            @community.design.create_home_page_video(name: homepage["name"], video: homepage["file"])
-            # binding.pry
-            # file = homepage["file"]
-            # @gallery_image = HomePageVideo.new(design_id: @community.design.id, video: file)
-            # # @gallery_image.video = file
-            # if @gallery_image.save!
-            #   @gallery_image.remote_video_url = @gallery_image.video.direct_fog_url + file.path
-            #   @gallery_image.name = file.original_filename
-            #   # @gallery_image.standard_image_url = @gallery_image.remote_video_url
-            #   @gallery_image.save
-            # end
-
-            # @uploader = HomePageVideo.new()
-            # if @uploader.save!
-            #   @uploader.remote_video_url = @uploader.video.direct_fog_url
-            #   @uploader.design_id = @community.design.id
-            #   @uploader.save
-
-            # end
+            # @community.design.create_home_page_video(name: homepage["name"], video: homepage["file"])
+            binding.pry
+            file = homepage["file"]
+            @uploader = HomePageVideo.new(video: homepage["file"])
+            if @uploader.save
+              @uploader.remote_video_url = @uploader.video.direct_fog_url + file
+              @uploader.design_id = @community.design.id
+              @uploader.save
+            end
           end
         else
           if homepage_id.present?
@@ -62,7 +52,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
   end
 
   private
-
+  
   def load_community
     @community = Community.find(params[:community_id])
   end
