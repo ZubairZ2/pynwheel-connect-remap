@@ -251,6 +251,18 @@
                     .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                       %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                     %span Amenity image
+              
+              .div.map-instruction-text
+                .windos-instruction-tag
+                  %span 
+                    %strong Note: 
+                    Press the Control (or Ctrl ⌃)  key before you move your mouse and while you navigate
+                
+                .mac-instruction-tag
+                  %span 
+                    %strong Note: 
+                    Press the Command (or Cmd ⌘)  key before you move your mouse and while you navigate
+                
               .zooming-content.zoomable-map-container
                 %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls.zooming-content-h{:href => "#"}
                   %img{:src => "/assets/plus.png"}/
