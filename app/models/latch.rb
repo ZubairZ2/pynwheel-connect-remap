@@ -4,6 +4,16 @@ class Latch < ApplicationRecord
   has_many :latch_locks, dependent: :destroy
   has_one :status, as: :statusable
 
+  def as_json
+    super(
+      :only => [:id, :client_id, :client_secret ], :method => [:lock_type]
+    )
+  end
+
+  def lock_type
+    return LATCH
+  end
+
   def import_data(file)
       Thread.new do
           execution_context = Rails.application.executor.run!

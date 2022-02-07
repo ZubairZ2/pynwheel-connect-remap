@@ -4,6 +4,12 @@ class Igloohome < ApplicationRecord
   belongs_to :community
   has_many :igloohome_locks, dependent: :destroy
 
+  def as_json
+    super(
+      :only => [:id, :username, :password]
+    )
+  end
+
   def import_data file
     if file.path.split('.').last.include?("csv")
       CSV.foreach(file.path, headers: true) do |row|

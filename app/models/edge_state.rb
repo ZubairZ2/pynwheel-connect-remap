@@ -8,6 +8,11 @@ class EdgeState < ApplicationRecord
     MapLocksJob.perform_async community, "EdgeState"
   end
 
+  def as_json
+    super(:only => [:id, :client_id, :client_secret]
+    )
+  end
+
   def self.active_client_credential_edgestate(edgestate)
     !edgestate.present? || (edgestate and edgestate.client_id and edgestate.client_secret).present? ||
     (edgestate and !edgestate.client_id and !edgestate.client_secret and !edgestate.refresh_token).present?
