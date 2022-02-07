@@ -56,6 +56,29 @@ function touchScreenEvent() {
   });
 }
 
+function getOS() {
+  var userAgent = window.navigator.userAgent,
+      platform = window.navigator.platform,
+      macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
+      windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
+      iosPlatforms = ['iPhone', 'iPad', 'iPod'],
+      os = null;
+
+  if (macosPlatforms.indexOf(platform) !== -1) {
+    os = 'Mac OS';
+  } else if (iosPlatforms.indexOf(platform) !== -1) {
+    os = 'iOS';
+  } else if (windowsPlatforms.indexOf(platform) !== -1) {
+    os = 'Windows';
+  } else if (/Android/.test(userAgent)) {
+    os = 'Android';
+  } else if (!os && /Linux/.test(platform)) {
+    os = 'Linux';
+  }
+
+  return os;
+}
+
 document.addEventListener('DOMContentLoaded', touchScreenEvent);
 
 $(window).bind('load', function () {
@@ -64,7 +87,7 @@ $(window).bind('load', function () {
     showMarkeronLoad();
     $('[data-toggle="tooltip"]').tooltip({trigger: "hover"});
     $(document).keydown(function (event) {
-      if (event.ctrlKey == true && (event.which == '61' || event.which == '107' || event.which == '173' || event.which == '109' || event.which == '187' || event.which == '189')) {
+      if (event.ctrlKey == true && (event.which == '61' || event.which == '107' || event.whFich == '173' || event.which == '109' || event.which == '187' || event.which == '189')) {
         event.preventDefault();
       }
     });
@@ -609,6 +632,10 @@ function setFilters() {
   $(".disabled input").attr('data-original-title', 'none available');
   $(".disabled").click(false);
   $(".disabled").hide();
+}
+
+function Toggle_maps(e) {
+  beansWidget.toggleMap();
 }
 
 function showMarkers(market_rent_change = false) {
@@ -1748,6 +1775,20 @@ function handleMapControl() {
   }
 }
 
+function display3DMapInstructions() {
+  let os = getOS();
+
+  console.log("Current OS: ", os);
+
+  if(os === "Mac OS" || os === "iOS") {
+    $(".windos-instruction-tag").addClass('hidden');
+    $(".mac-instruction-tag").removeClass('hidden');
+  } else {
+    $(".windos-instruction-tag").removeClass('hidden');
+    $(".mac-instruction-tag").addClass('hidden');
+  }
+}
+
 function display3DMap() {
   $("._3d-apply-filter-button").css("display", "block");
   $(".beans-map-container").show();
@@ -1762,6 +1803,8 @@ function display3DMap() {
   $(".2d-map-option").removeClass("hidden");
   $(".3d-map-option").addClass("hidden");
   $(".satelite-view-icon").removeClass("hidden");
+  $(".div.map-instruction-text").removeClass('hidden');
+  display3DMapInstructions();
   let windowWidth = window.innerWidth;
   let sideBarWidth = $(".c-sidebar").innerWidth();
   if($(window).width() <= 567){
@@ -1790,8 +1833,9 @@ function display2DMap() {
   $(".c-wrapper").css("margin-right", "90px");
   $(".c-sidebar").show();
   $(".satelite-view-icon").addClass("hidden");
-  $(".3d-map-option").removeClass("hidden")
-  $(".2d-map-option").addClass("hidden")
+  $(".3d-map-option").removeClass("hidden");
+  $(".2d-map-option").addClass("hidden");
+  $(".div.map-instruction-text").addClass('hidden');
   if(defaultMapType == "3d-map"){
     showMarkers();
   }
