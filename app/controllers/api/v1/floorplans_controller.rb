@@ -46,38 +46,54 @@ class Api::V1::FloorplansController < ActionController::Base
   private
 
   def remove_tour_stop(tour_stop)
-    floor = params[:floor]
-    paths = Path.where(map_path_from_id: tour_stop.stop_id)
-    paths.each do |path|
-      path.path_points.destroy_all
+    stops_count = @community.tour.tour_stops.where(display_stop: true).count
+
+    if stops_count > 1
+      floor = params[:floor]
+      paths = Path.where(map_path_from_id: tour_stop.stop_id)
+      paths.each do |path|
+        path.path_points.destroy_all
+        path.destroy if path.present?
+      end
+
+      path = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)&.paths&.last
+      path.path_points.destroy_all if path.present?
       path.destroy if path.present?
-    end
 
-    path = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)&.paths&.last
-    path.path_points.destroy_all if path.present?
-    path.destroy if path.present?
+      VisitedStop.where(tour_stop_id: tour_stop.id).destroy_all
+      
+      if @tour_stop.stop_type == "elevator"
+        (Elevator.find tour_stop.stop_id).destroy if Elevator.where(id: tour_stop.stop_id).any?
+      end
+      
+      if @tour_stop.stop_type == "building_starting_point"
+        (BuildingStartingPoint.find tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: tour_stop.stop_id).any?
+      end
+      
+      unless @community.is_sitemap
+        add_remove_stop_into_sort_hash(floor,@tour_stop,"remove")
+      end
 
-    VisitedStop.where(tour_stop_id: tour_stop.id).destroy_all
-    if @tour_stop.stop_type == "elevator"
-      (Elevator.find tour_stop.stop_id).destroy if Elevator.where(id: tour_stop.stop_id).any?
-    end
-    if @tour_stop.stop_type == "building_starting_point"
-      (BuildingStartingPoint.find tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: tour_stop.stop_id).any?
-    end
-    unless @community.is_sitemap
-      add_remove_stop_into_sort_hash(floor,@tour_stop,"remove")
-    end
-    if @tour_stop.destroy
-      render json: { success: true, error_code: 200, message: "Tour stop has been deleted successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
+      if @tour_stop.destroy
+        render json: { success: true, error_code: 200, message: "Tour stop has been deleted successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
+      else
+        render json: { success: false, status_code: 400, message: "Something went wrong, please try again later", data: nil }, status: 400
+      end
+
+    elsif stops_count == 1
+      render json: { success: true, error_code: 200, message: "Last stop can not be removed", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
+    
     else
-      render json: { success: false, status_code: 400, message: "Something went wrong, please try again later", data: nil }, status: 400
+      render json: { success: true, error_code: 200, message: "There is no stop to remove", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200  
     end
+
   end
 
   def add_tour_stop
     tour_stop = params[:stop_id]
     stop_type = params[:stop_type]
     floor = params[:floor]
+    
     if stop_type == "amenity"
       st = Amenity.find tour_stop
       st.floor = floor.to_i unless @community.show_map
@@ -90,10 +106,13 @@ class Api::V1::FloorplansController < ActionController::Base
       st = Unit.find tour_stop
       stName = st.marketing_name
     end
+
     ts = TourStop.create(stop_type: stop_type, stop_id: tour_stop,latitude: st.x_plot,longitude: st.y_plot,tour_id: @community.tour.id,name: stName)
+    
     unless @community.is_sitemap
       add_remove_stop_into_sort_hash(floor,ts,"add")
     end
+    
     PaperTrail::Version.create(item_type: "TourStop",item_id: st.id,event: "create",whodunnit: @community&.users&.first&.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{stName}' community_id: '#{@community.id}'")
     render json: { success: true, error_code: 200, message: "Tour stop has been added successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
   end
