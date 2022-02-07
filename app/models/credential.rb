@@ -49,7 +49,7 @@ class Credential < ApplicationRecord
     data = super(
       :only => [:community_id, :id]
     )
-    data.merge!(data_provider: data_provider,credentials: data_providers_credentials(data_provider),use_different_crm_provider: use_different_crm,crm_provider: crm_provider,crm_credential: crm_credential_provider)
+    data.merge!(data_provider: data_provider,credentials: data_providers_credentials(data_provider),use_different_crm_provider: use_different_crm,crm_provider: crm_provider,crm_credentials: crm_credential_provider)
   end
 
   def crm_credential_provider
@@ -84,7 +84,7 @@ class Credential < ApplicationRecord
   end
 
   def psi_credentials
-    {domain: self.entrata_url, username: self.username, password: self.password, property_id: self.property_id}
+    {entrata_url: self.entrata_url, username: self.username, password: self.password, property_id: self.property_id}
   end
 
   def yardirentcafe_credentials
@@ -110,7 +110,7 @@ class Credential < ApplicationRecord
   end
   
   def resman_credentials
-    {account_id: self.resman_account_id, property_id: self.resman_property_id}
+    {resman_account_id: self.resman_account_id, resman_property_id: self.resman_property_id}
   end
 
   def new_requested_provider
