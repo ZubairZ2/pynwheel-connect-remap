@@ -23,16 +23,15 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
         if @type.eql?(HOMEPAGE_VIDEO)
           if homepage_id.present?
             @community.design.home_page_video.update(name: homepage["name"], video: homepage["file"])
-          else
-            # @community.design.create_home_page_video(name: homepage["name"], video: homepage["file"])
-            binding.pry
-            file = homepage["file"]
-            @uploader = HomePageVideo.new(video: homepage["file"])
-            if @uploader.save
-              @uploader.remote_video_url = @uploader.video.direct_fog_url + file
-              @uploader.design_id = @community.design.id
-              @uploader.save
-            end
+          elsif
+            @community.design.create_home_page_video(name: homepage["name"])
+            # binding.pry
+            # @uploader =  HomePageVideo.new(video: homepage["file"])
+            # if @uploader.save
+            #   @uploader.remote_video_url = @uploader.video.direct_fog_url + @uploader.video.key
+            #   @uploader.design_id = @community.design.id
+            #   @uploader.save
+            # end
           end
         else
           if homepage_id.present?
