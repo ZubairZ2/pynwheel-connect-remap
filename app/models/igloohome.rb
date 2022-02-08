@@ -6,7 +6,7 @@ class Igloohome < ApplicationRecord
 
   def as_json
     super(
-      :only => [:id, :username, :password]
+      :only => [:id, :email]
     )
   end
 

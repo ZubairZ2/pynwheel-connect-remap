@@ -9,7 +9,7 @@ class Dwelo < ApplicationRecord
   end
 
   def as_json
-    super(:only => [:id, :client_id, :client_secret]
+    super(:only => [:id, :community_id, :client_id, :client_secret]
     )
   end
 
