@@ -168,7 +168,7 @@ class Api::V1::FloorplansController < ActionController::Base
       @building_list.each do |building|
         @floor_list.each do |floor|
           tour_sort_hash = @community.tour.sort_hash[building + ","+ floor.to_s]
-            if tour_sort_hash.present?
+            # if tour_sort_hash.present?
               if floor.eql?(floor_number.to_i)
                 if request.eql?("add")
                   tour_sort_hash.push(tour_stop.id.to_s)
@@ -180,7 +180,7 @@ class Api::V1::FloorplansController < ActionController::Base
                 @community.tour.sort_hash["#{building},#{floor.to_i}"] = tour_sort_hash
                 community_tour_stops_hash = @community.tour.sort_hash
               end
-            end
+            # end
         end
       end
     @community.tour.update_attributes(sort_hash: community_tour_stops_hash) if community_tour_stops_hash.present?
