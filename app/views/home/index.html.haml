@@ -40,7 +40,8 @@
                 
                 %h6.h6 Timezone: #{community.time_zone}
                 %h6.h6 Updated: #{community.updated_at.to_date}
-                %h6.h6 Psi data updated on: #{community.data_provider_updated_on}
+                - if community.data_provider == "psi" 
+                  %h6.h6 Entrata data updated on: #{community.data_provider_updated_on}
 
               %td
                 %h5.h5
