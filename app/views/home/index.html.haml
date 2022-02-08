@@ -29,20 +29,19 @@
             %th{:width => "250"} Company
         %tbody
           - @communities.each do |community|
-            - if community.present?
-              %tr
-                %td
-                  %h4.h4
-                    - if current_user.is_view_visitor_details_page?
-                      = link_to community.name, community_tour_users_path(community),:title=>community.data_provider
-                    - elsif community&.company.present?
-                      = link_to community.name, edit_company_community_path(community.company,community),:title=>community.data_provider
-                  
-                  %h6.h6 Timezone: #{community.time_zone}
-                  %h6.h6 Updated: #{community.updated_at.to_date}
-                  - if community.data_provider == "psi"
-                    %h6.h6 Psi data updated on: #{community.provider_data_updated_on.present? ? community.provider_data_updated_on : "Never"}
+            %tr
+              %td
+                %h4.h4
+                  - if current_user.is_view_visitor_details_page?
+                    = link_to community.name, community_tour_users_path(community),:title=>community.data_provider
+                    
+                  - elsif community&.company.present?
+                    = link_to community.name, edit_company_community_path(community.company,community),:title=>community.data_provider
+                
+                %h6.h6 Timezone: #{community.time_zone}
+                %h6.h6 Updated: #{community.updated_at.to_date}
+                %h6.h6 Psi data updated on: #{community.data_provider_updated_on}
 
-                %td
-                  %h5.h5
-                    = community.company.name rescue ""
+              %td
+                %h5.h5
+                  = community.company.name rescue ""

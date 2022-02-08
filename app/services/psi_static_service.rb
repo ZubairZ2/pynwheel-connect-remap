@@ -45,6 +45,7 @@ class PsiStaticService < BaseService
           end
           save_psi_floorplans(floorplans,property_id)
           save_psi_units(units,property_id)
+          community_data_updated_on()
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
@@ -75,6 +76,11 @@ class PsiStaticService < BaseService
     end
     fill_psi_pricing_details(1)
     fill_psi_pricing_details(0)
+  end
+
+  def community_data_updated_on 
+    com = Community.find credentials.community_id
+    com.update(data_provider_updated_on: Time.now.to_s) if com.present?
   end
 
   def save_psi_units(units,property_id)
