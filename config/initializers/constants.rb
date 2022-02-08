@@ -17,5 +17,5 @@ HARDWARE_SPECS = "Touchscreen Specifications and Installation for Pynwheel Touch
 TOUCH_HOME_PAGE_MEDIA = "Slideshow/Video for Pynwheel Touch Home Page"
 SITEMAP = "garden_style_community"
 FLOORPLATE = "mid_high_rise_community"
-API_TOKEN = "Api Token"
-PROPERTY_CODE = "Property Code"
+API_TOKEN = "api_token"
+PROPERTY_CODE = "property_code"

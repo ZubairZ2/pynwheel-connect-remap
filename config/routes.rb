@@ -550,6 +550,8 @@ Rails.application.routes.draw do
     namespace :v2 do
       post '/communities/:community_id/update_galleries', to: 'galleries#update_galleries'
       get '/communities/:community_id/community_data_provider', to: 'data_providers#get_community_data_provider'
+      post '/communities/:community_id/update_data_provider', to: 'data_providers#update_data_provider_and_credentials'
+      get '/communities/:community_id/test_connection', to: 'data_providers#test_connection'
       resources :user_details do
         member do
           put :update_company
