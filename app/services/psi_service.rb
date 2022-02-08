@@ -12,32 +12,19 @@ class PsiService < BaseService
     rescue => ex
     end
 
-
-
     property_ids = credentials.property_id.split(',') rescue []
-    
-    puts "-------"*10
-    puts "Community ID"
-    puts credentials.community_id
-    puts "Property Ids"
-    puts property_ids.inspect
 
     property_ids.each do |property_id|
       begin
-        # @@floorplanHash = {}
+\
         if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
           url = credentials.entrata_url
         else
           url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
         end
-        # if com_test.id == 458
-        #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "2 "
-        #   com_test.save
-        # end
 
         password = credentials.password
         username = credentials.username
-        #property_id = credentials.property_id
 
         response = HTTParty.post(url,
                                  :body => {
@@ -57,17 +44,10 @@ class PsiService < BaseService
                                  }.to_json,
                                  :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
-        # if com_test.id == 458
-        #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "3 "
-        #   com_test.save
-        # end
-        sleep 2
-        if response["response"]["code"] == 200
-          puts "---------"*30
-          puts "Verified credentials for Community #{credentials.community_id} #{property_id}"
-          puts "---------"*30
-          puts "\n\n\n"
 
+        sleep 2
+        
+        if response["response"]["code"] == 200
           units = []
           floorplans = []
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
@@ -78,38 +58,23 @@ class PsiService < BaseService
               floorplans << f
             end
           end
-          # if com_test.id == 458
-          #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "4 "
-          #   com_test.save
-          # end
+
           save_psi_floorplans(floorplans,property_id)
-          # if com_test.id == 458 || com_test.id == 819
-          #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "5 "
-          #   com_test.save
-          # end
           save_psi_units(units,property_id)
-          # if com_test.id == 458 || com_test.id == 819
-          #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "6 "
-          #   com_test.save
-          # end
+
+          community_data_updated_on("success")
+
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
             PaperTrail.enabled = false
             cred.save
             PaperTrail.enabled = true
+
           rescue => err
           end
-          # save_website_column_of_community(response)
-          #else
-          #puts '-----------------------------' , response["response"]["error"]["message"]
-          #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
-        else
-          puts "---------"*30
-          puts "failed credentials for Community#{ credentials.community_id}"
-          puts "---------"*30
-          puts "\n\n\n"
 
+        else
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
@@ -119,15 +84,19 @@ class PsiService < BaseService
           rescue => err
           end
         end
+
       rescue => e
         begin
+          community_data_updated_on("failed")
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
           PaperTrail.enabled = false
           cred.save
           PaperTrail.enabled = true
+        
         rescue => err
         end
+
         begin
           com = Community.find credentials.community_id
           unless com.entrata_exception_logs.present?
@@ -137,11 +106,13 @@ class PsiService < BaseService
           PaperTrail.enabled = false
           com.save
           PaperTrail.enabled = true
+        
         rescue => p
         end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+
       end
     end
+
     begin
       com_test = Community.find credentials.community_id
       com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
@@ -149,21 +120,20 @@ class PsiService < BaseService
       PaperTrail.enabled = false
       com_test.save
       PaperTrail.enabled = true
+    
     rescue => ex
     end
-    # if com_test.id == 458
-    #   com_test.entrata_exception_logs = com_test.entrata_exception_logs + "7 "
-    #   com_test.save
-    # end
+
     fill_psi_pricing_details(1)
     fill_psi_pricing_details(0)
   end
 
-  def save_psi_units(units,property_id)
-    # units_in_feed = units.map{|x| x["Units"]["Unit"]["UnitType"]}
-    # units_in_feed2 = units.map{|x| x["Units"]["Unit"]["UnitType"] + "-" + x["Units"]["Unit"]["MarketingName"]}
-    # units_in_feed = units_in_feed + units_in_feed2
+  def community_data_updated_on 
+    com = Community.find credentials.community_id
+    com.update(provider_data_updated_on: Time.now.to_s) if com.present?
+  end
 
+  def save_psi_units(units,property_id)
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["psi"]).map{|x| x.provider_unit_id}
     units.each do |u|
       vacateDate = ""
@@ -178,14 +148,9 @@ class PsiService < BaseService
         unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
       end
 
-      if unit.present?  
-        # unit.property_id = property_id
-        # unit.unit_type = u["Units"]["Unit"]["UnitType"]
+      if unit.present?
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         unit.provider = "psi"
-        #
-        # unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
-
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
 
         if u["Units"]["Unit"]["MarketRent"].present?
@@ -206,23 +171,6 @@ class PsiService < BaseService
 
         end
 
-        # unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-        #   if u["Units"]["Unit"]["MarketRent"].present?
-        #     unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-        #   elsif u["EffectiveRent"].present?
-        #     unit.effective_rent = u["EffectiveRent"]
-        #     # else
-        #     #   unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
-        #   end
-        # end
-
-        # unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
-        # if u["EffectiveRent"].present?
-        #   unit.effective_rent = u["EffectiveRent"]
-        # else
-        #   unit.effective_rent = 0
-        # end
-        # unit.floor = u["FloorLevel"]
         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
           unit.availability = u["Availability"]["VacancyClass"] if !unit.sold
           unit.available = false if !unit.sold
@@ -237,19 +185,20 @@ class PsiService < BaseService
           day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
         end
+        
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacateDate
         end
+
         unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
         unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
         url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
       
         unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
       
-        # building = u["Units"]["Unit"]["BuildingName"]
-        # unit.building = building.present? ? building.gsub("Building ", "") : ""
         @unit_record << unit.provider_unit_id
         unit.save(validate: false)
+      
       else
         unit = Unit.where(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s).first
        
@@ -280,7 +229,6 @@ class PsiService < BaseService
           unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
         end
 
-        # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["Units"]["Unit"]["MarketRent"].present?
           unit.market_rent = u["Units"]["Unit"]["MarketRent"]
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
@@ -299,10 +247,10 @@ class PsiService < BaseService
 
         end
 
-        # unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         unless unit.floor_is_updated.present? && unit.floor_is_updated
           unit.floor = u["FloorLevel"]
         end
+        
         unit.availability_url = u["Availability"]["UnitAvailabilityURL"]
 
         unless unit.availability_is_updated.present? && unit.availability_is_updated
@@ -312,6 +260,7 @@ class PsiService < BaseService
         unless unit.available_is_updated.present? && unit.available_is_updated
           unit.available = false
         end
+
         if u["Availability"]["VacancyClass"] == "Unoccupied"
           unless unit.available_is_updated.present? && unit.available_is_updated
             unit.available = true
@@ -321,14 +270,17 @@ class PsiService < BaseService
           day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
         end
+
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated
           unit.available_date = vacateDate
         end
 
         building = u["Units"]["Unit"]["BuildingName"]
+        
         unless unit.building_is_updated.present? && unit.building_is_updated
           unit.building = building.present? ? building.gsub("Building ", "") : ""
         end
+
         unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
         unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
         url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
@@ -358,44 +310,16 @@ class PsiService < BaseService
     floorplans.each do |f|
       floorplan = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"])#.first_or_initialize
       if floorplan.present?
-        # floorplan.property_id = property_id
-        # floorplan.name = f["Name"]
-        # floorplan.unit_count = f["UnitsAvailable"]
-        # floorplan.units_available = f["DisplayedUnitsAvailable"]
-        # floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
+
         floorplan.availability_url = f["FloorplanAvailabilityURL"] if f["FloorplanAvailabilityURL"].present?
         floorplan.provider = "psi"
 
-
-        # room_types = f["Room"]
-        # room_types.each do |rt|
-        #   if rt["@attributes"]["RoomType"] == "Bedroom"
-        #     floorplan.bedrooms = rt["Count"]
-        #   else
-        #     floorplan.bathrooms = rt["Count"]
-        #   end
-        # end
-        #
-        # if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
-        #
-        #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
-        # else
-        #
-        #
-        #   floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
-        # end
-        # if f["MarketRent"]["@attributes"]["Min"].to_f > 0
-        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
-        # else
-        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
-        # end
         if f["MarketRent"]["@attributes"]["Min"].to_f > 0
-
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
         else
-
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
         end
+
       else
         floorplan = Floorplan.where(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
 
@@ -406,17 +330,13 @@ class PsiService < BaseService
           floorplan.name = f["Name"]
         end
 
-        # if f["MarketRent"]["@attributes"]["Min"].to_f > 0
-        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
-        # else
-        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
-        # end
         floorplan.unit_count = f["UnitsAvailable"]
         floorplan.units_available = f["DisplayedUnitsAvailable"]
         floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
         floorplan.availability_url = f["FloorplanAvailabilityURL"]
 
         room_types = f["Room"]
+
         room_types.each do |rt|
           if rt["@attributes"]["RoomType"] == "Bedroom"
             unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
@@ -428,6 +348,7 @@ class PsiService < BaseService
             end
           end
         end
+
         unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
           if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
             floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
@@ -435,6 +356,7 @@ class PsiService < BaseService
             floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
           end
         end
+
         unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
           if f["MarketRent"]["@attributes"]["Min"].to_f > 0
             floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
@@ -443,6 +365,7 @@ class PsiService < BaseService
             floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
           end
         end
+
         floorplan.save(validate: false)
 
       end
@@ -456,6 +379,7 @@ class PsiService < BaseService
   def fill_psi_pricing_details(hit)
     floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
+
     property_ids.each do |property_id|
       move_in_dates = getMoveInDate(property_id)
       if hit == 1
@@ -466,17 +390,21 @@ class PsiService < BaseService
         move_in_dates = []
         move_in_dates << "0"
       end
+      
       ########################################## Space configuration
+
       move_in_dates.each do |move_in_date|
         begin
+          
           if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
             url = credentials.entrata_url
           else
             url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
           end
+          
           password = credentials.password
           username = credentials.username
-          #property_id = credentials.property_id
+
           if move_in_date == "0"
             response = HTTParty.post(url,
                                      :body => {
@@ -617,19 +545,18 @@ class PsiService < BaseService
                   end
                 end
               end
-              #else
-              #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
+
             else
-              #################################### with unit space pricing
               begin
+
                 if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
                   url = credentials.entrata_url
                 else
                   url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
                 end
+
                 password = credentials.password
                 username = credentials.username
-                #property_id = credentials.property_id
                 response = HTTParty.post(url,
                                          :body => {
                                              "auth": {
@@ -648,7 +575,9 @@ class PsiService < BaseService
                                          }.to_json,
                                          :headers => { 'Content-Type' => 'application/json' } )
                 response =  JSON.parse(response.body)
+                
                 sleep 2
+
                 if response["response"]["code"] == 200
                   psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
                   psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
@@ -658,20 +587,25 @@ class PsiService < BaseService
                   psi_units.each do |u|
                     u['UnitSpace'].each do |us|
                       begin
+
                         if u['UnitSpace'].count == 1
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                          
                           unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
                             unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)],community_id: credentials.community_id)
                           end
                         else
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
+                          
                           unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
                             unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                           end
                         end
+
                         unless unit.present?
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"],community_id: credentials.community_id)
                         end
+
                         unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
                           unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
                         end
@@ -723,7 +657,7 @@ class PsiService < BaseService
                         rentStr = ""
                         
                         begin
-                          if us[1]["Rent"]["TermRent"].count > 1 #0 && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
+                          if us[1]["Rent"]["TermRent"].count > 1
                             us[1]["Rent"]["TermRent"].each do |tr|
                               rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::\;"
                             end
@@ -738,9 +672,8 @@ class PsiService < BaseService
                       end
                     end
                   end
-                  #else
-                  #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
                 end
+
               rescue => e
                 begin
                   com = Community.find credentials.community_id
@@ -751,15 +684,15 @@ class PsiService < BaseService
                   PaperTrail.enabled = false
                   com.save
                   PaperTrail.enabled = true
+
                 rescue => r
                 end
-                #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
               end
 
-              ####################################
             end
 
           end
+
         rescue => e
           begin
             com = Community.find credentials.community_id
@@ -770,22 +703,19 @@ class PsiService < BaseService
             PaperTrail.enabled = false
             com.save
             PaperTrail.enabled = true
+          
           rescue => r
           end
-          #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
         end
       end
-
-      ##########################################
-
-
     end
   end
+
   def getMoveInDate(property_id)
     url = "https://"+credentials.entrata_url+".entrata.com/api/v1/properties"
     password = credentials.password
     username = credentials.username
-    #property_id = credentials.property_id
+
     begin
       response = HTTParty.post(url,
                                :body => {
@@ -804,8 +734,10 @@ class PsiService < BaseService
                                    }
                                }.to_json,
                                :headers => { 'Content-Type' => 'application/json' } )
+
       response =  JSON.parse(response.body)
       moveIn_dates = []
+
       response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
         if dates['leaseStartDate'].present?
           ss = dates['leaseStartDate'].split('/')
@@ -816,14 +748,15 @@ class PsiService < BaseService
           moveIn_dates << added_date
         end
       end
+
     rescue
     end
+
     moveIn_dates
   end
 
   def save_website_column_of_community(response)
     community = Community.find credentials.community_id
-    # community.update_attribute(:website,response['response']['result']["PhysicalProperty"]["Property"][0]["PropertyID"]["WebSite"])
   end
 
 
