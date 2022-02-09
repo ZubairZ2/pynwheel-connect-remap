@@ -1798,8 +1798,9 @@ function display3DMap() {
   $('.zoom-in-webpage').hide();
   $('.zoom-out-webpage').hide();
   $("#panzomm-container").css("width", "100%");
-  $(".location-items").hide();
-  // $(".c-wrapper").css("margin-right", "0px");
+  // $(".location-items").hide();
+  $(".c-wrapper").css("margin-right", "0px");
+  $(".desktop-content").hide();
   $(".2d-map-option").removeClass("hidden");
   $(".3d-map-option").addClass("hidden");
   $(".satelite-view-icon").removeClass("hidden");
@@ -1832,6 +1833,7 @@ function display2DMap() {
   $("#panzomm-container").css("width", "");
   $(".c-wrapper").css("margin-right", "90px");
   $(".c-sidebar").show();
+  $(".desktop-content").show();
   $(".satelite-view-icon").addClass("hidden");
   $(".3d-map-option").removeClass("hidden");
   $(".2d-map-option").addClass("hidden");
