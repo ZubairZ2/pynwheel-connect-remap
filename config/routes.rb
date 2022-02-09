@@ -555,6 +555,7 @@ Rails.application.routes.draw do
           get :data
           get :data_group
           get :community_tours
+          get :customize_stops_list
           post :user_saved_tour
           get :tour_configrations
           get :tour_configrations_v1

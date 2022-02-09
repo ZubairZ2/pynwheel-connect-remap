@@ -4,8 +4,8 @@ json.message "success"
 json.floorplan do
   json.id @floorplan.id
   json.floorplan_name @floorplan.name
-  json.bedrooms @floorplan.bedrooms rescue 0
-  json.bathrooms @floorplan.bathrooms rescue 0
+  json.bedrooms @floorplan.bedrooms.to_i.to_s rescue 0
+  json.bathrooms @floorplan.bathrooms.to_i rescue 0
   json.square_feet @floorplan.square_feet
 end
 
