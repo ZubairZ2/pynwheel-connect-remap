@@ -8,7 +8,7 @@ class Api::V1::FloorplansController < ActionController::Base
     bedrooms = params[:bedrooms].present? ? params[:bedrooms].split(',') : "any"
     requested_bedrooms = bedrooms.map {|x| x.downcase.eql?("studio") ? "0" : x}
     any_option = bedrooms.map {|b| b.downcase.eql?("any")}
-    filtered_floorplans = floorplans.present? ? floorplans.select {|b| requested_bedrooms.include?(b.bedrooms) } : [] unless any_option.include?(true) or bedrooms.blank?
+    filtered_floorplans = floorplans.present? ? floorplans.select {|b| requested_bedrooms.include?(b.bedrooms.to_i.to_s) } : [] unless any_option.include?(true) or bedrooms.blank?
     floorplans_list = any_option.include?(true) ? floorplans : filtered_floorplans 
     sorting_param = params[:sort_by].present? ? params[:sort_by] : "default"
     sorted_floorplans = floorplans_list.present? ? sort_floorplans(floorplans_list,sorting_param).uniq : []
