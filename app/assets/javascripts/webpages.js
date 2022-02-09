@@ -1799,7 +1799,7 @@ function display3DMap() {
   $('.zoom-out-webpage').hide();
   $("#panzomm-container").css("width", "100%");
   $(".location-items").hide();
-  $(".c-wrapper").css("margin-right", "0px");
+  // $(".c-wrapper").css("margin-right", "0px");
   $(".2d-map-option").removeClass("hidden");
   $(".3d-map-option").addClass("hidden");
   $(".satelite-view-icon").removeClass("hidden");
