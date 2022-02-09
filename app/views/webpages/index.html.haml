@@ -109,7 +109,10 @@
                     = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor, "onclick": "_3dFilterByFloor(this)"
                     %div.units-no{style: "margin-top: 11px"}
                       %span.teg-line{:id => "u_#{floor}"}
-            
+
+          .w-100.d-flex-justify-content-center.beans-map-container
+            .beanswidget#beanswidget.some{:style => "width:100%; height:100%"}
+
           .c-body{style: "overflow: hidden"}
             - if @community.theme_name.include?('gables')
               - fontsize = @community.design.present? && @community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : 30
@@ -229,9 +232,6 @@
                       - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
 
                         = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>amenity.name
-
-              .w-100.d-flex-justify-content-center.beans-map-container
-                .beanswidget#beanswidget.some{:style => "width:100%; height:100%"}
 
               .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
                 %strong Oops!
