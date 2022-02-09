@@ -177,7 +177,8 @@ class Api::V1::CommunitiesController < ActionController::Base
     if api_access or access == true
       @floorplans = get_floorplans_with_required_filter()
       @building_list = Buildings.new(@community).get_community_buildings
-      @floor_list_temp = Floors.new(@community).get_community_floors
+      @floor_list = Floors.new(@community).get_community_floors
+      @floor_list_temp = Floors.new(@community).get_community_temp_floors(@floor_list)
     end
   end
 
