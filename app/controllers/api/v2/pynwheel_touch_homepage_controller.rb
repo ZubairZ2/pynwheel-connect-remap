@@ -3,8 +3,9 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
   before_action :load_community, only: [:index, :add_homepage_design]
 
   def index
-    images = @community.design.home_page_images
-    video = @community.design.home_page_video
+    @design = @community.design || @community.create_design
+    images = @design.home_page_images
+    video = @design.home_page_video
     if images.any?
       render json: { success: true, data: render_homepage_design(HOMEPAGE_IMAGE, images) }
     elsif video.present?
@@ -21,17 +22,15 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
       homepage_params.values.each do |homepage|
         homepage_id = homepage["id"]
         if @type.eql?(HOMEPAGE_VIDEO)
-          if homepage_id.present?
-            @community.design.home_page_video.update(name: homepage["name"], video: homepage["file"])
-          elsif
-            @community.design.create_home_page_video(name: homepage["name"])
-            # binding.pry
-            # @uploader =  HomePageVideo.new(video: homepage["file"])
-            # if @uploader.save
-            #   @uploader.remote_video_url = @uploader.video.direct_fog_url + @uploader.video.key
-            #   @uploader.design_id = @community.design.id
-            #   @uploader.save
-            # end
+          homevideo = HomePageVideo.where(design_id: @community.design.id).first
+          if homevideo.present?
+            homevideo.destroy
+          end
+          @uploader =  HomePageVideo.new
+          if @uploader.save
+            @uploader.video = homepage["file"]
+            @uploader.design_id = @community.design.id
+            @uploader.save
           end
         else
           if homepage_id.present?
@@ -51,7 +50,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
   end
 
   private
-  
+
   def load_community
     @community = Community.find(params[:community_id])
   end
