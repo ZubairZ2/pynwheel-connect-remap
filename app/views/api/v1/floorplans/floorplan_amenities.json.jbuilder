@@ -28,7 +28,7 @@ json.amenities @amenities do |amenity|
   json.x_plot amenity.x_plot
   json.y_plot amenity.y_plot
   json.floor amenity.floor
-  json.unique_amenity_identifier "#{amenity&.amenityable_id}-#{amenity.floor}"
+  json.unique_amenity_identifier @community.is_sitemap ? "#{amenity&.amenityable_id}" : "#{amenity&.amenityable_id}-#{amenity.floor}"
   json.building amenity.building
   json.description amenity.description
   json.image amenity.image
