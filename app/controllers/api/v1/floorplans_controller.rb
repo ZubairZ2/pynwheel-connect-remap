@@ -46,7 +46,7 @@ class Api::V1::FloorplansController < ActionController::Base
   private
 
   def remove_tour_stop(tour_stop)
-    stops_count = @community.tour.tour_stops.where(display_stop: true).count
+    stops_count = @community.tour.tour_stops.where(display_stop: true, stop_type: ["unit", "amenity"]).count
 
     if stops_count > 1
       floor = params[:floor]
