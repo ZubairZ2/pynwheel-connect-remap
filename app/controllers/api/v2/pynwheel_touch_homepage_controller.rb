@@ -29,6 +29,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
           @uploader =  HomePageVideo.new
           if @uploader.save
             @uploader.video = homepage["file"]
+            @uploader.name = homepage["name"]
             @uploader.design_id = @community.design.id
             @uploader.save
           end
