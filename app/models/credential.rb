@@ -44,7 +44,80 @@ class Credential < ApplicationRecord
   has_one :status, as: :statusable
   
   after_update :change_to_scheduled_tours_for_sf
+
+  def as_json(data_provider = "")
+    data = super(
+      :only => [:community_id, :id]
+    )
+    data.merge!(data_provider: data_provider,credentials: data_providers_credentials(data_provider),use_different_crm_provider: use_different_crm,crm_provider: crm_provider,crm_credentials: crm_credential_provider)
+  end
+
+  def crm_credential_provider
+    community = self.community
+    return {} unless self.use_different_crm_provider && community.crm_credential.crm_provider.present?
+    community.crm_credential.crm_provider_credentials
+  end
+
+  def use_different_crm
+    community = self.community
+    community.use_crm_credentials?
+  end
+
+  def crm_provider
+    self.community.crm_credential.crm_provider rescue ""
+  end
+
+  def data_providers_credentials(data_provider)
+    case data_provider
+      when "psi"
+        psi_credentials
+      when "yardirentcafe"
+        yardirentcafe_credentials
+      when "realpagesvc"
+        realpagesvc_credentials
+      when "yardi"
+        yardi_credentials
+      when "resman"
+        resman_credentials
+      when "other"
+        new_requested_provider
+    end
+  end
+
+  def psi_credentials
+    {entrata_url: self.entrata_url, username: self.username, password: self.password, property_id: self.property_id}
+  end
+
+  def yardirentcafe_credentials
+    selected_code_option = self.api_token.present? ? API_TOKEN : PROPERTY_CODE
+    cred = {code_option: selected_code_option, p_code: self.p_code}
+    cred.merge!(fetch_code(selected_code_option))
+  end
   
+  def fetch_code(selected_code_option)
+    if selected_code_option.eql?(API_TOKEN)
+      {api_token: self.api_token}
+    else
+      {c_code: self.c_code}
+    end
+  end
+
+  def realpagesvc_credentials
+    {site_id: self.site_id, pmc_id: self.pmc_id}
+  end
+
+  def yardi_credentials
+    {url: self.url, username: self.username, password: self.password, property_id: self.property_id, server_name: self.server_name }
+  end
+  
+  def resman_credentials
+    {resman_account_id: self.resman_account_id, resman_property_id: self.resman_property_id}
+  end
+
+  def new_requested_provider
+    self.new_requested_data_provider rescue ""
+  end
+
   def import_data_from_spreadsheet(file)
     xlsx = Roo::Spreadsheet.open(file.open)
     units = xlsx.sheet(0)
