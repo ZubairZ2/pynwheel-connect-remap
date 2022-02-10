@@ -255,9 +255,9 @@ Rails.application.routes.draw do
       end
     end
     resources :tour_users do
-        get :lock_ploting
-        get :visited_stops_data
-        get :checkpoint_verification
+      get :lock_ploting
+      get :visited_stops_data
+      get :checkpoint_verification
     end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do
@@ -565,6 +565,8 @@ Rails.application.routes.draw do
       resources :communities do
         resources :community_floor_plans
         post :add_floorplan, to: 'community_floor_plans#add_floorplan'
+        resources :pynwheel_touch_homepage
+        post :add_homepage_design, to: 'pynwheel_touch_homepage#add_homepage_design'
         member do
           post :add_comment
           post :get_products
@@ -650,7 +652,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :tours,only: :index do
+      resources :tours, only: :index do
         collection do
           post :tour_user_login
           post :start_tour_auto_message
