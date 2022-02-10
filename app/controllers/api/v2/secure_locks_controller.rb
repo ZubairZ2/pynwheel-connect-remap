@@ -42,7 +42,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     if !lock_id.present?
       community_edge_state = @community.edge_state
       edge_state_lock = community_edge_state.present? ? community_edge_state : @community.create_edge_state
-      if edge_state_lock.present?
+      if edge_state_lock.present? && !edge_state_lock.yale.present?
         edge_state_lock.yale.create
         @locks_provider << REMOTELOCK
       end
@@ -53,7 +53,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     if !lock_id.present?
       community_edge_state = @community.edge_state
       edge_state_lock = community_edge_state.present? ? community_edge_state : @community.create_edge_state
-      if edge_state_lock.present?
+      if edge_state_lock.present? && !edge_state_lock.remote_locks.present?
         edge_state_lock.remote_locks.create
         @locks_provider << REMOTELOCK
       end
