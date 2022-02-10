@@ -1,4 +1,4 @@
-class PdfUploader < CarrierWave::Uploader::Base
+class CsvfileUploader < CarrierWave::Uploader::Base
 
   include CarrierWave::MiniMagick
 
@@ -9,7 +9,6 @@ class PdfUploader < CarrierWave::Uploader::Base
   end
 
   def extension_whitelist
-    %w(pdf)
+    %w(csv)
   end
-
 end

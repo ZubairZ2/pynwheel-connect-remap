@@ -3,10 +3,11 @@ class Latch < ApplicationRecord
   belongs_to :community
   has_many :latch_locks, dependent: :destroy
   has_one :status, as: :statusable
+  mount_uploader :file, CsvfileUploader
 
   def as_json
     super(
-      :only => [:id, :client_id, :client_secret ], :method => [:lock_type]
+      :only => [:id, :client_id, :client_secret, :file ], :method => [:lock_type]
     )
   end
 
