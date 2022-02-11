@@ -7,29 +7,27 @@ class PropertyAccessCode
   end
 
   def restrict_property_access_with_code
-    if @tour_type != "virtual_tour" && @tour_user.check_code_expiry(@community) 
 
-      @tour_user.property_access_code = generate_six_digit_random_pin
-      @tour_user.property_access_code_generated_at = Time.now
-      @tour_user.restricted_property_access = true
-      visitor_name = @tour_user.name.titleize
-
-      sleep 1
-
+    if @tour_type != "virtual_tour" && @tour_user.check_code_expiry(@community)
+      @tour_user.update_attributes(property_access_code: generate_six_digit_random_pin, property_access_code_generated_at: Time.now, restricted_property_access: true)
       create_tour_history()
-
-      subject = "Property Access Code for #{visitor_name}"
-      body = "#{visitor_name} is ready to start a Self Tour at #{@community.name}. 
-      Please instruct #{@tour_user.first_name.titleize} to enter this property access code into the Self Tour app:<br>
-      <br>#{@tour_user.property_access_code}<br>
-      <br>This code will expire in #{@tour_length_stay_limit} minutes<br> 
-      <br>Thanks!"
-
-      send_access_code_email(subject, body)
+      property_access_code_content()
     end
+
   end
 
   private
+
+  def property_access_code_content
+    subject = "Property Access Code for #{@tour_user&.name&.titleize}"
+    body = "#{@tour_user&.name&.titleize} is ready to start a Self Tour at #{@community.name}. 
+    Please instruct #{@tour_user.first_name.titleize} to enter this property access code into the Self Tour app:<br>
+    <br>#{@tour_user.property_access_code}<br>
+    <br>This code will expire in #{@tour_length_stay_limit} minutes<br> 
+    <br>Thanks!"
+
+    send_access_code_email(subject, body)
+  end
 
   def generate_six_digit_random_pin
     (SecureRandom.random_number * (10**6)).round.to_s
