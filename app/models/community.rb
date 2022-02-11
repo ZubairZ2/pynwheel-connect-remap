@@ -115,7 +115,7 @@ class Community < ApplicationRecord
     touch_installation_specification(current_user)
     set_lock_providers_status(current_user)
     set_tour_stops_status(current_user)
-    set_visiting_hours_status(current_user)  
+    set_visiting_hours_status(current_user)
   end
 
   def set_community_details_status(current_user)
@@ -133,7 +133,7 @@ class Community < ApplicationRecord
       property_sitemap_status = status_string(self.sitemap&.image.present?)
       set_status_for_all(sitemap,property_sitemap_status,current_user)
 
-    elsif self.has_floorplates?
+    elsif self.floorplates.any?
       floorplates = self.floorplates
       floorplates.each do |floorplate|
         property_floorplate_status = status_string(floorplate&.image.present?)
@@ -272,7 +272,7 @@ class Community < ApplicationRecord
     return if self.community_users.blank?
     community_users = self.community_users
     community_users.each do |cu|
-      required_hardware = cu.product_options.present? && check_required_hardware(cu.product_options) ? true : false 
+      required_hardware = cu.product_options.present? && check_required_hardware(cu.product_options) ? true : false
       status_attr = status_string(required_hardware)
       set_status_for_all(cu,status_attr,current_user)
     end
@@ -868,7 +868,11 @@ class Community < ApplicationRecord
   end
 
   def create_default_gallery
-    self.galleries.create(name: 'default')
+    default_galleries = ["appartments", "community"]
+    default_galleries.each do |gallery_name|
+      self.galleries.create(name: gallery_name, is_default: true)
+    end
+    # self.galleries.create(name: 'default')
   end
 
   def create_sms_email_content

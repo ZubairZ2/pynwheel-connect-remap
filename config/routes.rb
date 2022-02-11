@@ -255,9 +255,9 @@ Rails.application.routes.draw do
       end
     end
     resources :tour_users do
-        get :lock_ploting
-        get :visited_stops_data
-        get :checkpoint_verification
+      get :lock_ploting
+      get :visited_stops_data
+      get :checkpoint_verification
     end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do
@@ -550,6 +550,8 @@ Rails.application.routes.draw do
     namespace :v2 do
       post '/communities/:community_id/update_galleries', to: 'galleries#update_galleries'
       get '/communities/:community_id/community_data_provider', to: 'data_providers#get_community_data_provider'
+      post '/communities/:community_id/update_data_provider', to: 'data_providers#update_data_provider_and_credentials'
+      get '/communities/:community_id/test_connection', to: 'data_providers#test_connection'
       resources :user_details do
         member do
           put :update_company
@@ -565,6 +567,8 @@ Rails.application.routes.draw do
         post :add_secure_locks, to: 'secure_locks#add_secure_locks'
         resources :community_floor_plans
         post :add_floorplan, to: 'community_floor_plans#add_floorplan'
+        resources :pynwheel_touch_homepage
+        post :add_homepage_design, to: 'pynwheel_touch_homepage#add_homepage_design'
         member do
           post :add_comment
           post :get_products
@@ -650,7 +654,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :tours,only: :index do
+      resources :tours, only: :index do
         collection do
           post :tour_user_login
           post :start_tour_auto_message

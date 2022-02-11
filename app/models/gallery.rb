@@ -21,7 +21,7 @@ class Gallery < ApplicationRecord
 
   def as_json
     super(
-      :only => [:id, :name, :community_id], :methods => [:media]
+      :only => [:id, :name, :community_id, :is_default], :methods => [:media]
     )
   end
 
