@@ -537,6 +537,17 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
+    
+    namespace :self_tour do
+      namespace :v1 do
+        resources :communities do
+          get :community_tours
+          get :property_access_code
+          get :customize_stops_list
+        end
+      end
+    end
+
     namespace :v1 do
       post :authorize, to: 'schedule_tours#authorize_vendor'
       get :properties, to: 'schedule_tours#communities'

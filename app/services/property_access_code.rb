@@ -1,0 +1,52 @@
+class PropertyAccessCode
+  def initialize(community, tour_user, tour_type)
+    @community = community
+    @tour_user = tour_user
+    @tour_type = tour_type
+  end
+
+  def restrict_property_access_with_code
+    if @tour_type != "virtual_tour" && @tour_user.check_code_expiry(@community) 
+
+      @tour_user.property_access_code = generate_six_digit_random_pin
+      @tour_user.property_access_code_generated_at = Time.now
+      @tour_length_stay_limit = @community&.tour&.tour_setting&.length_stay_limit
+      @tour_user.restricted_property_access = true
+      visitor_name = @tour_user.name.titleize
+
+      sleep 1
+
+      create_tour_history()
+
+      subject = "Property Access Code for #{visitor_name}"
+      body = "#{visitor_name} is ready to start a Self Tour at #{@community.name}. 
+      Please instruct #{@tour_user.first_name.titleize} to enter this property access code into the Self Tour app:<br>
+      <br>#{@tour_user.property_access_code}<br>
+      <br>This code will expire in #{tour_length_stay_limit} minutes<br> 
+      <br>Thanks!"
+
+      send_access_code_email(subject, body)
+    end
+  end
+
+  private 
+
+  def create_tour_history
+    tour_history = TourHistory.find_or_create_by(tour_user_id: @tour_user.id) rescue TourHistory.new
+    tour_history.update_columns(community_id: @community.id, tour_type: @tour_type, tour_user_id: @tour_user.id, tour_id: @community.tour.id)
+    last_arrival = @tour_user.tour_histories.where(tour_id: @community.tour.id).last rescue nil
+    last_arrival.update_columns(arrived: Time.now) if last_arrival.present?
+  end
+
+  def send_access_code_email subj, body
+    return if community.blank?
+
+    emails = community.email.gsub(" ","").split(',')
+
+    emails.each do |email|
+      NotificationMailer.tour_history_mail(subj, body, email, INFO_EMAIL, @community, false, nil).deliver
+    end
+
+  end
+
+end

@@ -7,10 +7,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   include StripeServices
   include ShortestPath
   
-  before_action :set_community, only: [:email_favorites, :customize_stops_list]
-  before_action :set_community_tour, only: [:customize_stops_list]
-  before_action :set_tour_user, only: [:customize_stops_list]
-  before_action :random_string_generator, only: [:customize_stops_list]
+  before_action :set_community, only: :email_favorites
 
   require 'securerandom'
 
@@ -169,16 +166,6 @@ class Api::V1::CommunitiesController < ActionController::Base
       true
     else
       false
-    end
-  end
-
-  def customize_stops_list
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
-      @floorplans = get_floorplans_with_required_filter()
-      @building_list = Buildings.new(@community).get_community_buildings
-      @floor_list = Floors.new(@community).get_community_floors
-      @floor_list_temp = Floors.new(@community).get_community_temp_floors(@floor_list)
     end
   end
 
@@ -1324,27 +1311,6 @@ class Api::V1::CommunitiesController < ActionController::Base
   private
 
   def set_community
-    @community ||= Community.find(params[:id])
+    @community = Community.find(params[:id])
   end
-
-  def set_tour_user
-    @tour_user ||= TourUser.find_by_id(params[:tour_user_id])
-  end
-
-  def random_string_generator
-    @random_string = SecureRandom.hex
-  end
-
-  def set_community_tour
-    @tours = []
-    @tours <<  @community.tour
-    @tours
-  end
-
-  def get_floorplans_with_required_filter
-    all_floorplans = FloorplanUnitsService.new(@community).get_floorplans
-    all_floorplans = all_floorplans.sort_by {|f| f.bedrooms}.uniq { |b| b.bedrooms }
-    all_floorplans
-  end
-
 end

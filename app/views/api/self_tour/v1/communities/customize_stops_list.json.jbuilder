@@ -1,8 +1,8 @@
 i = 0
+
 json.tours @tours do |tour|
   json.id tour.id
   
-  json.tour_key  @random_string
   json.community_id tour.community_id
   json.name tour.name
   json.latitude tour.latitude
@@ -12,41 +12,6 @@ json.tours @tours do |tour|
   json.is_sitemap @community.is_sitemap
   json.show_camera_button @community.show_camera_button
   json.show_notepad_button @community.show_notepad_button
-  
-  if @community&.tour&.tour_setting&.enable_restricted_property_access
-    json.property_access @tour_user.restricted_property_access
-    json.property_access_code @tour_user.property_access_code
-  end
-
-  json.allow_tours_customization @community&.tour&.tour_setting&.enable_tour_customization
-
-  if @community&.tour&.tour_setting&.enable_tour_customization
-    ind = 1
-    json.unit_bedrooms @floorplans do |floorplan|
-      json.id ind
-      json.title (floorplan.bedrooms.present? ? (floorplan.bedrooms.to_i == 0 ? "Studio" : floorplan.bedrooms.to_i) : "")
-      json.value floorplan.bedrooms.present? ? floorplan.bedrooms.to_i : ""
-      json.is_selected false
-      ind = ind + 1
-    end
-
-  else
-    json.unit_bedrooms []
-  end
-
-  json.tour_setting do
-    json.show_map @community.show_map
-    json.mdu @community.mdu
-  end
-
-  if @community.is_sitemap
-    json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url) rescue ""
-
-  else
-    @floorplate = @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
-    json.image @floorplate.image rescue "no image"
-
-  end
 
   fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.new
   
@@ -64,6 +29,7 @@ json.tours @tours do |tour|
     else
       stops_arr =  @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
     end
+    
   else
 
     if scheduled_tour_stops.present?
@@ -110,4 +76,5 @@ json.tours @tours do |tour|
       json.type stop.stop_type
     end
   end
+  
 end
