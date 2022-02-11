@@ -1,8 +1,8 @@
 i = 0
+
 json.tours @tours do |tour|
   json.id tour.id
   
-  json.tour_key  tour.tour_key
   json.community_id tour.community_id
   json.name tour.name
   json.latitude tour.latitude

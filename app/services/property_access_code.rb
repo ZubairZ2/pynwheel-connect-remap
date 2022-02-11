@@ -5,7 +5,7 @@ class PropertyAccessCode
     @tour_type = tour_type
   end
 
-  def restrict_property_access_with_code 
+  def restrict_property_access_with_code
     if @tour_type != "virtual_tour" && @tour_user.check_code_expiry(@community) 
 
       @tour_user.property_access_code = generate_six_digit_random_pin

@@ -100,6 +100,28 @@ class Community < ApplicationRecord
     include_association :design
   end
 
+  def unit_bedrooms_filters floorplans, unit_bedrooms = []
+
+    if self&.tour&.tour_setting&.enable_tour_customization
+      int = 1
+
+      floorplans.each do |f|
+
+        unit_bedrooms << {
+          id: int,
+          title: (f.bedrooms.present? ? (f.bedrooms.to_i == 0 ? "Studio" : f.bedrooms.to_i) : ""),
+          value: f.bedrooms.present? ? f.bedrooms.to_i : "",
+          is_selected: false
+        }
+
+        int = int + 1
+
+      end
+    end
+
+    unit_bedrooms
+  end
+
   def community_website
     return unless self.website.present?
 

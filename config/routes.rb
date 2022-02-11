@@ -537,11 +537,14 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
-    namespace :v2 do
-      resources :communities, only: :index do
-        get :community_tours
-        get :property_access_code
-        get :customize_stops_list
+    
+    namespace :self_tour do
+      namespace :v1 do
+        resources :communities do
+          get :community_tours
+          get :property_access_code
+          get :customize_stops_list
+        end
       end
     end
 
