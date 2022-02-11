@@ -21,4 +21,10 @@ class RemoteLock < ApplicationRecord
   scope :edgestate_locks, -> {where dwelo_id: nil}
 
   before_destroy :clear_lock_provider
+
+  def as_json
+    super(
+      :only => [:id, :edge_state_id]
+    )
+  end
 end

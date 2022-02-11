@@ -563,6 +563,8 @@ Rails.application.routes.draw do
         end
       end
       resources :communities do
+        resources :secure_locks
+        post :add_secure_locks, to: 'secure_locks#add_secure_locks'
         resources :community_floor_plans
         post :add_floorplan, to: 'community_floor_plans#add_floorplan'
         resources :pynwheel_touch_homepage

@@ -7,4 +7,10 @@ class Dwelo < ApplicationRecord
   def map_locks_with_stops
     MapLocksJob.perform_async community, "Dwelo"
   end
+
+  def as_json
+    super(:only => [:id, :community_id, :client_id, :client_secret]
+    )
+  end
+
 end
