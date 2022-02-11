@@ -42,7 +42,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     if !lock_id.present?
       community_edge_state = @community.edge_state
       edge_state_lock = community_edge_state.present? ? community_edge_state : @community.create_edge_state
-      if edge_state_lock.present? && !edge_state_lock.yale.present?
+      if edge_state_lock.present?
         edge_state_lock.yale.create
         @locks_provider << REMOTELOCK
       end
@@ -53,7 +53,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     if !lock_id.present?
       community_edge_state = @community.edge_state
       edge_state_lock = community_edge_state.present? ? community_edge_state : @community.create_edge_state
-      if edge_state_lock.present? && !edge_state_lock.remote_locks.present?
+      if edge_state_lock.present?
         edge_state_lock.remote_locks.create
         @locks_provider << REMOTELOCK
       end
@@ -118,9 +118,9 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     locks = []
     if edge_state.present?
       remote_lock = RemoteLock.where(edge_state_id: edge_state.id)
-      locks << { type: REMOTELOCK } if remote_lock.present?
+      locks << { type: REMOTELOCK, details: remote_lock} if remote_lock.present?
       yale_lock = Yale.where(edge_state_id: edge_state.id)
-      locks << { type: YALELOCK } if yale_lock.present?
+      locks << { type: YALELOCK, details: yale_lock } if yale_lock.present?
       schlage_lock = Schlage.where(edge_state_id: edge_state.id)
       locks << { type: SCHLAGELOCK, details: schlage_lock } if schlage_lock.present?
     end
