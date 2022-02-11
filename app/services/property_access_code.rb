@@ -3,6 +3,7 @@ class PropertyAccessCode
     @community = community
     @tour_user = tour_user
     @tour_type = tour_type
+    @tour_length_stay_limit = @community&.tour&.tour_setting&.length_stay_limit
   end
 
   def restrict_property_access_with_code
@@ -10,7 +11,6 @@ class PropertyAccessCode
 
       @tour_user.property_access_code = generate_six_digit_random_pin
       @tour_user.property_access_code_generated_at = Time.now
-      @tour_length_stay_limit = @community&.tour&.tour_setting&.length_stay_limit
       @tour_user.restricted_property_access = true
       visitor_name = @tour_user.name.titleize
 
@@ -22,14 +22,18 @@ class PropertyAccessCode
       body = "#{visitor_name} is ready to start a Self Tour at #{@community.name}. 
       Please instruct #{@tour_user.first_name.titleize} to enter this property access code into the Self Tour app:<br>
       <br>#{@tour_user.property_access_code}<br>
-      <br>This code will expire in #{tour_length_stay_limit} minutes<br> 
+      <br>This code will expire in #{@tour_length_stay_limit} minutes<br> 
       <br>Thanks!"
 
       send_access_code_email(subject, body)
     end
   end
 
-  private 
+  private
+
+  def generate_six_digit_random_pin
+    (SecureRandom.random_number * (10**6)).round.to_s
+  end
 
   def create_tour_history
     tour_history = TourHistory.find_or_create_by(tour_user_id: @tour_user.id) rescue TourHistory.new
@@ -39,9 +43,9 @@ class PropertyAccessCode
   end
 
   def send_access_code_email subj, body
-    return if community.blank?
+    return if @community.blank?
 
-    emails = community.email.gsub(" ","").split(',')
+    emails = @community.email.gsub(" ","").split(',')
 
     emails.each do |email|
       NotificationMailer.tour_history_mail(subj, body, email, INFO_EMAIL, @community, false, nil).deliver
