@@ -543,7 +543,7 @@ Rails.application.routes.draw do
         resources :communities do
           get :community_tours
           get :initialize_tour
-          get :customize_stops_list
+          get :customize_tour
         end
       end
     end
