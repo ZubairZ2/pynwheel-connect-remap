@@ -5,10 +5,12 @@ class FloorplanUnitsService < BaseService
 
   def get_floorplans
     units = @community.units.available_units
+
     floorplans = []
     units.each do |u|
       floorplans << u.floorplan
     end
+    
     floorplans.compact
   end
 

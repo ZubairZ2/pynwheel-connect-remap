@@ -542,7 +542,7 @@ Rails.application.routes.draw do
       namespace :v1 do
         resources :communities do
           get :community_tours
-          get :property_access_code
+          get :initialize_tour
           get :customize_stops_list
         end
       end
