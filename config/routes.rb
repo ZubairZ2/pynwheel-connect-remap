@@ -547,9 +547,10 @@ Rails.application.routes.draw do
     namespace :self_tour do
       namespace :v1 do
         resources :communities do
-          get :community_tours
           get :initialize_tour
           get :customize_tour
+          get :generate_locks_accesses
+          post :check_lock_access
         end
       end
     end

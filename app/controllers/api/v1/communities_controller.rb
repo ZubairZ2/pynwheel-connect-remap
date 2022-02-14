@@ -613,34 +613,12 @@ class Api::V1::CommunitiesController < ActionController::Base
       render :json=> {:status=>false, :message => "Invalid Token", code: 401}
     end
   end
+  
   def check_lock_access_counter(tu)
     session["check_lock_access"+tu.id.to_s] = 0 if (session["check_lock_access"+tu.id.to_s].nil? || (session["check_lock_access"+tu.id.to_s] == 20))
     session["check_lock_access"+tu.id.to_s] += 1
     puts "&$"*30, session["check_lock_access"+tu.id.to_s]
     session["check_lock_access"+tu.id.to_s]
-  end
-
-  def create_zerv_user(community, tour_user)
-    locks_thread = Thread.new do
-      begin
-      tour_user.update_column 'zerv_status' , 'in progress'
-      execution_context = Rails.application.executor.run!
-
-      if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and tour_user.tour_type != "virtual_tour"
-        allowed_stops = zerv_multiple_stops_access(community)
-        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, is_resident: false)
-      end
-      tour_user.update_column 'zerv_status' , 'complete'
-      rescue => ex
-        tour_user.update_column 'zerv_status' , 'complete'
-        puts "--------- Zerv error -------- ", ex
-      end
-
-    ensure
-      execution_context.complete! if execution_context
-    end
-    
-    locks_thread.to_s
   end
   
   def check_zerv_user_existance_again(community, tour_user, thread_ref)

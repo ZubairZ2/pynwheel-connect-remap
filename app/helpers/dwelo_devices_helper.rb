@@ -184,7 +184,6 @@ module DweloDevicesHelper
 
   def lock_access_by_type(params, community, tour_user, current_time)
     if community.multiple_locks_provider.include?("Igloohome")
-      puts "----------------------- Igloohome Lock ----------------------"
       igloohome_lock_access(params, community, current_time)
     end
     
@@ -205,8 +204,6 @@ module DweloDevicesHelper
     Thread.new do
       begin
         tour_user = TourUser.find params[:tour_user_id]
-        puts "----------------------- igloohome_lock_access ----------------------"
-        puts tour_user.inspect
 
         if params[:time_zone].present?
           current_time = Time.now.in_time_zone(params[:time_zone])
@@ -220,7 +217,6 @@ module DweloDevicesHelper
 
       rescue => ex
         tour_user.update_column 'igloohome_status' , 'complete'
-        puts "--------- Igloohome error -------- ", ex
       end
     end
   end
@@ -230,15 +226,15 @@ module DweloDevicesHelper
       begin
       tour_user = TourUser.find params[:tour_user_id]
       tour_user.update_column 'dwelo_status' , 'in progress'
-      providers_account = Dwelo.find_by(community_id: params[:id]) rescue nil
+      providers_account = Dwelo.find_by(community_id: community.id) rescue nil
       @community = community
       access_token = dwelo_client_credentials(providers_account)
-      prev_data = tour_user.as_guests.find_by(community_id: params[:id])
+      prev_data = tour_user.as_guests.find_by(community_id: community.id)
 
       # ----------- creating a guest for remote lock (type = locks) ----------------- #
       unless prev_data.present? 
         response = create_dwelo_access_guest(access_token, tour_user, current_time)
-        dwelo_tour_user = tour_user.as_guests.create!(community_id: params[:id],  guest_id: response["id"], dwelo_guest: true)
+        dwelo_tour_user = tour_user.as_guests.create!(community_id: community.id,  guest_id: response["id"], dwelo_guest: true)
       else
         delete_dwelo_access_guest(access_token, prev_data.guest_id)
         response = create_dwelo_access_guest(access_token, tour_user, current_time)
@@ -272,11 +268,11 @@ module DweloDevicesHelper
       tour_user = TourUser.find params[:tour_user_id]
       tour_user.update_column 'edge_state_status' , 'in progress'
       access_token = RemoteLockService.new(community).client_credentials
-      prev_data = tour_user.as_guests.where(community_id: params[:id])
+      prev_data = tour_user.as_guests.where(community_id: community.id)
       # ----------- creating a guest for remote lock (type = locks) ----------------- #
       unless prev_data.present?
         response = RemoteLockService.new(community).create_access_guest(access_token,tour_user,current_time)
-        tour_user.as_guests.create(community_id: params[:id], edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+        tour_user.as_guests.create(community_id: community.id, edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
       else
         RemoteLockService.new(community).delete_access_guest(access_token,prev_data.last.guest_id)
         response = RemoteLockService.new(community).create_access_guest(access_token,tour_user,current_time)
@@ -674,5 +670,28 @@ module DweloDevicesHelper
     end
     # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
     # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1148/1577209294-floorplates_2.png"
+  end
+
+  def create_zerv_user(community, tour_user)
+    locks_thread = Thread.new do
+      begin
+      tour_user.update_column 'zerv_status' , 'in progress'
+      execution_context = Rails.application.executor.run!
+
+      if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and tour_user.tour_type != "virtual_tour"
+        allowed_stops = zerv_multiple_stops_access(community)
+        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, is_resident: false)
+      end
+      tour_user.update_column 'zerv_status' , 'complete'
+      rescue => ex
+        tour_user.update_column 'zerv_status' , 'complete'
+        puts "--------- Zerv error -------- ", ex
+      end
+
+    ensure
+      execution_context.complete! if execution_context
+    end
+    
+    locks_thread.to_s
   end
 end
