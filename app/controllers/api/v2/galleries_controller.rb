@@ -25,14 +25,13 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
           if @gallery.update_attributes(name: gallery["name"])
             PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "update",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
           end
-          update_gallery_images(@gallery,gallery_images)
+          update_gallery_images(@gallery, gallery_images)
         else
-          @gallery = @community.galleries.create(name: gallery["name"], community_id: @community.id)
+          @gallery = @community.galleries.create(name: gallery["name"])
           gallery_images = gallery["image"] rescue []
-
           if gallery_images.present?
             gallery_images.values.each do |img|
-              create_gallery_images(@gallery,img)
+              create_gallery_images(@gallery, img)
             end
           end
           PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
@@ -68,31 +67,30 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
           PaperTrail::Version.create(item_type: "GalleryImage",item_id: gallery.id,event: "update",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{gallery.name}' community_id: '#{@community.id}'")
         end
       else
-        create_gallery_images(gallery,img)
+        create_gallery_images(gallery, img)
       end
     end
   end
 
-  def create_gallery_images(gallery,community_gallery_img)
+  def create_gallery_images(gallery, community_gallery_img)
     file = community_gallery_img["file"]
     is_video_file = video_file?(file)
     if is_video_file
-      create_gallery_video(gallery,file)
+      create_gallery_video(gallery, file)
     else
       gallery.gallery_images.create(image: file, community_id: @community.id)
     end
     PaperTrail::Version.create(item_type: "GalleryImage",item_id: gallery.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{gallery.name}' community_id: '#{@community.id}'")
   end
 
-  def create_gallery_video(gallery,file)
-      @gallery_image = gallery.gallery_images.new
-      if @gallery_image.save
-        @gallery_image.name = file.original_filename
-        @gallery_image.video = file
-        @gallery_image.remote_video_url = @gallery_image.video.direct_fog_url + @gallery_image.video.key #file.path
-        @gallery_image.standard_image_url = @gallery_image.remote_video_url
-        @gallery_image.save
-      end
+  def create_gallery_video(gallery, file)
+    @uploader = GalleryImage.new
+    if @uploader.save
+      @uploader.name = file.original_filename
+      @uploader.video = file
+      @uploader.gallery_id = gallery.id
+      @uploader.save
+    end
   end
 
   def destroy
