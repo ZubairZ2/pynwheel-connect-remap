@@ -34,8 +34,16 @@ textarea {
     padding-top: 110px;
 }
 
+.map-instruction-text {
+    position: relative;
+    margin: 0 auto;
+    top: 21px;
+    width: 928px;
+    text-align: center;
+}
+
 .clean-data-btn {
-    display: none;
+    display: block;
 }
 
 .add-user-button {
@@ -4937,7 +4945,7 @@ input:checked+.slider:before {
 }
 
 .pyn-popover {
-    top: -25px !important;
+    top: -25px;
     width: max-content;
 }
 

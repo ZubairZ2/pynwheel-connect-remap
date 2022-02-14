@@ -39,6 +39,10 @@ module ZervServices
                 "phoneNumber":  tour_user.phone_number,
                 "email": tour_user.email,
                 "image": nil,
+                "cardFormat": @cardFormat,
+                "facilityId": @facilityId,
+                "accessCode": @accessCode,
+                "addressAndRelationship": true,
                 "refreshCredentialFrequency": 24,
                 "listAddUserAccess": list_add_user_access
             }

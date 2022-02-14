@@ -211,6 +211,7 @@
 
   $('#lock_provider').change(function(){
     update_locks_fields()
+    $('#lock_name')[0].value = '';
     if ($('#lock_provider').val().length == 0)
       $('.edit_amenity').submit();
   });

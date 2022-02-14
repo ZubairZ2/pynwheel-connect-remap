@@ -34,46 +34,15 @@
                 %h4.h4
                   - if current_user.is_view_visitor_details_page?
                     = link_to community.name, community_tour_users_path(community),:title=>community.data_provider
-                  - else
+                    
+                  - elsif community&.company.present?
                     = link_to community.name, edit_company_community_path(community.company,community),:title=>community.data_provider
-                %h6.h6 Updated: #{community.updated_at.to_date}  
+                
+                %h6.h6 Timezone: #{community.time_zone}
+                %h6.h6 Updated: #{community.updated_at.to_date}
+                - if community.data_provider == "psi" 
+                  %h6.h6 Entrata data updated on: #{community.data_provider_updated_on}
+
               %td
                 %h5.h5
                   = community.company.name rescue ""
-
-
-      -#.row
-      -#  .col-md-12
-      -#    %form.mt-30.mb-30{:action => "#", :method => "post"}
-      -#      .input-group
-      -#        %input.form-control{:name => "message", :placeholder => "Search by community or company name", :type => "text"}
-      -#        %span.input-group-btn
-      -#          %button.btn.btn-success.btn-flat{:type => "submit"} Search
-      -#.row
-      -#  .col-md-12
-      -#    .box.box-solid
-      -#      .box-header.with-border
-      -#        .row
-      -#          .col-md-8
-      -#            %h3.box-title.pt-15.pb-15
-      -#              %b
-      -#                Communities
-      -#          .col-md-4
-      -#            %h3.box-title.pt-15.pb-15
-      -#              %b
-      -#                Company
-      -#      / /.box-header
-      -#      .box-body
-      -#        - @communities.each do |community|
-      -#          .row
-      -#            .col-md-8
-      -#              %h4.h4
-      -#                %a= community.name
-      -#                %h5.h5 Updated: #{community.updated_at.to_date}
-      -#            .col-md-4
-      -#              %h5.h5
-      -#                = community.company.name
-      -#          .row
-      -#            .col-md-12
-      -#              %hr
-

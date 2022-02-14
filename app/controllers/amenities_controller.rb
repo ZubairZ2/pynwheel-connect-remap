@@ -136,12 +136,16 @@ class AmenitiesController < ApplicationController
   def update_amenity_door_lock
     @amenity = @community.amenities.find_by(id: params[:id])
     @door = @amenity.doors.find_by(id: params[:door_id])
-    if params[:lock_provider] == "Manual" && params[:access_code] == ""
+
+    if get_lock_provider() == "Manual" && params[:access_code] == ""
       @door.update_columns(lock_provider: "", access_code: "")
+      @amenity.update_attributes(lock_provider: "", access_code: "")
     else
-      @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code])
+      @door.update_columns(lock_provider: get_lock_provider(), access_code: params[:access_code])
+      @amenity.update_attributes(lock_provider: get_lock_provider(), access_code: params[:access_code])
     end
-    assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
+
+    assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && get_lock_provider() != "Manual"
   end
 
   def remove_amenity_door_plot
@@ -176,17 +180,25 @@ class AmenitiesController < ApplicationController
     if @community.enable_locks
       if @amenity.doors.present?
         @door = @amenity.doors.find_by id: params[:door_id]
-        if params[:lock_provider] == "Manual" && params[:access_code] == ""
+        
+        if get_lock_provider() == "Manual" && params[:access_code] == ""
           @door.update_columns(lock_provider: "", access_code: "", updated_at: Time.now.utc)
+          @amenity.update_attributes(lock_provider: "", access_code: "")
         else
-          @door.update_columns(lock_provider: params[:lock_provider], access_code: params[:access_code], updated_at: Time.now.utc)
+          @door.update_columns(lock_provider: get_lock_provider(), access_code: params[:access_code], updated_at: Time.now.utc)
+          @amenity.update_attributes(lock_provider: get_lock_provider(), access_code: params[:access_code])
         end
-        assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
+
+        assign_lock_to_door(@community, @door, params[:lock_id]) if params.has_key?("lock_id") && get_lock_provider() != "Manual"
       else
-        @amenity.update_attributes(lock_provider: params[:amenity][:lock_provider], access_code: params[:access_code])
-        assign_lock(@community, @amenity, params[:lock_id]) if params.has_key?("lock_id") && params[:lock_provider] != "Manual"
+        @amenity.update_attributes(lock_provider: get_lock_provider(), access_code: params[:access_code])
+        assign_lock(@community, @amenity, params[:lock_id]) if params.has_key?("lock_id") && get_lock_provider() != "Manual"
       end
     end
+  end
+
+  def get_lock_provider
+    params[:lock_provider] || params[:amenity][:lock_provider]
   end
 
 end

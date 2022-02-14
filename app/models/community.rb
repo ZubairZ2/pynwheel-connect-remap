@@ -1,7 +1,4 @@
 class Community < ApplicationRecord
-  # has_paper_trail
-  # mount_uploader :logo, AvatarUploader
-  # attr_readonly :uuid
   include LockedTourStopHelper
   
   mount_base64_uploader :logo, AvatarUploader
@@ -65,37 +62,24 @@ class Community < ApplicationRecord
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
   
-  # validate :unique_community_code_on_create, on: [:create]
-  # validate :unique_community_code_on_update, on: [:update]
-
   after_create :set_default_theme
   after_create :create_default_gallery
   after_create :create_sms_email_content
 
   attr_accessor :default_community_id
-  # before_validation :gen_uuid, on: :create
-  # validates :uuid, presence: true, uniqueness: true
   
   after_update :crop_image
   after_update :crop_secondary_image
   after_create :create_tour_also
   after_create :change_touchscreen_app_for_dwelo
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
-  #
-  # phony_normalize :phone
-  # # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
-  # validates :phone, phony_plausible: true
-
-
-  # phony_normalize :phone
-  # phony_normalize :phone, as: :phone_number_normalized_version, default_country_code: 'US'
-  # validates :phone, phony_plausible: true
-
+  after_save :set_community_time_zone, if: ->(obj){ (obj.latitude.present? and obj.latitude_changed?) ||  (obj.longitude.present? and obj.longitude_changed?) }
 
   enum alert_contact: [:email, :phone, :both]
   scope :active_communities, -> { where(locked: false) }
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
   scope :desc_created_at, -> { order(created_at: :desc) }
+
   amoeba do
     include_association :design
   end
@@ -120,6 +104,13 @@ class Community < ApplicationRecord
     end
 
     unit_bedrooms
+  end
+
+  def set_community_time_zone 
+    if self.latitude.present? && self.longitude.present?
+      time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
+      self.update_column :time_zone, time_zone
+    end
   end
 
   def community_website
@@ -218,9 +209,7 @@ class Community < ApplicationRecord
   end
 
   def get_time_zone default_time_zone = "UTC"
-    return default_time_zone unless (self.latitude.present? && self.longitude.present?)
-
-    Timezone.lookup(self.latitude, self.longitude).name rescue default_time_zone
+    self.time_zone.eql?("UTC") ? default_time_zone : self.time_zone
   end
 
   def has_temporary_images?
@@ -250,24 +239,6 @@ class Community < ApplicationRecord
       hours = (hours == 12) ? "00" : hours
       "#{hours.to_s}:#{minutes}"
     end
-  end
-
-  def get_community_time_zone()
-    tz = Ziptz.new
-    timezone = nil
-
-    if self.latitude.present? and self.longitude.present?
-      time_zone = Timezone.lookup(self.latitude, self.longitude)
-      timezone = time_zone.name
-    end
-
-    if timezone.nil? and self.zip.present?
-      timezone = tz.time_zone_name(self.zip)
-    end
-
-      return timezone
-    rescue
-      return "UTC"
   end
 
   def data_is_imported
@@ -324,13 +295,7 @@ class Community < ApplicationRecord
       (false)
     end
   end
-  def use_yardi_as_lead?
-    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
-      (true)
-    else
-      (false)
-    end
-  end
+  
   def use_yardi_as_lead?
     if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
       (true)
@@ -405,18 +370,14 @@ class Community < ApplicationRecord
       end
     end
   end
+  
   def check_credentials
-    #psi_service = PsiService.new(credential.attributes)
-    #psi_service.perform
     psi_static_service = CredentialsValid.new(JSON.parse(credential.attributes.to_json))
     psi_static_service.perform
-    # ImportPsiDataJob.perform_async credential.attributes.to_json
   end
+
   def import_psi_data
-    #psi_service = PsiService.new(credential.attributes)
-    #psi_service.perform
     ImportPsiStaticDataJob.perform_async credential.attributes.to_json
-    # ImportPsiDataJob.perform_async credential.attributes.to_json
   end
 
   def clean_data_psi
@@ -425,12 +386,11 @@ class Community < ApplicationRecord
 
   def import_zaremba_provider
     ImportZarembaStaticDataJob.perform_async credential.attributes.to_json
-    # ImportZarembaDataJob.perform_async credential.attributes.to_json
   end
+
   def import_xml_provider
     ImportXmlStaticDataJob.perform_async credential.attributes.to_json
-    # ImportXmlDataJob.perform_async credential.attributes.to_json
-  end
+s  end
 
   def swap_psi_data
     ImportPsiSwapDataJob.perform_async credential.attributes.to_json
@@ -454,19 +414,13 @@ class Community < ApplicationRecord
     ImportXmlSwapDataJob.perform_async credential.attributes.to_json
   end
   def import_yardirentcafe_data
-      #yardi_rent_cafe_service = YardiRentCafeService.new(credential.attributes)
-      #yardi_rent_cafe_service.perform
-    # ImportYardirentcafeDataJob.perform_async credential.attributes.to_json
     ImportYardirentcafeStaticDataJob.perform_async credential.attributes.to_json
   end
   def swap_yardirentcafe_data
     ImportYardirentcafeSwapDataJob.perform_async credential.attributes.to_json
   end
   def import_yardi2_data
-    #yardi2_service = Yardi2Service.new(credential.attributes)
-    #yardi2_service.perform
     ImportYardi2StaticDataJob.perform_async credential.attributes.to_json
-    # ImportYardi2DataJob.perform_async credential.attributes.to_json
   end
 
   def import_yardi_users_data
@@ -480,20 +434,15 @@ class Community < ApplicationRecord
   end
 
   def import_yardi4_data
-    #yardi4_service = Yardi4Service.new(credential.attributes)
-    #yardi4_service.perform
     ImportYardi4StaticDataJob.perform_async credential.attributes.to_json
-    # ImportYardi4DataJob.perform_async credential.attributes.to_json
   end
 
   def swap_yardi4_data
     ImportYardi4SwapDataJob.perform_async credential.attributes.to_json
   end
+  
   def import_realpage_svc_data
-    #real_page_svc_service = RealPageSvcService.new(credential.attributes)
-    #real_page_svc_service.perform
     ImportRealpageSvcStaticDataJob.perform_async credential.attributes.to_json
-    # ImportRealpageSvcDataJob.perform_async credential.attributes.to_json
   end
 
   def realpage_insert_prospect(tour_user, appointment_time, marketing_source, desired_move_in_date)
@@ -532,18 +481,8 @@ class Community < ApplicationRecord
     SalesforceSendFeedbackJob.perform_async self, tour_user, tour_history
   end
 
-  def available_slots
-    available_slots = YardirentcafeMarketingApi.new(community_id: self.id)
-    available_slots.available_slots(self)
-  end
-  def yardi_schedule_tour(schedule_tour, tu, desired_move_in_date)
-    st = YardirentcafeMarketingApi.new(community_id: self.id)
-    st.schedule_tour(self,schedule_tour,tu,desired_move_in_date)
-  end
-  def yardi_cancel_tour(schedule_tour)
-    # byebug
-    st = YardirentcafeMarketingApi.new(community_id: self.id)
-    st.cancel_tour(self,schedule_tour)
+  def available_slots scheduled_tour
+    YardiRentCafeServices::MarketingApisService.new(scheduled_tour).available_slots
   end
 
   def credentials_are_present?
@@ -1117,9 +1056,9 @@ class Community < ApplicationRecord
     tour_type
   end
 
-  def fetch_tour_type_according_to_time_for_yardi(date_str, tour_time)
+  def fetch_tour_type_according_to_time_for_yardi(scheduled_tour, date_str, tour_time)
     tour_type = []
-    yardi_time_slots = self.available_slots
+    yardi_time_slots = self.available_slots(scheduled_tour)
     yardi_self_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
     yardi_guided_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
     if self&.tour&.tour_setting.present?

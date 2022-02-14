@@ -9,6 +9,8 @@ var favoritesArr = [];
 var defaultMapType;
 var _3dUnitsToBeSelected;
 var enable3DMaps;
+var image_width_2d;
+var maxSelectedPrice;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -54,6 +56,29 @@ function touchScreenEvent() {
   });
 }
 
+function getOS() {
+  var userAgent = window.navigator.userAgent,
+      platform = window.navigator.platform,
+      macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
+      windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
+      iosPlatforms = ['iPhone', 'iPad', 'iPod'],
+      os = null;
+
+  if (macosPlatforms.indexOf(platform) !== -1) {
+    os = 'Mac OS';
+  } else if (iosPlatforms.indexOf(platform) !== -1) {
+    os = 'iOS';
+  } else if (windowsPlatforms.indexOf(platform) !== -1) {
+    os = 'Windows';
+  } else if (/Android/.test(userAgent)) {
+    os = 'Android';
+  } else if (!os && /Linux/.test(platform)) {
+    os = 'Linux';
+  }
+
+  return os;
+}
+
 document.addEventListener('DOMContentLoaded', touchScreenEvent);
 
 $(window).bind('load', function () {
@@ -62,7 +87,7 @@ $(window).bind('load', function () {
     showMarkeronLoad();
     $('[data-toggle="tooltip"]').tooltip({trigger: "hover"});
     $(document).keydown(function (event) {
-      if (event.ctrlKey == true && (event.which == '61' || event.which == '107' || event.which == '173' || event.which == '109' || event.which == '187' || event.which == '189')) {
+      if (event.ctrlKey == true && (event.which == '61' || event.which == '107' || event.whFich == '173' || event.which == '109' || event.which == '187' || event.which == '189')) {
         event.preventDefault();
       }
     });
@@ -143,6 +168,7 @@ $(window).bind('load', function () {
       }
     });
     $('#market_rent').change(function () {
+      maxSelectedPrice = this.value;
       showMarkers(true);
     });
     $('#square_feet').change(function () {
@@ -358,7 +384,7 @@ $(window).bind('load', function () {
       in_browser_width = parseFloat($('.sitemap-image').parent().width());
       actual_image_height = parseInt($('.sitemap-image').data("height"));
       actual_image_width = parseInt($('.sitemap-image').data("width"));
-      stretched_image_width = parseInt($('.sitemap-image').width());
+      stretched_image_width = image_width_2d || parseInt($('.sitemap-image').width());
       stretched_image_height = parseInt($('.sitemap-image').height());
       left_diff = (in_browser_width - stretched_image_width) / 2
 
@@ -374,11 +400,13 @@ $(window).bind('load', function () {
           y_plot = y_plot - 17
         }
         else{
-          y_plot = y_plot
+          y_plot = y_plot - 1
+          // x_plot = x_plot - 4
         }
+
         $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
         if($(window).width() >= 567 && $(window).width() <= 1360 ){
-          $(this).css({"margin-left": -5, "margin-top": -7})       
+          $(this).css({"margin-left": -5, "margin-top": -7})
         }
         if($(window).width() <= 567){
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()), "margin-top": -($('.fa-map-marker-alt-responsive').height()+7)})       
@@ -606,6 +634,10 @@ function setFilters() {
   $(".disabled").hide();
 }
 
+function Toggle_maps(e) {
+  beansWidget.toggleMap();
+}
+
 function showMarkers(market_rent_change = false) {
 
   $('.marker').addClass('hidden');
@@ -757,7 +789,12 @@ function set_prices_according_to_units_to_display(floorplate_units, is_market_re
         end_value = end_value + partition
         text = Math.ceil(min_market_rent + end_value)
         val = min_market_rent + "-" + text
-        $('#market_rent').append(`<option value="${val}"> ${text} </option>`)
+
+        if (maxSelectedPrice == val)
+          $('#market_rent').append(`<option value="${val}" selected> ${text} </option>`)
+
+        else
+          $('#market_rent').append(`<option value="${val}"> ${text} </option>`)
       }
     }
     else{
@@ -1266,6 +1303,15 @@ function overall_filtered_units(floorplate_units) {
   }
 }
 
+function set_yardirentcafe_url(element){
+  var url = $(element).data('availability-url');
+  
+  if(selectMap === "3d-map" && enable3DMaps) {
+    url = _3dSelectedUnit.availability_url
+  }
+
+  window.open(url, '_blank');
+}
 
 function set_psi_url(element) {
   var url = $(element).data('availability-url');
@@ -1640,21 +1686,23 @@ function adjustMarkerPosition(marker) {
   left_diff = (in_browser_width - stretched_image_width) / 2
   x_plot = (((stretched_image_width / actual_image_width) * x_plot));
   y_plot = (((stretched_image_height / actual_image_height) * y_plot));
-  
+
   if(actual_image_width > 1412){
     x_plot = x_plot - 6
     y_plot = y_plot - 17 
   }
   else{
-    y_plot = y_plot-10
+    y_plot = y_plot - 14
+    // x_plot = x_plot 
   }
+
   $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
   // $(marker).removeClass('hidden');
   // marker_width = $('#m_' + unit_id).width();
   // marker_height = $('#m_' + unit_id).height();
   // $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
   if($(window).width() >= 567 && $(window).width() <= 1360 ){
-    $(marker).css({"margin-left": -5, "margin-top": -2})       
+    $(marker).css({"margin-left": -5, "margin-top": -2})   
   }
   if($(window).width() <= 567){
     $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+8), "margin-top": -($('#s_'+unit_id).height()+7)})       
@@ -1690,8 +1738,10 @@ function adjustAmenitiesPosition() {
       y_plot = y_plot - 7 
     }
     else{
-      y_plot = y_plot
+      // y_plot = y_plot - 14
+      // x_plot = x_plot - 4
     }
+
     $(this).css({"left": (x_plot) + left_diff , "top": (y_plot)});
   });
 }
@@ -1725,19 +1775,37 @@ function handleMapControl() {
   }
 }
 
+function display3DMapInstructions() {
+  let os = getOS();
+
+  console.log("Current OS: ", os);
+
+  if(os === "Mac OS" || os === "iOS") {
+    $(".windos-instruction-tag").addClass('hidden');
+    $(".mac-instruction-tag").removeClass('hidden');
+  } else {
+    $(".windos-instruction-tag").removeClass('hidden');
+    $(".mac-instruction-tag").addClass('hidden');
+  }
+}
+
 function display3DMap() {
   $("._3d-apply-filter-button").css("display", "block");
   $(".beans-map-container").show();
   $('.zooming-content').css("float", "right");
+  image_width_2d = parseInt($('.sitemap-image').width());
   $('.image-map').hide();
   $('.zoom-in-webpage').hide();
   $('.zoom-out-webpage').hide();
   $("#panzomm-container").css("width", "100%");
-  $(".location-items").hide();
-  // $(".c-wrapper").css("margin-right", "0px");
+  // $(".location-items").hide();
+  $(".c-wrapper").css("margin-right", "0px");
+  $(".desktop-content").hide();
   $(".2d-map-option").removeClass("hidden");
   $(".3d-map-option").addClass("hidden");
   $(".satelite-view-icon").removeClass("hidden");
+  $(".div.map-instruction-text").removeClass('hidden');
+  display3DMapInstructions();
   let windowWidth = window.innerWidth;
   let sideBarWidth = $(".c-sidebar").innerWidth();
   if($(window).width() <= 567){
@@ -1765,9 +1833,11 @@ function display2DMap() {
   $("#panzomm-container").css("width", "");
   $(".c-wrapper").css("margin-right", "90px");
   $(".c-sidebar").show();
+  $(".desktop-content").show();
   $(".satelite-view-icon").addClass("hidden");
-  $(".3d-map-option").removeClass("hidden")
-  $(".2d-map-option").addClass("hidden")
+  $(".3d-map-option").removeClass("hidden");
+  $(".2d-map-option").addClass("hidden");
+  $(".div.map-instruction-text").addClass('hidden');
   if(defaultMapType == "3d-map"){
     showMarkers();
   }

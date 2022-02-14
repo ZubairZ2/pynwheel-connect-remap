@@ -62,7 +62,13 @@ Rails.application.routes.draw do
     resources :employees, :controller => 'users' do
       get :profile
     end
-    get :get_regions ,on: :collection
+    collection do
+      get :get_regions
+    end
+    member do 
+      get :generate_csv
+      get :generate_csv_for_scheduled_records
+    end
   end
   resources :community_groups do
     member do

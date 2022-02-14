@@ -92,6 +92,16 @@
                       %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                       %span.per-month-price-text.text-p /month
                     = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
+                  - elsif @community_info.data_provider == "yardirentcafe"
+                    - if @community.display_rent
+                      %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                      %span.per-month-price-text.text-p /month
+                    = link_to "Apply Now", "##",:onclick=>"set_yardirentcafe_url_on_favrite(this);",:id=>"psi-anchor-tag", "data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
+                  - else
+                    .unit-total-pricing{style: 'text-align: center'}
+                      - if @community.display_rent
+                        %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                        %span.per-month-price-text.text-p /month
             - elsif @community.credential.present? and @community.credential.apply_now.to_s == "separate_link"
               .m-filters
                 .m-filter-1.c-m-filter

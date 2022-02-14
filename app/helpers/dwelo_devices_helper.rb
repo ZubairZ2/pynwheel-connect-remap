@@ -601,14 +601,15 @@ module DweloDevicesHelper
       community.tour.tour_stops.where(display_stop: true).pluck(:stop_id)
     end
   end
+
   def tour_user_arrival_email(tour_user, community)
     emails = community.email.gsub(" ","").split(',')
     schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
+    
     emails.each do |email|
       NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.titleize} has arrived at #{community.name}", email,INFO_EMAIL,community,false,schedule_tour).deliver
     end
   end
-
 
   def set_sitemap_markers_on_map(units, detected_units, img_dimensions)
     units = units.where(x_plot: [0, "0", nil], y_plot: [0, "0", nil])

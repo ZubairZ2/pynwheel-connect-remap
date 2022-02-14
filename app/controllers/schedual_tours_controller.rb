@@ -99,8 +99,6 @@ class SchedualToursController < ApplicationController
 
       schedual_tour = (schedual_tour.present? && !schedual_tour.is_tour_completed) ? schedual_tour : new_tour
 
-      response = @community.use_yardi_as_lead? ? do_yardi_schedule_tour(schedual_tour,tu,params[:desired_move_in_date]) : nil
-
       previous_tour = {
         tour_date: schedual_tour.tour_date,
         tour_time: schedual_tour.tour_time,
@@ -120,13 +118,14 @@ class SchedualToursController < ApplicationController
       tour_type = params["tour_type"].present? ? params["tour_type"] : ""
       property_tour_type = params['tour_user']['property_tour_type'] if (params['tour_user'] && params['tour_user']['property_tour_type']).present? 
       knock_prospect_ip = Rails.env.development? ? "127.0.0.0" : (request.ip || request.remote_ip)
-      schedual_tour.update_attributes(knock_prospect_ip_address: knock_prospect_ip, tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code],yardirentcafe_prospect_id: response.present? ? response[0] : nil, yardirentcafe_appointment_id: response.present? ? response[1] : nil, realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
-      
+      schedual_tour.update_attributes(knock_prospect_ip_address: knock_prospect_ip, tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code], realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
+
       if previous_tour[:is_rescheduled]
         is_rescheduled = true
         new_tour.delete
       end
       
+      YardiRentCafeServices::MarketingApisService.new(schedual_tour).schedule_tour(previous_tour)
       KnockService.new(schedual_tour).knock_crm(is_rescheduled)
 
       begin
@@ -155,18 +154,7 @@ class SchedualToursController < ApplicationController
 
     redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification],community_id: community.id,property_tour_type: property_tour_type,tour_type: tour_type)
   end
-  def do_yardi_schedule_tour(schedual_tour,tu,desired_move_in_date)
-    yardi_schedule_tour = @community.yardi_schedule_tour(schedual_tour, tu, desired_move_in_date)
-    yardirentcafe_prospect_id = yardi_schedule_tour["Response"][0]["VoyProspectId"] rescue nil
-    yardirentcafe_appointment_id = yardi_schedule_tour["Response"][0]["VoyProspectApptId"] rescue nil
-    [yardirentcafe_prospect_id, yardirentcafe_appointment_id]
-  end
-  def do_yardi_schedule_tour(schedual_tour,tu,desired_move_in_date)
-    yardi_schedule_tour = @community.yardi_schedule_tour(schedual_tour, tu, desired_move_in_date)
-    yardirentcafe_prospect_id = yardi_schedule_tour["Response"][0]["VoyProspectId"] rescue nil
-    yardirentcafe_appointment_id = yardi_schedule_tour["Response"][0]["VoyProspectApptId"] rescue nil
-    [yardirentcafe_prospect_id, yardirentcafe_appointment_id]
-  end
+
   # POST /schedual_tours
   # POST /schedual_tours.json
   def create
@@ -237,7 +225,7 @@ class SchedualToursController < ApplicationController
       @schedual_tour.save
     end
 
-    tour_types = @is_knock_community ? KnockService.new(@schedual_tour).knock_available_tour_types( params[:date], params[:day], params[:time]) : @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
+    tour_types = @is_knock_community ? KnockService.new(@schedual_tour).knock_available_tour_types( params[:date], params[:day], params[:time]) : @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(@schedual_tour, date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
 
     render json: {tour_types: tour_types.uniq,limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
   end
@@ -313,6 +301,7 @@ class SchedualToursController < ApplicationController
       tour_time: @schedual_tour.tour_time,
     }
 
+    YardiRentCafeServices::MarketingApisService.new(@schedual_tour).schedule_tour(previous_tour)
     KnockService.new(@schedual_tour).knock_crm(true)
 
     @schedual_tour.update_attributes(tour_date: date, tour_time: tour_time, day_diff: day_diff)
@@ -343,12 +332,9 @@ class SchedualToursController < ApplicationController
   def destroy
     if params[:delete_type].present? && params[:delete_type] == "page"
       schedual_tour = SchedualTour.find params[:id]
-      puts "*** yardi_cancel_tour ***", @schedual_tour.community.yardi_cancel_tour(@schedual_tour) if @schedual_tour.community.use_yardi_as_lead?
-
       schedual_tour.destroy
       redirect_to community_schedual_tours_path(@community), notice: 'Scheduled tour is successfully deleted'
     else
-      @schedual_tour.community.yardi_cancel_tour(@schedual_tour) if @schedual_tour.community.use_yardi_as_lead?
       @schedual_tour.destroy
 
       respond_to do |format|
@@ -368,6 +354,7 @@ class SchedualToursController < ApplicationController
   end
 
   private
+
 
     def scheduled_tour_users community
       scheduled_tours = SchedualTour.where(community_id: community.id).where.not(tour_user_id: nil)

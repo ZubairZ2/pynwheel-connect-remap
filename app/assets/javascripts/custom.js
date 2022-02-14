@@ -677,9 +677,9 @@ function showDataTables(){
             'bSortable': false,
             'aTargets': [0,1,2,3,4,5],
         }],
-        "ordering": true,
-        "stateSave": true,
-        "paging": true
+        "ordering": false,
+        "stateSave": false,
+        "paging": false
     });
     $(".floorplan_name_col" ).click(function() {
         floorplan_names_order();

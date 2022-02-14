@@ -39,38 +39,18 @@
                   %a.logo{:href => @community.community_website}
                     %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
               .selection-fields
-                - if @unit_bedrooms.present?
-                  .selectable-field
-                    %label Bedrooms
-                    = select_tag :unit_bedroom, options_for_select(@unit_bedrooms),{:class=>"custom-select", :include_blank => "All "}
-                - else
-                  .selectable-field
-                    %label Bedrooms
-                    = select_tag :unit_bedroom, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
-                - if @available_units.present?
-                  .selectable-field
-                    %label Availability
-                    = select_tag :available_unit, options_for_select(@available_units),{:class=>"custom-select", :include_blank => "All "}
-                - else
-                  .selectable-field
-                    %label Availability
-                    = select_tag :available_unit, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
-                - if @market_rent.present?
-                  .selectable-field
-                    %label Max Price
-                    = select_tag :market_rent, options_for_select(@market_rent),{:class=>"custom-select", :include_blank => "Select Max Price"}
-                - else
-                  .selectable-field
-                    %label Max Price
-                    = select_tag :market_rent, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Max Price"}      
-                - if @square_feet.present?
-                  .selectable-field
-                    %label Min Square Footage
-                    = select_tag :square_feet, options_for_select(@square_feet),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}  
-                - else
-                  .selectable-field
-                    %label Min Square Footage
-                    = select_tag :square_feet, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"} 
+                .selectable-field
+                  %label Bedrooms
+                  = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
+                .selectable-field
+                  %label Availability
+                  = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
+                .selectable-field
+                  %label Max Price
+                  = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select", :include_blank => "Select Max Price"}
+                .selectable-field
+                  %label Min Square Footage
+                  = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}  
 
                 %button._3d-apply-filter-button{:type => "button", :onclick => "apply3DFilters();"} Apply Filters
                 %ul.selected-data-mobile.responsive-content
@@ -99,39 +79,19 @@
                 %span.filter-btn Filters
                 %img{:src => "/assets/menu-icon.png"}/
               .mobile-filter-mega-menu.responsive-content
-                - if @unit_bedrooms.present?
-                  .selectable-field
-                    %label Bedrooms
-                    = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms),{:class=>"custom-select", :include_blank => "All "}
-                - else
-                  .selectable-field
-                    %label Bedrooms
-                    = select_tag :responsive_unit_bedroom, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
-                - if @available_units.present?
-                  .selectable-field
-                    %label Availability
-                    = select_tag :responsive_available_unit, options_for_select(@available_units),{:class=>"custom-select", :include_blank => "All "}
-                - else
-                  .selectable-field
-                    %label Availability
-                    = select_tag :responsive_available_unit, options_for_select([]),{:class=>"custom-select", :include_blank => "All "}
-                
-                - if @market_rent.present?
-                  .selectable-field
-                    %label Maximum Price
-                    = select_tag :responsive_market_rent, options_for_select(@market_rent),{:class=>"custom-select", :include_blank => "Select Max Price"}
-                - else
-                  .selectable-field
-                    %label Maxy Price
-                    = select_tag :responsive_market_rent, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Max Price"}      
-                - if @square_feet.present?
-                  .selectable-field
-                    %label Min Square Footage
-                    = select_tag :responsive_square_feet, options_for_select(@square_feet),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
-                - else
-                  .selectable-field
-                    %label Min Square Footage
-                    = select_tag :responsive_square_feet, options_for_select([]),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
+                .selectable-field
+                  %label Bedrooms
+                  = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
+                .selectable-field
+                  %label Availability
+                  = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
+                .selectable-field
+                  %label Maximum Price
+                  = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select", :include_blank => "Select Max Price"}
+                .selectable-field
+                  %label Min Square Footage
+                  = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select", :include_blank => "Select Min Sq Ft"}
+
                 %div{:style => "text-align: center; padding-bottom: 9px;"}
                   %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"} Apply Filters
           
@@ -149,7 +109,10 @@
                     = link_to (floorplate.floor_name_added ? (floorplate.floor_name.present? ? floorplate.floor_name : "Nil") : floor),'javascript:;;',"data-interest" => "", :style => "margin: 0;color: white;font-size: 28pt;font-weight: 600", :class=>"floorplate-anchor #{floor == min_unit_floor ? 'selected' : ''}",:id=>floor, "onclick": "_3dFilterByFloor(this)"
                     %div.units-no{style: "margin-top: 11px"}
                       %span.teg-line{:id => "u_#{floor}"}
-            
+
+          .w-100.d-flex-justify-content-center.beans-map-container
+            .beanswidget#beanswidget.some{:style => "width:100%; height:100%"}
+
           .c-body{style: "overflow: hidden"}
             - if @community.theme_name.include?('gables')
               - fontsize = @community.design.present? && @community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : 30
@@ -270,9 +233,6 @@
 
                         = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>amenity.name
 
-              .w-100.d-flex-justify-content-center.beans-map-container
-                .beanswidget#beanswidget.some{:style => "width:100%; height:100%"}
-
               .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
                 %strong Oops!
                 There is nothing available on this floor that matches the parameters that you have selected.
@@ -291,6 +251,18 @@
                     .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                       %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                     %span Amenity image
+              
+              .div.map-instruction-text
+                .windos-instruction-tag
+                  %span 
+                    %strong Note: 
+                    Press the Control (or Ctrl ⌃)  key before you move your mouse and while you navigate
+                
+                .mac-instruction-tag
+                  %span 
+                    %strong Note: 
+                    Press the Command (or Cmd ⌘)  key before you move your mouse and while you navigate
+                
               .zooming-content.zoomable-map-container
                 %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls.zooming-content-h{:href => "#"}
                   %img{:src => "/assets/plus.png"}/
@@ -506,7 +478,7 @@
     if(current_width >= 993){
       let main_container_height = $('.c-body').height() - $('.c-footer').height();
       $('.floorplate-image').attr("height", main_container_height - 100)
-      $('.floorplate-image').attr("width", $("#zoomable").innerWidth())
+      //$('.floorplate-image').attr("width", 1412)
     }
     
     if(current_width <= 993){

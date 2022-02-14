@@ -77,20 +77,24 @@ class TourHistory < ApplicationRecord
         else
           @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         end
-
+        
         tour_user_remotelock_data(community)
         send_email_sms_or_both(@mail_content, community)
         send_email_sms_or_both(@complete_tour_content, community)
         send_email_sms_or_both_to_touruser(@thank_you_content, community)
 
         community.is_salesforce_community? ? save_salesforce_feedback_data(community, touruser) : save_prospect(self.left, community)
+
         KnockService.new(scheduled_tour).create_knock_visit(stop_marketing_names_visited_by_user, self.left) if community.is_knock_community?
+        YardiRentCafeServices::LeadsApiService.new(scheduled_tour).upload_leads_data(stop_marketing_names_visited_by_user, self, false) if community.use_yardi_as_lead?
 
         community.save
       end
 
       if self.abandoned_tour_at_stop.present?
-        KnockService.new(scheduled_tour).create_knock_visit(stop_marketing_names_visited_by_user, Time.now) if community.is_knock_community?
+        KnockService.new(scheduled_tour).create_knock_visit(stop_marketing_names_visited_by_user, get_current_time(community)) if community.is_knock_community?
+        YardiRentCafeServices::LeadsApiService.new(scheduled_tour).upload_leads_data(stop_marketing_names_visited_by_user, self, true) if community.use_yardi_as_lead?
+
         save_salesforce_feedback_data(community, touruser) if community.is_salesforce_community?
       end
 
@@ -98,7 +102,13 @@ class TourHistory < ApplicationRecord
   end
 
   def complete_scheduled_tour tour
-    tour.update(is_tour_completed: true, tour_completed_at: Time.now) if tour.present?
+    tour.update(is_tour_completed: true, tour_completed_at: get_current_time(tour&.community)) if tour.present?
+  end
+
+  def get_current_time community
+    return Time.now unless community.present?
+
+    Time.now.in_time_zone(community&.get_time_zone)
   end
 
   def save_salesforce_feedback_data community, tour_user
@@ -117,7 +127,7 @@ class TourHistory < ApplicationRecord
       timezone = community.get_time_zone()
       
       grace_period = tour.grace_period
-      current_time = Time.now.in_time_zone(timezone)
+      current_time = get_current_time(community)
       tour_date_time = (scheduled_tour.tour_date.to_s + " " + scheduled_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone)
 
       before_margin = current_time - grace_period.minutes
@@ -285,7 +295,7 @@ class TourHistory < ApplicationRecord
   def send_email_tour_user subj, body, community_email, community
     begin
       emails = community_email.gsub(" ","").split(',')
-      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0],community,true,nil).deliver
+      NotificationMailer.tour_history_mail(subj.humanize, body, self.tour_user.email, emails[0],community,false,nil).deliver
     rescue
     end
   end
