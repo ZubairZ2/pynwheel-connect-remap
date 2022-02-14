@@ -292,6 +292,10 @@
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
   var has_floorplate = "#{@community_info.has_floorplates?}";
+  var isSiteMap = "#{@community.sitemap.present?}"
+  var img_width = "#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"
+  var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"
+
   var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 0}";
   var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";
   floors = JSON.parse(floors);
@@ -476,9 +480,13 @@
 
   $(document).ready(function () {
     if(current_width >= 993){
+
       let main_container_height = $('.c-body').height() - $('.c-footer').height();
       $('.floorplate-image').attr("height", main_container_height - 100)
-      //$('.floorplate-image').attr("width", 1412)
+
+      if(isSiteMap == 'true') {
+        $('.floorplate-image').attr("width", img_width)
+      }
     }
     
     if(current_width <= 993){
