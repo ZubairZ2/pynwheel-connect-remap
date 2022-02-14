@@ -26,6 +26,10 @@
     %link{:href => "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
     = render '/font_awesome_v5'
+
+  #webpages-overlay
+    #webpages-overlay-text Overlay Text
+
   %body.custom-iframe-modeule
     .webPageLoader.hidden
     - unless @community_info.locked
@@ -256,12 +260,12 @@
                 .windos-instruction-tag
                   %span 
                     %strong Note: 
-                    Press the Control (or Ctrl ⌃)  key before you move your mouse and while you navigate
+                    Press the Control (or Ctrl ⌃) key before you move your mouse and while you navigate
                 
                 .mac-instruction-tag
                   %span 
                     %strong Note: 
-                    Press the Command (or Cmd ⌘)  key before you move your mouse and while you navigate
+                    Press the Control (or Ctrl ⌃) key before you move your mouse and while you navigate
                 
               .zooming-content.zoomable-map-container
                 %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls.zooming-content-h{:href => "#"}

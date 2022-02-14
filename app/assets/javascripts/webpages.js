@@ -36,9 +36,21 @@ $(document).ready(function () {
         'show-unit-numbers': _3dConfigurations ? _3dConfigurations.show_unit_numbers : true,
         'hide-floors': _3dConfigurations ? _3dConfigurations.hide_floors : true,
       });
+
     handleMapControl()
   }
 });
+
+function displayOverlayText() {
+  $("#webpages-overlay-text").html("Use ctrl + scroll to zoom the map");
+  $("#webpages-overlay").show();
+
+  setTimeout(()=>{
+    $("#webpages-overlay").hide();
+  }, 1500);
+
+}
+  
 
 function _3dMapViewMarker() {
   let _3dUnitsMarketingNames = getUnitsToBeSelected();
@@ -1770,6 +1782,7 @@ function set3DSelectedUnit(unitName, floor) {
 function handleMapControl() {
   if(selectMap === "3d-map" && enable3DMaps) {
     display3DMap();
+    displayOverlayText();
   } else {
     display2DMap();
   }
