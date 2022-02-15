@@ -28,7 +28,8 @@
     = render '/font_awesome_v5'
 
   #webpages-overlay
-    #webpages-overlay-text Overlay Text
+    #webpages-overlay-text Press the Control (or Ctrl ⌃) key before you move your mouse and while you navigate
+    %button{onclick: "hideOverlayText()", id: "webpages-overlay-button"} Got it
 
   %body.custom-iframe-modeule
     .webPageLoader.hidden
@@ -257,15 +258,9 @@
                     %span Amenity image
               
               .div.map-instruction-text
-                .windos-instruction-tag
-                  %span 
-                    %strong Note: 
-                    Press the Control (or Ctrl ⌃) key before you move your mouse and while you navigate
-                
-                .mac-instruction-tag
-                  %span 
-                    %strong Note: 
-                    Press the Control (or Ctrl ⌃) key before you move your mouse and while you navigate
+                %span 
+                  %strong Note: 
+                  Press the Control (or Ctrl ⌃) key before you move your mouse and while you navigate
                 
               .zooming-content.zoomable-map-container
                 %a.plus-action.zooming-action.zoom-in-webpage.zoom-controls.zooming-content-h{:href => "#"}

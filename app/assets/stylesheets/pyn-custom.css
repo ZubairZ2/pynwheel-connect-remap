@@ -6280,7 +6280,6 @@ ul.add-fav-options {
 
 #webpages-overlay {
     position: fixed;
-    display: none;
     width: 100%;
     height: 100%;
     top: 0;
@@ -6290,15 +6289,26 @@ ul.add-fav-options {
     background-color: rgba(0,0,0,0.5);
     z-index: 1000000;
     display: none;
-
   }
   
   #webpages-overlay-text{
     position: absolute;
-    top: 50%;
+    padding: 15px;
+    top: 47%;
     left: 50%;
-    font-size: 50px;
+    font-weight: 500;
+    font-size: 32px;
     color: white;
     transform: translate(-50%,-50%);
     -ms-transform: translate(-50%,-50%);
+  }
+
+  #webpages-overlay-button{
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    font-weight: 500;
+    font-size: 29px;
+    padding: 5px 10px 5px 10px;
+    transform: translate(-50%,-50%);
   }
