@@ -42,7 +42,7 @@ $(document).ready(function () {
 });
 
 function displayOverlayText() {
-  let instruction = localStorage.getItem("webpagesInstruction");
+  let instruction = localStorage.getItem(`webpagesInstruction${webCommunity.id}`);
 
   if(!instruction) {
     $("#webpages-overlay").show();
@@ -51,7 +51,7 @@ function displayOverlayText() {
 
 function hideOverlayText() {
   $("#webpages-overlay").hide();
-  localStorage.setItem("webpagesInstruction", true);
+  localStorage.setItem(`webpagesInstruction${webCommunity.id}`, true);
 }
   
 

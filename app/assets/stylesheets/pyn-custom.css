@@ -5403,6 +5403,10 @@ html, .add-fav-body {
 }
 
 @media screen and (max-width:993px){
+    #webpages-overlay-button {
+        top: 55% !important;
+    }
+
     .alert_message{
         margin-left: unset !important;
         position: absolute;
@@ -5552,6 +5556,14 @@ ul.add-fav-options {
 }
 
 @media screen and (max-width:567px){
+    #webpages-overlay-text {
+        width: 100%;
+    }
+
+    #webpages-overlay-button {
+        top: 58% !important;
+    }
+
     .c-connect-map-wrapper .c-m-iframe-content img {
         max-width: 350px !important;
     }
@@ -5685,7 +5697,9 @@ ul.add-fav-options {
 	.want-to-add-fav-container .add-fav-description br {
 		display: none !important;
 	}
+
 }
+
 @media screen and (max-width:400px){
   .floor-counts .product-single__thumb-arrow {
       padding-left: 6px;
@@ -5693,6 +5707,7 @@ ul.add-fav-options {
   }
 
 }
+
 /***************** Marker Popup css ****************/
 .c-modal-sidebar {
     z-index: 1030;
@@ -6297,7 +6312,7 @@ ul.add-fav-options {
     top: 47%;
     left: 50%;
     font-weight: 500;
-    font-size: 32px;
+    font-size: 22px;
     color: white;
     transform: translate(-50%,-50%);
     -ms-transform: translate(-50%,-50%);
@@ -6305,10 +6320,10 @@ ul.add-fav-options {
 
   #webpages-overlay-button{
     position: absolute;
-    top: 55%;
+    top: 52%;
     left: 50%;
     font-weight: 500;
-    font-size: 29px;
+    font-size: 22px;
     padding: 5px 10px 5px 10px;
     transform: translate(-50%,-50%);
   }
