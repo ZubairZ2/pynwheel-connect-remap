@@ -27,6 +27,7 @@ class Api::V2::OpeningHoursController < Api::V2::ApiApplicationController
         end
       end
       visiting_hours = get_all_hours
+      @community.set_visiting_hours_status(current_pynwheel_user)
       if visiting_hours.any?
         render json: { success: true, data: visiting_hours.as_json }
       end
@@ -44,6 +45,7 @@ class Api::V2::OpeningHoursController < Api::V2::ApiApplicationController
           delete_guided_visiting_hours(tour_params["hours_id"]) if tour_params["type"].eql?(GUIDED_TOUR)
         end
       end
+      @community.set_visiting_hours_status(current_pynwheel_user)
       render json: { success: true, message: "Visiting hour deleted successfully!" }
     rescue => exception
       render json: { success: false, message: exception.message }
