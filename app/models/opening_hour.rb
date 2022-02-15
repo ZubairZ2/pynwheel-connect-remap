@@ -3,4 +3,18 @@ class OpeningHour < ApplicationRecord
   belongs_to :community
   has_one :status, as: :statusable
   set_sortable :sort
+
+  def as_json
+    super(
+      :only => [:day]
+    ).merge!({
+       :id => self.id,
+      opening_time: change_time(self.opening_time),
+      closing_time: change_time(self.closing_time)
+    })
+  end
+
+  def change_time(opening)
+    Time.strptime(opening, "%H:%M").strftime("%I:%M %p")
+  end
 end
