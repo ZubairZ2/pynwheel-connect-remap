@@ -563,6 +563,9 @@ Rails.application.routes.draw do
         end
       end
       resources :communities do
+        resources :opening_hours
+        post :create_opening_hours, to: 'opening_hours#create_opening_hours'
+        delete :delete_opening_hours, to: 'opening_hours#delete_opening_hours'
         resources :secure_locks
         post :add_secure_locks, to: 'secure_locks#add_secure_locks'
         resources :community_floor_plans
