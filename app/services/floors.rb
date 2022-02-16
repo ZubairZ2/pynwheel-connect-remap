@@ -8,7 +8,15 @@ class Floors
   end
 
   def get_community_temp_floors floor_list
-    (floor_list - [@community.tour.starting_floor]).unshift(@community.tour.starting_floor) if @community.tour.starting_floor.present? rescue []
+    begin
+      if @community.tour.starting_floor.present?
+        (floor_list - [@community.tour.starting_floor]).unshift(@community.tour.starting_floor) rescue []
+      else
+        floor_list
+      end
+    rescue
+      []
+    end
   end
 
 end
