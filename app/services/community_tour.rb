@@ -54,7 +54,7 @@ class CommunityTour
           "name": name,
           "is_favorite": is_favorite,
           "id": stop.id,
-          "type": stop.name,
+          "type": stop.stop_type,
           "floor": @community.is_sitemap ? "" : new_stop&.floor,
           "building": @community.is_sitemap ? "" : new_stop&.building
         }
