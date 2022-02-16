@@ -36,6 +36,7 @@ class Api::V1::FloorplansController < ActionController::Base
 
   def update_tour_stops_list
     @tour_stop = TourStop.find_by_stop_id params[:stop_id]
+    
     if @tour_stop.present?
       remove_tour_stop(@tour_stop)
     else

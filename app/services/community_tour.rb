@@ -53,8 +53,9 @@ class CommunityTour
         available_stops << {
           "name": name,
           "is_favorite": is_favorite,
-          "id": stop.id,
-          "type": stop.stop_type,
+          "id": new_stop.id,
+          "stop_id": stop.id,
+          "stop_type": stop.stop_type,
           "floor": @community.is_sitemap ? "" : new_stop&.floor,
           "building": @community.is_sitemap ? "" : new_stop&.building
         }
