@@ -48,11 +48,15 @@ class CommunityTour
           is_favorite = @favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
         end
 
+        new_stop = stop.stop_type.classify.constantize.find_by_id(stop.stop_id)
+
         available_stops << {
           "name": name,
           "is_favorite": is_favorite,
           "id": stop.id,
-          "type": stop.name
+          "type": stop.name,
+          "floor": @community.is_sitemap ? "" : new_stop&.floor,
+          "building": @community.is_sitemap ? "" : new_stop&.building
         }
 
       end
@@ -78,7 +82,7 @@ class CommunityTour
     else
       @building_list << "" if @building_list == []
       @building_list.each do |building|
-        @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list
+        @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list_temp
         add_start = false
         @floor_list_loop.each do |floor|
           if @community.tour.sort_hash[building + ","+ floor.to_s].present?
