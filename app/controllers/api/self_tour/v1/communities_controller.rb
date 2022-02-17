@@ -28,7 +28,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
     @tour_type = params[:tour_status] rescue @tour_user.tour_type
     charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
     update_verification_attributes()
-    PropertyAccessCode.new(@community ,@tour_user, @tour_user.tour_type).restrict_property_access_with_code
+    PropertyAccessCode.new(@community ,@tour_user, @tour_type).restrict_property_access_with_code
     @community.update(deleted_ids: [])
   end
 
