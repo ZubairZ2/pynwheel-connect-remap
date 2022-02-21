@@ -43,7 +43,7 @@ class CommunityUser < ApplicationRecord
   end
 
   def community_products
-    if self.product_options.nil?
+    if self.community.product_options.nil?
       selected_products = old_community_products
     else
       selected_products = get_client_products
@@ -65,7 +65,7 @@ class CommunityUser < ApplicationRecord
   def get_client_products
     available_products = ["self_tour" , "pynwheel_touch" , "pynwheel_maps" , "graphic_design_services" , "additional_options"]
     selected_products = []
-    product_options = JSON.parse(self.product_options)
+    product_options = JSON.parse(self.community.product_options)
     available_products.each do |product|
       if product == "pynwheel_maps"
         product_status = nested_hash_value(product_options , "pynwheel_maps")
@@ -110,7 +110,7 @@ class CommunityUser < ApplicationRecord
     submitted_percentage = percent_of(number_of_submitted_sections, total_number_of_sections).to_i
     approved_percentage = percent_of(number_of_approved_sections, total_number_of_sections).to_i
     status_percentage = {submitted: submitted_percentage, approved: approved_percentage}
-    status_percentage 
+    status_percentage
   end
 
   def percent_of(v,n)

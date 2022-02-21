@@ -37,19 +37,15 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
           PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
         end
       end
-      if @gallery.present?
-        @community.set_gallery_images_status(current_pynwheel_user)
-        render :json => {:success => true, data: @gallery.as_json}
-      else
-        render :json => {:success => false, :message => @gallery.errors.full_messages}
-      end
+      @galleries = @community.galleries
+      render :json => {:success => true, data: @galleries.as_json}
     rescue => res
       render json: { success: false, error_code: 400, message: "#{res.message}" }, status: 400
     end
 	end
 
   def update_gallery_images(gallery,images)
-    
+
     return if images.blank?
     img_objects = images.values
 
@@ -116,7 +112,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
     end
 	end
 
-  private 
+  private
 
   def video_file?(file)
     file.path.include?("mp4") rescue false

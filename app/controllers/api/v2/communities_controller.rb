@@ -1,7 +1,6 @@
 class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :load_community , :only =>  [:add_comment , :update , :show]
-  before_action :load_user_community , :only => [:get_products , :update_products]
+  before_action :load_community , :except => [:index]
   before_action :check_brand_access , :only => [:show , :update]
 
 
@@ -35,7 +34,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   end
 
   def get_products
-    product_json = @community_user.product_options
+    product_json = @community.product_options
     if product_json.present?
       @product_json = JSON.parse(product_json)
       render :json => { data: @product_json }
@@ -46,8 +45,8 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
 
   def update_products
     product_attributes = params[:product_options].to_json
-    if @community_user.update_attributes(product_options: product_attributes)
-      @product_json = JSON.parse(@community_user.product_options)
+    if @community.update_attributes(product_options: product_attributes)
+      @product_json = JSON.parse(@community.product_options)
       render :json => { data: @product_json }
     else
       render :json => {:success => false , :message => "Sorry! something went wrong."}
@@ -63,10 +62,10 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
 
   def check_brand_feature_access(user_id)
     community_user = CommunityUser.find_by_id(user_id)
-    product_json = community_user&.product_options rescue ""
+    product_json = @community&.product_options rescue ""
     return {:brand_pdf_feature => false} if product_json.nil?
     desing_style = community_user.nested_hash_value(JSON.parse(product_json) , "desing_style")
-    if desing_style == "Expressionist"
+    if desing_style.eql?(Expressionist)
       brand_pdf_feature = true
     else
       brand_pdf_feature = false
@@ -92,10 +91,6 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
 
   def load_community
     @community = Community.find(params[:id])
-  end
-
-  def load_user_community
-    @community_user = CommunityUser.find_by_id(params[:id])
   end
 
   def community_params
