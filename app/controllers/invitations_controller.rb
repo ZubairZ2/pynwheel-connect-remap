@@ -60,12 +60,13 @@ class InvitationsController < Devise::InvitationsController
           user_community = CommunityUser.find_by(community_id: community, user_id: user.id) rescue nil
 
           existing_community = Community.find_by_id community
+          existing_community.update(product_options: params[:product_options])
           existing_community.set_community_status(current_user) if existing_community.present?
 
           unless user_community.present?
-            user_community = CommunityUser.create(community_id: community, user_id: user.id, enable_community_id: community, chat_enable: true, product_options: params[:product_options])
+            user_community = CommunityUser.create(community_id: community, user_id: user.id, enable_community_id: community, chat_enable: true)
           else
-            user_community.update!(enable_community_id: community, chat_enable: true, product_options: params[:product_options])
+            user_community.update!(enable_community_id: community, chat_enable: true)
           end
         end
 
@@ -78,15 +79,15 @@ class InvitationsController < Devise::InvitationsController
       name = name.strip
 
       community = Community.find_or_create_by(name: name, company_id: company.id)
-
+      community.update(product_options: params[:product_options])
       community.set_community_status(current_user) if community.present?
 
       user_community = CommunityUser.find_by(community_id: community.id, user_id: user.id) rescue nil
 
       unless user_community.present?
-        user_community = CommunityUser.create(community_id: community.id, user_id: user.id, enable_community_id: community.id, chat_enable: true, product_options: params[:product_options])
+        user_community = CommunityUser.create(community_id: community.id, user_id: user.id, enable_community_id: community.id, chat_enable: true)
       else
-        user_community.update!(enable_community_id: community.id, chat_enable: true, product_options: params[:product_options])
+        user_community.update!(enable_community_id: community.id, chat_enable: true)
       end
 
     end

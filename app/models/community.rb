@@ -269,13 +269,11 @@ class Community < ApplicationRecord
   end
 
   def touch_installation_specification(current_user)
-    return if self.community_users.blank?
-    community_users = self.community_users
-    community_users.each do |cu|
-      required_hardware = cu.product_options.present? && check_required_hardware(cu.product_options) ? true : false
-      status_attr = status_string(required_hardware)
-      set_status_for_all(cu,status_attr,current_user)
-    end
+    return if self.product_options.blank?
+    product_options = self.product_options
+    required_hardware = product_options.present? && check_required_hardware(product_options) ? true : false
+    status_attr = status_string(required_hardware)
+    set_status_for_all(self,status_attr,current_user)
   end
 
   def check_required_hardware(product_options)

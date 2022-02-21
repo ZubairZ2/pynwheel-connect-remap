@@ -5,9 +5,9 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
   def get_community_detail_forms(products)
     community_products = products
-    detail_forms = mendatory_detail_forms    
+    detail_forms = mendatory_detail_forms
     forms_for_touch_app(community_products).each {|x| detail_forms << x} if products.include?("pynwheel_touch")
-    forms_for_self_tour(community_products).each {|a| detail_forms << a} if products.include?("self_tour")    
+    forms_for_self_tour(community_products).each {|a| detail_forms << a} if products.include?("self_tour")
     detail_forms
   end
 
@@ -34,7 +34,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
   def forms_for_self_tour(products)
     return unless products.include?("self_tour")
-    
+
     [
       {
         name: LOCK_PROVIDER,
@@ -76,14 +76,14 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     return "" if @community.status.blank?
     @community.status.status rescue ""
   end
-  
+
   def property_map_status
     if @community.is_sitemap
       sitemap = @community.sitemap
-      sitemap.status.status rescue "" 
+      sitemap.status.status rescue ""
     elsif @community.has_floorplates?
       floorplates = @community.floorplates
-      floorplate_status = floorplates.map {|floorplate| floorplate.status.status rescue ""} 
+      floorplate_status = floorplates.map {|floorplate| floorplate.status.status rescue ""}
       floorplate_status.uniq.join(',')
     end
   end
@@ -124,9 +124,9 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
   def hardware_specs_status
     return "" if @community.community_users.blank?
-    community_users = @community.community_users
-    hardware_status = community_users.map {|cu| (cu.product_options.present? && @community.check_required_hardware(cu.product_options)) ? cu.status&.status : ""}
-    hardware_status.uniq.join(',')
+    product_options = @community.product_options
+    hardware_status = (product_options.present? && @community.check_required_hardware(product_options)) ? @community.status&.status : ""
+    hardware_status
   end
 
   def home_page_media_status
@@ -160,5 +160,5 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     end
     locks_status.uniq.join(',')
   end
-  
+
 end
