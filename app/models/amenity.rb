@@ -62,13 +62,18 @@ class Amenity < ApplicationRecord
     ["Conference Room","Conference Room"],["Business Center","Business Center"],["Rooftop Lounge","Rooftop Lounge"]]
 
 
-  def get_amenity_galleries
-    self&.amenity_galleries&.map{|gallery| {
-      id: gallery.id,
-      name: gallery.name,
-      amenity_id: gallery.amenity_id,
-      image: gallery.image
-    }} 
+  def get_amenity_galleries galler_obj = []
+    galler_obj << {
+      image: self.image
+    }
+
+    self&.amenity_galleries&.each do |gallery|
+      galler_obj << {
+        image: gallery.image
+      }
+    end
+
+    galler_obj
   end
 
   def crop_amenity_image
