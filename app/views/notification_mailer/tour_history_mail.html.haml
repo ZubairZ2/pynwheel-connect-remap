@@ -109,7 +109,7 @@
           height:auto;
         }
         .video-wrapper {display:none;}
-        @media (-webkit-min-device-pixel-ratio: 0) and (min-device-width:1024px) 
+        @media (-webkit-min-pixel-ratio: 0) and (min-width:1024px) 
         {
         .video-wrapper { display:block!important; }
         .video-fallback { display:none!important; }
@@ -239,7 +239,7 @@
           border-style: solid;
           border-color: #f4f4f4;
         }
-        @media only screen and (max-device-width: 760px) {
+        @media only screen and (max-width: 760px) {
           .howItWorks{
             height: 100% !important;
           }
@@ -261,11 +261,24 @@
             font-family:Helvetica, Arial, "Lucida Grande", sans-serif;
           }
         }
-        @media only screen and (min-device-width: 760px) and (max-device-width: 1170px) {
+        @media only screen and (min-width: 1000px) and (max-width: 1170px) {
           .howItWorks{
             margin-bottom: 40% !important;
           }
         }
+
+        @media only screen and (min-width: 901px) and (max-width: 999px) {
+          .howItWorks{
+            margin-bottom: 50% !important;
+          }
+        }
+
+        @media only screen and (min-width: 760px) and (max-width: 900px) {
+          .howItWorks{
+            margin-bottom: 70% !important;
+          }
+        }
+
         @media only screen and (max-width: 480px){
           body{
             width:100% !important;
