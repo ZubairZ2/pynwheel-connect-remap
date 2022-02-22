@@ -65,7 +65,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
     product_json = @community&.product_options rescue ""
     return {:brand_pdf_feature => false} if product_json.nil?
     desing_style = community_user.nested_hash_value(JSON.parse(product_json) , "desing_style")
-    if desing_style.eql?(Expressionist)
+    if desing_style.eql?(EXPRESSIONIST)
       brand_pdf_feature = true
     else
       brand_pdf_feature = false
