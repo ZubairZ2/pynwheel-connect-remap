@@ -631,7 +631,6 @@ module ShortestPath
         source = floors_graph[building][destination_floor_id].source
       end
     end # building loop end
-
     mobile_path = fetch_paths_arr_for_floorplate_multiple_buildings(path_object_in_order)
     new_stops_arr = update_new_stops_arr_for_multiple_buildings(new_stops_arr)
     return mobile_path, new_stops_arr
@@ -996,10 +995,11 @@ module ShortestPath
       building_floors_specific_amenities = fetch_amenities_according_to_building_to_floor(planned_to_visit_amenities_ids, building_list)
       @precedence_according_to_building_to_floors = fetch_unit_and_amenity_in_floor_by_floor_sorted_way_for_building(tour_stops, building_floors_specific_units, building_floors_specific_amenities, @floors_ids, building_list)
       # update precedence array according to floor in below code 
-      @community_units = @community.units.are_ploted_units.where.not(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
+      @community_units = @community.units.are_ploted_units.where.not(floorplate_id: nil, building: ["", nil]).order(:building, :unit_type).includes(:door) # only plotted units
       @unit_with_door = {}
       building_list.each {|building| @unit_with_door[building] = {}}
-      @community_units.each do |unit| 
+
+      @community_units.each do |unit|
         if planned_to_visit_units_ids.include?(unit.id)
           if unit.door.present?
             planned_to_visit_units_ids = planned_to_visit_units_ids - [unit.id]
@@ -1008,11 +1008,13 @@ module ShortestPath
           else
             @planned_to_visit_units_and_doors_ids << unit.id
           end
+
           if @unit_with_door[unit.building].has_key?(unit.floor)
             @unit_with_door[unit.building][unit.floor] << { unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }
           else
             @unit_with_door[unit.building][unit.floor] = [{ unit_info: { unit: { id: unit.id, name: unit.name, building: unit.building, provider_id: unit.provider_unit_id, x_plot: unit.x_plot, y_plot: unit.y_plot }, door: unit.door.present? ? unit.door : {} } }]
           end
+
         end
       end
       @amenities_doors = Amenity.where(amenityable_type: "Floorplate", amenityable_id: @floorplates.ids).includes(:doors)
@@ -1064,7 +1066,7 @@ module ShortestPath
       @original_presendece_arr = fetch_unit_and_amenity_in_floor_by_floor_sorted_way_for_building(tour_stops, building_floors_specific_units, building_floors_specific_amenities, @floors_ids, building_list)      
       @precedence_according_to_building_to_floors = @original_presendece_arr.deep_dup
       # update precedence array according to floor in below code 
-      @community_units = @community.units.are_ploted_units.where.not(floorplate_id: nil).order(:building, :unit_type).includes(:door) # only plotted units
+      @community_units = @community.units.are_ploted_units.where.not(floorplate_id: nil, building: ["", nil]).order(:building, :unit_type).includes(:door) # only plotted units
       @unit_with_door = {}
       building_list.each {|building| @unit_with_door[building] = {}}
       @community_units.each do |unit| 
@@ -1107,10 +1109,12 @@ module ShortestPath
     def fetch_units_according_to_building_to_floor(planned_to_visit_units_ids, building_list)
       building_to_floor_to_units = {}
       building_list.each {|building| building_to_floor_to_units[building] = {}}
-      building_floor_and_unit = Unit.where(id: planned_to_visit_units_ids).are_ploted_units.pluck(:building, :floor, :id)
+      building_floor_and_unit = Unit.where(id: planned_to_visit_units_ids).where.not(building: ["", nil]).are_ploted_units.pluck(:building, :floor, :id)
+
       building_floor_and_unit.each do |f_u|
-        building_to_floor_to_units[f_u[0]][f_u[1]] = building_to_floor_to_units[f_u[0]].keys.include?(f_u[1]) ? (building_to_floor_to_units[f_u[0]][f_u[1]] + [f_u[2]]) : ([f_u[2]])
+        building_to_floor_to_units[f_u[0]][f_u[1]] = building_to_floor_to_units[f_u[0]]&.keys&.include?(f_u[1]) ? (building_to_floor_to_units[f_u[0]][f_u[1]] + [f_u[2]]) : ([f_u[2]])
       end
+      
       building_to_floor_to_units
     end
     def fetch_units_according_to_floor(planned_to_visit_units_ids)
