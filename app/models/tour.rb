@@ -16,6 +16,7 @@
 
 class Tour < ApplicationRecord
   belongs_to :community
+  belongs_to :tour_user
   has_many :tour_stops, dependent: :destroy
   has_many :chatrooms, dependent: :destroy
 
@@ -39,13 +40,14 @@ class Tour < ApplicationRecord
   after_create :define_opening_hours
 
   def define_opening_hours
+    return if self.tour_user_id.present?
+
     self.community.opening_hours.create(day: "Monday", opening_time: "09:00", closing_time: "17:00")
     self.community.opening_hours.create(day: "Tuesday", opening_time: "09:00", closing_time: "17:00")
     self.community.opening_hours.create(day: "Wednesday", opening_time: "09:00", closing_time: "17:00")
     self.community.opening_hours.create(day: "Thursday", opening_time: "09:00", closing_time: "17:00")
     self.community.opening_hours.create(day: "Friday", opening_time: "09:00", closing_time: "17:00")
     self.community.opening_hours.create(day: "Saturday", opening_time: "09:00", closing_time: "17:00")
-
 
     self.community.guided_opening_hours.create(day: "Monday", opening_time: "09:00", closing_time: "17:00")
     self.community.guided_opening_hours.create(day: "Tuesday", opening_time: "09:00", closing_time: "17:00")

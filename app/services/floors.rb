@@ -1,6 +1,8 @@
 class Floors
-  def initialize(community)
+  def initialize(community, tour_user)
     @community = community
+    @tour_user = tour_user
+    @tour = get_user_tour()
   end
 
   def get_community_floors
@@ -9,14 +11,20 @@ class Floors
 
   def get_community_temp_floors floor_list
     begin
-      if @community.tour.starting_floor.present?
-        (floor_list - [@community.tour.starting_floor]).unshift(@community.tour.starting_floor) rescue []
+      if @tour.starting_floor.present?
+        (floor_list - [@tour.starting_floor]).unshift(@tour.starting_floor) rescue []
       else
         floor_list
       end
     rescue
       []
     end
+  end
+
+  private
+
+  def get_user_tour
+    @tour_user.tours.where(community_id: @community&.id).last
   end
 
 end

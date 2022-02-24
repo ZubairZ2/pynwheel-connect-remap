@@ -88,7 +88,7 @@ json.tours @tours do |tour|
     have_stop_in_building = false
     first_floor_elev = nil
 
-    scheduled_tour_stops = @community.community_tour_available_stops(@tour_user)
+    scheduled_tour_stops = @community.community_tour_available_stops(@tour_user, tour)
 
     if @community.is_sitemap
       if scheduled_tour_stops.present?

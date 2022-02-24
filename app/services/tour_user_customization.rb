@@ -1,0 +1,68 @@
+class TourUserCustomization
+  def initialize(community, tour_user)
+    @community = community
+    @tour_user = tour_user
+    @c_tour = @community.tour
+  end
+
+  def customize_tour
+    return if tour_user_customize_tour()
+
+    t_tour = create_tour_user_customize_tour()
+    add_tour_stops_for_tour_user(t_tour)
+    set_tour_user_sort_hash(t_tour) unless @community.is_sitemap
+  end
+
+  private
+
+  def add_tour_stops_for_tour_user t_tour
+    t_tour.tour_stops.delete_all
+
+    stops = @c_tour.tour_stops.where(display_stop: true)
+
+    stops.each do |stop|
+      new_stop = stop.dup
+      new_stop.tour_id = t_tour.id
+      new_stop.save(:validate => false)
+    end
+    
+  end
+
+  def tour_user_customize_tour
+    @tour_user.tours.where(community_id: @community&.id).last
+  end
+
+  def create_tour_user_customize_tour
+    tour = @c_tour.dup
+    tour.tour_user_id = @tour_user.id
+
+    unless @community.is_sitemap
+      sort_hash = tour.sort_hash
+      sort_hash.each do |key, array|
+        tour.sort_hash["#{key}"] = []
+      end
+    end
+
+    tour.save(:validate => false)
+    tour
+  end
+
+  def set_tour_user_sort_hash t_tour
+
+    stops = TourStop.where(tour_id: t_tour.id)
+
+    stops.each do |stop|
+      unless stop.stop_type === "elevator"
+        actual_stop = stop.stop_type.classify.constantize.find_by_id stop.stop_id
+        floor = actual_stop&.floor || ""
+        building = actual_stop&.building || ""
+        key = "#{building},#{floor}"
+        t_tour.sort_hash["#{key}"] << stop.id.to_s
+      end
+    end
+
+    t_tour.save!
+  end
+
+
+end

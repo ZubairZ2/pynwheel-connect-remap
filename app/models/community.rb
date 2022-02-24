@@ -736,11 +736,11 @@ s  end
   end
 
 
-  def community_tour_available_stops tour_user
+  def community_tour_available_stops tour_user, tour
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, self, false).get_scheduled_tour
 
     if scheduled_tour.present? && scheduled_tour.stops_list.present?
-      self.tour.tour_stops.where(id: scheduled_tour.stops_list).order(:sort)
+      tour.tour_stops.where(id: scheduled_tour.stops_list).order(:sort)
     else
       nil
     end

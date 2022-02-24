@@ -36,7 +36,7 @@ json.tours @tours do |tour|
 
   stops_arr = []
 
-  scheduled_tour_stops = @community.community_tour_available_stops(@tour_user)
+  scheduled_tour_stops = @community.community_tour_available_stops(@tour_user, tour)
   add_start = true
 
   if @community.is_sitemap

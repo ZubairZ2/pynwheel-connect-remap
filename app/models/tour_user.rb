@@ -31,6 +31,7 @@ class TourUser < ApplicationRecord
   has_many :lock_histories, dependent: :destroy
   has_many :prospects, dependent: :destroy
   has_many :user_stripes, dependent: :destroy
+  has_many :tours, dependent: :destroy
 
   has_one :feedbacks
   

@@ -2,8 +2,8 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   
   # Callbacks
   before_action :set_community, only: [:customize_tour, :initialize_tour, :generate_locks_accesses, :check_lock_access]
-  before_action :set_community_tour, only: [:customize_tour, :initialize_tour]
   before_action :set_tour_user, only: [:customize_tour, :initialize_tour, :generate_locks_accesses, :check_lock_access]
+  before_action :set_community_tour, only: [:customize_tour, :initialize_tour]
   before_action :random_string_generator, only: [:initialize_tour]
 
   # helper methods
@@ -16,22 +16,37 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   
   def customize_tour
     access = grant_access (decoded(params[:token])) rescue false
+    
     if api_access or access == true
-      @building_list = Buildings.new(@community).get_community_buildings
-      @floor_list = Floors.new(@community).get_community_floors
-      @floor_list_temp = Floors.new(@community).get_community_temp_floors(@floor_list)
+      @tour = set_community_tour()
+      @building_list = Buildings.new(@community, @tour_user).get_community_buildings
+      @floor_list = Floors.new(@community, @tour_user).get_community_floors
+      @floor_list_temp = Floors.new(@community, @tour_user).get_community_temp_floors(@floor_list)
+
+    else
+      render :json=> {:status=>false, :message => "Invalid Token", code: 401}
     end
   end
 
   def initialize_tour
-    @floorplans = get_floorplans_with_required_filter()
-    @tour_type = params[:tour_status] rescue @tour_user.tour_type
-    @tour_user.update(tour_type: params[:tour_status], tour_key: @random_string, verified_by: params[:verfied_by_provider])
+    access = grant_access (decoded(params[:token])) rescue false
     
-    charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
-    update_verification_attributes()
-    PropertyAccessCode.new(@community ,@tour_user, @tour_type).restrict_property_access_with_code
-    @community.update(deleted_ids: [])
+    if api_access or access == true
+      TourUserCustomization.new(@community, @tour_user).customize_tour
+      @tour = set_community_tour()
+      @floorplans = get_floorplans_with_required_filter()
+      @tour_type = params[:tour_status] rescue @tour_user.tour_type
+      @tour_user.update(tour_type: params[:tour_status], tour_key: @random_string, verified_by: params[:verfied_by_provider])
+      
+      charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
+      update_verification_attributes()
+      PropertyAccessCode.new(@community ,@tour_user, @tour_type).restrict_property_access_with_code
+      @community.update(deleted_ids: [])
+
+    else
+      render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+    end
+
   end
 
   def generate_locks_accesses
@@ -97,7 +112,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   end
 
   def set_community_tour
-    @tour = @community.tour
+    @tour_user.tours.where(community_id: @community&.id).last
   end
 
   def get_floorplans_with_required_filter

@@ -1,7 +1,8 @@
 class CommunityTour
-  def initialize community, tour_user, building_list, floor_list_loop, floor_list_temp
+  def initialize community, tour_user, building_list, floor_list_loop, floor_list_temp, user_tour
     @community = community
     @tour_user = tour_user
+    @tour = user_tour
     @building_list = building_list
     @floor_list_loop = floor_list_loop
     @floor_list_temp = floor_list_temp
@@ -10,7 +11,7 @@ class CommunityTour
     @favorite_amenity_array = []
     @stops_arr = []
 
-    @scheduled_tour_stops = @community.community_tour_available_stops(@tour_user)
+    @scheduled_tour_stops = @community.community_tour_available_stops(@tour_user, @tour)
   end
 
   def get_tour_stops
@@ -70,7 +71,7 @@ class CommunityTour
     if @scheduled_tour_stops.present?
       @stops_arr = @community.mdu ? @scheduled_tour_stops : @scheduled_tour_stops.where.not(stop_type: "unit").order(:sort)
     else
-      @stops_arr =  @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
+      @stops_arr =  @community.mdu ? @tour.tour_stops.where(display_stop: true).order(:sort) : @tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
     end
   end
 
@@ -86,8 +87,8 @@ class CommunityTour
         @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list_temp
         add_start = false
         @floor_list_loop.each do |floor|
-          if @community.tour.sort_hash[building + ","+ floor.to_s].present?
-            @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+          if @tour.sort_hash[building + ","+ floor.to_s].present?
+            @tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
               if (s_id.present?)
                 stop = (TourStop.find_by_id(s_id))
                 @stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
