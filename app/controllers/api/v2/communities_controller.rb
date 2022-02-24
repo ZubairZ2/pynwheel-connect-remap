@@ -15,6 +15,11 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
     render :json => {data: @community.as_json(@brand_pdf_feature)}
   end
 
+  def get_community_detail_forms
+    @community_user = CommunityUser.find_by_id(params[:community_user])
+    render :json => {:success => true , data: @community_user.as_json}
+  end
+
   def update
     if @community.update(community_params)
       @community.set_community_details_status(current_pynwheel_user)
