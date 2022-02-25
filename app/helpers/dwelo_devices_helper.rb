@@ -387,8 +387,8 @@ module DweloDevicesHelper
     allowed_stops
   end
 
-  def zerv_multiple_stops_access(community, allowed_stops = [])
-    available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+  def zerv_multiple_stops_access(community, tour_user, allowed_stops = [])
+    available_stops = TourAvailableStops.new(community, tour_user).available_stops
 
     available_stops.each do |stop|
       actual_stop = stop[0].classify.constantize.find_by_id stop[1]
@@ -679,7 +679,7 @@ module DweloDevicesHelper
       execution_context = Rails.application.executor.run!
 
       if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and tour_user.tour_type != "virtual_tour"
-        allowed_stops = zerv_multiple_stops_access(community)
+        allowed_stops = zerv_multiple_stops_access(community, tour_user)
         ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, is_resident: false)
       end
       tour_user.update_column 'zerv_status' , 'complete'

@@ -1,0 +1,25 @@
+class TourAvailableStops
+  def initialize community, tour_user
+    @community = community
+    @tour_user = tour_user
+  end
+
+  def available_stops
+    tour = tour_user_customize_tour()
+    tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+  end
+
+  private
+
+  def tour_user_customize_tour
+    if is_customization_enabled
+      @tour_user.tours.where(community_id: @community&.id).last || @community.tour
+    else
+      @community.tour
+    end
+  end
+
+  def is_customization_enabled
+    @community.tour&.tour_setting&.enable_tour_customization
+  end
+end

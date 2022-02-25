@@ -1,12 +1,8 @@
 class Api::SelfTour::V1::CommunitiesController < ActionController::Base
-  
-  # Callbacks
   before_action :set_community, only: [:customize_tour, :initialize_tour, :generate_locks_accesses, :check_lock_access]
   before_action :set_tour_user, only: [:customize_tour, :initialize_tour, :generate_locks_accesses, :check_lock_access]
-  before_action :set_community_tour, only: [:customize_tour, :initialize_tour]
   before_action :random_string_generator, only: [:initialize_tour]
 
-  # helper methods
   include DweloDevicesHelper
   include ApplicationHelper
   include ToursHelper
@@ -18,7 +14,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
     access = grant_access (decoded(params[:token])) rescue false
     
     if api_access or access == true
-      @tour = set_community_tour()
+      @tour = set_user_tour()
       @building_list = Buildings.new(@community, @tour_user).get_community_buildings
       @floor_list = Floors.new(@community, @tour_user).get_community_floors
       @floor_list_temp = Floors.new(@community, @tour_user).get_community_temp_floors(@floor_list)
@@ -33,7 +29,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
     
     if api_access or access == true
       TourUserCustomization.new(@community, @tour_user).customize_tour
-      @tour = set_community_tour()
+      @tour = set_user_tour()
       @floorplans = get_floorplans_with_required_filter()
       @tour_type = params[:tour_status] rescue @tour_user.tour_type
       @tour_user.update(tour_type: params[:tour_status], tour_key: @random_string, verified_by: params[:verfied_by_provider])
@@ -54,9 +50,9 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
 
     if api_access or access == true
       create_zerv_user(@community, @tour_user)
-      current_time = current_community_time(@community, params)
-      lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
-      @tour_user.update(lock_access_time: current_time)
+        current_time = current_community_time(@community, params)
+        lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
+        @tour_user.update(lock_access_time: current_time)
       render :json=> {status: true, :message => "Locks access generation is started", code: 200}
     else
       render :json=> {:status=>false, :message => "Invalid Token", code: 401}
@@ -111,7 +107,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
     @random_string = SecureRandom.hex
   end
 
-  def set_community_tour
+  def set_user_tour
     @tour_user.tours.where(community_id: @community&.id).last
   end
 

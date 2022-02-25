@@ -14,6 +14,7 @@ class Api::V1::FloorplansController < ActionController::Base
     floorplans_list = any_option.include?(true) ? floorplans : filtered_floorplans 
     sorting_param = params[:sort_by].present? ? params[:sort_by] : "default"
     sorted_floorplans = floorplans_list.present? ? sort_floorplans(floorplans_list,sorting_param).uniq : []
+
     @floorplans = Kaminari.paginate_array(sorted_floorplans).page(params[:page]).per(params[:per_page])
   end
 
