@@ -25,7 +25,7 @@ class PynwheelLaunch::Communities::Searcher
     query_string = "%#{params[:keyword].strip.downcase}%" if params[:keyword].present?
     company_ids = Company.where('lower(name) like ?' , query_string).pluck(:id)
     communities = collection.joins(:community).where('lower(communities.name) like ? OR communities.company_id in (?)' , query_string , company_ids)
-    communities = search_by_products(collection , params[:products]) if params[:products].present?
+    communities = search_by_products(collection , JSON.parse(params[:products])) if params[:products].present?
     communities
   end
 

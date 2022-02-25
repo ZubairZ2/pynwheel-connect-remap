@@ -121,7 +121,7 @@ class Community < ApplicationRecord
   def set_community_details_status(current_user)
     return if self.blank?
 
-    community_status = status_string((self.name && self.email && self.phone && self.address && self.city && self.state && self.zip).present?)
+    community_status = status_string(check_community_requirments(self))
     set_status_for_all(self,community_status,current_user)
   end
 
@@ -271,9 +271,13 @@ class Community < ApplicationRecord
   def touch_installation_specification(current_user)
     return if self.product_options.blank?
     product_options = self.product_options
-    required_hardware = product_options.present? && check_required_hardware(product_options) ? true : false
+    required_hardware = product_options.present? && check_required_hardware(product_options) && check_community_requirments(self) ? true : false
     status_attr = status_string(required_hardware)
     set_status_for_all(self,status_attr,current_user)
+  end
+
+  def check_community_requirments(community)
+    (community.name && community.email && community.phone && community.address && community.city && community.state && community.zip).present?
   end
 
   def check_required_hardware(product_options)
