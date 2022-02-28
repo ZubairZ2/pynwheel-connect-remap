@@ -105,7 +105,7 @@ json.tours @tours do |tour|
       last_stop_desc = stops_arr.compact[stop_count - 1]
     else
       temp_max_floor = nil
-      min_floor = @floor_list.include?(1) ? 1 : @floor_list[0]
+      min_floor = @floor_list[0]
       @building_list << "" if @building_list == []
       @building_list.each do |building|
 
@@ -428,6 +428,7 @@ json.tours @tours do |tour|
       blocked = []
       last_stop = stops_arr.compact[stops_arr.compact.size - 1]
     end
+
     #########-------------------- End tour stop sort-----------------------
     new_stops_arr = stops_arr.compact
     json.path_points []
