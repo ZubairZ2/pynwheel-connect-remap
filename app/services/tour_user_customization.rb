@@ -33,6 +33,7 @@ class TourUserCustomization
   end
 
   def create_tour_user_customize_tour
+    binding.pry
     tour = @c_tour.dup
     tour.tour_user_id = @tour_user.id
 

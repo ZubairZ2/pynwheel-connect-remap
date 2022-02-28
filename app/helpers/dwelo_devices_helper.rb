@@ -241,7 +241,7 @@ module DweloDevicesHelper
         prev_data.update_attributes!(guest_id: response["id"])
       end
 
-      allowed_stops = locks_with_same_type("Dwelo", community)
+      allowed_stops = locks_with_same_type("Dwelo", community, tour_user)
 
       dwelo = Dwelo.find_by(community_id: community.id)
       locks = RemoteLock.where(stop_id: allowed_stops, dwelo_id: dwelo.id).pluck(:device_id, :remote_lock_type)
@@ -279,7 +279,7 @@ module DweloDevicesHelper
         prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
       end
       # ------------ creating guest and granting access for igloo lock -------------------------------- #
-      allowed_stops = locks_with_same_type("EdgeState", community)
+      allowed_stops = locks_with_same_type("EdgeState", community, tour_user)
       locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: community.edge_state.id, remote_lock_type: "igloo_lock").pluck(:device_id, :stop_id)
      
       if locks.present?
@@ -306,7 +306,9 @@ module DweloDevicesHelper
       tour_user.update_column 'latch_status' , 'in progress'
       end_time = start_time + 90.minutes
 
-      stops_arr = community.tour.tour_stops.where(display_stop: true).order(:sort)
+      tour = TourAvailableStops.new(community, tour_user).get_tour
+
+      stops_arr = tour.tour_stops.where(display_stop: true).order(:sort)
       stops_ids = stops_arr.ids
 
       unit_ids = TourStop.where(id: stops_ids, stop_type: "unit").pluck(:stop_id)
@@ -330,6 +332,7 @@ module DweloDevicesHelper
         end
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
+      
       amenities.each do |amenity|
         if amenity.doors.any?
           lock_info = amenity.doors.first.latch_lock.present? ? amenity.doors.first.latch_lock.latch_lock_columns : []
@@ -337,7 +340,8 @@ module DweloDevicesHelper
           lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
         end
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
-      end  
+      end 
+
       elevators.each do |elevator|
         lock_info = elevator.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
@@ -347,6 +351,7 @@ module DweloDevicesHelper
         lock_info = building_starting_point.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
+
       if locks_data.present?
         LatchGuest.where(tour_user_id: tour_user.id, community_id: community.id).update_all(status: "deleted")
         locks_data.each do |lock_info|
@@ -375,8 +380,9 @@ module DweloDevicesHelper
     end
   end
 
-  def locks_with_same_type(type, community, allowed_stops = [])
-    visible_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+  def locks_with_same_type(type, community, tour_user, allowed_stops = [])
+    visible_stops = TourAvailableStops.new(community, tour_user).available_stops
+
     visible_stops.each do |stop|
       if (stop[0].classify.constantize.find_by_id stop[1]).lock_provider == type
         allowed_stops << stop[1]

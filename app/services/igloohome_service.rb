@@ -7,7 +7,7 @@ class IgloohomeService < BaseService
   end
 
   def assign_guest_bluetooth_key
-    allowed_stops = igloohome_allowed_stops(@community)
+    allowed_stops = igloohome_allowed_stops(@community, @tour_user)
     igloohome = @community.igloohome
     igloohome_locks = IgloohomeLock.where(igloohome_id: @community&.igloohome&.id, stop_id: allowed_stops)
     get_igloohome_locks_guest_key(igloohome_locks) if igloohome_locks.present?

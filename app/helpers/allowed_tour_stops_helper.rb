@@ -1,6 +1,6 @@
 module AllowedTourStopsHelper
-  def igloohome_allowed_stops(community, allowed_stops = [])
-    visible_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+  def igloohome_allowed_stops(community, tour_user, allowed_stops = [])
+    visible_stops = TourAvailableStops.new(community, tour_user).available_stops
 
     visible_stops.each do |stop|
       tour_stop = (stop[0].classify.constantize.find_by_id stop[1])
