@@ -40,8 +40,8 @@ json.units @units do |u|
   json.unique_unit_identifier  @community.is_sitemap ? "#{@community&.sitemap&.id}" : "#{u&.floorplate&.id}-#{u.floor}"
 
   begin
-    json.available_date u.available_date < Date.today + 1 ? "Now" : u.available_date.strftime("%m-%d-%Y")
-    json.available_date_for_filter u.available_date.strftime("%m-%d-%Y")
+    json.available_date u.available_date < Date.today + 1 ? "Now" : u.available_date.strftime("%m-%d-%y")
+    json.available_date_for_filter u.available_date.strftime("%m-%d-%y")
   rescue => ex
     json.available_date "N/A"
     json.available_date_for_filter "N/A"
