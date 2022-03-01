@@ -435,31 +435,7 @@ module DweloDevicesHelper
     tours_exist = false; on_time_tour=nil; nearest_tour=nil; time_status=nil; salesforce_grace_period=10;
 
     response = SalesforceServices::GetBookingByNeighbor.call(community: community, tour_user: tour_user)
-    puts "\n\n"
-    puts "tour_user"
-    puts tour_user
-    puts "---"*50
-    puts "Response"
-    puts "---"*50
-    puts response.inspect
-    puts "---"*50
-    puts "current_time"
-    puts "---"*50
-    puts current_time
-    puts "---"*50
-    puts "timezone"
-    puts "---"*50
-    puts timezone
-    puts "---"*50
-    puts "community"
-    puts "---"*50
-    puts community.inspect
-    puts "---"*50
-    puts "response.payload"
-    puts "---"*50
-    puts response.payload.inspect
-    puts "\n\n"
-    
+
     if response.success? and response.payload.present?
       if community.crm_credential.salesforce_property_id.present?
         today_scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Id"] == @community.crm_credential.salesforce_property_id) and (b["Status__c"] == "Scheduled" || b["Status__c"] == "Confirmed" || b["Status__c"] == "Rescheduled") and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
@@ -519,7 +495,6 @@ module DweloDevicesHelper
   end
 
   def app_usage(community, property_time, limit ,tour_user)
-    # return (limit <= TourHistory.where('arrived = ? AND left = ? AND abandoned_tour_at_stop AND active_app = ? AND arrived > ? AND is_virtual_tour', property_time.to_date,  nil, nil, false, property_time - 180.minutes, false).count) ? false : true
     unless geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude, 1)
       return 0
     else
@@ -674,8 +649,6 @@ module DweloDevicesHelper
     else
       "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
     end
-    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
-    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1148/1577209294-floorplates_2.png"
   end
 
   def create_zerv_user(community, tour_user)
