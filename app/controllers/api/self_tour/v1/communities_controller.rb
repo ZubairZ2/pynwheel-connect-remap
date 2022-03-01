@@ -1,6 +1,6 @@
 class Api::SelfTour::V1::CommunitiesController < ActionController::Base
-  before_action :set_community, only: [:customize_tour, :initialize_tour, :generate_locks_accesses, :check_lock_access]
-  before_action :set_tour_user, only: [:customize_tour, :initialize_tour, :generate_locks_accesses, :check_lock_access]
+  before_action :set_community, only: [:user_tour_status, :customize_tour, :initialize_tour, :generate_locks_accesses, :check_lock_access]
+  before_action :set_tour_user, only: [:user_tour_status, :customize_tour, :initialize_tour, :generate_locks_accesses, :check_lock_access]
   before_action :random_string_generator, only: [:initialize_tour]
 
   include DweloDevicesHelper
@@ -9,19 +9,81 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   include TourStopsHelper
   include StripeServices
   include ShortestPath
-  
-  def customize_tour
-    access = grant_access (decoded(params[:token])) rescue false
-    
-    if api_access or access == true
-      @tour = set_user_tour()
-      @building_list = Buildings.new(@community, @tour_user).get_community_buildings
-      @floor_list = Floors.new(@community, @tour_user).get_community_floors
-      @floor_list_temp = Floors.new(@community, @tour_user).get_community_temp_floors(@floor_list)
 
-    else
-      render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+  def user_tour_status
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      if @community.present? and @tour_user.present?
+        @tour_session_type = "unscheduled"
+        should_range_be_checked = true
+        @tour_user.tour_type = "virtual_tour"                                           # initilize by virtual tour
+        @location_received = false
+
+        if params[:latitude].present? and params[:latitude].present?
+          @tour_user.latitude = params[:latitude]
+          @tour_user.longitude = params[:longitude]
+          @location_received = true
+        end
+
+        @within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1)
+
+        timezone = @community.get_time_zone()
+        current_time = current_community_time(@community, params)
+        @is_salesforce_crm = @community.is_salesforce_community?
+
+        if @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
+          unless @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
+            unless @is_salesforce_crm
+              @scheduled_data = nearest_time_tour(@community, @tour_user, current_time)
+              if @community.tour.only_scheduled_tour
+                if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
+                  if @location_received and @within_one_km
+                    @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type          # either scheduled tour is self_tour/guided_tour
+                  else
+                    @tour_user.tour_type = "self_tour"
+                  end
+                elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
+                  @tour_date = @scheduled_data.nearest_tour.tour_date.strftime('%_m/%d/%Y')
+                  @tour_time = @scheduled_data.nearest_tour.tour_time.strftime('%l:%M %P')
+                end
+                should_range_be_checked = false
+              end
+              @tour_session_type = "scheduled" if (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?)
+            else
+              @scheduled_data = sf_nearest_time_tour(@community, @tour_user, current_time, timezone)
+              if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
+                if @location_received and @within_one_km
+                  # @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type   ----   # whatever responded in API resonpse
+                else
+                  @tour_user.tour_type = "self_tour"
+                end
+              elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
+                @tour_date = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%_m/%d/%Y')
+                @tour_time = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%l:%M %P')
+              end
+              should_range_be_checked = false
+            end
+
+            if should_range_be_checked and @location_received and @within_one_km
+                @tour_user.tour_type = (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?) ? @scheduled_data.on_time_tour.tour_type : "self_tour" # if he is not on_time, he should not take guided tour
+            elsif should_range_be_checked
+              @tour_user.tour_type = "self_tour"
+            end
+          end
+        end
+
+        if (@within_one_km && ( @tour_user.tour_type == "self_tour"))
+          tour_user_arrival_email(@tour_user, @community)
+          @tour_user.arrival_email_sent = true
+        else
+          @tour_user.arrival_email_sent = false
+        end
+
+        @tour_user.save
+        @verfication_type = params[:id_verification].present? ? @community.tour.verification_type : "email"
+      end
     end
+    
   end
 
   def initialize_tour
@@ -43,6 +105,20 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
       render :json=> {:status=>false, :message => "Invalid Token", code: 401}
     end
 
+  end
+
+  def customize_tour
+    access = grant_access (decoded(params[:token])) rescue false
+    
+    if api_access or access == true
+      @tour = set_user_tour()
+      @building_list = Buildings.new(@community, @tour_user).get_community_buildings
+      @floor_list = Floors.new(@community, @tour_user).get_community_floors
+      @floor_list_temp = Floors.new(@community, @tour_user).get_community_temp_floors(@floor_list)
+
+    else
+      render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+    end
   end
 
   def generate_locks_accesses
