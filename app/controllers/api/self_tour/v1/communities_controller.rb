@@ -1,7 +1,8 @@
 class Api::SelfTour::V1::CommunitiesController < ActionController::Base
-  before_action :set_community, only: [:user_tour_status, :customize_tour, :initialize_tour, :generate_locks_accesses, :check_lock_access]
-  before_action :set_tour_user, only: [:user_tour_status, :customize_tour, :initialize_tour, :generate_locks_accesses, :check_lock_access]
+  before_action :set_community, only: [:user_tour_status, :initialize_tour, :customize_tour, :generate_locks_accesses, :check_lock_access, :start_tour]
+  before_action :set_tour_user, only: [:user_tour_status, :initialize_tour, :customize_tour, :generate_locks_accesses, :check_lock_access, :start_tour]
   before_action :random_string_generator, only: [:initialize_tour]
+  before_action :check_authorization, only: [:user_tour_status, :initialize_tourz, :customize_tour, :generate_locks_accesses, :check_lock_access, :start_tour]
 
   include DweloDevicesHelper
   include ApplicationHelper
@@ -11,8 +12,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   include ShortestPath
 
   def user_tour_status
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    if @is_authorized
       if @community.present? and @tour_user.present?
         @tour_session_type = "unscheduled"
         should_range_be_checked = true
@@ -83,13 +83,10 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         @verfication_type = params[:id_verification].present? ? @community.tour.verification_type : "email"
       end
     end
-    
   end
 
   def initialize_tour
-    access = grant_access (decoded(params[:token])) rescue false
-    
-    if api_access or access == true
+    if @is_authorized
       TourUserCustomization.new(@community, @tour_user).customize_tour
       @tour = set_user_tour()
       @floorplans = get_floorplans_with_required_filter()
@@ -108,27 +105,23 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   end
 
   def customize_tour
-    access = grant_access (decoded(params[:token])) rescue false
-    
-    if api_access or access == true
+    if @is_authorized
       @tour = set_user_tour()
       @building_list = Buildings.new(@community, @tour_user).get_community_buildings
       @floor_list = Floors.new(@community, @tour_user).get_community_floors
       @floor_list_temp = Floors.new(@community, @tour_user).get_community_temp_floors(@floor_list)
-
     else
       render :json=> {:status=>false, :message => "Invalid Token", code: 401}
     end
   end
 
   def generate_locks_accesses
-    access = grant_access (decoded(params[:token])) rescue false
-
-    if api_access or access == true
+    if @is_authorized
       create_zerv_user(@community, @tour_user)
-        current_time = current_community_time(@community, params)
-        lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
-        @tour_user.update(lock_access_time: current_time)
+      current_time = current_community_time(@community, params)
+      lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
+      @tour_user.update(lock_access_time: current_time)
+      
       render :json=> {status: true, :message => "Locks access generation is started", code: 200}
     else
       render :json=> {:status=>false, :message => "Invalid Token", code: 401}
@@ -137,8 +130,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   end
 
   def check_lock_access
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    if @is_authorized
       counter = check_lock_access_counter(@tour_user)
 
       if (params[:tour_type] == "self_tour" && @tour_user.tour_type != "guided_tour" && @community.enable_locks)
@@ -154,8 +146,59 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
       render :json=> {:status=>false, :message => "Invalid Token", code: 401}
     end
   end
+
+  def start_tour
+    if @is_authorized
+      if @community.present? && @tour_user.present?
+        delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
+        te = tour_stops_ids(@tour_user, @community)
+        @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
+        @community.save
+        @tours = []
+        @tours << TourAvailableStops.new(community, tour_user).get_tour
+
+        session["check_lock_access#{@tour_user.id.to_s}"] = 0
+        current_time = current_community_time(@community, params)
+
+        @building_list = Buildings.new(@community, @tour_user).get_community_buildings
+        @floor_list = Floors.new(@community, @tour_user).get_community_floors
+        @floor_list_temp = Floors.new(@community, @tour_user).get_community_temp_floors(@floor_list)
+        @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}       
+        @chat_count = chat_room_count(@tour_user, @community)
+
+        edge_state = EdgeState.find_by(community_id: params[:id])
+        
+        if @community.enable_locks and @community.multiple_locks_provider.include?("EdgeState") and edge_state.present? and @tour_user.tour_type != "virtual_tour"
+          Thread.new do
+            access_token = RemoteLockService.new(@community).client_credentials
+            allowed_stops = allowed_stop_ids(@tour_user, @community)
+            allowed_stops << @community.tour.id
+            locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
+            if locks.present?
+              tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
+              locks.each do |lock|
+                RemoteLockService.new(@community).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
+              end
+            end
+          end
+        else
+          @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
+        end
+        check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
+      else
+        render :json=> {:success=>false, :message => "Community or tour user not found"}
+      end
+    else
+        render :json=> {:success=>false, :message => "Invalid Token"}
+    end
+  end
   
   private
+
+  def chat_room_count tour_user, community
+    chatroom = Chatroom.find_by(tour_user_id: tour_user.id, tour_id: community.tour.id)
+    Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
+  end
 
   def check_lock_access_counter(tu)
     session["check_lock_access"+tu.id.to_s] = 0 if (session["check_lock_access"+tu.id.to_s].nil? || (session["check_lock_access"+tu.id.to_s] == 20))
@@ -200,6 +243,10 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
 
   def do_verfication verfied_by_provider, community
     (verfied_by_provider == "authenteq") && community.tour.tour_setting.present? && community.tour.tour_setting.charge_user_for_id_verfication
+  end
+
+  def check_authorization
+    @is_authorized = grant_access (decoded(params[:token])) rescue false
   end
 
 end

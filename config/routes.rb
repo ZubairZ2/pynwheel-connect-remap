@@ -552,6 +552,7 @@ Rails.application.routes.draw do
           get :customize_tour
           get :generate_locks_accesses
           post :check_lock_access
+          delete :start_tour
         end
       end
     end
