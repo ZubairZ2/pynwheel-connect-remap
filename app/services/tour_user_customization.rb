@@ -6,14 +6,20 @@ class TourUserCustomization
   end
 
   def customize_tour
-    return if tour_user_customize_tour()
-
-    t_tour = create_tour_user_customize_tour()
-    add_tour_stops_for_tour_user(t_tour)
-    set_tour_user_sort_hash(t_tour) unless @community.is_sitemap
+    return unless is_customization_enabled
+    
+    unless tour_user_customize_tour
+      t_tour = create_tour_user_customize_tour()
+      add_tour_stops_for_tour_user(t_tour)
+      set_tour_user_sort_hash(t_tour) unless @community.is_sitemap
+    end
   end
 
   private
+
+  def is_customization_enabled
+    @community.tour&.tour_setting&.enable_tour_customization
+  end
 
   def add_tour_stops_for_tour_user t_tour
     t_tour.tour_stops.delete_all
@@ -33,7 +39,6 @@ class TourUserCustomization
   end
 
   def create_tour_user_customize_tour
-    binding.pry
     tour = @c_tour.dup
     tour.tour_user_id = @tour_user.id
 
@@ -57,8 +62,7 @@ class TourUserCustomization
         actual_stop = stop.stop_type.classify.constantize.find_by_id stop.stop_id
         floor = actual_stop&.floor || ""
         building = actual_stop&.building || ""
-        key = "#{building},#{floor}"
-        t_tour.sort_hash["#{key}"] << stop.id.to_s
+        t_tour.sort_hash["#{building},#{floor}"] << stop.id.to_s
       end
     end
 
