@@ -2,7 +2,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   before_action :set_community, only: [:user_tour_status, :initialize_tour, :customize_tour, :generate_locks_accesses, :check_lock_access, :start_tour]
   before_action :set_tour_user, only: [:user_tour_status, :initialize_tour, :customize_tour, :generate_locks_accesses, :check_lock_access, :start_tour]
   before_action :random_string_generator, only: [:initialize_tour]
-  before_action :check_authorization, only: [:user_tour_status, :initialize_tourz, :customize_tour, :generate_locks_accesses, :check_lock_access, :start_tour]
+  before_action :check_authorization, only: [:user_tour_status, :initialize_tour, :customize_tour, :generate_locks_accesses, :check_lock_access, :start_tour]
 
   include DweloDevicesHelper
   include ApplicationHelper
@@ -88,7 +88,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   def initialize_tour
     if @is_authorized
       TourUserCustomization.new(@community, @tour_user).customize_tour
-      @tour = set_user_tour()
+      @tour = TourAvailableStops.new(@community, @tour_user).get_tour
       @floorplans = get_floorplans_with_required_filter()
       @tour_type = params[:tour_status] rescue @tour_user.tour_type
       @tour_user.update(tour_type: params[:tour_status], tour_key: @random_string, verified_by: params[:verfied_by_provider])
@@ -106,7 +106,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
 
   def customize_tour
     if @is_authorized
-      @tour = set_user_tour()
+      @tour = TourAvailableStops.new(@community, @tour_user).get_tour
       @building_list = Buildings.new(@community, @tour_user).get_community_buildings
       @floor_list = Floors.new(@community, @tour_user).get_community_floors
       @floor_list_temp = Floors.new(@community, @tour_user).get_community_temp_floors(@floor_list)
@@ -155,7 +155,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
         @community.save
         @tours = []
-        @tours << TourAvailableStops.new(community, tour_user).get_tour
+        @tours << TourAvailableStops.new(@community, @tour_user).get_tour
 
         session["check_lock_access#{@tour_user.id.to_s}"] = 0
         current_time = current_community_time(@community, params)
@@ -184,7 +184,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         else
           @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
         end
-        check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
+        # check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
       else
         render :json=> {:success=>false, :message => "Community or tour user not found"}
       end
@@ -226,10 +226,6 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
     @random_string = SecureRandom.hex
   end
 
-  def set_user_tour
-    @tour_user.tours.where(community_id: @community&.id).last
-  end
-
   def get_floorplans_with_required_filter
     all_floorplans = FloorplanUnitsService.new(@community).get_floorplans
     all_floorplans = all_floorplans.sort_by {|f| f.bedrooms}.uniq { |b| b.bedrooms }
@@ -247,6 +243,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
 
   def check_authorization
     @is_authorized = grant_access (decoded(params[:token])) rescue false
+    @is_authorized = ( api_access ||  (@is_authorized == true) )
   end
 
 end

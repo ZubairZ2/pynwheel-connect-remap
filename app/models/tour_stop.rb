@@ -37,6 +37,15 @@ class TourStop < ApplicationRecord
 
   scope :visible, -> { where(display_stop: true) }
 
+  def check_unit_occupied
+    if self.stop_type == "unit"
+      u = Unit.find self.stop_id
+      return (u.available || u.modal_unit) ? false : true
+    else
+      return false
+    end
+  end
+
   def path_data
   	self.stop_type.classify.constantize.path_data
   end

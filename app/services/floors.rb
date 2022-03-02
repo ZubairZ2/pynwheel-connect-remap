@@ -2,7 +2,7 @@ class Floors
   def initialize(community, tour_user)
     @community = community
     @tour_user = tour_user
-    @tour = get_user_tour()
+    @tour = TourAvailableStops.new(@community, @tour_user).get_tour
   end
 
   def get_community_floors
@@ -19,12 +19,6 @@ class Floors
     rescue
       []
     end
-  end
-
-  private
-
-  def get_user_tour
-    @tour_user.tours.where(community_id: @community&.id).last
   end
 
 end

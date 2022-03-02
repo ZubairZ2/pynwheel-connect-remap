@@ -3,12 +3,13 @@ class TourUserCustomization
     @community = community
     @tour_user = tour_user
     @c_tour = @community.tour
+    @user_customized_tour = TourAvailableStops.new(@community, @tour_user).get_tour
   end
 
   def customize_tour
     return unless is_customization_enabled
     
-    unless tour_user_customize_tour
+    unless @user_customized_tour.present?
       t_tour = create_tour_user_customize_tour()
       add_tour_stops_for_tour_user(t_tour)
       set_tour_user_sort_hash(t_tour) unless @community.is_sitemap
@@ -32,10 +33,6 @@ class TourUserCustomization
       new_stop.save(:validate => false)
     end
     
-  end
-
-  def tour_user_customize_tour
-    @tour_user.tours.where(community_id: @community&.id).last
   end
 
   def create_tour_user_customize_tour

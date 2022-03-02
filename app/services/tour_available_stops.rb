@@ -11,7 +11,7 @@ class TourAvailableStops
 
   def get_tour
     if is_customization_enabled
-      @tour_user.tours.where(community_id: @community&.id).last || @community.tour
+      @tour_user.tours.where(community_id: @community&.id).last ||  @community.tour
     else
       @community.tour
     end

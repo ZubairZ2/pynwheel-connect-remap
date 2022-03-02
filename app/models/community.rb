@@ -106,6 +106,10 @@ class Community < ApplicationRecord
     unit_bedrooms
   end
 
+  def get_community_favorite_stop
+    self.favorite_stop.present? ? self.favorite_stop : FavoriteStop.new
+  end
+
   def set_community_time_zone 
     if self.latitude.present? && self.longitude.present?
       time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
