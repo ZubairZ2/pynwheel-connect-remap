@@ -77,6 +77,8 @@ module ZervServices
             puts url
             puts "***"*50
             puts response
+
+            AccessLogsService.new().create_access_log(tour_user&.id, community&.id, stop_list, "zerv", body, response, url, is_resident)
         rescue HTTParty::Error => e
             OpenStruct.new({success?: false, error: e, payload: nil})
         else
