@@ -11,6 +11,31 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     detail_forms
   end
 
+  def update_status_and_remarks detail_type, status, remarks
+    case detail_type
+    when COMMUNITY_DETAILS
+      update_community_status_and_remarks(status, remarks)
+    when PROPERTY_MAP_IMAGES
+      update_property_map_status_and_remarks(status, remarks)
+    when FLOORPLAN_IMAGES
+      update_floorplan_status_and_remarks(status, remarks)
+    when PROPERTY_MANAGEMENT_SYSTEM
+      update_data_provider_status_and_remarks(status, remarks)
+    when LOCK_PROVIDER
+      update_lock_providers_status_and_remarks(status, remarks)
+    when TOUR_STOPS
+      update_tour_stops_status_and_remarks(status, remarks)
+    when VISITING_HOURS
+      update_visiting_hours_status_and_remarks(status, remarks)
+    when TOUCH_GALLERY_MEDIA
+      update_touch_gallery_media_status_and_remarks(status, remarks)
+    when TOUCH_HOME_PAGE_MEDIA
+      update_home_page_media_status_and_remarks(status, remarks)
+    when HARDWARE_SPECS
+      update_hardware_specs_status_and_remarks(status, remarks)
+    end
+  end
+
   def mendatory_detail_forms
     [
       {
@@ -167,6 +192,82 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     end
 
     locks_status.compact.uniq
+  end
+
+  def update_community_status_and_remarks status, remarks
+    return if @community.status.blank?
+    @community&.status.update_attributes(status: status, remarks: remarks)
+  end
+
+  def update_property_map_status_and_remarks status, remarks
+    if @community.is_sitemap
+      @community.sitemap&.status.update_attributes(status: status, remarks: remarks)
+    elsif @community.has_floorplates?
+      @community.floorplates.each {|floorplate| floorplate&.status.update_attributes(status: status, remarks: remarks) }
+    end
+  end
+
+  def update_floorplan_status_and_remarks status, remarks
+    return if @community.floorplans.blank?
+    @community.floorplans.each {|floorplan| floorplan&.status.update_attributes(status: status, remarks: remarks) }
+  end
+
+  def update_data_provider_status_and_remarks status, remarks
+    return if @community.data_provider.blank? && @community.credential.blank?
+    
+    @community.credential&.status.update_attributes(status: status, remarks: remarks) 
+    @community.crm_credential&.status.update_attributes(status: status, remarks: remarks) if @community.credential&.use_different_crm_provider
+  end
+
+  def update_visiting_hours_status_and_remarks status, remarks
+    return if @community.opening_hours.blank? && @community.guided_opening_hours.blank?
+
+    @community&.opening_hours.each {|oh| oh&.status.update_attributes(status: status, remarks: remarks) } if @community&.opening_hours.present?
+    @community&.guided_opening_hours.each {|gh| gh&.status.update_attributes(status: status, remarks: remarks) } if @community&.guided_opening_hours.present?
+  end
+
+  def update_touch_gallery_media_status_and_remarks status, remarks
+    return if @community.galleries.blank?
+    @community&.galleries.map {|gallery| gallery&.status.update_attributes(status: status, remarks: remarks) } if @community&.galleries.present?
+  end
+
+  def update_hardware_specs_status_and_remarks status, remarks
+    return if @community.community_users.blank?
+    @community&.status.update_attributes(status: status, remarks: remarks) if (@community.product_options.present? && @community.check_required_hardware(@community.product_options))
+  end
+
+  def update_home_page_media_status_and_remarks status, remarks
+    return if @community.design.blank? && @community.design&.home_page_images.blank? && @community.design&.home_page_video.blank?
+    
+    home_page_images = @community&.design&.home_page_images
+    home_page_video = @community&.design&.home_page_video
+
+    home_page_images.map {|hp_img| hp_img&.status.update_attributes(status: status, remarks: remarks) } if home_page_images.present?
+    home_page_video&.status.update_attributes(status: status, remarks: remarks) if home_page_video.present?
+  end
+
+  def update_tour_stops_status_and_remarks status, remarks
+    return if @community.tour&.tour_stops.blank?
+    tour_stops = @community.tour&.tour_stops
+    
+    tour_stops.map {|ts| ts&.status.update_attributes(status: status, remarks: remarks) }
+  end
+
+  def update_lock_providers_status_and_remarks status, remarks
+    return if @community.zerv.blank? && @community.latch.blank? && @community.dwelo.blank? && @community.edge_state.blank? && @community&.edge_state&.remote_locks.blank?
+    
+    zerv = @community.zerv
+    latch = @community.latch
+    dwelo = @community.dwelo
+    remote_locks = @community.edge_state&.remote_locks
+
+    zerv&.status.update_attributes(status: status, remarks: remarks) if zerv.present?
+    latch&.status.update_attributes(status: status, remarks: remarks) if latch.present?
+    dwelo&.status.update_attributes(status: status, remarks: remarks) if dwelo.present?
+    
+    unless remote_locks.nil?
+      remote_locks.each {|remote_lock| remote_lock&.status.update_attributes(status: status, remarks: remarks) }
+    end
   end
 
 end
