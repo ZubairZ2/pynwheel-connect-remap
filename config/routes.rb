@@ -568,7 +568,12 @@ Rails.application.routes.draw do
         delete :delete_opening_hours, to: 'opening_hours#delete_opening_hours'
         resources :secure_locks
         post :add_secure_locks, to: 'secure_locks#add_secure_locks'
-        resources :community_floor_plans
+        resources :community_floor_plans do
+          member do
+            delete :delete_floorplan_amenity
+            delete :delete_floorplan_image
+          end
+        end
         post :add_floorplan, to: 'community_floor_plans#add_floorplan'
         resources :pynwheel_touch_homepage
         post :add_homepage_design, to: 'pynwheel_touch_homepage#add_homepage_design'
