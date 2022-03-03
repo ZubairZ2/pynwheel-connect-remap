@@ -2,6 +2,8 @@ json.tour_id @tour.id
 json.tour_key @random_string
 json.community_id @tour.community_id
 json.allow_tours_customization @community.tour&.tour_setting&.enable_tour_customization
+json.units_available @community.tour&.tour_setting&.enable_tour_customization ? (@community.units.available_units.count > 0) : false
+json.amenities_available @community.tour&.tour_setting&.enable_tour_customization ? (@community.amenities.plotted_amenities.count > 0) :false
 json.property_access (@tour_type != "virtual_tour" && @community.tour&.tour_setting&.enable_restricted_property_access) ? @tour_user.restricted_property_access : false
 json.property_access_code (@tour_type != "virtual_tour" && @community.tour&.tour_setting&.enable_restricted_property_access) ? @tour_user.property_access_code : ""
 json.unit_bedrooms @community.unit_bedrooms_filters(@floorplans)
