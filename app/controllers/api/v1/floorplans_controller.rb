@@ -40,7 +40,7 @@ class Api::V1::FloorplansController < ActionController::Base
   def update_tour_stops_list
     return unless @tour.present?
     @tour_stop = @tour.tour_stops.where(stop_id: params[:stop_id]).last
-    
+
     if @tour_stop.present?
       remove_tour_stop(@tour_stop)
     else
@@ -59,7 +59,7 @@ class Api::V1::FloorplansController < ActionController::Base
   def set_tour_user_tour
     return unless @tour_user.present?
 
-    @tour = @tour_user.tours.where(community_id: @community.id).last
+    @tour = TourAvailableStops.new(@community, @tour_user).get_tour
   end
 
   def remove_tour_stop(tour_stop)

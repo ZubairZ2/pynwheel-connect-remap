@@ -1110,7 +1110,6 @@ module ShortestPath
       building_to_floor_to_units = {}
       building_list.each {|building| building_to_floor_to_units[building] = {}}
       building_floor_and_unit = Unit.where(id: planned_to_visit_units_ids).where.not(building: ["", nil]).are_ploted_units.pluck(:building, :floor, :id)
-
       building_floor_and_unit.each do |f_u|
         building_to_floor_to_units[f_u[0]][f_u[1]] = building_to_floor_to_units[f_u[0]]&.keys&.include?(f_u[1]) ? (building_to_floor_to_units[f_u[0]][f_u[1]] + [f_u[2]]) : ([f_u[2]])
       end

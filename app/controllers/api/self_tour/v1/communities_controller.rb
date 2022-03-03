@@ -166,24 +166,24 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}       
         @chat_count = chat_room_count(@tour_user, @community)
 
-        edge_state = EdgeState.find_by(community_id: params[:id])
+        # edge_state = EdgeState.find_by(community_id: params[:id])
         
-        if @community.enable_locks and @community.multiple_locks_provider.include?("EdgeState") and edge_state.present? and @tour_user.tour_type != "virtual_tour"
-          Thread.new do
-            access_token = RemoteLockService.new(@community).client_credentials
-            allowed_stops = allowed_stop_ids(@tour_user, @community)
-            allowed_stops << @community.tour.id
-            locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
-            if locks.present?
-              tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
-              locks.each do |lock|
-                RemoteLockService.new(@community).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
-              end
-            end
-          end
-        else
-          @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
-        end
+        # if @community.enable_locks and @community.multiple_locks_provider.include?("EdgeState") and edge_state.present? and @tour_user.tour_type != "virtual_tour"
+        #   Thread.new do
+        #     access_token = RemoteLockService.new(@community).client_credentials
+        #     allowed_stops = allowed_stop_ids(@tour_user, @community)
+        #     allowed_stops << @community.tour.id
+        #     locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
+        #     if locks.present?
+        #       tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
+        #       locks.each do |lock|
+        #         RemoteLockService.new(@community).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
+        #       end
+        #     end
+        #   end
+        # else
+        #   @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
+        # end
         # check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
       else
         render :json=> {:success=>false, :message => "Community or tour user not found"}

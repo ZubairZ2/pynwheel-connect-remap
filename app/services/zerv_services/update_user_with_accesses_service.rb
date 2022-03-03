@@ -7,7 +7,7 @@ module ZervServices
             stop_list    = args[:stop_list]
             zerv_user    = args[:zerv_user]
             is_resident = args[:is_resident]
-            
+            stop_ids = []
             @facilityId   = community.zerv.facility_id.blank? ? "0" : community.zerv.facility_id
             @accessCode   = community.zerv.badge_id.blank? ? "1234" : community.zerv.badge_id
             @cardFormat   = community.zerv.card_format.blank? ? "HID Prox 26-bit H10301" : community.zerv.card_format
@@ -24,6 +24,7 @@ module ZervServices
                 timezone = community.get_time_zone()
                 tour_time = Time.now.in_time_zone(timezone)
                 stop_list.each do |stop|
+                    stop_ids << stop&.id&.to_i
                     attached_lock = stop.zerv_locks.last
                     access_code = attached_lock.universal_access_code.present? ? attached_lock.universal_access_code : nil rescue nil
                     access_point = attached_lock.mac_id rescue nil
@@ -77,6 +78,8 @@ module ZervServices
             puts url
             puts "***"*50
             puts response
+
+            AccessLogsService.new().create_access_log(tour_user&.id, community&.id, stop_ids, "zerv", body, response, url, is_resident)
         rescue HTTParty::Error => e
             OpenStruct.new({success?: false, error: e, payload: nil})
         else
