@@ -36,9 +36,24 @@ $(document).ready(function () {
         'show-unit-numbers': _3dConfigurations ? _3dConfigurations.show_unit_numbers : true,
         'hide-floors': _3dConfigurations ? _3dConfigurations.hide_floors : true,
       });
+
     handleMapControl()
   }
 });
+
+function displayOverlayText() {
+  let instruction = localStorage.getItem(`webpagesInstruction${webCommunity.id}`);
+
+  if(!instruction) {
+    $("#webpages-overlay").show();
+  }
+}
+
+function hideOverlayText() {
+  $("#webpages-overlay").hide();
+  localStorage.setItem(`webpagesInstruction${webCommunity.id}`, true);
+}
+  
 
 function _3dMapViewMarker() {
   let _3dUnitsMarketingNames = getUnitsToBeSelected();
@@ -54,29 +69,6 @@ function touchScreenEvent() {
   $('#zoomable a').on('touchstart', function (e) {
     e.stopImmediatePropagation();
   });
-}
-
-function getOS() {
-  var userAgent = window.navigator.userAgent,
-      platform = window.navigator.platform,
-      macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
-      windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
-      iosPlatforms = ['iPhone', 'iPad', 'iPod'],
-      os = null;
-
-  if (macosPlatforms.indexOf(platform) !== -1) {
-    os = 'Mac OS';
-  } else if (iosPlatforms.indexOf(platform) !== -1) {
-    os = 'iOS';
-  } else if (windowsPlatforms.indexOf(platform) !== -1) {
-    os = 'Windows';
-  } else if (/Android/.test(userAgent)) {
-    os = 'Android';
-  } else if (!os && /Linux/.test(platform)) {
-    os = 'Linux';
-  }
-
-  return os;
 }
 
 document.addEventListener('DOMContentLoaded', touchScreenEvent);
@@ -1770,22 +1762,9 @@ function set3DSelectedUnit(unitName, floor) {
 function handleMapControl() {
   if(selectMap === "3d-map" && enable3DMaps) {
     display3DMap();
+    displayOverlayText();
   } else {
     display2DMap();
-  }
-}
-
-function display3DMapInstructions() {
-  let os = getOS();
-
-  console.log("Current OS: ", os);
-
-  if(os === "Mac OS" || os === "iOS") {
-    $(".windos-instruction-tag").addClass('hidden');
-    $(".mac-instruction-tag").removeClass('hidden');
-  } else {
-    $(".windos-instruction-tag").removeClass('hidden');
-    $(".mac-instruction-tag").addClass('hidden');
   }
 }
 
@@ -1805,7 +1784,7 @@ function display3DMap() {
   $(".3d-map-option").addClass("hidden");
   $(".satelite-view-icon").removeClass("hidden");
   $(".div.map-instruction-text").removeClass('hidden');
-  display3DMapInstructions();
+  // display3DMapInstructions();
   let windowWidth = window.innerWidth;
   let sideBarWidth = $(".c-sidebar").innerWidth();
   if($(window).width() <= 567){
