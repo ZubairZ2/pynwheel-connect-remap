@@ -1,29 +1,14 @@
-# == Schema Information
-#
-# Table name: tour_histories
-#
-#  id                     :integer          not null, primary key
-#  arrived                :datetime
-#  left                   :datetime
-#  id_mismatch            :boolean
-#  abandoned_tour_at_stop :integer
-#  tour_user_id           :integer
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
-#  lengthy_stay           :datetime
-#
-
 class TourHistory < ApplicationRecord
   attr_accessor :community
   attr_accessor :length_stay_limit
 
   belongs_to :tour_user
   has_many :lock_histories, dependent: :destroy
+  
   include DweloDevicesHelper
 
   after_create :send_arrival_notifications
   after_update :send_update_notifications
-
 
   private
 
@@ -121,7 +106,7 @@ class TourHistory < ApplicationRecord
   end
 
   def is_tour_on_time(scheduled_tour, community, timezone = nil)
-    tour = community.tour
+    tour = community.community_tour
 
     if  tour.only_scheduled_tour && tour.grace_period.present?
       timezone = community.get_time_zone()
@@ -235,7 +220,7 @@ class TourHistory < ApplicationRecord
   end
 
   def send_email_sms_or_both_to_touruser thank_you_msg, community
-    content = (community.tour.tour_setting.enable_header_footer ? (thank_you_msg.gsub("\n", "<br>").html_safe) :  "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + (thank_you_msg.gsub("\n", "<br>").html_safe))
+    content = (community.community_tour.tour_setting.enable_header_footer ? (thank_you_msg.gsub("\n", "<br>").html_safe) :  "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.self_tour_logo.present? ? community.self_tour_logo.url : ''}' data-title='#{community.name}' /></div><br/> " + (thank_you_msg.gsub("\n", "<br>").html_safe))
   	if community.alert_contact == "email"
       send_email_tour_user "Thank you for visiting #{community.name}", content, community.email, community
   	elsif community.alert_contact == "phone"

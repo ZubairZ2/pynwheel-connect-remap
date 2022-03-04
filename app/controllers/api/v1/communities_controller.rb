@@ -150,7 +150,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         secure_random = SecureRandom.hex
 
         payload = {tour_user_id: params[:tour_user_id], license_key: params[:license_key],secure_random: secure_random}
-        # session[params[:tour_user_id].to_i] = secure_random
+
         (TourUser.find params[:tour_user_id]).update_attributes(secure_random: secure_random)
         @token = encoded(payload)
       rescue => ex
@@ -162,7 +162,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def do_verfication verfied_by_provider, community
-    if (verfied_by_provider == "authenteq") && community.tour.tour_setting.present? && community.tour.tour_setting.charge_user_for_id_verfication
+    if (verfied_by_provider == "authenteq") && community.community_tour.tour_setting.present? && community.community_tour.tour_setting.charge_user_for_id_verfication
       true
     else
       false
@@ -176,9 +176,10 @@ class Api::V1::CommunitiesController < ActionController::Base
       @random_string = SecureRandom.hex
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       @community = Community.find params[:id]
+      
       @tours = []
-      @tours << Tour.find_by_id(params[:tour_id]) if params[:tour_id].present?
-      @tours <<  @community.tour unless @tours.present?
+      @tours <<  @community.community_tour
+
       @community.deleted_ids = []
       @tour_user.tour_key = @random_string
       @tour_user.tour_type = params[:tour_status]
@@ -191,9 +192,9 @@ class Api::V1::CommunitiesController < ActionController::Base
       send_user_arrival_email(@tour_user, @community)
       restrict_property_access_with_code(@community,@tour_user,@tour_type)
       time_zone = @community.get_time_zone()
-      if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.tour.visual_id_verification #TODO:: change to 1 month after testing
-        @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
-        @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
+      if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.community_tour.visual_id_verification #TODO:: change to 1 month after testing
+        @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime,is_authentiq_verified: true) if @community.community_tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
+        @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime,is_checkpoint_verified: true) if @community.community_tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
       end
       all_floorplans = FloorplanUnitsService.new(@community).get_floorplans
       @floorplans = all_floorplans.sort_by {|f| f.bedrooms}.uniq { |b| b.bedrooms }
@@ -203,10 +204,10 @@ class Api::V1::CommunitiesController < ActionController::Base
         @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
         @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
         @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
-        @community.tour.building_order.present? ? (@building_list =  @community.tour.building_order) : ""
+        @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
 
         @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
-        @floor_list_temp = (@floor_list - [@community.tour.starting_floor]).unshift(@community.tour.starting_floor) if @community.tour.starting_floor.present? rescue []
+        @floor_list_temp = (@floor_list - [@community.community_tour.starting_floor]).unshift(@community.community_tour.starting_floor) if @community.community_tour.starting_floor.present? rescue []
         #####
         current_time = current_community_time(@community, params)
         lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
@@ -222,7 +223,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     if tour_type != "virtual_tour" && tour_user.check_code_expiry(community) 
       tour_user.property_access_code = generate_six_digit_random_pin
       tour_user.property_access_code_generated_at = Time.now
-      tour_length_stay_limit = community&.tour&.tour_setting&.length_stay_limit
+      tour_length_stay_limit = community&.community_tour&.tour_setting&.length_stay_limit
       tour_user.restricted_property_access = true
       visitor_name = tour_user.name.titleize
       sleep 1
@@ -240,8 +241,8 @@ class Api::V1::CommunitiesController < ActionController::Base
   #TODO:: Incase if you need to create tourhistory here otherwise remove it later.
   def create_tour_history(tour_user,tour_type,community)
     tour_history = TourHistory.find_or_create_by(tour_user_id: tour_user.id) rescue TourHistory.new
-    tour_history.update_columns(community_id: community.id, tour_type: tour_type, tour_user_id: tour_user.id, tour_id: community.tour.id)
-    last_arrival = tour_user.tour_histories.where(tour_id: community.tour.id).last rescue nil
+    tour_history.update_columns(community_id: community.id, tour_type: tour_type, tour_user_id: tour_user.id, tour_id: community.community_tour.id)
+    last_arrival = tour_user.tour_histories.where(tour_id: community.community_tour.id).last rescue nil
     last_arrival.update_columns(arrived: Time.now) if last_arrival.present?
   end
 
@@ -256,10 +257,12 @@ class Api::V1::CommunitiesController < ActionController::Base
   def delete_tour_stop
     @community = Community.find params[:id]
     delete_array = params[:stop_id].split(",") if params[:stop_id].present?
-    te = @community.tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
+    te = @community.community_tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
     @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
     @community.save 
-    @tours = Tour.where(id: params[:tour_id])
+    @tours = []
+    @tours = @community.community_tour
+
     @tour_user = TourUser.find_by(id: params[:tour_user_id])
 
     @building_list = @floor_list = []
@@ -267,7 +270,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
     @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
     @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
-    @community.tour.building_order.present? ? (@building_list =  @community.tour.building_order) : ""
+    @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
 
     @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
     current_time = current_community_time(@community, params)
@@ -276,8 +279,8 @@ class Api::V1::CommunitiesController < ActionController::Base
     if @community.enable_locks and @community.multiple_locks_provider.include?("EdgeState") and edge_state.present? and @tour_user.tour_type != "virtual_tour"
       Thread.new do
         access_token = RemoteLockService.new(@community).client_credentials
-        allowed_stops = @community.tour.tour_stops.where(display_stop: true).pluck(:stop_id)
-        allowed_stops << @community.tour.id
+        allowed_stops = @community.community_tour.tour_stops.where(display_stop: true).pluck(:stop_id)
+        allowed_stops << @community.community_tour.id
         locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
         if locks.present?
           tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
@@ -301,7 +304,9 @@ class Api::V1::CommunitiesController < ActionController::Base
         te = tour_stops_ids(@tour_user, @community)
         @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
         @community.save
-        @tours = Tour.where(id: params[:tour_id])
+        @tours = []
+        @tours << @community.community_tour
+
         session["check_lock_access"+@tour_user.id.to_s] = 0
         current_time = current_community_time(@community, params)
 
@@ -310,29 +315,24 @@ class Api::V1::CommunitiesController < ActionController::Base
         @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
         @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
         @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
-        @community.tour.building_order.present? ? (@building_list =  @community.tour.building_order) : ""
+        @community.community_tour.building_order.present? ? (@building_list =  @community.community_tour.building_order) : ""
         
         @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
 
-        chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
+        chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.community_tour.id)
         @chat_count = Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
         @floor_list_temp = (@floor_list - [@tours.last.starting_floor]).unshift(@tours.last.starting_floor) if @tours.last.starting_floor.present? rescue nil
         @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}
-        chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
+        chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.community_tour.id)
         @chat_count = Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
-        # @floor_list = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if x.building.present?}.compact.flatten!
-        # non_building_floor = Floorplate.where(community_id: @community.id).order('building asc').map{|x| x.floors if !x.building.present?}.compact.flatten!
-        # @floor_list = (@floor_list.present? ? @floor_list : []) + (non_building_floor.present? ? non_building_floor : [])
 
         edge_state = EdgeState.find_by(community_id: params[:id])
-        # @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
-
         
         if @community.enable_locks and @community.multiple_locks_provider.include?("EdgeState") and edge_state.present? and @tour_user.tour_type != "virtual_tour"
           Thread.new do
             access_token = RemoteLockService.new(@community).client_credentials
             allowed_stops = allowed_stop_ids(@tour_user, @community)
-            allowed_stops << @community.tour.id
+            allowed_stops << @community.community_tour.id
             locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
             if locks.present?
               tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
@@ -360,13 +360,13 @@ class Api::V1::CommunitiesController < ActionController::Base
     if api_access or access == true
       @community = Community.find params[:community_id] if params[:community_id].present?
       @tour_user = TourUser.find params[:tour_user_id]
-      @tour = @community.tour
-      chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.tour.id)
+      @tour = @community.community_tour
+      chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.community_tour.id)
       @latest_message_id = Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
       
       stops_arr = []
       if @community.is_sitemap
-        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) :  @community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+        stops_arr = @community.mdu ? @community.community_tour.tour_stops.where(display_stop: true).order(:sort) :  @community.community_tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
       else
         @building_list = @floor_list = []
 
@@ -379,8 +379,8 @@ class Api::V1::CommunitiesController < ActionController::Base
           @building_list.each do |building|
             if @floor_list.present?
               @floor_list.each do |floor|
-                if @community.tour.sort_hash[building + ","+ floor.to_s].present?
-                  @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+                if @community.community_tour.sort_hash[building + ","+ floor.to_s].present?
+                  @community.community_tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
                     if (s_id.present?)
                       stop = (TourStop.find_by_id(s_id))
                       stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
@@ -394,7 +394,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       
       stops_arr = stops_arr.compact.map{|x| x.id}.uniq
 
-      un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.tour.id ).map{|x| x.tour_stop_id}.uniq
+      un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.community_tour.id ).map{|x| x.tour_stop_id}.uniq
       @visited_stops = []
       stops_arr.each do |val|
         if un_ordered_visited_stops.include?(val)
@@ -403,12 +403,12 @@ class Api::V1::CommunitiesController < ActionController::Base
       end
 
       # @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
-      @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
+      @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.community_tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
       
       current_time = current_community_time(@community, params)
       @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
       
-      # @tours = VisitedStop.where(tour_user_id: @tour_user.id,@community.tour.id,tour_key: last_vs.tour_key)
+      # @tours = VisitedStop.where(tour_user_id: @tour_user.id,@community.community_tour.id,tour_key: last_vs.tour_key)
       # @tours = @tours.map{|h| h}[-4..-1].to_h
     end
   end
@@ -420,7 +420,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community = Community.find_by_id params[:id]
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       if @community.present? and @tour_user.present?
-        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @community.tour.id)
+        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @community.community_tour.id)
         data = {visited_history: @visited_history, tour_user: @tour_user}
         render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
       else
@@ -439,7 +439,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       if params[:id].present? and params[:tour_user_id].present?
         @community = Community.find_by_id params[:id]
         if @community.present?
-          @tour = @community.tour
+          @tour = @community.community_tour
           @tour_user = TourUser.find_by_id params[:tour_user_id]
           
           @locks_thread = create_zerv_user(@community, @tour_user) if params[:second_time].present? and ( params[:second_time] == "false" || params[:second_time] == false )
@@ -448,7 +448,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           timezone = @community.get_time_zone()
           current_time = (timezone != "UTC") ? Time.now.in_time_zone(timezone) : (params[:current_time].present? ? params[:current_time].to_datetime : Time.now.in_time_zone(timezone))
 
-          @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
+          @limit_exceeded = (@community.community_tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.community_tour.tour_setting.limit_max_tour,@tour_user) : false)
           @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
           
           @tour_user.is_virtual_tour = ( (@in_visiting_hours ? false : true)  || @limit_exceeded)
@@ -532,10 +532,10 @@ class Api::V1::CommunitiesController < ActionController::Base
           @is_salesforce_crm = (@community.credential.present? and @community.credential.use_different_crm_provider and @community.crm_credential.present? and @community.crm_credential.crm_provider == "salesforce") ? true : false
 
           if @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
-            unless @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
+            unless @limit_exceeded = (@community.community_tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.community_tour.tour_setting.limit_max_tour,@tour_user) : false)
               unless @is_salesforce_crm
                 @scheduled_data = nearest_time_tour(@community, @tour_user, current_time)
-                if @community.tour.only_scheduled_tour
+                if @community.community_tour.only_scheduled_tour
                   if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
                     if @location_received and (@within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1))
                       @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type          # either scheduled tour is self_tour/guided_tour
@@ -580,7 +580,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           end
           @locks_thread = create_zerv_user(@community, @tour_user)
           @tour_user.save
-          @verfication_type = params[:id_verification].present? ? @community.tour.verification_type : "email"
+          @verfication_type = params[:id_verification].present? ? @community.community_tour.verification_type : "email"
         end
         @tour_user.save
       end
@@ -626,8 +626,8 @@ class Api::V1::CommunitiesController < ActionController::Base
       puts "-----------------------------------------     main thread halted    ---------------------------------------------------"
       begin
         unless thread_ref == "null"
-          available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
-          available_stops << ["tour", community.tour.id]
+          available_stops = community.community_tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+          available_stops << ["tour", community.community_tour.id]
           allowed_stops = available_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
 
           thread_ref = thread_ref.gsub("run", "sleep")

@@ -30,7 +30,7 @@ module AllowedTourStopsHelper
     end
       
 
-    allowed_stops << community.tour.id if community.tour.lock_provider == "Igloohome"
+    allowed_stops << community.community_tour.id if community.community_tour.lock_provider == "Igloohome"
     
     allowed_stops
   end

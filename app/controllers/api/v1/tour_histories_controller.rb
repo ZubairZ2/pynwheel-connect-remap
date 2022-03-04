@@ -84,12 +84,13 @@ class Api::V1::TourHistoriesController < ActionController::Base
       end
     end
   end
+
   def verify_property_access_code
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
       access_code = params[:access_code] rescue ""
-      is_property_access_enabled = @community&.tour&.tour_setting&.enable_restricted_property_access
-      tour_length_stay_limit = @community&.tour&.tour_setting&.length_stay_limit
+      is_property_access_enabled = @community&.community_tour&.tour_setting&.enable_restricted_property_access
+      tour_length_stay_limit = @community&.community_tour&.tour_setting&.length_stay_limit
       if @tour_user.property_access_code_verification(access_code,is_property_access_enabled,tour_length_stay_limit)
         @tour_user.update_columns(restricted_property_access: false)
         render :json=> {success: true, error_code: 200, message: "Code has been verified successfully."}
@@ -99,6 +100,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
       end
     end
   end
+
   def save_visitedStops params
     arr = []
     stops = params[:tour_stop_id].split(',')
@@ -126,9 +128,6 @@ class Api::V1::TourHistoriesController < ActionController::Base
         arr << false
       end
     end
-    puts "------**"*50
-    puts "save_visitedStops"
-    puts arr
   end
 
   def alerts_during_tour
@@ -174,12 +173,13 @@ class Api::V1::TourHistoriesController < ActionController::Base
       render :json=> {:success=>false, :message => "Invalid Token"}
     end
   end
+
   def check_length_stay(tour_history_id, lengthy_stay, community, tu, stop_id)
     tour_history = TourHistory.find tour_history_id
     lengthy_stay = (convert_epoch_to_datetime lengthy_stay.to_s)
     stay_time = time_difference(lengthy_stay, tour_history.arrived)
     
-    if stay_time > community.tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == false && tour_history.tour_status == "self_tour"
+    if stay_time > community.community_tour.tour_setting.length_stay_limit && tour_history.lengthy_stay_email_sent == false && tour_history.tour_status == "self_tour"
       stop = TourStop.find_by_id stop_id
       at_stop = stop.present? ? stop.name : community.name
       
@@ -199,6 +199,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
     end
   end
+
   def has_tour_user_left(community, tu, lat_long)
     if(tu.arrival_email_sent and lat_long.present? and geo_distance(lat_long[:lat],lat_long[:lng],community.latitude, community.longitude, 1)  )
       emails = community.email.gsub(" ","").split(',')
@@ -211,14 +212,16 @@ class Api::V1::TourHistoriesController < ActionController::Base
 
     end
   end
+
   def geo_distance(lat1,long1,lat2,long2,limit)
     return ((Geocoder::Calculations.distance_between([lat1,long1],[lat2,long2],options = {:units => :km}) > limit) rescue true)
   end
+
   def time_difference(lengthy_stay, arrival_time)
     ((lengthy_stay - arrival_time) / 1.minute).round
   end
+
   def change_id_selfie_status
-    puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
       if params[:tour_user_id].present? && params[:id_selfie_mismatch_status].present?
@@ -253,12 +256,15 @@ class Api::V1::TourHistoriesController < ActionController::Base
   end
 
   private
+
   def base_url
     Rails.env.development? ? "localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/") 
   end
+
   def convert_epoch_to_datetime epoch_str
     Time.strptime(epoch_str, '%s')
   end
+  
   def tour_history_params
     params.permit(:arrived, :left, :lengthy_stay, :id_mismatch, :abandoned_tour_at_stop, :tour_user_id, :community_id)
   end

@@ -2,7 +2,7 @@ class TourUserCustomization
   def initialize(community, tour_user)
     @community = community
     @tour_user = tour_user
-    @c_tour = @community.tour
+    @c_tour = @community.community_tour
     @user_customized_tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
   end
 
@@ -19,7 +19,7 @@ class TourUserCustomization
   private
 
   def is_customization_enabled
-    @community.tour&.tour_setting&.enable_tour_customization
+    @community.community_tour&.tour_setting&.enable_tour_customization
   end
 
   def add_tour_stops_for_tour_user t_tour
@@ -59,8 +59,8 @@ class TourUserCustomization
     @building_list.each do |building|
       if @floor_list.present?
         @floor_list.each do |floor|
-          if @community.tour.sort_hash[building + ","+ floor.to_s].present?
-            @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+          if @community.community_tour.sort_hash[building + ","+ floor.to_s].present?
+            @community.community_tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
               if (s_id.present?)
                 stop = (TourStop.find_by_id(s_id))
                 new_stop = TourStop.where(stop_id: stop.stop_id, tour_id: t_tour.id).last if stop.present?

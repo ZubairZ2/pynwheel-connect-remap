@@ -1,7 +1,7 @@
 module SchedualToursHelper
   def get_user_tour_stops (community)
-    if community.present? && community.tour.present?
-      tour_stops = community.tour.tour_stops
+    if community.present? && community.community_tour.present?
+      tour_stops = community.community_tour.tour_stops
       unit_ids = tour_stops.where(stop_type: "unit").pluck(:stop_id) 
       non_available_stops = unit_ids.present? ? Unit.where(id: unit_ids, available: false).ids : []
       tour_stops.where.not(stop_id: non_available_stops).order(:sort)
@@ -119,7 +119,7 @@ module SchedualToursHelper
   end
 
   def get_visible_tour_stops(community, tour)
-    tour_stops = community.tour.tour_stops
+    tour_stops = community.community_tour.tour_stops
     if tour.present? && tour.stops_list.present?
       tour_stops.where(id: tour.stops_list).pluck(:id)
     else

@@ -322,7 +322,7 @@ module DweloDevicesHelper
       building_starting_points = BuildingStartingPoint.where(id: building_starting_point_ids, lock_provider: "Latch").includes(:latch_locks)
 
       locks_data = []
-      locks_data << community.tour.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.tour.latch_locks.present?
+      locks_data << community.community_tour.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.community_tour.latch_locks.present?
 
       units.each do |unit|
         if unit.door.present?
@@ -389,7 +389,7 @@ module DweloDevicesHelper
       end
     end
 
-    allowed_stops << community.tour.id if community.tour.lock_provider == type
+    allowed_stops << community.community_tour.id if community.community_tour.lock_provider == type
     allowed_stops
   end
 
@@ -403,7 +403,7 @@ module DweloDevicesHelper
       end
     end
 
-    allowed_stops << ["tour", community.tour.id] if community.tour.lock_provider == "Zerv"
+    allowed_stops << ["tour", community.community_tour.id] if community.community_tour.lock_provider == "Zerv"
     
     allowed_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
   end
@@ -464,7 +464,7 @@ module DweloDevicesHelper
 
     today_scheduled_tours = get_scheduled_tours(community.id, tour_user.id, current_time)
     if tours_exist = today_scheduled_tours.present?
-      on_time_tour = is_tour_on_time(current_time, today_scheduled_tours, community.tour.grace_period)
+      on_time_tour = is_tour_on_time(current_time, today_scheduled_tours, community.community_tour.grace_period)
       unless on_time_tour.present?
 
         time_status , nearest_tour = tour_time_status(today_scheduled_tours, current_time)
@@ -476,7 +476,7 @@ module DweloDevicesHelper
 
   def check_guest_limit(community, property_time, limit, tour_user)
     
-    if community.tour.tour_setting.do_limit_max_tour
+    if community.community_tour.tour_setting.do_limit_max_tour
       return (limit <= (app_usage(community, property_time, limit, tour_user) + total_scheduled_tour(community,property_time, limit, tour_user)) ? true : false)
     else
       return false
@@ -498,7 +498,7 @@ module DweloDevicesHelper
     unless geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude, 1)
       return 0
     else
-      return TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, tour_id: community.tour.id).where('tour_status != ? and arrived > ?', "virtual_tour", (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude, 1)) }.compact.count
+      return TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, tour_id: community.community_tour.id).where('tour_status != ? and arrived > ?', "virtual_tour", (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude, 1)) }.compact.count
     end    
   end
 

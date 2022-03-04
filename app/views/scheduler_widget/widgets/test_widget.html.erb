@@ -225,7 +225,7 @@
               <%= hidden_field_tag :community_id, @community_id %>
               <%= hidden_field_tag :user_time_zone, value: nil %>
 
-              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_first_name.nil? ? true : current_community.tour.tour_setting.show_first_name) %>
+              <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_first_name.nil? ? true : current_community.community_tour.tour_setting.show_first_name) %>
                 <div class="row mb-20 mt-20">
                   <div class="w-35 unschedule_tour">
                     <%= f.radio_button :property_tour_type, 'unscheduled_self_tour', :checked => (@schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "unscheduled_self_tour") || @schedule_tour.property_tour_type == nil ? true : false, :class => "select_property_tour", :id => "unscheduled_self_tour" %> 
@@ -245,7 +245,7 @@
                       </span>
                     </i>
                   </div>
-                  <% if current_community.tour.tour_setting.allow_virtual_tour %> 
+                  <% if current_community.community_tour.tour_setting.allow_virtual_tour %> 
                     <div class="w-20-for-check">
                       <%= f.radio_button :property_tour_type, 'remote_tour', :id => "remote_tour", :class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "remote_tour" ? true : false  %> 
                       <%= label :select_property_tour, 'Tour remotely', value: 'remote_tour', for: "remote_tour" %>
@@ -293,7 +293,7 @@
                 <%= f.email_field :email, class: "form-control", placeholder: "Email Address", id: "tour_user_email", required: 'required' %>
                 <span class="reshedule-notification" style="display: <%= @tour_user.id.present? && !@reschedule_tour && @schedule_tour.is_tour_completed ? "block" : "none" %>">A user with this email address already has a scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
               </div>
-              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_phone.nil? ? true : current_community.tour.tour_setting.show_phone) %>
+              <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_phone.nil? ? true : current_community.community_tour.tour_setting.show_phone) %>
                 <div class="form-group w-20 w-100">
                   <label data-toggle="tooltip" data-placement="top" title="(Default US)">Country Code <span class="asterisk_color" >*</span></label> 
                   <select name="country_code" class="form-control select_number" id="country_code">
@@ -310,8 +310,8 @@
               <div class="clearfix"></div>
 
               <% if @credit_card_required %>
-                <%= hidden_field_tag :verification_type_authenteq, ((@community.tour.present? and @community.tour.tour_setting.present?) ? (@community.tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.tour.present? ? @community.tour.visual_id_verification : true)  && (@community.tour.verification_type == "authenteq") %>
-                <% if ((@community.tour.present? and @community.tour.tour_setting.present?) ? (@community.tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.tour.present? ? @community.tour.visual_id_verification : true)  && (@community.tour.verification_type == "authenteq") && @schedule_tour.property_tour_type == "scheduled_tour" %>
+                <%= hidden_field_tag :verification_type_authenteq, ((@community.community_tour.present? and @community.community_tour.tour_setting.present?) ? (@community.community_tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.community_tour.present? ? @community.community_tour.visual_id_verification : true)  && (@community.community_tour.verification_type == "authenteq") %>
+                <% if ((@community.community_tour.present? and @community.community_tour.tour_setting.present?) ? (@community.community_tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.community_tour.present? ? @community.community_tour.visual_id_verification : true)  && (@community.community_tour.verification_type == "authenteq") && @schedule_tour.property_tour_type == "scheduled_tour" %>
                   <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.</p>
                 <% else %>
                   <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)</p>
@@ -346,7 +346,7 @@
                 </div>
               <% end %>
 
-              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_bedroom.nil? ? true : current_community.tour.tour_setting.show_desired_bedroom )  %>
+              <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_desired_bedroom.nil? ? true : current_community.community_tour.tour_setting.show_desired_bedroom )  %>
                 <div class="w-left-50">
                   <label>Desired Number of Bedrooms</label>
                   <span class="hidden" id="bedroom"></span>
@@ -358,7 +358,7 @@
                 <span class="hidden" id="hidden_tour_type"></span>
                 <%= hidden_field_tag :hidden_tour_type,"", :class=>"form-control"%>
               </div>
-              <% if current_community.tour.tour_setting.nil? ? true : (current_community.tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.tour.tour_setting.show_desired_move_in_date) %>
+              <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.community_tour.tour_setting.show_desired_move_in_date) %>
               <div class="form-group w-right-50">
                 <label>Desired Move-in Date <span class="asterisk_color" >*</span></label>
                 <span class="hidden" id="move-in-date"></span>
@@ -492,7 +492,7 @@
           </section>
           <section class="mt-15">
             <div class="container how_it_works">
-                <%= render 'shared/instruction_card', :obj => {property_tour_type: property_tour_type,community_name: community_name,tour_type: tour_type,id_verification: @community.tour.visual_id_verification,property_access: @community.tour.tour_setting.enable_restricted_property_access}%>
+                <%= render 'shared/instruction_card', :obj => {property_tour_type: property_tour_type,community_name: community_name,tour_type: tour_type,id_verification: @community.community_tour.visual_id_verification,property_access: @community.community_tour.tour_setting.enable_restricted_property_access}%>
             </div>
           </section>
       </div>
@@ -511,7 +511,7 @@
       var knock_available_time_slots;
       var is_knock_community = false;
       var knock_tour_types = []
-      var schedule_tour_only = "<%= @community.tour.only_scheduled_tour %>";
+      var schedule_tour_only = "<%= @community.community_tour.only_scheduled_tour %>";
       var community_id = <%= raw @community.id %>;
       var form_for_reschedule_tour = "<%= @reschedule_tour %>";
       var property_tour_type = "<%= @schedule_tour.property_tour_type %>"

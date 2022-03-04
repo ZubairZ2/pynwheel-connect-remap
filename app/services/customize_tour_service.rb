@@ -17,13 +17,9 @@ class CustomizeTourService
     end
   end
 
-  def get_community_tour
-    Tour.where(community_id: @community.id, tour_user_id: nil).last
-  end
-
   private
 
   def is_customization_enabled
-    @community.tour&.tour_setting&.enable_tour_customization
+    @community.community_tour&.tour_setting&.enable_tour_customization
   end
 end

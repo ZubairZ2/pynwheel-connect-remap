@@ -32,10 +32,10 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         @is_salesforce_crm = @community.is_salesforce_community?
 
         if @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
-          unless @limit_exceeded = (@community.tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.tour.tour_setting.limit_max_tour,@tour_user) : false)
+          unless @limit_exceeded = (@community.community_tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.community_tour.tour_setting.limit_max_tour,@tour_user) : false)
             unless @is_salesforce_crm
               @scheduled_data = nearest_time_tour(@community, @tour_user, current_time)
-              if @community.tour.only_scheduled_tour
+              if @community.community_tour.only_scheduled_tour
                 if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
                   if @location_received and @within_one_km
                     @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type          # either scheduled tour is self_tour/guided_tour
@@ -80,7 +80,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         end
 
         @tour_user.save
-        @verfication_type = params[:id_verification].present? ? @community.tour.verification_type : "email"
+        @verfication_type = params[:id_verification].present? ? @community.community_tour.verification_type : "email"
       end
     end
   end
@@ -165,26 +165,6 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         @floor_list_temp = Floors.new(@community, @tour_user).get_community_temp_floors(@floor_list)
         @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}       
         @chat_count = chat_room_count(@tour_user, @community)
-
-        # edge_state = EdgeState.find_by(community_id: params[:id])
-        
-        # if @community.enable_locks and @community.multiple_locks_provider.include?("EdgeState") and edge_state.present? and @tour_user.tour_type != "virtual_tour"
-        #   Thread.new do
-        #     access_token = RemoteLockService.new(@community).client_credentials
-        #     allowed_stops = allowed_stop_ids(@tour_user, @community)
-        #     allowed_stops << @community.tour.id
-        #     locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
-        #     if locks.present?
-        #       tour_user_guest_id = @tour_user.as_guests.where(community_id: @community.id).last.guest_id rescue ''
-        #       locks.each do |lock|
-        #         RemoteLockService.new(@community).grant_access(access_token, tour_user_guest_id ,lock[0] ,lock[1])
-        #       end
-        #     end
-        #   end
-        # else
-        #   @dwelo_guest_id = @tour_user.as_guests.where(dwelo_guest: true).first.guest_id rescue nil
-        # end
-        # check_zerv_user_existance_again(@community, @tour_user, params[:locks_thread_ref])
       else
         render :json=> {:success=>false, :message => "Community or tour user not found"}
       end
@@ -196,7 +176,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   private
 
   def chat_room_count tour_user, community
-    chatroom = Chatroom.find_by(tour_user_id: tour_user.id, tour_id: community.tour.id)
+    chatroom = Chatroom.find_by(tour_user_id: tour_user.id, tour_id: community.community_tour.id)
     Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
   end
 
@@ -208,9 +188,9 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   end
 
   def update_verification_attributes
-    if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.tour.visual_id_verification
-      @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime, is_authentiq_verified: true) if @community.tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
-      @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime, is_checkpoint_verified: true) if @community.tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
+    if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.community_tour.visual_id_verification
+      @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime, is_authentiq_verified: true) if @community.community_tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
+      @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime, is_checkpoint_verified: true) if @community.community_tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
     end
   end
 
@@ -238,7 +218,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   end
 
   def do_verfication verfied_by_provider, community
-    (verfied_by_provider == "authenteq") && community.tour.tour_setting.present? && community.tour.tour_setting.charge_user_for_id_verfication
+    (verfied_by_provider == "authenteq") && community.community_tour.tour_setting.present? && community.community_tour.tour_setting.charge_user_for_id_verfication
   end
 
   def check_authorization

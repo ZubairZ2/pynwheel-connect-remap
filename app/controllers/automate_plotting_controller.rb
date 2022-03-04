@@ -5,7 +5,7 @@ class AutomatePlottingController < ApplicationController
     @community = Community.find params[:community_id]
     @current_locks_provider = existing_locks_provider(@community)
     @all_locks = all_locks(@community)
-    @tour = @community.tour
+    @tour = @community.community_tour
     @tour_stops = @tour&.tour_stops.visible.order('sort ASC')
     @precedence_arr = @tour_stops.pluck(:stop_id, :stop_type) # due to sortable gem its sorted so we fetch in a line 
     @planned_to_visit_units_and_doors_ids     = []
@@ -13,7 +13,7 @@ class AutomatePlottingController < ApplicationController
     if @community.is_sitemap
       fetch_data_for_sitemap
       add_breadcrumb "SiteMap", community_sitemaps_path(current_community)
-    else 
+    else
       sorted_building = @tour.building_order
       @building_list = @community.fetch_building_list(sorted_building)
       if @building_list.count  < 2 # means there is only building in floorplate community
@@ -32,7 +32,7 @@ class AutomatePlottingController < ApplicationController
       path_object_in_order = begin; return_path_for_sitemap(params[:community_id], params[:path_type]); rescue; []; end
       response = {path_object: path_object_in_order.to_json}
     else
-      sorted_building = community.tour.building_order
+      sorted_building = community.community_tour.building_order
       @building_list = @community.fetch_building_list(sorted_building)
       if @building_list.count  < 2 # means there is only one building in floorplate community
         path_object_in_order, floor_ids = begin; return_path_for_floorplate(params[:community_id], params[:path_type]); rescue; []; end

@@ -22,7 +22,7 @@ class Api::V1::ScheduleToursController < ActionController::Base
 
   def tour_types
     @tour_types ||= []
-    tour_setting = @community.tour&.tour_setting
+    tour_setting = @community.community_tour&.tour_setting
     @tour_types << "self_tour" if tour_setting&.allow_self_tour
     @tour_types << "guided_tour" if tour_setting&.allow_guided_tour
     @tour_types << "virtual_tour" if tour_setting&.allow_virtual_tour
@@ -34,7 +34,7 @@ class Api::V1::ScheduleToursController < ActionController::Base
   end
 
   def tour_dates
-    tour_setting = @community.tour&.tour_setting
+    tour_setting = @community.community_tour&.tour_setting
     allow_self_tour = tour_setting&.allow_self_tour
     allow_guided_tour = tour_setting&.allow_guided_tour
     allow_virtual_tour = tour_setting&.allow_virtual_tour
@@ -74,7 +74,7 @@ class Api::V1::ScheduleToursController < ActionController::Base
   end
 
   def time_slots
-    @stepping = @community.tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
+    @stepping = @community.community_tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.community_tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.community_tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.community_tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
     @tour_type = params['tour_type']
     # binding.pry
     @tour_date = params['tour_date']

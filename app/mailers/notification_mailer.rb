@@ -8,7 +8,7 @@ class NotificationMailer < ApplicationMailer
 		@android_link = (Company.find @community.company_id).name.downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
     	@property_tour_type = schedule_tour.property_tour_type if schedule_tour.present?
 		@tour_type = schedule_tour.tour_type if schedule_tour.present?
-		@id_verification = @community.tour.visual_id_verification
+		@id_verification = @community.community_tour.visual_id_verification
 		schedSelfTourData = SchedulerWidgetConstants::SCHED_SELF_TOUR_DATA
 		schedGuidedTourData = SchedulerWidgetConstants::SCHED_GUIDED_TOUR_DATA
 		@unschedSelfTour = SchedulerWidgetConstants::UNSCHED_SELF_TOUR_DATA
