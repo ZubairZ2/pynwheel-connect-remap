@@ -47,8 +47,8 @@
                   = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
               - else
                 = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
-                - if @community.tour.x_plot.to_i + @community.tour.y_plot.to_i > 0
-                  = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.tour.x_plot}px; top:#{@community.tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.tour.id}/resetStartingPoint"
+                - if @community.community_tour.x_plot.to_i + @community.community_tour.y_plot.to_i > 0
+                  = link_to image_tag("/assets/star.png", style: 'width:15px;'), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "m_", :style => "left:#{@community.community_tour.x_plot}px; top:#{@community.community_tour.y_plot}px; position:absolute;", "data-name" => "plot", "data-target" => "#confirm-delete", "data-toggle" => "modal", "data-href" => "/communities/#{@community.id}/tours/#{@community.community_tour.id}/resetStartingPoint"
               - community_units = @community_units
               - units_by_plotted_doors_order = @community_units.sort_by {|obj| obj.door.present? ? obj.door.id : obj.id}
               - coordinates_array = []
@@ -158,7 +158,7 @@
   var units_info = #{@unit_with_door.to_json.html_safe};
   var amenities_info = #{@amenity_with_doors.to_json.html_safe};
   // var access_points = #{@access_points.to_json.html_safe};
-  var building_starting_point = {x_plot: #{@community.tour.x_plot.to_json.html_safe}, y_plot: #{@community.tour.y_plot.to_json.html_safe} };
+  var building_starting_point = {x_plot: #{@community.community_tour.x_plot.to_json.html_safe}, y_plot: #{@community.community_tour.y_plot.to_json.html_safe} };
   var left_margin = #{raw @left_margin}
   var right_margin = #{raw @right_margin}
   var community_id = #{params[:community_id]};

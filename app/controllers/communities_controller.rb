@@ -67,45 +67,31 @@ class CommunitiesController < ApplicationController
 
   def edit
     @com_id = current_community.id
-    @chatroom = params[:tour_user_id].present? ? show_chat_modal(params[:tour_user_id],current_community.tour.id) : Chatroom.new
+    @chatroom = params[:tour_user_id].present? ? show_chat_modal(params[:tour_user_id],current_community.community_tour.id) : Chatroom.new
     @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
+
   def settings_page
     authorize! :edit_settings_page, current_user
-    tour = @community.create_tour if @community.tour.nil?	
+    tour = @community.create_tour if @community.community_tour.nil?	
     tour.create_tour_setting if tour.present? and tour.tour_setting.nil?
     add_breadcrumb "Companies", companies_path(current_company)
     add_breadcrumb "Communities", company_communities_path(current_company)
     add_breadcrumb "Settings"
     @community = Community.find params[:community_id]
     @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
-    # if params[:default_community_id].present?
-    #   dwelo_account =Dwelo.find_by(community_id: @community.id) rescue nil
-    #   unless dwelo_account.present?
-    #     @dwelo = Dwelo.create!(client_id: "GLAeaxdUJb64yxWwQbzGGGEmnPAW4DaP", client_secret: "wr5RZQfGBqqWyVWLHU2gGWW2g9Qmz2BWSH94yNhfuuZ6GMet" ,community_id: @community.id, default_community_id: params[:default_community_id])
-    #     load_data(@dwelo.default_community_id)
-    #   end
-    # end
   end
+
   def update_web_maps_configurations
     ThreeDMapsConfiguration.find_or_initialize_by(:community_id => params[:community_id]).update!(maps_configuration_params)
     sleep(1)
   end
+
   def update_billing_rate
-    # @community = Community.find(params[:community_id]) rescue nil
-    # if @community.company.name.downcase == "lincoln"
-      @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour])
-    # elsif @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
-    #   @community.update!(dwelo_billing_rate: params[:community][:dwelo_billing_rate])
-    # elsif params[:community][:touchscreen_app] == 1 and params[:community][:self_tour] == 1
-    #   @community.update!(billing_rate_maps: params[:community][:billing_rate_maps])
-    # elsif params[:community][:touchscreen_app] == 1 and params[:community][:self_tour] == 0
-    #   @community.update!(billing_rate_touch: params[:community][:billing_rate_touch])
-    # elsif params[:community][:touchscreen_app] == 0 and params[:community][:self_tour] == 1
-    #   @community.update!(billing_rate_selftour: params[:community][:billing_rate_selftour])
-    # end
+    @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour])
   end
+
   def update
     if params[:community][:billing_rate_touch].present? or params[:community][:lincoln_billing_rate].present? or params[:community][:dwelo_billing_rate].present? or params[:community][:billing_rate_selftour].present? or params[:community][:billing_rate_maps].present? or params[:community][:billing_rate_for_both].present?
       @community.update!(lincoln_billing_rate: params[:community][:lincoln_billing_rate], dwelo_billing_rate: params[:community][:dwelo_billing_rate],billing_rate_maps: params[:community][:billing_rate_maps],billing_rate_touch: params[:community][:billing_rate_touch],billing_rate_selftour: params[:community][:billing_rate_selftour], billing_rate_for_both: params[:community][:billing_rate_for_both])
@@ -129,8 +115,8 @@ class CommunitiesController < ApplicationController
     end
     if params["verification_type"].present?
       begin
-        @community.tour.verification_type = params["verification_type"]
-        @community.tour.save
+        @community.community_tour.verification_type = params["verification_type"]
+        @community.community_tour.save
       rescue Exception => e
 
       end
@@ -182,27 +168,19 @@ class CommunitiesController < ApplicationController
       else
         inner_check = true
 
-        if @community.company_id != params[:community][:company_id].to_i
-          # @community.community_group_id = nil
-        end
         params[:community][:billing_month] = params[:community][:billing_month] if params[:community][:billing_month].present?
         @community.date_activated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "0")
         @community.date_inactivated = Date.today if (params[:community][:locked].present? && params[:community][:locked] == "1")
         params[:community][:billing_month] = params[:community][:billing_month][0] if params[:community][:billing_month].present?
         if params[:community][:show_map].present?
           if @community.show_map == false &&  params[:community][:show_map] == "1"
-            ts = TourStop.where(tour_id: @community.tour.id, latitude: nil,longitude: nil)
-            ts1 = TourStop.where(tour_id: @community.tour.id, latitude: 0,longitude: 0)
+            ts = TourStop.where(tour_id: @community.community_tour.id, latitude: nil,longitude: nil)
+            ts1 = TourStop.where(tour_id: @community.community_tour.id, latitude: 0,longitude: 0)
             ts.destroy_all if ts.present?
             ts1.destroy_all if ts1.present?
-
-            # if TourStop.where(tour_id: @community.tour.id, latitude: 0,longitude: 0).present?
-            #   format.html { redirect_to community_settings_page_path(current_community),error: 'Please remove tour stop that are not plotted on property map.' }
-            #   flash[:error] = "Please remove tour stop that are not plotted on property map."
-            #   inner_check = false
-            # end
           end
         end
+
         if inner_check
           if @community.update(community_params)
             
@@ -245,7 +223,6 @@ class CommunitiesController < ApplicationController
     redirect_to community_design_index_path(current_community),notice: 'Community will clone within few seconds.'
   end
 
-
   def alert_message
     if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
       '<div class="alert alert-success">Credentials added successfully.</div>'
@@ -259,8 +236,6 @@ class CommunitiesController < ApplicationController
       '<div class="alert alert-success">Home Page Logo updated successfully.</div>'
     elsif params[:community][:theme_name].present?
       '<div class="alert alert-success">Theme selected successfully.</div>'
-      # elsif params[:overlay_tab].present?
-      #   '<div class="alert alert-success">Expressionist options selected successfully.</div>'
     elsif params[:global_navigation_tab].present?
       '<div class="alert alert-success">Global Navigation options selected successfully.</div>'
     elsif params[:filter_panel_tab].present?
@@ -288,19 +263,11 @@ class CommunitiesController < ApplicationController
     end
   end
   def make_cordinate    
-    # address = Geocoder.coordinates(params[:address])
     @community.update_attributes(latitude: params[:lat], longitude: params[:long]) rescue ""
     @community.neighborhood.update_attributes(latitude: address[0], longitude: address[1]) rescue ""
     render :json=>{"cord"=> "ok" }
   end
-  def change_expressionist_default
-    # d = Community.find(params[:community_id]).design
-    # com = Community.find(params[:community_id]).design.expressionist
-    # com.display_button_on_bg_color = true
-    # d.filter_panel.filter_panel_buttons_show_backround_color = true
-    # d.save
-    # com.save
-  end
+
   def destroy
     idd = @community.id
     design_id = @community.design.id if @community.design.present?
@@ -428,25 +395,23 @@ class CommunitiesController < ApplicationController
   def account_report
     @community = Community.find(params[:community_id])
     workbook = WriteXLSX.new("public/AccountReport/AccountReport.xlsx")
-    # workbook = WriteXLSX.new("public/Reports/intagleo report "+ filenam +".xlsx")
-    zip_data = write_account_report(workbook)
-    
-    ###### redirect_to download_sheet_reports_path(zip_data,filename)
+    zip_data = write_account_report(workbook)    
     send_data(zip_data, :type => 'application/zip', :filename => "AccountReport.zip")
-
-    # send_data("public/AccountReport.xlsx", :disposition => 'attachment',:charset => "utf-8", :type => 'application/xml', :filename => "grgrgr.xlsx")
   end
+
   def authenteq_report
     @community = Community.find(params[:community_id])
     workbook = WriteXLSX.new("public/AuthenteqReport/AuthenteqReport.xlsx")
     zip_data = write_authenteq_report(workbook)
     send_data(zip_data, :type => 'application/zip', :filename => "AuthenteqReport.zip")
   end
+
   def tour_feedback_report
     workbook = WriteXLSX.new("public/STFeedbackReport/STFeedbackReport.xlsx")
     zip_data = write_feedback_report(workbook)
     send_data(zip_data, :type => 'application/zip', :filename => "STFeedbackReport.zip")
   end
+
   def realpage_load_pricing_data
     @community = Community.find params[:community_id]
     @community.connect_to_pricing(@community)
@@ -454,8 +419,8 @@ class CommunitiesController < ApplicationController
     @community.save
     flash[:notice] = "Data is loading. Please refresh after time."
     redirect_to community_settings_path(current_community)
-
   end
+
   def show_realpage_pricing_data
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
@@ -466,8 +431,6 @@ class CommunitiesController < ApplicationController
       flash[:error] = "Please enter credentials in settings before importing data."
       redirect_to community_settings_path(:community_id=>@community.id)
     end
-
-
   end
 
   def credentials
@@ -477,6 +440,7 @@ class CommunitiesController < ApplicationController
     end
     @crm_credential = @community.crm_credential.present? ? @community.crm_credential : @community.create_crm_credential
   end
+
   def update_imported_data
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
@@ -518,6 +482,7 @@ class CommunitiesController < ApplicationController
     end
 
   end
+
   def selected_communities
     user = User.find params['user'].to_i
     if params.has_key?('company_name')
@@ -539,10 +504,9 @@ class CommunitiesController < ApplicationController
     current_community.units.destroy_all
     current_community.floorplans.destroy_all
 
-    stop_id = current_community.tour.tour_stops.where(stop_type: "unit").destroy_all
+    stop_id = current_community.community_tour.tour_stops.where(stop_type: "unit").destroy_all
     VisitedStop.where(tour_stop_id: stop_id.pluck(:id)).destroy_all
 
-    # VisitedStop.where(tour_id: current_community.tour.id, )
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
     if @community.credentials_are_present?
@@ -560,6 +524,7 @@ class CommunitiesController < ApplicationController
       redirect_to community_settings_path(current_community)
     end
   end
+
   def import_page
     add_breadcrumb "Settings", "##"
     add_breadcrumb "Import Unit Data", community_import_page_path(current_community)
@@ -666,7 +631,6 @@ class CommunitiesController < ApplicationController
     end
   end
 
-
   def add_plots
     units = Unit.where(community_id: params[:id], provider_unit_id: JSON.parse(params[:unit_provider_ids]))
     units.update_all(x_plot: params[:add_horizontal_position],y_plot: params[:add_vertical_position])
@@ -709,7 +673,7 @@ class CommunitiesController < ApplicationController
   end
   def save_tour_settings
     @community = Community.find params[:community_id]
-    @tour = @community.tour
+    @tour = @community.community_tour
     @tour_setting = @tour.tour_setting
     unless params[:community].present? && params[:community][:optional_mails].present?    
       if params[:widget_settings]
@@ -736,7 +700,6 @@ class CommunitiesController < ApplicationController
         @community.show_tour_page = params[:show_tour_page].present? ? params[:show_tour_page] : false
         @community.show_camera_button = params[:show_camera_button].present? ? true : false
         @community.scheduler_widget = params[:scheduler_widget].present? ? true : false
-        # @community.tour.update_attributes(max_tour_users: params[:max_tour_users], max_virtual_tour_users: params[:max_virtual_tour_users],max_self_tour_users: params[:max_self_tour_users],max_guided_tour_users: params[:max_guided_tour_users])
         @community.automate_unit_stop = params[:automate_unit_stop].present? ? params[:automate_unit_stop] : false
         @tour.enable_auto_zoom = params[:enable_auto_zoom].present? ? params[:enable_auto_zoom] : false
         @tour.max_virtual_tour_users = params[:max_virtual_tour_users]
@@ -756,7 +719,7 @@ class CommunitiesController < ApplicationController
       @tour_setting.save
 
     else
-      @tour_setting = @community.tour.tour_setting
+      @tour_setting = @community.community_tour.tour_setting
       @tour_setting.enable_header_footer = params[:enable_header_footer].present? ? true : false
       @tour_setting.email_header_color = params[:email_header_color] if params[:email_header_color].present?
       @tour_setting.email_footer_color = params[:email_footer_color] if params[:email_footer_color].present?

@@ -12,7 +12,7 @@ json.tours @tours do |tour|
   json.is_sitemap @community.is_sitemap
   json.show_camera_button @community.show_camera_button
   json.show_notepad_button @community.show_notepad_button
-  json.property_access @community&.tour&.tour_setting&.enable_restricted_property_access ? @tour_user.restricted_property_access : false
+  json.property_access @community&.community_tour&.tour_setting&.enable_restricted_property_access ? @tour_user.restricted_property_access : false
   json.property_access_code @tour_user.property_access_code.present? ? @tour_user.property_access_code : "" 
   
   json.tour_setting do
@@ -43,7 +43,7 @@ json.tours @tours do |tour|
     if scheduled_tour_stops.present?
       stops_arr = @community.mdu ? scheduled_tour_stops : scheduled_tour_stops.where.not(stop_type: "unit").order(:sort)
     else
-      stops_arr =  @community.mdu ? @community.tour.tour_stops.where(display_stop: true).order(:sort) : @community.tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
+      stops_arr =  @community.mdu ? @community.community_tour.tour_stops.where(display_stop: true).order(:sort) : @community.community_tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
     end
   else
 
@@ -56,8 +56,8 @@ json.tours @tours do |tour|
         @floor_list_loop = (@floor_list_temp.present? && add_start) ? @floor_list_temp : @floor_list
         add_start = false
         @floor_list_loop.each do |floor|
-          if @community.tour.sort_hash[building + ","+ floor.to_s].present?
-            @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+          if @community.community_tour.sort_hash[building + ","+ floor.to_s].present?
+            @community.community_tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
               if (s_id.present?)
                 stop = (TourStop.find_by_id(s_id))
                 stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next

@@ -31,10 +31,10 @@ class AutomateUnitStop < ApplicationJob
 
 
 
-              stop = TourStop.find_by(tour_id: community.tour.id, stop_id: u.id,stop_type: "unit")
+              stop = TourStop.find_by(tour_id: community.community_tour.id, stop_id: u.id,stop_type: "unit")
               unless stop.present?
                 if u.available
-                  TourStop.create(name: u.marketing_name,tour_id: community.tour.id, latitude:u.x_plot, longitude: u.y_plot, stop_id: u.id, stop_type: "unit",display_stop: false) if (u.x_plot + u.y_plot > 1)
+                  TourStop.create(name: u.marketing_name,tour_id: community.community_tour.id, latitude:u.x_plot, longitude: u.y_plot, stop_id: u.id, stop_type: "unit",display_stop: false) if (u.x_plot + u.y_plot > 1)
                 else
 
                   stop.destroy unless u.available
@@ -48,7 +48,7 @@ class AutomateUnitStop < ApplicationJob
 
 
             else
-              stop = TourStop.find_by(tour_id: community.tour.id, stop_id: u.id,stop_type: "unit")
+              stop = TourStop.find_by(tour_id: community.community_tour.id, stop_id: u.id,stop_type: "unit")
               if stop.present?
                 stop.display_stop = false
                 stop.save
@@ -58,7 +58,7 @@ class AutomateUnitStop < ApplicationJob
 
 
           else
-            stop = TourStop.find_by(tour_id: community.tour.id, stop_id: u.id,stop_type: "unit")
+            stop = TourStop.find_by(tour_id: community.community_tour.id, stop_id: u.id,stop_type: "unit")
             if stop.present?
               stop.display_stop = false
               stop.save
@@ -72,7 +72,7 @@ class AutomateUnitStop < ApplicationJob
 
 
       end
-      stop = TourStop.find_by(tour_id: community.tour.id, stop_id: soonest_unit.id,stop_type: "unit") rescue nil
+      stop = TourStop.find_by(tour_id: community.community_tour.id, stop_id: soonest_unit.id,stop_type: "unit") rescue nil
       if stop.present?
         stop.display_stop = true
         stop.save

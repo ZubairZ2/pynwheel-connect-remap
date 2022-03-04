@@ -113,7 +113,7 @@ module CommunitiesHelper
     worksheet.write(0, 6, "Tour Time UTC", format)
     worksheet.write(0, 7, "Id Verification Provider", format)
     community = current_community
-    tour_histories = TourHistory.where(tour_id: community.tour.id, verified_by: "authenteq", created_at: (Date.today - 30.days)..Date.today + 1)
+    tour_histories = TourHistory.where(tour_id: community.community_tour.id, verified_by: "authenteq", created_at: (Date.today - 30.days)..Date.today + 1)
 
     tour_histories.each do |th|
       if th.present?
@@ -145,7 +145,7 @@ module CommunitiesHelper
   end
 
   def check_tour_user_card_info(community, tour_user)
-    community.tour.verification_type == "authenteq" && community.tour.tour_setting.charge_user_for_id_verfication && community.tour.visual_id_verification && tour_user.strip_customer_id.blank?
+    community.community_tour.verification_type == "authenteq" && community.community_tour.tour_setting.charge_user_for_id_verfication && community.community_tour.visual_id_verification && tour_user.strip_customer_id.blank?
   end
 
   def check_visual_id_verification(tour_user, community)
@@ -156,8 +156,8 @@ module CommunitiesHelper
     is_checkpoint_verified = tour_user.is_checkpoint_verified
     time_zone = community.get_time_zone()
     current_tour_time = params[:current_time] if params[:current_time].present?
-    if community.tour.visual_id_verification && tour_type != "virtual_tour"
-      if community.tour.verification_type == "authenteq"
+    if community.community_tour.visual_id_verification && tour_type != "virtual_tour"
+      if community.community_tour.verification_type == "authenteq"
         if !is_authentiq_verified
           true
         elsif is_authentiq_verified and (current_tour_time > (authentiq_verified_at + 30.days))
@@ -168,7 +168,7 @@ module CommunitiesHelper
           false
         end
       else
-        if community.tour.verification_type == "check_point_id"
+        if community.community_tour.verification_type == "check_point_id"
           if !is_checkpoint_verified
             true
           elsif is_authentiq_verified and (current_tour_time > (checkpoint_verified_at + 30.days))

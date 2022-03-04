@@ -119,6 +119,7 @@ class Api::V1::ToursController < ActionController::Base
         begin
           a1 = TourUser.find params[:tour_user_id].to_i
           a2 = Tour.find params[:tour_id].to_i
+          
           timezone = a2.community.get_time_zone()
         rescue => ex
         end

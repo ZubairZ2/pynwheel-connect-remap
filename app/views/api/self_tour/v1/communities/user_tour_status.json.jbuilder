@@ -2,7 +2,7 @@
   json.data do
     community_code    =  (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')  if @community.scheduler_widget
     if @is_salesforce_crm
-      @community.tour.only_scheduled_tour = true
+      @community.community_tour.only_scheduled_tour = true
       @community.scheduler_widget         = false
     end
 
@@ -19,7 +19,7 @@
 
     if @in_visiting_hours
       unless @limit_exceeded
-        if @community.tour.only_scheduled_tour                                              # aslo works with salesforce communities
+        if @community.community_tour.only_scheduled_tour                                              # aslo works with salesforce communities
             if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
               unless @within_one_km
                 json.scheduler_widget_allowed false
@@ -33,10 +33,10 @@
               if @scheduled_data.time_status == "before time"
                 json.scheduler_widget_allowed false
                 if @community.arrive_too_early_alert.present?
-                  @community.arrive_too_early_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time).gsub!("<grace time>", @community.tour.grace_period.to_s)
+                  @community.arrive_too_early_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time).gsub!("<grace time>", @community.community_tour.grace_period.to_s)
                   json.tour_alert @community.arrive_too_early_alert + " In the meantime, would you like to take a virtual tour?"  
                 else
-                  json.tour_alert "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.tour.grace_period.to_s} minutes before that time. In the meantime, would you like to take a virtual tour?"
+                  json.tour_alert "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.community_tour.grace_period.to_s} minutes before that time. In the meantime, would you like to take a virtual tour?"
                 end
               elsif @scheduled_data.time_status == "after time"
                 if @community.arrive_too_late_alert.present?
@@ -48,7 +48,7 @@
                     json.tour_alert @community.arrive_too_late_alert + " In the meantime, would you like to take a virtual tour?"
                   end
                 else
-                  message = "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.tour.grace_period.to_s} minutes before that time. "
+                  message = "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.community_tour.grace_period.to_s} minutes before that time. "
                   if @community.scheduler_widget
                     json.tour_alert message + " Please click on the Reschedule button to reschedule. In the meantime, would you like to take a virtual tour?"
                     json.scheduler_widget_url "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_data.nearest_tour.id}?datetime=#{@scheduled_data.nearest_tour.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_data.nearest_tour.tour_time.strftime("%H:%M")}&community_code=#{community_code}&direct=true"

@@ -33,23 +33,10 @@ namespace :delayed_email_notifications do
 			daily_email_sent = schedule_tour.daily_email_sent
 			hourly_email_sent = schedule_tour.hourly_email_sent
 
-			# send_on_hour_email(schedule_tour, timezone)
 			one_hour_before_emails schedule_tour if !schedule_tour.hourly_email_sent
 			one_day_before_emails schedule_tour if coming_from == "on_day_before" and tour_date > current_day and !daily_email_sent and tour_date < (current_day + 2)
 		end
 	end
-
-	# def send_on_hour_email schedule_tour, timezone
-	# 	current_date_time = Time.now.in_time_zone(timezone)
-	# 	tour_date_time = (schedule_tour.tour_date.to_s + " " + schedule_tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone)
-		
-	# 	time_diff = time_difference(tour_date_time, current_date_time)
-	# 	# if coming_from == "on_hour_before" and tour_date >= (current_day-1) and !hourly_email_sent and tour_date < (current_day+1)
-	# 	if ( time_diff > 0 && time_diff <= 60)
-	# 		one_hour_before_emails schedule_tour if !schedule_tour.hourly_email_sent
-	# 	end
-		
-	# end
 
 	def time_difference tour_time, current_time
     ((tour_time - current_time) / 1.minute).round
@@ -59,17 +46,18 @@ namespace :delayed_email_notifications do
 		tour_histories.each do |th|
 			
 			if th.present? and (Time.now - th.updated_at) > 60 
-				community = (Tour.find_by_id th.tour_id).community 
+				community = (Tour.find_by_id th.tour_id).community
 
-
-		  		@mail_content = ["abandoned_tour_at_stop", "#{(TourUser.find th.tour_user_id).name rescue "User"} abandoned a tour of #{(community.name.titleize)} at "] #get_alert_message('abandoned_tour_at_stop')
+		  	@mail_content = ["abandoned_tour_at_stop", "#{(TourUser.find th.tour_user_id).name rescue "User"} abandoned a tour of #{(community.name.titleize)} at "]
 
 				@mail_content[1] = "#{@mail_content.last} #{(TourStop.find th.abandoned_tour_at_stop.to_i).name.titleize rescue "Not Found"}."
+				
 				if th.tour_user_id == 1445
           @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "111Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
 				else
 				  @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         end
+
 				touruser_remotelock_data community, th
 				send_email_sms_or_both @mail_content, community
 				send_email_sms_or_both_to_touruser @thank_you_content, community, th
@@ -181,7 +169,7 @@ namespace :delayed_email_notifications do
 			mobile_change_appointment = (schedual_tour.created_by === "PERQ" ?  "" : "Change appointment: #{reschedule_tour_link}#{"\n"}")
 		  
 			confirmation_page_link = "#{base_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}"
-		  if community.tour.tour_setting.enable_header_footer
+		  if community.community_tour.tour_setting.enable_header_footer
 			  content = "Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive.<br>#{change_appointment}<br>#{community.one_day_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 		  else
 			  content = "<div style='vertical-align:middle; text-align:center'><img style='height: 55px;' src='#{community.logo.url}' data-title='#{community.name}' /></div><br/>Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive. <br> iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_day_email_text.gsub("\n", "<br>").html_safe rescue ""}"
@@ -209,7 +197,6 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 
 			time_left_to_email = (tour_time - server_time)/1.minute
 			
-			# time_left_to_email = time_left_to_email * -1 if time_left_to_email < 0
 			if time_left_to_email <= 60 && time_left_to_email > 0
 				tu = schedual_tour.tour_user
 				community = schedual_tour.community
@@ -221,7 +208,7 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 				base_url =  Rails.env.development? ? "localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelconnect.com/") 
 				is_rescheduled = false
 				confirmation_page_link = "#{base_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}"
-				if community.tour.tour_setting.enable_header_footer
+				if community.community_tour.tour_setting.enable_header_footer
 					content = "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Poppins;'> Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br> Please download Self Tour app before you arrive:<br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""} </p></div>"
 				else
 					content = "<div style='vertical-align:middle; font-family: Poppins; text-align:center'><img style='height: 55px;' src='#{community.logo.url}' data-title='#{community.name}' /></div><br/>Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a> <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""}"
@@ -300,26 +287,9 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 	end
 
 	def avail_stops_name_of_community community
-		# stops_arr = community.mdu ? community.tour.tour_stops.where(display_stop: true).order(:sort) :  community.tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
-		# allowed_stops = TourStop.where(id: stops_arr.ids).pluck(:stop_type, :stop_id)
-
-        tour_stops = []
-        # allowed_stops.each do |stop|
-        #   if stop[0] == "unit"
-        #     unit = stop[0].classify.constantize.find_by_id stop[1]
-        #     if unit.building.present?
-        #       name = unit.building + "-" + unit.name
-        #     else
-        #       name = unit.name
-        #     end
-        #     tour_stops << name if unit.present?
-        #   elsif stop[0] == "amenity"
-        #     amentiy = stop[0].classify.constantize.find_by_id stop[1]
-        #     tour_stops << amentiy.name if amentiy.present?
-        #   end
-		# end
-		return tour_stops
+		return []
 	end
+
 	def show_contact community
 		if community.credential.use_different_crm_provider && (community.crm_credential.crm_provider == "salesforce" || community.crm_credential.crm_provider == "yardirentcafe")
 			return true
@@ -327,7 +297,6 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 			return false
 		end
 	end
-
 
 	def stop_marketing_names_visited_by_user th
 		visited_stops = []
@@ -344,6 +313,7 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 				visited_stops << marketing_name if unit.present?
 			end
 		end
+
 		return visited_stops
 	end
 

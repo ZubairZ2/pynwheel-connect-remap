@@ -175,11 +175,11 @@ class UnitsController < ApplicationController
       end
       if params[:unit][:modal_unit].present?
         if params[:unit][:modal_unit] == "1"
-          ts = TourStop.find_by(stop_id: @unit.id, tour_id: @community.tour.id, stop_type: "unit")
-          TourStop.create(tour_id: @community.tour.id, stop_type: "unit", name: @unit.marketing_name, display_stop: true, stop_id: @unit.id, latitude: @unit.x_plot, longitude: @unit.y_plot) unless ts.present?
+          ts = TourStop.find_by(stop_id: @unit.id, tour_id: @community.community_tour.id, stop_type: "unit")
+          TourStop.create(tour_id: @community.community_tour.id, stop_type: "unit", name: @unit.marketing_name, display_stop: true, stop_id: @unit.id, latitude: @unit.x_plot, longitude: @unit.y_plot) unless ts.present?
         else
           unless @unit.modal_unit == false
-            ts = TourStop.find_by(stop_id: @unit.id, tour_id: @community.tour.id, stop_type: "unit")
+            ts = TourStop.find_by(stop_id: @unit.id, tour_id: @community.community_tour.id, stop_type: "unit")
             if ts.present?
               paths = Path.where(map_path_from_id: ts.stop_id)
               paths.each do |path|

@@ -83,7 +83,6 @@ function saveTourStaringPoint(id, dx, dy) {
             "tour_id": tour_id
         },
         function (data, status, xhr) {
-            // arr.push([data.tour.id, data.tour.x_plot, data.tour.y_plot, true]);
             doDraggable();
         });
 }
@@ -94,8 +93,6 @@ function saveTourStopPoint(id) {
             "tour_stop_id": id
         },
         function (data, status, xhr) {
-            // arr.push([data.tour.id, data.tour.x_plot, data.tour.y_plot, true]);
-            // doDraggable();
             if (data.tour.stop_type == "unit") {
                 $('.tour_sortable_disabled').append("<tr id=\"TourStop_" + data.tour.id + "\" class=\"ui-sortable-handle\">\n" +
                     "<td>" + $(".table").find("tr").length + "</td>\n" +

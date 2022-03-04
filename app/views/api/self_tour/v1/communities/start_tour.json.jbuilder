@@ -9,11 +9,11 @@ json.tours @tours do |tour|
   json.id tour.id
   json.tour_key  @tour_user.tour_key
   json.community_id @community.id
-  json.name @community&.tour&.name
-  json.latitude @community&.tour&.latitude
-  json.longitude @community&.tour&.longitude
-  json.x_plot @community&.tour&.x_plot
-  json.y_plot @community&.tour&.y_plot
+  json.name @community&.community_tour&.name
+  json.latitude @community&.community_tour&.latitude
+  json.longitude @community&.community_tour&.longitude
+  json.x_plot @community&.community_tour&.x_plot
+  json.y_plot @community&.community_tour&.y_plot
   json.is_sitemap @community.is_sitemap
 
   plates_name = {}
@@ -28,7 +28,7 @@ json.tours @tours do |tour|
   favorite_amenity_array = fs.favorite_amenities(@tour_user)
 
   if @community.is_sitemap
-    floorplate_image = @community.tour.image.present? ? @community.tour : (@community.is_sitemap ? @community.sitemap : @community.floorplates.first) rescue nil
+    floorplate_image = @community.community_tour.image.present? ? @community.community_tour : (@community.is_sitemap ? @community.sitemap : @community.floorplates.first) rescue nil
     json.image floorplate_image.image.url rescue nil
     json.image_width (floorplate_image.width rescue 0)
     json.image_height (floorplate_image.height rescue 0)
@@ -107,13 +107,13 @@ json.tours @tours do |tour|
               end
             end
             if add_start
-              stops_arr << @community.tour #------- Adding starting point
+              stops_arr << @community.community_tour #------- Adding starting point
               add_start = false
 
               begin
-                if @community&.tour&.starting_floor.present? and @community&.tour&.starting_floor != min_floor #and !bsp.present?
+                if @community&.community_tour&.starting_floor.present? and @community&.community_tour&.starting_floor != min_floor #and !bsp.present?
 
-                  first_floor_elev = @all_elevators.map{|x| x[0] if (@community&.tour&.building.present? ? x[2] == @community.tour.building : x[2] == building) and (@community.tour.starting_floor.present? ? (x[1].include? @community.tour.starting_floor) : (x[1].include? min_floor))}.compact.first
+                  first_floor_elev = @all_elevators.map{|x| x[0] if (@community&.community_tour&.building.present? ? x[2] == @community.community_tour.building : x[2] == building) and (@community.community_tour.starting_floor.present? ? (x[1].include? @community.community_tour.starting_floor) : (x[1].include? min_floor))}.compact.first
                   first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
                   if first_floor_elev.present?
                     first_floor_elev.floor = floor
@@ -180,7 +180,7 @@ json.tours @tours do |tour|
                       last_stop_id = add_stop.id
                       have_stop_in_building = true
                       
-                      if first_floor_elev.present? && @community.tour.starting_floor.to_i == add_stop.floor
+                      if first_floor_elev.present? && @community.community_tour.starting_floor.to_i == add_stop.floor
                         stops_arr = stops_arr - [first_floor_elev]
                         first_floor_elev = nil
                       end
@@ -271,13 +271,13 @@ json.tours @tours do |tour|
 
     stops = @community.mdu ? tour.tour_stops : tour.tour_stops.where.not(stop_type: "unit")
     stops_except_deleted = []
-    stops_except_deleted << @community.tour if @community.is_sitemap
+    stops_except_deleted << @community.community_tour if @community.is_sitemap
 
     stops_arr.compact.each do |stop|
       stops_except_deleted << stop unless (@community.deleted_ids.include?(stop.id) || unit_dlt_ids.include?(stop.id) )
     end
     
-    stops_except_deleted << @community.tour if
+    stops_except_deleted << @community.community_tour if
 
     new_stops_arr = []
     last_element  = nil
@@ -1201,7 +1201,7 @@ json.tours @tours do |tour|
         json.image_width floor_image.width  rescue 0
         json.image_height floor_image.height rescue 0
         if new_stops_arr[counter - 1].is_a? Tour 
-          floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.tour.starting_floor.present? ? @community.tour.starting_floor : min_floor)}.compact.last rescue nil
+          floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.community_tour.starting_floor.present? ? @community.community_tour.starting_floor : min_floor)}.compact.last rescue nil
           json.floorplate_image floorplate_image.image.url rescue ""
           json.image_width floorplate_image.width rescue 0
           json.image_height floorplate_image.height rescue 0
@@ -1212,7 +1212,7 @@ json.tours @tours do |tour|
         json.image_width floorplate_image.width rescue 0
         json.image_height floorplate_image.height rescue 0
         if new_stops_arr[counter - 1].is_a? Tour 
-          floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.tour.starting_floor.present? ? @community.tour.starting_floor : min_floor)}.compact.last rescue nil
+          floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.community_tour.starting_floor.present? ? @community.community_tour.starting_floor : min_floor)}.compact.last rescue nil
           json.floorplate_image floorplate_image.image.url rescue ""
           json.image_width floorplate_image.width rescue 0
           json.image_height floorplate_image.height rescue 0
@@ -1359,7 +1359,7 @@ json.tours @tours do |tour|
         @existing_path_points = path_points if path_points.present?
       else
         if new_stops_arr[i-1].present? and new_stops_arr[i-1].is_a? Tour
-          @existing_path_points << {x_plot: @community.tour.x_plot, y_plot: @community.tour.y_plot} if i == 0
+          @existing_path_points << {x_plot: @community.community_tour.x_plot, y_plot: @community.community_tour.y_plot} if i == 0
           path = Path.where(map_path_to_id: stop.stop_id, map_path_from_id: nil).first
           if path.blank?
             path = Path.where(map_path_to_id: nil, map_path_from_id: stop.stop_id).first
@@ -1420,14 +1420,14 @@ json.tours @tours do |tour|
     json.authenticate_zerv is_zerv_lock_present
     json.tour_start_point_lock_type (@tour_user.tour_type != "virtual_tour" &&  @community.enable_locks)  ? @tours.first.lock_provider : ""
 
-    json.current_position_marker_icon @community.tour.marker_icon_size.present? ? (@community.tour.marker_icon_size == "0" ? "19x25" : (@community.tour.marker_icon_size == "1" ? "17x23" : (@community.tour.marker_icon_size == "2" ? "15x21" : (@community.tour.marker_icon_size == "3" ? "13x19" : (@community.tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
-    json.next_position_marker_icon  @community.tour.marker_icon_size.present? ? (@community.tour.marker_icon_size == "0" ? "35x35" : (@community.tour.marker_icon_size == "1" ? "33x33" : (@community.tour.marker_icon_size == "2" ? "31x31" : (@community.tour.marker_icon_size == "3" ? "29x29" : (@community.tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
+    json.current_position_marker_icon @community.community_tour.marker_icon_size.present? ? (@community.community_tour.marker_icon_size == "0" ? "19x25" : (@community.community_tour.marker_icon_size == "1" ? "17x23" : (@community.community_tour.marker_icon_size == "2" ? "15x21" : (@community.community_tour.marker_icon_size == "3" ? "13x19" : (@community.community_tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
+    json.next_position_marker_icon  @community.community_tour.marker_icon_size.present? ? (@community.community_tour.marker_icon_size == "0" ? "35x35" : (@community.community_tour.marker_icon_size == "1" ? "33x33" : (@community.community_tour.marker_icon_size == "2" ? "31x31" : (@community.community_tour.marker_icon_size == "3" ? "29x29" : (@community.community_tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
     json.show_camera_button (@tour_user.tour_type != "virtual_tour") ? @community.show_camera_button : false
-    json.dotted_line_color @community.tour.dotted_line_color rescue "green"
+    json.dotted_line_color @community.community_tour.dotted_line_color rescue "green"
     json.visual_id_verification (@tour_user.tour_type != "virtual_tour") ? tour.visual_id_verification : false
     json.apply_now_self_tour @community.apply_now_self_tour.present? ? @community.apply_now_self_tour : false
     json.chat_control (@community.chat_control and @community.is_chat_available) ? @community.chat_control : false
-    json.enable_auto_zoom (@community.tour.present?) ? @community.tour.enable_auto_zoom : false
+    json.enable_auto_zoom (@community.community_tour.present?) ? @community.community_tour.enable_auto_zoom : false
     json.show_map @community.show_map
     json.mdu @community.mdu
     json.pynwheel_access_username @community&.zerv&.username

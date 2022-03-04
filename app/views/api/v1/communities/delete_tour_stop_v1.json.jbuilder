@@ -38,7 +38,7 @@ json.tours @tours do |tour|
   last_stop_id = nil
    unit_dlt_ids = []
   # if @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.nil? ? true : tour.tour_setting.show_desired_bedroom) : false)
-  #   unit_dlt_ids = @community.tour.tour_stops.map{|x| x.id if x.stop_type == "unit" && ((Unit.find_by_id x.stop_id).floorplan.bedrooms.to_i != @tour_user.desired_bedroom.to_i rescue false)}.compact
+  #   unit_dlt_ids = @community.community_tour.tour_stops.map{|x| x.id if x.stop_type == "unit" && ((Unit.find_by_id x.stop_id).floorplan.bedrooms.to_i != @tour_user.desired_bedroom.to_i rescue false)}.compact
   # else
   #   unit_dlt_ids = []
   # end
@@ -94,8 +94,8 @@ json.tours @tours do |tour|
       if scheduled_tour_stops.present?
         stops_arr = @community.mdu ? scheduled_tour_stops : scheduled_tour_stops.where.not(stop_type: "unit").order(:sort)
       else
-        unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit }.compact
-        stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+        unoccupied = @community.community_tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit }.compact
+        stops_arr = @community.mdu ? @community.community_tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.community_tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       end
 
       stop_count = stops_arr.compact.count
@@ -110,7 +110,7 @@ json.tours @tours do |tour|
       @building_list.each do |building|
 
         # If no availble units or amenity in the building do not add elevator or staarting point in stops
-        visible_stops_ids = @community.tour.tour_stops.where(stop_type: ["unit", "amenity"], display_stop: true).pluck(:stop_id)
+        visible_stops_ids = @community.community_tour.tour_stops.where(stop_type: ["unit", "amenity"], display_stop: true).pluck(:stop_id)
         available_units_count = @community.units.where(id: visible_stops_ids, building: building, available: true).count
         available_amenities_count = @community.amenities.where(id: visible_stops_ids, building: building,breezway_lock_visible: true).count
 
@@ -136,7 +136,7 @@ json.tours @tours do |tour|
                 
               #   first_floor_elev = @all_elevators.map{|x| x[0] if (tour.building.present? ? x[2] == tour.building : x[2] == building) and (tour.starting_floor.present? ? (x[1].include? tour.starting_floor) : (x[1].include? min_floor))}.compact.first
               #   first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
-              #   # first_floor_elev = @community.tour.sort_hash[(tour.building.present? ? tour.building : building) + ","+ tour.starting_floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
+              #   # first_floor_elev = @community.community_tour.sort_hash[(tour.building.present? ? tour.building : building) + ","+ tour.starting_floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
               #   if first_floor_elev.present?
               #     first_floor_elev.floor = floor
               #     first_floor_elev.building = building
@@ -167,7 +167,7 @@ json.tours @tours do |tour|
               if bsp.present? and bsp.floor != min_floor
                 first_floor_elev = @all_elevators.map{|x| x[0] if ( x[2] == bsp.building ) and  (x[1].include? bsp.floor) }.compact.first
                 first_floor_elev = TourStop.find_by stop_id: first_floor_elev.id
-                # first_floor_elev = @community.tour.sort_hash[bsp.building + ","+ bsp.floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
+                # first_floor_elev = @community.community_tour.sort_hash[bsp.building + ","+ bsp.floor.to_s].map{|x| TourStop.find x rescue next}.map{|x| x if x.stop_type == "elevator"}.compact.first rescue nil
                 if first_floor_elev.present?
                   first_floor_elev.floor = floor
                   first_floor_elev.building = building
@@ -178,11 +178,11 @@ json.tours @tours do |tour|
             end
             
 
-            if @community.tour.sort_hash[building + ","+ floor.to_s].present?
+            if @community.community_tour.sort_hash[building + ","+ floor.to_s].present?
 
-              arr_to_remove = @community.tour.sort_hash[building + ","+ floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids 
+              arr_to_remove = @community.community_tour.sort_hash[building + ","+ floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids 
               
-              # if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor && @building_list[0] != building) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator") && (@community.tour.starting_floor.present? ? @community.tour.starting_floor != floor.to_i : true )
+              # if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor && @building_list[0] != building) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator") && (@community.community_tour.starting_floor.present? ? @community.community_tour.starting_floor != floor.to_i : true )
               #   begin
               #     unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
               #     next
@@ -191,7 +191,7 @@ json.tours @tours do |tour|
               #   end
               # end
               temp_max_floor = floor
-              @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+              @community.community_tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
                 # amenity_hit = true
                 # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
                 # if ts_ck.present?  && ts_ck.stop_type == "amenity"
@@ -365,8 +365,8 @@ json.tours @tours do |tour|
     ########------------------------ Sorting tour Stop in an array-----------------------
     if @community.is_sitemap
 
-      unoccupied = @community.tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit}.compact
-      stops_arr = @community.mdu ? @community.tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      unoccupied = @community.community_tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit}.compact
+      stops_arr = @community.mdu ? @community.community_tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : @community.community_tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       stops_arr = stops_arr.map{|x| x if !(@community.deleted_ids.include? x.id)}.compact
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 2]
@@ -382,13 +382,13 @@ json.tours @tours do |tour|
 
           begin
             # if @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.nil? ? true : tour.tour_setting.show_desired_bedroom) : false)
-            #   unit_dlt_ids = @community.tour.tour_stops.map{|x| x.id if x.stop_type == "unit" && ((Unit.find_by_id x.stop_id).floorplan.bedrooms.to_i != @tour_user.desired_bedroom.to_i rescue false)}.compact
+            #   unit_dlt_ids = @community.community_tour.tour_stops.map{|x| x.id if x.stop_type == "unit" && ((Unit.find_by_id x.stop_id).floorplan.bedrooms.to_i != @tour_user.desired_bedroom.to_i rescue false)}.compact
             # else
             #   unit_dlt_ids = []
             # end
             unit_dlt_ids = []
-            if @community.tour.sort_hash[building + ","+ floor.to_s].present?
-              arr_to_remove = @community.tour.sort_hash[building + ","+ floor.to_s].grep(/\d+/, &:to_i) - ( @community.deleted_ids + unit_dlt_ids)
+            if @community.community_tour.sort_hash[building + ","+ floor.to_s].present?
+              arr_to_remove = @community.community_tour.sort_hash[building + ","+ floor.to_s].grep(/\d+/, &:to_i) - ( @community.deleted_ids + unit_dlt_ids)
               if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator")
                 begin
                   # unless ((TourStop.find arr_to_remove).map{|x| (Elevator.find x.stop_id).floors.max - 1 if x.stop_type == "elevator"}).include? floor
@@ -398,7 +398,7 @@ json.tours @tours do |tour|
                 end
               end
               temp_max_floor = floor
-              @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+              @community.community_tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
                 # amenity_hit = true
                 # ts_ck = (TourStop.find_by_id(s_id)) if (s_id.present? )
                 # if ts_ck.present?  && ts_ck.stop_type == "amenity"
@@ -1316,7 +1316,7 @@ json.tours @tours do |tour|
         json.image_width floor_image.width  rescue 0
         json.image_height floor_image.height rescue 0
         if new_stops_arr[counter - 1].is_a? Tour 
-          floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.tour.starting_floor.present? ? @community.tour.starting_floor : min_floor)}.compact.last rescue nil
+          floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.community_tour.starting_floor.present? ? @community.community_tour.starting_floor : min_floor)}.compact.last rescue nil
           json.floorplate_image floorplate_image.image.url rescue ""
           json.image_width floorplate_image.width rescue 0
           json.image_height floorplate_image.height rescue 0
@@ -1327,7 +1327,7 @@ json.tours @tours do |tour|
         json.image_width floorplate_image.width rescue 0
         json.image_height floorplate_image.height rescue 0
         if new_stops_arr[counter - 1].is_a? Tour 
-          floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.tour.starting_floor.present? ? @community.tour.starting_floor : min_floor)}.compact.last rescue nil
+          floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.community_tour.starting_floor.present? ? @community.community_tour.starting_floor : min_floor)}.compact.last rescue nil
           json.floorplate_image floorplate_image.image.url rescue ""
           json.image_width floorplate_image.width rescue 0
           json.image_height floorplate_image.height rescue 0
@@ -1545,11 +1545,11 @@ json.tours @tours do |tour|
     json.current_position_marker_icon tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "19x25" : (tour.marker_icon_size == "1" ? "17x23" : (tour.marker_icon_size == "2" ? "15x21" : (tour.marker_icon_size == "3" ? "13x19" : (tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
     json.next_position_marker_icon  tour.marker_icon_size.present? ? (tour.marker_icon_size == "0" ? "35x35" : (tour.marker_icon_size == "1" ? "33x33" : (tour.marker_icon_size == "2" ? "31x31" : (tour.marker_icon_size == "3" ? "29x29" : (tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
     json.show_camera_button (@tour_user.tour_type != "virtual_tour") ? @community.show_camera_button : false
-    json.dotted_line_color @community.tour.dotted_line_color rescue "green"
+    json.dotted_line_color @community.community_tour.dotted_line_color rescue "green"
     json.visual_id_verification (@tour_user.tour_type != "virtual_tour") ? tour.visual_id_verification : false
     json.apply_now_self_tour @community.apply_now_self_tour.present? ? @community.apply_now_self_tour : false
     json.chat_control (@community.chat_control and @community.is_chat_available) ? @community.chat_control : false
-    json.enable_auto_zoom (@community.tour.present?) ? @community.tour.enable_auto_zoom : false
+    json.enable_auto_zoom (@community.community_tour.present?) ? @community.community_tour.enable_auto_zoom : false
     json.show_map @community.show_map
     json.mdu @community.mdu
     json.pynwheel_access_username @community&.zerv&.username

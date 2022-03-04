@@ -61,8 +61,8 @@ class TourUser < ApplicationRecord
 
   def check_code_expiry(community)
     access_code_generated_at = self.property_access_code_generated_at
-    tour_length_stay_limit = community&.tour&.tour_setting&.length_stay_limit
-    enabled_property_access = community&.tour&.tour_setting&.enable_restricted_property_access
+    tour_length_stay_limit = community&.community_tour&.tour_setting&.length_stay_limit
+    enabled_property_access = community&.community_tour&.tour_setting&.enable_restricted_property_access
     if enabled_property_access && (access_code_generated_at.nil? || Time.now > access_code_generated_at + tour_length_stay_limit.minutes)
       true
     else

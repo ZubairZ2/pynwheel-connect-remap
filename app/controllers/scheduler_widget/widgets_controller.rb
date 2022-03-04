@@ -33,10 +33,10 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @phone_country_code = ISO3166::Country.new(@schedule_tour.country_code) if @schedule_tour.country_code.present?
     @community_id = params[:community_id]
     @community = Community.find params[:community_id]
-    @scheduler_widget_setting = @community.tour.scheduler_widget_setting
-    @credit_card_required =  @community.tour.credit_card_required
+    @scheduler_widget_setting = @community.community_tour.scheduler_widget_setting
+    @credit_card_required =  @community.community_tour.credit_card_required
     @bedroom_list = @community.fetch_bedroom_list()
-    @marketing_source_required = @community.tour.marketing_source_required
+    @marketing_source_required = @community.community_tour.marketing_source_required
     @community_time_zone = @community.get_time_zone()
     @current_time = Time.now.in_time_zone(@community_time_zone).strftime("%H:%M %p") if @community_time_zone.present?
     if params[:direct].present?
@@ -53,7 +53,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @is_virtual_on = @community.is_virtual_permission_on
     @any_tour_type_selected = @community.is_any_tour_type_selected
     @disable_day_of_week = @community.collect_disable_days
-    @stepping = @community.tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
+    @stepping = @community.community_tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.community_tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.community_tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.community_tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
     @tour_type = @schedule_tour.tour_type if @reschedule_tour.present?
     @axisting_tour_users = scheduled_tour_users @community
 
