@@ -575,7 +575,12 @@ Rails.application.routes.draw do
           end
         end
         post :add_floorplan, to: 'community_floor_plans#add_floorplan'
-        resources :pynwheel_touch_homepage
+        resources :pynwheel_touch_homepage do
+          member do
+            delete :delete_homepage_video
+          end
+        end
+        delete :delete_home_page_image, to: 'pynwheel_touch_homepage#delete_home_page_image'
         post :add_homepage_design, to: 'pynwheel_touch_homepage#add_homepage_design'
         member do
           post :add_comment

@@ -1,15 +1,12 @@
 class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :load_community, only: [:index, :add_homepage_design]
+  before_action :load_community, only: [:index, :add_homepage_design, :all_design, :delete_homepage_video, :delete_home_page_image]
 
   def index
-    @design = @community.design || @community.create_design
-    images = @design.home_page_images
-    video = @design.home_page_video
-    if images.any?
-      render json: { success: true, data: render_homepage_design(HOMEPAGE_IMAGE, images) }
-    elsif video.present?
-      render json: { success: true, data: render_homepage_design(HOMEPAGE_VIDEO, video) }
+    @media = all_design if @community.present?
+
+    if @media.any?
+      render json: { success: true, data: @media.as_json }
     else
       render json: { success: false, message: "Image or video not found for this community." }
     end
@@ -23,10 +20,8 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
         homepage_id = homepage["id"]
         if @type.eql?(HOMEPAGE_VIDEO)
           homevideo = HomePageVideo.where(design_id: @community.design.id).first
-          if homevideo.present?
-            homevideo.destroy
-          end
-          @uploader =  HomePageVideo.new
+          homevideo.destroy if homevideo.present?
+          @uploader = HomePageVideo.new
           if @uploader.save
             @uploader.video = homepage["file"]
             @uploader.name = homepage["name"]
@@ -34,26 +29,68 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
             @uploader.save
           end
         else
-          if homepage_id.present?
-            @community.design.home_page_images.update(image: homepage["file"])
-          else
+          if !homepage_id.present?
             @community.design.home_page_images.create(image: homepage["file"])
           end
         end
       end
-      type = @type.eql?(HOMEPAGE_VIDEO) ? HOMEPAGE_VIDEO : HOMEPAGE_IMAGE
-      data = @type.eql?(HOMEPAGE_VIDEO) ? @community.design.home_page_video : @community.design.home_page_images
+      media = all_design
       @community.set_touch_vidoes_status(current_pynwheel_user)
-      render json: { success: true, data: render_homepage_design(type, data) }
+      render json: { success: true, data: media.as_json }
     rescue => ex
       render json: { success: false, message: ex.message }
     end
   end
 
+  def delete_homepage_video
+    if @community.present?
+      @homevideo = HomePageVideo.where(design_id: @community.design.id).first
+      if @homevideo.present?
+        if @homevideo.destroy!
+          render :json => {:success => true, :error_code => 200, :message => "Homepage video deleted successfully", data: nil}
+        else
+          render :json => {:success => false, :error_code => 500, :message => @homevideo.errors.full_messages}
+        end
+      end
+    end
+  end
+
+  def delete_home_page_image
+    if @community.present?
+      design = @community.design
+      if design.present?
+        @home_page_image = design.home_page_images.find_by(id: params[:homepage_image_id])
+        if @home_page_image.present?
+          if @home_page_image.destroy!
+            render :json => {:success => true, :error_code => 200, :message => "Homepage image deleted successfully", data: nil}
+          else
+            render :json => {:success => false, :error_code => 500, :message => @home_page_image.errors.full_messages}
+          end
+        end
+      end
+    end
+  end
+  
   private
+
+  def all_design
+    @design = @community.design || @community.create_design
+    images = @design.home_page_images
+    video = @design.home_page_video
+    media = []
+    if images.any?
+      media << { images: images.as_json }
+    end
+    if video.present?
+      media << { video: video.as_json }
+    end
+    media
+  end
 
   def load_community
     @community = Community.find(params[:community_id])
+    rescue ActiveRecord::RecordNotFound
+    render json: {success: false, error_code: 400, message: 'Community not found', data: nil}, status: :not_found
   end
 
   def render_homepage_design(type, homepage_design)
@@ -63,4 +100,5 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
   def community_params
     params.require(:homepage).permit(:community_id)
   end
+  
 end
