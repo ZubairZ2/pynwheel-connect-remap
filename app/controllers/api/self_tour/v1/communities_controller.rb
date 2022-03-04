@@ -1,8 +1,8 @@
 class Api::SelfTour::V1::CommunitiesController < ActionController::Base
-  before_action :set_community, only: [:user_tour_status, :initialize_tour, :customize_tour, :generate_locks_accesses, :check_lock_access, :start_tour]
-  before_action :set_tour_user, only: [:user_tour_status, :initialize_tour, :customize_tour, :generate_locks_accesses, :check_lock_access, :start_tour]
+  before_action :load_community  
+  before_action :load_tour_user
   before_action :random_string_generator, only: [:initialize_tour]
-  before_action :check_authorization, only: [:user_tour_status, :initialize_tour, :customize_tour, :generate_locks_accesses, :check_lock_access, :start_tour]
+  before_action :check_authorization
 
   include DweloDevicesHelper
   include ApplicationHelper
@@ -214,11 +214,11 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
     end
   end
 
-  def set_community
+  def load_community
     @community ||= Community.find(params[:community_id])
   end
 
-  def set_tour_user
+  def load_tour_user
     @tour_user ||= TourUser.find_by_id(params[:tour_user_id])
   end
 
