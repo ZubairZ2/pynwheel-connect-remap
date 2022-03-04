@@ -3,7 +3,7 @@ class TourUserCustomization
     @community = community
     @tour_user = tour_user
     @c_tour = @community.tour
-    @user_customized_tour = TourAvailableStops.new(@community, @tour_user).get_user_tour
+    @user_customized_tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
   end
 
   def customize_tour

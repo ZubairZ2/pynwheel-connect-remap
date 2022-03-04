@@ -1,4 +1,4 @@
-class TourAvailableStops
+class CustomizeTourService
   def initialize community, tour_user
     @community = community
     @tour_user = tour_user

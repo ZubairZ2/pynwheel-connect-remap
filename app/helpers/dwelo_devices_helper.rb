@@ -306,7 +306,7 @@ module DweloDevicesHelper
       tour_user.update_column 'latch_status' , 'in progress'
       end_time = start_time + 90.minutes
 
-      tour = TourAvailableStops.new(community, tour_user).get_tour
+      tour = CustomizeTourService.new(community, tour_user).get_user_tour
 
       stops_arr = tour.tour_stops.where(display_stop: true).order(:sort)
       stops_ids = stops_arr.ids
@@ -381,7 +381,7 @@ module DweloDevicesHelper
   end
 
   def locks_with_same_type(type, community, tour_user, allowed_stops = [])
-    visible_stops = TourAvailableStops.new(community, tour_user).available_stops
+    visible_stops = CustomizeTourService.new(community, tour_user).available_stops
 
     visible_stops.each do |stop|
       if (stop[0].classify.constantize.find_by_id stop[1]).lock_provider == type
@@ -394,7 +394,7 @@ module DweloDevicesHelper
   end
 
   def zerv_multiple_stops_access(community, tour_user, allowed_stops = [])
-    available_stops = TourAvailableStops.new(community, tour_user).available_stops
+    available_stops = CustomizeTourService.new(community, tour_user).available_stops
 
     available_stops.each do |stop|
       actual_stop = stop[0].classify.constantize.find_by_id stop[1]
@@ -561,7 +561,7 @@ module DweloDevicesHelper
 
   def tour_stops_ids(tour_user, community)
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, community, false).get_scheduled_tour
-    tour = TourAvailableStops.new(community, tour_user).get_tour
+    tour = CustomizeTourService.new(community, tour_user).get_user_tour
 
     if scheduled_tour.present? && scheduled_tour.stops_list.present?
       tour.tour_stops.where(stop_type: ["amenity", "unit"]).pluck(:id) - scheduled_tour.stops_list
@@ -572,7 +572,7 @@ module DweloDevicesHelper
 
   def allowed_stop_ids(tour_user, community)
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, community, false).get_scheduled_tour
-    tour = TourAvailableStops.new(community, tour_user).get_tour
+    tour = CustomizeTourService.new(community, tour_user).get_user_tour
 
     if scheduled_tour.present? && scheduled_tour.stops_list.present?
       tour.tour_stops.where(id: scheduled_tour.stops_list).pluck(:stop_id)
