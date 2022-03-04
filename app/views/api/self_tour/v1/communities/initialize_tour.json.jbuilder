@@ -1,6 +1,6 @@
 json.tour_id @tour.id
 json.tour_key @random_string
-json.community_id @tour.community_id
+json.community_id @community.id
 json.allow_tours_customization @community.community_tour&.tour_setting&.enable_tour_customization
 json.units_available @community.community_tour&.tour_setting&.enable_tour_customization ? (@community.units.available_units.count > 0) : false
 json.amenities_available @community.community_tour&.tour_setting&.enable_tour_customization ? (@community.amenities.plotted_amenities.count > 0) :false

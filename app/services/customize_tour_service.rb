@@ -13,7 +13,7 @@ class CustomizeTourService
     if is_customization_enabled
       @tour_user.tours.where(community_id: @community&.id).last
     else
-      get_community_tour
+      @community.community_tour
     end
   end
 
