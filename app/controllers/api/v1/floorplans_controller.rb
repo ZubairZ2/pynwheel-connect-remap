@@ -59,7 +59,7 @@ class Api::V1::FloorplansController < ActionController::Base
   def set_tour_user_tour
     return unless @tour_user.present?
 
-    @tour = TourAvailableStops.new(@community, @tour_user).get_tour
+    @tour = TourAvailableStops.new(@community, @tour_user).get_user_tour
   end
 
   def remove_tour_stop(tour_stop)

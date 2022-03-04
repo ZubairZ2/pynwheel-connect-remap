@@ -3,7 +3,7 @@ class TourUserCustomization
     @community = community
     @tour_user = tour_user
     @c_tour = @community.tour
-    @user_customized_tour = TourAvailableStops.new(@community, @tour_user).get_tour
+    @user_customized_tour = TourAvailableStops.new(@community, @tour_user).get_user_tour
   end
 
   def customize_tour
@@ -52,19 +52,32 @@ class TourUserCustomization
 
   def set_tour_user_sort_hash t_tour
 
-    stops = TourStop.where(tour_id: t_tour.id)
+    @building_list = Buildings.new(@community, @tour_user).get_community_buildings
+    @floor_list = Floors.new(@community, @tour_user).get_community_floors
 
-    stops.each do |stop|
-      unless stop.stop_type === "elevator"
-        actual_stop = stop.stop_type.classify.constantize.find_by_id stop.stop_id
-        floor = actual_stop&.floor || ""
-        building = actual_stop&.building || ""
-        t_tour.sort_hash["#{building},#{floor}"] << stop.id.to_s
+    @building_list << "" 
+    @building_list.each do |building|
+      if @floor_list.present?
+        @floor_list.each do |floor|
+          if @community.tour.sort_hash[building + ","+ floor.to_s].present?
+            @community.tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+              if (s_id.present?)
+                stop = (TourStop.find_by_id(s_id))
+                new_stop = TourStop.where(stop_id: stop.stop_id, tour_id: t_tour.id).last if stop.present?
+
+                if new_stop.present?
+                  unless t_tour.sort_hash[building + ","+ floor.to_s].include?(new_stop.id.to_s)
+                    t_tour.sort_hash[building + ","+ floor.to_s] << new_stop.id
+                  end
+                end
+              end
+            end
+          end
+        end
       end
     end
 
     t_tour.save!
+
   end
-
-
 end

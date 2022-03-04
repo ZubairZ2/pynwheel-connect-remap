@@ -9,12 +9,16 @@ class TourAvailableStops
     tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
   end
 
-  def get_tour
+  def get_user_tour
     if is_customization_enabled
       @tour_user.tours.where(community_id: @community&.id).last
     else
-      @community.tour
+      get_community_tour
     end
+  end
+
+  def get_community_tour
+    Tour.where(community_id: @community.id, tour_user_id: nil).last
   end
 
   private

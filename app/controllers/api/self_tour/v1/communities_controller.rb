@@ -88,7 +88,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   def initialize_tour
     if @is_authorized
       TourUserCustomization.new(@community, @tour_user).customize_tour
-      @tour = TourAvailableStops.new(@community, @tour_user).get_tour
+      @tour = TourAvailableStops.new(@community, @tour_user).get_user_tour
       @floorplans = get_floorplans_with_required_filter()
       @tour_type = params[:tour_status] rescue @tour_user.tour_type
       @tour_user.update(tour_type: params[:tour_status], tour_key: @random_string, verified_by: params[:verfied_by_provider])
@@ -106,7 +106,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
 
   def customize_tour
     if @is_authorized
-      @tour = TourAvailableStops.new(@community, @tour_user).get_tour
+      @tour = TourAvailableStops.new(@community, @tour_user).get_user_tour
       @building_list = Buildings.new(@community, @tour_user).get_community_buildings
       @floor_list = Floors.new(@community, @tour_user).get_community_floors
       @floor_list_temp = Floors.new(@community, @tour_user).get_community_temp_floors(@floor_list)
@@ -155,7 +155,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
         @community.save
         @tours = []
-        @tours << TourAvailableStops.new(@community, @tour_user).get_tour
+        @tours << TourAvailableStops.new(@community, @tour_user).get_user_tour
 
         session["check_lock_access#{@tour_user.id.to_s}"] = 0
         current_time = current_community_time(@community, params)
