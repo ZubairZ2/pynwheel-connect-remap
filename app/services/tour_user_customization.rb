@@ -52,8 +52,8 @@ class TourUserCustomization
 
   def set_tour_user_sort_hash t_tour
 
-    @building_list = Buildings.new(@community, @tour_user).get_community_buildings
-    @floor_list = Floors.new(@community, @tour_user).get_community_floors
+    @building_list = Buildings.new(@community).get_community_buildings
+    @floor_list = Floors.new(@community).get_community_floors
 
     @building_list << "" 
     @building_list.each do |building|

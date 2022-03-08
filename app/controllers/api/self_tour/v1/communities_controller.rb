@@ -107,9 +107,9 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   def customize_tour
     if @is_authorized
       @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
-      @building_list = Buildings.new(@community, @tour_user).get_community_buildings
-      @floor_list = Floors.new(@community, @tour_user).get_community_floors
-      @floor_list_temp = Floors.new(@community, @tour_user).get_community_temp_floors(@floor_list)
+      @building_list = Buildings.new(@community).get_community_buildings
+      @floor_list = Floors.new(@community).get_community_floors
+      @floor_list_temp = Floors.new(@community).get_community_temp_floors(@floor_list)
     else
       render :json=> {:status=>false, :message => "Invalid Token", code: 401}
     end
@@ -160,9 +160,9 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         session["check_lock_access#{@tour_user.id.to_s}"] = 0
         current_time = current_community_time(@community, params)
 
-        @building_list = Buildings.new(@community, @tour_user).get_community_buildings
-        @floor_list = Floors.new(@community, @tour_user).get_community_floors
-        @floor_list_temp = Floors.new(@community, @tour_user).get_community_temp_floors(@floor_list)
+        @building_list = Buildings.new(@community).get_community_buildings
+        @floor_list = Floors.new(@community).get_community_floors
+        @floor_list_temp = Floors.new(@community).get_community_temp_floors(@floor_list)
         @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}       
         @chat_count = chat_room_count(@tour_user, @community)
       else

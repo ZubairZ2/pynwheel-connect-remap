@@ -1,8 +1,6 @@
 class Buildings
-  def initialize(community, tour_user)
+  def initialize(community)
     @community = community
-    @tour_user =  tour_user
-    @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
   end
 
   def get_community_buildings
