@@ -2,7 +2,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
   before_action :load_community , :except => [:index]
   before_action :check_brand_access , :only => [:show , :update]
-
+  before_action :load_community_user, :only => [:update_status_and_remarks]
 
   def index
     @communities = PynwheelLaunch::Communities::Searcher.new(current_pynwheel_user , params).get_user_communities
@@ -58,6 +58,15 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
     end
   end
 
+  def update_status_and_remarks
+    if @community.present? && @community_user.present?
+      PynwheelLaunch::Communities::CommunityDetailForms.new(@community).update_status_and_remarks(params[:detail_type], params[:status][:name], params[:status][:remarks])
+      render :json => {:success => true , data: @community_user.as_json}
+    else
+      render :json => {:success => false , :message=> "Community or community user not found"}
+    end
+  end
+
   private
 
   def check_brand_access
@@ -96,6 +105,10 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
 
   def load_community
     @community = Community.find(params[:id])
+  end
+
+  def load_community_user
+    @community_user ||= CommunityUser.find_by_id(params[:community_user_id])
   end
 
   def community_params

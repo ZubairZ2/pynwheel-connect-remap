@@ -585,6 +585,7 @@ Rails.application.routes.draw do
         member do
           post :add_comment
           post :get_products
+          post :update_status_and_remarks
           put :update_products
           get :get_community_detail_forms
         end
