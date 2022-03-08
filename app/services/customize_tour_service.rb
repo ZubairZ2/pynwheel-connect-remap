@@ -5,7 +5,7 @@ class CustomizeTourService
   end
 
   def available_stops
-    tour = get_tour()
+    tour = get_user_tour()
     tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
   end
 
