@@ -2,7 +2,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
   before_action :load_community , :except => [:index]
   before_action :check_brand_access , :only => [:show , :update]
-  before_action :load_community_user, :only => [:update_statuses]
+  before_action :load_community_user, :only => [:update_status_and_remarks]
 
   def index
     @communities = PynwheelLaunch::Communities::Searcher.new(current_pynwheel_user , params).get_user_communities
