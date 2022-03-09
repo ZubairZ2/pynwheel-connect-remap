@@ -1,8 +1,8 @@
 class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationController
-  before_action :load_Community , only: [:show , :add_property_images]
   before_action :doorkeeper_authorize!
+  before_action :load_Community , only: [:index , :add_property_images, :delete_property_map]
 
-  def show
+  def index
     if @community.is_sitemap
       property_map = @community.sitemap
       type = SITEMAP
@@ -24,7 +24,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
       property_map = add_sitemap_property(params)
       type = SITEMAP
     else
-      property_map = add_floorplate_property(params , @errors)
+      property_map = add_floorplate_property(params, @errors)
       type = FLOORPLATE
     end
     if @errors.blank?
@@ -32,6 +32,25 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
       render json: {:success =>  true , data: render_property_maps(type , property_map)}
     else
       render json: {:success =>  false , data: @errors}
+    end
+  end
+
+  def delete_property_map
+    @type = params["property_type"]
+    if @type.eql?(SITEMAP)
+      if @community.sitemap.present?
+        if @community.sitemap.destroy!
+          render :json => {:success => true, :error_code => 200, :message => "Garden style community deleted successfully", data: nil}
+        end
+      end
+    elsif @type.eql?(FLOORPLATE)
+      floorplate = @community.floorplates.find_by(id: params["property_id"])
+      # binding.pry
+      if floorplate.present?
+        if floorplate.destroy!
+          render :json => {:success => true, :error_code => 200, :message => "Mid high rise community deleted successfully", data: nil}
+        end
+      end
     end
   end
 
@@ -51,6 +70,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
   end
 
   def add_floorplate_property(params , errors)
+    binding.pry
     floorplates = params["floorplate"]
     @property_map =
     floorplates.values.each do |floorplate|
@@ -79,11 +99,11 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
   end
 
   def load_Community
-    @community = Community.find(params[:id])
+    @community = Community.find(params[:community_id])
   end
 
-  def render_property_maps(type , property_map)
-    {type => property_map.as_json}
+  def render_property_maps(type, property_map)
+    { type => property_map.as_json }
   end
 
   def sitemap_params
