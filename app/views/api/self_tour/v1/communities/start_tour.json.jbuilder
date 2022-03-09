@@ -143,11 +143,11 @@ json.tours @tours do |tour|
             rescue => ex
             end
             
-            if tour.sort_hash[building + ","+ floor.to_s].present?
-              arr_to_remove = tour.sort_hash[building + ","+ floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids 
+            if @tour_sort_hash[building + ","+ floor.to_s].present?
+              arr_to_remove =  @tour_sort_hash[building + ","+ floor.to_s].grep(/\d+/, &:to_i) - @community.deleted_ids 
               temp_max_floor = floor
 
-              tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+              @tour_sort_hash[building + ","+ floor.to_s].each do |s_id|
                 add_stop = TourStop.find_by_id(s_id)
 
                 if add_stop.present?
@@ -311,8 +311,8 @@ json.tours @tours do |tour|
 
           begin
             unit_dlt_ids = []
-            if tour.sort_hash[building + ","+ floor.to_s].present?
-              arr_to_remove = tour.sort_hash[building + ","+ floor.to_s].grep(/\d+/, &:to_i) - ( @community.deleted_ids + unit_dlt_ids)
+            if  @tour_sort_hash[building + ","+ floor.to_s].present?
+              arr_to_remove =  @tour_sort_hash[building + ","+ floor.to_s].grep(/\d+/, &:to_i) - ( @community.deleted_ids + unit_dlt_ids)
               
               if arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.count == 1 && (min_floor != floor) && (arr_to_remove.map{|x| ((TourStop.find_by_id x).stop_type rescue nil) }.uniq.include? "elevator")
                 begin
@@ -322,7 +322,7 @@ json.tours @tours do |tour|
               end
 
               temp_max_floor = floor
-              tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
+              @tour_sort_hash[building + ","+ floor.to_s].each do |s_id|
 
                 add_stop = TourStop.find_by_id(s_id)
 
@@ -384,6 +384,7 @@ json.tours @tours do |tour|
     end
   end
 
+  binding.pry
   json.tour_stop new_stops_arr.compact do |stop|
     unless @community.auto_wayfinding
       begin

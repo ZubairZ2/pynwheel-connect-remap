@@ -1,5 +1,5 @@
 class Floors
-  def initialize(community, tour_user)
+  def initialize(community)
     @community = community
   end
 

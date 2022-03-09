@@ -65,7 +65,7 @@ class TourUserCustomization
                 stop = (TourStop.find_by_id(s_id))
                 new_stop = TourStop.where(stop_id: stop.stop_id, tour_id: t_tour.id).last if stop.present?
 
-                if new_stop.present?
+                if new_stop.present? && (new_stop.stop_type == "unit" || new_stop.stop_type ==  "amenity")
                   unless t_tour.sort_hash[building + ","+ floor.to_s].include?(new_stop.id.to_s)
                     t_tour.sort_hash[building + ","+ floor.to_s] << new_stop.id
                   end

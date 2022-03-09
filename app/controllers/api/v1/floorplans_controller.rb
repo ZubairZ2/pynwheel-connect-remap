@@ -1,9 +1,9 @@
 class Api::V1::FloorplansController < ActionController::Base
   include ApplicationHelper
-  before_action :authorize_access, only: [:index, :floorplan_units, :update_tour_stops_list]
-  before_action :set_community, only: [:index, :floorplan_amenities, :floorplan_units, :update_tour_stops_list]
-  before_action :set_tour_user, only: [:update_tour_stops_list]
-  before_action :set_tour_user_tour, only: [:update_tour_stops_list]
+  before_action :authorize_access
+  before_action :laod_community
+  before_action :load_tour_user, only: [:update_tour_stops_list]
+  before_action :load_tour_user_tour, only: [:update_tour_stops_list]
 
   def index
     floorplans = floorplan_units_service(@community).get_floorplans
@@ -50,13 +50,13 @@ class Api::V1::FloorplansController < ActionController::Base
 
   private
 
-  def set_tour_user
+  def load_tour_user
     return unless params[:tour_user_id].present?
 
     @tour_user ||= TourUser.find_by_id params[:tour_user_id]
   end
 
-  def set_tour_user_tour
+  def load_tour_user_tour
     return unless @tour_user.present?
 
     @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
@@ -66,7 +66,6 @@ class Api::V1::FloorplansController < ActionController::Base
     stops_count = @tour.tour_stops.where(display_stop: true, stop_type: ["unit", "amenity"]).count
 
     if stops_count > 1
-      floor = params[:floor]
       paths = Path.where(map_path_from_id: tour_stop.stop_id)
       paths.each do |path|
         path.path_points.destroy_all
@@ -88,7 +87,7 @@ class Api::V1::FloorplansController < ActionController::Base
       end
       
       unless @community.is_sitemap
-        add_remove_stop_into_sort_hash(floor, tour_stop, "remove")
+        add_remove_stop_into_sort_hash(params[:building], params[:floor], tour_stop, "remove")
       end
 
       if tour_stop.destroy
@@ -109,9 +108,8 @@ class Api::V1::FloorplansController < ActionController::Base
   def add_tour_stop
     if params[:stop_type] == "amenity"
       st = Amenity.find params[:stop_id]
-      st.floor = params[:floor].to_i unless @community.show_map
-      st.save
       stName = st.name
+
     elsif params[:stop_type] == "elevator"
       st = Elevator.find params[:stop_id]
       stName = st.name
@@ -123,15 +121,15 @@ class Api::V1::FloorplansController < ActionController::Base
     ts = TourStop.create(stop_type: params[:stop_type], stop_id: params[:stop_id], latitude: st.x_plot, longitude: st.y_plot, tour_id: @tour.id, name: stName)
     
     unless @community.is_sitemap
-      add_remove_stop_into_sort_hash(params[:floor], ts, "add")
+      add_remove_stop_into_sort_hash(params[:building], params[:floor], ts, "add")
     end
     
     PaperTrail::Version.create(item_type: "TourStop", item_id: st.id, event: "create", whodunnit: @community&.users&.first&.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{stName}' community_id: '#{@community.id}'")
     render json: { success: true, error_code: 200, message: "Tour stop has been added successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
   end
 
-  def set_community
-    @community = Community.find params[:community_id]
+  def laod_community
+    @community ||= Community.find params[:community_id]
   end
 
   def authorize_access
@@ -173,39 +171,29 @@ class Api::V1::FloorplansController < ActionController::Base
     sorted_floorplans
   end
 
-  def add_remove_stop_into_sort_hash(floor_number, tour_stop, request)
-    @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue []
-    @building_list = building_list
-    community_tour_stops_hash = []
-    @building_list << "" if @building_list == []
-      @building_list.each do |building|
-        @floor_list.each do |floor|
+  def add_remove_stop_into_sort_hash(building, floor, tour_stop, request)
 
-          tour_sort_hash = @tour.sort_hash[building + ","+ floor.to_s]
-            # if tour_sort_hash.present?
-              if floor.eql?(floor_number.to_i)
-                if request.eql?("add")
-                  tour_sort_hash.push(tour_stop.id.to_s)
-                elsif request.eql?("remove")
-                  tour_sort_hash.delete(tour_stop.id.to_s)
-                else
-                  tour_sort_hash
-                end
-                @tour.sort_hash["#{building},#{floor.to_i}"] = tour_sort_hash
-                community_tour_stops_hash = @tour.sort_hash
-              end
-            # end
-        end
-      end
+    # buildings_list = Buildings.new(@community).get_community_buildings
+    # buildings_list = buildings_list.select{|s| s.present? }
+    # building = buildings_list.present? ? buildings_list[0] : ""
 
-    @tour.update_attributes(sort_hash: community_tour_stops_hash) if community_tour_stops_hash.present?
-  end
+    building = ""
 
-  def building_list
-    @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-    @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
-    @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
-    @building_list
+    if params[:building].present?
+      building = params[:building]      
+    end
+
+    # stop = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)
+
+    # stop.update(floor: floor, building: building)
+
+    if request.eql?("add")
+      @tour.sort_hash[building + ","+ floor.to_s].push(tour_stop.id)
+    elsif request.eql?("remove")
+      @tour.sort_hash[building + ","+ floor.to_s].delete(tour_stop.id)
+    end
+
+    @tour.save!
   end
 
 end
