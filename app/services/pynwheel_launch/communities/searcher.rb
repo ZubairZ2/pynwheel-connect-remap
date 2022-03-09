@@ -17,8 +17,17 @@ class PynwheelLaunch::Communities::Searcher
     else
       communities = CommunityUser.all
     end
+
+    communities = distinct_user_communities(communities)
     communities = communities_by_search(communities) if search_params
     communities.order(created_at: :desc)
+  end
+
+  def distinct_user_communities communities
+    return unless communities.present?
+    
+    community_users_ids = communities.group(:community_id).select("MAX(updated_at)").maximum(:id).values
+    CommunityUser.where(id: community_users_ids)
   end
 
   def communities_by_search(collection)
