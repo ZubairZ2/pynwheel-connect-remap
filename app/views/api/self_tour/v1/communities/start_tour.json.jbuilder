@@ -375,16 +375,15 @@ json.tours @tours do |tour|
     else
       is_multiple_building, building_list = ShortestPath.check_stops_have_multiple_buildings(new_stops_arr, @community.id)
       if is_multiple_building
-        new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side_for_multiple(new_stops_arr, @community.id) # Here we add this community elevator and building start/exit for shortest path making
+        new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side_for_multiple(new_stops_arr, @community.id, @tour_user) # Here we add this community elevator and building start/exit for shortest path making
         mobile_path, new_stops_arr = ShortestPath.return_floorplate_mobile_path_for_multiple_buildings(new_stops_arr, building_list, @community.id, 'sorting')
       else
-        new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, @community.id) # Here we add this community elevator for shortest path making
+        new_stops_arr = ShortestPath.fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, @community.id, @tour_user) # Here we add this community elevator for shortest path making        
         mobile_path, new_stops_arr = ShortestPath.return_floorplate_path_for_mobile(new_stops_arr, @community.id, 'sorting')
       end
     end
   end
 
-  binding.pry
   json.tour_stop new_stops_arr.compact do |stop|
     unless @community.auto_wayfinding
       begin
@@ -447,7 +446,6 @@ json.tours @tours do |tour|
     elsif last_last_count_num == counter
       navigation_title = "Your tour is completed! Now let's go back to where you started."
     end
-
     begin
       if (navigation_title.include? "elevator") || (navigation_title.include? "Elevator") && !counter == 0
         navigation_title = "Next Stop: Elevator"

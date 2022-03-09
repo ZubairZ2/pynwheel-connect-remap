@@ -682,22 +682,30 @@ module ShortestPath
     end
     return is_multiple_building, building_list
   end
-  def fetch_multiple_stops(stop_types, new_stops_arr, community_id)
+
+  def fetch_multiple_stops(stop_types, new_stops_arr, community_id, tour_user)
     community = Community.find community_id
-    tour = community.community_tour
+    tour = tour_user.present? ? CustomizeTourService.new(community, tour_user).get_user_tour : community.community_tour
     tour_stops = tour&.tour_stops.visible.order('sort ASC')
     floorplate_mobile_stops = []
+
     tour_stops.each do |tour_stop|
-      floorplate_mobile_stops << tour_stop if stop_types.include?(tour_stop.stop_type) || new_stops_arr.include?(tour_stop)
+      if new_stops_arr.include?(tour_stop)
+        floorplate_mobile_stops << tour_stop
+      end
     end
+
     floorplate_mobile_stops
   end
-  def fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, community_id)
-    fetch_multiple_stops(['elevator'], new_stops_arr, community_id)
+
+  def fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, community_id, tour_user = nil)
+    fetch_multiple_stops(['elevator'], new_stops_arr, community_id, tour_user)
   end
-  def fetch_tour_stops_which_are_required_from_mobile_side_for_multiple(new_stops_arr, community_id)
-    fetch_multiple_stops(['elevator', 'building_starting_point'], new_stops_arr, community_id)
+
+  def fetch_tour_stops_which_are_required_from_mobile_side_for_multiple(new_stops_arr, community_id, tour_user = nil)
+    fetch_multiple_stops(['elevator', 'building_starting_point'], new_stops_arr, community_id, tour_user)
   end
+
   def return_stop_lock(stop)
     lock = nil
     if HAVING_DOOR_STOPS.include?(stop.class.name)

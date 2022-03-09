@@ -34,29 +34,40 @@ class CustomizeTourService
     tour = user_customized_tour
     tour_sort_hash = tour.sort_hash
     elevators = community_elevators
-
+    
     elevators.each do |elevator|
       elevator_floor_range = elevator.floors
       building = elevator&.building rescue ""
 
-      elevator_floor_range.each do |floor|
-        selected_obj = tour_sort_hash["#{building},#{floor}"]
-        if selected_obj.present?
-          unless selected_obj.include?(elevator.id)
-            stop = TourStop.where(stop_id:  elevator.id).last
+      if stops_available_for_tour(building)
+        elevator_floor_range.each do |floor|
+          selected_obj = tour_sort_hash["#{building},#{floor}"]
+          if selected_obj.present?
+            unless selected_obj.include?(elevator.id)
+              stop = TourStop.where(stop_id:  elevator.id).last
 
-            if stop.present?
-              tour_sort_hash["#{building},#{floor}"] << stop.id
+              if stop.present?
+                tour_sort_hash["#{building},#{floor}"] << stop.id
+              end
             end
           end
         end
       end
+
     end
 
     tour_sort_hash
   end
 
   private
+
+  def stops_available_for_tour building
+    tour = user_customized_tour
+    visible_stops_ids = tour.tour_stops.where(stop_type: ["unit", "amenity"], display_stop: true).pluck(:stop_id)
+    available_units_count = @community.units.where(id: visible_stops_ids, building: building, available: true).count
+    available_amenities_count = @community.amenities.where(id: visible_stops_ids, building: building, breezway_lock_visible: true).count
+    (available_units_count + available_amenities_count) > 0
+  end
 
   def community_elevators
     @community.elevators

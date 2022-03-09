@@ -183,9 +183,9 @@ class Api::V1::FloorplansController < ActionController::Base
       building = params[:building]      
     end
 
-    # stop = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)
+    stop = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)
 
-    # stop.update(floor: floor, building: building)
+    stop.update(floor: floor, building: building)
 
     if request.eql?("add")
       @tour.sort_hash[building + ","+ floor.to_s].push(tour_stop.id)
