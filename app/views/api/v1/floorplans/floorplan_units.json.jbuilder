@@ -36,7 +36,7 @@ json.units @units do |u|
   json.x_plot u.x_plot
   json.y_plot u.y_plot
   json.floor u.floor.present? ? u.floor : ""
-  json.building u.building
+  json.building u.building.present? ? u.building : ""
   json.unique_unit_identifier  @community.is_sitemap ? "#{@community&.sitemap&.id}" : "#{u&.floorplate&.id}-#{u.floor}"
 
   begin
@@ -47,7 +47,6 @@ json.units @units do |u|
     json.available_date_for_filter "N/A"
   end
    
-  json.building u.building.present? ? u.building : ""
   json.available u.available
   json.availability u.availability
   json.effective_rent u.effective_rent.to_i
