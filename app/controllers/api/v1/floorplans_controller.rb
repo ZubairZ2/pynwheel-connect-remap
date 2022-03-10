@@ -177,7 +177,7 @@ class Api::V1::FloorplansController < ActionController::Base
     # buildings_list = buildings_list.select{|s| s.present? }
     # building = buildings_list.present? ? buildings_list[0] : ""
 
-    building = params[:building].present? ? params[:building] || ""
+    building = params[:building].present? ? params[:building] : ""
 
     # stop = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)
 
