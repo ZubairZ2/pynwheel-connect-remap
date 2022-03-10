@@ -177,15 +177,11 @@ class Api::V1::FloorplansController < ActionController::Base
     # buildings_list = buildings_list.select{|s| s.present? }
     # building = buildings_list.present? ? buildings_list[0] : ""
 
-    building = ""
+    building = params[:building].present? ? params[:building] || ""
 
-    if params[:building].present?
-      building = params[:building]      
-    end
+    # stop = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)
 
-    stop = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)
-
-    stop.update(floor: floor, building: building)
+    # stop.update(floor: floor, building: building)
 
     if request.eql?("add")
       @tour.sort_hash[building + ","+ floor.to_s].push(tour_stop.id)
