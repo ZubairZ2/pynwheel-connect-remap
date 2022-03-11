@@ -43,6 +43,29 @@ class Floorplate < ApplicationRecord
   before_destroy :reset_units_plots
   after_commit :populate_image_urls, on: [:create,:update]
 
+  def get_floorplate_amenities_data floor, community_id
+    amenities = self.amenities.where(floor: floor, community_id: community_id)
+    floorplate_amenities = []
+
+    amenities.each do |stop|
+      floorplate_amenities << amenity_info(stop)
+    end
+
+    floorplate_amenities.present? ? floorplate_amenities_info(floor, floorplate_amenities) : nil
+
+  end
+
+  def get_floorplate_units_data floor, provider_floorplan_id, community_id
+    units = self.units.available_units.where(floor: floor, floorplan_id: provider_floorplan_id, community_id: community_id)
+    floorplate_units = []
+
+    units.each do |stop|
+      floorplate_units << unit_info(stop)
+    end
+
+    floorplate_units.present? ? floorplate_units_info(floor, floorplate_units) : nil
+  end
+
   def reset_units_plots
     self.units.update_all(x_plot: 0,y_plot: 0, floorplate_id: nil)
   end
@@ -92,4 +115,56 @@ class Floorplate < ApplicationRecord
     end
   end
 
+  private
+
+
+  def amenity_info amenity
+    {
+      id: amenity.id,
+      unit_name: amenity.name,
+      x_plot: amenity.x_plot,
+      y_plot: amenity.y_plot,
+    }
+  end
+
+  def unit_info unit
+    {
+      id: unit.id,
+      unit_name: unit.name,
+      x_plot: unit.x_plot,
+      y_plot: unit.y_plot,
+    }
+  end
+
+  def floorplate_amenities_info floor, floorplate_stops
+    {
+      id: self.id,
+      name: self.name,
+      floor_number: self.number,
+      image: self.image,
+      height: self.height,
+      width: self.width,
+      floor_range: self.range,
+      floorplan_name: floor,
+      building: self.building,
+      unique_floorplat_amenity_identifier: "#{self.id}-#{floor}",
+      floorplate_amenities: floorplate_stops
+    }
+  end
+
+  def floorplate_units_info floor, floorplate_stops
+    {
+      id: self.id,
+      name: self.name,
+      floor_number: self.number,
+      image: self.image,
+      height: self.height,
+      width: self.width,
+      floor_range: self.range,
+      floorplan_name: floor,
+      building: self.building,
+      unique_floorplat_unit_identifier: "#{self.id}-#{floor}",
+      floorplate_units: floorplate_stops
+    }
+  end
 end

@@ -254,6 +254,7 @@ Rails.application.routes.draw do
         get :lock_ploting
         get :visited_stops_data
         get :checkpoint_verification
+        get :reset_tour_stops
     end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do
@@ -543,6 +544,20 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
+    
+    namespace :self_tour do
+      namespace :v1 do
+        resources :communities do
+          get :user_tour_status
+          get :initialize_tour
+          get :customize_tour
+          get :generate_locks_accesses
+          post :check_lock_access
+          delete :start_tour
+        end
+      end
+    end
+
     namespace :v1 do
       post :authorize, to: 'schedule_tours#authorize_vendor'
       get :properties, to: 'schedule_tours#communities'
@@ -561,6 +576,7 @@ Rails.application.routes.draw do
           get :data
           get :data_group
           get :community_tours
+          get :customize_stops_list
           post :user_saved_tour
           get :tour_configrations
           get :tour_configrations_v1
@@ -624,6 +640,10 @@ Rails.application.routes.draw do
           post :feedback
         end
       end
+      resources :floorplans, only: :index
+      get '/floorplans/:floorplan_id/units', to: 'floorplans#floorplan_units'
+      get '/floorplan_amenities', to: 'floorplans#floorplan_amenities'
+      post '/update_tour_stops_list', to: 'floorplans#update_tour_stops_list'
       post :save_shared_tour, to: 'tours#save_shared_tour'
       post :checkpoint_verification_response, to: 'tours#checkpoint_verification_response'
       get '/get_floorplan_units', to: 'tours#floorplan_units'

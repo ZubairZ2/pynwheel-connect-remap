@@ -183,7 +183,7 @@
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
-                  = check_box_tag :visual_id_verification, true, @community.tour.visual_id_verification, class: "visual-id-verification"
+                  = check_box_tag :visual_id_verification, true, @community.community_tour.visual_id_verification, class: "visual-id-verification"
                   %label.label-primary{:for => "visual_id_verification"}
                   %span.pl-15 Yes
             .form-group
@@ -196,7 +196,7 @@
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
-                  = check_box_tag :charge_user_for_id_verfication, true, @community.tour.tour_setting.charge_user_for_id_verfication  , class: "charge_user_for_id_verfication"
+                  = check_box_tag :charge_user_for_id_verfication, true, @community.community_tour.tour_setting.charge_user_for_id_verfication  , class: "charge_user_for_id_verfication"
                   %label.label-primary{:for => "charge_user_for_id_verfication"}
                   %span.pl-15 Yes    
             .form-group
@@ -208,7 +208,7 @@
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
-                  = check_box_tag :enable_auto_zoom, true, @community.tour.enable_auto_zoom, class: "enable_auto_zoom"
+                  = check_box_tag :enable_auto_zoom, true, @community.community_tour.enable_auto_zoom, class: "enable_auto_zoom"
                   %label.label-primary{:for => "enable_auto_zoom"}
                   %span.pl-15 Yes 
             .form-group
@@ -245,7 +245,7 @@
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
-                  = check_box_tag :enable_restricted_property_access, true, @community.tour.tour_setting.enable_restricted_property_access, class: "enable_restricted_property_access" 
+                  = check_box_tag :enable_restricted_property_access, true, @community.community_tour.tour_setting.enable_restricted_property_access, class: "enable_restricted_property_access" 
                   %label.label-primary{:for => "enable_restricted_property_access"}
                   %span.pl-15 Yes
             .form-group
@@ -259,7 +259,7 @@
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
-                  = check_box_tag :do_limit_max_tour, true, @community.tour.tour_setting.do_limit_max_tour  , class: "do_limit_max_tour"
+                  = check_box_tag :do_limit_max_tour, true, @community.community_tour.tour_setting.do_limit_max_tour  , class: "do_limit_max_tour"
                   %label.label-primary{:for => "do_limit_max_tour"}
                   %span.pl-15 Yes      
             
@@ -270,7 +270,7 @@
                   %span#propertyDetailNameText
                     Enter the maximum number of in-person tours you would like at the property at one time. Leave blank if there is no limit.
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                %input.day-list.max-users-v.form-control{type: "number", id: "limit_max_tour", name: "limit_max_tour", min: "1", max: "60", step: "1", onkeydown: "return false", value: @community.tour.tour_setting.limit_max_tour}         
+                %input.day-list.max-users-v.form-control{type: "number", id: "limit_max_tour", name: "limit_max_tour", min: "1", max: "60", step: "1", onkeydown: "return false", value: @community.community_tour.tour_setting.limit_max_tour}         
             - if @tour_setting.allow_self_tour.nil? || @tour_setting.allow_self_tour
               .form-group.limit_max_tour_class.hidden
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -279,7 +279,7 @@
                     %span#propertyDetailNameText
                       Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.tour.max_self_tour_users}
+                  %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.community_tour.max_self_tour_users}
             - if (@tour_setting.allow_guided_tour.nil? || @tour_setting.allow_guided_tour) && !@community.is_salesforce_community?
               .form-group.limit_max_tour_class.hidden
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -288,20 +288,32 @@
                     %span#propertyDetailNameText
                       Enter the maximum number of Guided Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.tour.max_guided_tour_users}    
+                  %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.community_tour.max_guided_tour_users}    
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Length of tour
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
                   %span#propertyDetailNameText
                     If a visitor stays on tour past the time allotted here, the property will get a notification to check in with them.
-                    - if @community.tour.tour_setting.enable_restricted_property_access
+                    - if @community.community_tour.tour_setting.enable_restricted_property_access
                       Also, property access code will be expired after this time period.
               .col-sm-12.col-lg-2.col-md-2.col-xs-12
-                %input.day-list.max-users-v.form-control{type: "number", id: "length_stay_limit", name: "length_stay_limit", min: "10", max:"300", value: @community.tour.tour_setting.length_stay_limit} 
+                %input.day-list.max-users-v.form-control{type: "number", id: "length_stay_limit", name: "length_stay_limit", min: "10", max:"300", value: @community.community_tour.tour_setting.length_stay_limit} 
               .col-sm-12.col-lg-2.col-md-2.col-xs-12.add_minutes_span{:style => "margin-top: 13px;"}
                 %span
                   Minutes
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
+                Allow Customize Tours in Self Tour
+                %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
+                  %span#propertyDetailNameText
+                    Enabling this toggle will allow prospects to choose available units and amenities of their own choice to customize their tours 
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = check_box_tag :enable_tour_customization, true, @community.community_tour.tour_setting.enable_tour_customization, class: "enable_tour_customization" 
+                  %label.label-primary{:for => "enable_tour_customization"}
+                  %span.pl-15 Yes
             - if current_user.is_super_admin?
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
@@ -320,7 +332,7 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Dotted line color
                 .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                  = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.tour.dotted_line_color.humanize),:class => "form-control"
+                  = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.community_tour.dotted_line_color.humanize),:class => "form-control"
 
             
             .box-footer  
@@ -393,14 +405,14 @@
                         .row
                           .col-sm-6.col-lg-6.col-md-4.col-xs-12
                             .checkbox
-                              = check_box_tag :credit_card_required, true, @community.tour.credit_card_required
+                              = check_box_tag :credit_card_required, true, @community.community_tour.credit_card_required
                               %label Credit card required
                       - if @community.data_provider == "realpagesvc"
                         .col-sm-12.col-lg-9.col-md-9.col-xs-12
                           .row
                             .col-sm-6.col-lg-6.col-md-4.col-xs-12
                               .checkbox
-                                = check_box_tag :marketing_source_required, true, @community.tour.marketing_source_required
+                                = check_box_tag :marketing_source_required, true, @community.community_tour.marketing_source_required
                                 %label Lead source
                   .div_checklist{:class => "#{(@community.credential.present? and  @community.crm_credential.present? and @community.crm_credential.crm_provider.present? and @community.crm_credential.crm_provider == "salesforce") ? '' : ( (@community.scheduler_widget.present? and @community.scheduler_widget == true) ? '' : 'hidden')}"}
                     .form-group
@@ -412,7 +424,7 @@
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
                           %span.pr-15 No
-                          = check_box_tag :only_scheduled_tour, true, @community.tour.only_scheduled_tour , class: "only_scheduled_tour"
+                          = check_box_tag :only_scheduled_tour, true, @community.community_tour.only_scheduled_tour , class: "only_scheduled_tour"
                           %label.label-primary{:for => "only_scheduled_tour"}
                           %span.pl-15 Yes
                     .dev{:style => "margin-left: 60px;margin-top: -10px;margin-bottom: -10px;"}
@@ -420,7 +432,7 @@
                         .col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15{style:"margin-right: -35px;"}
                           Grace period
                         .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                          %input.day-list.max-users-v.form-control{type: "number", id: "grace_time", name: "grace_time", min: "5", max: "60", step: "5", onkeydown: "return false", value: @community.tour.grace_period}              
+                          %input.day-list.max-users-v.form-control{type: "number", id: "grace_time", name: "grace_time", min: "5", max: "60", step: "5", onkeydown: "return false", value: @community.community_tour.grace_period}              
                   
                   .form-group
                     %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label.font-size-15
@@ -749,7 +761,7 @@
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       .TriSea-technologies-Switch
                         %span.pr-15 No
-                        = check_box_tag :enable_header_footer, true, @community.tour.tour_setting.enable_header_footer, class: "enable_header_footer"
+                        = check_box_tag :enable_header_footer, true, @community.community_tour.tour_setting.enable_header_footer, class: "enable_header_footer"
                         %label.label-primary{:for => "enable_header_footer"}
                         %span.pl-15 Yes 
                 
@@ -761,7 +773,7 @@
                       .input-group.colorpicker-style.hex-format-colorpicker
                         .input-group-addon
                           %i
-                          = text_field_tag :email_header_color,"" , class: "form-control email_header_color-field",autocomplete: true,:value=>@community.tour.tour_setting.email_header_color
+                          = text_field_tag :email_header_color,"" , class: "form-control email_header_color-field",autocomplete: true,:value=>@community.community_tour.tour_setting.email_header_color
 
                 .col-lg-9.col-lg-offset-1
                   .form-group
@@ -771,7 +783,7 @@
                       .input-group.colorpicker-style.hex-format-colorpicker
                         .input-group-addon
                           %i
-                          = text_field_tag :email_footer_color,"" , class: "form-control email_footer_color-field",autocomplete: true,:value=>@community.tour.tour_setting.email_footer_color          
+                          = text_field_tag :email_footer_color,"" , class: "form-control email_footer_color-field",autocomplete: true,:value=>@community.community_tour.tour_setting.email_footer_color          
                 - if !@community.is_salesforce_community? && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
                     .form-group
@@ -812,7 +824,7 @@
                           This message will be sent to guest after tour will end.
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{@community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
-                - if !@community.is_salesforce_community? && current_community.tour.only_scheduled_tour and (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
+                - if !@community.is_salesforce_community? && current_community.community_tour.only_scheduled_tour and (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -868,7 +880,7 @@
         .modal-header
           Copy and paste the code below and share it with your web developer to add the scheduler widget to your website.
         .modal-body
-          %input.form-control#schedule-url1{:value => '<iframe style="height: 70px; width: 260px;"src="'+root_url+'/scheduler_widget/scheduler_widget_button?community_id='+current_community.id.to_s+'&community_code=eyJhbGciOiJIUzI1NiJ9.eyJjb21tdW5pdHlfaWQiOjR9.R9eFa3gZqU1lZDB2HP5x7w-NsWltyf3CjW0tPXPCnTw&id='+current_community.tour.scheduler_widget_setting.id.to_s+'"width="fit-content%" height="fit-content" />'}
+          %input.form-control#schedule-url1{:value => '<iframe style="height: 70px; width: 260px;"src="'+root_url+'/scheduler_widget/scheduler_widget_button?community_id='+current_community.id.to_s+'&community_code=eyJhbGciOiJIUzI1NiJ9.eyJjb21tdW5pdHlfaWQiOjR9.R9eFa3gZqU1lZDB2HP5x7w-NsWltyf3CjW0tPXPCnTw&id='+current_community.community_tour.scheduler_widget_setting.id.to_s+'"width="fit-content%" height="fit-content" />'}
 
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
@@ -955,7 +967,7 @@
     //tues_morning_val = jQuery(".Sunday_" + monday_count).find($(".morning_time")).val(monday_morning);
     //tues_evening_val = jQuery(".Sunday_" + monday_count).find($(".evening_time")).val(monday_evening);
   }
-  var do_limit_max_tour = "#{current_community.tour.tour_setting.do_limit_max_tour}"  
+  var do_limit_max_tour = "#{current_community.community_tour.tour_setting.do_limit_max_tour}"  
   if(do_limit_max_tour == "true")
     $('.limit_max_tour_class').removeClass('hidden');
   $('#do_limit_max_tour').change(function() {
@@ -989,7 +1001,7 @@
     //tues_evening_val = jQuery(".Sunday_" + monday_count).find($(".evening_time")).val(monday_evening);
   }
 
-  var do_limit_max_tour = "#{current_community.tour.tour_setting.do_limit_max_tour}"  
+  var do_limit_max_tour = "#{current_community.community_tour.tour_setting.do_limit_max_tour}"  
   if(do_limit_max_tour == "true")
     $('.limit_max_tour_class').removeClass('hidden');
   $('#do_limit_max_tour').change(function() {

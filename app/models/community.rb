@@ -84,6 +84,36 @@ class Community < ApplicationRecord
     include_association :design
   end
 
+  def unit_bedrooms_filters floorplans, unit_bedrooms = []
+
+    if self&.community_tour&.tour_setting&.enable_tour_customization
+      int = 1
+
+      floorplans.each do |f|
+
+        unit_bedrooms << {
+          id: int,
+          title: (f.bedrooms.present? ? (f.bedrooms.to_i == 0 ? "Studio" : f.bedrooms.to_i) : ""),
+          value: f.bedrooms.present? ? f.bedrooms.to_i : "",
+          is_selected: false
+        }
+
+        int = int + 1
+
+      end
+    end
+
+    unit_bedrooms
+  end
+
+  def community_tour
+    Tour.where(community_id: self&.id, tour_user_id: nil).last
+  end
+
+  def get_community_favorite_stop
+    self.favorite_stop.present? ? self.favorite_stop : FavoriteStop.new
+  end
+
   def set_community_time_zone 
     if self.latitude.present? && self.longitude.present?
       time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
@@ -112,7 +142,7 @@ class Community < ApplicationRecord
   end
 
   def create_tour_also
-    tour = self.create_tour if self.tour.nil?
+    tour = self.create_tour if self&.community_tour.nil?
     tour.create_tour_setting if tour.present? and tour.tour_setting.nil?
   end
 
@@ -714,27 +744,27 @@ s  end
   end
 
 
-  def community_tour_available_stops tour_user
+  def community_tour_available_stops tour_user, tour
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, self, false).get_scheduled_tour
 
     if scheduled_tour.present? && scheduled_tour.stops_list.present?
-      self.tour.tour_stops.where(id: scheduled_tour.stops_list).order(:sort)
+      tour.tour_stops.where(id: scheduled_tour.stops_list).order(:sort)
     else
       nil
     end
   end
 
   def is_virtual_permission_on
-    if self&.tour&.tour_setting.present?
-      self.tour.tour_setting.allow_virtual_tour
+    if self&.community_tour&.tour_setting.present?
+      self&.community_tour.tour_setting.allow_virtual_tour
     else
       false
     end
   end
 
   def is_any_tour_type_selected
-    if self&.tour&.tour_setting.present?
-      toue_setting = self.tour.tour_setting
+    if self&.community_tour&.tour_setting.present?
+      toue_setting = self&.community_tour.tour_setting
       return toue_setting.allow_virtual_tour || toue_setting.allow_self_tour || toue_setting.allow_guided_tour
     else
       return false
@@ -743,23 +773,21 @@ s  end
 
   def collect_disable_days
     disable_days_of_week = []
-    if self&.tour&.tour_setting.present?
-      tour_setting = self.tour.tour_setting
+
+    if self&.community_tour&.tour_setting.present?
+      tour_setting = self&.community_tour.tour_setting
       allow_self_tour = tour_setting.allow_self_tour
       allow_guided_tour = tour_setting.allow_guided_tour
-      # allow_virtual_tour = tour_setting.allow_virtual_tour
-      # if allow_virtual_tour
-      #   return disable_days_of_week
-      # else
-        week_days = {"Sunday" => 0, "Monday" => 1, "Tuesday" => 2, "Wednesday" => 3, "Thursday" => 4, "Friday" => 5, "Saturday" => 6}
-        self_tour_week_days = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day) : []
-        guided_tour_week_days = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day) : []
-        enable_days = self_tour_week_days.present? && guided_tour_week_days.present? ? (self_tour_week_days | guided_tour_week_days) : (self_tour_week_days + guided_tour_week_days)
-        enable_indexes = enable_days.any? ? (enable_days.map {|day| week_days[day]}) : []
-        disable_days = week_days.values - enable_indexes
-        return disable_days
-      # end
+      week_days = {"Sunday" => 0, "Monday" => 1, "Tuesday" => 2, "Wednesday" => 3, "Thursday" => 4, "Friday" => 5, "Saturday" => 6}
+      self_tour_week_days = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day) : []
+      guided_tour_week_days = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day) : []
+      enable_days = self_tour_week_days.present? && guided_tour_week_days.present? ? (self_tour_week_days | guided_tour_week_days) : (self_tour_week_days + guided_tour_week_days)
+      enable_indexes = enable_days.any? ? (enable_days.map {|day| week_days[day]}) : []
+      disable_days = week_days.values - enable_indexes
+      
+      return disable_days
     end
+
     disable_days_of_week
   end
 
@@ -768,32 +796,23 @@ s  end
     self_time_slots_hash = {}
     guided_time_slots_hash = {}
     week_days = {"Sunday" => 0, "Monday" => 1, "Tuesday" => 2, "Wednesday" => 3, "Thursday" => 4, "Friday" => 5, "Saturday" => 6}
-    if self&.tour&.tour_setting.present?
-      tour_setting = self.tour.tour_setting
+    if self&.community_tour&.tour_setting.present?
+      tour_setting = self&.community_tour.tour_setting
       allow_self_tour = tour_setting.allow_self_tour
       allow_guided_tour = tour_setting.allow_guided_tour
-      # allow_virtual_tour = tour_setting.allow_virtual_tour
-      # if allow_virtual_tour
-      #   each_day_slots = return_time_slots("0:00", "23:59",stepping)
-      #   ((0..6).to_a).each do |day|
-      #     time_slots[day] = each_day_slots
-      #   end
-      # else
-        self_tour_data = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day, :opening_time, :closing_time) : []
-        if self_tour_data.present?
-          self_tour_data.each do |data|
-            # time_slots[week_days[data[0]]] = time_slots[week_days[data[0]]].present? ? (time_slots[week_days[data[0]]] + return_time_slots(data[1], data[2], stepping)) : (return_time_slots(data[1], data[2], stepping))
-            self_time_slots_hash[week_days[data[0]]] = self_time_slots_hash[week_days[data[0]]].present? ? (self_time_slots_hash[week_days[data[0]]] + return_slots_hash(data[1], data[2])) : (return_slots_hash(data[1], data[2]))
-          end
+
+      self_tour_data = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day, :opening_time, :closing_time) : []
+      if self_tour_data.present?
+        self_tour_data.each do |data|
+          self_time_slots_hash[week_days[data[0]]] = self_time_slots_hash[week_days[data[0]]].present? ? (self_time_slots_hash[week_days[data[0]]] + return_slots_hash(data[1], data[2])) : (return_slots_hash(data[1], data[2]))
         end
-        guided_tour_data = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
-        if guided_tour_data.present?
-          guided_tour_data.each do |data|
-            # time_slots[week_days[data[0]]] = time_slots[week_days[data[0]]].present? ? (time_slots[week_days[data[0]]] + return_time_slots(data[1], data[2], stepping)) : (return_time_slots(data[1], data[2], stepping))
-            guided_time_slots_hash[week_days[data[0]]] = guided_time_slots_hash[week_days[data[0]]].present? ? (guided_time_slots_hash[week_days[data[0]]] + return_slots_hash(data[1], data[2])) : (return_slots_hash(data[1], data[2]))
-          end
+      end
+      guided_tour_data = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
+      if guided_tour_data.present?
+        guided_tour_data.each do |data|
+          guided_time_slots_hash[week_days[data[0]]] = guided_time_slots_hash[week_days[data[0]]].present? ? (guided_time_slots_hash[week_days[data[0]]] + return_slots_hash(data[1], data[2])) : (return_slots_hash(data[1], data[2]))
         end
-      # end
+      end
     end
     merged_slots = merge_both_self_and_guided_slots(self_time_slots_hash, guided_time_slots_hash)
     slots = return_final_slots(merged_slots, stepping)
@@ -803,8 +822,6 @@ s  end
     time_slots = slots
     time_slots.each {|key, value_arr| time_slots[key] = value_arr.uniq}
     time_slots
-    # time_slots.each {|key, value_arr| time_slots[key] = value_arr.uniq}
-    # time_slots
   end
 
   def collect_time_slots_for_rechedule_tours(stepping,tour_type)
@@ -812,25 +829,24 @@ s  end
     self_time_slots_hash = {}
     guided_time_slots_hash = {}
     week_days = {"Sunday" => 0, "Monday" => 1, "Tuesday" => 2, "Wednesday" => 3, "Thursday" => 4, "Friday" => 5, "Saturday" => 6}
-    if self&.tour&.tour_setting.present?
-      tour_setting = self.tour.tour_setting
+    if self&.community_tour&.tour_setting.present?
+      tour_setting = self&.community_tour.tour_setting
       allow_self_tour = tour_setting.allow_self_tour
       allow_guided_tour = tour_setting.allow_guided_tour
-        self_tour_data = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day, :opening_time, :closing_time) : []
-        if self_tour_data.present? && tour_type == "self_tour"
-          self_tour_data.each do |data|
-            time_slots[week_days[data[0]]] = time_slots[week_days[data[0]]].present? ? (time_slots[week_days[data[0]]] + return_time_slots(data[1], data[2], stepping)) : (return_time_slots(data[1], data[2], stepping))
-            # self_time_slots_hash[week_days[data[0]]] = self_time_slots_hash[week_days[data[0]]].present? ? (self_time_slots_hash[week_days[data[0]]] + return_slots_hash(data[1], data[2])) : (return_slots_hash(data[1], data[2]))
-          end
+      self_tour_data = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day, :opening_time, :closing_time) : []
+      if self_tour_data.present? && tour_type == "self_tour"
+        self_tour_data.each do |data|
+          time_slots[week_days[data[0]]] = time_slots[week_days[data[0]]].present? ? (time_slots[week_days[data[0]]] + return_time_slots(data[1], data[2], stepping)) : (return_time_slots(data[1], data[2], stepping))
         end
-        guided_tour_data = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
-        if guided_tour_data.present? && tour_type == "guided_tour"
-          guided_tour_data.each do |data|
-            time_slots[week_days[data[0]]] = time_slots[week_days[data[0]]].present? ? (time_slots[week_days[data[0]]] + return_time_slots(data[1], data[2], stepping)) : (return_time_slots(data[1], data[2], stepping))
-            # guided_time_slots_hash[week_days[data[0]]] = guided_time_slots_hash[week_days[data[0]]].present? ? (guided_time_slots_hash[week_days[data[0]]] + return_slots_hash(data[1], data[2])) : (return_slots_hash(data[1], data[2]))
-          end
+      end
+      guided_tour_data = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
+      if guided_tour_data.present? && tour_type == "guided_tour"
+        guided_tour_data.each do |data|
+          time_slots[week_days[data[0]]] = time_slots[week_days[data[0]]].present? ? (time_slots[week_days[data[0]]] + return_time_slots(data[1], data[2], stepping)) : (return_time_slots(data[1], data[2], stepping))
         end
+      end
     end
+
     time_slots.each {|key, value_arr| time_slots[key] = value_arr.uniq}
     time_slots
   end
@@ -911,8 +927,8 @@ s  end
 
   def collect_time_slots_for_yardi(stepping, yardi_self_time_slots, yardi_guided_time_slots)
     time_slots = {}
-    if self&.tour&.tour_setting.present?
-      tour_setting = self.tour.tour_setting
+    if self&.community_tour&.tour_setting.present?
+      tour_setting = self&.community_tour.tour_setting
       allow_self_tour = tour_setting.allow_self_tour
       allow_guided_tour = tour_setting.allow_guided_tour
       allow_virtual_tour = tour_setting.allow_virtual_tour
@@ -965,24 +981,17 @@ s  end
 
   def fetch_tour_type_according_to_time(day, tour_time)
     tour_type = []
-    if self&.tour&.tour_setting.present?
-      tour_setting = self.tour.tour_setting
+    if self&.community_tour&.tour_setting.present?
+      tour_setting = self&.community_tour.tour_setting
       allow_self_tour = tour_setting.allow_self_tour
       allow_guided_tour = tour_setting.allow_guided_tour
-
-      # TODO::Removed virtual tour option from dropdown
-      # allow_virtual_tour = tour_setting.allow_virtual_tour
-      # if allow_virtual_tour
-      #   tour_type << ["virtual_tour","Virtual Tour"]
-      # end
       week_days = {"Sunday" => 0, "Monday" => 1, "Tuesday" => 2, "Wednesday" => 3, "Thursday" => 4, "Friday" => 5, "Saturday" => 6}
+     
       if allow_self_tour && self.opening_hours.present?
         hours_hash ||= []
-        # hours_hash = {}
         self_tour_week_days = self.opening_hours.pluck(:day, :opening_time, :closing_time)
         if self_tour_week_days.present?
           self_tour_week_days.each do |arr|
-            # hours_hash[week_days[arr[0]]] = [arr[1], arr[2]]
             hours_hash << {"#{week_days[arr[0]]}": ["#{arr[1]}","#{arr[2]}"]}
           end
           merged_intervals = hours_hash.each_with_object({}) { |h, o| h.each { |k,v| (o[k] ||= []) << v } }
@@ -990,7 +999,6 @@ s  end
           merged_intervals.each do |k,v|
             time_range << v if k[0].to_i == day.to_i
           end
-          # time_range = hours_hash[day.to_i]
           merged_time_range = time_range.flatten(1)
           if merged_time_range.present?
             merged_time_range.each do |time_range_obj|
@@ -1005,19 +1013,16 @@ s  end
       end
       if allow_guided_tour && self.guided_opening_hours.present?
         guided_hours_hash ||= []
-        # hours_hash = {}
         guided_tour_week_days = self.guided_opening_hours.pluck(:day, :opening_time, :closing_time)
         if guided_tour_week_days.present?
           guided_tour_week_days.each do |arr|
             guided_hours_hash << {"#{week_days[arr[0]]}": ["#{arr[1]}","#{arr[2]}"]}
-            # hours_hash[week_days[arr[0]]] = [arr[1], arr[2]]
           end
           merged_intervals = guided_hours_hash.each_with_object({}) { |h, o| h.each { |k,v| (o[k] ||= []) << v } }
           guided_time_range = []
           merged_intervals.each do |k,v|
             guided_time_range << v if k[0].to_i == day.to_i
           end
-          # time_range = hours_hash[day.to_i]
           merged_time_range = guided_time_range.flatten(1)
           if merged_time_range.present?
             merged_time_range.each do |time_range_obj|
@@ -1039,8 +1044,8 @@ s  end
     yardi_time_slots = self.available_slots(scheduled_tour)
     yardi_self_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
     yardi_guided_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
-    if self&.tour&.tour_setting.present?
-      tour_setting = self.tour.tour_setting
+    if self&.community_tour&.tour_setting.present?
+      tour_setting = self&.community_tour.tour_setting
       stepping = tour_setting.time_intervel == '15 min' ? 15 : (tour_setting.time_intervel == '30 min' ? 30 : (tour_setting.time_intervel == '1 hr') ? 60 : (tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
       allow_self_tour = tour_setting.allow_self_tour
       allow_guided_tour = tour_setting.allow_guided_tour
@@ -1383,28 +1388,6 @@ s  end
     return slot_hash
   end
 
-  # For Testing purpose if there is no slot available of self
-  # def get_yardi_self_fixed_time_slots
-  #   [["6/4/2021", "8:00:00", "9:00:00"],
-  #  ["6/4/2021", "9:00:00", "10:00:00"],
-  #  ["6/4/2021", "10:00:00", "11:00:00"],
-  #  ["6/4/2021", "11:00:00", "12:00:00"],
-  #  ["6/4/2021", "12:00:00", "12:20:00"],
-  #  ["6/4/2021", "1:00:00", "2:00:00"],
-  #  ["6/4/2021", "2:20:00", "3:00:00"],
-  #  ["6/4/2021", "3:00:00", "4:00:00"],
-  #  ["6/4/2021", "4:20:00", "4:40:00"],
-  #  ["6/4/2021", "5:00:00", "6:00:00"],
-  #  ["6/4/2021", "6:00:00", "7:00:00"],
-  #  ["6/7/2021", "9:00:00", "10:00:00"],
-  #  ["6/7/2021", "11:00:00", "12:00:00"],
-  #  ["6/7/2021", "1:00:00", "2:00:00"],
-  #  ["6/7/2021", "3:00:00", "4:00:00"],
-  #  ["6/7/2021", "4:00:00", "5:00:00"],
-  #  ["6/7/2021", "5:00:00", "6:00:00"],
-  #  ["6/7/2021", "6:00:00", "7:00:00"]]
-  # end
-
   def populate_favorites(items_objs,email_to)
     fs = self.favorite_stop
     fs = self.favorite_stop.present? ? self.favorite_stop : FavoriteStop.create(community_id: self.id)
@@ -1415,17 +1398,8 @@ s  end
       favorites << favorite.first if favorite.present?
       if item[:type] == 'floorplan'
         units[item[:id].to_s] = item[:unit_id]
-      #   u = Unit.find item['unit_id']
-      #   if u.present?
-      #     units << u
-      #   else
-      #     u = Unit.new
-      #     units << u
-      #   end
-      # else
-      #   u = Unit.new
-      #   units << u
       end
+
       if item[:type] == 'unit'
         fs.user_favorites_unit[email_to] = [] #if fs.user_favorites_unit[email_to] == nil
         fs.user_favorites_unit[email_to] << item[:id] unless fs.user_favorites_unit[email_to].include?(item[:id])

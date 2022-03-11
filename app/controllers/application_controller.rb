@@ -3,7 +3,6 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_user!, except: :generate_error
   layout :layout_by_resource
   config.time_zone = 'Eastern Time (US & Canada)'
-  # before_action :check_community
   before_action :configure_permitted_parameters, if: :devise_controller?
   helper_method :current_community
   before_action :community_code
@@ -11,7 +10,6 @@ class ApplicationController < ActionController::Base
   helper_method :alphabetical_sort
   helper_method :show_chat_support
   before_action :load_tour_users_chats
-  # before_filter :redirect_to_pynwheelconnect
   
   def current_community
   	if params[:community_id].present?
@@ -21,10 +19,11 @@ class ApplicationController < ActionController::Base
 		  @community ||= Community.find_by_id params[:id] 
 	  end  	
   end
+  
   def community_code
     if current_community.present?
-      @community.create_tour unless @community.tour.present?
-      @schedule_widget_setting = @community.tour.scheduler_widget_setting || @community.tour.create_scheduler_widget_setting
+      @community.create_tour unless @community.community_tour.present?
+      @schedule_widget_setting = @community.community_tour.scheduler_widget_setting || @community.community_tour.create_scheduler_widget_setting
       @community_code = (JWT.encode ({"community_id" => @community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
     end
   end
@@ -64,8 +63,6 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(resource_or_scope)
-    # LoggedInUser.where(user_id: current_user).destroy_all
-    # cookies.permanent[:browser_id] = SecureRandom.hex(8) if cookies[:browser_id].nil?
     root_url
   end
 
@@ -93,11 +90,8 @@ class ApplicationController < ActionController::Base
       if params[:community_id].present?
         all_ids = []
         current_user.communities.each do |c|
-          # all_ids.insert(c.id)
           all_ids << c.id
         end
-        # byebug
-        # puts '+++++++++++++++', all_ids[0]
         if all_ids.include? params[:community_id].to_i
 
         else
@@ -124,9 +118,9 @@ class ApplicationController < ActionController::Base
     # request.xhr? => returns numeric or nil values not BOOLEAN values and 
     # it works with unless condition as suited with our case
     unless request.xhr?
-      if current_user.present? and @community.present? and @community.tour.present?
+      if current_user.present? and @community.present? and @community.community_tour.present?
         chat_enabled_communities = current_user.communities.where(community_users: {chat_enable: true}).uniq.includes(:tour)
-        @chatrooms = Chatroom.where(tour_id: chat_enabled_communities.map{|c| c.tour.id if c.tour.present?}).includes(:chats, :tour, :tour_user)
+        @chatrooms = Chatroom.where(tour_id: chat_enabled_communities.map{|c| c.community_tour.id if c.community_tour.present?}).includes(:chats, :tour, :tour_user)
         @listening_channels = chat_enabled_communities.map{|c| (c.name + "_with_id_" + c.id.to_s).parameterize.gsub("-", "").gsub("_", "")}
         @notifications =  @chatrooms.map{ |chatroom| notifications_by_chatroom(@community, chatroom) }
         @chatroom_list = @chatrooms.map{|c| c.id}
@@ -138,15 +132,18 @@ class ApplicationController < ActionController::Base
   def notifications_by_chatroom(community,chatroom)
     all_community_members = community.users
     min_count = 99999
+
     all_community_members.each do |user|
       count = Chat.where("chatroom_id = ? AND  name != ? ", chatroom.id, "Support Team").unread_by(user).count
       if count < min_count
         min_count = count 
       end
     end
+    
     if all_community_members.count == 0
       min_count=0
     end 
+
     [chatroom.id , min_count]
   end
 
@@ -156,17 +153,19 @@ class ApplicationController < ActionController::Base
 
   def show_chat_support
     current_community.present? ? CommunityUser.where(user_id: current_user.id, chat_enable: true).exists? : false rescue false
-    # Community.joins(:community_users).where(communities: {chat_control: true}, community_users: {community_id: current_community.id, user_id: current_user.id, chat_enable: true}).exists? rescue false
   end
+
   def make_sure_one_selected_hallway(hallways)
     if hallways.present? && !hallways.where(selected: true).any?
-        hallway = hallways.last
-        hallway.selected = true
-        hallway.save
-        hallways.last.selected = true
+      hallway = hallways.last
+      hallway.selected = true
+      hallway.save
+      hallways.last.selected = true
     end
+
     hallways
   end
+
   protected
 
   def layout_by_resource
@@ -181,13 +180,4 @@ class ApplicationController < ActionController::Base
     devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:region_id,:role,:community_ids=>[]])
     devise_parameter_sanitizer.permit(:accept_invitation, keys: [:first_name, :last_name, :avatar])
   end
-
-  # TODO: Redirection from pynwheelapp to pynwheelconnect
-  # def redirect_to_pynwheelconnect
-  #   if Rails.env.production? and request.host_with_port == "pynwheelapp.com"
-  #     redirect_to "https://pynwheelconnect.com/", :status => 301
-  #     return false
-  #   end
-  # end
-
 end

@@ -4,23 +4,13 @@ styling_end = '</p></div>'
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number
 json.email @tour_user.email
-json.visual_id_verification @in_visiting_hours == true ? (@community.present? ? @community.tour.visual_id_verification : true) : false
+json.visual_id_verification @in_visiting_hours == true ? (@community.present? ? @community.community_tour.visual_id_verification : true) : false
 json.virtual_tour @in_visiting_hours == true ? true : false   # seding reverse value due to last name of json field i.e 'ontime'
 json.latest_message_id @latest_message_id 
 json.chat_control (@community.chat_control and @community.is_chat_available) ? @community.chat_control : false
-
-# @tours.each do |tour|
-#   if tour[0][1] == last_vs.tour_key
-#     @tours = { [tour[0][0],tour[0][1]] => tour[1]}
-#   end
-# end
-# @tours = { [@tours.keys.last[0],@tours.keys.last[1]] => @tours.values.last}
-# @tours = @tours.last
 tours = [@tour]
 tour_key = @last_vs.tour_key rescue nil
 json.tours tours do |tour|
-  # tour_key = tour[0][1]
-  # tour = Tour.find tour[0][0]
   @community = Community.find tour.community_id
   json.id tour.id
   json.tour_key tour_key
@@ -31,12 +21,8 @@ json.tours tours do |tour|
   json.x_plot tour.x_plot
   json.y_plot tour.y_plot
   json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url) rescue ""
-  # visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key).group('tour_stop_id').count
 
   json.visited_tour @visited_stops do |visited_stop|
-    # @tour = TourStop.find visited_stop[0] rescue next
-    # byebug
-
     @tour = TourStop.find visited_stop rescue next
     stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop,description: nil, image: nil).last
     stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop).last unless stop.present?
@@ -44,7 +30,6 @@ json.tours tours do |tour|
     
     if @tour.stop_type == "unit" || @tour.stop_type == "amenity"
       json.id @tour.id
-      # @tour = TourStop.find visited_stop[0]
       json.type @tour.stop_type
       if @tour.stop_type == "unit"
         unit = Unit.find @tour.stop_id
@@ -65,7 +50,6 @@ json.tours tours do |tour|
             str = ss.split(':')
 
             pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
-            # h = {"pricing_option" => pricing_str}
             lease_pricing << pricing_str
 
           end
@@ -105,12 +89,7 @@ json.tours tours do |tour|
         
         json.stop_data stop_dat
         @unit_gallery_arr = []
-        @unit_amenities = unit.amenities # Amenity.where(community_id: (Tour.find @tour.tour_id).community_id, amenityable_type: "Unit", amenityable_id: @tour.stop_id)
-        puts "----------------------"*10
-        puts "----------------@unit_amenities"
-        puts  @unit_amenities.count
-        puts "----------------------"*10
-
+        @unit_amenities = unit.amenities
 
         json.unit_amenities @unit_amenities do |unit_amenity|
           if unit_amenity.x_plot.present? && (unit_amenity.x_plot + unit_amenity.y_plot > 0)
@@ -134,14 +113,10 @@ json.tours tours do |tour|
           json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
           json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""
 
-            # unit_amenity.description = nil
             @unit_gallery_arr << unit_amenity
 
             unit_amenity.amenity_galleries.each do |ag|
               @unit_gallery_arr << ag
-              # json.name ag.name
-              # json.image ag.image.url
-              # json.description ag.description
             end
           end
         end
@@ -182,7 +157,6 @@ json.tours tours do |tour|
         floorplate_image = (amenity.amenityable.image.present? ? amenity.amenityable : nil) if amenity.amenityable.present? rescue nil
 
         json.floorplate_image floorplate_image.image.url rescue ""
-        # json.html_description amenity.directional_text
         json.floorplan_image []
         json.name amenity.name
         json.x_plot amenity.x_plot
@@ -192,7 +166,6 @@ json.tours tours do |tour|
         json.video_link_button_label amenity.video_link_button_label
         json.video_link amenity.video_link.present? ? amenity.video_link : ""
 
-        # amenity.description = nil
         amenityGalleryArr = []
         amenityGalleryArr << amenity
         amenity.amenity_galleries.each do |amen|
@@ -249,7 +222,6 @@ json.tours tours do |tour|
         obj[:event_time] = (un.event_date.present? ? un.event_date.strftime("%m/%d/%Y") + " " : "") + (un.event_time.present? ? un.event_time.strftime("%H:%M:%S") : "")
         description_arr << un.description
         description_arr_v1 << obj
-        # json.description un.description
       end
 
       json.notes description_arr
@@ -257,5 +229,4 @@ json.tours tours do |tour|
 
     end
   end
-
 end

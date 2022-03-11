@@ -31,6 +31,7 @@ class TourUser < ApplicationRecord
   has_many :lock_histories, dependent: :destroy
   has_many :prospects, dependent: :destroy
   has_many :user_stripes, dependent: :destroy
+  has_many :tours, dependent: :destroy
 
   has_one :feedbacks
   
@@ -45,6 +46,7 @@ class TourUser < ApplicationRecord
 
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :id_card, AvatarUploader
+
   def crop_user_image
     begin
       image.recreate_versions! if (image.present? and crop_image_bit and !crop_image_bit.nil)
@@ -53,15 +55,17 @@ class TourUser < ApplicationRecord
       
     end
   end
+  
   attr_accessor :crop_image_bit
+
   def crop_image_bit
     @crop_image_bit
   end
 
   def check_code_expiry(community)
     access_code_generated_at = self.property_access_code_generated_at
-    tour_length_stay_limit = community&.tour&.tour_setting&.length_stay_limit
-    enabled_property_access = community&.tour&.tour_setting&.enable_restricted_property_access
+    tour_length_stay_limit = community&.community_tour&.tour_setting&.length_stay_limit
+    enabled_property_access = community&.community_tour&.tour_setting&.enable_restricted_property_access
     if enabled_property_access && (access_code_generated_at.nil? || Time.now > access_code_generated_at + tour_length_stay_limit.minutes)
       true
     else
@@ -97,4 +101,7 @@ class TourUser < ApplicationRecord
     end
   end
 
+  def customized_tour community
+    !(community.community_tour&.tour_setting&.enable_tour_customization && self.tours.where(community_id: community.id).last.present?)
+  end
 end

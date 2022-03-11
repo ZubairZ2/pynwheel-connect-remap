@@ -64,14 +64,14 @@ class KnockService < BaseService
   private
 
   def get_filtered_in_person_slots slots
-    tour_setting = @community.tour.tour_setting
+    tour_setting = @community.community_tour.tour_setting
     allow_guided_tour = tour_setting.allow_guided_tour
     guided_tour_data = (allow_guided_tour && @community.guided_opening_hours.present?) ? @community.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
     calculate_available_time_slots_hash(slots, guided_tour_data)
   end
 
   def get_filtered_self_guided_slots slots
-    tour_setting = @community.tour.tour_setting
+    tour_setting = @community.community_tour.tour_setting
     allow_self_tour = tour_setting.allow_self_tour if tour_setting.present?
     self_tour_data = (allow_self_tour && @community.opening_hours.present?) ? @community.opening_hours.pluck(:day, :opening_time, :closing_time) : []
     calculate_available_time_slots_hash(slots, self_tour_data)

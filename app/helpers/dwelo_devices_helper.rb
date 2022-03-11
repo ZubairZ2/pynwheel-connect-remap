@@ -184,7 +184,6 @@ module DweloDevicesHelper
 
   def lock_access_by_type(params, community, tour_user, current_time)
     if community.multiple_locks_provider.include?("Igloohome")
-      puts "----------------------- Igloohome Lock ----------------------"
       igloohome_lock_access(params, community, current_time)
     end
     
@@ -205,8 +204,6 @@ module DweloDevicesHelper
     Thread.new do
       begin
         tour_user = TourUser.find params[:tour_user_id]
-        puts "----------------------- igloohome_lock_access ----------------------"
-        puts tour_user.inspect
 
         if params[:time_zone].present?
           current_time = Time.now.in_time_zone(params[:time_zone])
@@ -220,7 +217,6 @@ module DweloDevicesHelper
 
       rescue => ex
         tour_user.update_column 'igloohome_status' , 'complete'
-        puts "--------- Igloohome error -------- ", ex
       end
     end
   end
@@ -230,22 +226,22 @@ module DweloDevicesHelper
       begin
       tour_user = TourUser.find params[:tour_user_id]
       tour_user.update_column 'dwelo_status' , 'in progress'
-      providers_account = Dwelo.find_by(community_id: params[:id]) rescue nil
+      providers_account = Dwelo.find_by(community_id: community.id) rescue nil
       @community = community
       access_token = dwelo_client_credentials(providers_account)
-      prev_data = tour_user.as_guests.find_by(community_id: params[:id])
+      prev_data = tour_user.as_guests.find_by(community_id: community.id)
 
       # ----------- creating a guest for remote lock (type = locks) ----------------- #
       unless prev_data.present? 
         response = create_dwelo_access_guest(access_token, tour_user, current_time)
-        dwelo_tour_user = tour_user.as_guests.create!(community_id: params[:id],  guest_id: response["id"], dwelo_guest: true)
+        dwelo_tour_user = tour_user.as_guests.create!(community_id: community.id,  guest_id: response["id"], dwelo_guest: true)
       else
         delete_dwelo_access_guest(access_token, prev_data.guest_id)
         response = create_dwelo_access_guest(access_token, tour_user, current_time)
         prev_data.update_attributes!(guest_id: response["id"])
       end
 
-      allowed_stops = locks_with_same_type("Dwelo", community)
+      allowed_stops = locks_with_same_type("Dwelo", community, tour_user)
 
       dwelo = Dwelo.find_by(community_id: community.id)
       locks = RemoteLock.where(stop_id: allowed_stops, dwelo_id: dwelo.id).pluck(:device_id, :remote_lock_type)
@@ -272,18 +268,18 @@ module DweloDevicesHelper
       tour_user = TourUser.find params[:tour_user_id]
       tour_user.update_column 'edge_state_status' , 'in progress'
       access_token = RemoteLockService.new(community).client_credentials
-      prev_data = tour_user.as_guests.where(community_id: params[:id])
+      prev_data = tour_user.as_guests.where(community_id: community.id)
       # ----------- creating a guest for remote lock (type = locks) ----------------- #
       unless prev_data.present?
         response = RemoteLockService.new(community).create_access_guest(access_token,tour_user,current_time)
-        tour_user.as_guests.create(community_id: params[:id], edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
+        tour_user.as_guests.create(community_id: community.id, edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
       else
         RemoteLockService.new(community).delete_access_guest(access_token,prev_data.last.guest_id)
         response = RemoteLockService.new(community).create_access_guest(access_token,tour_user,current_time)
         prev_data.last.update_attributes(edgestate_pin: response["data"]["attributes"]["pin"], guest_id: response["data"]["id"])
       end
       # ------------ creating guest and granting access for igloo lock -------------------------------- #
-      allowed_stops = locks_with_same_type("EdgeState", community)
+      allowed_stops = locks_with_same_type("EdgeState", community, tour_user)
       locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: community.edge_state.id, remote_lock_type: "igloo_lock").pluck(:device_id, :stop_id)
      
       if locks.present?
@@ -310,7 +306,9 @@ module DweloDevicesHelper
       tour_user.update_column 'latch_status' , 'in progress'
       end_time = start_time + 90.minutes
 
-      stops_arr = community.tour.tour_stops.where(display_stop: true).order(:sort)
+      tour = CustomizeTourService.new(community, tour_user).get_user_tour
+
+      stops_arr = tour.tour_stops.where(display_stop: true).order(:sort)
       stops_ids = stops_arr.ids
 
       unit_ids = TourStop.where(id: stops_ids, stop_type: "unit").pluck(:stop_id)
@@ -324,7 +322,7 @@ module DweloDevicesHelper
       building_starting_points = BuildingStartingPoint.where(id: building_starting_point_ids, lock_provider: "Latch").includes(:latch_locks)
 
       locks_data = []
-      locks_data << community.tour.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.tour.latch_locks.present?
+      locks_data << community.community_tour.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.community_tour.latch_locks.present?
 
       units.each do |unit|
         if unit.door.present?
@@ -334,6 +332,7 @@ module DweloDevicesHelper
         end
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
+      
       amenities.each do |amenity|
         if amenity.doors.any?
           lock_info = amenity.doors.first.latch_lock.present? ? amenity.doors.first.latch_lock.latch_lock_columns : []
@@ -341,7 +340,8 @@ module DweloDevicesHelper
           lock_info = amenity.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten  
         end
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
-      end  
+      end 
+
       elevators.each do |elevator|
         lock_info = elevator.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
@@ -351,6 +351,7 @@ module DweloDevicesHelper
         lock_info = building_starting_point.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
+
       if locks_data.present?
         LatchGuest.where(tour_user_id: tour_user.id, community_id: community.id).update_all(status: "deleted")
         locks_data.each do |lock_info|
@@ -379,20 +380,21 @@ module DweloDevicesHelper
     end
   end
 
-  def locks_with_same_type(type, community, allowed_stops = [])
-    visible_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+  def locks_with_same_type(type, community, tour_user, allowed_stops = [])
+    visible_stops = CustomizeTourService.new(community, tour_user).available_stops
+
     visible_stops.each do |stop|
       if (stop[0].classify.constantize.find_by_id stop[1]).lock_provider == type
         allowed_stops << stop[1]
       end
     end
 
-    allowed_stops << community.tour.id if community.tour.lock_provider == type
+    allowed_stops << community.community_tour.id if community.community_tour.lock_provider == type
     allowed_stops
   end
 
-  def zerv_multiple_stops_access(community, allowed_stops = [])
-    available_stops = community.tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+  def zerv_multiple_stops_access(community, tour_user, allowed_stops = [])
+    available_stops = CustomizeTourService.new(community, tour_user).available_stops
 
     available_stops.each do |stop|
       actual_stop = stop[0].classify.constantize.find_by_id stop[1]
@@ -401,7 +403,7 @@ module DweloDevicesHelper
       end
     end
 
-    allowed_stops << ["tour", community.tour.id] if community.tour.lock_provider == "Zerv"
+    allowed_stops << ["tour", community.community_tour.id] if community.community_tour.lock_provider == "Zerv"
     
     allowed_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
   end
@@ -433,31 +435,7 @@ module DweloDevicesHelper
     tours_exist = false; on_time_tour=nil; nearest_tour=nil; time_status=nil; salesforce_grace_period=10;
 
     response = SalesforceServices::GetBookingByNeighbor.call(community: community, tour_user: tour_user)
-    puts "\n\n"
-    puts "tour_user"
-    puts tour_user
-    puts "---"*50
-    puts "Response"
-    puts "---"*50
-    puts response.inspect
-    puts "---"*50
-    puts "current_time"
-    puts "---"*50
-    puts current_time
-    puts "---"*50
-    puts "timezone"
-    puts "---"*50
-    puts timezone
-    puts "---"*50
-    puts "community"
-    puts "---"*50
-    puts community.inspect
-    puts "---"*50
-    puts "response.payload"
-    puts "---"*50
-    puts response.payload.inspect
-    puts "\n\n"
-    
+
     if response.success? and response.payload.present?
       if community.crm_credential.salesforce_property_id.present?
         today_scheduled_tours = response.payload.find_all{ |b| ( (b["Account__r"]["Id"] == @community.crm_credential.salesforce_property_id) and (b["Status__c"] == "Scheduled" || b["Status__c"] == "Confirmed" || b["Status__c"] == "Rescheduled") and b["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime("%Y-%m-%d") == Time.now.in_time_zone(timezone).strftime("%Y-%m-%d")) }
@@ -486,7 +464,7 @@ module DweloDevicesHelper
 
     today_scheduled_tours = get_scheduled_tours(community.id, tour_user.id, current_time)
     if tours_exist = today_scheduled_tours.present?
-      on_time_tour = is_tour_on_time(current_time, today_scheduled_tours, community.tour.grace_period)
+      on_time_tour = is_tour_on_time(current_time, today_scheduled_tours, community.community_tour.grace_period)
       unless on_time_tour.present?
 
         time_status , nearest_tour = tour_time_status(today_scheduled_tours, current_time)
@@ -498,7 +476,7 @@ module DweloDevicesHelper
 
   def check_guest_limit(community, property_time, limit, tour_user)
     
-    if community.tour.tour_setting.do_limit_max_tour
+    if community.community_tour.tour_setting.do_limit_max_tour
       return (limit <= (app_usage(community, property_time, limit, tour_user) + total_scheduled_tour(community,property_time, limit, tour_user)) ? true : false)
     else
       return false
@@ -517,11 +495,10 @@ module DweloDevicesHelper
   end
 
   def app_usage(community, property_time, limit ,tour_user)
-    # return (limit <= TourHistory.where('arrived = ? AND left = ? AND abandoned_tour_at_stop AND active_app = ? AND arrived > ? AND is_virtual_tour', property_time.to_date,  nil, nil, false, property_time - 180.minutes, false).count) ? false : true
     unless geo_distance(tour_user.latitude,tour_user.longitude,community.latitude, community.longitude, 1)
       return 0
     else
-      return TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, tour_id: community.tour.id).where('tour_status != ? and arrived > ?', "virtual_tour", (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude, 1)) }.compact.count
+      return TourHistory.where(left: nil, abandoned_tour_at_stop: nil,active_app: true, tour_id: community.community_tour.id).where('tour_status != ? and arrived > ?', "virtual_tour", (property_time - 120.minutes)).map{|x| x if(geo_distance(x.latitude,x.longitude,community.latitude, community.longitude, 1)) }.compact.count
     end    
   end
 
@@ -584,21 +561,23 @@ module DweloDevicesHelper
 
   def tour_stops_ids(tour_user, community)
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, community, false).get_scheduled_tour
+    tour = CustomizeTourService.new(community, tour_user).get_user_tour
 
     if scheduled_tour.present? && scheduled_tour.stops_list.present?
-      community.tour.tour_stops.where(stop_type: ["amenity", "unit"]).pluck(:id) - scheduled_tour.stops_list
+      tour.tour_stops.where(stop_type: ["amenity", "unit"]).pluck(:id) - scheduled_tour.stops_list
     else
-      community.tour.tour_stops.where(display_stop: false).pluck(:id)
+      tour.tour_stops.where(display_stop: false).pluck(:id)
     end
   end
 
   def allowed_stop_ids(tour_user, community)
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, community, false).get_scheduled_tour
+    tour = CustomizeTourService.new(community, tour_user).get_user_tour
 
     if scheduled_tour.present? && scheduled_tour.stops_list.present?
-      community.tour.tour_stops.where(id: scheduled_tour.stops_list).pluck(:stop_id)
+      tour.tour_stops.where(id: scheduled_tour.stops_list).pluck(:stop_id)
     else
-      community.tour.tour_stops.where(display_stop: true).pluck(:stop_id)
+      tour.tour_stops.where(display_stop: true).pluck(:stop_id)
     end
   end
 
@@ -672,7 +651,28 @@ module DweloDevicesHelper
     else
       "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
     end
-    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1149/1578332903-floorplates_1.png"
-    # "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/floorplate/image/1148/1577209294-floorplates_2.png"
+  end
+
+  def create_zerv_user(community, tour_user)
+    locks_thread = Thread.new do
+      begin
+      tour_user.update_column 'zerv_status' , 'in progress'
+      execution_context = Rails.application.executor.run!
+
+      if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and tour_user.tour_type != "virtual_tour"
+        allowed_stops = zerv_multiple_stops_access(community, tour_user)
+        ZervServices::GrantAccessesService.call(community: community, tour_user: tour_user, stop_list: allowed_stops, is_resident: false)
+      end
+      tour_user.update_column 'zerv_status' , 'complete'
+      rescue => ex
+        tour_user.update_column 'zerv_status' , 'complete'
+        puts "--------- Zerv error -------- ", ex
+      end
+
+    ensure
+      execution_context.complete! if execution_context
+    end
+    
+    locks_thread.to_s
   end
 end

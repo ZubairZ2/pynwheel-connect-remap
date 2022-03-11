@@ -49,16 +49,14 @@ class MapLocksJob < ApplicationJob
     end
   end
 
-
   def clear_locks_provider(community, type)
     community.units.where(lock_provider: type).update_all(lock_provider: "")
     community.amenities.where(lock_provider: type).update_all(lock_provider: "")
     community.elevators.where(lock_provider: type).update_all(lock_provider: "")
     community.building_starting_point.where(lock_provider: type).update_all(lock_provider: "")
-    community.tour.where(lock_provider: type).update_all(lock_provider: "")
+    community.community_tour.update(lock_provider: "") if community.community_tour.lock_provider === type
     community.doors.where(lock_provider: type).update_all(lock_provider: "")
   end
-
 
   def parse_stop(community, sub_location_name)
     data=nil
@@ -83,7 +81,7 @@ class MapLocksJob < ApplicationJob
     data = community.amenities.where(name: sub_location_name).first if data.nil?
     data = community.elevators.where(name: sub_location_name).first if data.nil?
     data = community.building_starting_point.where(name: sub_location_name).first if data.nil?
-    data = community.tour.name == sub_location_name ? community.tour : nil if data.nil?
+    data = community.community_tour.name == sub_location_name ? community.community_tour : nil if data.nil?
 
     if data.nil? and sub_location_name.count('-') > 1
         (sub_location_name.count('-')+1).times.each do |i|
