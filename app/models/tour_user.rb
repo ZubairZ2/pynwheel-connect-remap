@@ -102,6 +102,6 @@ class TourUser < ApplicationRecord
   end
 
   def customized_tour community
-    !(community.community_tour&.tour_setting&.enable_tour_customization && self.tours.where(community_id: community.id).last.present?)
+    (community.community_tour&.tour_setting&.enable_tour_customization && self.tours.where(community_id: community.id).last.present?)
   end
 end
