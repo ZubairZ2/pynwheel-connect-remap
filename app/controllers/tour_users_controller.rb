@@ -2,6 +2,9 @@ class TourUsersController < ApplicationController
   # include Error::ErrorHandler
   before_action :check_community
   before_action :breadCrumb
+  before_action :load_community, only: [:reset_tour_stops]
+  before_action :load_tour_user, only: [:reset_tour_stops]
+
   skip_before_action :load_tour_users_chats, only: [:lock_ploting]
 
   def index
@@ -358,4 +361,24 @@ class TourUsersController < ApplicationController
   def breadCrumb
     add_breadcrumb "Home", root_path
   end
+
+  def reset_tour_stops
+    if @community.present? && @tour_user.present?
+      response = CustomizeTourService.new(@community, @tour_user).reset_user_tour_stops
+      redirect_to community_tour_users_path(@community), notice: 'User tour stops reset successfully'
+    else
+      redirect_to community_tour_users_path(@community), notice: 'Community or tour user not fount'
+    end
+  end
+
+  private
+
+  def load_community
+    @community ||= Community.find_by_id params[:community_id]
+  end
+
+  def load_tour_user
+    @tour_user ||= TourUser.find_by_id params[:tour_user_id]
+  end
+
 end

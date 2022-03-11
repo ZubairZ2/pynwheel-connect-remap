@@ -254,6 +254,7 @@ Rails.application.routes.draw do
         get :lock_ploting
         get :visited_stops_data
         get :checkpoint_verification
+        get :reset_tour_stops
     end
     resources :floorplates do
       resources :elevators, controller: "floorplates" do
