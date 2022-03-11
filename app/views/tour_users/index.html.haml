@@ -116,6 +116,11 @@
                                     %i.fa.fa-exclamation-triangle.expiredTourToolTip{style: "margin-left: 3px", "data-content" => "Access Code has expired", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"}
                                   - else
                                     %i.propertyDetailName.fa.fa-question-circle{"data-content" => "Will be expired after #{tour_length} minutes", "data-toggle" => "visitor_popover", "data-trigger" => "hover",  "data-placement" => "top"}
+                             
+                              - if user.customized_tour(@community)
+                                %div
+                                  = link_to 'Reset Tour Stops', community_tour_user_path(@community,user),:class=>"btn btn-success loader_class"
+
                             - else
                               Removed at Consumer Request
 

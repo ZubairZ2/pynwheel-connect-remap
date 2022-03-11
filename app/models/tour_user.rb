@@ -46,6 +46,7 @@ class TourUser < ApplicationRecord
 
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :id_card, AvatarUploader
+
   def crop_user_image
     begin
       image.recreate_versions! if (image.present? and crop_image_bit and !crop_image_bit.nil)
@@ -54,7 +55,9 @@ class TourUser < ApplicationRecord
       
     end
   end
+  
   attr_accessor :crop_image_bit
+
   def crop_image_bit
     @crop_image_bit
   end
@@ -98,4 +101,7 @@ class TourUser < ApplicationRecord
     end
   end
 
+  def customized_tour community
+    !(community.community_tour&.tour_setting&.enable_tour_customization && self.tours.where(community_id: community.id).last.present?)
+  end
 end
