@@ -29,7 +29,7 @@ class CustomizeTourService
   end
 
   def customize_tour_sort_hash_with_elevators
-    return if (@community.sitemap or !user_customized_tour.present? or !is_customization_enabled)
+    return if (@community.is_sitemap or !user_customized_tour.present? or !is_customization_enabled)
     
     tour = user_customized_tour
     tour_sort_hash = tour.sort_hash
