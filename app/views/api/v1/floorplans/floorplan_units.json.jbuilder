@@ -25,11 +25,12 @@ end
 json.floorplates floorplates_obj.compact
 
 json.units @units do |u|
+  tour_stop = TourStop.where(stop_id: u.id, tour_id: @tour.id).last
+
   json.id u.id
   json.community_id u.community_id
   json.floorplate_id u.floorplate_id
   json.floorplan_id u.floorplan_id
-  tour_stop = TourStop.find_by(stop_id: u.id)
   json.is_unit_already_available tour_stop.present? ? true : false
   json.unit_name u.building.present? ? u.building + '-'+ u.marketing_name : u.marketing_name rescue u.marketing_name
   json.unit_type u.unit_type

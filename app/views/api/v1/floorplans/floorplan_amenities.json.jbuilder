@@ -17,7 +17,7 @@ end
 json.floorplates floorplates_obj.compact
 
 json.amenities @amenities do |amenity|
-  tour_stop = TourStop.find_by(stop_id: amenity.id)
+  tour_stop =  TourStop.where(stop_id: amenity.id, tour_id: @tour.id).last
 
   json.id amenity.id
   json.community_id amenity.community_id
