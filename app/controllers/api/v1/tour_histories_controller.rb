@@ -47,7 +47,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
         tour_history.longitude = tu.longitude rescue nil
         begin
           tu = TourUser.find params[:tour_user_id]
-          if !@tour.visual_id_verification
+          if !community.community_tour.visual_id_verification
             tu.id_selfie_mismatch = false
           end
           tour_history.verified_by = tu.verified_by
@@ -135,8 +135,9 @@ class Api::V1::TourHistoriesController < ActionController::Base
     if api_access or access == true
       if params[:community_id].present? && params[:tour_id].present? && params[:tour_user_id].present?
         id_mismatch = false
+        community = set_community
         tour = Tour.find params[:tour_id]
-        unless tour.visual_id_verification
+        unless community.community_tour.visual_id_verification
           begin
             tu = TourUser.find params[:tour_user_id]
             tu.id_selfie_mismatch = false
@@ -152,9 +153,9 @@ class Api::V1::TourHistoriesController < ActionController::Base
           end
         end
 
-        check_length_stay(params[:tour_history_id], params[:lengthy_stay], tour.community, tu, params[:current_stop_id]) if (params[:tour_history_id].present? and params[:lengthy_stay].present?)
-        chat_control = (tour.community.chat_control and tour.community.is_chat_available) ? tour.community.chat_control : false
-        has_tour_user_left(tour.community, tu, params[:lat_langs].last) if params[:lat_langs].present?
+        check_length_stay(params[:tour_history_id], params[:lengthy_stay], community, tu, params[:current_stop_id]) if (params[:tour_history_id].present? and params[:lengthy_stay].present?)
+        chat_control = (community.chat_control and community.is_chat_available) ? community.chat_control : false
+        has_tour_user_left(community, tu, params[:lat_langs].last) if params[:lat_langs].present?
         chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
         if chatroom.present?
           if params[:last_msg_id].present?
