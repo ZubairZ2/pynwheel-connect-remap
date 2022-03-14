@@ -2,8 +2,8 @@ class Api::V1::FloorplansController < ActionController::Base
   include ApplicationHelper
   before_action :authorize_access
   before_action :laod_community
-  before_action :load_tour_user, only: [:update_tour_stops_list]
-  before_action :load_tour_user_tour, only: [:update_tour_stops_list]
+  before_action :load_tour_user, except: [:index]
+  before_action :load_tour_user_tour, except: [:index]
 
   def index
     floorplans = floorplan_units_service(@community).get_floorplans
@@ -172,16 +172,7 @@ class Api::V1::FloorplansController < ActionController::Base
   end
 
   def add_remove_stop_into_sort_hash(building, floor, tour_stop, request)
-
-    # buildings_list = Buildings.new(@community).get_community_buildings
-    # buildings_list = buildings_list.select{|s| s.present? }
-    # building = buildings_list.present? ? buildings_list[0] : ""
-
     building = params[:building].present? ? params[:building] : ""
-
-    # stop = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)
-
-    # stop.update(floor: floor, building: building)
 
     if request.eql?("add")
       @tour.sort_hash[building + ","+ floor.to_s].push(tour_stop.id)
