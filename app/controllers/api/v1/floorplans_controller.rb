@@ -91,16 +91,16 @@ class Api::V1::FloorplansController < ActionController::Base
       end
 
       if tour_stop.destroy
-        render json: { success: true, error_code: 200, message: "Tour stop has been deleted successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
+        render json: { success: true, error_code: 200, message: "Tour stop has been deleted successfully", is_unit_already_available: TourStop.where(stop_id: params[:stop_id], tour_id: @tour.id ).last.present?}, status: 200
       else
         render json: { success: false, status_code: 400, message: "Something went wrong, please try again later", data: nil }, status: 400
       end
 
     elsif stops_count == 1
-      render json: { success: true, error_code: 200, message: "Last stop can not be removed", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
+      render json: { success: true, error_code: 200, message: "Last stop can not be removed", is_unit_already_available: TourStop.where(stop_id: params[:stop_id], tour_id: @tour.id).last.present?}, status: 200
     
     else
-      render json: { success: true, error_code: 200, message: "There is no stop to remove", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200  
+      render json: { success: true, error_code: 200, message: "There is no stop to remove", is_unit_already_available: TourStop.where(stop_id: params[:stop_id], tour_id: @tour.id).last.present?}, status: 200  
     end
 
   end
