@@ -61,9 +61,10 @@ class CustomizeTourService
 
   def reset_user_tour_stops
     user_tour = user_customized_tour
+    
     if user_tour.present?
       user_tour.tour_stops.delete_all
-      @tour_user.tours.delete_all
+      user_tour.destroy!
     end
   end
 
