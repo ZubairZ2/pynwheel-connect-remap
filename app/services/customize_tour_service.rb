@@ -59,6 +59,15 @@ class CustomizeTourService
     tour_sort_hash
   end
 
+  def reset_user_tour_stops
+    user_tour = user_customized_tour
+    
+    if user_tour.present?
+      user_tour.tour_stops.delete_all
+      user_tour.destroy!
+    end
+  end
+
   private
 
   def stops_available_for_tour building
