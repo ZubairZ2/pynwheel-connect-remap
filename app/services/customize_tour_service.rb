@@ -10,10 +10,18 @@ class CustomizeTourService
   end
 
   def get_user_tour
-    if is_customization_enabled
+    if is_customization_enabled && user_customized_tour.present?
       user_customized_tour
     else
       @community.community_tour
+    end
+  end
+
+  def get_community_tours_ids
+    if @tour_user.present?
+      Tour.where(community_id: @community.id, tour_user_id: @tour_user.id).pluck(:id)
+    else
+      Tour.where(community_id: @community.id).pluck(:id)
     end
   end
 
