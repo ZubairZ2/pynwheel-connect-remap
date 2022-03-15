@@ -21,9 +21,21 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     @errors = []
     property_type = params["community"]["property_type"]
     if property_type.eql?(SITEMAP)
+      if @community.floorplates.present?
+        @community.floorplates.delete_all
+      end
+      @community.is_sitemap = true
+      @community.save
       property_map = add_sitemap_property(params)
       type = SITEMAP
     else
+      if @community.is_sitemap
+        if @community.sitemap.present?
+          @commuinity.sitemap.destroy!
+        end
+        @community.is_sitemap = false
+        @community.save
+      end
       property_map = add_floorplate_property(params, @errors)
       type = FLOORPLATE
     end
@@ -45,7 +57,6 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
       end
     elsif @type.eql?(FLOORPLATE)
       floorplate = @community.floorplates.find_by(id: params["property_id"])
-      # binding.pry
       if floorplate.present?
         if floorplate.destroy!
           render :json => {:success => true, :error_code => 200, :message => "Mid high rise community deleted successfully", data: nil}
@@ -70,19 +81,19 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
   end
 
   def add_floorplate_property(params , errors)
-    binding.pry
     floorplates = params["floorplate"]
-    @property_map =
+    @property_map = ""
     floorplates.values.each do |floorplate|
-      image = MiniMagick::Image.open(floorplate["image"].path)
+
       if floorplate["id"].present?
         @floorplate = @community.floorplates.find_by_id(floorplate["id"])
-        if @floorplate.update_attributes(name: floorplate["name"] , image: floorplate["image"] , label_image: floorplate["label_image"] , range: floorplate["range"] , width: image.width , height: image.height)
+        if @floorplate.update_attributes(name: floorplate["name"]  , label_image: floorplate["label_image"] , range: floorplate["range"])
           PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "update", whodunnit: current_user.id, community_id: @community.id, company_id: @community.company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
         else
           errors.push(@floorplate.errors.full_messages)
         end
       else
+        image = MiniMagick::Image.open(floorplate["image"].path)
         @floorplate = @community.floorplates.create(name: floorplate["name"] , image: floorplate["image"] , label_image: floorplate["label_image"] , range: floorplate["range"] , width: image.width , height: image.height)
         if @floorplate.persisted?
           PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: @community.id, company_id: @community.company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}")
