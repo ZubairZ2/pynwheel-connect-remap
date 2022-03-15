@@ -24,7 +24,7 @@ json.tours tours do |tour|
   json.visited_tour @visited_stops do |visited_stop|
     @tour = TourStop.find visited_stop rescue next
     stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id, tour_key: tour_key,tour_stop_id: visited_stop,description: nil, image: nil).last
-    stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id, 8tour_key: tour_key,tour_stop_id: visited_stop).last unless stop.present?
+    stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id, tour_key: tour_key,tour_stop_id: visited_stop).last unless stop.present?
     stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_stop_id: @tour.id).last unless stop.present?
     
     if @tour.stop_type == "unit" || @tour.stop_type == "amenity"
