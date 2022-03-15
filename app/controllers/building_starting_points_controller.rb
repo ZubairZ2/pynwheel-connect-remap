@@ -38,10 +38,12 @@ class BuildingStartingPointsController < ApplicationController
 
   def destroy
     ts = TourStop.find_by(stop_type: "building_starting_point", stop_id: @building_starting_point.id)
+    
     if ts.present?
       VisitedStop.where(tour_stop_id: ts.id).destroy_all
       ts.destroy
     end
+
     @building_starting_point.destroy
 
     respond_to do |format|

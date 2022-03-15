@@ -384,7 +384,9 @@ module DweloDevicesHelper
     visible_stops = CustomizeTourService.new(community, tour_user).available_stops
 
     visible_stops.each do |stop|
-      if (stop[0].classify.constantize.find_by_id stop[1]).lock_provider == type
+      actual_stop = stop[0].classify.constantize.find_by_id stop[1]
+
+      if actual_stop.present? && actual_stop.lock_provider == type
         allowed_stops << stop[1]
       end
     end
@@ -398,7 +400,7 @@ module DweloDevicesHelper
 
     available_stops.each do |stop|
       actual_stop = stop[0].classify.constantize.find_by_id stop[1]
-      if lock_provider_type(actual_stop) == "Zerv"
+      if actual_stop.present? && lock_provider_type(actual_stop) == "Zerv"
         allowed_stops << [stop[0], stop[1]]
       end
     end

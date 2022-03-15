@@ -68,6 +68,15 @@ class CustomizeTourService
     end
   end
 
+  def remove_community_tour_stops
+    tours = Tour.where("community_id = ? And tour_user_id IS NOT NULL", @community.id)
+    tour_stops = TourStop.where(tour_id: tours.pluck(:id) )
+
+    VisitedStop.where(tour_stop_id: tour_stops.pluck(:id)).delete_all
+    tour_stops.delete_all
+    tours.delete_all
+  end
+
   private
 
   def stops_available_for_tour building

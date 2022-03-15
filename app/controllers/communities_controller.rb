@@ -506,9 +506,11 @@ class CommunitiesController < ApplicationController
 
     stop_id = current_community.community_tour.tour_stops.where(stop_type: "unit").destroy_all
     VisitedStop.where(tour_stop_id: stop_id.pluck(:id)).destroy_all
+    CustomizeTourService.new(current_community, nil).remove_community_tour_stops
 
     Thread.current[:errors] = []
     @community = Community.find params[:community_id]
+
     if @community.credentials_are_present?
       if current_community.data_is_imported and Thread.current[:errors].empty?
         flash[:notice] = "Good job! You have successfully imported this property's data."
