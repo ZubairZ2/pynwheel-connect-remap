@@ -7,7 +7,8 @@ class TourUsersController < ApplicationController
   def index
     add_breadcrumb "All Visitors", '#'
     @community = Community.find params[:community_id]
-    user_ids = TourHistory.where(tour_id: @community.community_tour.id).pluck(:tour_user_id).uniq if @community.present? && @community.community_tour.present?
+    tour_ids = CustomizeTourService.new(@community, nil).get_community_tours_ids
+    user_ids = TourHistory.where(tour_id: tour_ids).pluck(:tour_user_id).uniq if @community.present? && @community.community_tour.present?
     @tour_users = user_ids.present? ? TourUser.where(id: user_ids) : []
   end
   
@@ -17,8 +18,9 @@ class TourUsersController < ApplicationController
     add_breadcrumb "Visitor Details", "#"
     @tour_user = TourUser.find params[:id]
     @virtual_list = []
-    @visited_stop = VisitedStop.where(tour_id: @community.community_tour.id,tour_user_id: @tour_user.id).group_by(&:tour_stop_id)
-    @alerts = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @community.community_tour.id)
+    @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
+    @visited_stop = VisitedStop.where(tour_id: [@tour.id, @community.community_tour.id], tour_user_id: @tour_user.id).group_by(&:tour_stop_id)
+    @alerts = TourHistory.where(tour_user_id: @tour_user.id, tour_id: [@tour.id, @community.community_tour.id])
     chatroom = Chatroom.find_by(tour_user_id: params[:id], tour_id: @community.community_tour.id)
     @chatroom_id = chatroom.present? ? chatroom.id : 0
     
@@ -134,9 +136,8 @@ class TourUsersController < ApplicationController
       floors = []
       buildings = []
       stops = []
-
       visitod_stops = VisitedStop.where(tour_key: tour_history.tour_key).order(:id)
-      tour =  @community.community_tour
+      tour = Tour.find tour_history.tour_id
 
       visitod_stops.each_with_index do |x, index|
         points = []
@@ -248,8 +249,8 @@ class TourUsersController < ApplicationController
   def destroy
     @community = Community.find params[:community_id]
     @tour_user = TourUser.find params[:id]
-    @tour = @community.community_tour
-
+    @tour =  @community.community_tour
+    tour_ids =  CustomizeTourService.new(@community, @tour_user).get_community_tours_ids
     if params[:delete_all].present?
       delete_tour_user_all_attributes(@tour_user, @community)
       redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
@@ -264,7 +265,7 @@ class TourUsersController < ApplicationController
       end
 
     else
-      tour_histories = TourHistory.where(tour_user_id: @tour_user.id, tour_id: @tour.id).includes(:lock_histories)
+      tour_histories = TourHistory.where(tour_user_id: @tour_user.id, tour_id: tour_ids).includes(:lock_histories)
       lock_histories_ids = tour_histories.all.map { |x| x.lock_histories.ids }.flatten
       LockHistory.where(id: lock_histories_ids).delete_all
 
@@ -275,8 +276,8 @@ class TourUsersController < ApplicationController
 
       @tour_user.as_guests.find_by(community_id: @community.id).delete if @tour_user.as_guests.find_by(community_id: @community.id).present?
       @tour_user.igloo_guests.where(community_id: @community.id).delete_all if @tour_user.igloo_guests.find_by(community_id: @community.id).present?
-      @tour_user.tour_histories.where(tour_id: @tour.id).delete_all
-      @tour_user.visited_stops.where(tour_id: @tour.id).delete_all
+      @tour_user.tour_histories.where(tour_id: tour_ids).delete_all
+      @tour_user.visited_stops.where(tour_id: tour_ids).delete_all
       @tour_user.schedual_tours.where(community_id: @community.id).delete_all
       @tour_user.prospects.where(community_id: @community.id).delete_all
 
@@ -302,7 +303,9 @@ class TourUsersController < ApplicationController
     end
 
     tour_user.save!(validate: false)
-    tour_histories = TourHistory.where(tour_user_id: tour_user.id, tour_id: community.community_tour.id) rescue nil
+
+    tour_ids =  CustomizeTourService.new(community, tour_user).get_community_tours_ids
+    tour_histories = TourHistory.where(tour_user_id: tour_user.id, tour_id: tour_ids) rescue nil
     
     if tour_histories.present?
       tour_histories.each do |tour_history|
@@ -339,7 +342,8 @@ class TourUsersController < ApplicationController
     end
 
     if params[:history] == "true"
-      tour_histories = TourHistory.where(tour_user_id: tour_user.id, tour_id: community.community_tour.id) rescue nil
+      tour_ids =  CustomizeTourService.new(community, tour_user).get_community_tours_ids
+      tour_histories = TourHistory.where(tour_user_id: tour_user.id, tour_id: tour_ids) rescue nil
       tour_histories.each do |tour_history|
         tour_history.history = true
         tour_history.save!
