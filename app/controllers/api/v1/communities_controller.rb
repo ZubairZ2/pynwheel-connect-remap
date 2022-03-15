@@ -354,62 +354,58 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def user_saved_tour
-    # @device_id = params[:device_id]
-    puts params
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
       @community = Community.find params[:community_id] if params[:community_id].present?
       @tour_user = TourUser.find params[:tour_user_id]
-      @tour = @community.community_tour
+      @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
       chatroom = Chatroom.find_by(tour_user_id: @tour_user.id, tour_id: @community.community_tour.id)
       @latest_message_id = Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
       
       stops_arr = []
       if @community.is_sitemap
-        stops_arr = @community.mdu ? @community.community_tour.tour_stops.where(display_stop: true).order(:sort) :  @community.community_tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+        stops_arr = @community.mdu ? @tour.tour_stops.where(display_stop: true).order(:sort) :  @tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
       else
         @building_list = @floor_list = []
 
-        @building_list = @community.units.map{|x| x.building rescue next}.uniq.compact + @community.amenities.map{|x| x.building rescue next}.uniq.compact
-        @building_list = @building_list.compact.reject { |c| c.empty? }.uniq.sort
-        @building_list = @building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@building_list).sort.map{|x,y| y}
-        @floor_list = @community.floorplates.map{|x| x.floors}.flatten!.uniq.sort rescue nil
+        @building_list = Buildings.new(@community).get_community_buildings
+        @floor_list = Floors.new(@community).get_community_floors
+        tour_sort_hash = CustomizeTourService.new(@community, @tour_user).get_tour_sort_hash
 
         @building_list << "" if @building_list == []
-          @building_list.each do |building|
-            if @floor_list.present?
-              @floor_list.each do |floor|
-                if @community.community_tour.sort_hash[building + ","+ floor.to_s].present?
-                  @community.community_tour.sort_hash[building + ","+ floor.to_s].each do |s_id|
-                    if (s_id.present?)
-                      stop = (TourStop.find_by_id(s_id))
-                      stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
-                    end
+        @building_list.each do |building|
+          if @floor_list.present?
+            @floor_list.each do |floor|
+              if tour_sort_hash[building + ","+ floor.to_s].present?
+                tour_sort_hash[building + ","+ floor.to_s].each do |s_id|
+                  if (s_id.present?)
+                    stop = (TourStop.find_by_id(s_id))
+                    stops_arr << stop if (stop.display_stop && (@community.mdu ? true : (stop.stop_type != "unit")) ) rescue next
                   end
                 end
               end
             end
           end
+        end
       end
       
       stops_arr = stops_arr.compact.map{|x| x.id}.uniq
 
-      un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @community.community_tour.id ).map{|x| x.tour_stop_id}.uniq
+      un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}.uniq
+
       @visited_stops = []
+      
       stops_arr.each do |val|
         if un_ordered_visited_stops.include?(val)
           @visited_stops << val
         end
       end
 
-      # @tours = VisitedStop.where(tour_user_id: @tour_user.id).group('tour_id').group('tour_key').count
-      @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @community.community_tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
+      @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
       
       current_time = current_community_time(@community, params)
       @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community) if @community.present?
-      
-      # @tours = VisitedStop.where(tour_user_id: @tour_user.id,@community.community_tour.id,tour_key: last_vs.tour_key)
-      # @tours = @tours.map{|h| h}[-4..-1].to_h
+
     end
   end
 

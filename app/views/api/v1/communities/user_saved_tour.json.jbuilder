@@ -11,22 +11,21 @@ json.chat_control (@community.chat_control and @community.is_chat_available) ? @
 tours = [@tour]
 tour_key = @last_vs.tour_key rescue nil
 json.tours tours do |tour|
-  @community = Community.find tour.community_id
   json.id tour.id
   json.tour_key tour_key
-  json.community_id tour.community_id
-  json.name tour.name
-  json.latitude tour.latitude
-  json.longitude tour.longitude
-  json.x_plot tour.x_plot
-  json.y_plot tour.y_plot
-  json.image tour.image.present? ? tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url) rescue ""
+  json.community_id @community.id
+  json.name @community.community_tour.name
+  json.latitude @community.community_tour.latitude
+  json.longitude @community.community_tour.longitude
+  json.x_plot @community.community_tour.x_plot
+  json.y_plot @community.community_tour.y_plot
+  json.image @community.community_tour.image.present? ? @community.community_tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url) rescue ""
 
   json.visited_tour @visited_stops do |visited_stop|
     @tour = TourStop.find visited_stop rescue next
-    stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop,description: nil, image: nil).last
-    stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_key: tour_key,tour_stop_id: visited_stop).last unless stop.present?
-    stop = VisitedStop.where(tour_user_id: @tour_user.id,tour_stop_id: @tour.id).last unless stop.present?
+    stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id, tour_key: tour_key,tour_stop_id: visited_stop,description: nil, image: nil).last
+    stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id, 8tour_key: tour_key,tour_stop_id: visited_stop).last unless stop.present?
+    stop = VisitedStop.where(tour_user_id: @tour_user.id, tour_stop_id: @tour.id).last unless stop.present?
     
     if @tour.stop_type == "unit" || @tour.stop_type == "amenity"
       json.id @tour.id
@@ -193,7 +192,7 @@ json.tours tours do |tour|
         end
       end
 
-      user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id).where.not(image: nil)
+      user_gallery = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id, tour_stop_id: @tour.id).where.not(image: nil)
       gallery_arr = []
       gallery_arr_v1 = []
       
@@ -209,7 +208,7 @@ json.tours tours do |tour|
 
       json.user_gallery gallery_arr
       json.user_gallery_v1 gallery_arr_v1
-      user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id,tour_stop_id: @tour.id).where.not(description: nil)
+      user_notes = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: tour.id, tour_stop_id: @tour.id).where.not(description: nil)
       user_notes = user_notes.present? ? user_notes.order(:created_at).compact : []
 
       description_arr = []
