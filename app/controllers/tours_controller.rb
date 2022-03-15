@@ -165,8 +165,9 @@ class ToursController < ApplicationController
 
   def sort_buildings
     if params[:sitemap] == "false"
-      @community.community_tour.building_order = params["array"]
-      @community.community_tour.save
+      tour = @community.community_tour
+      tour.building_order = params["array"]
+      tour.save
     end
   end
 

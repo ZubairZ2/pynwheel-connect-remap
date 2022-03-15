@@ -113,10 +113,12 @@ class CommunitiesController < ApplicationController
     if params["community"]["latitude"].present?
       @community.neighborhood.update_attributes(latitude: params["community"]["latitude"], longitude: params["community"]["longitude"]) rescue ""
     end
+
     if params["verification_type"].present?
       begin
-        @community.community_tour.verification_type = params["verification_type"]
-        @community.community_tour.save
+        tour = @community.community_tour
+        tour.verification_type = params["verification_type"]
+        tour.save
       rescue Exception => e
 
       end
