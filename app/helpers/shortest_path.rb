@@ -1485,6 +1485,7 @@ module ShortestPath
         if @building_list.first ==  building
           stops_arr << @community.community_tour
           tour_stop_of_building = TourStop.find_by(stop_type: "building_starting_point", stop_id: @building_to_building_id[building])
+          
           if tour_stop_of_building.present?
             tour_stop_of_building.name = "Building #{building}"
             stops_arr << tour_stop_of_building
@@ -1512,11 +1513,14 @@ module ShortestPath
             stops_arr << TourStop.find_by(stop_type: "elevator", stop_id: ele_id)
           end
         end
+
         # add next building start/exit point OR starting point/ exit point if last building
         if @building_list[@building_list.find_index(building) + 1].present? # means there is next building present
           tour_stop_of_building = TourStop.find_by(stop_type: "building_starting_point", stop_id: @building_to_building_id[@building_list[@building_list.find_index(building) + 1]])
-          tour_stop_of_building.name = "Building #{@building_list[@building_list.find_index(building) + 1]}"
-          stops_arr << tour_stop_of_building
+          if tour_stop_of_building.present?
+            tour_stop_of_building.name = "Building #{@building_list[@building_list.find_index(building) + 1]}"
+            stops_arr << tour_stop_of_building
+          end
         else # its last building
           stops_arr << @community.community_tour
         end

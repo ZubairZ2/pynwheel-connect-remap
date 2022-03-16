@@ -434,15 +434,21 @@ json.tours @tours do |tour|
       ((new_stops_arr.compact.size - 2) == counter) ? navigation_title = "Next Stop: Starting point" : navigation_title = "Next Stop: Starting point"
     elsif  new_stops_arr.compact[counter + 1].present? and new_stops_arr.compact[counter + 1].id == last_stop_id
       navigation_title = @community.show_map ? ("Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Next Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
+      navigation_title = (new_stops_arr[counter + 1].present? && new_stops_arr[counter + 1].stop_type == "unit") ? new_stops_arr[counter + 1].get_unit_navigation_title(navigation_title) : navigation_title
       hit = false
+      
     elsif last_stop_desc.present? && last_stop_desc.id == stop.id
       navigation_title = @community.show_map ? ("Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Last Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
+      navigation_title = (new_stops_arr[counter + 1].present? && new_stops_arr[counter + 1].stop_type == "unit") ? new_stops_arr[counter + 1].get_unit_navigation_title(navigation_title) : navigation_title
     elsif counter == 0
       navigation_title = @community.show_map ? ("First Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("First Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
+      navigation_title = (new_stops_arr[counter + 1].present? && new_stops_arr[counter + 1].stop_type == "unit") ? new_stops_arr[counter + 1].get_unit_navigation_title(navigation_title) : navigation_title
     elsif skip_1 and new_stops_arr[counter + 2].present?
       navigation_title = @community.show_map ? ("Next Stop: " + new_stops_arr[counter + 2].name if new_stops_arr[counter + 2].present?) : ("Next Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
+      navigation_title = (new_stops_arr[counter + 2].present? && new_stops_arr[counter + 2].stop_type == "unit") ? new_stops_arr[counter + 2].get_unit_navigation_title(navigation_title) : navigation_title
     elsif new_stops_arr[counter + 1].present?
       navigation_title = @community.show_map ? ("Next Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Next Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
+      navigation_title = (new_stops_arr[counter + 1].present? && new_stops_arr[counter + 1].stop_type == "unit") ? new_stops_arr[counter + 1].get_unit_navigation_title(navigation_title) : navigation_title
     elsif last_last_count_num == counter
       navigation_title = "Your tour is completed! Now let's go back to where you started."
     end
@@ -902,14 +908,8 @@ json.tours @tours do |tour|
       json.igloohome_guest_bluetooth_key ''
       json.igloohome_guest_pin ''
     end
-
-    if stop.stop_type == "unit" && navigation_title.present?
-      navigation_title = navigation_title.split(":")
-      navigation_title = "#{navigation_title[0]}: Apt # #{navigation_title[1]}"
-    end
     
     json.navigation_title navigation_title
-
     json.id stop.id rescue next
     json.x_plot stop.latitude rescue next
     json.y_plot stop.longitude

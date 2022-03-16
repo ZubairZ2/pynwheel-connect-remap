@@ -46,6 +46,11 @@ class TourStop < ApplicationRecord
     end
   end
 
+  def get_unit_navigation_title navigation_title
+    navigation_title = navigation_title.split(":")
+    "#{navigation_title[0]}: Apt ##{navigation_title[1]}"
+  end
+
   def path_data
   	self.stop_type.classify.constantize.path_data
   end
