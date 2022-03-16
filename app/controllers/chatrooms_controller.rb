@@ -10,7 +10,8 @@ class ChatroomsController < ApplicationController
     end
 
     def create
-        chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
+        tour = Community.find_by_id params[:community_id]
+        chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: tour.id)
         if chatroom.present?
             messages = chatroom.chats.order(created_at: :desc)
             if messages.present?
@@ -22,7 +23,7 @@ class ChatroomsController < ApplicationController
                 render json: {messages: message, chatroom_id: chatroom.id,  stats: :OK, code: 200 }
             end
         else
-            chatroom = Chatroom.create(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
+            chatroom = Chatroom.create(tour_user_id: params[:tour_user_id], tour_id: tour.id)
             chat = chatroom.chats.create(name: "Support Team" , message: "Hello, how can we help you?" , client_date: DateTime.now.strftime("%a %b %d %Y %k:%M:%S"), tour_key: @tour_user.tour_key )
             message = serailize_message(chat)
             render json: {messages: message, chatroom_id: chatroom.id,  stats: :OK, code: 200 }

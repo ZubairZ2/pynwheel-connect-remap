@@ -67,7 +67,7 @@ class CommunitiesController < ApplicationController
 
   def edit
     @com_id = current_community.id
-    @chatroom = params[:tour_user_id].present? ? show_chat_modal(params[:tour_user_id],current_community.community_tour.id) : Chatroom.new
+    @chatroom = params[:tour_user_id].present? ? show_chat_modal(params[:tour_user_id], current_community.community_tour.id) : Chatroom.new
     @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
     add_breadcrumb "Property Details", edit_company_community_path(current_company,@community)
   end
