@@ -10,7 +10,9 @@ class ChatroomsController < ApplicationController
     end
 
     def create
-        tour = Community.find_by_id params[:community_id]
+        community = Community.find_by_id params[:community_id]
+        tour = community.community_tour
+        
         chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: tour.id)
         if chatroom.present?
             messages = chatroom.chats.order(created_at: :desc)
