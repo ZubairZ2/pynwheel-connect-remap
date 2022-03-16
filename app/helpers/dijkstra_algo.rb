@@ -76,28 +76,35 @@ module DijkstraAlgo
   
   # To find the full shortest route to a node
   
-    def find_path(dest)
+    def find_path dest
+      return if dest.nil?
+
       if @previous[dest] != -1
         find_path @previous[dest]
       end
+
       @path << dest
     end
     
     def return_minimum_distance_node(destination_arr)
       new_check_hash = {}
+
       destination_arr.each do |ele|
         if @distance.has_key?(ele)
           new_check_hash[ele] = @distance[ele]
         end
       end
+
       minimum_node_key = new_check_hash.keys.first
       minimum_node_value = new_check_hash.values.first
+
       new_check_hash.each do |key,value|
         if new_check_hash[key] < minimum_node_value
           minimum_node_key = key
           minimum_node_value = value
         end
       end
+
       return minimum_node_key
     end
   

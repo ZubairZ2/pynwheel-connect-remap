@@ -550,10 +550,12 @@ module ShortestPath
     @floors_ids_before = @floors_ids.deep_dup
     remove_buildings_which_have_no_any_stop_to_visit(precedence_visited_ids_by_floor)
     updated_floors_ids_and_collect_last_floor_id_against_each_building(precedence_visited_ids_by_floor)
+
     @building_list.each do |building|
       # Find upside path form temp uniq ids floor by floor
       @floors_ids[building].each do |floor|
         # first move towards starting point to building starting points
+
         if first_building_pass
           source = 0; destination_arr = [building_start_id_to_uniq_id[building][floor][@building_to_building_id[building]]]
           floors_graph[building][floor].from_one_point_to_move_other_point(source, destination_arr)
@@ -1483,8 +1485,10 @@ module ShortestPath
         if @building_list.first ==  building
           stops_arr << @community.community_tour
           tour_stop_of_building = TourStop.find_by(stop_type: "building_starting_point", stop_id: @building_to_building_id[building])
-          tour_stop_of_building.name = "Building #{building}"
-          stops_arr << tour_stop_of_building
+          if tour_stop_of_building.present?
+            tour_stop_of_building.name = "Building #{building}"
+            stops_arr << tour_stop_of_building
+          end
         end
         # for upstair
         @original_presendece_arr[building].keys().sort().each do |floor|
