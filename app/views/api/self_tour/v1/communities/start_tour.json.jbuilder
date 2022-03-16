@@ -902,6 +902,11 @@ json.tours @tours do |tour|
       json.igloohome_guest_bluetooth_key ''
       json.igloohome_guest_pin ''
     end
+
+    if stop.stop_type == "unit" && navigation_title.present?
+      navigation_title = navigation_title.split(":")
+      navigation_title = "#{navigation_title[0]}: Apt # #{navigation_title[1]}"
+    end
     
     json.navigation_title navigation_title
 
