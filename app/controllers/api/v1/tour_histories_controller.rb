@@ -136,7 +136,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
       if params[:community_id].present? && params[:tour_id].present? && params[:tour_user_id].present?
         id_mismatch = false
         community = set_community
-        tour = Tour.find params[:tour_id]
+
         unless community.community_tour.visual_id_verification
           begin
             tu = TourUser.find params[:tour_user_id]
@@ -156,7 +156,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
         check_length_stay(params[:tour_history_id], params[:lengthy_stay], community, tu, params[:current_stop_id]) if (params[:tour_history_id].present? and params[:lengthy_stay].present?)
         chat_control = (community.chat_control and community.is_chat_available) ? community.chat_control : false
         has_tour_user_left(community, tu, params[:lat_langs].last) if params[:lat_langs].present?
-        chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: params[:tour_id])
+        chatroom = Chatroom.find_by(tour_user_id: params[:tour_user_id], tour_id: community.community_tour.id)
         if chatroom.present?
           if params[:last_msg_id].present?
             count = Chat.where("name = ? AND chatroom_id = ? AND id > ?", "Support Team", chatroom.id, params[:last_msg_id]).count
