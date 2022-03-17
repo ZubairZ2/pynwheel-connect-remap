@@ -308,13 +308,16 @@ class UnitsController < ApplicationController
   end
 
   def destroy
-    ts = TourStop.find_by(stop_id: @unit.id)
+    ts = TourStop.where(stop_id: @unit.id)
+
     if ts.present?
-      VisitedStop.where(tour_stop_id: ts.id).destroy_all
-      ts.destroy
+      VisitedStop.where(tour_stop_id: ts.pluck(:id) ).destroy_all
+      ts.destroy_all
     end
+
     PaperTrail::Version.create(item_type: "Unit", item_id: @unit.id, event: "delete", whodunnit: current_user.id, community_id: current_community.id, company_id: current_company.id, object: "marketing_name: '#{@unit.marketing_name}' community_id: '#{@unit.community_id}'")
     @unit.destroy
+
     flash[:notice] = "Unit deleted successfully."
     redirect_to community_units_path(:community_id => @community.id)
   end
