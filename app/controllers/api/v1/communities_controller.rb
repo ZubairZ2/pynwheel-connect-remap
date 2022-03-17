@@ -416,6 +416,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community = Community.find_by_id params[:id]
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       if @community.present? and @tour_user.present?
+        TourUserCustomization.new(@community, @tour_user).customize_tour
         @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id)
         

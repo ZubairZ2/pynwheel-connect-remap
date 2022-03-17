@@ -87,7 +87,6 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
 
   def initialize_tour
     if @is_authorized
-      TourUserCustomization.new(@community, @tour_user).customize_tour
       @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
       @floorplans = get_floorplans_with_required_filter()
       @tour_type = params[:tour_status] rescue @tour_user.tour_type
