@@ -10,7 +10,7 @@ class CustomizeTourService
   end
 
   def get_user_tour
-    if is_customization_enabled && user_customized_tour.present?
+    if is_customization_enabled
       user_customized_tour
     else
       @community.community_tour
