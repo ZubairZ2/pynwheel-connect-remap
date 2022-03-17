@@ -69,20 +69,15 @@ class CustomizeTourService
 
   def reset_user_tour_stops
     user_tour = user_customized_tour
-    
-    if user_tour.present?
-      user_tour.tour_stops.delete_all
-      user_tour.destroy!
-    end
+    user_tour.destroy! if user_tour.present?
   end
 
   def remove_community_tour_stops
     tours = Tour.where("community_id = ? And tour_user_id IS NOT NULL", @community.id)
     tour_stops = TourStop.where(tour_id: tours.pluck(:id) )
 
-    VisitedStop.where(tour_stop_id: tour_stops.pluck(:id)).delete_all
-    tour_stops.delete_all
-    tours.delete_all
+    VisitedStop.where(tour_stop_id: tour_stops.pluck(:id)).destroy_all
+    tours.destroy_all
   end
 
   private
