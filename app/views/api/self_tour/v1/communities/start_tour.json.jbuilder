@@ -52,7 +52,7 @@ json.tours @tours do |tour|
     end
 
     if sp.blank?
-      @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first : sp = Path.where(map_path_from_id: nil, map_path_to_id: ts.where(stop_type: "elevator").first.stop_id)&.first rescue nil
+      @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first : sp = Path.where(map_path_to_id: ts.where(stop_type: "elevator").first.stop_id)&.first rescue nil
       json.path_points sp.present? ? sp.path_points.reorder('id DESC') : []
     else
       json.path_points sp.present? ? sp.path_points.reorder('id ASC') : []
@@ -484,7 +484,23 @@ json.tours @tours do |tour|
 
       begin
         if counter == 0
-          @existing_path_points = []
+          ts = @community.mdu ? tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort) : tour.tour_stops.where.not(id: @community.deleted_ids, stop_type: "unit").order(:sort)
+          ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
+
+          if @community.is_sitemap
+            sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first
+          else
+            ts.where(stop_type: "elevator").each do |last_elev|
+              sp = Path.where(map_path_from_id: last_elev.stop_id, map_path_to_id: nil)&.first unless sp.present? rescue nil
+            end
+          end
+
+          if sp.blank?
+            @community.is_sitemap ? sp = Path.where(map_path_from_id: nil, map_path_to_id: ts&.last&.stop_id)&.first : sp = Path.where(map_path_to_id: ts.where(stop_type: "elevator").first.stop_id)&.first rescue nil
+            @existing_path_points = sp.present? ? sp.path_points.reorder('id DESC') : []
+          else
+            @existing_path_points = sp.present? ? sp.path_points.reorder('id ASC') : []
+          end
         else
           if @community.auto_wayfinding
             stop_id = TourStop.find(new_stops_arr[i-1].id).stop_type == "elevator" ? TourStop.find(new_stops_arr[i-1].id).stop_id : new_stops_arr[i-1].id
@@ -1396,6 +1412,7 @@ json.tours @tours do |tour|
     end  
 
     @existing_path_points.flatten! unless @community.auto_wayfinding
+
     json.path_points @existing_path_points
 
     i+=1
