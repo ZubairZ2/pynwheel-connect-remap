@@ -44,7 +44,7 @@ class Floorplate < ApplicationRecord
   after_commit :populate_image_urls, on: [:create,:update]
 
   def get_floorplate_amenities_data floor, community_id
-    amenities = self.amenities.where(floor: floor, community_id: community_id)
+    amenities = self.amenities.where(floor: floor, community_id: community_id).where.not(building: ["", nil, "N/A"])
     floorplate_amenities = []
 
     amenities.each do |stop|
@@ -56,7 +56,7 @@ class Floorplate < ApplicationRecord
   end
 
   def get_floorplate_units_data floor, provider_floorplan_id, community_id
-    units = self.units.available_units.where(floor: floor, floorplan_id: provider_floorplan_id, community_id: community_id)
+    units = self.units.available_units.where(floor: floor, floorplan_id: provider_floorplan_id, community_id: community_id).where.not(building: ["", nil, "N/A"])
     floorplate_units = []
 
     units.each do |stop|
@@ -146,7 +146,6 @@ class Floorplate < ApplicationRecord
       width: self.width,
       floor_range: self.range,
       floorplan_name: floor,
-      building: self.building,
       unique_floorplat_amenity_identifier: "#{self.id}-#{floor}",
       floorplate_amenities: floorplate_stops
     }
@@ -162,7 +161,6 @@ class Floorplate < ApplicationRecord
       width: self.width,
       floor_range: self.range,
       floorplan_name: floor,
-      building: self.building,
       unique_floorplat_unit_identifier: "#{self.id}-#{floor}",
       floorplate_units: floorplate_stops
     }
