@@ -15,14 +15,14 @@ class FloorplanUnitsService < BaseService
   end
 
   def get_floorplan_units(floorplan)
-    Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', floorplan.provider_floorplan_id, @community.id, true).available_units if floorplan.present?
+    Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', floorplan.provider_floorplan_id, @community.id, true).available_units.where.not(floor: not_floor, building: not_building) if floorplan.present?
   end
 
   def get_floorplate_amenities
     unless @community.is_sitemap
-      @community.amenities.where(amenityable_type: "Floorplate").where.not(x_plot: [0,nil], y_plot: [0,nil]).sort_by { |a| a&.floor } 
+      @community.amenities.where(amenityable_type: "Floorplate").where.not(x_plot: [0,nil], y_plot: [0,nil], floor: not_floor, building: not_building).sort_by { |a| a&.floor } 
     else
-      @community.amenities.where(amenityable_type: "Sitemap").where.not(x_plot: [0,nil], y_plot: [0,nil])
+      @community.amenities.where(amenityable_type: "Sitemap").where.not(x_plot: [0,nil], y_plot: [0,nil], floor: nil, building: nil)
     end
   end
 
@@ -44,4 +44,13 @@ class FloorplanUnitsService < BaseService
     floors.uniq
   end
 
+  private
+
+  def not_floor
+    [nil]
+  end
+
+  def not_building
+    ["", nil, "N/A"]
+  end
 end
