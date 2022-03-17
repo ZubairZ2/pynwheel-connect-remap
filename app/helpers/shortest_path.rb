@@ -1095,7 +1095,7 @@ module ShortestPath
           end
         end 
       end
-      @amenities_doors = Amenity.where(amenityable_type: "Floorplate", amenityable_id: @floorplates.ids).includes(:doors)
+      @amenities_doors = Amenity.where(amenityable_type: "Floorplate", amenityable_id: @floorplates.ids).where.not(floor: [nil], building: ["", nil]).includes(:doors)
       @amenity_with_doors = {}
       building_list.each {|building| @amenity_with_doors[building] = {}}
       @amenities_doors.each do |amenity| 
@@ -1107,6 +1107,7 @@ module ShortestPath
           else
             @planned_to_visit_amenities_and_doors_ids << amenity.id
           end
+
           if @amenity_with_doors[amenity.building].has_key?(amenity.floor)
             @amenity_with_doors[amenity.building][amenity.floor] << { amenity_info: { amenity: { id: amenity.id, name: amenity.name, building: amenity.building, provider_id: amenity.provider_amenity_id, x_plot: amenity.x_plot, y_plot: amenity.y_plot }, door: amenity.doors.present? ? amenity.doors : {} } }           
           else
@@ -1145,7 +1146,7 @@ module ShortestPath
     def fetch_amenities_according_to_building_to_floor(planned_to_visit_amenities_ids, building_list)
       building_floor_amenities = {}
       building_list.each {|building| building_floor_amenities[building] = {}}
-      building_floor_and_amenity = Amenity.where(id: planned_to_visit_amenities_ids).pluck(:building, :floor, :id)
+      building_floor_and_amenity = Amenity.where(id: planned_to_visit_amenities_ids).where.not(floor: [nil], building: ["", nil]).pluck(:building, :floor, :id)
       building_floor_and_amenity.each do |f_a|
         building_floor_amenities[f_a[0]][f_a[1]] = building_floor_amenities[f_a[0]].keys.include?(f_a[1]) ? (building_floor_amenities[f_a[0]][f_a[1]] + [f_a[2]]) : ([f_a[2]])
       end
@@ -1407,18 +1408,26 @@ module ShortestPath
       end
       actual_path
     end
+
     def fetch_destination_stop_id(point, stops_id_hash_reverse)
-      if point.has_key?("door_id")
-        dest_id = stops_id_hash_reverse[point["door_id"]]
-      elsif point["point_type"] == "elevator" 
-        dest_id = point["elevator_id"]
-      elsif point["point_type"] == "building_starting_exit_point" 
-        dest_id = point["building_starting_exit_id"]
+      if point.present?
+        if point.has_key?("door_id")
+          dest_id = stops_id_hash_reverse[point["door_id"]]
+        elsif point["point_type"] == "elevator" 
+          dest_id = point["elevator_id"]
+        elsif point["point_type"] == "building_starting_exit_point" 
+          dest_id = point["building_starting_exit_id"]
+        else
+          dest_id = 0
+        end
+      
       else
         dest_id = 0
       end
+
       dest_id
     end
+
     def update_path_by_removing_floor(stop_to_stop_path)
       source_id, dest_id, source_stop, destination_stop, floor_index =2, 3, 5, 6, 7
       need_to_ignore_stops = ["unit", "amenity", "building_starting_point"]
