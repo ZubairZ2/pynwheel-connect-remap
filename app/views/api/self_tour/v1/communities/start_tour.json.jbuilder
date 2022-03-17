@@ -1422,7 +1422,7 @@ json.tours @tours do |tour|
     end
     
     json.authenticate_zerv is_zerv_lock_present
-    json.tour_start_point_lock_type (@tour_user.tour_type != "virtual_tour" &&  @community.enable_locks)  ? @tours.first.lock_provider : ""
+    json.tour_start_point_lock_type (@tour_user.tour_type != "virtual_tour" &&  @community.enable_locks)  ? @community.community_tour.lock_provider : ""
 
     json.current_position_marker_icon @community.community_tour.marker_icon_size.present? ? (@community.community_tour.marker_icon_size == "0" ? "19x25" : (@community.community_tour.marker_icon_size == "1" ? "17x23" : (@community.community_tour.marker_icon_size == "2" ? "15x21" : (@community.community_tour.marker_icon_size == "3" ? "13x19" : (@community.community_tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
     json.next_position_marker_icon  @community.community_tour.marker_icon_size.present? ? (@community.community_tour.marker_icon_size == "0" ? "35x35" : (@community.community_tour.marker_icon_size == "1" ? "33x33" : (@community.community_tour.marker_icon_size == "2" ? "31x31" : (@community.community_tour.marker_icon_size == "3" ? "29x29" : (@community.community_tour.marker_icon_size == "4" ? "27x27" : "35x35")  )) ) )  : "35x35"
