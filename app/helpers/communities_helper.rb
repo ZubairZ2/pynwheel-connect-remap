@@ -167,18 +167,19 @@ module CommunitiesHelper
         else
           false
         end
-      else
-        if community.community_tour.verification_type == "check_point_id"
-          if !is_checkpoint_verified
-            true
-          elsif is_authentiq_verified and (current_tour_time > (checkpoint_verified_at + 30.days))
-            true
-          elsif is_authentiq_verified and (current_tour_time < (checkpoint_verified_at + 30.days))
-            false
-          else
-            false
-          end
+      elsif community.community_tour.verification_type == "check_point_id"
+        if !is_checkpoint_verified
+          true
+        elsif is_authentiq_verified and (current_tour_time > (checkpoint_verified_at + 30.days))
+          true
+        elsif is_authentiq_verified and (current_tour_time < (checkpoint_verified_at + 30.days))
+          false
+        else
+          false
         end
+
+      elsif community.community_tour.verification_type == "email"
+        community.community_tour.visual_id_verification
       end
     else
       false
