@@ -693,7 +693,7 @@ module ShortestPath
         building_list = sorted_building
       end
     end
-    return is_multiple_building, building_list
+    return is_multiple_building, building_list.sort!
   end
 
   def fetch_multiple_stops(stop_types, new_stops_arr, community_id, tour_user)

@@ -385,7 +385,7 @@ json.tours @tours do |tour|
       end
     end
   end
-  
+
   json.tour_stop new_stops_arr.compact do |stop|
     unless @community.auto_wayfinding
       begin
