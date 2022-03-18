@@ -359,6 +359,8 @@ json.tours @tours do |tour|
   once_flag = true
   counter = 0
 
+  new_stops_arr = @community.get_stops_with_floor_and_buildings(new_stops_arr)
+
   if new_stops_arr[0].is_a? Tour
     json.navigation_title "Starting point"
   else
@@ -383,7 +385,7 @@ json.tours @tours do |tour|
       end
     end
   end
-
+  
   json.tour_stop new_stops_arr.compact do |stop|
     unless @community.auto_wayfinding
       begin

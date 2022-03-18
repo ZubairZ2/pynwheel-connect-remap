@@ -51,15 +51,29 @@ class CommunityTour
 
         new_stop = stop.stop_type.classify.constantize.find_by_id(stop.stop_id)
 
-        available_stops << {
-          "name": name,
-          "is_favorite": is_favorite,
-          "id": new_stop.id,
-          "stop_id": stop.id,
-          "stop_type": stop.stop_type,
-          "floor": @community.is_sitemap ? "" : new_stop&.floor,
-          "building": @community.is_sitemap ? "" : new_stop&.building
-        }
+        if @community.is_sitemap
+          available_stops << {
+            "name": name,
+            "is_favorite": is_favorite,
+            "id": new_stop.id,
+            "stop_id": stop.id,
+            "stop_type": stop.stop_type,
+            "floor": new_stop&.floor,
+            "building": new_stop&.building
+          }
+        else
+          if new_stop&.floor.present? && new_stop&.building.present?
+            available_stops << {
+              "name": name,
+              "is_favorite": is_favorite,
+              "id": new_stop.id,
+              "stop_id": stop.id,
+              "stop_type": stop.stop_type,
+              "floor": new_stop&.floor,
+              "building": new_stop&.building
+            }
+          end
+        end
 
       end
     end

@@ -732,6 +732,34 @@ s  end
 
     filtered_stops
   end
+
+
+  def get_stops_with_floor_and_buildings(new_stops_arr)
+    stops = []
+
+    unless self.is_sitemap
+      new_stops_arr.each do |stop|
+        unless (stop.is_a? Tour)
+          if stop.stop_type === "unit" || stop.stop_type === "amenity"
+            actual_stop = stop.stop_type.classify.constantize.find_by_id(stop.stop_id)
+
+            if actual_stop.present? && actual_stop.floor.present? && actual_stop.building.present?
+              stops << stop  
+            end
+          else
+            stops << stop
+          end
+        else
+          stops << stop
+        end
+      end
+
+    else
+      stops = new_stops_arr
+    end
+
+    stops
+  end
   
   def lock_options(locks_present_hash)
     options = [["Select an option",""],["Manual", "Manual"]]
