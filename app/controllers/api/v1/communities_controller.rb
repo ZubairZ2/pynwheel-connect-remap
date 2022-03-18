@@ -301,11 +301,10 @@ class Api::V1::CommunitiesController < ActionController::Base
 
       if @community.present? && @tour_user.present?
         delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
-        te = tour_stops_ids(@tour_user, @community)
+        te = tour_stops_ids(@community.community_tour, @tour_user, @community)
         @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
         @community.save
-        @tours = []
-        @tours << @community.community_tour
+        @tours = [@community.community_tour]
 
         session["check_lock_access"+@tour_user.id.to_s] = 0
         current_time = current_community_time(@community, params)

@@ -561,9 +561,9 @@ module DweloDevicesHelper
     end
   end
 
-  def tour_stops_ids(tour_user, community)
+  def tour_stops_ids(tour, tour_user, community)
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, community, false).get_scheduled_tour
-    tour = CustomizeTourService.new(community, tour_user).get_user_tour
+    # tour = CustomizeTourService.new(community, tour_user).get_user_tour
 
     if scheduled_tour.present? && scheduled_tour.stops_list.present?
       tour.tour_stops.where(stop_type: ["amenity", "unit"]).pluck(:id) - scheduled_tour.stops_list
