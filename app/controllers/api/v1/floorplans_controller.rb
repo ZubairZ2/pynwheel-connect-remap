@@ -11,10 +11,11 @@ class Api::V1::FloorplansController < ActionController::Base
     requested_bedrooms = bedrooms.map {|x| x.downcase.eql?("studio") ? "0" : x}
     any_option = bedrooms.map {|b| b.downcase.eql?("any")}
     filtered_floorplans = floorplans.present? ? floorplans.select {|b| requested_bedrooms.include?(b.bedrooms.to_i.to_s) } : [] unless any_option.include?(true) or bedrooms.blank?
+    
     floorplans_list = any_option.include?(true) ? floorplans : filtered_floorplans 
     sorting_param = params[:sort_by].present? ? params[:sort_by] : "default"
-    sorted_floorplans = floorplans_list.present? ? sort_floorplans(floorplans_list,sorting_param).uniq : []
-
+    sorted_floorplans = floorplans_list.present? ? sort_floorplans(floorplans_list, sorting_param).uniq : []
+    sorted_floorplans = available_floorplans_list(sorted_floorplans)
     @floorplans = Kaminari.paginate_array(sorted_floorplans).page(params[:page]).per(params[:per_page])
   end
 
@@ -49,6 +50,17 @@ class Api::V1::FloorplansController < ActionController::Base
   end
 
   private
+
+  def available_floorplans_list floorplans_list, available_floorplan_list = []    
+    floorplans_list.each do |floorplan|
+      available_units = FloorplanUnitsService.new(@community).get_floorplan_units(floorplan)      
+      if available_units.count > 0
+        available_floorplan_list << floorplan
+      end
+    end
+
+    available_floorplan_list
+  end
 
   def load_tour_user
     return unless params[:tour_user_id].present?
