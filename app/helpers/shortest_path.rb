@@ -562,7 +562,18 @@ module ShortestPath
           complete_path[building][floor] = floors_graph[building][floor].one_to_one_path
         end
         
-        if first_building_pass; source = floors_graph[building][floor].source; elsif floor == @floors_ids[building].first; source = building_start_id_to_uniq_id[building][floor][@building_to_building_id[building]]; else; source = elevator_id_to_uniq_id[building][floor][uniq_id_to_elevator_by_floor[building][floor - 1][floors_graph[building][floor - 1].source]]; end
+        if first_building_pass 
+          source = floors_graph[building][floor].source 
+        elsif floor == @floors_ids[building].first 
+          source = building_start_id_to_uniq_id[building][floor][@building_to_building_id[building]] 
+        else 
+          if elevator_id_to_uniq_id[building][floor].present?
+            source = elevator_id_to_uniq_id[building][floor][uniq_id_to_elevator_by_floor[building][floor - 1][floors_graph[building][floor - 1].source]]
+          else
+            source = 0
+          end
+        end
+        
         destination_arr = precedence_visited_ids_by_floor[building][floor]
         unless (floor == @last_floor_against_building[building])
           elevator_arr = elevators_which_have_next_floor_in_building(floor_to_elevator_uniq_ids[building][floor], uniq_id_to_elevator_by_floor[building][floor], building, floor)
@@ -597,13 +608,13 @@ module ShortestPath
           src = floors_graph[building][last_floor_id].source
         else
           if destination_floor_id == floor
-            src = elevator_id_to_uniq_id[building][floor][uniq_id_to_elevator_by_floor[building][floor + 1][src]]
+            src = elevator_id_to_uniq_id[building][floor][uniq_id_to_elevator_by_floor[building][floor + 1][src]] if  elevator_id_to_uniq_id[building][floor].present?
             traverse_back_path[floor] = [src]
           elsif have_elevator_on_current_floor_for_building(src, uniq_id_to_elevator_by_floor[building][floor + 1], building, floor + 1) && have_elevator_on_current_floor_for_building(src, uniq_id_to_elevator_by_floor[building][floor + 1], building, floor - 1) 
             src = elevator_id_to_uniq_id[building][floor][uniq_id_to_elevator_by_floor[building][floor + 1][src]]
             traverse_back_path[floor] = [src]
           else
-            src = elevator_id_to_uniq_id[building][floor][uniq_id_to_elevator_by_floor[building][floor + 1][src]]
+            src = elevator_id_to_uniq_id[building][floor][uniq_id_to_elevator_by_floor[building][floor + 1][src]] if elevator_id_to_uniq_id[building][floor].present?
             elevator_arr = elevators_which_have_previous_floor_in_building(floor_to_elevator_uniq_ids[building][floor], uniq_id_to_elevator_by_floor[building][floor], building, floor)
             floors_graph[building][floor].traverse_back(src, elevator_arr)
             traverse_back_path[floor] = floors_graph[building][floor].elevator_path.flatten
@@ -1327,34 +1338,36 @@ module ShortestPath
           else
             path_object_keys = path_object_in_order[building]["upside_path_objects"][floor].keys()[0..len]
           end
-          path_object_keys.each do |key|
-            point = path_object_in_order[building]["upside_path_objects"][floor][key]
-            if point.has_key?("point_type")
-              path_points << {"x_plot" => point["door_x_plot"].to_f, "y_plot" => point["door_y_plot"].to_f} if point.has_key?("is_door") && point["is_door"]
-              if point.has_key?("is_door") && point["is_door"] # if its unit or amenity and have door
-                door = Door.find point["door_id"]
-                stop = door.attached_with
-                path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
-              elsif (point.has_key?("is_door") && !point["is_door"]) # if its unit or amenity and have no door
-                stop = point["point_type"].classify.constantize.find point["door_id"]
-                path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
-              elsif point["point_type"] == "elevator" # if its a elevator
-                stop = point["point_type"].classify.constantize.find point["elevator_id"]
-                path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
-              elsif point["point_type"] == "building_starting_exit_point" # if its a building entry/exit point
-                stop = BuildingStartingPoint.find point["building_starting_exit_id"]
-                path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+          if path_object_keys.present?
+            path_object_keys.each do |key|
+              point = path_object_in_order[building]["upside_path_objects"][floor][key]
+              if point.has_key?("point_type")
+                path_points << {"x_plot" => point["door_x_plot"].to_f, "y_plot" => point["door_y_plot"].to_f} if point.has_key?("is_door") && point["is_door"]
+                if point.has_key?("is_door") && point["is_door"] # if its unit or amenity and have door
+                  door = Door.find point["door_id"]
+                  stop = door.attached_with
+                  path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+                elsif (point.has_key?("is_door") && !point["is_door"]) # if its unit or amenity and have no door
+                  stop = point["point_type"].classify.constantize.find point["door_id"]
+                  path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+                elsif point["point_type"] == "elevator" # if its a elevator
+                  stop = point["point_type"].classify.constantize.find point["elevator_id"]
+                  path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+                elsif point["point_type"] == "building_starting_exit_point" # if its a building entry/exit point
+                  stop = BuildingStartingPoint.find point["building_starting_exit_id"]
+                  path_points << {"x_plot" => stop.x_plot.to_f, "y_plot" => stop.y_plot.to_f}
+                end
+                dest_type = tour_stop_type_arr.include?(point["point_type"]) ? "TourStop" : "Tour"
+                dest_id = fetch_destination_stop_id(point, stops_id_hash_reverse)
+                to = point["point_type"]
+                path << [source_type, dest_type, source_id, dest_id, path_points, from, to, floor, building]
+                source_type = dest_type
+                source_id = dest_id
+                from = to
+                path_points = []
+              else
+                path_points << {"x_plot" => point["x_plot"], "y_plot" => point["y_plot"]}
               end
-              dest_type = tour_stop_type_arr.include?(point["point_type"]) ? "TourStop" : "Tour"
-              dest_id = fetch_destination_stop_id(point, stops_id_hash_reverse)
-              to = point["point_type"]
-              path << [source_type, dest_type, source_id, dest_id, path_points, from, to, floor, building]
-              source_type = dest_type
-              source_id = dest_id
-              from = to
-              path_points = []
-            else
-              path_points << {"x_plot" => point["x_plot"], "y_plot" => point["y_plot"]}
             end
           end
         end
@@ -2150,7 +2163,7 @@ module ShortestPath
       end
     end
     def have_elevator_on_current_floor_for_building(source, uniq_id_to_elevator_for_floor, building, floor)
-      if uniq_id_to_elevator_for_floor.any?
+      if uniq_id_to_elevator_for_floor&.any?
         elevator_id = uniq_id_to_elevator_for_floor[source]
         @building_to_floor_to_elevators[building][floor].include?(elevator_id)
       else
@@ -2250,12 +2263,12 @@ module ShortestPath
       unit_uniq_id_to_org_id = convert_values_into_keys(unit_id_to_uniq_id)
       amenity_uniq_id_to_org_id = convert_values_into_keys(amenity_id_to_uniq_id)
       elevator_uniq_id_to_org_id = convert_values_into_keys(elevator_id_to_uniq_id)
-      path_uniq_ids_arr.each_with_index do |element, i|
+      path_uniq_ids_arr.compact.each_with_index do |element, i|
         if starting_point_for_building(building, floor)
           building_uniq_id_to_org_id = convert_values_into_keys(building_start_id_to_uniq_id)
           if (element == 0 ) # for starting point
             path_object_in_order[i] = start_point_data
-          elsif (element < building_starting_index) # then its hallways points
+          elsif (building_starting_index.present? && element < building_starting_index) # then its hallways points
             path_object_in_order[i] = new_hallways_coordinates[hallways_uniq_id_to_org_id[element]]
           elsif (element < unit_starting_index) # then its building starting point
             path_object_in_order[i] = building_starting_point_data[building_uniq_id_to_org_id[element]]
