@@ -172,12 +172,12 @@ class Api::V1::FloorplansController < ActionController::Base
   end
 
   def add_remove_stop_into_sort_hash(building, floor, tour_stop, request)
-    building = params[:building].present? ? params[:building] : ""
-
     if request.eql?("add")
       @tour.sort_hash[building + ","+ floor.to_s].push(tour_stop.id)
     elsif request.eql?("remove")
-      @tour.sort_hash[building + ","+ floor.to_s].delete(tour_stop.id)
+      if @tour.sort_hash.present? && @tour.sort_hash[building + ","+ floor.to_s].present?
+        @tour.sort_hash[building + ","+ floor.to_s].delete(tour_stop.id)
+      end
     end
 
     @tour.save!
