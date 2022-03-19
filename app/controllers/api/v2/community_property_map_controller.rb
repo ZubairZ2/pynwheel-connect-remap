@@ -6,7 +6,8 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     if @community.is_sitemap
       property_map = @community.sitemap
       type = SITEMAP
-    else
+    end
+    if @community.has_floorplates?
       property_map = @community.floorplates
       type = FLOORPLATE
     end
