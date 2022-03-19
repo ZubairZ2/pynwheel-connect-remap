@@ -1,6 +1,6 @@
 class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :load_Community , only: [:index , :add_property_images, :delete_property_map]
+  before_action :load_Community , only: [:index , :add_property_images, :delete_property_map, :delete_label_image]
 
   def index
     if @community.is_sitemap
@@ -60,6 +60,25 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
       if floorplate.present?
         if floorplate.destroy!
           render :json => {:success => true, :error_code => 200, :message => "Mid high rise community deleted successfully", data: nil}
+        end
+      end
+    end
+  end
+
+  def delete_label_image
+    @type = params["property_type"]
+    sitemap = @community.sitemap
+    if sitemap.present?
+      sitemap.remove_label_image!
+      if sitemap.save
+        render :json => {:success => true, :error_code => 200, :message => "Garden style community label image deleted successfully", data: nil}
+      end
+    else
+      floorplate = @community.floorplates.find_by(id: params["property_id"])
+      if floorplate.present?
+        floorplate.remove_label_image!
+        if floorplate.save
+          render :json => {:success => true, :error_code => 200, :message => "Mid high rise community label image deleted successfully", data: nil}
         end
       end
     end
