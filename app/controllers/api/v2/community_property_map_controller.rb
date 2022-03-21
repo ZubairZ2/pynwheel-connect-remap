@@ -1,6 +1,6 @@
 class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :load_Community , only: [:index , :add_property_images, :delete_property_map, :delete_label_image]
+  before_action :load_Community , only: [:index , :add_property_images, :delete_property_map, :delete_label_image, :change_property_type]
 
   def index
     if @community.is_sitemap
@@ -68,11 +68,13 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
 
   def delete_label_image
     @type = params["property_type"]
-    sitemap = @community.sitemap
-    if sitemap.present?
-      sitemap.remove_label_image!
-      if sitemap.save
-        render :json => {:success => true, :error_code => 200, :message => "Garden style community label image deleted successfully", data: nil}
+    if @type.eql?(SITEMAP)
+      sitemap = @community.sitemap
+      if sitemap.present?
+        sitemap.remove_label_image!
+        if sitemap.save
+          render :json => {:success => true, :error_code => 200, :message => "Garden style community label image deleted successfully", data: nil}
+        end
       end
     else
       floorplate = @community.floorplates.find_by(id: params["property_id"])
@@ -81,6 +83,23 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
         if floorplate.save
           render :json => {:success => true, :error_code => 200, :message => "Mid high rise community label image deleted successfully", data: nil}
         end
+      end
+    end
+  end
+
+  def change_property_type
+    type = params["property_type"]
+    if type.eql?(SITEMAP)
+      sitemap = @community.sitemap
+      if sitemap.present?
+        if sitemap.destroy!
+          render :json => {:success => true, :error_code => 200, :message => "Garden style community details deleted successfully", data: nil}
+        end
+      end
+    else
+      if @community.floorplates.present?
+        @community.floorplates.delete_all
+        render :json => {:success => true, :error_code => 200, :message => "Mid high rise community details deleted successfully", data: nil}
       end
     end
   end
