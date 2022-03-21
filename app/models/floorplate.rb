@@ -38,7 +38,7 @@ class Floorplate < ApplicationRecord
   has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
   has_one :status, as: :statusable
 
-  validates_uniqueness_of :name, scope: :community_id
+  validates_uniqueness_of :name, scope: :community_id, if: -> { name.present? }
   validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}
   validates_with FloorValidator
 

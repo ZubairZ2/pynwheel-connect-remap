@@ -557,12 +557,12 @@ Rails.application.routes.draw do
           put :update_company
         end
       end
-      resources :community_property_map do
-        member do
-          post :add_property_images
-        end
-      end
       resources :communities do
+        resources :community_property_map
+        delete :delete_property_map, to: 'community_property_map#delete_property_map'
+        delete :delete_label_image, to: 'community_property_map#delete_label_image'
+        delete :change_property_type, to: 'community_property_map#change_property_type'
+        post :add_property_images, to: 'community_property_map#add_property_images'
         resources :opening_hours
         post :create_opening_hours, to: 'opening_hours#create_opening_hours'
         delete :delete_opening_hours, to: 'opening_hours#delete_opening_hours'

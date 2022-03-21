@@ -22,7 +22,7 @@ class Sitemap < ApplicationRecord
   has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
   has_one :status, as: :statusable
 
-  validates :image, :presence => {message: "cannot be blank. Please upload site map image first."}
+  validates :image, :presence => {message: "cannot be blank. Please upload site map image first."}, if: -> { image.present? }
 
   def as_json
     super(
