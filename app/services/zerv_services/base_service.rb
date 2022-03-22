@@ -61,7 +61,7 @@ module ZervServices
       ZervGuest.where(community_id: community.id, tour_user_id: tour_user.id).update_all(status: "deleted")
       if stop_list.present?
         stop_list.each do |stop|
-          stop.zerv_guests.create(community_id: community.id, tour_user_id: tour_user.id, status: "active") if stop.zerv_locks.last.present?
+          stop.zerv_guests.create(community_id: community.id, tour_user_id: tour_user.id, status: "active")
         end
       else
         ZervGuest.create(community_id: community.id, tour_user_id: tour_user.id, status: "active")
@@ -84,7 +84,7 @@ module ZervServices
       ZervGuest.where(community_id: community.id, pynwheel_access_user_id: tour_user.id).update_all(status: "deleted")
       if stop_list.present?
         stop_list.each do |stop|
-          stop.zerv_guests.create(community_id: community.id, pynwheel_access_user_id: tour_user.id, status: "active") if stop.zerv_locks.last.present?
+          stop.zerv_guests.create(community_id: community.id, pynwheel_access_user_id: tour_user.id, status: "active")
         end
       else
         ZervGuest.create(community_id: community.id, pynwheel_access_user_id: tour_user.id, status: "active")
