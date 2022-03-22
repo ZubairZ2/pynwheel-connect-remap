@@ -42,10 +42,21 @@ class Api::V1::FloorplansController < ActionController::Base
     return unless @tour.present?
     @tour_stop = @tour.tour_stops.where(stop_id: params[:stop_id]).last
 
-    if @tour_stop.present?
-      remove_tour_stop(@tour_stop)
+    unless @community.community_tour&.tour_setting&.enable_tour_customization
+      if @tour_stop.present?
+        @community.deleted_ids.push(tour_stop.id)
+        @community.save!
+      else
+        if @community.deleted_ids.include?(tour_stop.id)
+          @community.deleted_ids.delete(tour_stop.id)
+        end
+      end
     else
-      add_tour_stop()
+      if @tour_stop.present?
+        remove_tour_stop(@tour_stop)
+      else
+        add_tour_stop()
+      end
     end
   end
 
@@ -192,13 +203,6 @@ class Api::V1::FloorplansController < ActionController::Base
         if @tour.sort_hash.present? && @tour.sort_hash[building + ","+ floor.to_s].present?
           @tour.sort_hash[building + ","+ floor.to_s].delete(tour_stop.id)
         end
-      end
-    end
-
-    unless @community.community_tour&.tour_setting&.enable_tour_customization
-      if request.eql?("remove")
-        @community.deleted_ids.push(tour_stop.id)
-        @community.save!
       end
     end
 
