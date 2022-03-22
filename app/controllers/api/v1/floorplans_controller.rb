@@ -44,12 +44,8 @@ class Api::V1::FloorplansController < ActionController::Base
 
     unless @community.community_tour&.tour_setting&.enable_tour_customization
       if @tour_stop.present?
-        @community.deleted_ids.push(tour_stop.id)
+        @community.deleted_ids.push(@tour_stop.id)
         @community.save!
-      else
-        if @community.deleted_ids.include?(tour_stop.id)
-          @community.deleted_ids.delete(tour_stop.id)
-        end
       end
     else
       if @tour_stop.present?
