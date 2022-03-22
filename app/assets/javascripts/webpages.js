@@ -397,9 +397,15 @@ $(window).bind('load', function () {
         }
 
         $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
+        
+        if ($(window).width() > 1360) {
+          $(this).css({"margin-left": 2, "margin-top": 7})
+        }
+
         if($(window).width() >= 567 && $(window).width() <= 1360 ){
           $(this).css({"margin-left": -5, "margin-top": -7})
         }
+
         if($(window).width() <= 567){
           $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()), "margin-top": -($('.fa-map-marker-alt-responsive').height()+7)})       
         }
