@@ -663,7 +663,9 @@ module ShortestPath
     floor = ""
     mobile_path.each_with_index do |path, indx|
       if (path[0] == source_type && path[1] == dest_type && path[2] == source_id && path[3] == dest_id)
-        floor = mobile_path[indx + 1][floor_index]
+        if mobile_path[indx + 1].present?
+          floor = mobile_path[indx + 1][floor_index]
+        end
         break
       end
     end
