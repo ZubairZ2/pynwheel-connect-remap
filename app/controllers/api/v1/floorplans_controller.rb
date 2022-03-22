@@ -98,9 +98,7 @@ class Api::V1::FloorplansController < ActionController::Base
         (BuildingStartingPoint.find tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: tour_stop.stop_id).any?
       end
       
-      unless @community.is_sitemap
-        add_remove_stop_into_sort_hash(params[:building], params[:floor], tour_stop, "remove")
-      end
+      add_remove_stop_into_sort_hash(params[:building], params[:floor], tour_stop, "remove")
 
       if tour_stop.destroy
         render json: { success: true, error_code: 200, message: "Tour stop has been deleted successfully", is_unit_already_available: TourStop.where(stop_id: params[:stop_id], tour_id: @tour.id ).last.present?}, status: 200
@@ -132,9 +130,7 @@ class Api::V1::FloorplansController < ActionController::Base
 
     ts = TourStop.create(stop_type: params[:stop_type], stop_id: params[:stop_id], latitude: st.x_plot, longitude: st.y_plot, tour_id: @tour.id, name: stName)
     
-    unless @community.is_sitemap
-      add_remove_stop_into_sort_hash(params[:building], params[:floor], ts, "add")
-    end
+    add_remove_stop_into_sort_hash(params[:building], params[:floor], ts, "add")
     
     PaperTrail::Version.create(item_type: "TourStop", item_id: st.id, event: "create", whodunnit: @community&.users&.first&.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{stName}' community_id: '#{@community.id}'")
     render json: { success: true, error_code: 200, message: "Tour stop has been added successfully", is_unit_already_available: TourStop.find_by(stop_id: params[:stop_id]).present?}, status: 200
@@ -184,16 +180,25 @@ class Api::V1::FloorplansController < ActionController::Base
   end
 
   def add_remove_stop_into_sort_hash(building, floor, tour_stop, request)
-    if request.eql?("add")
-      if @tour.sort_hash.present? && @tour.sort_hash[building + ","+ floor.to_s].present?
-        @tour.sort_hash[building + ","+ floor.to_s].push(tour_stop.id)
-      else
-        @tour.sort_hash[building + ","+ floor.to_s] = []
-        @tour.sort_hash[building + ","+ floor.to_s].push(tour_stop.id)
+    unless @community.is_sitemap
+      if request.eql?("add")
+        if @tour.sort_hash.present? && @tour.sort_hash[building + ","+ floor.to_s].present?
+          @tour.sort_hash[building + ","+ floor.to_s].push(tour_stop.id)
+        else
+          @tour.sort_hash[building + ","+ floor.to_s] = []
+          @tour.sort_hash[building + ","+ floor.to_s].push(tour_stop.id)
+        end
+      elsif request.eql?("remove")
+        if @tour.sort_hash.present? && @tour.sort_hash[building + ","+ floor.to_s].present?
+          @tour.sort_hash[building + ","+ floor.to_s].delete(tour_stop.id)
+        end
       end
-    elsif request.eql?("remove")
-      if @tour.sort_hash.present? && @tour.sort_hash[building + ","+ floor.to_s].present?
-        @tour.sort_hash[building + ","+ floor.to_s].delete(tour_stop.id)
+    end
+
+    unless @community.community_tour&.tour_setting&.enable_tour_customization
+      if request.eql?("remove")
+        @community.deleted_ids.push(tour_stop.id)
+        @community.save!
       end
     end
 
