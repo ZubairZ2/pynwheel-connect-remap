@@ -149,18 +149,10 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   def start_tour
     if @is_authorized
       if @community.present? && @tour_user.present?
-        tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
-        delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
-        te = tour_stops_ids(tour, @tour_user, @community)
-        @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
-        @community.save
-        @tours = [tour]
-
+        @tour = [CustomizeTourService.new(@community, @tour_user).get_user_tour]
         session["check_lock_access#{@tour_user.id.to_s}"] = 0
         current_time = current_community_time(@community, params)
-        
         @tour_sort_hash = CustomizeTourService.new(@community, @tour_user).get_tour_sort_hash
-
         @building_list = Buildings.new(@community).get_community_buildings
         @floor_list = Floors.new(@community).get_community_floors
         @floor_list_temp = Floors.new(@community).get_community_temp_floors(@floor_list)
@@ -170,7 +162,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         render :json=> {:success=>false, :message => "Community or tour user not found"}
       end
     else
-        render :json=> {:success=>false, :message => "Invalid Token"}
+      render :json=> {:success=>false, :message => "Invalid Token"}
     end
   end
   
