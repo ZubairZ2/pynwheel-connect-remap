@@ -669,30 +669,29 @@ module ShortestPath
     end
     floor
   end
-  def check_stops_have_multiple_buildings(new_stops_arr, community_id)
-    community = Community.find community_id
-    tour = community.community_tour
+  def check_stops_have_multiple_buildings(new_stops_arr, community, tour_user)
+    tour = tour_user.present? ? CustomizeTourService.new(community, tour_user).get_user_tour : community.community_tour
     sorted_building = tour.building_order.reject { |e| e.to_s.strip.empty? } rescue []
     tour_stops = tour&.tour_stops.visible.order('sort ASC')
     unit_ids = tour_stops.where(stop_type: "unit").pluck(:stop_id)
     amenity_ids = tour_stops.where(stop_type: "amenity").pluck(:stop_id)
     building_list, actual_building_list = []
-    actual_building_list = (Unit.where(community_id: community_id).pluck(:building)).reject { |e| e.to_s.strip.empty? } rescue []
-    actual_building_list += Amenity.where(community_id: community_id).pluck(:building).reject { |e| e.to_s.strip.empty? }
+    actual_building_list = (Unit.where(community_id: community.id).pluck(:building)).reject { |e| e.to_s.strip.empty? } rescue []
+    actual_building_list += Amenity.where(community_id: community.id).pluck(:building).reject { |e| e.to_s.strip.empty? }
     is_multiple_building = actual_building_list.uniq.count > 1
     building_list = (Unit.where(id: unit_ids).pluck(:building)).reject { |e| e.to_s.strip.empty? } rescue []
     building_list += Amenity.where(id: amenity_ids).pluck(:building).reject { |e| e.to_s.strip.empty? }
     building_list = building_list.compact.reject { |c| c.empty? }.uniq
     building_list = building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(building_list).sort.map{|x,y| y}
-    if sorted_building.present?
-      if (building_list - sorted_building != [] )
-        building_list = (sorted_building) + (building_list - sorted_building) 
-      elsif sorted_building - building_list != []
-        building_list = (sorted_building & building_list)
-      else
-        building_list = sorted_building
-      end
-    end
+    # if sorted_building.present?
+    #   if (building_list - sorted_building != [] )
+    #     building_list = (sorted_building) + (building_list - sorted_building) 
+    #   elsif sorted_building - building_list != []
+    #     building_list = (sorted_building & building_list)
+    #   else
+    #     building_list = sorted_building
+    #   end
+    # end
     return is_multiple_building, building_list.sort!
   end
 
