@@ -149,9 +149,16 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   def start_tour
     if @is_authorized
       if @community.present? && @tour_user.present?
-        @tours = [CustomizeTourService.new(@community, @tour_user).get_user_tour]
+        tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
+        @tours = [tour]
+        
+        delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
+        te = tour_stops_ids(tour, @tour_user, @community)
+        @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
+
         session["check_lock_access#{@tour_user.id.to_s}"] = 0
         current_time = current_community_time(@community, params)
+
         @tour_sort_hash = CustomizeTourService.new(@community, @tour_user).get_tour_sort_hash
         @building_list = Buildings.new(@community).get_community_buildings
         @floor_list = Floors.new(@community).get_community_floors

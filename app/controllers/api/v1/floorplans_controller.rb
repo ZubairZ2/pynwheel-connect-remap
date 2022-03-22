@@ -41,18 +41,10 @@ class Api::V1::FloorplansController < ActionController::Base
   def update_tour_stops_list
     return unless @tour.present?
     @tour_stop = @tour.tour_stops.where(stop_id: params[:stop_id]).last
-
-    unless @community.community_tour&.tour_setting&.enable_tour_customization
-      if @tour_stop.present?
-        @community.deleted_ids.push(@tour_stop.id)
-        @community.save!
-      end
+    if @tour_stop.present?
+      remove_tour_stop(@tour_stop)
     else
-      if @tour_stop.present?
-        remove_tour_stop(@tour_stop)
-      else
-        add_tour_stop()
-      end
+      add_tour_stop()
     end
   end
 
