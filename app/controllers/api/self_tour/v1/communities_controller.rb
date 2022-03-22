@@ -149,8 +149,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
   def start_tour
     if @is_authorized
       if @community.present? && @tour_user.present?
-        tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
-        @tour = [tour]
+        @tours = [CustomizeTourService.new(@community, @tour_user).get_user_tour]
         session["check_lock_access#{@tour_user.id.to_s}"] = 0
         current_time = current_community_time(@community, params)
         @tour_sort_hash = CustomizeTourService.new(@community, @tour_user).get_tour_sort_hash
