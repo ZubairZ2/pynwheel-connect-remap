@@ -44,29 +44,32 @@ namespace :delayed_email_notifications do
 
 	def abandoned_tour tour_histories
 		tour_histories.each do |th|
-			
-			if th.present? and (Time.now - th.updated_at) > 60 
-				community = (Tour.find_by_id th.tour_id).community
+			if th.present?
+				tour = (Tour.find_by_id th.tour_id)
+				community = tour&.community
 
-		  	@mail_content = ["abandoned_tour_at_stop", "#{(TourUser.find th.tour_user_id).name rescue "User"} abandoned a tour of #{(community.name.titleize)} at "]
+				if community.present? and (Time.now - th.updated_at) > 60 
 
-				@mail_content[1] = "#{@mail_content.last} #{(TourStop.find th.abandoned_tour_at_stop.to_i).name.titleize rescue "Not Found"}."
-				
-				if th.tour_user_id == 1445
-          @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "111Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
-				else
-				  @thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
-        end
+					@mail_content = ["abandoned_tour_at_stop", "#{(TourUser.find th.tour_user_id).name rescue "User"} abandoned a tour of #{(community.name.titleize)} at "]
 
-				touruser_remotelock_data community, th
-				send_email_sms_or_both @mail_content, community
-				send_email_sms_or_both_to_touruser @thank_you_content, community, th
-				th.update_column 'abandoned_tour_email_sent', true
-				save_prospect(th.lengthy_stay, th, community) if th.lengthy_stay.present?
-				th.abandoned_tour_email_sent = true
-				th.save
+					@mail_content[1] = "#{@mail_content.last} #{(TourStop.find th.abandoned_tour_at_stop.to_i).name.titleize rescue "Not Found"}."
+					
+					if th.tour_user_id == 1445
+						@thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "111Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+					else
+						@thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+					end
 
-				community.save
+					touruser_remotelock_data community, th
+					send_email_sms_or_both @mail_content, community
+					send_email_sms_or_both_to_touruser @thank_you_content, community, th
+					th.update_column 'abandoned_tour_email_sent', true
+					save_prospect(th.lengthy_stay, th, community) if th.lengthy_stay.present?
+					th.abandoned_tour_email_sent = true
+					th.save
+
+					community.save
+				end
 			end
 		end
 		
