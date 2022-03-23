@@ -153,9 +153,11 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         @tours = [tour]
 
         delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
-        te = tour_stops_ids(tour, @tour_user, @community)
+        # te = tour_stops_ids(tour, @tour_user, @community)
+        te = []
         @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
         @community.save!
+
         session["check_lock_access#{@tour_user.id.to_s}"] = 0
         current_time = current_community_time(@community, params)
 
