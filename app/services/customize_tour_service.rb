@@ -50,15 +50,17 @@ class CustomizeTourService
       if stops_available_for_tour(building)
         elevator_floor_range.each do |floor|
           selected_obj = tour_sort_hash["#{building},#{floor}"]
+
           if selected_obj.present?
             unless selected_obj.include?(elevator.id)
               stop = TourStop.where(stop_id:  elevator.id).last
 
               if stop.present?
-                tour_sort_hash["#{building},#{floor}"] << stop.id
+                tour_sort_hash["#{building},#{floor}"] << stop.id.to_s
               end
             end
           end
+
         end
       end
 

@@ -704,12 +704,10 @@ module ShortestPath
     floorplate_mobile_stops = []
 
     tour_stops.each do |tour_stop|
-      if new_stops_arr.include?(tour_stop)
-        floorplate_mobile_stops << tour_stop
-      end
+      floorplate_mobile_stops << tour_stop if stop_types.include?(tour_stop.stop_type) || new_stops_arr.include?(tour_stop)
     end
 
-    floorplate_mobile_stops
+    floorplate_mobile_stops.compact
   end
 
   def fetch_tour_stops_which_are_required_from_mobile_side(new_stops_arr, community_id, tour_user = nil)

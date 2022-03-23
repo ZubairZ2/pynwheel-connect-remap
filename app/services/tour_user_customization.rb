@@ -51,10 +51,9 @@ class TourUserCustomization
   end
 
   def set_tour_user_sort_hash t_tour
-
     @building_list = Buildings.new(@community).get_community_buildings
     @floor_list = Floors.new(@community).get_community_floors
-
+    
     @building_list << "" 
     @building_list.each do |building|
       if @floor_list.present?
@@ -67,7 +66,7 @@ class TourUserCustomization
 
                 if new_stop.present? && (new_stop.stop_type == "unit" || new_stop.stop_type ==  "amenity")
                   unless t_tour.sort_hash[building + ","+ floor.to_s].include?(new_stop.id.to_s)
-                    t_tour.sort_hash[building + ","+ floor.to_s] << new_stop.id
+                    t_tour.sort_hash[building + ","+ floor.to_s] << new_stop.id.to_s
                   end
                 end
               end
