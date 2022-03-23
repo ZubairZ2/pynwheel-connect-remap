@@ -249,8 +249,11 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   def update_tour_stops_status_and_remarks status, remarks
     return if @community.tour&.tour_stops.blank?
     tour_stops = @community.tour&.tour_stops
-    
-    tour_stops.map {|ts| ts&.status.update_attributes(status: status, remarks: remarks) }
+    tour_stops.map do |ts|
+      unless ts.status.nil?
+        ts&.status.update_attributes(status: status, remarks: remarks)
+      end
+    end
   end
 
   def update_lock_providers_status_and_remarks status, remarks

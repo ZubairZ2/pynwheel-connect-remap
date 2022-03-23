@@ -103,10 +103,18 @@ class CommunityUser < ApplicationRecord
 
   def status_in_percentage
     community_detail_sections = community_detail_forms
-    all_sections_with_status = community_detail_sections.map {|x| x[:status]}
+    new_statuses = []
+    all_sections_with_status = community_detail_sections.map do |status|
+      statuses = status[:status]
+      statuses.each do |x|
+        if !x.nil?
+          new_statuses << x[:name] if x[:name].present?
+        end
+      end
+    end
     total_number_of_sections = all_sections_with_status.count
-    number_of_submitted_sections = all_sections_with_status.pluck("submitted").compact.count rescue 0
-    number_of_approved_sections = all_sections_with_status.pluck("approved").compact.count rescue 0
+    number_of_submitted_sections = new_statuses.pluck("submitted").compact.count rescue 0
+    number_of_approved_sections = new_statuses.pluck("approved").compact.count rescue 0
     submitted_percentage = percent_of(number_of_submitted_sections, total_number_of_sections).to_i
     approved_percentage = percent_of(number_of_approved_sections, total_number_of_sections).to_i
     status_percentage = {submitted: submitted_percentage, approved: approved_percentage}
