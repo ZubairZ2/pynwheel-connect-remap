@@ -51,7 +51,7 @@ class ZervAccountsController < ApplicationController
 
     private
       def zerv_params
-          params.require(:zerv).permit(:username, :password, :facility_id, :badge_id, :card_format)
+          params.require(:zerv).permit(:username, :password, :facility_id, :badge_id, :card_format, :customer_id)
       end
 
       def set_zerv
