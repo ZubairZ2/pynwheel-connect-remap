@@ -25,7 +25,7 @@ module ZervServices
                 tour_time = Time.now.in_time_zone(timezone)
                 stop_list.each do |stop|
                     stop_ids << stop&.id&.to_i
-                    attached_lock = stop.zerv_locks.last
+                    attached_lock = ShortestPath.return_stop_lock(stop)
                     access_code = attached_lock.universal_access_code.present? ? attached_lock.universal_access_code : nil rescue nil
                     access_point = attached_lock.mac_id rescue nil
 
