@@ -5,9 +5,12 @@ module ZervServices
             tour_user = args[:tour_user]
             check_again = args[:checking_twice].present? ? true : false
             is_resident = args[:is_resident]
+            community = args[:community]
+            customer_id = community&.zerv&.customer_id || "PynWheel-TCXVx"
             number = get_user_phone_number(is_resident, tour_user)
 
-            url =  base_url + "/user/getuserwithtimezone/" + number + "?customerId=PynWheel-TCXVx"
+            url = "#{base_url}/user/getuserwithtimezone/#{number}?customerId=#{customer_id}"
+
             id_token = get_id_token
 
             puts '--------------------------    Zerv get user with accesses called    ------------------------'
