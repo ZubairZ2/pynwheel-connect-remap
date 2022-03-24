@@ -19,13 +19,15 @@ module ZervServices
                     response.payload["listUsers"].each do |zerv_user|
                         if zerv_user["phoneNumber"] == number
                             ################################## if user exists get previous data also #####################################
-                            response = ZervServices::GetUserWithAccessesService.call(is_resident: is_resident, community: community, tour_user: tour_user)
+                            response = ZervServices::GetUserWithAccessesService.call(is_resident: is_resident, community: community, tour_user: tour_user, customer_id: zerv_user["customerId"])
+                            
                             if response.success? 
                                 response = ZervServices::UpdateUserWithAccessesService.call(is_resident: is_resident, community: community, tour_user: tour_user, stop_list: stop_list, zerv_user: response.payload)
                                 check_response(is_resident, community, tour_user, stop_list, response, response.error.present? ? {manual_error: "UpdateUserWithAccessesService responsed false", error_position: "Error: #{response.error.code} :: Unable to update Zerv user"} : {})
                             else
                                 create_zerv_guest__failure(community, tour_user, response.error.merge(manual_error: "GetUserWithAccessesService responsed false", error_position: "Error: #{response.error.code} :: Unable to create Zerv user"))
                             end
+
                             is_user_exists = true
                         end
                     end

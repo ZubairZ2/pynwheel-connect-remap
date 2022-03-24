@@ -621,32 +621,32 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
   
   def check_zerv_user_existance_again(community, tour_user, thread_ref)
-    if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and community.zerv.present? and tour_user.tour_type != "virtual_tour"
-      puts "-----------------------------------------     main thread halted    ---------------------------------------------------"
-      begin
-        unless thread_ref == "null"
-          available_stops = community.community_tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
-          available_stops << ["tour", community.community_tour.id]
-          allowed_stops = available_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
+    # if community.enable_locks and community.multiple_locks_provider.include?("Zerv") and community.zerv.present? and tour_user.tour_type != "virtual_tour"
+    #   puts "-----------------------------------------     main thread halted    ---------------------------------------------------"
+    #   begin
+    #     unless thread_ref == "null"
+    #       available_stops = community.community_tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+    #       available_stops << ["tour", community.community_tour.id]
+    #       allowed_stops = available_stops.map{ |stop| stop[0].classify.constantize.find_by_id stop[1] }.compact
 
-          thread_ref = thread_ref.gsub("run", "sleep")
-          locks_thread = Thread.list.select {|thread| thread if thread.to_s == thread_ref}.compact
+    #       thread_ref = thread_ref.gsub("run", "sleep")
+    #       locks_thread = Thread.list.select {|thread| thread if thread.to_s == thread_ref}.compact
 
-          if locks_thread.present? and locks_thread[0].present? and locks_thread[0].alive?
-            puts "-----------------------------------------  locks thread joined  ---------------------------------------------------"
-            locks_thread[0].join(18)
-          end
+    #       if locks_thread.present? and locks_thread[0].present? and locks_thread[0].alive?
+    #         puts "-----------------------------------------  locks thread joined  ---------------------------------------------------"
+    #         locks_thread[0].join(18)
+    #       end
 
-          if tour_user.zerv_guests.where(community_id: community.id, status: "active", res_errors: nil).blank?
-            ZervServices::GetUserWithAccessesService.call(is_resident: false, community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true)
-          end
+    #       if tour_user.zerv_guests.where(community_id: community.id, status: "active", res_errors: nil).blank?
+    #         ZervServices::GetUserWithAccessesService.call(is_resident: false, community: community, tour_user: tour_user, stop_list: allowed_stops, checking_twice: true)
+    #       end
 
-        end
-      rescue => exception
-        puts exception
-      end
-      puts "-----------------------------------------  main thread continued  -----------------------------------------"
-    end
+    #     end
+    #   rescue => exception
+    #     puts exception
+    #   end
+    #   puts "-----------------------------------------  main thread continued  -----------------------------------------"
+    # end
   end
   
   def include_application_data
