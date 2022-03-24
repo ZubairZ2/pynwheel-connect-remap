@@ -10,7 +10,7 @@ module ZervServices
             
             number = get_user_phone_number(is_resident, tour_user)
 
-            url =  base_url + "/user/getuserwithtimezone/" + number + "?customerId=PynWheel-TCXVx"
+            url = "#{base_url}/user/getuserwithtimezone/#{number}?customerId=#{customer_id}"
             id_token = get_id_token
 
             puts '--------------------------    Zerv get user with accesses called    ------------------------'
