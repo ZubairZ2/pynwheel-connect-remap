@@ -1359,10 +1359,13 @@ function disable_rent_filter_options(min_rent) {
     var option = select.options[i];
     var option_rent = option.value.split('-');
     var maximum_option_rent = parseFloat(option_rent[1]);
+
     if (min_rent >= maximum_option_rent)
-      $("#market_rent option[value=" + option.value + "]").show()
+      $("#market_rent option[value=" + min_rent + "]").show()
+      // $("#market_rent option[value=" + option.value + "]").show()
     else
-      $("#market_rent option[value=" + option.value + "]").show()
+      $("#market_rent option[value=" + maximum_option_rent + "]").show()
+      // $("#market_rent option[value=" + option.value + "]").show()
   }
 }
 
