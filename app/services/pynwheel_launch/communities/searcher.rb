@@ -125,6 +125,8 @@ class PynwheelLaunch::Communities::Searcher
 
     touch_gallery_media_status(community, statuses)
 
+    hardware_specs_status(community, statuses)
+
     lock_providers_status(community, statuses)
 
     tour_stops_status(community, statuses)
@@ -208,10 +210,11 @@ class PynwheelLaunch::Communities::Searcher
   end
 
   def hardware_specs_status(community, statuses)
-    return [] if community.community_users.blank?
-    product_options = community.product_options
-    if product_options.present? && community.check_required_hardware(product_options)
-      statuses << community&.status&.status
+    return [] if community.design.blank?
+    if !community.design.status.nil?
+      statuses << community&.design&.status&.status
+    else
+      statuses << community&.design&.status
     end
   end
 

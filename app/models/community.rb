@@ -269,11 +269,10 @@ class Community < ApplicationRecord
   end
 
   def touch_installation_specification(current_user)
-    return if self.product_options.blank?
-    product_options = self.product_options
-    required_hardware = product_options.present? && check_required_hardware(product_options) && check_community_requirments(self) ? true : false
-    status_attr = status_string(required_hardware)
-    set_status_for_all(self,status_attr,current_user)
+    return if self.design.blank?
+    hardware_spec = self.design.pynwheel_touch_hardware_spec
+    status_attr = hardware_spec.present? ? SUBMITTED : nil
+    set_status_for_all(self.design,status_attr,current_user)
   end
 
   def check_community_requirments(community)

@@ -16,6 +16,7 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
     image = params[:hardware][:image]
     if image.present?
       if @community.design.update_attributes(pynwheel_touch_hardware_spec: image)
+        @community.touch_installation_specification(current_pynwheel_user)
         render :json => {success: true, data: @community.design.pynwheel_touch_hardware_spec}
       else
         render json: {success: false, message: "Unable to add hardsware spec image"}
@@ -29,6 +30,7 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
     if hardware_image.present?
       design.remove_pynwheel_touch_hardware_spec!
       design.save
+      @community.touch_installation_specification(current_pynwheel_user)
       render json: {success: true, messgae: "Pynwheel touch hardware spec deleted successfully."}
     else
       render json: {success: false, message: "Unable to delete pynwheel touch hardware spec"}

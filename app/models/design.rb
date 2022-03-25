@@ -162,6 +162,7 @@ class Design < ApplicationRecord
 	accepts_nested_attributes_for :gable
 	accepts_nested_attributes_for :expressionist
 	accepts_nested_attributes_for :filter_panel
+	has_one :status, as: :statusable
 
 	amoeba do
 		enable
