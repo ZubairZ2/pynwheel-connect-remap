@@ -119,7 +119,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username,
       :yardirentcafe_leads_api_user_name, :yardirentcafe_leads_api_password, :yardirentcafe_marketing_api_key,
       :yardirentcafe_company_code, :yardirentcafe_property_id, :yardirentcafe_property_code,:salesforce_password, 
-      :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :salesforce_grant_type)
+      :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :knock_api_key, :knock_community_id, :knock_sms_consent_url, :salesforce_grant_type)
   end
 
 end
