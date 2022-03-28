@@ -1,10 +1,10 @@
 class PsiSwapService < BaseService
-  # @@floorplanHash = Hash.new
+  @@floorplanHash = Hash.new
   def perform
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
-        # @@floorplanHash = {}
+        @@floorplanHash = {}
         if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
           url = credentials.entrata_url
         else
@@ -125,7 +125,10 @@ class PsiSwapService < BaseService
 
         end
 
-        # unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+        unless (u["Units"]["Unit"]["MarketRent"].present?  || u["Units"]["Unit"]["UnitRent"].present? || u["EffectiveRent"].present?)
+          unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+        end
+
         unit.floor = u["FloorLevel"]
         unit.availability = u["Availability"]["VacancyClass"]
         if u["Availability"]["VacancyClass"] == "Unoccupied"
@@ -193,7 +196,11 @@ class PsiSwapService < BaseService
             unit.square_feet = u["Units"]["Unit"]["MaxSquareFeet"].to_f
           end
         end
-        # unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+
+        unless (u["Units"]["Unit"]["MarketRent"].present?  || u["Units"]["Unit"]["UnitRent"].present? || u["EffectiveRent"].present?)
+          unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+        end
+
         unit.floor = u["FloorLevel"]
         unit.availability = u["Availability"]["VacancyClass"]
         if u["Availability"]["VacancyClass"] == "Unoccupied"
@@ -254,15 +261,13 @@ class PsiSwapService < BaseService
 
           floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
         else
-
-
           floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
         end
-        # if f["MarketRent"]["@attributes"]["Min"].to_f > 0
-        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
-        # else
-        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
-        # end
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+        else
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
+        end
         if f["MarketRent"]["@attributes"]["Min"].to_f > 0
 
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
@@ -299,25 +304,23 @@ class PsiSwapService < BaseService
         end
 
         if f["SquareFeet"]["@attributes"]["Min"].to_f > 0
-
           floorplan.square_feet = f["SquareFeet"]["@attributes"]["Min"]
         else
-
-
           floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
         end
-        # if f["MarketRent"]["@attributes"]["Min"].to_f > 0
-        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
-        # else
-        #   @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
-        # end
-        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
 
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+        else
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
+        end
+
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
         else
-
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
         end
+
         floorplan.save
       end
     end
@@ -393,9 +396,11 @@ class PsiSwapService < BaseService
             unless response["response"]["result"].include?('No records found')
               psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
               psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
+
               psi_floorplan.each_with_index do |f,index|
                 floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
               end
+              
               psi_units.each do |u|
                 u['UnitSpace'].each do |us|
 
@@ -516,9 +521,11 @@ class PsiSwapService < BaseService
                 if response["response"]["code"] == 200
                   psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
                   psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
+                  
                   psi_floorplan.each_with_index do |f,index|
                     floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
                   end
+
                   psi_units.each do |u|
                     u['UnitSpace'].each do |us|
                       begin
