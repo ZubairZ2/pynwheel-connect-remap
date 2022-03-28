@@ -520,7 +520,7 @@ class PsiService < BaseService
                       end
                     end
 
-                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                    # unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                       if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
                         unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
                         unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
@@ -533,7 +533,7 @@ class PsiService < BaseService
                       else
                         unit.max_effective_rent = 0 
                       end
-                    end
+                    # end
 
                     rentStr = ""
                     
@@ -650,7 +650,7 @@ class PsiService < BaseService
                           end
                         end
 
-                        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                        # unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                           if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
                             unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
                             unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
@@ -663,7 +663,7 @@ class PsiService < BaseService
                           else
                             unit.max_effective_rent = 0 
                           end
-                        end
+                        # end
 
                         rentStr = ""
                         
