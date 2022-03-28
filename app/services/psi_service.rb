@@ -166,13 +166,9 @@ class PsiService < BaseService
           unit.effective_rent = u["EffectiveRent"]
 
         else
-          unit.market_rent = 0.0
-          unit.effective_rent = 0.0
-
-        end
-
-        unless (u["Units"]["Unit"]["MarketRent"].present?  || u["Units"]["Unit"]["UnitRent"].present? || u["EffectiveRent"].present?)
+          unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
           unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+
         end
 
         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
@@ -246,12 +242,7 @@ class PsiService < BaseService
           unit.effective_rent = u["EffectiveRent"]
 
         else
-          unit.market_rent = 0.0
-          unit.effective_rent = 0.0
-
-        end
-
-        unless (u["Units"]["Unit"]["MarketRent"].present?  || u["Units"]["Unit"]["UnitRent"].present? || u["EffectiveRent"].present?)
+          unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
           unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         end
 
@@ -323,6 +314,12 @@ class PsiService < BaseService
         floorplan.provider = "psi"
 
         if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+        else
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
+        end
+
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
         else
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Max"]
@@ -363,6 +360,12 @@ class PsiService < BaseService
           else
             floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
           end
+        end
+
+        if f["MarketRent"]["@attributes"]["Min"].to_f > 0
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
+        else
+          @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
         end
 
         unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated

@@ -120,13 +120,9 @@ class PsiSwapService < BaseService
           unit.effective_rent = u["EffectiveRent"]
 
         else
-          unit.market_rent = 0.0
-          unit.effective_rent = 0.0
-
-        end
-
-        unless (u["Units"]["Unit"]["MarketRent"].present?  || u["Units"]["Unit"]["UnitRent"].present? || u["EffectiveRent"].present?)
+          unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
           unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+
         end
 
         unit.floor = u["FloorLevel"]
@@ -184,8 +180,8 @@ class PsiSwapService < BaseService
           unit.effective_rent = u["EffectiveRent"]
 
         else
-          unit.market_rent = 0.0
-          unit.effective_rent = 0.0
+          unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+          unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
 
         end
 
@@ -195,10 +191,6 @@ class PsiSwapService < BaseService
           else
             unit.square_feet = u["Units"]["Unit"]["MaxSquareFeet"].to_f
           end
-        end
-
-        unless (u["Units"]["Unit"]["MarketRent"].present?  || u["Units"]["Unit"]["UnitRent"].present? || u["EffectiveRent"].present?)
-          unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         end
 
         unit.floor = u["FloorLevel"]
@@ -263,11 +255,13 @@ class PsiSwapService < BaseService
         else
           floorplan.square_feet = f["SquareFeet"]["@attributes"]["Max"]
         end
+        
         if f["MarketRent"]["@attributes"]["Min"].to_f > 0
           @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Min"]
         else
           @@floorplanHash[f["Name"]] = f["MarketRent"]["@attributes"]["Max"]
         end
+
         if f["MarketRent"]["@attributes"]["Min"].to_f > 0
 
           floorplan.market_rent = f["MarketRent"]["@attributes"]["Min"]
