@@ -391,9 +391,9 @@ class PsiSwapService < BaseService
               psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
               psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
 
-              psi_floorplan.each_with_index do |f,index|
-                floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
-              end
+              # psi_floorplan.each_with_index do |f,index|
+              #   floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
+              # end
               
               psi_units.each do |u|
                 u['UnitSpace'].each do |us|
@@ -516,9 +516,9 @@ class PsiSwapService < BaseService
                   psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
                   psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
                   
-                  psi_floorplan.each_with_index do |f,index|
-                    floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
-                  end
+                  # psi_floorplan.each_with_index do |f,index|
+                  #   floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
+                  # end
 
                   psi_units.each do |u|
                     u['UnitSpace'].each do |us|
