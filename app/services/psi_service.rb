@@ -1,5 +1,5 @@
 class PsiService < BaseService
-  # @@floorplanHash = Hash.new
+  @@floorplanHash = Hash.new
   def perform
     @unit_record = []
     begin
@@ -171,6 +171,10 @@ class PsiService < BaseService
 
         end
 
+        unless (u["Units"]["Unit"]["MarketRent"].present?  || u["Units"]["Unit"]["UnitRent"].present? || u["EffectiveRent"].present?)
+          unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+        end
+
         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
           unit.availability = u["Availability"]["VacancyClass"] if !unit.sold
           unit.available = false if !unit.sold
@@ -245,6 +249,10 @@ class PsiService < BaseService
           unit.market_rent = 0.0
           unit.effective_rent = 0.0
 
+        end
+
+        unless (u["Units"]["Unit"]["MarketRent"].present?  || u["Units"]["Unit"]["UnitRent"].present? || u["EffectiveRent"].present?)
+          unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
         end
 
         unless unit.floor_is_updated.present? && unit.floor_is_updated
