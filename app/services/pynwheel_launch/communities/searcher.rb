@@ -100,8 +100,7 @@ class PynwheelLaunch::Communities::Searcher
 
   def search_by_status(collection , statuses)
     selected_communities = []
-    statuses.values.each do |recieved_status|
-      status = status_value_check(recieved_status)
+    statuses.values.each do |status|
       collection.each do |community_user|
         get_communities_statuses(community_user, status, selected_communities)
       end
@@ -126,6 +125,8 @@ class PynwheelLaunch::Communities::Searcher
 
     touch_gallery_media_status(community, statuses)
 
+    hardware_specs_status(community, statuses)
+
     lock_providers_status(community, statuses)
 
     tour_stops_status(community, statuses)
@@ -133,15 +134,18 @@ class PynwheelLaunch::Communities::Searcher
     home_page_media_status(community, statuses)
 
     if status.eql?(IN_PROGRESS)
-      if statuses.any?{|x| x.eql?(status)} && !statuses.all?{|x| x.eql?(status)}
+      received_status = status_value_check(status)
+      if statuses.any?{|x| x.eql?(received_status)} && !statuses.all?{|x| x.eql?(received_status)}
         selected_communities << community_user
       end
     elsif status.eql?(REJECTED)
-      if statuses.any?{|x| x.eql?(status)} && !statuses.all?{|x| x.eql?(status)}
+      received_status = status_value_check(status)
+      if statuses.any?{|x| x.eql?(received_status)} && !statuses.all?{|x| x.eql?(received_status)}
         selected_communities << community_user
       end
     else
-      if statuses.all?{|x| x.eql?(status)}
+      received_status = status_value_check(status)
+      if statuses.all?{|x| x.eql?(received_status)}
         selected_communities << community_user
       end
     end
@@ -206,10 +210,11 @@ class PynwheelLaunch::Communities::Searcher
   end
 
   def hardware_specs_status(community, statuses)
-    return [] if community.community_users.blank?
-    product_options = community.product_options
-    if product_options.present? && community.check_required_hardware(product_options)
-      statuses << community&.status&.status
+    return [] if community.design.blank?
+    if !community.design.status.nil?
+      statuses << community&.design&.status&.status
+    else
+      statuses << community&.design&.status
     end
   end
 
