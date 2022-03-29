@@ -8,16 +8,26 @@ namespace :tour_stops do
         tour = community.community_tour
         sort_hash = tour.sort_hash
 
-        building_list = Buildings.new(community).get_community_buildings
-        floors_list = Floors.new(community).get_community_floors
+        building_list = community.units.pluck(:building).uniq + community.amenities.pluck(:building).uniq
+        building_list = building_list.compact.uniq
+
+        floors_list = community.units.pluck(:floor).uniq + community.amenities.pluck(:floor).uniq
+        floors_list = floors_list.compact.uniq
+
         clean_building_array = building_list.reject(&:blank?)
+        clean_building_array = clean_building_array.compact.uniq.sort!
+
         clean_floors_array = floors_list.reject(&:blank?)
+        clean_floors_array = clean_floors_array.compact.uniq.sort!
+
+        if community.community_tour.building_order.present?
+          clean_building_array =  community.community_tour.building_order
+        end
 
         puts "Community: #{community.id}, #{community.name}"
         puts "sort_hash:  #{sort_hash}"
         puts "building_list:  #{building_list}"
         puts "floors_list:  #{floors_list}"
-
         building_list << "" if building_list == []
         building_list&.each do |building|
           floors_list&.each do |floor|
