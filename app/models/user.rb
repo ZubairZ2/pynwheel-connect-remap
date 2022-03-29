@@ -72,18 +72,12 @@ class User < ApplicationRecord
     super(
       :only => [:id , :first_name , :last_name , :email , :role] ,
       include: [:company] ,
-      :methods => [:name, :company_status]
+      :methods => [:name]
     )
   end
 
   def all_companies
     Company.all.map(&:name).sort
-  end
-
-  def company_status
-    return if self.company.blank?
-
-    self&.company&.status&.status
   end
 
   def dwelo_companies
