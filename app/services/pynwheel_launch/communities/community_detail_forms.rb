@@ -13,6 +13,8 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
   def update_status_and_remarks detail_type, status, remarks
     case detail_type
+    when COMPANY_DETAILS
+      update_company_status_and_remarks(status, remarks)
     when COMMUNITY_DETAILS
       update_community_status_and_remarks(status, remarks)
     when PROPERTY_MAP_IMAGES
@@ -38,6 +40,10 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
   def mendatory_detail_forms
     [
+      {
+        name: COMPANY_DETAILS,
+        status: company_status
+      },
       {
         name: COMMUNITY_DETAILS,
         status: community_status
@@ -96,6 +102,11 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   private
+
+  def company_status
+    return [] if @community.company.blank?
+    [@community&.company&.status&.status_and_remarks_obj]
+  end
 
   def community_status
     return [] if @community.status.blank?
@@ -192,6 +203,11 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     end
 
     locks_status.compact.uniq
+  end
+
+  def update_company_status_and_remarks status, remarks
+    return if @community.company.status.blank?
+    @community&.company&.status.update_attributes(status: status, remarks: remarks)
   end
 
   def update_community_status_and_remarks status, remarks

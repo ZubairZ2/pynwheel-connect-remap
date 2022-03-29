@@ -72,7 +72,7 @@ class User < ApplicationRecord
     super(
       :only => [:id , :first_name , :last_name , :email , :role] ,
       include: [:company] ,
-      :methods => [:name]
+      :methods => [:name, :company_status]
     )
   end
 
@@ -80,9 +80,16 @@ class User < ApplicationRecord
     Company.all.map(&:name).sort
   end
 
+  def company_status
+    return if self.company.blank?
+
+    self&.company&.status&.status
+  end
+
   def dwelo_companies
     Company.where(creator_id: User.where(role: "Dwelo admin").ids).map(&:name).sort
   end
+  
   def name
   	if first_name.nil? and last_name.nil?
   		email
