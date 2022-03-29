@@ -554,12 +554,10 @@ Rails.application.routes.draw do
       get '/communities/:community_id/test_connection', to: 'data_providers#test_connection'
       resources :user_details do
         member do
-          get :get_company_by_user
           put :update_company
         end
       end
       resources :communities do
-        get :get_company, to: 'user_details#get_company'
         resources :community_property_map
         delete :delete_property_map, to: 'community_property_map#delete_property_map'
         delete :delete_label_image, to: 'community_property_map#delete_label_image'

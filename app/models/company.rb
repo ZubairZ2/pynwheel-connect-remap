@@ -32,11 +32,6 @@ class Company < ApplicationRecord
     )
   end
 
-  def company_status
-    return [] if self.blank?
-    [self&.status&.status_and_remarks_obj]
-  end
-
   def set_company_details_status(current_user)
     return if self.blank?
 
@@ -47,6 +42,11 @@ class Company < ApplicationRecord
   def set_status_for_all(status_entity,status_attribute,current_user)
     status_entity.build_status unless status_entity.status
     status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user.id)
+  end
+
+  def company_status
+    return [] if self.blank?
+    [self&.status&.status_and_remarks_obj]
   end
 
   def delete_company
@@ -66,4 +66,5 @@ class Company < ApplicationRecord
   def check_company_requirement(company)
     (company.name && company.email && company.phone && company.address && company.city && company.state && company.zip).present?
   end
+  
 end

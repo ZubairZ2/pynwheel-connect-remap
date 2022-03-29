@@ -71,9 +71,15 @@ class User < ApplicationRecord
   def as_json
     super(
       :only => [:id , :first_name , :last_name , :email , :role] ,
-      include: [:company] ,
-      :methods => [:name]
+      :methods => [:name, :company_details]
     )
+  end
+
+  def company_details
+    user_company = self.company
+    if user_company.present?
+      user_company.as_json
+    end
   end
 
   def all_companies
