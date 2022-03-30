@@ -1,7 +1,7 @@
 class Status < ApplicationRecord
     belongs_to :statusable, polymorphic: true
 
-    enum status: [:in_progress, :submitted, :approved, :rejected , :re_submitted]
+    enum status: [:in_progress, :submitted, :approved, :rejected , :re_submitted, :completed, :deployed]
 
     def status_and_remarks_obj
         {name: self.status, remarks: self.remarks}
