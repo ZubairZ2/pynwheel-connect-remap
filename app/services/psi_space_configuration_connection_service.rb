@@ -21,9 +21,9 @@ class PsiSpaceConfigurationConnectionService < BaseService
                                        "name": "getUnitsAvailabilityAndPricing",
                                        "params": {
                                            "propertyId": property_id,
-                                           "availableUnitsOnly": "0",
-                                           "showUnitSpaces": "1",
-                                           "useSpaceConfiguration": "1"
+                                           "availableUnitsOnly": credentials&.entrata_available_units_only,
+                                           "showUnitSpaces": credentials&.entrata_show_unit_spaces,
+                                           "useSpaceConfiguration": credentials&.entrata_use_space_configuration
                                        }
                                    }
                                }.to_json,

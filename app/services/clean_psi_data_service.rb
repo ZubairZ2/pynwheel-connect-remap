@@ -24,8 +24,8 @@ class CleanPsiDataService < BaseService
                                          "name": "getMitsPropertyUnits",
                                          "params": {
                                              "propertyIds": property_id,
-                                             "availableUnitsOnly": "0",
-                                             "showUnitSpaces": "1"
+                                             "availableUnitsOnly": credentials&.entrata_available_units_only,
+                                             "showUnitSpaces": credentials&.entrata_show_unit_spaces
                                          }
                                      }
                                  }.to_json,

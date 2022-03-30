@@ -25,8 +25,8 @@ class PsiStaticService < BaseService
                                          "name": "getMitsPropertyUnits",
                                          "params": {
                                              "propertyIds": property_id,
-                                             "availableUnitsOnly": "0",
-                                             "showUnitSpaces": "1"
+                                             "availableUnitsOnly": credentials&.entrata_available_units_only,
+                                             "showUnitSpaces": credentials&.entrata_show_unit_spaces
                                          }
                                      }
                                  }.to_json,
@@ -269,9 +269,9 @@ class PsiStaticService < BaseService
                                            "name": "getUnitsAvailabilityAndPricing",
                                            "params": {
                                                "propertyId": property_id,
-                                               "availableUnitsOnly": "0",
-                                               "showUnitSpaces": "1",
-                                               "useSpaceConfiguration": "1"
+                                               "availableUnitsOnly": credentials&.entrata_available_units_only,
+                                               "showUnitSpaces": credentials&.entrata_show_unit_spaces,
+                                               "useSpaceConfiguration": credentials&.entrata_use_space_configuration
                                            }
                                        }
                                    }.to_json,
@@ -290,9 +290,9 @@ class PsiStaticService < BaseService
                                            "name": "getUnitsAvailabilityAndPricing",
                                            "params": {
                                                "propertyId": property_id,
-                                               "availableUnitsOnly": "0",
-                                               "showUnitSpaces": "1",
-                                               "useSpaceConfiguration": "1",
+                                               "availableUnitsOnly": credentials&.entrata_available_units_only,
+                                               "showUnitSpaces": credentials&.entrata_show_unit_spaces,
+                                               "useSpaceConfiguration": credentials&.entrata_use_space_configuration,
                                                "moveInStartDate": move_in_date
                                            }
                                        }
@@ -418,8 +418,8 @@ class PsiStaticService < BaseService
                                                "name": "getUnitsAvailabilityAndPricing",
                                                "params": {
                                                    "propertyId": property_id,
-                                                   "availableUnitsOnly": "0",
-                                                   "showUnitSpaces": "1"
+                                                   "availableUnitsOnly": credentials&.entrata_available_units_only,
+                                                   "showUnitSpaces": credentials&.entrata_show_unit_spaces
                                                }
                                            }
                                        }.to_json,

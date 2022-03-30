@@ -522,6 +522,9 @@ function showPsiFields(){
     $('#entrata_pricing_button').show();
     $('#entrata_space_configuration_button').show();
     $('#data-replace-update-buttons').hide();
+    $('#entrata_available_units_only').show();
+    $('#entrata_show_unit_spaces').show();
+    $('#entrata_use_space_configuration').show(); 
 }
 function showZarembaFields(){
     $('.credential_fields').hide();
