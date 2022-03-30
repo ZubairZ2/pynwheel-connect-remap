@@ -18,7 +18,7 @@ namespace :provider do
                                      "name": "getMitsPropertyUnits",
                                      "params": {
                                          "propertyIds": @property_id,
-                                         "availableUnitsOnly": "0"
+                                         "availableUnitsOnly": credentials&.entrata_available_units_only
                                      }
                                  }
                              }.to_json,
@@ -159,7 +159,7 @@ namespace :provider do
                                      "name": "getUnitsAvailabilityAndPricing",
                                      "params": {
                                          "propertyId": @property_id,
-                                         "availableUnitsOnly": "0"
+                                         "availableUnitsOnly": credentials&.entrata_available_units_only
                                      }
                                  }
                              }.to_json,
