@@ -30,13 +30,13 @@ json.tours @tours do |tour|
   if @community.is_sitemap
     floorplate_image = @community.community_tour.image.present? ? @community.community_tour : (@community.is_sitemap ? @community.sitemap : @community.floorplates.first) rescue nil
     json.image floorplate_image.image.url rescue nil
-    json.image_width (floorplate_image.width rescue 0)
-    json.image_height (floorplate_image.height rescue 0)
+    json.image_width @community.property_map_width(floorplate_image)
+    json.image_height @community.property_map_height(floorplate_image)
   else
     @floorplate = @community.floorplates.select{|f| f.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.sort[0].to_i)}.first
     json.image @floorplate.image
-    json.image_width (@floorplate.width rescue 0)
-    json.image_height (@floorplate.height rescue 0)
+    json.image_width @community.property_map_width(@floorplate)
+    json.image_height @community.property_map_height(@floorplate)
   end
 
   if @community.show_map
@@ -479,8 +479,8 @@ json.tours @tours do |tour|
       json.directional_text counter != 0 ? "Your tour is completed! Now let's go back to where you started." : ""
       floorplate_image = @community.is_sitemap ? @community.sitemap : (stop.starting_floor.present? ? @community.floorplates.select{|x| x if x.floors.include?(stop.starting_floor.to_i)}.last : @community.floorplates.select{|x| x if x.floors.include?(@community.floorplates.map{|f| f.floors}.flatten.min)}.last) rescue nil
       json.floorplate_image floorplate_image.image.url rescue ""
-      json.image_width floorplate_image.width  rescue 0
-      json.image_height floorplate_image.height  rescue 0
+      json.image_width @community.property_map_width(floorplate_image)
+      json.image_height @community.property_map_height(floorplate_image)
       
       @existing_path_points = []
 
@@ -944,8 +944,8 @@ json.tours @tours do |tour|
       json.floorplan_id unit&.floorplan&.id
       floorplate_image = (unit.floorplate.image.present? ? unit.floorplate : nil) if unit.floorplate.present?  rescue nil
       json.floorplate_image floorplate_image.image.url  rescue ""
-      json.image_width floorplate_image.width  rescue 0
-      json.image_height floorplate_image.height  rescue 0
+      json.image_width @community.property_map_width(floorplate_image)
+      json.image_height @community.property_map_height(floorplate_image)
       json.update_apply ((unit.provider == "resman" || unit.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
       json.provider unit.provider
 
@@ -1145,8 +1145,8 @@ json.tours @tours do |tour|
       json.directional_text bsp.directional_text
       floorplate_image = @community.floorplates.map{|x| x if (x.floors.include? bsp.floor)}.compact.first rescue nil
       json.floorplate_image floorplate_image.image.url  rescue ""
-      json.image_width floorplate_image.width  rescue 0
-      json.image_height floorplate_image.height rescue 0
+      json.image_width @community.property_map_width(floorplate_image)
+      json.image_height @community.property_map_height(floorplate_image)
 
     elsif stop.stop_type == "elevator"
       elevator = Elevator.find_by_id stop.stop_id
@@ -1204,24 +1204,24 @@ json.tours @tours do |tour|
         floor_image = @community.floorplates.map{|x| x if x.floors.include?(current_floor)}.compact.last rescue nil
         floor_image = (floor_image || elevator.floorplate) rescue nil
         json.floorplate_image floor_image.image.url  rescue ""
-        json.image_width floor_image.width  rescue 0
-        json.image_height floor_image.height rescue 0
+        json.image_width @community.property_map_width(floor_image)
+        json.image_height @community.property_map_height(floor_image)
         if new_stops_arr[counter - 1].is_a? Tour 
           floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.community_tour.starting_floor.present? ? @community.community_tour.starting_floor : min_floor)}.compact.last rescue nil
           json.floorplate_image floorplate_image.image.url rescue ""
-          json.image_width floorplate_image.width rescue 0
-          json.image_height floorplate_image.height rescue 0
+          json.image_width @community.property_map_width(floorplate_image)
+          json.image_height @community.property_map_height(floorplate_image)
         end
       else
         floorplate_image = (elevator.floorplate.image.present? ? elevator.floorplate : nil) if elevator.floorplate.present? rescue nil
         json.floorplate_image floorplate_image.image.url rescue ""
-        json.image_width floorplate_image.width rescue 0
-        json.image_height floorplate_image.height rescue 0
+        json.image_width @community.property_map_width(floorplate_image)
+        json.image_height @community.property_map_height(floorplate_image)
         if new_stops_arr[counter - 1].is_a? Tour 
           floorplate_image = @community.floorplates.map{|x| x if x.floors.include?(@community.community_tour.starting_floor.present? ? @community.community_tour.starting_floor : min_floor)}.compact.last rescue nil
           json.floorplate_image floorplate_image.image.url rescue ""
-          json.image_width floorplate_image.width rescue 0
-          json.image_height floorplate_image.height rescue 0
+          json.image_width @community.property_map_width(floorplate_image)
+          json.image_height @community.property_map_height(floorplate_image)
         end
       end
 
@@ -1281,8 +1281,8 @@ json.tours @tours do |tour|
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
       floorplate_image = (amenity.amenityable.image.present? ? amenity.amenityable : nil) if amenity.amenityable.present? rescue nil
       json.floorplate_image floorplate_image.image.url  rescue 0
-      json.image_width floorplate_image.width rescue 0
-      json.image_height floorplate_image.height rescue 0
+      json.image_width @community.property_map_width(floorplate_image)
+      json.image_height @community.property_map_height(floorplate_image)
       json.is_favorite favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
       if amenity.amenity_galleries.count == 0
          stop_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")

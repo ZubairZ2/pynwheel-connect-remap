@@ -106,6 +106,36 @@ class Community < ApplicationRecord
     unit_bedrooms
   end
 
+  def property_map_width map
+    if map.present?
+      if map.width.to_i > 0
+        map.width.to_f
+      elsif map.image.url.present?
+        image = MiniMagick::Image.open("https://images-pynwheel-cms-v2.s3.amazonaws.com#{map.image.url}")
+        image[:width].to_f
+      else
+        0.0
+      end
+    else
+      0.0
+    end
+  end
+
+  def property_map_height map
+    if map.present?
+      if map.height.to_i > 0
+        map.height.to_f
+      elsif map.image.url.present?
+        image = MiniMagick::Image.open("https://images-pynwheel-cms-v2.s3.amazonaws.com#{map.image.url}")
+        image[:height].to_f
+      else
+        0.0
+      end
+    else
+      0.0
+    end
+  end
+
   def community_tour
     Tour.where(community_id: self&.id, tour_user_id: nil).last
   end
