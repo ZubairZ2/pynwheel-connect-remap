@@ -25,7 +25,7 @@ class CommunityUser < ApplicationRecord
                 }}
               }}
           },
-      :methods => [:invitation_date , :company_name , :community_products, :status_in_percentage, :community_detail_forms]
+      :methods => [:invitation_date , :company_details , :community_products, :status_in_percentage, :community_detail_forms]
     )
   end
 
@@ -33,12 +33,12 @@ class CommunityUser < ApplicationRecord
     self.created_at
   end
 
-  def company_name
+  def company_details
     user_company = self.user.company
     if user_company.present?
-      user_company&.name
+      user_company.as_json
     else
-      self.community.company&.name
+      self.community.company.as_json
     end
   end
 

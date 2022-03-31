@@ -113,6 +113,8 @@ class PynwheelLaunch::Communities::Searcher
     community = community_user.community
     statuses = []
 
+    company_status(community, statuses)
+
     community_status(community, statuses)
 
     property_map_status(community, statuses)
@@ -164,6 +166,10 @@ class PynwheelLaunch::Communities::Searcher
     end
   end
 
+  def company_status(community, statuses)
+    return [] if community&.company.status.blank?
+    statuses << community&.company&.status&.status
+  end
 
   def community_status(community, statuses)
     return [] if community.status.blank?
