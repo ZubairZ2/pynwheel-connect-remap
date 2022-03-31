@@ -111,7 +111,7 @@ class Community < ApplicationRecord
       if map.width.to_i > 0
         map.width.to_f
       elsif map.image.url.present?
-        image = MiniMagick::Image.open("https://images-pynwheel-cms-v2.s3.amazonaws.com#{map.image.url}")
+        image = MiniMagick::Image.open(get_map_url(map))
         image[:width].to_f
       else
         0.0
@@ -126,13 +126,21 @@ class Community < ApplicationRecord
       if map.height.to_i > 0
         map.height.to_f
       elsif map.image.url.present?
-        image = MiniMagick::Image.open("https://images-pynwheel-cms-v2.s3.amazonaws.com#{map.image.url}")
+        image = MiniMagick::Image.open(get_map_url(map))
         image[:height].to_f
       else
         0.0
       end
     else
       0.0
+    end
+  end
+
+  def get_map_url map
+    if Rails.env.development?
+      "https://images-pynwheel-cms-v2.s3.amazonaws.com#{map.image.url}"
+    else
+      map.image.url
     end
   end
 
