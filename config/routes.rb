@@ -589,6 +589,7 @@ Rails.application.routes.draw do
           post :add_comment
           post :get_products
           post :update_status_and_remarks
+          post :move_to_production
           put :update_products
           get :get_community_detail_forms
         end
