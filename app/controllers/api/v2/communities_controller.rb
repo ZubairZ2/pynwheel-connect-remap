@@ -70,7 +70,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
 
   def move_to_production
     if (@community && @community_user && @current_user).present?
-      Statuses.new(@community, @current_user, "deployed").update_statuses
+      Statuses.new(@community, @current_user, params[:status]).update_statuses
       render :json => {:success => true , data: @community_user.as_json}
     else
       render :json => {:success => false , :message=> "Community or community user not found"}
