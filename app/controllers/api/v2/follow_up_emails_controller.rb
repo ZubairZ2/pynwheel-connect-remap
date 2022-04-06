@@ -21,7 +21,7 @@ class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
     when APPLICATION_NOT_STARTED
       puts "APPLICATION_NOT_STARTED"
     when APPLICATION_IN_PROGRESS
-      return FollowUpMailer.application_in_progess(email[:data], @users).to_s
+      email =  FollowUpMailer.application_in_progess(email[:data], @users).to_s
     end
   end
 

@@ -5,7 +5,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
 
   def send_emails
     @forms = forms_list
-    if @forms
+    if @forms.present?
       if @forms[:all_status].all?{|x| x.eql?(IN_PROGRESS)}
         return {type: APPLICATION_NOT_STARTED, data: @forms[:form_list]}
       elsif @forms[:all_status].any?{|x| x.eql?(IN_PROGRESS)} && !@forms[:all_status].all?{|x| x.eql?(IN_PROGRESS)}
@@ -26,7 +26,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
       },
       {
         name: PROPERTY_MAP_IMAGES,
-        status: property_map_status(all_forms_status)
+        # status: property_map_status(all_forms_status)
       },
       {
         name: FLOORPLAN_IMAGES,
@@ -34,7 +34,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
       },
       {
         name: PROPERTY_MANAGEMENT_SYSTEM,
-        status: data_provider_status(all_forms_status)
+        # status: data_provider_status(all_forms_status)
       }
     ]
   end
@@ -80,11 +80,12 @@ class PynwheelLaunch::Communities::FollowUpEmails
     self_tour_forms.each {|x| detail_forms << x} if @community.product_options.include?("self_tour")
     pynwheel_touch_forms = forms_for_touch_app
     pynwheel_touch_forms.each {|x| detail_forms << x} if @community.product_options.include?("pynwheel_touch")
+
     return {:form_list => detail_forms, :all_status => all_forms_status}
   end
 
   def community_status(all_forms_status)
-    return "" if @community.status.blank?
+    return "in_progress" if @community.status.blank?
     all_forms_status << @community&.status&.status
     @community&.status&.status
   end
@@ -104,7 +105,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
   end
 
   def floorplan_status(all_forms_status)
-    return if @community.floorplans.blank?
+    all_forms_status << "in_progress" if @community.floorplans.blank?
     statuses = []
     floorplans = @community.floorplans
     floorplans.map {|floorplan| statuses << floorplan&.status&.status rescue nil}
@@ -114,7 +115,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
   end
 
   def data_provider_status(all_forms_status)
-    return [] if @community.data_provider.blank? && @community.credential.blank?
+    return "in_progress" if @community.data_provider.blank? && @community.credential.blank?
     data_provider_status = []
     data_provider_status << @community.credential&.status&.status rescue nil
 
@@ -152,7 +153,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
   def status_check(statuses)
     return SUBMITTED if statuses.all?{|x| x.eql?(SUBMITTED)}
     return APPROVED if statuses.all?{|x| x.eql?(APPROVED)}
-    return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.blank?}
+    return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.nil? || x.empty?}
   end
 
 end
