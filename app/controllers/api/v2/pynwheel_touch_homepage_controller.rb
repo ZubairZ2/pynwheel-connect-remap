@@ -47,6 +47,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
       @homevideo = HomePageVideo.where(design_id: @community.design.id).first
       if @homevideo.present?
         if @homevideo.destroy!
+          @community.set_touch_vidoes_status(current_pynwheel_user)
           render :json => {:success => true, :error_code => 200, :message => "Homepage video deleted successfully", data: nil}
         else
           render :json => {:success => false, :error_code => 500, :message => @homevideo.errors.full_messages}
@@ -62,6 +63,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
         @home_page_image = design.home_page_images.find_by(id: params[:homepage_image_id])
         if @home_page_image.present?
           if @home_page_image.destroy!
+            @community.set_touch_vidoes_status(current_pynwheel_user)
             render :json => {:success => true, :error_code => 200, :message => "Homepage image deleted successfully", data: nil}
           else
             render :json => {:success => false, :error_code => 500, :message => @home_page_image.errors.full_messages}
