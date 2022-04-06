@@ -145,7 +145,7 @@ class Design < ApplicationRecord
 	mount_base64_uploader :filter_panel_background_image, AvatarUploader
 	mount_base64_uploader :filter_label_image, AvatarUploader
 	mount_base64_uploader :gallery_button_on_image, AvatarUploader
-	mount_base64_uploader :pynwheel_touch_hardware_spec, SiteMapUploader
+	mount_base64_uploader :pynwheel_touch_hardware_spec, AvatarUploader
 	has_one :menu , dependent: :destroy
 	has_one :gable , dependent: :destroy
 	has_one :filter_panel , dependent: :destroy
