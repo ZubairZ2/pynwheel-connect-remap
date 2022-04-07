@@ -4,7 +4,7 @@ class SchedulerWidgetConstants
       key: 1,
       image: "instruction-1.png",
       title: "Install App and Follow Directions",
-      text: "Directions to the property will be texted to you about one hour before your tour. Install the app before you go.",
+      text: "Directions to the property will be sent to you about one hour before your tour. Install the app before you go.",
       background: "#e2f5ff"
     },
     {
@@ -18,7 +18,7 @@ class SchedulerWidgetConstants
       key: 3,
       image: "instruction-3.png",
       title: "Access Locked Areas and Navigate",
-      text: "The app will open locked doors for you, and navigation will help you get from one stop to the next.",
+      text: "The app will assist you in unlocking doors along the way, and navigation will help you get from one stop to the next.",
       background: "#ffebe6"
     },
     {
@@ -35,7 +35,7 @@ class SchedulerWidgetConstants
       key: 1,
       image: "instruction-1.png",
       title: "Install App and Follow Directions",
-      text: "Directions to the property will be texted to you about one hour before your tour. Install the app before you go.",
+      text: "Directions to the property will be sent to you about one hour before your tour. Install the app before you go.",
       background: "#e2f5ff"
     },
     {
