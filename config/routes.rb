@@ -568,6 +568,8 @@ Rails.application.routes.draw do
         delete :delete_opening_hours, to: 'opening_hours#delete_opening_hours'
         resources :secure_locks
         post :add_secure_locks, to: 'secure_locks#add_secure_locks'
+        post :send_follow_up_emails, to: 'follow_up_emails#send_follow_up_emails'
+        get :preview_follow_up_email, to: 'follow_up_emails#preview_follow_up_email'
         resources :community_floor_plans do
           member do
             delete :delete_floorplan_amenity
