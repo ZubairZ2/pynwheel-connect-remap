@@ -26,7 +26,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
       },
       {
         name: PROPERTY_MAP_IMAGES,
-        # status: property_map_status(all_forms_status)
+        status: property_map_status(all_forms_status)
       },
       {
         name: FLOORPLAN_IMAGES,
@@ -34,7 +34,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
       },
       {
         name: PROPERTY_MANAGEMENT_SYSTEM,
-        # status: data_provider_status(all_forms_status)
+        status: data_provider_status(all_forms_status)
       }
     ]
   end
@@ -97,7 +97,9 @@ class PynwheelLaunch::Communities::FollowUpEmails
       statuses << sitemap&.status&.status
     elsif @community.has_floorplates?
       floorplates = @community.floorplates
-      floorplates.map {|floorplate| stauses << floorplate&.status&.status rescue nil}
+      floorplates.map do |floorplate|
+        stauses << floorplate&.status&.status rescue nil
+      end
     end
     send_status = status_check(statuses)
     all_forms_status << send_status
@@ -105,8 +107,8 @@ class PynwheelLaunch::Communities::FollowUpEmails
   end
 
   def floorplan_status(all_forms_status)
-    all_forms_status << "in_progress" if @community.floorplans.blank?
     statuses = []
+    statuses << "in_progress" if @community.floorplans.blank?
     floorplans = @community.floorplans
     floorplans.map {|floorplan| statuses << floorplan&.status&.status rescue nil}
     send_status = status_check(statuses)
@@ -151,9 +153,13 @@ class PynwheelLaunch::Communities::FollowUpEmails
   end
 
   def status_check(statuses)
-    return SUBMITTED if statuses.all?{|x| x.eql?(SUBMITTED)}
-    return APPROVED if statuses.all?{|x| x.eql?(APPROVED)}
-    return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.nil? || x.empty?}
+    if !statuses.empty?
+      return SUBMITTED if statuses.all?{|x| x.eql?(SUBMITTED)}
+      return APPROVED if statuses.all?{|x| x.eql?(APPROVED)}
+      return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.nil? || x.empty?}
+    else
+      return IN_PROGRESS
+    end
   end
 
 end

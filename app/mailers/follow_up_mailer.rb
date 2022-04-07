@@ -8,10 +8,17 @@ class FollowUpMailer < ApplicationMailer
     mail(to: users.first.email, subject: 'No content received yet! is there anything pynwheel can help with?')
   end
 
-  def application_in_progess(forms, users)
+  def preview_application_in_progess(forms)
     @forms = forms
+    mail()
+  end
+
+  def send_email(users, subject, body)
+    @body = body
     @users = users
-    mail(to: "fahad.umer@gmail.com", subject: 'Some content was received to pynwheel, but not all')
+    @users.each do |user|
+      mail(to: user, subject: subject)
+    end
   end
 
 end

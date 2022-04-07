@@ -331,42 +331,8 @@
                                 %tr
                                   %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                                     = image_tag "pynwheel-default-logo.png", :class => "email-logo"
-                                    %p.companyText Pynwheel Inc.            
-            %table#emailBody{:bgcolor => "#FFFFFF", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620", :leftmargin => "10"}
-              %tr
-                %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
-                  %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                    %p Hi #{@users.first.email}
-              %tr
-                %td
-                  %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                    %p I just wanted to touch base as we're missing some content that we need before we can move into production: Following is the status of so far via Pynwheel Launch.
-            %table#emailBody{:bgcolor => "#FFFFFF", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
-              %tr
-                %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
-                  %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                    %p
-                      - @forms.each_with_index do |form, index|
-                        #{index + 1}. #{form[:name]} - #{form[:status]}
-                        %br
-              %tr
-                %td
-                  %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                    %p If you need more time, that's fine! Just let me know. We just wanted to make sure it didn't slipthrough the cracks. As a reminder, production begins after we have received all content and we have made a successful connection to your data feed . Production typicallytakes 2-4 weeks. Let me know if you have any questions.
-              %tr
-                %td
-                  %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                    %p To access Pynwheel Launch | click here and provide details in each section of the dashboard.
-              %tr
-                %td
-                  %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:10px;"}
-                    %p Kellie Ferrell
-                    %p Production Manager
-                    %p 303-640-3652
-                    %a{ :href => "mailto:support@pynwheel.com"} support@pynwheel.com
-              %tr
-                %td
-                  %div{:style => "height:15px;"}
+                                    %p.companyText Pynwheel Inc.
+            = @body.html_safe
 
             %table#emailFooter{:bgcolor => "#CCCCCC", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
               %tr

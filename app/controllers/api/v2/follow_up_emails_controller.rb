@@ -5,23 +5,34 @@ class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
 
   def preview_follow_up_email
     email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-    email_body = send_email(email)
-    render :json => {:success => true, :email => email_body}
+    email_body = preview_email(email)
+    render :json => {:success => true, :email => {email: email_body[:email], subject: email_body[:subject], emails: @users.pluck(:email)}}
   end
 
   def send_follow_up_emails
-    # email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-    # send_email(email)
+    email_params = JSON.parse(params[:email])
+    if email_params.present?
+      @users = email_params["emails"]
+      @subject = email_params["subject"]
+      @body = params["email_body"]
+      if FollowUpMailer.send_email(@users, @subject, @body).deliver_later
+        render json: {success: true}
+      end
+    end
   end
 
   private
 
-  def send_email(email)
+  def preview_email(email)
     case email[:type]
-    when APPLICATION_NOT_STARTED
-      puts "APPLICATION_NOT_STARTED"
     when APPLICATION_IN_PROGRESS
-      email =  FollowUpMailer.application_in_progess(email[:data], @users).to_s
+      email = FollowUpMailer.preview_application_in_progess(email[:data])
+      subject = 'Some content was received to pynwheel, but not all'
+      return {email: email, subject: subject}
+    else
+      email = FollowUpMailer.preview_application_in_progess(email[:data])
+      subject = 'Some content was received to pynwheel, but not all'
+      return {email: email, subject: subject}
     end
   end
 
