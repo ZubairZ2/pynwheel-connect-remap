@@ -36,6 +36,12 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
       end
       media = all_design
       @community.set_touch_vidoes_status(current_pynwheel_user)
+      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
+        email[:data].each do |mail|
+          if mail[:name].eql?(TOUCH_HOME_PAGE_MEDIA) && mail[:status].eql?("Submitted")
+            FollowUpMailer.send_submitted_form(@community, TOUCH_HOME_PAGE_MEDIA, email[:data]).deliver_later
+          end
+        end
       render json: { success: true, data: media.as_json }
     rescue => ex
       render json: { success: false, message: ex.message }

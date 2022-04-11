@@ -6,6 +6,7 @@ class Statuses
   end
 
   def update_statuses
+    set_company_details_status
     set_community_details_status
     set_property_map_status
     set_floorplan_status
@@ -19,6 +20,10 @@ class Statuses
   end
 
   private
+
+  def set_company_details_status
+    @community.company.set_status_for_all(@community.company, @status, @current_user) unless @community.company.blank?
+  end
 
   def set_community_details_status
     @community.set_status_for_all(@community, @status, @current_user) unless @community.blank?

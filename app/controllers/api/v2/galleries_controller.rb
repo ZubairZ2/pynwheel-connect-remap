@@ -39,6 +39,12 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
       end
       @galleries = @community.galleries
       @community.set_gallery_images_status(current_pynwheel_user)
+      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
+      email[:data].each do |mail|
+        if mail[:name].eql?(TOUCH_GALLERY_MEDIA) && mail[:status].eql?("Submitted")
+          FollowUpMailer.send_submitted_form(@community, TOUCH_GALLERY_MEDIA, email[:data]).deliver_later
+        end
+      end
       render :json => {:success => true, data: @galleries.as_json}
     rescue => res
       render json: { success: false, error_code: 400, message: "#{res.message}" }, status: 400

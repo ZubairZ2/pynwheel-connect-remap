@@ -1,12 +1,15 @@
 class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :set_community
-  before_action :set_user
+  before_action :set_community, only: [:preview_follow_up_email, :send_follow_up_emails]
+  before_action :set_user, only: [:preview_follow_up_email, :send_follow_up_emails]
 
   def preview_follow_up_email
+    email_preview_first = [APPLICATION_IN_PROGRESS, APPLICATION_NOT_STARTED]
     email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-    email_body = preview_email(email)
-    render :json => {:success => true, :email => {email: email_body[:email], subject: email_body[:subject], emails: @users.pluck(:email)}}
+    if email_preview_first.include?(email[:type])
+      email_body = preview_email(email)
+      render :json => {:success => true, :email => {email: email_body[:email], subject: email_body[:subject], emails: @users.pluck(:email)}}
+    end
   end
 
   def send_follow_up_emails
@@ -29,9 +32,9 @@ class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
       email = FollowUpMailer.preview_application_in_progess(email[:data])
       subject = 'Some content was received to pynwheel, but not all'
       return {email: email, subject: subject}
-    else
-      email = FollowUpMailer.preview_application_in_progess(email[:data])
-      subject = 'Some content was received to pynwheel, but not all'
+    when APPLICATION_NOT_STARTED
+      email = FollowUpMailer.preview_application_not_started(email[:data])
+      subject = "No content received yet! is there anything pynwheel can help with?"
       return {email: email, subject: subject}
     end
   end

@@ -17,6 +17,12 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
     if image.present?
       if @community.design.update_attributes(pynwheel_touch_hardware_spec: image)
         @community.touch_installation_specification(current_pynwheel_user)
+        email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
+        email[:data].each do |mail|
+          if mail[:name].eql?(HARDWARE_SPECS) && mail[:status].eql?("Submitted")
+            FollowUpMailer.send_submitted_form(@community, HARDWARE_SPECS, email[:data]).deliver_later
+          end
+        end
         render :json => {success: true, data: @community.design.pynwheel_touch_hardware_spec}
       else
         render json: {success: false, message: "Unable to add hardsware spec image"}
