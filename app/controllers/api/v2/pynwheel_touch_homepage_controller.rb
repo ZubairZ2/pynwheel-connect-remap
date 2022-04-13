@@ -85,12 +85,13 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
     @design = @community.design || @community.create_design
     images = @design.home_page_images
     video = @design.home_page_video
+    type = @design.loop_type
     media = []
     if images.any?
-      media << { images: images.as_json }
+      media << { images: images.as_json, type: type }
     end
     if video.present?
-      media << { video: video.as_json }
+      media << { video: video.as_json, type: type }
     end
     media
   end
