@@ -584,6 +584,7 @@ Rails.application.routes.draw do
         end
         delete :delete_home_page_image, to: 'pynwheel_touch_homepage#delete_home_page_image'
         post :add_homepage_design, to: 'pynwheel_touch_homepage#add_homepage_design'
+        post :change_default_design, to: 'pynwheel_touch_homepage#change_default_design'
         member do
           get  :get_pynwheel_touch_hardware_spec, to: 'hardware_specs#get_pynwheel_touch_hardware_spec'
           post :add_pynwheel_touch_hardware_spec, to: 'hardware_specs#add_pynwheel_touch_hardware_spec'

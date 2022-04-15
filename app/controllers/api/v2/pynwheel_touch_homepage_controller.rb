@@ -1,6 +1,6 @@
 class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :load_community, only: [:index, :add_homepage_design, :all_design, :delete_homepage_video, :delete_home_page_image]
+  before_action :load_community, only: [:index, :add_homepage_design, :all_design, :delete_homepage_video, :delete_home_page_image, :change_default_design]
 
   def index
     @media = all_design if @community.present?
@@ -75,6 +75,18 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
             render :json => {:success => false, :error_code => 500, :message => @home_page_image.errors.full_messages}
           end
         end
+      end
+    end
+  end
+
+  def change_default_design
+    @design = @community.design
+    value = params["changeType"]
+    if  value.present?
+      if @design.update_attributes(loop_type: value)
+        render :json => {success: true, message: "Default design changed"}
+      else
+        render :json => {success: false, message: "Failed to change default design"}
       end
     end
   end
