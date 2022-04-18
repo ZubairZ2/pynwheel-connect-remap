@@ -16,7 +16,7 @@ class FollowUpMailer < ApplicationMailer
     @forms = data
     @community = community
     @form_submitted = form_submitted
-    mail(to: "support@pynwheel.com", subject: "#{@community.name} - Data submitted for review")
+    mail(to: "abdul.manan@intagleo.com", subject: "#{@community.name} - Data submitted for review")
   end
 
   def send_moved_to_production(community)
