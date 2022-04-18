@@ -1,6 +1,6 @@
 class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :load_community, only: %i[index add_secure_locks]
+  before_action :load_community, only: %i[index add_secure_locks delete_secure_lock]
 
   def index
     locks = get_all_locks
@@ -30,9 +30,26 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
       @community.update_attributes(multiple_locks_provider: unique_locks_provider)
       @community.set_lock_providers_status(current_pynwheel_user)
       locks = get_all_locks
-      render json: { status: true, data: locks.as_json }
+      render json: { success: true, data: locks.as_json }
     rescue => e
-      render json: { status: false, message: e.message }
+      render json: { success: false, message: e.message }
+    end
+  end
+
+  def delete_secure_lock
+    success = false
+    @type = params["type"]
+    if @type.eql?(LATCH)
+      @lock = Latch.find_by_id(params["id"])
+      if @lock.present?
+        success = true if @lock.destroy!
+      end
+    end
+    locks = get_all_locks
+    if locks.any?
+      render json: { success: success, data: locks.as_json }
+    else
+      render json: { success: false, message: e.message }
     end
   end
 
@@ -118,16 +135,16 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     locks = []
     if edge_state.present?
       remote_lock = RemoteLock.where(edge_state_id: edge_state.id)
-      locks << { type: REMOTELOCK, details: remote_lock} if remote_lock.present?
+      locks << { type: REMOTELOCKCLIENT, details: remote_lock} if remote_lock.present?
       yale_lock = Yale.where(edge_state_id: edge_state.id)
-      locks << { type: YALELOCK, details: yale_lock } if yale_lock.present?
+      locks << { type: YALELOCKCLIENT, details: yale_lock } if yale_lock.present?
       schlage_lock = Schlage.where(edge_state_id: edge_state.id)
-      locks << { type: SCHLAGELOCK, details: schlage_lock } if schlage_lock.present?
+      locks << { type: SCHLAGELOCKCLIENT, details: schlage_lock } if schlage_lock.present?
     end
     locks << { type: DWELO, details: dwelo } if dwelo.present?
-    locks << { type: LATCH, details: latch } if latch.present?
-    locks << { type: ZERV, details: zerv } if zerv.present?
-    locks << { type: IGLOOHOME, details: igloo_home } if igloo_home.present?
+    locks << { type: LATCHCLIENT, details: latch } if latch.present?
+    locks << { type: ZERVCLIENT, details: zerv } if zerv.present?
+    locks << { type: IGLOOHOMECLIENT, details: igloo_home } if igloo_home.present?
     locks
   end
 
