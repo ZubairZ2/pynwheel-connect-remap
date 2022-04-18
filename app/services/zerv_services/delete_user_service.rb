@@ -7,7 +7,7 @@ module ZervServices
 
         def execute(community, tour_user)
             tour_user.phone_number[0] = '' unless is_number?(tour_user.phone_number[0])
-            url = "https://accessapi.zervinc.net/v1/portal/user/deleteuser/#{tour_user.phone_number}"
+            url = "#{base_url}/user/deleteuser/#{tour_user.phone_number}"
             id_token = get_id_token
             
             response = HTTParty.delete(url,
