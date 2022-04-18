@@ -45,7 +45,7 @@ module ZervServices
     end
 
     def base_url
-      "https://accessapi.zervinc.net/v1/portal"
+      ENV["ZERV_BASE_URL"]
     end
 
     def check_response(is_resident, community, tour_user, stop_list, response, errors)
