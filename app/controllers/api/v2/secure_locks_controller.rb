@@ -36,24 +36,113 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     end
   end
 
+  def delete_lock_files
+    success = false
+    @type = params["type"]
+    success = delete_latch_file if @type.eql?(LATCH)
+    success = delete_schlage_file if @type.eql?(SCHLAGELOCK)
+    success = delete_igloohome_file if @type.eql?(IGLOOHOME)
+    if success
+      render json: {success: true}
+    end
+  end
+
   def delete_secure_lock
     success = false
     @type = params["type"]
-    if @type.eql?(LATCH)
-      @lock = Latch.find_by_id(params["id"])
-      if @lock.present?
-        success = true if @lock.destroy!
-      end
-    end
+
+    success = delete_schlage_lock if @type.eql?(SCHLAGELOCK)
+    success = delete_remote_lock if @type.eql?(REMOTELOCK)
+    success = delete_yale_lock  if @type.eql?(YALELOCK)
+    success = delete_dwelo_lock if @type.eql?(DWELO)
+    success = delete_latch_lock  if @type.eql?(LATCH)
+    success = delete_igloohome_lock if @type.eql?(IGLOOHOME)
+    success = delete_zerv_lock if @type.eql?(ZERV)
     locks = get_all_locks
-    if locks.any?
+    if success
       render json: { success: success, data: locks.as_json }
     else
-      render json: { success: false, message: e.message }
+      render json: { success: false, message: "Failed to delete secure lock" }
     end
   end
 
   private
+
+  def delete_latch_file
+    lock = Latch.find_by_id(params["id"])
+    if lock.present?
+      lock.remove_file!
+      lock.save
+      return true
+    end
+  end
+
+  def delete_schlage_file
+    lock = Schlage.find_by_id(params["id"])
+    if lock.present?
+      lock.remove_image!
+      lock.save
+      return true
+    end
+  end
+
+  def delete_igloohome_file
+    lock = Igloohome.find_by_id(params["id"])
+    if lock.present?
+      lock.remove_file!
+      lock.save
+      return true
+    end
+  end
+
+  def delete_latch_lock
+    lock = Latch.find_by_id(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_yale_lock
+    lock = Yale.find_by_id(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_remote_lock
+    lock = RemoteLock.find(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_schlage_lock
+    lock = Schlage.find(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_dwelo_lock
+    lock = Dwelo.find(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_igloohome_lock
+    lock = Igloohome.find(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_zerv_lock
+    lock = Zerv.find(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
 
   def yale_lock(lock_id, lock)
     if !lock_id.present?
@@ -106,7 +195,11 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     unless @community.latch.present?
       @community.create_latch(client_id: lock['client_id'], client_secret: lock['client_secret'], file: lock["file"])
     else
-      @community.latch.update(client_id: lock['client_id'], client_secret: lock['client_secret'], file: lock["file"])
+      if lock["file"].present?
+        @community.latch.update(client_id: lock['client_id'], client_secret: lock['client_secret'], file: lock["file"])
+      else
+        @community.latch.update(client_id: lock['client_id'], client_secret: lock['client_secret'])
+      end
     end
   end
 
@@ -114,7 +207,11 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     unless @community.igloohome.present?
       @community.create_igloohome(email: lock['email'], file: lock["file"])
     else
-      @community.igloohome.update_attributes(email: lock['email'], file: lock["file"])
+      if lock["file"].present?
+        @community.igloohome.update_attributes(email: lock['email'], file: lock["file"])
+      else
+        @community.igloohome.update_attributes(email: lock['email'])
+      end
     end
   end
 
