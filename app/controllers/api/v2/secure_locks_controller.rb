@@ -1,6 +1,6 @@
 class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :load_community, only: %i[index add_secure_locks]
+  before_action :load_community, only: %i[index add_secure_locks delete_secure_lock]
 
   def index
     locks = get_all_locks
@@ -30,13 +30,119 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
       @community.update_attributes(multiple_locks_provider: unique_locks_provider)
       @community.set_lock_providers_status(current_pynwheel_user)
       locks = get_all_locks
-      render json: { status: true, data: locks.as_json }
+      render json: { success: true, data: locks.as_json }
     rescue => e
-      render json: { status: false, message: e.message }
+      render json: { success: false, message: e.message }
+    end
+  end
+
+  def delete_lock_files
+    success = false
+    @type = params["type"]
+    success = delete_latch_file if @type.eql?(LATCH)
+    success = delete_schlage_file if @type.eql?(SCHLAGELOCK)
+    success = delete_igloohome_file if @type.eql?(IGLOOHOME)
+    if success
+      render json: {success: true}
+    end
+  end
+
+  def delete_secure_lock
+    success = false
+    @type = params["type"]
+
+    success = delete_schlage_lock if @type.eql?(SCHLAGELOCK)
+    success = delete_remote_lock if @type.eql?(REMOTELOCK)
+    success = delete_yale_lock  if @type.eql?(YALELOCK)
+    success = delete_dwelo_lock if @type.eql?(DWELO)
+    success = delete_latch_lock  if @type.eql?(LATCH)
+    success = delete_igloohome_lock if @type.eql?(IGLOOHOME)
+    success = delete_zerv_lock if @type.eql?(ZERV)
+    locks = get_all_locks
+    if success
+      render json: { success: success, data: locks.as_json }
+    else
+      render json: { success: false, message: "Failed to delete secure lock" }
     end
   end
 
   private
+
+  def delete_latch_file
+    lock = Latch.find_by_id(params["id"])
+    if lock.present?
+      lock.remove_file!
+      lock.save
+      return true
+    end
+  end
+
+  def delete_schlage_file
+    lock = Schlage.find_by_id(params["id"])
+    if lock.present?
+      lock.remove_image!
+      lock.save
+      return true
+    end
+  end
+
+  def delete_igloohome_file
+    lock = Igloohome.find_by_id(params["id"])
+    if lock.present?
+      lock.remove_file!
+      lock.save
+      return true
+    end
+  end
+
+  def delete_latch_lock
+    lock = Latch.find_by_id(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_yale_lock
+    lock = Yale.find_by_id(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_remote_lock
+    lock = RemoteLock.find(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_schlage_lock
+    lock = Schlage.find(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_dwelo_lock
+    lock = Dwelo.find(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_igloohome_lock
+    lock = Igloohome.find(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_zerv_lock
+    lock = Zerv.find(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
 
   def yale_lock(lock_id, lock)
     if !lock_id.present?
@@ -89,7 +195,11 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     unless @community.latch.present?
       @community.create_latch(client_id: lock['client_id'], client_secret: lock['client_secret'], file: lock["file"])
     else
-      @community.latch.update(client_id: lock['client_id'], client_secret: lock['client_secret'], file: lock["file"])
+      if lock["file"].present?
+        @community.latch.update(client_id: lock['client_id'], client_secret: lock['client_secret'], file: lock["file"])
+      else
+        @community.latch.update(client_id: lock['client_id'], client_secret: lock['client_secret'])
+      end
     end
   end
 
@@ -97,7 +207,11 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     unless @community.igloohome.present?
       @community.create_igloohome(email: lock['email'], file: lock["file"])
     else
-      @community.igloohome.update_attributes(email: lock['email'], file: lock["file"])
+      if lock["file"].present?
+        @community.igloohome.update_attributes(email: lock['email'], file: lock["file"])
+      else
+        @community.igloohome.update_attributes(email: lock['email'])
+      end
     end
   end
 
@@ -118,16 +232,16 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     locks = []
     if edge_state.present?
       remote_lock = RemoteLock.where(edge_state_id: edge_state.id)
-      locks << { type: REMOTELOCK, details: remote_lock} if remote_lock.present?
+      locks << { type: REMOTELOCKCLIENT, details: remote_lock} if remote_lock.present?
       yale_lock = Yale.where(edge_state_id: edge_state.id)
-      locks << { type: YALELOCK, details: yale_lock } if yale_lock.present?
+      locks << { type: YALELOCKCLIENT, details: yale_lock } if yale_lock.present?
       schlage_lock = Schlage.where(edge_state_id: edge_state.id)
-      locks << { type: SCHLAGELOCK, details: schlage_lock } if schlage_lock.present?
+      locks << { type: SCHLAGELOCKCLIENT, details: schlage_lock } if schlage_lock.present?
     end
     locks << { type: DWELO, details: dwelo } if dwelo.present?
-    locks << { type: LATCH, details: latch } if latch.present?
-    locks << { type: ZERV, details: zerv } if zerv.present?
-    locks << { type: IGLOOHOME, details: igloo_home } if igloo_home.present?
+    locks << { type: LATCHCLIENT, details: latch } if latch.present?
+    locks << { type: ZERVCLIENT, details: zerv } if zerv.present?
+    locks << { type: IGLOOHOMECLIENT, details: igloo_home } if igloo_home.present?
     locks
   end
 
