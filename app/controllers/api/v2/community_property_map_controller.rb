@@ -79,8 +79,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     if @type.eql?(SITEMAP)
       sitemap = @community.sitemap
       if sitemap.present?
-        sitemap.remove_label_image!
-        if sitemap.save
+        if sitemap.remove_label_image!
           @community.set_property_map_status(current_pynwheel_user)
           render :json => {:success => true, :error_code => 200, :message => "Garden style community label image deleted successfully", data: nil}
         end
@@ -88,8 +87,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     else
       floorplate = @community.floorplates.find_by(id: params["property_id"])
       if floorplate.present?
-        floorplate.remove_label_image!
-        if floorplate.save
+        if floorplate.remove_label_image!
           @community.set_property_map_status(current_pynwheel_user)
           render :json => {:success => true, :error_code => 200, :message => "Mid high rise community label image deleted successfully", data: nil}
         end
@@ -103,14 +101,16 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
       sitemap = @community.sitemap
       if sitemap.present?
         if sitemap.destroy!
-          @community.set_property_map_status(current_pynwheel_user)
+          @community.is_sitemap = false
+          @community.save
           render :json => {:success => true, :error_code => 200, :message => "Garden style community details deleted successfully", data: nil}
         end
       end
     else
       if @community.floorplates.present?
         @community.floorplates.delete_all
-        @community.set_property_map_status(current_pynwheel_user)
+        @community.is_sitemap = true
+        @community.save
         render :json => {:success => true, :error_code => 200, :message => "Mid high rise community details deleted successfully", data: nil}
       end
     end

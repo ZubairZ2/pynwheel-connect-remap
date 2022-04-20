@@ -18,7 +18,7 @@ class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
       @users = email_params["emails"]
       @subject = email_params["subject"]
       @body = params["email_body"]
-      if FollowUpMailer.send_email(@users, @subject, @body).deliver_later
+      if FollowUpMailer.send_email_request(@users, @subject, @body)
         render json: {success: true}
       end
     end

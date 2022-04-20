@@ -236,62 +236,62 @@
            width:100% !important;
            min-width:100% !important;
          }
-
-       }
+      
+       }  
          @media only screen and (max-width: 480px){
           table[id=emailHeader],table[id=emailBody],table[id=emailFooter],table[class=flexibleContainer]{
            width:100% !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           td[class=flexibleContainerBox],td[class=flexibleContainerBox] table{
            display:block;
            width:100%;
            text-align:center !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           td[class=imageContent] img{
            height:auto !important;
            width:100% !important;
            max-width:100% !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           img[class=flexibleImage]{
            height:auto !important;
            width:100% !important;
            max-width:100% !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           img[class=flexibleImageSmall]{
            height:auto !important;
            width:auto !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           table[class=flexibleContainerBoxNext]{
            padding-top:10px !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           table[class=emailButton]{
            width:100% !important;
          }
-
+      
         } @media only screen and (max-width: 480px){
           td[class=buttonContent]{
            padding:0 !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           td[class=buttonContent] a{
            padding:15px !important;
@@ -350,7 +350,26 @@
                                   %td
                                     %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
                                       %p Welcome to Pynwheel, We are excited to work with you! The next step in our process is creating an account to provide information for your Pynwheel app(s). Services included in your plan are listed below.
-                  
+                                
+                                - product_options = JSON.parse(@resource.product_options)
+
+                                %tr
+                                  %td
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:10px;"}
+                                      - if product_options["product_options"]["self_tour"]["is_enabled"]
+                                        %p{:style => "color: #000000;"} - Self Tour
+                                      
+                                      - if product_options["product_options"]["pynwheel_touch"]["is_enabled"]
+                                        %p{:style => "color: #000000;"} - Pynwheel Touch
+                                      
+                                      - if product_options["product_options"]["pynwheel_maps"]
+                                        %p{:style => "color: #000000;"} - Pynwheel Maps
+                                        
+                                      - if product_options["product_options"]["graphic_design_services"]["is_enabled"]
+                                        %p{:style => "color: #000000;"} - Graphic Design Services
+                                        
+                                      - if product_options["product_options"]["additional_options"]["is_enabled"]
+                                        %p{:style => "color: #000000;"} - Additional Options
 
                                 %tr
                                   %td
@@ -362,8 +381,8 @@
                                 %tr
                                   %td
                                     %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:10px;"}
-                                      %p Please let me know if you have any questions!
-
+                                      %p Please let me know if you have any questions!     
+                              
                                 %tr
                                   %td
                                     %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:10px;"}
@@ -377,7 +396,7 @@
                                     %div{:style => "height:15px;"}
                                 %tr
                                   %td
-                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"} 
                                       - if @resource.invitation_due_at
                                         = t("devise.mailer.invitation_instructions.accept_until", due_date: l(@resource.invitation_due_at, format: :'devise.mailer.invitation_instructions.accept_until_format'))
 
@@ -402,8 +421,8 @@
                                           %tr
                                             %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 15px; padding-left: 18px; color:#000000; text-align:center;", :valign => "top"}
                                               %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
-                                                Pynwheel Inc. Denver, Colorado
-
+                                                Pynwheel Inc. Denver, Colorado  
+                                              
                                               %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
                                                 303-640-3652
 

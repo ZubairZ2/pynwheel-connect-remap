@@ -24,7 +24,8 @@ class InvitationsController < Devise::InvitationsController
           :role => params[:user][:role],
           :company_id => params[:user][:company_id],
           :region_id => params[:user][:region_id],
-          :community_ids => params[:user][:community_ids]
+          :community_ids => params[:user][:community_ids],
+          :product_options => params[:product_options]
         },
         current_inviter)
 

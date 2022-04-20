@@ -301,8 +301,8 @@
     %center{:style => "background-color:#E1E1E1;"}
       %table#bodyTable{:border => "0", :cellpadding => "0", :cellspacing => "0", :height => "100%", :style => "table-layout: fixed;max-width:100% !important;width: 100% !important;min-width: 100% !important;", :width => "100%"}
         %tr
-          %td#bodyCell{:align => "center", :valign => "top", :padding => "10", :margin => "10"}
-            %table#emailHeader{:bgcolor => "#E1E1E1", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620", :padding => "10", :margin => "10"}
+          %td#bodyCell{:align => "center", :valign => "top"}
+            %table#emailHeader{:bgcolor => "#E1E1E1", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
               %tr
                 %td{:align => "center", :valign => "top"}
                   %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
@@ -318,13 +318,13 @@
                                       %tr
                                         %td.textContent{:align => "left"}
                                           %div{:style => "font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#828282;text-align:center;line-height:120%;"}
-            %table#emailBody{:bgcolor => "#FFFFFF", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620", :padding => "10", :margin => "10"}
+            %table#emailBody{:bgcolor => "#FFFFFF", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
               %tr
                 %td{:align => "center", :valign => "top"}
-                  %table{:bgcolor => "#CCCCCC", :border => "0", :cellpadding => "2", :cellspacing => "0", :style => "color:#FFFFFF;", :width => "100%"}
+                  %table{:bgcolor => "#CCCCCC", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF;", :width => "100%"}
                     %tr
                       %td{:align => "center", :valign => "top"}
-                        %table.flexibleContainer{:border => "0", :cellpadding => "2", :cellspacing => "0", :width => "620"}
+                        %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
                           %tr
                             %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
                               %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
@@ -332,23 +332,26 @@
                                   %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                                     = image_tag "pynwheel-default-logo.png", :class => "email-logo"
                                     %p.companyText Pynwheel Inc.
-            %table#emailBody{:bgcolor => "#FFFFFF", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620", :leftmargin => "10"}
-              %tr
-                %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
-                  %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                    %p Hi there,
-              %tr
-                %td
-                  %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                    %p This email is to confirm that your touchscreen/self tour application has been submitted to production. If we need any additional content or information we will let you know. Otherwise, we'll let you know when it is complete. Production typically takes 2-4 weeks.
-              %tr
-                %td
-                  %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                    %p Thanks you!
-              %tr
-                %td
-                  %div{:style => "height:15px;"}
 
+                  %table{:border => "0", :cellpadding => "20", :cellspacing => "0", :width => "100%"}
+                    %tr
+                      %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
+                        %table{:border => "0", :cellpadding => "0", :cellspacing => "0    ", :width => "100%"}
+                          %tr
+                            %td{:align => "center", :valign => "top"}
+                              %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
+                                %p Hi there,
+                          %tr
+                            %td
+                              %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
+                                %p This email is to confirm that your touchscreen/self tour application has been submitted to production. If we need any additional content or information we will let you know. Otherwise, we'll let you know when it is complete. Production typically takes 2-4 weeks.
+                          %tr
+                            %td
+                              %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
+                                %p Thanks you!
+                            %tr
+                              %td
+                                %div{:style => "height:15px;"}
             %table#emailFooter{:bgcolor => "#CCCCCC", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
               %tr
                 %td

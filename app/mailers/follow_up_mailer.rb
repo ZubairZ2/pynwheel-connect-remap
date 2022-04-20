@@ -25,12 +25,16 @@ class FollowUpMailer < ApplicationMailer
     mail(to: @emails, subject: "#{@community.name} - Moved to Production")
   end
 
-  def send_email(users, subject, body)
-    @body = body
-    @users = users
-    @users.each do |user|
-      mail(to: user, subject: subject)
+  def self.send_email_request(users, subject, body)
+    users.each do |user|
+      send_email(user, subject, body).deliver
     end
+  end
+
+  def send_email(user, subject, body)
+    @body = body
+    @users = user
+      mail(to: @users, subject: subject)
   end
 
 end
