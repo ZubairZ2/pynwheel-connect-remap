@@ -7,9 +7,9 @@ class PynwheelLaunch::Communities::FollowUpEmails
     forms = forms_list
     if forms.present?
       readable_forms_status = get_readable_form_status(forms)
-      if forms.all?{|x| x[:status].eql?(IN_PROGRESS)}
+      if forms.all?{|x| x[:status].eql?(IN_PROGRESS) || x[:status].eql?(nil)}
         return {type: APPLICATION_NOT_STARTED, data: readable_forms_status}
-      elsif forms.any?{|x| x[:status].eql?(IN_PROGRESS)} && !forms.all?{|x| x[:status].eql?(IN_PROGRESS)}
+      elsif forms.any?{|x| x[:status].eql?(IN_PROGRESS) || x[:status].eql?(nil)} && !forms.all?{|x| x[:status].eql?(IN_PROGRESS) ||x[:status].eql?(nil)}
         return {type: APPLICATION_IN_PROGRESS, data: readable_forms_status}
       elsif forms.all?{|x| x[:status].eql?(SUBMITTED)}
         return {type: APPLICATION_SUBMITTED, data: readable_forms_status}
@@ -48,14 +48,14 @@ class PynwheelLaunch::Communities::FollowUpEmails
         name: LOCK_PROVIDER,
         status: lock_providers_status
       },
-      {
-        name: TOUR_STOPS,
-        status: tour_stops_status
-      },
-      {
-        name: VISITING_HOURS,
-        status: visiting_hours_status
-      }
+      # {
+      #   name: TOUR_STOPS,
+      #   status: tour_stops_status
+      # },
+      # {
+      #   name: VISITING_HOURS,
+      #   status: visiting_hours_status
+      # }
     ]
   end
 
@@ -81,7 +81,12 @@ class PynwheelLaunch::Communities::FollowUpEmails
     pynwheel_touch_forms = forms_for_touch_app
     pynwheel_touch_forms.each {|x| detail_forms << x} if @community.product_options.include?("pynwheel_touch")
     self_tour_forms = forms_for_self_tour
-    self_tour_forms.each {|x| detail_forms << x} if @community.product_options.include?("self_tour")
+
+    if @community.product_options.include?("self_tour")
+      self_tour_forms.each do |x|
+        detail_forms << x
+      end
+    end
     detail_forms
   end
 
@@ -118,7 +123,6 @@ class PynwheelLaunch::Communities::FollowUpEmails
     if @community.credential&.use_different_crm_provider
       data_provider_status << @community.crm_credential&.status&.status rescue nil
     end
-
     status = status_check(data_provider_status)
     status
   end
@@ -219,9 +223,9 @@ class PynwheelLaunch::Communities::FollowUpEmails
     if !statuses.empty?
       return SUBMITTED if statuses.all?{|x| x.eql?(SUBMITTED)}
       return APPROVED if statuses.all?{|x| x.eql?(APPROVED)}
-      return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.empty? || x.nil?}
+      return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.eql?(nil)}
     else
-      return ""
+      return nil
     end
   end
 
