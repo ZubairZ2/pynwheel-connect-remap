@@ -104,7 +104,7 @@ class Yardi4StaticService < BaseService
   def save_yardi4_units(ils_units,property_id)
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
-      unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])).first_or_initialize
+      unit = Unit.where(provider: "yardi", community_id: credentials.community_id, property_id: property_id, provider_unit_id: (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])).first_or_initialize
       unless unit.manual_override
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
@@ -207,7 +207,7 @@ class Yardi4StaticService < BaseService
 
   def save_yardi4_floorplans(floorplans)
     floorplans.lazy.each do |floorplan|
-      fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:IDValue]).first_or_initialize
+      fp = Floorplan.where(provider: "yardi", community_id: credentials.community_id, property_id: property_id, provider_floorplan_id: floorplan[0][:IDValue]).first_or_initialize
       unless fp.manual_override
         rooms = []
         floorplan.each do |f|

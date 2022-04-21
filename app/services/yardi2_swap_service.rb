@@ -51,12 +51,12 @@ class Yardi2SwapService < BaseService
     end
   end
 
-  def save_yardi2_units(ils_units,property_id)
+  def save_yardi2_units(ils_units, property_id)
     ils_units[0].lazy.each do |unit_entries|
       begin
-        unit = Unit.where(community_id: credentials.community_id,marketing_name: unit_entries[0][:Id])
+        unit = Unit.where(community_id: credentials.community_id, property_id: property_id, marketing_name: unit_entries[0][:Id])
         if unit.count > 1
-          unit = Unit.where(community_id: credentials.community_id,marketing_name: unit_entries[0][:Id],floorplan_id: Floorplan.find_by(name: unit_entries[1][:Unit][:"MITS:Information"][:"MITS:FloorplanName"]).provider_floorplan_id)
+          unit = Unit.where(community_id: credentials.community_id, property_id: property_id, marketing_name: unit_entries[0][:Id],floorplan_id: Floorplan.find_by(name: unit_entries[1][:Unit][:"MITS:Information"][:"MITS:FloorplanName"]).provider_floorplan_id)
         end
         if unit.present?
           unit = unit.first
@@ -98,7 +98,8 @@ class Yardi2SwapService < BaseService
           unit.save(validate: false)
 
         else
-          dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id])
+          dup = Unit.find_by(community_id: credentials.community_id, property_id: property_id, provider_unit_id: unit_entries[0][:Id])
+
           if dup.present?
             dup.destroy
           end
@@ -274,12 +275,14 @@ class Yardi2SwapService < BaseService
         d.destroy
       end
     end
+
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
       unless d.provider == "yardi_new" || d.provider == "manually"
         d.destroy
       end
     end
+
     unit = Unit.where(community_id: credentials.community_id)
     unit.each do |d|
       if d.provider == "yardi_new"
@@ -295,6 +298,7 @@ class Yardi2SwapService < BaseService
         d.save(validate: false)
       end
     end
+    
   end
 
 end
