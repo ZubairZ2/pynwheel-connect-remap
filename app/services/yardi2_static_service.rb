@@ -85,10 +85,10 @@ class Yardi2StaticService < BaseService
     end
   end
 
-  def save_yardi2_units(ils_units,property_id)
+  def save_yardi2_units(ils_units, property_id)
     ils_units[0].lazy.each do |unit_entries|
       begin
-        unit = Unit.where(provider: "yardi",community_id: credentials.community_id,provider_unit_id: unit_entries[0][:Id]).first_or_initialize
+        unit = Unit.where(provider: "yardi", community_id: credentials.community_id, property_id: property_id, provider_unit_id: unit_entries[0][:Id]).first_or_initialize
         unless unit.manual_override
           unit.property_id = property_id
           unit.unit_type = unit_entries[0][:Id]

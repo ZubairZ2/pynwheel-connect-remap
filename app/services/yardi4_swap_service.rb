@@ -82,13 +82,13 @@ class Yardi4SwapService < BaseService
   end
     
 
-  def update_yardi4_units(ils_units,property_id)
+  def update_yardi4_units(ils_units, property_id)
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
 
-      unit = Unit.where(community_id: credentials.community_id,marketing_name: (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue]) )
+      unit = Unit.where(community_id: credentials.community_id, property_id: property_id, marketing_name: (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue]) )
       if unit.count > 1
-        unit = Unit.where(community_id: credentials.community_id,marketing_name: (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue]) ,floorplan_id: Floorplan.find_by(name: u[:Units][:Unit][:FloorplanName]).provider_floorplan_id)
+        unit = Unit.where(community_id: credentials.community_id, property_id: property_id, marketing_name: (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue]) ,floorplan_id: Floorplan.find_by(name: u[:Units][:Unit][:FloorplanName]).provider_floorplan_id)
       end
       if unit.present?
         unit = unit.first
@@ -138,7 +138,7 @@ class Yardi4SwapService < BaseService
         unit.save(validate: false)
       else
         # unit = Unit.where(community_id: credentials.community_id).first
-        dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue]))
+        dup = Unit.find_by(community_id: credentials.community_id, property_id: property_id, provider_unit_id: (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue]))
         if dup.present?
           dup.destroy
         end
