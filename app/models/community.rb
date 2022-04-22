@@ -53,6 +53,7 @@ class Community < ApplicationRecord
   has_one :igloohome, dependent: :destroy
   has_one :three_d_maps_configuration, dependent: :destroy
   has_many :comments , as: :commentable
+  has_one :portal_tour, dependent: :destroy
   has_one :status, as: :statusable
 
   accepts_nested_attributes_for :credential
@@ -988,7 +989,6 @@ class Community < ApplicationRecord
     end
     options
   end
-
 
   def community_tour_available_stops tour_user
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, self, false).get_scheduled_tour
