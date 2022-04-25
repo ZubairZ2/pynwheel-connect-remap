@@ -177,8 +177,8 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def tour_stops_status
-    return [] if @community.tour&.tour_stops.blank?
-    tour_stops = @community.tour&.tour_stops
+    return [] if @community.portal_tour&.portal_tour_stops.blank?
+    tour_stops = @community.portal_tour&.portal_tour_stops
     
     tour_stops_status = tour_stops.map {|ts| ts&.status&.status_and_remarks_obj rescue nil}
     tour_stops_status.compact.uniq
@@ -263,8 +263,8 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def update_tour_stops_status_and_remarks status, remarks
-    return if @community.tour&.tour_stops.blank?
-    tour_stops = @community.tour&.tour_stops
+    return if @community.portal_tour&.portal_tour_stops.blank?
+    tour_stops = @community.portal_tour&.portal_tour_stops
     tour_stops.map do |ts|
       unless ts.status.nil?
         ts&.status.update_attributes(status: status, remarks: remarks)

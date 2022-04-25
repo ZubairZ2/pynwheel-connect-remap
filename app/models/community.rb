@@ -53,6 +53,7 @@ class Community < ApplicationRecord
   has_one :igloohome, dependent: :destroy
   has_one :three_d_maps_configuration, dependent: :destroy
   has_many :comments , as: :commentable
+  has_one :portal_tour, dependent: :destroy
   has_one :status, as: :statusable
 
   accepts_nested_attributes_for :credential
@@ -285,8 +286,8 @@ class Community < ApplicationRecord
   end
 
   def set_tour_stops_status(current_user)
-    return if self.tour&.tour_stops.blank?
-    tour_stops = self.tour.tour_stops.compact
+    return if self.portal_tour&.portal_tour_stops.blank?
+    tour_stops = self.portal_tour.portal_tour_stops.compact
     tour_stops.each do |ts|
       status_attr = status_string(ts.name.present?)
       set_status_for_all(ts,status_attr,current_user)
@@ -335,7 +336,7 @@ class Community < ApplicationRecord
     present_required_fields ? SUBMITTED : IN_PROGRESS
   end
 
-  def set_status_for_all(status_entity,status_attribute,current_user)
+  def set_status_for_all(status_entity, status_attribute, current_user)
     status_entity.build_status unless status_entity.status
     status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user.id)
   end
@@ -988,7 +989,6 @@ class Community < ApplicationRecord
     end
     options
   end
-
 
   def community_tour_available_stops tour_user
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, self, false).get_scheduled_tour
