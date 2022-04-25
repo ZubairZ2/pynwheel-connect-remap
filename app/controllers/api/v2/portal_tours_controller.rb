@@ -1,6 +1,6 @@
 class Api::V2::PortalToursController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :load_community, :only => [:add_tour_step_details, :get_tour_step_details]
+  before_action :load_community, :only => [:add_tour_step_details, :get_tour_step_details, :delete_tour_stop]
 
   def get_tour_step_details
       @tour = @community.portal_tour
@@ -60,6 +60,7 @@ class Api::V2::PortalToursController < Api::V2::ApiApplicationController
       tour_stop = PortalTourStop.find params["tour_stop_id"]
       if tour_stop.present?
         if tour_stop.destroy!
+          @community.set_tour_stops_status(current_pynwheel_user)
           render json: {success: true, message: "Tour stop deleted successfully"}
         else
           render json: {success: false, message: tour_stop.errors.full_messages}
