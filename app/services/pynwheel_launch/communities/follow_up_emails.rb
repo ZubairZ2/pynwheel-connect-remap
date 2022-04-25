@@ -48,14 +48,14 @@ class PynwheelLaunch::Communities::FollowUpEmails
         name: LOCK_PROVIDER,
         status: lock_providers_status
       },
-      # {
-      #   name: TOUR_STOPS,
-      #   status: tour_stops_status
-      # },
-      # {
-      #   name: VISITING_HOURS,
-      #   status: visiting_hours_status
-      # }
+      {
+        name: TOUR_STOPS,
+        status: tour_stops_status
+      },
+      {
+        name: VISITING_HOURS,
+        status: visiting_hours_status
+      }
     ]
   end
 
@@ -154,8 +154,8 @@ class PynwheelLaunch::Communities::FollowUpEmails
   end
 
   def tour_stops_status
-    return nil if @community.tour&.tour_stops.blank?
-    tour_stops = @community.tour&.tour_stops
+    return nil if @community.portal_tour&.portal_tour_stops.blank?
+    tour_stops = @community.portal_tour&.portal_tour_stops
     
     tour_stops_status = tour_stops.map {|ts| ts&.status&.status rescue nil}
     status = status_check(tour_stops_status)
