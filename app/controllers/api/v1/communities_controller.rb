@@ -7,7 +7,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   include StripeServices
   include ShortestPath
   
-  before_action :set_community, only: :email_favorites
+  before_action :set_community, only: [:email_favorites, :get_user_by_email]
 
   require 'securerandom'
 
@@ -408,6 +408,36 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+  def get_user_by_email
+    access = grant_access(decoded(params[:token])) rescue false
+    if api_access or access == true
+      @tour_user = TourUser.find_by(email: params[:user_email])
+        if @tour_user.present?
+          render :json=> {status: true, code: 200}
+        else
+          render :json=> {status: false, code: 400}
+        end
+    else
+        render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+    end
+  end
+    
+  def tour_user_sign_up
+    if params["email"].present?
+      existed_user = TourUser.find_by(email: params["email"])
+      if existed_user.present?
+        render json: {status: false, message: "email already exists", code: 400}
+      else
+          user = TourUser.create(email: params["email"], first_name: params["first_name"], last_name: params["last_name"], phone_number: params["mobile_number"], is_sms_enabled: params["chat_enable"])
+        if user.present?
+          render json: {status: true, data: user, code: 201}
+        else
+          render json: {status: false, message: "Failed to create tour user", code: 400}
+        end
+      end
+    end
+  end
+
   def tour_user_data
     data = Hash.new
     access = grant_access (decoded(params[:token])) rescue false
@@ -418,9 +448,8 @@ class Api::V1::CommunitiesController < ActionController::Base
         TourUserCustomization.new(@community, @tour_user).customize_tour
         @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id)
-        
-        data = {visited_history: @visited_history, tour_user: @tour_user}
-
+        @scheduled_tours = @tour_user.schedual_tours
+        data = {visited_history: @visited_history, tour_user: @tour_user, scheduled: @scheduled_tours.count}
         render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
       else
         render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}

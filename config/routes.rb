@@ -582,6 +582,8 @@ Rails.application.routes.draw do
           get :tour_configrations_v1
           post :check_lock_access
           get :tour_user_data
+          get :get_user_by_email
+          post :tour_user_sign_up
           get :ios_data
           get :minimum_data
           post :email_favorites
