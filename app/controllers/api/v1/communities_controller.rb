@@ -413,9 +413,9 @@ class Api::V1::CommunitiesController < ActionController::Base
     if api_access or access == true
       @tour_user = TourUser.find_by(email: params[:user_email])
         if @tour_user.present?
-          render :json=> {status: true, code: 200}
+          render :json=> {status: true, user: @tour_user, code: 200}
         else
-          render :json=> {status: false, code: 400}
+          render :json=> {status: false, error: "Email not found", code: 400}
         end
     else
         render :json=> {:status=>false, :message => "Invalid Token", code: 401}
