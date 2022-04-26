@@ -80,7 +80,7 @@ class InvitationsController < Devise::InvitationsController
       name = name.strip
 
       community = Community.find_or_create_by(name: name, company_id: company.id)
-      community.update(product_options: params[:product_options])
+      community.update(product_options: params[:product_options], move_to_production: false)
       community.set_community_status(current_user) if community.present?
 
       user_community = CommunityUser.find_by(community_id: community.id, user_id: user.id) rescue nil
