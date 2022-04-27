@@ -107,7 +107,7 @@ class Statuses
 
   def set_visiting_hours_status
     @tour = @community.community_tour
-    if @tour.self_tour
+    if @community.self_tour
       if @tour&.tour_setting&.allow_self_tour
         unless @community&.opening_hours.blank?
           @community.opening_hours.each do |oh|
