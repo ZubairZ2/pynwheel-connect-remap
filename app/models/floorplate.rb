@@ -28,6 +28,7 @@ class Floorplate < ApplicationRecord
   serialize :map_ocr_data, Array
 
   mount_uploader :image, SiteMapUploader
+  mount_uploader :label_image, SiteMapUploader
 
   belongs_to :community
   has_many :units, dependent: :destroy
@@ -35,8 +36,9 @@ class Floorplate < ApplicationRecord
   has_many :elevators, dependent: :destroy
   has_many :hallways, as: :parent
   has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
+  has_one :status, as: :statusable
 
-  validates_uniqueness_of :name, scope: :community_id
+  validates_uniqueness_of :name, scope: :community_id, if: -> { name.present? }
   validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}
   validates_with FloorValidator
 
@@ -64,6 +66,13 @@ class Floorplate < ApplicationRecord
     end
 
     floorplate_units.present? ? floorplate_units_info(floor, floorplate_units) : nil
+
+  end
+
+  def as_json
+    super(
+      :only => [:id , :name , :range , :image , :label_image]
+    )
   end
 
   def reset_units_plots

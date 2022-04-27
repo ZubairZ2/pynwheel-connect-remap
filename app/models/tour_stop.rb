@@ -25,11 +25,12 @@ class TourStop < ApplicationRecord
   has_many :stop_galleries, dependent: :destroy
   attr_accessor :building
   attr_accessor :floor
-  attr_accessor :status
+  # attr_accessor :status
 
   has_one :path, as: :map_path
   has_many :path_points, through: :paths
   belongs_to :unit, dependent: :destroy
+  has_one :status, as: :statusable
   
   before_destroy :remove_associated_stops
 

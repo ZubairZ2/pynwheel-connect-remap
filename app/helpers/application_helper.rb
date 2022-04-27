@@ -27,7 +27,7 @@ module ApplicationHelper
   def decoded(token)
     JWT.decode token, ENV['SECRET_KEY_BASE'], true, { algorithm: 'HS256' } rescue nil
   end
-  
+
   def grant_access(payload)
     begin
       ((TourUser.find payload[0]['tour_user_id'].to_i).secure_random == payload[0]['secure_random']) && (payload[0]['license_key'] == ENV['TEMP_ACESS_TOKEN'])
@@ -35,7 +35,7 @@ module ApplicationHelper
       false
     end
   end
-  
+
   def api_access
     ENV["API_ACCESS"] == "true" ? true : false
   end
@@ -47,7 +47,7 @@ module ApplicationHelper
     while start_index.present? and end_index.present? and middle_index.present? and start_index < middle_index and middle_index < end_index do
       puts "res"
       word = str[start_index..end_index] rescue nil
-      
+
       if word.present? && word.include?(',')
         link, text = str[start_index+1..end_index-1].split(',')
         link = "<a href=#{link} target='_blank'>#{text}</a>"
@@ -58,18 +58,18 @@ module ApplicationHelper
       end_index = str.index('}')
       middle_index = str.index(',')
     end
-    
+
     str
   end
 
   def gables_theme_options
     ["gables_organic","gables_refined","gables_energetic","gables_natural","gables_custom"]
   end
-  
+
   def self_tour_icon_size
     [["19x25","0"],["17x23","1"],["15x21","2"],["13x19","3"],["11x17","4"]]
   end
-  
+
   def font_families
     options_with_style = []
     families = JSON.parse(File.read(Rails.root.join("app/assets/jsons/font_families.json")))
@@ -78,7 +78,7 @@ module ApplicationHelper
     f_families.each do |family|
       options_with_style << [family[0],family[1],:style => "font-family:#{family[0]}" ]
     end
-    
+
     options_with_style
   end
 
@@ -89,7 +89,7 @@ module ApplicationHelper
   def display_position_on_homepage
     [["Select",""],["1","1"],["2","2"],["3","3"]]
   end
-  
+
   def filter_panel_text_font_sizes
     ["12px","13px","14px","15px","16px","17px","18px"]
   end
@@ -214,11 +214,11 @@ module ApplicationHelper
   def home_page_icons_position_option
     ["Left of text","Right of text","Above of text"]
   end
-  
+
   def global_nav_icons_position_option
     ["Left of text","Right of text","Above the text"]
   end
-  
+
   def global_nav_button_icon_size_option
     ["25px","35px","45px","55px","65px"]
   end
@@ -540,9 +540,87 @@ module ApplicationHelper
     end
     stop_lock_provider
   end
-  
+
   def generate_six_digit_random_pin
     (SecureRandom.random_number(9e5) + 1e5).to_i.to_s
+  end
+
+  def product_defualt_options
+    {
+      "dwelo_community": false,
+
+      "product_options": {
+        "self_tour": {
+          "is_enabled": false,
+          "options": {
+            "hardware_required": {
+              "is_enabled": false,
+              "options": {
+                "pynwheel_access": {
+                  "is_enabled": false,
+                  "options": {
+                    "pyns": 0,
+                    "deadbolts": 0,
+                    "others": {
+                      "is_enabled": false,
+                      "options": {
+                        "type": "",
+                        "quantity":0
+                      }
+                    }
+                  }
+                },
+
+                "latch":false,
+
+                "igloo":false,
+
+                "remote_lock": {
+                  "is_enabled": false,
+                  "options": {
+                    "igloo": 0,
+                    "yale": 0,
+                    "schlage": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+
+        "pynwheel_touch": {
+          "is_enabled": false,
+          "options": {
+            "desing_style": "Futurnist",
+            "hardware": "No Touchscreen",
+            "installation": "No",
+            "stand": "Chief"
+          }
+        },
+
+        "pynwheel_maps": false,
+
+        "graphic_design_services": {
+          "is_enabled": false,
+          "options": {
+            "floorplans": {
+              "2d": 0,
+              "3d": 0
+            },
+            "site_plan": 0
+          }
+        },
+
+        "additional_options": {
+          "is_enabled": false,
+          "options": {
+            "virtual_staging": 0,
+            "photography": 0,
+            "panoskin_tour_package": 0
+          }
+        }
+      }
+    }
   end
 
 end

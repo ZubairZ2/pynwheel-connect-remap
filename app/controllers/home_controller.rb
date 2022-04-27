@@ -3,7 +3,7 @@ class HomeController < ApplicationController
   before_action :check_community
   def index
   	if current_user.is_super_admin?
-    	@communities = alphabetical_sort(Community.select(:id,:name,:updated_at,:company_id,:data_provider, :time_zone, :data_provider_updated_on).includes(:company))
+    	@communities = alphabetical_sort(Community.select(:id,:name,:updated_at,:company_id,:data_provider, :time_zone, :move_to_production, :data_provider_updated_on).includes(:company))
     elsif current_user.is_dwelo_admin?
       assigned_communities_ids = current_user.communities.ids # all assinged communities
       dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).ids # all communities created by any dwelo admin
@@ -17,9 +17,19 @@ class HomeController < ApplicationController
     else
     	@communities = current_user.communities
     end
+
+    @communities = move_to_production_communities(@communities)
+
     community_id = session[:community_id]
     session[:authorization_code] = params['code'] if (params and params['code']).present?
     redirect_to "/communities/#{community_id}/edgestate_accounts/edgestate_code_grant_authorization" if (params and params['code']).present?
+  end
+
+  private
+
+  def move_to_production_communities communities
+    communities = communities.map{|c| c if c.move_to_production }
+    communities.compact
   end
 
 end

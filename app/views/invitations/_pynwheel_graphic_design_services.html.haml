@@ -1,0 +1,19 @@
+.graphic-design-services-option
+  %input#graphic-design-services{:name => "graphic-design-services", :type => "checkbox"}
+  %label Graphic Design Services
+
+  .sub-options.graphic-design-services-options
+    .graphic-floor-plans-options
+      %label{:style => "margin-right: 10px;"} Floor Plans:
+
+      %label{:for => "floor-plan-2d"} 2D
+      %input#floor-plan-2d-quantity{:max => "100", :min => "0", :name => "floor-plan-2d", :type => "number", :value=>"0"}/
+
+      %label{:for => "floor-plan-3d"} 3D
+      %input#floor-plan-3d-quantity{:max => "100", :min => "0", :name => "floor-plan-3d", :type => "number", :value=>"0"}/
+    %br
+
+    .graphic-site-plan-options
+      %label{:for => "site-plan", :style => "margin-right: 10px;"} Site Plan:
+      %input#site-plan-quantity{:max => "100", :min => "0", :name => "site-plan", :type => "number", :value=>"0"}/
+    %br

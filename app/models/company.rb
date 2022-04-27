@@ -23,7 +23,31 @@ class Company < ApplicationRecord
   has_many :users, dependent: :destroy
   has_many :community_groups, dependent: :destroy
   has_many :regions
+  has_one :status, as: :statusable
   validates_uniqueness_of :name
+
+  def as_json
+    super(
+      :only => [:id , :name , :phone , :email , :address , :zip , :state , :city], :methods => [:company_status]
+    )
+  end
+
+  def set_company_details_status(current_user)
+    return if self.blank?
+
+    company_status = status_string(check_company_requirement(self))
+    set_status_for_all(self, company_status, current_user)
+  end
+
+  def set_status_for_all(status_entity,status_attribute,current_user)
+    status_entity.build_status unless status_entity.status
+    status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user.id)
+  end
+
+  def company_status
+    return [] if self.blank?
+    [self&.status&.status_and_remarks_obj]
+  end
 
   def delete_company
     DeleteCompanyJob.perform_async self
@@ -32,4 +56,15 @@ class Company < ApplicationRecord
   def creator
     User.find_by(id: self.creator_id)
   end
+
+  private
+
+  def status_string(present_required_fields)
+    present_required_fields ? SUBMITTED : IN_PROGRESS
+  end
+
+  def check_company_requirement(company)
+    (company.name && company.email && company.phone && company.address && company.city && company.state && company.zip).present?
+  end
+  
 end

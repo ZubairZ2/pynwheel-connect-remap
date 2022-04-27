@@ -3,6 +3,14 @@ class Igloohome < ApplicationRecord
 
   belongs_to :community
   has_many :igloohome_locks, dependent: :destroy
+  mount_uploader :file, CsvfileUploader
+  # mount_uploader :file, SchlagelockUploader
+
+  def as_json
+    super(
+      :only => [:id, :email, :file]
+    )
+  end
 
   def import_data file
     if file.path.split('.').last.include?("csv")

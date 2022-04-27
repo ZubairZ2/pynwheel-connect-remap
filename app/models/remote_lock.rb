@@ -3,6 +3,7 @@ class RemoteLock < ApplicationRecord
   belongs_to :edge_state
   belongs_to :dwelo
   belongs_to :stop, polymorphic: true
+  has_one :status, as: :statusable
 
   # belongs_to :unit
   # belongs_to :amenity
@@ -20,4 +21,10 @@ class RemoteLock < ApplicationRecord
   scope :edgestate_locks, -> {where dwelo_id: nil}
 
   before_destroy :clear_lock_provider
+
+  def as_json
+    super(
+      :only => [:id, :edge_state_id]
+    )
+  end
 end

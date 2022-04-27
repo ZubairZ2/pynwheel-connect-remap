@@ -1201,6 +1201,8 @@ GEM
       devise (>= 4.6)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
+    doorkeeper (5.5.4)
+      railties (>= 5)
     enumerable-statistics (2.0.1)
     erubis (2.7.0)
     exception_notification (4.4.0)
@@ -1525,6 +1527,7 @@ DEPENDENCIES
   derailed_benchmarks
   devise
   devise_invitable
+  doorkeeper
   exception_notification
   execjs
   figaro

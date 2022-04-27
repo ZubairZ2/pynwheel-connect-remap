@@ -1,9 +1,10 @@
 class Community < ApplicationRecord
   include LockedTourStopHelper
-  
+
   mount_base64_uploader :logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   mount_base64_uploader :self_tour_logo, AvatarUploader
+  mount_base64_uploader :brand_details_pdf , PdfUploader
 
   belongs_to :company
   belongs_to :community_group
@@ -36,7 +37,7 @@ class Community < ApplicationRecord
   has_many :elevators, dependent: :destroy
   has_many :doors, dependent: :destroy
   has_many :access_points, -> { where("attached_with_type = 'Floorplate' OR attached_with_type = 'Sitemap'") }, class_name: 'Door', dependent: :destroy
-  
+
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy
   has_one :design, dependent: :destroy
@@ -51,6 +52,9 @@ class Community < ApplicationRecord
   has_one :zerv, dependent: :destroy
   has_one :igloohome, dependent: :destroy
   has_one :three_d_maps_configuration, dependent: :destroy
+  has_many :comments , as: :commentable
+  has_one :portal_tour, dependent: :destroy
+  has_one :status, as: :statusable
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
@@ -61,13 +65,13 @@ class Community < ApplicationRecord
   validate :validate_page_position
   validates_with CodeValidatorOnUpdate , on: [:update]
   validates_with CodeValidatorOnCreate , on: [:create]
-  
+
   after_create :set_default_theme
   after_create :create_default_gallery
   after_create :create_sms_email_content
 
   attr_accessor :default_community_id
-  
+
   after_update :crop_image
   after_update :crop_secondary_image
   after_create :create_tour_also
@@ -151,8 +155,261 @@ class Community < ApplicationRecord
   def get_community_favorite_stop
     self.favorite_stop.present? ? self.favorite_stop : FavoriteStop.new
   end
+  
+  def as_json(options = {})
+    data = super(
+      :only => [:id , :name , :logo , :address , :city , :state , :email , :phone , :zip, :property_manager_name,:property_manager_phone,:property_manager_email , :website , :number_of_units]
+    )
+    check_brand_access = options[:brand_pdf_feature]
+    if check_brand_access == true
+      data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())
+    else
+      data.merge!(:brand_feature_access => false)
+    end
+  end
 
-  def set_community_time_zone 
+  def brand_details
+    self.brand_details_pdf
+  end
+
+  def set_community_status(current_user)
+    return if self.blank?
+
+    set_community_details_status(current_user)
+    set_property_map_status(current_user)
+    set_floorplan_status(current_user)
+    set_gallery_images_status(current_user)
+    set_touch_vidoes_status(current_user)
+    set_data_provider_status(current_user)
+    touch_installation_specification(current_user)
+    set_lock_providers_status(current_user)
+    set_tour_stops_status(current_user)
+    set_visiting_hours_status(current_user)
+  end
+
+  def set_community_details_status(current_user)
+    return if self.blank?
+
+    community_status = status_string(check_community_requirments(self))
+    set_status_for_all(self,community_status,current_user)
+  end
+
+  def set_property_map_status(current_user)
+    return if self.sitemap.blank? && self.floorplates.blank?
+
+    if self.sitemap.present?
+      sitemap = self.sitemap
+      property_sitemap_status = status_string(self.sitemap&.image.present?)
+      set_status_for_all(sitemap,property_sitemap_status,current_user)
+
+    elsif self.floorplates.any?
+      floorplates = self.floorplates
+      floorplates.each do |floorplate|
+        property_floorplate_status = status_string(floorplate&.image.present?)
+        set_status_for_all(floorplate,property_floorplate_status,current_user)
+      end
+    end
+  end
+
+  def set_floorplan_status(current_user)
+    return if self.floorplans.blank?
+
+    self.floorplans.each do |floorplan|
+      floorplan_status = status_string(floorplan&.image.present?)
+      set_status_for_all(floorplan,floorplan_status,current_user)
+    end
+  end
+
+  def set_gallery_images_status(current_user)
+    return if self.galleries.blank?
+
+    self.galleries.each do |gallery|
+      gallery_images_status = status_string(gallery.name.present? && gallery&.gallery_images.present?)
+      set_status_for_all(gallery,gallery_images_status,current_user)
+    end
+  end
+
+  def set_touch_vidoes_status(current_user)
+    return if self.design.blank?
+    design = self.design
+    home_page_image_status(design,current_user)
+    home_page_video_status(design,current_user)
+  end
+
+  def home_page_image_status(design,current_user)
+    return if design.home_page_images.blank?
+
+    design.home_page_images.each do |touch_img|
+      touch_img_status = status_string(touch_img.name.present? & touch_img.image.present?)
+      set_status_for_all(touch_img,touch_img_status,current_user)
+    end
+  end
+
+  def home_page_video_status(design,current_user)
+    return if design.home_page_video.blank?
+
+    hp_video = design.home_page_video
+    touch_video_status = status_string(hp_video.video.url.present?)
+    set_status_for_all(hp_video,touch_video_status,current_user)
+  end
+
+  def set_data_provider_status(current_user)
+    return if self.data_provider.blank? && self.credential.blank?
+    provider_credential = self.credential
+    required_fields = check_required_fields_for_providers
+    status_attr = status_string(required_fields)
+    set_status_for_all(provider_credential,status_attr,current_user)
+    if self&.credential&.use_different_crm_provider
+      set_crm_status(current_user)
+    end
+  end
+
+  def check_required_fields_for_providers
+    credential = self.credential
+
+    case data_provider
+      when "psi"
+        credential.entrata_url.present? && credential.username.present? && credential.password.present? && credential.property_id.present?
+      when "yardirentcafe"
+        (credential.c_code.present? || credential.api_token.present?) && credential.p_code.present?
+      when "realpagesvc"
+        credential.site_id.present? && credential.pmc_id.present?
+      when "yardi"
+        credential.url.present? && credential.username.present? && credential.password.present? && credential.property_id.present? && credential.server_name.present? && credential.database.present? && credential.platform.present? && credential.interface_entity.present?
+      when "resman"
+        credential.resman_api_version.present? && credential.resman_account_id.present? && credential.resman_property_id.present?
+      when "zaremba"
+        credential.zaremba_username.present? && credential.zaremba_password.present? && credential.zaremba_filename.present? && credential.zaremba_property_id.present?
+      when "xml"
+        credential.xml_filename.present? && credential.xml_domain.present?
+      when "other"
+        credential.new_requested_data_provider.present?
+    end
+  end
+
+  def set_crm_status(current_user)
+    return if self.crm_credential.blank?
+    crm_credential = self.crm_credential
+    required_fields = check_crm_required_fields
+    status_attr = status_string(required_fields)
+    set_status_for_all(crm_credential,status_attr,current_user)
+  end
+
+  def check_crm_required_fields
+    return if self.crm_credential.crm_provider.blank?
+    crm_credential = self.crm_credential
+
+    case crm_credential.crm_provider
+      when "psi"
+        crm_credential.entrata_domain.present? && crm_credential.entrata_username.present? && crm_credential.entrata_password.present? && crm_credential.entrata_property_id.present?
+      when "yardirentcafe"
+        crm_credential.yardirentcafe_leads_api_user_name.present? && crm_credential.yardirentcafe_leads_api_password.present? && crm_credential.yardirentcafe_marketing_api_key.present? && crm_credential.yardirentcafe_company_code.present? && crm_credential.yardirentcafe_property_id.present? && crm_credential.yardirentcafe_property_code.present?
+      when "realpagesvc"
+        crm_credential.realpage_site_id.present? && crm_credential.realpage_pmc_id.present?
+      when "salesforce"
+        crm_credential.salesforce_username.present? && crm_credential.salesforce_password.present? && crm_credential.salesforce_client_id.present? && crm_credential.salesforce_secret_id.present? && crm_credential.salesforce_property_id.present?
+      when "knock"
+        crm_credential.knock_api_key.present? && crm_credential.knock_community_id.present? && crm_credential.knock_sms_consent_url.present?
+    end
+  end
+
+  def set_visiting_hours_status(current_user)
+    return unless self.self_tour
+    self_tour_visiting_hours(current_user) if self&.tour&.tour_setting&.allow_self_tour
+    guided_visiting_hours(current_user) if self&.tour&.tour_setting&.allow_guided_tour
+  end
+
+  def self_tour_visiting_hours(current_user)
+    return if self.opening_hours.blank?
+    self_visiting_hours = self.opening_hours
+    self_visiting_hours.each do |oh|
+      status_attr = status_string(oh.day.present? && oh.opening_time.present? && oh.closing_time.present?)
+      set_status_for_all(oh,status_attr,current_user)
+    end
+  end
+
+  def guided_visiting_hours(current_user)
+    return if self.guided_opening_hours.blank?
+    guided_visiting_hours = self.guided_opening_hours
+    guided_visiting_hours.each do |gh|
+      status_attr = status_string(gh.day.present? && gh.opening_time.present? && gh.closing_time.present? )
+      set_status_for_all(gh,status_attr,current_user)
+    end
+  end
+
+  def touch_installation_specification(current_user)
+    return if self.design.blank?
+    hardware_spec = self.design.pynwheel_touch_hardware_spec
+    status_attr = hardware_spec.present? ? SUBMITTED : nil
+    set_status_for_all(self.design,status_attr,current_user)
+  end
+
+  def check_community_requirments(community)
+    (community.name && community.email && community.phone && community.address && community.city && community.state && community.zip).present?
+  end
+
+  def check_required_hardware(product_options)
+    products_json = JSON.parse product_options
+    products_json['product_options']['pynwheel_touch']['options']['hardware'].present?
+  end
+
+  def set_tour_stops_status(current_user)
+    return if self.portal_tour&.portal_tour_stops.blank?
+    tour_stops = self.portal_tour.portal_tour_stops.compact
+    tour_stops.each do |ts|
+      status_attr = status_string(ts.name.present?)
+      set_status_for_all(ts,status_attr,current_user)
+    end
+  end
+
+  def set_lock_providers_status(current_user)
+    return if self.zerv.blank? && self.latch.blank? && self.dwelo.blank? && self.edge_state.blank? && self&.edge_state&.remote_locks.blank?
+    pynwheel_access_status(current_user)
+    latch_locks_status(current_user)
+    dwelo_locks_status(current_user)
+    remote_lock_status(current_user)
+  end
+
+  def pynwheel_access_status(current_user)
+    return if self.zerv.blank?
+    zerv_lock = self.zerv
+    status_attr = status_string(zerv_lock.facility_id.present? && zerv_lock.badge_id.present? && zerv_lock.card_format.present?)
+    set_status_for_all(zerv_lock,status_attr,current_user)
+  end
+
+  def latch_locks_status(current_user)
+    return if self.latch.blank?
+    latch = self.latch
+    status_attr = status_string(latch.client_id.present? && latch.client_secret.present?)
+    set_status_for_all(latch,status_attr,current_user)
+  end
+
+  def dwelo_locks_status(current_user)
+    return if self.dwelo.blank?
+    dwelo = self.dwelo
+    status_attr = status_string(dwelo.community_id.present? && dwelo.client_id.present? && dwelo.client_secret.present?)
+    set_status_for_all(dwelo,status_attr,current_user)
+  end
+
+  def remote_lock_status(current_user)
+    return if self.edge_state.blank?
+    remote_locks = self.edge_state&.remote_locks
+    remote_locks.each do |remote_lock|
+      status_attr = status_string(remote_lock.present?)
+      set_status_for_all(remote_lock,status_attr,current_user)
+    end
+  end
+
+  def status_string(present_required_fields)
+    present_required_fields ? SUBMITTED : IN_PROGRESS
+  end
+
+  def set_status_for_all(status_entity, status_attribute, current_user)
+    status_entity.build_status unless status_entity.status
+    status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user.id)
+  end
+
+  def set_community_time_zone
     if self.latitude.present? && self.longitude.present?
       time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
       self.update_column :time_zone, time_zone
@@ -226,15 +483,15 @@ class Community < ApplicationRecord
   def is_gables_natural?
     theme_name == "gables_natural"
   end
-  
+
   def is_gables_custom?
     theme_name == "gables_custom"
   end
-  
+
   def any_gables_theme?
     theme_name == "gables_organic" || theme_name == "gables_refined" || theme_name == "gables_energetic" || theme_name == "gables_natural" || theme_name == "gables_custom"
   end
-  
+
   def is_panther?
     theme_name == "panther"
   end
@@ -275,7 +532,7 @@ class Community < ApplicationRecord
   def get_time_in_24_hours_format time
     arr = time.split(" ")
     arr = arr[0].split(":")
-    hours = arr[0].to_i 
+    hours = arr[0].to_i
     minutes = arr[1]
 
     if time.include?("pm") || time.include?("PM")
@@ -341,7 +598,7 @@ class Community < ApplicationRecord
       (false)
     end
   end
-  
+
   def use_yardi_as_lead?
     if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
       (true)
@@ -403,7 +660,7 @@ class Community < ApplicationRecord
     end
   end
   def unique_community_code_on_update
-    unless attributes["code"] == "" || attributes["code"] == nil 
+    unless attributes["code"] == "" || attributes["code"] == nil
       com = Community.where(code: attributes["code"])
       if com.count == 0
         true
@@ -498,7 +755,7 @@ s  end
   def real_page_get_marketing_sources
     RealPageGetMarketingSoucesJob.perform_async credential.attributes.to_json, self
   end
-  
+
   def entrata_send_mits_leads(tour_user, tour_time, end_time, visited_stops)
     PsiSendMitsLeadsJob.perform_async credential.attributes.to_json, tour_user, tour_time, end_time, visited_stops, self
   end
@@ -665,7 +922,11 @@ s  end
   end
 
   def create_default_gallery
-    self.galleries.create(name: 'default')
+    default_galleries = ["appartments", "community"]
+    default_galleries.each do |gallery_name|
+      self.galleries.create(name: gallery_name, is_default: true)
+    end
+    # self.galleries.create(name: 'default')
   end
 
   def create_sms_email_content
@@ -695,7 +956,7 @@ s  end
     email_to = params[:favorites][:email_to]
     result = populate_favorites(params[:favorites][:items],email_to)
     favorites = result[0]
-    units = result[1] 
+    units = result[1]
 
     params[:favorites][:items].each do |item|
       # if item['unit_id'].present?
@@ -711,7 +972,7 @@ s  end
       # end
 
     end
-    email_bcc = self.favorite_setting.present? ? self.favorite_setting.email_bcc : nil 
+    email_bcc = self.favorite_setting.present? ? self.favorite_setting.email_bcc : nil
     email_from = self.favorite_setting.present? ? self.favorite_setting.email_from : nil
     email_body = self.favorite_setting.present? ? self.favorite_setting.email_body : nil
     ios = params[:favorites][:device_type].present? && params[:favorites][:device_type] == "iOS" ? true : false
@@ -757,7 +1018,7 @@ s  end
     end
 
     non_visible_stops_ids = amenity_stops.present? ? Amenity.where(id: amenity_stops.pluck(:stop_id), breezway_lock_visible: false).pluck(:id) : []
-    
+
     tour_stops.map do |x|
       if (x.is_a? Tour)
         filtered_stops << x
@@ -965,7 +1226,7 @@ s  end
                 unshift_times += 1
               elsif self_start_time > missing_start_time && (self_start_time < missing_end_time && self_end_time >= missing_end_time) # for right between slot
                 missing_slots = missing_slots - [missing_slot_arr]
-                missing_slots.unshift( [missing_slot_arr[0], arr[0]] )  
+                missing_slots.unshift( [missing_slot_arr[0], arr[0]] )
                 unshift_times += 1
               elsif ( self_start_time >= missing_start_time && self_start_time <= missing_end_time) && ( self_end_time <= missing_end_time && self_end_time > missing_start_time) # for between slot
                 missing_slots = missing_slots - [missing_slot_arr]
@@ -984,7 +1245,7 @@ s  end
           end
         end
         slots_from_missing_slots = make_slots_from_missing_time_slots(unshift_times, free_slot_of_guided[date]['start_time'], free_slot_of_guided[date]['end_time'], missing_slots, current_date_time_slots, yardi_guided_time_slots_hash[date])
-        merge_both_slots[date] = slots_from_missing_slots 
+        merge_both_slots[date] = slots_from_missing_slots
 
       end
     end
@@ -1007,12 +1268,12 @@ s  end
         end
       elsif allow_self_tour && yardi_self_time_slots.any? && allow_guided_tour && yardi_guided_time_slots.any? && self_tour_data.present? && guided_tour_data.present?
         yardi_self_time_slots = maintain_datetime_according_to_yardi(yardi_self_time_slots)
-        yardi_guided_time_slots = maintain_datetime_according_to_yardi(yardi_guided_time_slots) 
+        yardi_guided_time_slots = maintain_datetime_according_to_yardi(yardi_guided_time_slots)
         yardi_self_time_slots_hash = fetch_hash_from_slots(yardi_self_time_slots)
         yardi_self_time_slots_hash = remove_slots_according_to_pynwheel(yardi_self_time_slots_hash, self_tour_data)
         yardi_guided_time_slots_hash = fetch_hash_from_slots(yardi_guided_time_slots)
         yardi_guided_time_slots_hash = remove_slots_according_to_pynwheel(yardi_guided_time_slots_hash, guided_tour_data)
-        # Now For Testing purpose merge self into guided 
+        # Now For Testing purpose merge self into guided
         merged_slots = merge_both_self_and_guided_slots(yardi_self_time_slots_hash, yardi_guided_time_slots_hash)
         slots = return_final_slots(merged_slots, stepping)
         slots.each {|date,two_d_array| slots[date] = two_d_array.flatten }
@@ -1191,7 +1452,7 @@ s  end
     building_list = building_list.map {|i| i.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(building_list).sort.map{|x,y| y}
     if sorted_building.present?
       if (building_list - sorted_building != [] )
-        building_list = (sorted_building) + (building_list - sorted_building) 
+        building_list = (sorted_building) + (building_list - sorted_building)
       elsif sorted_building - building_list != []
         building_list = (building_list & sorted_building)
       else
@@ -1232,7 +1493,7 @@ s  end
               unless opening_minute < 60
                 opening_hour +=1
                 opening_minute = (opening_minute - 60)
-              end                
+              end
             else
               opening_hour = opening_hour + 1
               opening_minute = (opening_minute + steps) - 60
@@ -1272,7 +1533,7 @@ s  end
       pm_hour = "0" + hour.to_s
       hour = hour < 10 ? pm_hour : hour.to_s
       return hour, "pm"
-    end  
+    end
   end
 
   def maintain_datetime_according_to_yardi(yardi_time_slots)
@@ -1281,8 +1542,8 @@ s  end
     end
   end
 
-  # Yardi sending us faulty date means they are not giving us date in am/pm so repeatedly calls we see from 8 to 12 time is always in am 
-  # and 01 to 07 its always in pm 
+  # Yardi sending us faulty date means they are not giving us date in am/pm so repeatedly calls we see from 8 to 12 time is always in am
+  # and 01 to 07 its always in pm
   def yardi_required_format(faulty_date, date_type)
     hour, minute = faulty_date.split(":")[0].to_i, faulty_date.split(":")[1]
     if hour >= 8 && hour <= 12
@@ -1299,7 +1560,7 @@ s  end
     end
     yardi_s_hash
   end
-  
+
   def fetch_missing_slots(yardi_time_slots_per_day)
     missing_slots = []
     last_time = yardi_time_slots_per_day.first.last
@@ -1314,7 +1575,7 @@ s  end
       end
     else
       missing_slots << [yardi_time_slots_per_day.first.first, last_time]
-    end 
+    end
     missing_slots
   end
 
@@ -1418,7 +1679,7 @@ s  end
       k+=1
     end
     slots += future_slot_from_self
-    slots = [[slots.first.first, slots.last.last]] #if missing_slots_length <= 1 **** Need to make more perfect it according to diff scenarios ******* 
+    slots = [[slots.first.first, slots.last.last]] #if missing_slots_length <= 1 **** Need to make more perfect it according to diff scenarios *******
     return slots
   end
 
@@ -1437,7 +1698,7 @@ s  end
   def remove_slots_according_to_pynwheel(yardi_time_slots_hash, pynwheel_tour_data)
     week_available_slot_hash = {}
     pynwheel_tour_data.each do |arr|
-      week_available_slot_hash[arr[0]] = [arr[1], arr[2]] 
+      week_available_slot_hash[arr[0]] = [arr[1], arr[2]]
     end
     slot_hash = {}
     yardi_time_slots_hash.each do |slot_date, slots_arr|
@@ -1482,14 +1743,14 @@ s  end
     if positions.include?(1) && attributes['display_unit_on_homepage']
       errors[:base] << "Position 1 has already been taken."
     end
-    if positions.include?(2) && attributes['display_gallery_on_homepage']  
+    if positions.include?(2) && attributes['display_gallery_on_homepage']
       errors[:base] << "Position 2 has already been taken."
     end
   end
 
   def turn_off_chat
-     # doesn't matter whether chat was enabled or not, 
-     # just turn the chat OFF for every CMS user and 
+     # doesn't matter whether chat was enabled or not,
+     # just turn the chat OFF for every CMS user and
      # for all mobile users of this community
     if self.id.present?
       CommunityUser.where(community_id: self.id).update_all(is_logged_in: false)

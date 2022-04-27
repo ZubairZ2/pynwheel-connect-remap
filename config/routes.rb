@@ -1,5 +1,9 @@
 Rails.application.routes.draw do
 
+  use_doorkeeper scope: 'api/v2/auth' do
+    skip_controllers :applications
+  end
+
   get 'crm_providers/update'
 
   get 'tutorial/index'
@@ -27,7 +31,7 @@ Rails.application.routes.draw do
   post :flag_id_mismatch, to: 'tours#flag_id_mismatch'
 
   get 'tours/index'
-  post 'tours/customize_tour', to: 'tours#customize_tour' 
+  post 'tours/customize_tour', to: 'tours#customize_tour'
   delete 'tours/reset_to_standard_tour', to: 'tours#reset_to_standard_tour'
 
   namespace :scheduler_widget do
@@ -65,7 +69,7 @@ Rails.application.routes.draw do
     collection do
       get :get_regions
     end
-    member do 
+    member do
       get :generate_csv
       get :generate_csv_for_scheduled_records
     end
@@ -558,6 +562,76 @@ Rails.application.routes.draw do
       end
     end
 
+    namespace :v2 do
+      post '/communities/:community_id/update_galleries', to: 'galleries#update_galleries'
+      get '/communities/:community_id/community_data_provider', to: 'data_providers#get_community_data_provider'
+      post '/communities/:community_id/update_data_provider', to: 'data_providers#update_data_provider_and_credentials'
+      get '/communities/:community_id/test_connection', to: 'data_providers#test_connection'
+      resources :user_details do
+        member do
+          put :update_company
+        end
+      end
+      resources :communities do
+        resources :community_property_map
+        delete :delete_property_map, to: 'community_property_map#delete_property_map'
+        delete :delete_label_image, to: 'community_property_map#delete_label_image'
+        delete :change_property_type, to: 'community_property_map#change_property_type'
+        post :add_property_images, to: 'community_property_map#add_property_images'
+        resources :opening_hours
+        post :create_opening_hours, to: 'opening_hours#create_opening_hours'
+        delete :delete_opening_hours, to: 'opening_hours#delete_opening_hours'
+        resources :secure_locks
+        post :add_tour_step_details, to: 'portal_tours#add_tour_step_details'
+        get :get_tour_step_details, to: 'portal_tours#get_tour_step_details'
+        delete :delete_tour_stop_gallery, to: 'portal_tours#delete_tour_stop_gallery'
+        delete :delete_tour_stop, to: 'portal_tours#delete_tour_stop'
+        post :add_secure_locks, to: 'secure_locks#add_secure_locks'
+        delete :delete_secure_lock, to: 'secure_locks#delete_secure_lock'
+        delete :delete_lock_files, to: 'secure_locks#delete_lock_files'
+        post :send_follow_up_emails, to: 'follow_up_emails#send_follow_up_emails'
+        get :preview_follow_up_email, to: 'follow_up_emails#preview_follow_up_email'
+        resources :community_floor_plans do
+          member do
+            delete :delete_floorplan_amenity
+            delete :delete_floorplan_image
+          end
+        end
+        post :add_floorplan, to: 'community_floor_plans#add_floorplan'
+        resources :pynwheel_touch_homepage do
+          member do
+            delete :delete_homepage_video
+          end
+        end
+        delete :delete_home_page_image, to: 'pynwheel_touch_homepage#delete_home_page_image'
+        post :add_homepage_design, to: 'pynwheel_touch_homepage#add_homepage_design'
+        post :change_default_design, to: 'pynwheel_touch_homepage#change_default_design'
+        member do
+          get  :get_pynwheel_touch_hardware_spec, to: 'hardware_specs#get_pynwheel_touch_hardware_spec'
+          post :add_pynwheel_touch_hardware_spec, to: 'hardware_specs#add_pynwheel_touch_hardware_spec'
+          delete :delete_pynwheel_touch_hardware_spec, to: 'hardware_specs#delete_pynwheel_touch_hardware_spec'
+          post :add_comment
+          post :get_products
+          post :update_status_and_remarks
+          post :move_to_production
+          put :update_products
+          get :get_community_detail_forms
+        end
+        resources :galleries do
+          member do
+            delete :delete_gallery_image
+          end
+        end
+        resources :data_providers
+
+      end
+      resources :access_token do
+        collection do
+          post :revoke
+        end
+      end
+    end
+
     namespace :v1 do
       post :authorize, to: 'schedule_tours#authorize_vendor'
       get :properties, to: 'schedule_tours#communities'
@@ -625,7 +699,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :tours,only: :index do
+      resources :tours, only: :index do
         collection do
           post :tour_user_login
           post :start_tour_auto_message
@@ -652,7 +726,7 @@ Rails.application.routes.draw do
       post '/mis_match_verification', to: 'tours#mis_match_verification'
       get '/path/:floorplate_id', to: 'wayfinding#floorplate_path_points'
 
-      # 
+      #
       post :save_tour_history, to: 'tour_histories#save_tour_history'
       post :alerts_during_tour, to: 'tour_histories#alerts_during_tour'
       get :get_tour_history, to: 'tour_histories#get_tour_history'

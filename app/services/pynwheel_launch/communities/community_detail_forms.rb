@@ -1,0 +1,292 @@
+class PynwheelLaunch::Communities::CommunityDetailForms
+  def initialize(community)
+    @community = community
+  end
+
+  def get_community_detail_forms(products)
+    community_products = products
+    detail_forms = mendatory_detail_forms
+    forms_for_touch_app(community_products).each {|x| detail_forms << x} if products.include?("pynwheel_touch")
+    forms_for_self_tour(community_products).each {|a| detail_forms << a} if products.include?("self_tour")
+    detail_forms
+  end
+
+  def update_status_and_remarks detail_type, status, remarks
+    case detail_type
+    when COMPANY_DETAILS
+      update_company_status_and_remarks(status, remarks)
+    when COMMUNITY_DETAILS
+      update_community_status_and_remarks(status, remarks)
+    when PROPERTY_MAP_IMAGES
+      update_property_map_status_and_remarks(status, remarks)
+    when FLOORPLAN_IMAGES
+      update_floorplan_status_and_remarks(status, remarks)
+    when PROPERTY_MANAGEMENT_SYSTEM
+      update_data_provider_status_and_remarks(status, remarks)
+    when LOCK_PROVIDER
+      update_lock_providers_status_and_remarks(status, remarks)
+    when TOUR_STOPS
+      update_tour_stops_status_and_remarks(status, remarks)
+    when VISITING_HOURS
+      update_visiting_hours_status_and_remarks(status, remarks)
+    when TOUCH_GALLERY_MEDIA
+      update_touch_gallery_media_status_and_remarks(status, remarks)
+    when TOUCH_HOME_PAGE_MEDIA
+      update_home_page_media_status_and_remarks(status, remarks)
+    when HARDWARE_SPECS
+      update_hardware_specs_status_and_remarks(status, remarks)
+    end
+  end
+
+  def mendatory_detail_forms
+    [
+      {
+        name: COMPANY_DETAILS,
+        status: company_status
+      },
+      {
+        name: COMMUNITY_DETAILS,
+        status: community_status
+      },
+      {
+        name: PROPERTY_MAP_IMAGES,
+        status: property_map_status
+      },
+      {
+        name: FLOORPLAN_IMAGES,
+        status: floorplan_status
+      },
+      {
+        name: PROPERTY_MANAGEMENT_SYSTEM,
+        status: data_provider_status
+      }
+    ]
+  end
+
+  def forms_for_self_tour(products)
+    return unless products.include?("self_tour")
+
+    [
+      {
+        name: LOCK_PROVIDER,
+        status: lock_providers_status
+      },
+      {
+        name: TOUR_STOPS,
+        status: tour_stops_status
+      },
+      {
+        name: VISITING_HOURS,
+        status: visiting_hours_status
+      }
+    ]
+  end
+
+  def forms_for_touch_app(products)
+    return unless products.include?("pynwheel_touch")
+
+    [
+      {
+        name: TOUCH_GALLERY_MEDIA,
+        status: touch_gallery_media_status
+      },
+      {
+        name: TOUCH_HOME_PAGE_MEDIA,
+        status: home_page_media_status
+      },
+      {
+        name: HARDWARE_SPECS,
+        status: hardware_specs_status
+      }
+    ]
+  end
+
+  private
+
+  def company_status
+    return [] if @community.company.blank?
+    [@community&.company&.status&.status_and_remarks_obj]
+  end
+
+  def community_status
+    return [] if @community.status.blank?
+    [@community&.status&.status_and_remarks_obj]
+  end
+
+  def property_map_status
+    if @community.is_sitemap
+      sitemap = @community.sitemap
+      [sitemap&.status&.status_and_remarks_obj]
+    elsif @community.has_floorplates?
+      floorplates = @community.floorplates
+      floorplate_status = floorplates.map {|floorplate| floorplate&.status&.status_and_remarks_obj rescue nil}
+      floorplate_status.compact.uniq
+    end
+  end
+
+  def floorplan_status
+    return [] if @community.floorplans.blank?
+    floorplans = @community.floorplans
+    floorplan_status = floorplans.map {|floorplan| floorplan&.status&.status_and_remarks_obj rescue nil}
+    floorplan_status.compact.uniq
+  end
+
+  def data_provider_status
+    return [] if @community.data_provider.blank? && @community.credential.blank?
+    data_provider_status = []
+    data_provider_status << @community.credential&.status&.status_and_remarks_obj rescue nil
+
+    if @community.credential&.use_different_crm_provider
+      data_provider_status << @community.crm_credential&.status&.status_and_remarks_obj rescue nil
+    end
+
+    data_provider_status.compact.uniq
+  end
+
+  def visiting_hours_status
+    return [] if @community.opening_hours.blank? && @community.guided_opening_hours.blank?
+    visiting_hours_status = []
+    self_visiting_hours = @community.opening_hours
+    guided_visiting_hours = @community.guided_opening_hours
+    visiting_hours_status << self_visiting_hours.map {|oh| oh&.status&.status_and_remarks_obj rescue nil} if self_visiting_hours.present?
+    visiting_hours_status << guided_visiting_hours.map {|gh| gh&.status&.status_and_remarks_obj rescue nil} if guided_visiting_hours.present?
+    visiting_hours_status.flatten.compact.uniq
+  end
+
+  def touch_gallery_media_status
+    return [] if @community.galleries.blank?
+    galleries = @community.galleries
+    gallery_media_status = galleries.map {|gallery| gallery&.status&.status_and_remarks_obj rescue nil} if galleries.present?
+    gallery_media_status.compact.uniq
+  end
+
+  def hardware_specs_status
+    return [] if @community.design.blank?
+    hardware_spec = @community.design.pynwheel_touch_hardware_spec
+    hardware_status = hardware_spec.present? ? @community&.design&.status&.status_and_remarks_obj : nil
+    [hardware_status].compact
+  end
+
+  def home_page_media_status
+    return [] if @community.design.blank? && @community.design&.home_page_images.blank? && @community.design&.home_page_video.blank?
+    home_page_images = @community.design.home_page_images
+    home_page_video = @community.design.home_page_video
+    home_page_medias_status = home_page_images.map {|hp_img| hp_img&.status&.status_and_remarks_obj rescue nil} if home_page_images.present?
+    home_page_medias_status << home_page_video&.status&.status_and_remarks_obj rescue nil if home_page_video.present?
+    home_page_medias_status.compact.uniq rescue []
+  end
+
+  def tour_stops_status
+    return [] if @community.portal_tour&.portal_tour_stops.blank?
+    tour_stops = @community.portal_tour&.portal_tour_stops
+    
+    tour_stops_status = tour_stops.map {|ts| ts&.status&.status_and_remarks_obj rescue nil}
+    tour_stops_status.compact.uniq
+  end
+
+  def lock_providers_status
+    return [] if @community.zerv.blank? && @community.latch.blank? && @community.dwelo.blank? && @community.edge_state.blank? && @community&.edge_state&.remote_locks.blank?
+    
+    locks_status = []
+    
+    zerv = @community.zerv
+    latch = @community.latch
+    dwelo = @community.dwelo
+    remote_locks = @community.edge_state&.remote_locks
+
+    locks_status << zerv&.status&.status_and_remarks_obj rescue nil if zerv.present?
+    locks_status << latch&.status&.status_and_remarks_obj rescue nil if latch.present?
+    locks_status << dwelo&.status&.status_and_remarks_obj rescue nil if dwelo.present?
+    
+    unless remote_locks.nil?
+      remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status_and_remarks_obj rescue nil}
+    end
+
+    locks_status.compact.uniq
+  end
+
+  def update_company_status_and_remarks status, remarks
+    return if @community.company.status.blank?
+    @community&.company&.status.update_attributes(status: status, remarks: remarks)
+  end
+
+  def update_community_status_and_remarks status, remarks
+    return if @community.status.blank?
+    @community&.status.update_attributes(status: status, remarks: remarks)
+  end
+
+  def update_property_map_status_and_remarks status, remarks
+    if @community.is_sitemap
+      @community.sitemap&.status.update_attributes(status: status, remarks: remarks)
+    elsif @community.has_floorplates?
+      @community.floorplates.each {|floorplate| floorplate&.status.update_attributes(status: status, remarks: remarks) }
+    end
+  end
+
+  def update_floorplan_status_and_remarks status, remarks
+    return if @community.floorplans.blank?
+    @community.floorplans.each {|floorplan| floorplan&.status.update_attributes(status: status, remarks: remarks) }
+  end
+
+  def update_data_provider_status_and_remarks status, remarks
+    return if @community.data_provider.blank? && @community.credential.blank?
+    
+    @community.credential&.status.update_attributes(status: status, remarks: remarks) 
+    @community.crm_credential&.status.update_attributes(status: status, remarks: remarks) if @community.credential&.use_different_crm_provider
+  end
+
+  def update_visiting_hours_status_and_remarks status, remarks
+    return if @community.opening_hours.blank? && @community.guided_opening_hours.blank?
+
+    @community&.opening_hours.each {|oh| oh&.status.update_attributes(status: status, remarks: remarks) } if @community&.opening_hours.present?
+    @community&.guided_opening_hours.each {|gh| gh&.status.update_attributes(status: status, remarks: remarks) } if @community&.guided_opening_hours.present?
+  end
+
+  def update_touch_gallery_media_status_and_remarks status, remarks
+    return if @community.galleries.blank?
+    @community&.galleries.map {|gallery| gallery&.status.update_attributes(status: status, remarks: remarks) } if @community&.galleries.present?
+  end
+
+  def update_hardware_specs_status_and_remarks status, remarks
+    return if @community.design.blank?
+    @community&.design&.status.update_attributes(status: status, remarks: remarks) if @community.design.pynwheel_touch_hardware_spec.present?
+  end
+
+  def update_home_page_media_status_and_remarks status, remarks
+    return if @community.design.blank? && @community.design&.home_page_images.blank? && @community.design&.home_page_video.blank?
+    
+    home_page_images = @community&.design&.home_page_images
+    home_page_video = @community&.design&.home_page_video
+
+    home_page_images.map {|hp_img| hp_img&.status.update_attributes(status: status, remarks: remarks) } if home_page_images.present?
+    home_page_video&.status.update_attributes(status: status, remarks: remarks) if home_page_video.present?
+  end
+
+  def update_tour_stops_status_and_remarks status, remarks
+    return if @community.portal_tour&.portal_tour_stops.blank?
+    tour_stops = @community.portal_tour&.portal_tour_stops
+    tour_stops.map do |ts|
+      unless ts.status.nil?
+        ts&.status.update_attributes(status: status, remarks: remarks)
+      end
+    end
+  end
+
+  def update_lock_providers_status_and_remarks status, remarks
+    return if @community.zerv.blank? && @community.latch.blank? && @community.dwelo.blank? && @community.edge_state.blank? && @community&.edge_state&.remote_locks.blank?
+    
+    zerv = @community.zerv
+    latch = @community.latch
+    dwelo = @community.dwelo
+    remote_locks = @community.edge_state&.remote_locks
+
+    zerv&.status.update_attributes(status: status, remarks: remarks) if zerv.present?
+    latch&.status.update_attributes(status: status, remarks: remarks) if latch.present?
+    dwelo&.status.update_attributes(status: status, remarks: remarks) if dwelo.present?
+    
+    unless remote_locks.nil?
+      remote_locks.each {|remote_lock| remote_lock&.status.update_attributes(status: status, remarks: remarks) }
+    end
+  end
+
+end

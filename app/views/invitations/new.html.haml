@@ -12,7 +12,7 @@
       .col-md-8.col-lg-5.col-sm-12.col-xs-12
         .text-center
           %h3 Send Invitation
-        = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f| 
+        = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f|
           .form-group
             - if current_user.is_super_admin?
               = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
@@ -20,34 +20,43 @@
               = f.select :role, options_for_select(User::ROLES_DWELO_ADMIN,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
             - elsif current_user.is_community_admin?
               = f.select :role, options_for_select(User::ROLES_ADMIN,f.object.role),{},{class: "form-control validate[required]"}
-          
-          .form-group
-            - if current_user.is_super_admin?
-              = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
-            - elsif current_user.is_dwelo_admin?
-              = f.select :company, options_for_select(current_user.dwelo_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
-          = hidden_field_tag "companies_hash", companies_hash.to_json
-          = f.hidden_field "company_id"
-          = f.hidden_field "region_id"
-          - if current_user.is_super_admin? || current_user.is_dwelo_admin? 
-            .form-group.region_select.hide_it
 
-          .row
+          .company-select-toggle{:style => "margin-top: 30px;margin-bottom: 30px;"}
+            %label Select Company:
+            .form-check
+              %input#existingCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "existing", :checked => "checked"}/
+              %label.form-check-label{:for => "existingCompanyToggle"}
+                Existing
+            .form-check
+              %input#newCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "new"}/
+              %label.form-check-label{:for => "newCompanyToggle"}
+                New
+
+          .pynwheel-new-company-form{:style => "display: table; width: 100%;"}
+            %div{style: "width: auto"}
+              %label Company Name
+              .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row
+                = text_field_tag "new_company_name", nil, :name => "user[new_company_name]", :class=>"form-control", :placeholder=>"Enter new company name"
+
+            %div{style: "width: auto"}
+              %label Community Names
+              .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row
+                = text_field_tag "new_community_names", nil,:name => "user[new_community_names]",:class=>"form-control" ,:placeholder=>"Enter new community names"
+
+          .pynwheel-existing-company-form
             .form-group
-              .row
-                .col-lg-6.col-sm-6.col-xs-6.col-md-6
-                  %p{:style => "text-align: center;"} Listed Communities
-                .col-lg-6.col-sm-6.col-xs-6.col-md-6
-                  %p{:style => ""} Selected Communities
-              .col-sm-12.col-xs-12.col-lg-12.col-md-12
-              .col-sm-1.col-xs-1.col-lg-12.col-md-12
-              .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
-                = f.select :community_ids, options_for_select(''),{},{class: "form-control communities_box",:multiple=>true}
-          %br
-          .chat_feature
-            .row{:style => "text-align: center; margin-top: 50px; margin-bottom: 30px;"}
-              %label
-                Enable Chat
+              - if current_user.is_super_admin?
+                = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
+              - elsif current_user.is_dwelo_admin?
+                = f.select :company, options_for_select(current_user.dwelo_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
+
+            = hidden_field_tag "companies_hash", companies_hash.to_json
+            = f.hidden_field "company_id"
+            = f.hidden_field "region_id"
+
+            - if current_user.is_super_admin? || current_user.is_dwelo_admin?
+              .form-group.region_select.hide_it
+
             .row
               .form-group
                 .row
@@ -58,28 +67,90 @@
                 .col-sm-12.col-xs-12.col-lg-12.col-md-12
                 .col-sm-1.col-xs-1.col-lg-12.col-md-12
                 .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
-                  = select_tag :chat_community_ids, options_for_select(''),{class: "form-control communities_box",:multiple=>true}
-          
+                  = f.select :community_ids, options_for_select(''),{},{class: "form-control communities_box",:multiple=>true}
+            %br
+
+            .chat_feature
+              .row{:style => "text-align: center; margin-top: 50px; margin-bottom: 30px;"}
+                %label
+                  Enable Chat
+
+              .row
+                .form-group
+                  .row
+                    .col-lg-6.col-sm-6.col-xs-6.col-md-6
+                      %p{:style => "text-align: center;"} Listed Communities
+                    .col-lg-6.col-sm-6.col-xs-6.col-md-6
+                      %p{:style => ""} Selected Communities
+
+                  .col-sm-12.col-xs-12.col-lg-12.col-md-12
+                  .col-sm-1.col-xs-1.col-lg-12.col-md-12
+                  .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
+                    = select_tag :chat_community_ids, options_for_select(''),{class: "form-control communities_box",:multiple=>true}
+
           %br
-          .form-group
-            = f.email_field :email, :class=>"form-control validate[required,custom[email]]", :placeholder=>"Email",:maxlength=>"50", autofocus: true
-            %i.fa.fa-envelope    
-          = f.submit "Send Invitation", :class=>"btn btn-primary btn-block"
+
+          = render :partial=> 'product_options'
+
+          = hidden_field_tag "product_options", product_defualt_options.to_json
+
+          %br
+          .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row{style: "display: inline-flex;width: 100%;"}
+            %span.to-input.fa.fa-envelope
+            .all-mail
+            = f.text_area :email, name: "user[email]", :class=>"form-control", :placeholder=>"Email",:maxlength=>"50", autofocus: true
+
+          %input.to-submit-id{:name => "to_sumbit", :type => "hidden"}/
+          -# %button.btn.btn-primary.btn-block#invitation-submit-btn{ type: 'button' } Submit
+
+          = f.submit "Send Invitation", :class=>"btn btn-primary btn-block invitation-submit-btn"
           = link_to "Cancel", company_employees_path(current_company), :class=>"btn btn-default btn-block"
         .text-center
           %p.copy-right © 2018 Pynwheel
+
+
 :javascript
+  var emails = [];
+  $(".enter-mail-id").keydown(function (e) {
+    if (e.keyCode == 13 || e.keyCode == 32) {
+      //alert('You Press enter');
+    var getValue = $(this).val().trim();
+    if (getValue) {
+      $('.all-mail').append('<span class="email-ids">'+ getValue +' <span class="cancel-email" data-email-to-cancel="'+ getValue +'">x</span></span>');
+      emails.push(getValue)
+      $(".to-submit-id").val(emails.join(','))
+      $(this).val('');
+    }
+    }
+  });
+  $(document).on('click','.cancel-email',function(){
+    var toCancel = $(this).data('email-to-cancel');
+    $(this).parent().remove();
+    emails = emails.filter(function(elem){
+      return elem != toCancel;
+    });
+    $(".to-submit-id").val(emails.join(','))
+  });
+
   $('#user_community_ids').multiSelect();
   $('#chat_community_ids').multiSelect();
 
+  var defaultProductOptionsJson = JSON.parse($('input[name=product_options]').val());
+  var updatedProductOptionsJson = defaultProductOptionsJson
+
+  productDefaultOptions();
+
+  $(".invitation-submit-btn").on('click', function() {
+    setProductOptions();
+  });
+
   $(".company_list").change(function(){
     console.log("change called")
-
     companies_obj = JSON.parse($('#companies_hash').val())
     company_name = $(this).val()
     company_id = companies_obj[company_name]
     $('#user_company_id').val(company_id)
-  
+
     user_role = $('#user_role').val()
     if (is_regional_admin(user_role)){
       add_region()
@@ -92,7 +163,7 @@
     if (!is_visitor_detail(user_role)){
       $('#chat_community_ids').multiSelect('removeAllOptions');
       for(i = 0; i < $('#user_community_ids :selected').length ; i++)
-      { 
+      {
         $('#chat_community_ids').multiSelect('addOption', { value: $('#user_community_ids :selected')[i].value, text: $('#user_community_ids :selected')[i].text });
       }
     }
@@ -115,6 +186,44 @@
       $('.region_select').addClass('hide_it')
       add_or_replace_options()
     }
+
+    handleProductOptionBasedOnUserRole(user_role);
+  });
+
+  $("#additional-services").on('change', function() {
+    handleAdditionaServicesOptionsVisibility(this.checked);
+  });
+
+  $("#graphic-design-services").on('change', function() {
+    handleGraphicDesignServicesOptionsVisibility(this.checked);
+  });
+
+  $("#pynwheel-access-other").on('change', function() {
+    handelPynwheelAccessOtherOptionsVisibility(this.checked);
+  });
+
+  $("#pynwheel-access").on('change', function() {
+    handlePynwheelAccessOptionsVisibility(this.checked);
+  });
+
+  $("#pynwheel-remote-lock").on('change', function() {
+    handlePynwheelRemoteLockOptionsVisibility(this.checked);
+  });
+
+  $("#pynwheel-self-tour-hardware").on('change', function() {
+     handlePynwheelSelfTourHardwareOptionsVisibility(this.checked);
+  });
+
+  $("#pynwheel-self-tour").on('change', function() {
+    handlePynwheelSelfTourOptionsVisibility(this.checked);
+  });
+
+  $("#pynwheel-touch").on('change', function() {
+    handlePynwheelTouchOptionsVisibility(this.checked);
+  });
+
+  $('input[type=radio][name=companySelectToggle]').change(function() {
+    handleCompanyFormVisibility(this.value);
   });
 
   $(document).on('change', '#regions', function() {
@@ -122,9 +231,309 @@
       $('#user_region_id').val($('#regions').val())
     else
       $('#user_region_id').val("")
-      
+
     add_or_replace_options()
   });
+
+  function handleProductOptionBasedOnUserRole(role) {
+    if(role == 'New Client') {
+      $("#product_options").removeClass("hide");
+    } else {
+      $("#product_options").addClass("hide");
+    }
+  }
+
+  function productDefaultOptions() {
+    let defaultOption = false;
+
+    //User role
+    handleProductOptionBasedOnUserRole("");
+
+    //Pynwheel touch options
+    handlePynwheelTouchOptionsVisibility(defaultOption);
+
+    //Pynwheel self tour options
+    handlePynwheelSelfTourOptionsVisibility(defaultOption);
+    handlePynwheelSelfTourHardwareOptionsVisibility(defaultOption);
+    handlePynwheelRemoteLockOptionsVisibility(defaultOption);
+    handlePynwheelAccessOptionsVisibility(defaultOption);
+    handelPynwheelAccessOtherOptionsVisibility(defaultOption);
+
+    //Graphic Design
+    handleGraphicDesignServicesOptionsVisibility(defaultOption);
+
+    //Additional Options
+    handleAdditionaServicesOptionsVisibility(defaultOption);
+
+    handleCompanyFormVisibility("existing");
+
+  }
+
+  function setProductOptions() {
+    if(user_role == 'New Client') {
+      selfTourOptions();
+      pynwheelTouchOptions();
+      pynwheelMapOptions();
+      graphicDesignServicesOptions();
+      additionalServicesOptions();
+      isDweloCommunity();
+    }
+    else {
+      updatedProductOptionsJson = defaultProductOptionsJson;
+    }
+    $('input[name=product_options]').val(JSON.stringify(updatedProductOptionsJson))
+  }
+
+  function isDweloCommunity() {
+    if ( $("#pynwheel-dwelo-community-option").prop('checked') ) {
+      updatedProductOptionsJson["dwelo_community"] = true;
+
+    } else {
+      updatedProductOptionsJson["dwelo_community"] = false;
+    }
+  }
+
+  function setRemoteLockDefaultOption() {
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["is_enabled"] = false;
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["igloo"] = 0;
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["schlage"] = 0;
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["yale"] = 0;
+  }
+
+  function setLatchDefaultOption( is_selected = false) {
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["igloo"] = is_selected;
+  }
+
+  function setIglooDefaultOption( is_selected = false) {
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["latch"] = is_selected;
+  }
+
+
+  function pynwheelAccessDefaultOptions() {
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["is_enabled"] = false;
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["deadbolts"] = 0;
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["pyns"] = 0;
+    pynwheelAccessOtherDefaultOption();
+  }
+
+  function pynwheelAccessOtherDefaultOption() {
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["is_enabled"] = false;
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["options"]["type"] = "";
+    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["options"]["quantity"] = 0;
+  }
+
+  function pynwheelAccessOtherOption() {
+     if ( $("#pynwheel-access-other").prop('checked') ) {
+      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["is_enabled"] = true;
+      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["options"]["type"] = $("#other-type").val();
+      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["options"]["quantity"] =  parseInt( $("#other-quantity").val() );
+
+     } else {
+       pynwheelAccessOtherDefaultOption();
+     }
+  }
+
+  function pynwheelAccessOption() {
+    if ( $("#pynwheel-access").prop('checked') ) {
+      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["is_enabled"] = true;
+      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["deadbolts"] = parseInt( $("#deadbolts-quantity").val() );
+      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["pyns"] = parseInt( $("#pyns-quantity").val() );
+      pynwheelAccessOtherOption();
+
+    } else {
+      pynwheelAccessDefaultOptions();
+    }
+  }
+
+  function latchOption() {
+    if ( $("#pynwheel-latch").prop('checked') ) {
+      setLatchDefaultOption(true)
+    } else {
+      setLatchDefaultOption(false);
+    }
+  }
+
+  function iglooOption() {
+    if ( $("#pynwheel-igloo").prop('checked') ) {
+      setIglooDefaultOption(true)
+    } else {
+      setIglooDefaultOption(false);
+    }
+  }
+
+  function remoteLockOption() {
+    if ( $("#pynwheel-remote-lock").prop('checked') ) {
+      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["is_enabled"] = true;
+      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["igloo"] = parseInt( $("#igloo-quantity").val() );
+      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["schlage"] = parseInt( $("#yale-quantity").val() );
+      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["yale"] = parseInt( $("#schlage-quantity").val() );
+
+    } else {
+      setRemoteLockDefaultOption();
+    }
+  }
+
+  function hardwareOptions( isHardwareRequired ) {
+    if ( isHardwareRequired ) {
+      latchOption();
+      iglooOption();
+      pynwheelAccessOption();
+      remoteLockOption();
+
+    } else {
+      setLatchDefaultOption(false);
+      setIglooDefaultOption(false);
+      pynwheelAccessDefaultOptions();
+      setRemoteLockDefaultOption();
+    }
+  }
+
+  function isHardwareRequired( isSelfTourEnabled ) {
+    if ( isSelfTourEnabled ) {
+      if ( $("#pynwheel-self-tour-hardware").prop('checked') ) {
+        updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["is_enabled"] = true;
+        hardwareOptions( true );
+
+      } else {
+
+        updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["is_enabled"] = false;
+        hardwareOptions( false);
+      }
+
+    } else {
+      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["is_enabled"] = false;
+      setLatchDefaultOption(false);
+      setIglooDefaultOption(false)
+      pynwheelAccessDefaultOptions();
+      setRemoteLockDefaultOption();
+    }
+
+  }
+
+  function selfTourOptions() {
+    if ( $("#pynwheel-self-tour").prop('checked') ) {
+      updatedProductOptionsJson["product_options"]["self_tour"]["is_enabled"] = true;
+      isHardwareRequired( true );
+
+    } else {
+
+      updatedProductOptionsJson["product_options"]["self_tour"]["is_enabled"] = false;
+      isHardwareRequired( false );
+    }
+  }
+
+  function pynwheelTouchOptions() {
+    if ( $("#pynwheel-touch").prop('checked') ) {
+      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["is_enabled"] = true;
+      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["design_style"] = $("input[name='touchDesignStyleRadio']:checked").val();
+      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["hardware"] = $("input[name='touchScreenRadio']:checked").val();
+      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["installation"] = $("input[name='touchInstallationRadio']:checked").val();
+      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["stand"] = $("input[name='touchStandRadio']:checked").val();
+
+    } else {
+
+      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["is_enabled"] = false;
+      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["design_style"] = "Futurnist";
+      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["hardware"] = "No Touchscreen";
+      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["installation"] = "No";
+      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["stand"] = "Chief";
+
+    }
+  }
+
+  function pynwheelMapOptions() {
+    if ( $("#pynwheel-maps").prop('checked') ) {
+      updatedProductOptionsJson["product_options"]["pynwheel_maps"] = true;
+
+    } else {
+
+      updatedProductOptionsJson["product_options"]["pynwheel_maps"] = false;
+    }
+  }
+
+  function graphicDesignServicesOptions() {
+    if ( $("#graphic-design-services").prop('checked') ) {
+      updatedProductOptionsJson["product_options"]["graphic_design_services"]["is_enabled"] = true;
+      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["floorplans"]["2d"] = parseInt( $("#floor-plan-2d-quantity").val() );
+      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["floorplans"]["3d"] = parseInt( $("#floor-plan-3d-quantity").val() );
+      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["site_plan"] = parseInt( $("#site-plan-quantity").val() );
+
+    } else {
+
+      updatedProductOptionsJson["product_options"]["graphic_design_services"]["is_enabled"] = false;
+      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["floorplans"]["2d"] = 0;
+      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["floorplans"]["3d"] = 0;
+      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["site_plan"] = 0;
+
+    }
+  }
+
+  function additionalServicesOptions() {
+    if ( $("#additional-services").prop('checked') ) {
+      updatedProductOptionsJson["product_options"]["additional_options"]["is_enabled"] = true;
+      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["panoskin_tour_package"] = parseInt( $("#panoskin-tour-package-quantity").val() );
+      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["photography"] = parseInt( $("#photography-quantity").val() );
+      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["virtual_staging"] = parseInt( $("#virtual-staging-quantity").val() );
+
+    } else {
+
+      updatedProductOptionsJson["product_options"]["additional_options"]["is_enabled"] = false;
+      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["panoskin_tour_package"] = 0;
+      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["photography"] = 0;
+      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["virtual_staging"] = 0;
+    }
+  }
+
+  function handleCompanyFormVisibility(is_existing) {
+    if(is_existing == "existing") {
+      $(".pynwheel-existing-company-form").show();
+      $(".pynwheel-new-company-form").hide();
+    } else{
+      $(".pynwheel-existing-company-form").hide();
+      $(".pynwheel-new-company-form").show();
+    }
+  }
+
+  function handleAdditionaServicesOptionsVisibility(is_checked) {
+    productVisibilityHandler(".additional-services-options", is_checked)
+  }
+
+  function handleGraphicDesignServicesOptionsVisibility(is_checked) {
+    productVisibilityHandler(".graphic-design-services-options", is_checked);
+  }
+
+  function handelPynwheelAccessOtherOptionsVisibility(is_checked) {
+    productVisibilityHandler(".pynwheel-access-other-options", is_checked);
+  }
+
+  function handlePynwheelAccessOptionsVisibility(is_checked) {
+    productVisibilityHandler(".pynwheel-access-options", is_checked);
+  }
+
+  function handlePynwheelRemoteLockOptionsVisibility(is_checked) {
+    productVisibilityHandler(".pynwheel-remote-lock-options", is_checked);
+  }
+
+  function handlePynwheelSelfTourHardwareOptionsVisibility(is_checked) {
+    productVisibilityHandler(".pynwheel-self-tour-hardware-options", is_checked);
+  }
+
+  function handlePynwheelSelfTourOptionsVisibility (is_checked) {
+    productVisibilityHandler(".pynwheel-self-tour-sub-options", is_checked);
+  }
+
+  function handlePynwheelTouchOptionsVisibility(is_checked) {
+    productVisibilityHandler(".pynwheel-touch-sub-options", is_checked);
+  }
+
+  function productVisibilityHandler(selector, is_checked) {
+     if(is_checked) {
+      $(selector).removeClass("hide");
+    } else {
+      $(selector).addClass("hide");
+    }
+  }
+
 
   function enable_disable_communities(){
     user_role = $('#user_role').val()
@@ -142,15 +551,15 @@
   function add_or_replace_options(){
     var selected_company =  $(".company_list").val()
     user_role = $('#user_role').val()
-    if (is_regional_admin(user_role)){ 
+    if (is_regional_admin(user_role)){
       selected_region = $('#regions').val()
-      if ( $('#regions').length > 0  && selected_region.length == 0 ) 
+      if ( $('#regions').length > 0  && selected_region.length == 0 )
         selected_region = "false"
 
       data = { company: selected_company, region: selected_region}
       append_communities(data)
     }
-    else{ 
+    else{
       data = { company: selected_company }
       append_communities(data)
     }

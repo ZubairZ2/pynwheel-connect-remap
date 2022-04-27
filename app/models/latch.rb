@@ -2,6 +2,18 @@ class Latch < ApplicationRecord
   require 'csv'
   belongs_to :community
   has_many :latch_locks, dependent: :destroy
+  has_one :status, as: :statusable
+  mount_uploader :file, CsvfileUploader
+
+  def as_json
+    super(
+      :only => [:id, :client_id, :client_secret, :file ], :method => [:lock_type]
+    )
+  end
+
+  def lock_type
+    return LATCH
+  end
 
   def import_data(file)
       Thread.new do

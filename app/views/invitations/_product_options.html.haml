@@ -1,0 +1,13 @@
+#product_options{:style => "margin-left: 30px;margin-top: 0px; margin-bottom: 30px;"}
+  .row{:style => "margin-top: 30px;"}
+    %label
+      Product Options:
+    = render :partial=>'pynwheel_self_tour_options'
+    = render :partial=>'pynwheel_touch_options'
+    = render :partial=>'pynwheel_maps'
+    = render :partial=>'pynwheel_graphic_design_services'
+    = render :partial=>'pynwheel_additional_services'
+
+  .row{:style => "margin-top: 30px;"}
+    %input#pynwheel-dwelo-community-option{:name => "pynwheel-dwelo-community-option", :type => "checkbox"}
+    %label Dwelo Community

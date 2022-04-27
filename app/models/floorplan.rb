@@ -4,16 +4,25 @@ class Floorplan < ApplicationRecord
   mount_base64_uploader :secondary_image, AvatarUploader
   belongs_to :community
   has_many :amenities, as: :amenityable
-  validates_uniqueness_of :name, scope: :community, on: :create
-  validates_uniqueness_of :provider_floorplan_id, scope: :community
-  after_commit :populate_image_urls, on: [:create,:update]
-  validates :market_rent, :numericality => { greater_than_or_equal_to: -1 }
+  has_one :status, as: :statusable
+  validates_uniqueness_of :name, scope: :community, on: [:create, :update]
+  validates_uniqueness_of :provider_floorplan_id, scope: :community, if: -> { provider_floorplan_id.present? }
+  after_commit :populate_image_urls, on: [:create, :update]
+  validates :market_rent, :numericality => { greater_than_or_equal_to: -1 }, if: -> { market_rent.present? }
+  # before_create :set_image_name
   after_update :crop_image
   after_update :crop_secondary_image
 
+  def as_json
+    super(
+      :only => [:id, :name, :image], :include => {
+        :amenities => {:only => [:id  , :image] } }
+    )
+  end
+
   def populate_image_urls
     if image.present?
-      set_standard_url('Floorplan',id)
+      set_standard_url('Floorplan', id)
     end
   end
 
