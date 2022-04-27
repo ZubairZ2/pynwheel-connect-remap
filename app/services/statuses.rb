@@ -95,8 +95,9 @@ class Statuses
   end
 
   def set_tour_stops_status
-    unless @community.tour&.tour_stops.blank?
-      tour_stops = @community.tour.tour_stops.compact
+    @tour = @community.community_tour
+    unless @tour.tour_stops.blank?
+      tour_stops = @tour.tour_stops.compact
 
       tour_stops.each do |stop|
         @community.set_status_for_all(stop, @status, @current_user)
@@ -105,9 +106,9 @@ class Statuses
   end
 
   def set_visiting_hours_status
-    if @community.self_tour
-
-      if @community&.tour&.tour_setting&.allow_self_tour
+    @tour = @community.community_tour
+    if @tour.self_tour
+      if @tour&.tour_setting&.allow_self_tour
         unless @community&.opening_hours.blank?
           @community.opening_hours.each do |oh|
             @community.set_status_for_all(oh, @status, @current_user)
@@ -115,7 +116,7 @@ class Statuses
         end
       end
 
-      if @community&.tour&.tour_setting&.allow_guided_tour
+      if @tour&.tour_setting&.allow_guided_tour
         unless @community&.guided_opening_hours.blank?
           @community.guided_opening_hours.each do |gh|
             @community.set_status_for_all(gh, @status, @current_user)
