@@ -66,7 +66,7 @@ class Statuses
   end
 
   def set_data_provider_status
-    unless @community&.data_provider.blank? && @community&.credential.blank?
+    unless @community&.credential.blank?
       @community.set_status_for_all(@community.credential, @status, @current_user)
 
       if @community&.credential&.use_different_crm_provider
