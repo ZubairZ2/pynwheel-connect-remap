@@ -5,7 +5,7 @@ class Zerv < ApplicationRecord
 
   def as_json
     super(
-      :only => [:id, :badge_id, :facility_id, :card_format]
+      :only => [:id, :badge_id, :facility_id, :card_format, :username, :password]
     )
   end
 

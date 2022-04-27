@@ -184,10 +184,10 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
 
   def dwelo_lock(lock)
     unless @community.dwelo.present?
-      @community.build_dwelo(client_id: lock['client_id'], client_secret: lock['client_secret'])
+      @community.build_dwelo(client_id: lock['client_id'], client_secret: lock['client_secret'], default_community_id: lock['community_id'])
       @locks_provider << DWELO
     else
-      @community.dwelo.update(client_id: lock['client_id'], client_secret: lock['client_secret'])
+      @community.dwelo.update(client_id: lock['client_id'], client_secret: lock['client_secret'], default_community_id: lock['community_id'])
     end
   end
 
@@ -217,9 +217,9 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
 
   def zerv_lock(lock)
     unless @community.zerv.present?
-      @community.create_zerv(facility_id: lock['facility_id'], badge_id: lock['badge_id'], card_format: lock['card_format'])
+      @community.create_zerv(facility_id: lock['facility_id'], badge_id: lock['badge_id'], card_format: lock['card_format'], username: lock['username'], password: lock["password"])
     else
-    @community.zerv.update(facility_id: lock['facility_id'], badge_id: lock['badge_id'], card_format: lock['card_format'])
+    @community.zerv.update(facility_id: lock['facility_id'], badge_id: lock['badge_id'], card_format: lock['card_format'], username: lock['username'], password: lock["password"])
     end
   end
 
