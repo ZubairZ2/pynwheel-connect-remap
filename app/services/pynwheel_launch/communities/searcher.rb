@@ -236,8 +236,8 @@ class PynwheelLaunch::Communities::Searcher
 
   def tour_stops_status(community, statuses)
     @tour = community.community_tour
-    return [] if @tour.tour&.tour_stops.blank?
-    tour_stops = @tour.tour&.tour_stops
+    return [] if @tour.tour_stops.blank?
+    tour_stops = @tour.tour_stops
     tour_stops.map do |ts|
       if ts.status.present?
         statuses << ts&.status&.status
