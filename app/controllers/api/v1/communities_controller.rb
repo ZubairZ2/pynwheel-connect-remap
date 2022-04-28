@@ -409,18 +409,18 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def get_user_by_email
-    access = grant_access(decoded(params[:token])) rescue false
-    if api_access or access == true
+    if params[:user_email]
       @tour_user = TourUser.find_by(email: params[:user_email])
-        if @tour_user.present?
-          @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
-          @scheduled_tours = @tour_user.schedual_tours
-          render :json=> {status: true, user: @tour_user, code: 200, access_token: params[:token], visited_history: @visited_history, schedule_tour: @scheduled_tours.count}
-        else
-          render :json=> {status: false, error: "Email not found", code: 400}
-        end
+      if @tour_user.present?
+        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
+        @scheduled_tours = @tour_user.schedual_tours
+        token = encoded(@tour_user.id)
+        render :json => {status: true, user: @tour_user, code: 200, access_token: token, visited_history: @visited_history, schedule_tour: @scheduled_tours.count}
+      else
+        render :json => {status: false, error: "Email not found", code: 400}
+      end
     else
-        render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+      render :json => {status: false, error: "Email not provided", code: 400}
     end
   end
 
