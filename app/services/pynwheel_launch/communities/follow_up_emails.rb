@@ -79,10 +79,10 @@ class PynwheelLaunch::Communities::FollowUpEmails
   def forms_list
     detail_forms = mendatory_detail_forms
     pynwheel_touch_forms = forms_for_touch_app
-    pynwheel_touch_forms.each {|x| detail_forms << x} if @community.product_options.include?("pynwheel_touch")
+    pynwheel_touch_forms.each {|x| detail_forms << x} if @community.touchscreen_app
     self_tour_forms = forms_for_self_tour
 
-    if @community.product_options.include?("self_tour")
+    if @community.self_tour
       self_tour_forms.each do |x|
         detail_forms << x
       end
