@@ -16,9 +16,9 @@ class Sitemap < ApplicationRecord
   mount_uploader :label_image, SiteMapUploader
 
   belongs_to :community
-  has_many :amenities, as: :amenityable, dependent: :destroy
+  has_many :amenities, as: :amenityable
   has_many :elevators, dependent: :destroy
-  has_many :hallways, as: :parent, dependent: :destroy
+  has_many :hallways, as: :parent
   has_many :access_points, class_name: 'Door', as: :attached_with, dependent: :destroy
   has_one :status, as: :statusable
 
