@@ -146,7 +146,7 @@
                     -#- if counts[u.marketing_name] == 1
                     -#  %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u), :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
                     -#- else
-                    %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u),:display_as => :unit_market, :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
+                    %td= best_in_place u, :marketing_name, :url => community_unit_path(@community,u),:display_as => :provider_unit_id, :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil },:style => u.floorplan_id_is_updated? ? "color: #dd4a39;" : ""
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u),:display_as => :show_integer_rent, :data => {:rent => u.effective_rent },:style => u.effective_rent_is_updated? ? "color: #dd4a39;" : ""
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :place_holder => (u.sold  ? "Never Available" : "-"), :data => {:available_date => u.available_date },:style => u.available_date_is_updated? ? "color: #dd4a39;" : ""
@@ -179,7 +179,7 @@
                 DONE
 
 #modal-to-change-floor.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
         Set Floor
@@ -194,17 +194,20 @@
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
                 = check_box_tag 'unit_ids[]', unit.id,false,class: 'floor-checkbox mass-override'
-                = h unit.marketing_name  
+                - if @community.data_provider == "yardi"
+                  = h unit.provider_unit_id
+                - else
+                  = h unit.marketing_name  
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
 #modal-to-change-building.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
         Set Building
       = form_tag set_building_community_units_path(@community) do  
-        .modal-body.set-building-modal-body
+        .modal-body.set-floor-modal-body.set-building-modal-body
           = text_field_tag :building, nil,:class=>"form-control mb-20 validate[required]",:placeholder=>"Enter Building"
           .row
             .col-md-4
@@ -214,12 +217,15 @@
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
                 = check_box_tag 'unit_ids[]', unit.id,false,class: 'building-checkbox mass-override'
-                = h unit.marketing_name  
+                - if @community.data_provider == "yardi"
+                  = h unit.provider_unit_id
+                - else
+                  = h unit.marketing_name
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel          
 #modal-to-set-available-date.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
         Set Available Date
@@ -234,12 +240,15 @@
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
                 = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-date-checkbox mass-override'
-                = h unit.marketing_name  
+                - if @community.data_provider == "yardi"
+                  = h unit.provider_unit_id
+                - else
+                  = h unit.marketing_name 
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
 #modal-to-set-available.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
         Set Available
@@ -254,12 +263,15 @@
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
                 = check_box_tag 'unit_ids[]', unit.id,false,class: 'available-checkbox mass-override'
-                = h unit.marketing_name  
+                - if @community.data_provider == "yardi"
+                  = h unit.provider_unit_id
+                - else
+                  = h unit.marketing_name 
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
 #modal-to-set-manual-override.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
         Set Manual Override
@@ -274,12 +286,15 @@
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
                 = check_box_tag 'unit_ids[]', unit.id,false,class: 'manual-override-checkbox mass-override'
-                = h unit.marketing_name  
+                - if @community.data_provider == "yardi"
+                  = h unit.provider_unit_id
+                - else
+                  = h unit.marketing_name
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel                                   
 #modal-to-set-sold.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
         Set Sold
@@ -294,18 +309,22 @@
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
                 = check_box_tag 'unit_ids[]', unit.id,false,class: 'sold-checkbox mass-override'
-                = h unit.marketing_name  
+                - if @community.data_provider == "yardi"
+                  = h unit.provider_unit_id
+                - else
+                  = h unit.marketing_name
+
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
 
 #modal-to-add-description.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
         Add Description
       = form_tag add_description_community_units_path(@community) do
-        .modal-body.set-description-modal-body
+        .modal-body.set-floor-modal-body.set-description-modal-body
           = text_area :description, nil,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
           .row
             .col-md-4
@@ -315,13 +334,16 @@
             - units.each do |unit|
               .col-md-2.pt-5.pb-5
                 = check_box_tag 'unit_ids[]', unit.id,false,class: 'description-checkbox mass-override'
-                = h unit.marketing_name
+                - if @community.data_provider == "yardi"
+                  = h unit.provider_unit_id
+                - else
+                  = h unit.marketing_name
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
 
 #modal-to-set-image.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
         Upload Floor Plan Image
@@ -336,7 +358,10 @@
             - units.each do |unit|
               .col-md-3.pt-5.pb-5
                 = check_box_tag 'unit_ids[]', unit.id,false,class: 'image-checkbox mass-override'
-                = h unit.marketing_name
+                - if @community.data_provider == "yardi"
+                  = h unit.provider_unit_id
+                - else
+                  = h unit.marketing_name
         .modal-footer
           = submit_tag 'Submit',:class=>"btn btn-success"
           %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
@@ -557,9 +582,6 @@
       });
 
     });
-
-
-
 
     $('#best_in_place_unit_317_manual_override').change(function(){
       alert('okk');

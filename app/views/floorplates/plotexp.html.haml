@@ -141,17 +141,17 @@
                         - right = unit.y_plot - right_margin
 
                         %p{class: "marker", style: "left:#{unit.x_plot - left_margin }px; top:#{unit.y_plot - right_margin}px; position:absolute"}
-                          = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
+                          = link_to "javascript:void(0);", { id: "m_#{unit.provider_unit_id}", style: "font-size: #{fontsize}px", data_provider: @community.data_provider, provider_unit_id: unit.provider_unit_id, title: (unit.building.present? ? unit.building + '-' : '') + unit.marketing_name, data: {toggle: "tooltip", toggle: "modal", name: "plot", target: "#markers-modal", href: "/communities/#{@community.id}/units/#{unit.provider_unit_id}/remove_plot_from_floorplate?floorplate_id=#{params[:floorplate_id]}", horizontal: unit.x_plot, vertical: unit.y_plot, unit_form_url: "/communities/#{current_community.id}/units/#{unit.id}/adjust_position", plotted_category: "unit"}} do
                             %i{class: "fas fa-map-marker-alt", style: "color: #{marker_color};"}
 
                           - if !unit_door_exists and @community.self_tour and @community.auto_wayfinding
-                            = link_to "javascript:void(0);", { id: "plus_#{unit.provider_unit_id}", style: "margin-left: -6px;", title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}, onclick: 'plot_entry_point(event)'} do
+                            = link_to "javascript:void(0);", { id: "plus_#{unit.provider_unit_id}", style: "margin-left: -6px;", data_provider: @community.data_provider, provider_unit_id: unit.provider_unit_id, title:  "Click to plot this unit(s) door", data: {toggle: "tooltip", plotted_category: "create_unit_door"}, onclick: 'plot_entry_point(event)'} do
                               %i{class: "fa fa-plus-circle fa-xs", style: "color: #59de83; font-size: #{fontsize/2}px;" }
                             - unit_door_exists = false
 
                         - if unit_door_exists and @community.self_tour and @community.auto_wayfinding
                           - unit_door = unit.door
-                          = link_to "javascript:void(0);", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "unit_door"}} do
+                          = link_to "javascript:void(0);", { id: "door_#{unit.provider_unit_id}", class: "marker", style: "left:#{unit_door.x_plot}px; top:#{unit_door.y_plot}px; position:absolute; font-size: #{door_fontsize}px", data_provider: @community.data_provider, provider_unit_id: unit.provider_unit_id, title: "#{unit_door.name}", data: {door_id: "#{unit_door.id}", toggle: "tooltip", toggle: "modal", target: "#ajax-doors-detail-modal", plotted_category: "unit_door"}} do
                             %i{class: "fa fa-sign-in fa-xs", style: "color: #{door_marker_color};"}
 
                       - else
@@ -186,8 +186,11 @@
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
                     - if unit.building != nil && unit.building != ""
                       %option{:value => "#{unit.provider_unit_id}"}= "#{unit.building}-#{unit.marketing_name}"
-                    - else
-                      %option{:value => "#{unit.provider_unit_id}"}= unit.marketing_name
+                    - elsif @community.data_provider == "yardi"
+                      %option{:value => "#{unit.provider_unit_id}"}= unit.provider_unit_id
+                    - else 
+                      %option{:value => "#{unit.provider_unit_id}"}= "#{unit.marketing_name}"
+
                   - arr.push([unit.provider_unit_id, (unit.x_plot.to_i - left_margin ), (unit.y_plot.to_i - right_margin ), true, unit.id.to_s])
               %h5.mt-40.hidden SELECTED UNITS
               .add-plan.mt-10.mb-20
@@ -243,6 +246,8 @@
                   - if unit.x_plot.to_i + unit.y_plot.to_i == 0 and unit.provider_unit_id.present?
                     - if unit.building != nil && unit.building != ""
                       %option{:value=>unit.provider_unit_id}= "#{unit.building}-#{unit.marketing_name}"
+                    - elsif @community.data_provider == "yardi"
+                      %option{:value => "#{unit.provider_unit_id}"}= unit.provider_unit_id
                     - else
                       %option{:value=>unit.provider_unit_id}= "#{unit.marketing_name}"
 
