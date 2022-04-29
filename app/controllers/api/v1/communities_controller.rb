@@ -468,6 +468,33 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+  def get_filtered_tours
+    data = Hash.new
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      @tour_user = TourUser.find_by_id params[:tour_user_id]
+      @scheduled_tours = @tour_user.schedual_tours
+      upcoming_tours = []
+      completed_tours = []
+      expired_tours = []
+      if @scheduled_tours.present?
+        @scheduled_tours.each do |tour|
+          if !tour.tour_type.empty?
+            completed_tours << tour if tour.is_tour_completed
+            expired_tours << tour if !tour.is_tour_completed && date_compare(tour)
+            upcoming_tours << tour if !tour.is_tour_completed && !date_compare(tour)
+          end
+        end
+        data = { tour_user: @tour_user, upcoming: upcoming_tours, completed: completed_tours, exipred: expired_tours }
+        render :json=> { data: data, :status=>true, :message => "data returned succesfully", code: 200 }
+      else
+        render :json=> { data: data, :status=>false, :message => "Invalid or Missing tour_user_id", code: 400 }
+      end
+    else
+      render :json=> { data: data, :status=>false, :message => "Invalid Token", code: 401 }
+    end
+  end
+
   def tour_configrations
     #################### Remember this call is being called twice for one of the usecase in mobile app #######################
     puts params
@@ -1322,6 +1349,16 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   private
+
+  def date_compare(tour)
+    d = tour.tour_date
+    t = tour.tour_time
+    tour_date_time = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec, t.zone)
+    new_date = Date.today
+    new_time = Time.now
+    new_date_time = DateTime.new(new_date.year, new_date.month, new_date.day, new_time.hour, new_time.min, new_time.sec, new_time.zone)
+    return tour_date_time <= new_date_time
+  end
 
   def send_user_arrival_email tour_user, community
     unless (tour_user&.tour_type === "virtual_tour" || tour_user.arrival_email_sent)

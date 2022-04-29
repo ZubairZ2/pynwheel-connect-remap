@@ -573,6 +573,7 @@ Rails.application.routes.draw do
       post :device_lock_unlock, to: 'dwelo_devices#device_lock_or_unlock'
       get :get_tour_user_by_tour, to: 'communities#get_tour_user_by_tour'
       get :get_user_by_email, to: 'communities#get_user_by_email'
+      get :get_filtered_tours, to: 'communities#get_filtered_tours'
       resources :communities, only: :index do
         member do
           get :data
