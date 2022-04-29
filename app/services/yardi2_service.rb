@@ -95,7 +95,8 @@ class Yardi2Service < BaseService
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardi"]).map{|x| x.provider_unit_id}
     ils_units[0].lazy.each do |unit_entries|
       begin
-        unit = Unit.find_by(provider: "yardi", property_id: property_id, community_id: credentials.community_id, provider_unit_id: unit_entries[0][:Id])#.first_or_initialize
+        provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
+        unit = Unit.find_by(provider: "yardi", property_id: property_id, community_id: credentials.community_id, provider_unit_id: provider_unit_id)#.first_or_initialize
         if unit.present?
           # unit.property_id = property_id
           # unit.unit_type = unit_entries[0][:Id]
@@ -151,7 +152,8 @@ class Yardi2Service < BaseService
           @unit_record << unit.provider_unit_id
           unit.save!(validate: false)
         else
-          unit = Unit.where(provider: "yardi", community_id: credentials.community_id, property_id: property_id, provider_unit_id: unit_entries[0][:Id]).first_or_initialize
+          provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
+          unit = Unit.where(provider: "yardi", community_id: credentials.community_id, property_id: property_id, provider_unit_id: provider_unit_id).first_or_initialize
           unless unit.manual_override
             unit.property_id = property_id
             unit.unit_type = unit_entries[0][:Id]

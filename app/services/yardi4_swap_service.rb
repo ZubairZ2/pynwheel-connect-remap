@@ -93,7 +93,7 @@ class Yardi4SwapService < BaseService
       if unit.present?
         unit = unit.first
         unit.provider = "yardi_new"
-        unit.provider_unit_id = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])
+        unit.provider_unit_id = "#{u[:Units][:Unit][:Identification][0][:IDValue]}-#{property_id}" rescue "#{u[:Units][:Unit][:Identification][0][0][:IDValue]}-#{property_id}"
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
         unit.unit_type = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])
@@ -138,7 +138,8 @@ class Yardi4SwapService < BaseService
         unit.save(validate: false)
       else
         # unit = Unit.where(community_id: credentials.community_id).first
-        dup = Unit.find_by(community_id: credentials.community_id, property_id: property_id, provider_unit_id: (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue]))
+        provider_unit_id = "#{u[:Units][:Unit][:Identification][0][:IDValue]}-#{property_id}" rescue "#{u[:Units][:Unit][:Identification][0][0][:IDValue]}-#{property_id}"
+        dup = Unit.find_by(community_id: credentials.community_id, property_id: property_id, provider_unit_id: provider_unit_id)
         if dup.present?
           dup.destroy
         end
@@ -146,7 +147,7 @@ class Yardi4SwapService < BaseService
         unit.community_id = credentials.community_id
         unit.provider = "yardi_new"
         unit.property_id = property_id
-        unit.provider_unit_id = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])
+        unit.provider_unit_id = provider_unit_id
         unit.unit_type = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])
         unit.marketing_name = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])
         unit.floorplan_id = u[:Units][:Unit][:UnitType]
