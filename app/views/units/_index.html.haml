@@ -146,7 +146,11 @@
                     -#- if counts[u.marketing_name] == 1
                     -#  %td= best_in_place u, :marketing_name,:url => community_unit_path(@community,u), :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
                     -#- else
-                    %td= best_in_place u, :marketing_name, :url => community_unit_path(@community,u),:display_as => :provider_unit_id, :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
+                    - if @community.data_provider == "yardi"
+                      %td= best_in_place u, :marketing_name, :url => community_unit_path(@community,u),:display_as => :provider_unit_id, :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
+                    - else
+                      %td= best_in_place u, :marketing_name, :url => community_unit_path(@community,u),:display_as => :unit_market, :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
+                    
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil },:style => u.floorplan_id_is_updated? ? "color: #dd4a39;" : ""
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u),:display_as => :show_integer_rent, :data => {:rent => u.effective_rent },:style => u.effective_rent_is_updated? ? "color: #dd4a39;" : ""
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :place_holder => (u.sold  ? "Never Available" : "-"), :data => {:available_date => u.available_date },:style => u.available_date_is_updated? ? "color: #dd4a39;" : ""
