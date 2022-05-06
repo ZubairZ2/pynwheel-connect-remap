@@ -3342,6 +3342,16 @@ a#favoriteclickme {
     overflow-x: hidden;
 }
 
+.disable-submit-btn {
+    width: 100%;
+    padding: 16px;
+    background-color: #808080c2;
+    font-size: 16px;
+    color: white;
+    font-weight: 600;
+    cursor: not-allowed;
+}
+
 .pin1 {
     position: absolute;
     top: 40%;

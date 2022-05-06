@@ -203,7 +203,7 @@
     <%= content_tag(:div, "", id: 'knock-data', data: { available_time_slots: @knock_available_slots.to_json, is_knock_community: @is_knock_community })%>
 
     <%= link_to("#{@scheduler_widget_setting.btn_text}", "url",id: "schedule_btn", style: "width: #{@scheduler_widget_setting.btn_width}; height: #{@scheduler_widget_setting.btn_height}; font-size: #{@scheduler_widget_setting.btn_font_size}; background-color: #{@scheduler_widget_setting.btn_color}; border-color: #{@scheduler_widget_setting.btn_color}; font-family: #{@scheduler_widget_setting.btn_font}; align-items: center; display: inline-grid; margin: 10px; padding: 0px;",class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#modalLoginForm", backdrop: "static"}) %>
-
+     
     <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
       <div class="modal-dialog" role="document">
         <section>
@@ -416,6 +416,7 @@
                   </div>
 
                   <button type="submit">Submit Payment</button>
+                  
                 <% end %>
               <% end %>
 
@@ -442,7 +443,6 @@
                   <label for="text_instructions" class="inst_text_label"> By clicking on submit, you consent to receive delivery notification sent by text and/or email communications. Please visit our <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.
                   </label>
                 <% end %>
-
               </div>
 
               <span class="hidden" id="show-limit-error"></span>
@@ -461,15 +461,25 @@
                   <button id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
                   <button class="btn_popup" id="cancel-visit" style="border-left: 5px solid #fff;  width: 50%;">Cancel my visit</button>
                 <%else%>
-                  <button id ="confirm_reservation" class="btn_popup">Submit</button>
+                  
+                  <% if @community.self_tour && (@community.scheduler_widget.nil? ? true : @community.scheduler_widget) && !@community.locked %>
+                    <button id ="confirm_reservation" class="btn_popup">Submit</button>
+                  <% else %>
+                    <span style = "color: red"><strong>Sorry</strong>, for the inconvenience. It seems <strong> <%= @community.name %> </strong> does not offer self tours or it's under construction. For inquiries call the property at property phone number <strong> <%= @community.phone %> </strong> or <strong> <%= @community.email %> </strong> at property email address.
+                    </span>
+                    <br></br>
+                    <button type="button" class="disable-submit-btn" disabled>Submit</button>
+                  <% end %>
+
                 <%end%>
               </div>
               
             <% end %>
           </div>
-        </section>
+        
       </div>
     </div>
+
     <% if flash[:success].present? || @reschedule_tour %>
       <div id="scheduleMyTourSuccess" tabindex="-1" aria-hidden="true">
           <section>
@@ -1194,5 +1204,5 @@
     </script>
 
   </body>
-  
+
 </html>
