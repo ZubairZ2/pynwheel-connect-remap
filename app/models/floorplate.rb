@@ -39,7 +39,7 @@ class Floorplate < ApplicationRecord
   has_one :status, as: :statusable
 
   validates_uniqueness_of :name, scope: :community_id, if: -> { name.present? }
-  validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}
+  validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}, on: [:create]
   validates_with FloorValidator
 
   before_destroy :reset_units_plots
