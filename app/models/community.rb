@@ -197,15 +197,15 @@ class Community < ApplicationRecord
   def set_property_map_status(current_user)
     return if self.sitemap.blank? && self.floorplates.blank?
 
-    if self.sitemap.present?
+    if self.is_sitemap
       sitemap = self.sitemap
-      property_sitemap_status = status_string(self.sitemap&.image.present?)
+      property_sitemap_status = status_string(self.sitemap&.image&.url.present?)
       set_status_for_all(sitemap,property_sitemap_status,current_user)
 
     elsif self.floorplates.any?
       floorplates = self.floorplates
       floorplates.each do |floorplate|
-        property_floorplate_status = status_string(floorplate&.image.present?)
+        property_floorplate_status = status_string(floorplate&.image&.url.present?)
         set_status_for_all(floorplate,property_floorplate_status,current_user)
       end
     end
@@ -215,7 +215,7 @@ class Community < ApplicationRecord
     return if self.floorplans.blank?
 
     self.floorplans.each do |floorplan|
-      floorplan_status = status_string(floorplan&.image.present?)
+      floorplan_status = status_string(floorplan&.image&.url.present?)
       set_status_for_all(floorplan,floorplan_status,current_user)
     end
   end
@@ -240,7 +240,7 @@ class Community < ApplicationRecord
     return if design.home_page_images.blank?
 
     design.home_page_images.each do |touch_img|
-      touch_img_status = status_string(touch_img.name.present? & touch_img.image.present?)
+      touch_img_status = status_string(touch_img.name.present? & touch_img.image&.url.present?)
       set_status_for_all(touch_img,touch_img_status,current_user)
     end
   end

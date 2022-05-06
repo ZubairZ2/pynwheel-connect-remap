@@ -30,7 +30,7 @@ class Statuses
   end
 
   def set_property_map_status
-    if @community.sitemap.present?
+    if @community.is_sitemap && !@community.sitemap.blank?
       @community.set_status_for_all(@community.sitemap, @status, @current_user)
     elsif @community.floorplates.any?
       @community.floorplates.each do |floorplate|

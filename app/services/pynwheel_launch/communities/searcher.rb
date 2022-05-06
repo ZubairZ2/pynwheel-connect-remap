@@ -25,7 +25,6 @@ class PynwheelLaunch::Communities::Searcher
 
   def distinct_user_communities communities
     return unless communities.present?
-    
     community_users_ids = communities.group(:community_id).select("MAX(updated_at)").maximum(:id).values
     CommunityUser.where(id: community_users_ids)
   end
@@ -113,31 +112,29 @@ class PynwheelLaunch::Communities::Searcher
     community = community_user.community
     statuses = []
 
-    company_status(community, statuses)
+    statuses << company_status(community)
 
-    community_status(community, statuses)
+    statuses << community_status(community)
+    
+    statuses << property_map_status(community)
+    
+    statuses << floorplan_status(community)
+    
+    statuses << data_provider_status(community)
+    
+      statuses << visiting_hours_status(community) if community.self_tour
+      
+      statuses << touch_gallery_media_status(community) if community.touchscreen_app
 
-    property_map_status(community, statuses)
+      statuses << hardware_specs_status(community) if community.touchscreen_app
+      
+      statuses << lock_providers_status(community) if community.self_tour
 
-    floorplan_status(community, statuses)
-
-    data_provider_status(community, statuses)
-
-    visiting_hours_status(community, statuses)
-
-    touch_gallery_media_status(community, statuses)
-
-    hardware_specs_status(community, statuses)
-
-    lock_providers_status(community, statuses)
-
-    tour_stops_status(community, statuses)
-
-    home_page_media_status(community, statuses)
+      statuses << home_page_media_status(community) if community.touchscreen_app
 
     if status.eql?(IN_PROGRESS)
       received_status = status_value_check(status)
-      if statuses.any?{|x| x.eql?(received_status)} && !statuses.all?{|x| x.eql?(received_status)}
+      if statuses.any?{|x| x.eql?(received_status) || x.nil?} && !statuses.all?{|x| x.eql?(received_status) || x.nil?}
         selected_communities << community_user
       end
     elsif status.eql?(REJECTED)
@@ -145,9 +142,14 @@ class PynwheelLaunch::Communities::Searcher
       if statuses.any?{|x| x.eql?(received_status)} && !statuses.all?{|x| x.eql?(received_status)}
         selected_communities << community_user
       end
-    else
+    elsif status.eql?(PARAM_100_CONTENT_SUBMITED) || status.eql?(PARAM_APPROVED_FOR_PRODUCTION)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status)}
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(DEPLOYED)}
+        selected_communities << community_user
+      end
+    elsif status.eql?(PARAM_NOT_STARTED)
+      received_status = status_value_check(status)
+      if statuses.all?{|x| x.eql?(received_status) || x.nil?}
         selected_communities << community_user
       end
     end
@@ -166,101 +168,111 @@ class PynwheelLaunch::Communities::Searcher
     end
   end
 
-  def company_status(community, statuses)
-    return [] if community&.company.status.blank?
-    statuses << community&.company&.status&.status
+  def company_status(community)
+    return nil if community&.company.status.blank?
+    return community&.company&.status&.status
   end
 
-  def community_status(community, statuses)
-    return [] if community.status.blank?
-    statuses << community&.status&.status
+  def community_status(community)
+    return nil if community.status.blank?
+    return community&.status&.status
   end
 
-  def property_map_status(community, statuses)
+  def property_map_status(community)
+    return nil if community.sitemap.blank? && community.floorplates.blank?
+    status = []
     if community.is_sitemap
       sitemap = community.sitemap
-      statuses << sitemap&.status&.status
+      status << sitemap&.status&.status
     elsif community.has_floorplates?
       floorplates = community.floorplates
-      floorplates.map {|floorplate| statuses << floorplate&.status&.status}
+      floorplates.map {|floorplate| status << floorplate&.status&.status}
     end
+    return status_check(status)
   end
 
-  def floorplan_status(community, statuses)
-    return [] if community.floorplans.blank?
+  def floorplan_status(community)
+    return nil if community.floorplans.blank?
     floorplans = community.floorplans
-    floorplans.map {|floorplan| statuses << floorplan&.status&.status}
+    floorplan_status = floorplans.map {|floorplan| floorplan&.status&.status rescue nil}
+    return status_check(floorplan_status)
   end
 
-  def data_provider_status(community, statuses)
-    return [] if community.data_provider.blank? && community.credential.blank?
-    statuses << community.credential&.status&.status
+  def data_provider_status(community)
+    return nil if community.data_provider.blank? && community.credential.blank?
+    data_provider_status = []
+    data_provider_status << community.credential&.status&.status
     if community.credential&.use_different_crm_provider
-      statuses << community.crm_credential&.status&.status
+      data_provider_status << community.crm_credential&.status&.status
     end
+    return status_check(data_provider_status)
   end
 
-  def visiting_hours_status(community, statuses)
-    return [] if community.opening_hours.blank? && community.guided_opening_hours.blank?
+  def visiting_hours_status(community)
+    return nil if community.opening_hours.blank? && community.guided_opening_hours.blank?
     visiting_hours_status = []
     self_visiting_hours = community.opening_hours
     guided_visiting_hours = community.guided_opening_hours
-    self_visiting_hours.map {|oh| statuses << oh&.status&.status} if self_visiting_hours.present?
-    guided_visiting_hours.map {|gh| statuses << gh&.status&.status} if guided_visiting_hours.present?
+    self_visiting_hours.map {|oh| visiting_hours_status << oh&.status&.status} if self_visiting_hours.present?
+    guided_visiting_hours.map {|gh| visiting_hours_status << gh&.status&.status} if guided_visiting_hours.present?
+    status_check(visiting_hours_status)
   end
 
-  def touch_gallery_media_status(community, statuses)
-    return [] if community.galleries.blank?
+  def touch_gallery_media_status(community)
+    return nil if community.galleries.blank?
     galleries = community.galleries
-    galleries.each { |gallery| statuses << gallery&.status&.status } if galleries.present?
+    gallery_media_status = galleries.map { |gallery| gallery&.status&.status rescue nil } if galleries.present?
+    return status_check(gallery_media_status)
   end
 
-  def hardware_specs_status(community, statuses)
-    return [] if community.design.blank?
-    if !community.design.status.nil?
-      statuses << community&.design&.status&.status
-    else
-      statuses << community&.design&.status
-    end
+  def hardware_specs_status(community)
+    return nil if community.design.blank?
+    hardware_spec = community.design.pynwheel_touch_hardware_spec
+    hardware_status = hardware_spec.present? ? community&.design&.status&.status : nil
+    hardware_status
   end
 
-  def home_page_media_status(community, statuses)
-    return [] if community.design.blank? && community.design&.home_page_images.blank? && community.design&.home_page_video.blank?
+  def home_page_media_status(community)
+    return nil if community.design.blank? && community.design&.home_page_images.blank? && community.design&.home_page_video.blank?
     home_page_images = community.design.home_page_images
     home_page_video = community.design.home_page_video
-    home_page_images.map {|hp_img| statuses << hp_img&.status&.status} if home_page_images.present?
-    if home_page_video.present?
-      statuses << home_page_video&.status&.status if home_page_video.present?
-    end
+    home_page_medias_status = []
+    home_page_images.each {|hp_img| home_page_medias_status << hp_img&.status&.status rescue nil} if home_page_images.present?
+    home_page_medias_status << home_page_video&.status&.status rescue nil if home_page_video.present?
+    status = status_check(home_page_medias_status)
+    status
   end
 
-  def tour_stops_status(community, statuses)
-    @tour = community.community_tour
-    return [] if @tour.tour_stops.blank?
-    tour_stops = @tour.tour_stops
-    tour_stops.map do |ts|
-      if ts.status.present?
-        statuses << ts&.status&.status
-      end
-    end
-  end
-
-  def lock_providers_status(community, statuses)
-    return [] if community.zerv.blank? && community.latch.blank? && community.dwelo.blank? && community.edge_state.blank? && community&.edge_state&.remote_locks.blank?
-    
+  def lock_providers_status(community)
+    return nil if community.zerv.blank? && community.latch.blank? && community.dwelo.blank? && community.edge_state.blank? && community&.edge_state&.remote_locks.blank?
     locks_status = []
-
+    
     zerv = community.zerv
     latch = community.latch
     dwelo = community.dwelo
     remote_locks = community.edge_state&.remote_locks
 
-    statuses << zerv&.status&.status if zerv.present?
-    statuses << latch&.status&.status if latch.present?
-    statuses << dwelo&.status&.status if dwelo.present?
-
+    locks_status << zerv&.status&.status rescue nil if zerv.present?
+    locks_status << latch&.status&.status rescue nil if latch.present?
+    locks_status << dwelo&.status&.status rescue nil if dwelo.present?
+    
     unless remote_locks.nil?
-      remote_locks.each {|remote_lock| statuses << remote_lock&.status.status if !remote_lock.status.nil?}
+      remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status rescue nil}
+    end
+
+    status = status_check(locks_status)
+    status
+  end
+
+  def status_check(statuses)
+    if !statuses.empty?
+      return REJECTED if statuses.any?{|x| x.eql?(REJECTED)}
+      return SUBMITTED if statuses.all?{|x| x.eql?(SUBMITTED)}
+      return APPROVED if statuses.all?{|x| x.eql?(APPROVED)}
+      return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.eql?(nil)}
+      return DEPLOYED if statuses.all?{|x| x.eql?(DEPLOYED)}
+    else
+      return nil
     end
   end
 
