@@ -485,7 +485,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             upcoming_tours << tour.community if !tour.is_tour_completed && !date_compare(tour)
           end
         end
-        data = { tour_user: @tour_user, upcoming: upcoming_tours, completed: completed_tours, exipred: expired_tours }
+        data = { tour_user: @tour_user, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
         render :json=> { data: data, :status=>true, :message => "data returned succesfully", code: 200 }
       else
         render :json=> { data: data, :status=>false, :message => "Invalid or Missing tour_user_id", code: 400 }
