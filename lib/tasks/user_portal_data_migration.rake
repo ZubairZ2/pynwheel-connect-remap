@@ -21,7 +21,7 @@ namespace :user_portal_data_migration do
       elsif community.company.creator.present?
         CommunityUser.create(community_id: community.id, user_id: community.company.creator.id)
       else
-        CommunityUser.create(community_id: community.id, user_id: 2)
+        CommunityUser.create(community_id: community.id, user_id: 15)
       end
     end
   end
