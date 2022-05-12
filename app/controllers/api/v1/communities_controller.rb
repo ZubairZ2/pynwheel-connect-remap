@@ -480,9 +480,9 @@ class Api::V1::CommunitiesController < ActionController::Base
       if @scheduled_tours.present?
         @scheduled_tours.each do |tour|
           if !tour.tour_type.empty?
-            completed_tours << tour if tour.is_tour_completed
-            expired_tours << tour if !tour.is_tour_completed && date_compare(tour)
-            upcoming_tours << tour if !tour.is_tour_completed && !date_compare(tour)
+            completed_tours << tour.community if tour.is_tour_completed
+            expired_tours << tour.community if !tour.is_tour_completed && date_compare(tour)
+            upcoming_tours << tour.community if !tour.is_tour_completed && !date_compare(tour)
           end
         end
         data = { tour_user: @tour_user, upcoming: upcoming_tours, completed: completed_tours, exipred: expired_tours }
