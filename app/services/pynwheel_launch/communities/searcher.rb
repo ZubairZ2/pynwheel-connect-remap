@@ -97,19 +97,20 @@ class PynwheelLaunch::Communities::Searcher
     end
   end
 
-  def search_by_status(collection , statuses)
+  def search_by_status(collection, statuses)
     selected_communities = []
     statuses.values.each do |status|
-      collection.each do |community_user|
-        get_communities_statuses(community_user, status, selected_communities)
+      communities_id = collection.pluck(:community_id).uniq
+      communities_collection = Community.includes(:status, :community_users, design: [:status, {home_page_images: :status}, {home_page_video: :status}], sitemap: :status, company: :status, floorplates: :status, floorplans: :status, credential: :status, crm_credential: :status, opening_hours: :status, guided_opening_hours: :status, galleries: :status, zerv: :status, latch: :status, dwelo: :status, edge_state: [remote_locks: :status]).where(id: communities_id)
+      communities_collection.each do |community|
+        get_communities_statuses(community, status, selected_communities)
       end
     end
     selected_communities
     communities = CommunityUser.where(id:selected_communities.pluck(:id))
   end
 
-  def get_communities_statuses(community_user, status, selected_communities)
-    community = community_user.community
+  def get_communities_statuses(community, status, selected_communities)
     statuses = []
 
     statuses << company_status(community)
@@ -122,35 +123,34 @@ class PynwheelLaunch::Communities::Searcher
     
     statuses << data_provider_status(community)
     
-      statuses << visiting_hours_status(community) if community.self_tour
+    statuses << visiting_hours_status(community) if community.self_tour
       
-      statuses << touch_gallery_media_status(community) if community.touchscreen_app
+    statuses << touch_gallery_media_status(community) if community.touchscreen_app
 
-      statuses << hardware_specs_status(community) if community.touchscreen_app
-      
-      statuses << lock_providers_status(community) if community.self_tour
+    statuses << hardware_specs_status(community) if community.touchscreen_app
+    
+    statuses << lock_providers_status(community) if community.self_tour
 
-      statuses << home_page_media_status(community) if community.touchscreen_app
-
+    statuses << home_page_media_status(community) if community.touchscreen_app
     if status.eql?(IN_PROGRESS)
       received_status = status_value_check(status)
       if statuses.any?{|x| x.eql?(received_status) || x.nil?} && !statuses.all?{|x| x.eql?(received_status) || x.nil?}
-        selected_communities << community_user
+        selected_communities << community.community_users.first
       end
     elsif status.eql?(REJECTED)
       received_status = status_value_check(status)
       if statuses.any?{|x| x.eql?(received_status)} && !statuses.all?{|x| x.eql?(received_status)}
-        selected_communities << community_user
+        selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_100_CONTENT_SUBMITED) || status.eql?(PARAM_APPROVED_FOR_PRODUCTION)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) || x.eql?(DEPLOYED)}
-        selected_communities << community_user
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?("deployed")}
+        selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_NOT_STARTED)
       received_status = status_value_check(status)
       if statuses.all?{|x| x.eql?(received_status) || x.nil?}
-        selected_communities << community_user
+        selected_communities << community.community_users.first
       end
     end
     selected_communities

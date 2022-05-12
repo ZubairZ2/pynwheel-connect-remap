@@ -46,6 +46,7 @@ class CommunitiesController < ApplicationController
       # @community.creator_id = User.where(role: "Dwelo admin").first.id unless current_user.is_dwelo_admin?
     end
     if @community.save
+      CommunityUser.create(community_id: @community.id, user_id: current_user.id)
       @community.create_neighborhood
       flash[:notice] = "Community created successfully."
       if @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
