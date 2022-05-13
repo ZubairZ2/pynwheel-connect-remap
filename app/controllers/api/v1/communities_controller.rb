@@ -473,20 +473,24 @@ class Api::V1::CommunitiesController < ActionController::Base
     access = grant_access (decoded(params[:token])) rescue false
     if api_access or access == true
       @tour_user = TourUser.find_by_id params[:tour_user_id]
-      @scheduled_tours = @tour_user.schedual_tours
-      upcoming_tours = []
-      completed_tours = []
-      expired_tours = []
-      if @scheduled_tours.present?
-        @scheduled_tours.each do |tour|
-          if !tour.tour_type.empty?
-            completed_tours << tour.community if tour.is_tour_completed
-            expired_tours << tour.community if !tour.is_tour_completed && date_compare(tour)
-            upcoming_tours << tour.community if !tour.is_tour_completed && !date_compare(tour)
+      if @tour_user.present?
+        @scheduled_tours = @tour_user.schedual_tours
+        upcoming_tours = []
+        completed_tours = []
+        expired_tours = []
+        if @scheduled_tours.present?
+          @scheduled_tours.each do |tour|
+            if !tour.tour_type.empty?
+              completed_tours << tour.community if tour.is_tour_completed
+              expired_tours << tour.community if !tour.is_tour_completed && date_compare(tour)
+              upcoming_tours << tour.community if !tour.is_tour_completed && !date_compare(tour)
+            end
           end
+          data = { tour_user: @tour_user, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
+          render :json=> { data: data.as_json, :status=>true, :message => "data returned succesfully", code: 200 }
+        else
+          render :json=> { data: data, :status=>false, :message => "Invalid or Missing tour_user_id", code: 400 }
         end
-        data = { tour_user: @tour_user, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
-        render :json=> { data: data, :status=>true, :message => "data returned succesfully", code: 200 }
       else
         render :json=> { data: data, :status=>false, :message => "Invalid or Missing tour_user_id", code: 400 }
       end

@@ -68,6 +68,12 @@ class Community < ApplicationRecord
 
   attr_accessor :default_community_id
   
+  def as_json
+    super(
+      :only => [:id, :name, :address, :phone, :logo , :longitude, :latitude]
+    )
+  end
+  
   after_update :crop_image
   after_update :crop_secondary_image
   after_create :create_tour_also
