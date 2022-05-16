@@ -486,8 +486,9 @@ class Api::V1::CommunitiesController < ActionController::Base
               upcoming_tours << tour.community if !tour.is_tour_completed && !date_compare(tour)
             end
           end
-          data = { tour_user: @tour_user, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
-          render :json=> { data: data.as_json, :status=>true, :message => "data returned succesfully", code: 200 }
+          last_visit = get_last_visited_community(@scheduled_tours)
+          data = { tour_user: @tour_user, upcoming: upcoming_tours.uniq, last_visit: last_visit, completed: completed_tours.uniq, exipred: expired_tours.uniq }
+          render :json=> { data: data.as_json, :status=> true, :message => "data returned succesfully", code: 200 }
         else
           render :json=> { data: data, :status=>false, :message => "Invalid or Missing tour_user_id", code: 400 }
         end
@@ -1353,6 +1354,20 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   private
+
+  def get_last_visited_community(scheduled_tours)
+    completed_tours = []
+    scheduled_tours.order(:tour_time).each do |tour|
+      if (!tour.tour_time.nil?)
+        completed_tours << tour if tour.is_tour_completed
+      end
+    end
+    if completed_tours.present?
+      return {visited_time: completed_tours.last.tour_time, visited_community: completed_tours.last.community}
+    else
+      return nil
+    end
+  end
 
   def date_compare(tour)
     d = tour.tour_date
