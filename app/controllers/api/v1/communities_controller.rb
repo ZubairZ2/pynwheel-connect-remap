@@ -415,7 +415,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
         @scheduled_tours = []
         @tour_user.schedual_tours.each do |tour|
-          @scheduled_tours << get_community_tour(tour) if !tour.is_tour_completed && !date_compare(tour)
+          @scheduled_tours << tour if !tour.is_tour_completed && !date_compare(tour)
         end
         token = encoded(@tour_user.id)
         render :json => {status: true, user: @tour_user, code: 200, access_token: token, visited_history: @visited_history, schedule_tour: @scheduled_tours.count}
@@ -1382,12 +1382,14 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def date_compare(tour)
     d = tour.tour_date
-    t = tour.tour_time
-    tour_date_time = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec, t.zone)
-    new_date = Date.today
-    new_time = Time.now
-    new_date_time = DateTime.new(new_date.year, new_date.month, new_date.day, new_time.hour, new_time.min, new_time.sec, new_time.zone)
-    return tour_date_time <= new_date_time
+    if !d.nil?
+      t = tour.tour_time
+      tour_date_time = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec, t.zone)
+      new_date = Date.today
+      new_time = Time.now
+      new_date_time = DateTime.new(new_date.year, new_date.month, new_date.day, new_time.hour, new_time.min, new_time.sec, new_time.zone)
+      return tour_date_time <= new_date_time
+    end
   end
 
   def send_user_arrival_email tour_user, community
