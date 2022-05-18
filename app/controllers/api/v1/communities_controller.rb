@@ -481,9 +481,9 @@ class Api::V1::CommunitiesController < ActionController::Base
         if @scheduled_tours.present?
           @scheduled_tours.each do |tour|
             if !tour.tour_type.empty?
-              completed_tours << tour.community if tour.is_tour_completed
-              expired_tours << tour.community if !tour.is_tour_completed && date_compare(tour)
-              upcoming_tours << tour.community if !tour.is_tour_completed && !date_compare(tour)
+              completed_tours << get_community_tour(tour) if tour.is_tour_completed
+              expired_tours << get_community_tour(tour) if !tour.is_tour_completed && date_compare(tour)
+              upcoming_tours << get_community_tour(tour) if !tour.is_tour_completed && !date_compare(tour)
             end
           end
           last_visit = get_last_visited_community(@scheduled_tours)
@@ -498,6 +498,13 @@ class Api::V1::CommunitiesController < ActionController::Base
     else
       render :json=> { data: data, :status=>false, :message => "Invalid Token", code: 401 }
     end
+  end
+
+  def get_community_tour(tour)
+    d = tour.tour_date
+    t = tour.tour_time
+    dt = DateTime.new(d.year, d.month, d.day, t.hour, t.min)
+    return {tour_time: dt, community: tour.community}
   end
 
   def tour_configrations
