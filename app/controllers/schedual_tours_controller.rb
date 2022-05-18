@@ -185,6 +185,15 @@ class SchedualToursController < ApplicationController
     end
   end
 
+  def get_funnel_available_times
+    day = params[:date].gsub("/", "-")
+    response = FunnelService.new().get_available_times(day)
+    response = response.map { |date| date.to_datetime.strftime("%I:%M %p")  }
+    
+    render json: {data: response, status: :OK, code: 200}, layout: false
+
+  end
+
   def get_tour_type
     community = Community.find params[:community_id]
     @use_yardi_as_lead = @community.use_yardi_as_lead?
