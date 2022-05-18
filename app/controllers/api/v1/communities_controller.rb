@@ -413,7 +413,10 @@ class Api::V1::CommunitiesController < ActionController::Base
       @tour_user = TourUser.find_by(email: params[:user_email])
       if @tour_user.present?
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
-        @scheduled_tours = @tour_user.schedual_tours
+        @scheduled_tours = []
+        @tour_user.schedual_tours.each do |tour|
+          @scheduled_tours << get_community_tour(tour) if !tour.is_tour_completed && !date_compare(tour)
+        end
         token = encoded(@tour_user.id)
         render :json => {status: true, user: @tour_user, code: 200, access_token: token, visited_history: @visited_history, schedule_tour: @scheduled_tours.count}
       else
@@ -498,13 +501,6 @@ class Api::V1::CommunitiesController < ActionController::Base
     else
       render :json=> { data: data, :status=>false, :message => "Invalid Token", code: 401 }
     end
-  end
-
-  def get_community_tour(tour)
-    d = tour.tour_date
-    t = tour.tour_time
-    dt = DateTime.new(d.year, d.month, d.day, t.hour, t.min)
-    return {tour_time: dt, community: tour.community}
   end
 
   def tour_configrations
@@ -1361,6 +1357,14 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   private
+
+  def get_community_tour(tour)
+    d = tour.tour_date
+    t = tour.tour_time
+    dt = DateTime.new(d.year, d.month, d.day, t.hour, t.min)
+    tour_type = tour.tour_type
+    return {tour_type: tour_type, tour_time: dt, community: tour.community}
+  end
 
   def get_last_visited_community(scheduled_tours)
     completed_tours = []
