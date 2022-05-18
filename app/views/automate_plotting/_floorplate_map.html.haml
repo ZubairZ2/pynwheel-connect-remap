@@ -120,7 +120,11 @@
     document.addEventListener("touchcancel", touchHandler, true);
 
     map_id = building_list ? ("#" + building_list[0] + "_map_" + floors[0]) : ("#map_" + floors[0])
-    let elem = document.querySelector(map_id);
+
+    //let elem = document.querySelector(map_id);
+    new_map_id = map_id.split('#').join('')
+    let elem = document.querySelector(`[id='${new_map_id}']`)
+
     apply_zoom_functionality_against_floor(map_id, elem)
     fp_id = floor_to_floorplate_id[floors[0]]
     hallways_coordinates = building_list ? hallways[building_list[0]][floors[0]] : hallways[floors[0]]
@@ -146,7 +150,11 @@
       $('.floor_btn').css('background', '#e0e0e0')
       $(this).css('background', "#49d849")
       initialize_variables()
-      let elem = document.querySelector(map_id);
+      
+      //let elem = document.querySelector(map_id);
+      new_map_id = map_id.split('#').join('')
+      let elem = document.querySelector(`[id='${new_map_id}']`)
+
       apply_zoom_functionality_against_floor(map_id, elem)
       draw_initial_hallways(hallways_coordinates, map_id)
     });
@@ -165,7 +173,11 @@
         $('.building_btn_in_auto').css('background', '#e0e0e0')
         $(this).css('background', "#49d849")
         initialize_variables()
-        let elem = document.querySelector(map_id);
+
+         //let elem = document.querySelector(map_id);
+        new_map_id = map_id.split('#').join('')
+        let elem = document.querySelector(`[id='${new_map_id}']`)
+
         apply_zoom_functionality_against_floor(map_id, elem)
         draw_initial_hallways(hallways_coordinates, map_id)
       });
