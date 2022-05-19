@@ -1410,7 +1410,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def date_compare(tour)
-    if !tour.property_tour_type.empty?
+    if tour.property_tour_type.eql?("unscheduled_self_tour") || tour.property_tour_type.eql?("remote_tour")
       return false
     else
       d = tour.tour_date
