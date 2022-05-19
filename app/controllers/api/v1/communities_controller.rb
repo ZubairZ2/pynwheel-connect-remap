@@ -408,6 +408,31 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+  def get_count_screen
+    data = Hash.new
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      @tour_user = TourUser.find_by_id params[:tour_user_id]
+      if @tour_user.present?
+        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
+        username = "#{@tour_user.first_name} #{@tour_user.last_name}"
+        upcoming_tour = []
+        schedule_tours = @tour_user.schedual_tours
+        if schedule_tours.length > 0
+          schedule_tours.each do |tour|
+            upcoming_tour << tour if !tour.is_tour_completed && !date_compare(tour)
+          end
+        end
+        data = {name: username, upcoming: upcoming_tour.count, visited_history: @visited_history}
+        render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
+      else
+        render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
+      end
+    else
+      render :json=> {data: data, :status=>false, :message => "Invalid Token", code: 401}
+    end
+  end
+
   def get_user_by_email
     if params[:user_email]
       @tour_user = TourUser.find_by(email: params[:user_email])
@@ -483,7 +508,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         expired_tours = []
         if @scheduled_tours.present?
           @scheduled_tours.each do |tour|
-            if !tour.tour_type.empty?
+            if tour.present?
               completed_tours << get_community_tour(tour) if tour.is_tour_completed
               expired_tours << get_community_tour(tour) if !tour.is_tour_completed && date_compare(tour)
               upcoming_tours << get_community_tour(tour) if !tour.is_tour_completed && !date_compare(tour)
@@ -1359,10 +1384,14 @@ class Api::V1::CommunitiesController < ActionController::Base
   private
 
   def get_community_tour(tour)
-    d = tour.tour_date
-    t = tour.tour_time
-    dt = DateTime.new(d.year, d.month, d.day, t.hour, t.min)
-    tour_type = tour.tour_type
+    if !tour.tour_date.nil?
+      d = tour.tour_date
+      t = tour.tour_time
+      dt = DateTime.new(d.year, d.month, d.day, t.hour, t.min)
+    else
+      dt = DateTime.now
+    end
+    tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
     return {tour_type: tour_type, tour_time: dt, community: tour.community}
   end
 
@@ -1381,8 +1410,10 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def date_compare(tour)
-    d = tour.tour_date
-    if !d.nil?
+    if !tour.property_tour_type.empty?
+      return false
+    else
+      d = tour.tour_date
       t = tour.tour_time
       tour_date_time = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec, t.zone)
       new_date = Date.today

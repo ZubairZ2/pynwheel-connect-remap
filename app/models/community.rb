@@ -103,7 +103,8 @@ class Community < ApplicationRecord
   end
 
   def schedule_tour_url
-    return "#{ENV['HOST_URL']}communities/#{self.id}/webpages"
+    community_code = (JWT.encode ({"community_id" => self.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256') if self.present?
+    return "#{ENV['HOST_URL']}scheduler_widget/test_widget?community_id=#{self.id}&community_code=#{community_code}&schedule_tours_page=true&direct=true"
   end
 
 
