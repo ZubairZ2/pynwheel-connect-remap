@@ -102,8 +102,12 @@ class Community < ApplicationRecord
     self.brand_details_pdf
   end
 
+  def community_code
+    (JWT.encode ({"community_id" => self.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256') if self.present?
+  end
+
   def schedule_tour_url
-    community_code = (JWT.encode ({"community_id" => self.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256') if self.present?
+    community_code = self.community_code
     return "#{ENV['HOST_URL']}scheduler_widget/test_widget?community_id=#{self.id}&community_code=#{community_code}&schedule_tours_page=true&direct=true"
   end
 
