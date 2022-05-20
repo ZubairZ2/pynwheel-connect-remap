@@ -2545,14 +2545,51 @@ ul.home-tabs li:hover a {
 }
 
 .left-side {
-    float: right;
-    padding-left: 15px;
-    letter-spacing: 1px;
+    background-color: #00000014;
+    padding: 15px;
+    height: 100%;
+	width: 25%;
+    float: left;
+    height: 100%;
+    overflow: scroll;
+    padding-bottom: 150px;
 }
 
 .right-side {
 	height: 100%;
-	width: 100%;
+	width: 75%;
+    float: left;
+}
+
+.left-side-30-units {
+    padding: 15px;
+}
+
+.image_styles {
+    display: flex;
+    justify-content: center;
+    background-color: white;
+    margin-bottom: 10px;
+}
+
+.image_styles > img {
+    width: 250px;
+    height: 200px
+}
+
+
+.webpage-left-list-view-title {
+    display: flex;
+    padding: 10px 0px;
+    justify-content: space-between;
+}
+
+.unit-details-section {
+    display: flex;
+}
+
+.unit-details-section > p {
+    padding-left: 15px;
 }
 
 .transform-none {

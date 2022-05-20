@@ -241,7 +241,34 @@
               .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
                 %strong Oops!
                 There is nothing available on this floor that matches the parameters that you have selected.
-
+            .left-side
+              -all_details = JSON.parse(@units_with_floorplan_info)
+              %p = #{all_details.first}
+              %div.webpage-left-list-view-title
+                %p
+                  #{all_details.count} Units Found
+                = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High", "1"], ["Price: High to Low", "2"], ["Availability: Soonest to Latest", "3"], ["Availability: Latest to Soonest", "4"], ["Sq Ft: More to Less", "5"], ["Sq Ft: Less to More", "6"]]), {:style => "min-width: 210"}
+              -all_details.each do  |unit|
+                %div.left-side-30-units
+                  %div.image_styles
+                    %img(src = "#{unit['floorplan_image']}")
+                  %div.unit-details-section
+                    %p
+                      Unit ##{unit['marketing_name']}
+                    %p
+                      #{@community_info.name}
+                  %div.unit-details-section
+                    %p
+                      %i.fa.fa-bed &nbsp #{unit['bedrooms']} Bed
+                    %p
+                    %i.fa.fa-bath &nbsp #{unit['bathrooms'].to_i} Bath
+                    %p
+                    %i.fa.fa-building &nbsp #{unit['square_feet'].to_i} Sq Ft
+                  %div.unit-details-section
+                    %p
+                      Available #{unit['available'] ? "Now" : unit['availability']}
+                    %p
+                      $#{unit['market_rent'].to_i}/month
           %footer.c-footer
             .inner-footer
               .footer-logo
