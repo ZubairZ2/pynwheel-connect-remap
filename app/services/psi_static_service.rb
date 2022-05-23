@@ -156,11 +156,19 @@ class PsiStaticService < BaseService
         unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
           unit.available = true
         end
-        year = u["Availability"]["VacateDate"]["@attributes"]["Year"]
-        month = u["Availability"]["VacateDate"]["@attributes"]["Month"]
-        day = u["Availability"]["VacateDate"]["@attributes"]["Day"]
-        vacateDate = Date.parse("#{year}-#{month}-#{day}")
+        
+        if u["Availability"].present? && u["Availability"]["VacateDate"].present? 
+          availability_attr = u["Availability"]["VacateDate"]["@attributes"]
+          vacateDate = Date.parse("#{availability_attr["Year"]}-#{availability_attr["Month"]}-#{availability_attr["Day"]}")
+        end
+
+        if u["Availability"].present? && u["Availability"]["MadeReadyDate"].present?
+          availability_attr = u["Availability"]["MadeReadyDate"]["@attributes"]
+          vacateDate = Date.parse("#{availability_attr["Year"]}-#{availability_attr["Month"]}-#{availability_attr["Day"]}")
+        end
+
       end
+      
       unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
         unit.available_date = vacateDate
       end
