@@ -267,6 +267,7 @@
                     <%= text_field_tag :tour_date, "", :class=>tour_date_class, :placeholder=>"Tour Date",:maxlength=>"10",:autocomplete=>"off", :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
                   </div>
                   <%= hidden_field_tag 'time_slot_hash', @time_slots.to_json %>
+
                   <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_time">
                     <label>Tour Time <span class="asterisk_color" >*</span></label>
                     <%= select_tag :tour_time , options_for_select([]),:class => "form-control", :include_blank => 'Select time slot', :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
@@ -525,6 +526,7 @@
 
       var funnel_available_days;
       var is_funnel_community = false;
+      var selected_day_slots = [];
 
       var knock_tour_types = []
       var schedule_tour_only = "<%= @community.community_tour.only_scheduled_tour %>";
@@ -561,8 +563,6 @@
 
         funnel_available_days = $("#funnel-data").data("funnelAvailableDays");
         is_funnel_community = $("#funnel-data").data("isFunnelCommunity");
-
-       debugger;
 
         if(form_for_reschedule_tour){
           $("#desired_move_in_date").val(move_in_date).attr('selected', true)
@@ -755,17 +755,15 @@
           var time_slots = JSON.parse( $('#time_slot_hash').val() )
           day = (new Date($(this).val())).getDay()
           tour_time = '<%= @schedule_tour&.tour_time&.strftime("%I:%M %P") %>'
-          // schedule_tour = '<%= @schedule_tour %>'
-          debugger;
+          schedule_tour_id = '<%= @schedule_tour.id %>'
+
           options = '<option value="">Select Time Slot</option>'
           
           selected_date = moment($(this).val()).zone(community_time_zone).format("YYYY/MM/DD")
           today_date = moment().zone(community_time_zone).format("YYYY/MM/DD")
 
-          if(is_funnel_community && !isEmpty(funnel_available_days)) {
-            selected_day_slots = getFunnelAvailableTimes(selected_date, community_id);
-          }
-          else if(is_knock_community && !isEmpty(knock_available_time_slots)) {
+
+          if(is_knock_community && !isEmpty(knock_available_time_slots)) {
             selected_day_slots = getKnockAvailableTimeSlots(knock_available_time_slots, moment($(this).val()).format("MM-DD-YYYY"))
           }
           else if (use_yardi_as_lead && !is_virtual_on){
@@ -775,7 +773,8 @@
           else {
             selected_day_slots = time_slots[day]
           }
-
+          
+          
           if (selected_date == today_date){
             if(current_time_according_to_timzone !== ""){
               today_time = current_time_according_to_timzone
@@ -783,9 +782,10 @@
             else{
               today_time = moment().zone(community_time_zone).format("HH:mm A")
             }
+
             today_datetime = moment(today_date + " " + today_time, "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A")
             minus_day_slots = []
-            debugger
+
             for (let i = 0; i < selected_day_slots.length; ++i) {
               if (moment(selected_date + " " + selected_day_slots[i], "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A") >= today_datetime){
                 minus_day_slots.push(selected_day_slots[i])
@@ -793,20 +793,31 @@
             }
             selected_day_slots = minus_day_slots 
           }
-          for (let i = 0; i < selected_day_slots.length; ++i) {
-            options += `<option value="${selected_day_slots[i]}" >${selected_day_slots[i]}</option>`
+          
+
+          if(is_funnel_community && !isEmpty(funnel_available_days)) {
+            getFunnelTimes(schedule_tour_id, selected_date, community_id);            
+          } 
+          else {
+            for (let i = 0; i < selected_day_slots.length; ++i) {
+              options += `<option value="${selected_day_slots[i]}" >${selected_day_slots[i]}</option>`
+            }
+
+            $('#tour_time').html(options)
+            $('#tour_type').html('<option value="">Select Tour Type</option>')
           }
-          $('#tour_time').html(options)
-          $('#tour_type').html('<option value="">Select Tour Type</option>')
+
           if(form_for_reschedule_tour && property_tour_type == "scheduled_tour" ) {
             $(`#tour_time option[value="<%= @schedule_tour.tour_time&.strftime("%I:%M %P") %>"]`).attr("selected", true);
             $('#tour_type').html('<option value="<%= @schedule_tour.tour_type %>"><%= @schedule_tour&.tour_type&.split('_').map(&:capitalize).join(' ') rescue ""%></option>')
           }
           
         });
+
         $("#tour_type").attr("disabled", true);
         if(!form_for_reschedule_tour){
           $("#tour_time").on("change", function() {
+
             if ($(this).val() != ""){
               day = (new Date($("#tour_date").val())).getDay()
               date = $("#tour_date").val()
@@ -1110,19 +1121,36 @@
         return JSON.stringify(obj) === JSON.stringify({});
       }
 
-      function getFunnelAvailableTimes(date, community_id) {
-        let times = [];
+      async function getFunnelTimes(schedule_tour_id, date, community_id) {
+        let f_response =  await getFunnelAvailableTimes(schedule_tour_id, date, community_id);
+        let funnel_selected_day_slots = f_response.data;
 
-        $.ajax({
-        url: "/schedual_tours/get_funnel_available_times",
-        type: "GET",
-        data: {date: date, community_id: community_id }
-        }).done(function(response){
-          times = response.data
-        });
+        console.log("f_response", f_response);
 
-        return times;    
+        for (let i = 0; i <  funnel_selected_day_slots.length; ++i) {
+          options += `<option value="${funnel_selected_day_slots[i]}" >${funnel_selected_day_slots[i]}</option>`
+        }
+
+        $('#tour_time').html(options)
+        $('#tour_type').html('<option value="">Select Tour Type</option>')
+        
       }
+
+      function getFunnelAvailableTimes(schedule_tour_id, date, community_id) {
+        return new Promise(function(resolve, reject) {
+          $.ajax({
+            url: '/schedual_tours/get_funnel_available_times',
+            data: {schedule_tour_id, schedule_tour_id, date: date, community_id: community_id},
+            success: function(data) {
+              resolve(data)
+            },
+            error: function(err) {
+              reject(err)
+            }
+          });
+        });
+      }
+
 
       function getKnockAvailableTimeSlots(knockData, selectedDate) {
         let selfGuided = knockData.self_guided_available_time_slots

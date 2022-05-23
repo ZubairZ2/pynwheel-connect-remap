@@ -126,6 +126,7 @@ class SchedualToursController < ApplicationController
       
       YardiRentCafeServices::MarketingApisService.new(schedual_tour).schedule_tour(previous_tour)
       KnockService.new(schedual_tour).knock_crm(is_rescheduled)
+      FunnelService.new(schedual_tour).funnel_crm(is_rescheduled)
 
       begin
         sent_notifications = send_email_and_other_notifications(schedual_tour,previous_tour,is_rescheduled,property_tour_type)
@@ -187,15 +188,17 @@ class SchedualToursController < ApplicationController
 
   def get_funnel_available_times
     day = params[:date].gsub("/", "-")
-    response = FunnelService.new().get_available_times(day)
-    response = response.map { |date| date.to_datetime.strftime("%I:%M %p")  }
-    
+    scheduled_tour = SchedualTour.find_by_id(params[:schedule_tour_id])
+    response = FunnelService.new(scheduled_tour).get_available_times(day)
+    response = response.map { |date| date.to_datetime.strftime("%I:%M %P")  }
+
     render json: {data: response, status: :OK, code: 200}, layout: false
 
   end
 
   def get_tour_type
     community = Community.find params[:community_id]
+
     @use_yardi_as_lead = @community.use_yardi_as_lead?
     @is_knock_community = @community.is_knock_community?
 
@@ -214,6 +217,7 @@ class SchedualToursController < ApplicationController
     self_tour_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "self_tour").where.not(tour_user_id: nil).count
     guided_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "guided_tour").where.not(tour_user_id: nil).count
     limit_exceded_tour_types = check_limit(params[:tour_type], total_count,total_count_per_day,self_tour_count,guided_count,  @community)
+    
     if params.has_key?("schedual_tour_id") && params["schedual_tour_id"].present?
       @schedual_tour = SchedualTour.find(params["schedual_tour_id"])
     else
@@ -221,9 +225,13 @@ class SchedualToursController < ApplicationController
       @schedual_tour.save
     end
 
-    tour_types = @is_knock_community ? KnockService.new(@schedual_tour).knock_available_tour_types( params[:date], params[:day], params[:time]) : @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(@schedual_tour, date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
+    unless community.is_funnel_community?
+      tour_types = @is_knock_community ? KnockService.new(@schedual_tour).knock_available_tour_types( params[:date], params[:day], params[:time]) : @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(@schedual_tour, date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
+      render json: {tour_types: tour_types.uniq,limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
+    else      
+      render json: {tour_types: [["self_tour", "Self Tour"], ["guided_tour", "Guided Tour"]] ,limit_exceded_tour_types: [], schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
+    end
 
-    render json: {tour_types: tour_types.uniq,limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
   end
 
   def show_tour_type_modal(show_self_tour_option, show_guided_tour_option, in_limit, community, limit_type, error)
@@ -299,6 +307,8 @@ class SchedualToursController < ApplicationController
 
     YardiRentCafeServices::MarketingApisService.new(@schedual_tour).schedule_tour(previous_tour)
     KnockService.new(@schedual_tour).knock_crm(true)
+    FunnelService.new(@schedual_tour).funnel_crm(true)
+
 
     @schedual_tour.update_attributes(tour_date: date, tour_time: tour_time, day_diff: day_diff)
     

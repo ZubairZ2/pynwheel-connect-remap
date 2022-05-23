@@ -4,7 +4,7 @@ class SchedualTour < ApplicationRecord
   belongs_to :tour, optional: true
   belongs_to :community, optional: true
   
-  before_destroy :cancel_yardi_tour, :cancel_knock_appointment, :notify_community_on_cancel_tour
+  before_destroy :cancel_funnel_appointment, :cancel_yardi_tour, :cancel_knock_appointment, :notify_community_on_cancel_tour
 
   scope :desc_tour_date, -> {order('coalesce(tour_date, created_at) desc')}
   scope :scheduled_tours, -> { where.not(tour_user_id: nil, tour_date: nil, tour_time: nil, community_id: nil) }
@@ -23,6 +23,11 @@ class SchedualTour < ApplicationRecord
   end
 
   private 
+
+  def cancel_funnel_appointment
+    return unless self.community.is_knock_community?
+    FunnelService.new(self).cancel_knock_appointment
+  end
 
   def cancel_knock_appointment
     return unless self.community.is_knock_community?

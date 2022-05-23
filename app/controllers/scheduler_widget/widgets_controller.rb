@@ -73,7 +73,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @knock_available_slots =  @is_knock_community ? KnockService.new(@schedule_tour).available_slots : {}
 
     @is_funnel_community = @schedule_tour.community.is_funnel_community?
-    @funnel_available_days =  @is_funnel_community ? FunnelService.new().get_available_days : {}
+    @funnel_available_days =  @is_funnel_community ? FunnelService.new(@schedule_tour).get_available_days : {}
     
     community = Community.find params[:community_id]
     app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
