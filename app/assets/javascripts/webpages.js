@@ -319,7 +319,7 @@ $(window).bind('load', function () {
                 } else {
                   $('.fav-heart').addClass('hidden')
                 }
-                $('#popover-marketing-name').html($(this).data('unit-marketing-name') + "</b>");
+                $('#popover-marketing-name').html($(this).data('unit-marketing-name') + "</b>");            
                   $('#popover-floorplan').html($(this).data('unit-description'))
                   $('#popover-floorplan').html($(this).data('unit-lease-pricing'))
                   $('#popover-floorplan').html($(this).data('floorplan-name'))
@@ -350,15 +350,20 @@ $(window).bind('load', function () {
                   $('#popover-available-date').html($(this).data('available-date'));
                 }
 
-                $('#popover-price').html(('$' + $(this).data('market-rent')));
+                $('#popover-price').html(('$' + $(this).data('market-rent')))
+
+                $($('#item_'+ $(this).data('unit-marketing-name')))[0].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+
+                $('#item_'+ $(this).data('unit-marketing-name')).css({border: "1px solid red"})
 
                 var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
                 var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
-                $('#marker-popover').css({left: (new_dx + 100) + "px", top: (new_dy - 100) + "px"});
+                $('#marker-popover').css({left: (new_dx -75) + "px", top: (new_dy + 35) + "px",height: "35px", background: "red", margin: "0px", padding: "0px"});
                 $('#marker-popover').removeClass('hidden');
               })
               .mouseleave(function () {
                 $('#marker-popover').addClass('hidden');
+                $(".left-side-30-units").css({border: "0px"})
               });
     }
     ///////////////////////////////////////////////

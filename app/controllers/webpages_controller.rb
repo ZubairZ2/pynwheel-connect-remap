@@ -52,6 +52,7 @@ class WebpagesController < ActionController::Base
           id: unit.id,
           marketing_name: unit.marketing_name,
           market_rent: unit.effective_rent,
+          building: unit.building,
           bedrooms: floorplan.bedrooms,
           bathrooms: floorplan.bathrooms,
           square_feet: (unit.square_feet.present? && unit.square_feet != 0) ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0),

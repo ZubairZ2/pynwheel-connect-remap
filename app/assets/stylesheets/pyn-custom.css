@@ -2547,7 +2547,6 @@ ul.home-tabs li:hover a {
 .left-side {
     background-color: #00000014;
     padding: 15px;
-    height: 100%;
 	width: 25%;
     float: left;
     height: 100%;
@@ -2565,16 +2564,20 @@ ul.home-tabs li:hover a {
     padding: 15px;
 }
 
-.image_styles {
+.image-styles {
     display: flex;
     justify-content: center;
     background-color: white;
     margin-bottom: 10px;
 }
 
-.image_styles > img {
-    width: 250px;
-    height: 200px
+.fa-map-marker-alt {
+    font-size: 34px;
+}
+
+.image-styles > img {
+    width: 250;
+    height: 180px
 }
 
 
@@ -2585,6 +2588,7 @@ ul.home-tabs li:hover a {
 }
 
 .unit-details-section {
+    padding: 5px 0 0 0;
     display: flex;
 }
 
@@ -3387,6 +3391,21 @@ a#favoriteclickme {
     color: white;
     font-weight: 600;
     cursor: not-allowed;
+}
+
+.popup {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border-radius: 10px;
+    border: 0 solid white;
+}
+
+.popup-title {
+    padding: 5px 0px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
 }
 
 .pin1 {
