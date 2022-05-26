@@ -416,14 +416,14 @@ class Api::V1::CommunitiesController < ActionController::Base
       if @tour_user.present?
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
         username = "#{@tour_user.first_name} #{@tour_user.last_name}"
-        upcoming_tour = []
+        completed_tours = []
         schedule_tours = @tour_user.schedual_tours
         if schedule_tours.length > 0
           schedule_tours.each do |tour|
-            upcoming_tour << tour if !tour.is_tour_completed && !date_compare(tour)
+            completed_tours << tour if tour.is_tour_completed
           end
         end
-        data = {name: username, upcoming: upcoming_tour.count, visited_history: @visited_history}
+        data = {name: username, completed_tours: completed_tours.count, visited_history: @visited_history}
         render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
       else
         render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
@@ -518,7 +518,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           data = { tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
           render :json=> { data: data.as_json, :status=> true, :message => "data returned succesfully", code: 200 }
         else
-          render :json=> { data: data, :status=>false, :message => "Invalid or Missing tour_user_id", code: 400 }
+          render :json=> { data: data, :status=>false, :message => "Tours not found", code: 400 }
         end
       else
         render :json=> { data: data, :status=>false, :message => "Invalid or Missing tour_user_id", code: 400 }
