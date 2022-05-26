@@ -4,7 +4,7 @@ namespace :yardi_voyager do
 
   task :update_yardi_voyager_provider_unit_id => :environment do
     puts "--------------------- Yardi provider unit id updation start ------------------------"
-    Community.where(data_provider: "yardi").each do |community|
+    Community.where(id: "621").each do |community|
       community.units.each do |unit|
         
         puts "--------------------------------------- Community #{community.id} data updation started: -------------------------------------------------------------------"
