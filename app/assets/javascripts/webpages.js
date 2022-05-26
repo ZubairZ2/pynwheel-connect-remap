@@ -852,6 +852,7 @@ function select_units_according_to_filters(floorplate_units) {
   var square_feet = $('#square_feet').val() || $('#responsive_square_feet').val();
   var unit_bedroom = $('#unit_bedroom').val() || $('#responsive_unit_bedroom').val();
   var unit_availability = $('#available_unit').val() || $('#responsive_available_unit').val();
+  var sortChange = document.getElementById('filter');
   market_rent = market_rent.split('-');
   square_feet = square_feet.split('-');
   var minimum_market_rent = parseFloat(market_rent[0]);
