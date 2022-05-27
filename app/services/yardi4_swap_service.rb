@@ -69,7 +69,7 @@ class Yardi4SwapService < BaseService
           end
           update_yardi4_floorplans(floorplans)
           update_yardi4_units(ils_units,external_property_id)
-          rename_provider
+          # rename_provider
           #else
           #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
@@ -92,7 +92,7 @@ class Yardi4SwapService < BaseService
       end
       if unit.present?
         unit = unit.first
-        unit.provider = "yardi_new"
+        unit.provider = "yardi"
         unit.provider_unit_id = "#{u[:Units][:Unit][:Identification][0][:IDValue]}-#{property_id}" rescue "#{u[:Units][:Unit][:Identification][0][0][:IDValue]}-#{property_id}"
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
@@ -145,7 +145,7 @@ class Yardi4SwapService < BaseService
         end
         unit = Unit.new
         unit.community_id = credentials.community_id
-        unit.provider = "yardi_new"
+        unit.provider = "yardi"
         unit.property_id = property_id
         unit.provider_unit_id = provider_unit_id
         unit.unit_type = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])
@@ -207,7 +207,7 @@ class Yardi4SwapService < BaseService
         fp = fp.first
         rooms = []
         floorplan.each do |f|
-          fp.provider = "yardi_new"
+          fp.provider = "yardi"
           fp.provider_floorplan_id = floorplan[0][:IDValue]
           if f.key?(:Room)
             rooms << f
@@ -250,7 +250,7 @@ class Yardi4SwapService < BaseService
         # fp = Floorplan.where(community_id: credentials.community_id).first
         fp = Floorplan.new
         fp.community_id = credentials.community_id
-        fp.provider = "yardi_new"
+        fp.provider = "yardi"
         rooms = []
         floorplan.each do |f|
           fp.provider_floorplan_id = floorplan[0][:IDValue]

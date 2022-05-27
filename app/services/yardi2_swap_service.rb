@@ -42,7 +42,7 @@ class Yardi2SwapService < BaseService
           end
           save_yardi2_floorplans(floorplans)
           save_yardi2_units(ils_units,external_property_id)
-          rename_provider
+          # rename_provider
         end
       rescue => e
         e.message
@@ -62,7 +62,7 @@ class Yardi2SwapService < BaseService
 
         if unit.present?
           unit = unit.first
-          unit.provider = "yardi_new"
+          unit.provider = "yardi"
           unit.provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
           unit.property_id = property_id
           unit.unit_type = unit_entries[0][:Id]
@@ -111,7 +111,7 @@ class Yardi2SwapService < BaseService
           # unit = Unit.where(community_id: credentials.community_id).first
           unit = Unit.new
           unit.community_id = credentials.community_id
-          unit.provider = "yardi_new"
+          unit.provider = "yardi"
           unit.provider_unit_id = provider_unit_id
           unit.property_id = property_id
           unit.unit_type = unit_entries[0][:Id]
@@ -174,14 +174,14 @@ class Yardi2SwapService < BaseService
           fp = fp.first
           rooms = []
           floorplan.each do |f|
-            fp.provider = "yardi_new"
+            fp.provider = "yardi"
             if f.key?(:Room)
               rooms << f
             end
 
             if f.key?(:Id)
               fp.provider_floorplan_id= f[:Id]
-              fp.provider = "yardi_new"
+              fp.provider = "yardi"
             end
             if f.key?(:MarketRent)
               if f[:MarketRent][0][:Min].to_f > 0
@@ -229,7 +229,7 @@ class Yardi2SwapService < BaseService
                 dup.destroy
               end
               fp.provider_floorplan_id = f[:Id]
-              fp.provider = "yardi_new"
+              fp.provider = "yardi"
             end
             if f.key?(:Name)
               fp.name = f[:Name]
