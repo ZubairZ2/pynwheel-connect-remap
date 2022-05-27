@@ -406,8 +406,16 @@ $(window).bind('load', function () {
           $(this).css({"margin-left": -5, "margin-top": -7})
         }
 
-        if($(window).width() <= 567){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()), "margin-top": -($('.fa-map-marker-alt-responsive').height()+7)})       
+        if($(window).width() >= 480 && $(window).width() <= 567){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-15)})       
+        }
+
+        if($(window).width() >= 320 && $(window).width() <= 480){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-7), "margin-top": -($('.fa-map-marker-alt-responsive').height()-13)})       
+        }
+
+        if($(window).width() <= 320 ){
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-5), "margin-top": -($('.fa-map-marker-alt-responsive').height()-11)})       
         }
       });
 
@@ -1705,9 +1713,19 @@ function adjustMarkerPosition(marker) {
   if($(window).width() >= 567 && $(window).width() <= 1360 ){
     $(marker).css({"margin-left": -5, "margin-top": -2})   
   }
-  if($(window).width() <= 567){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+8), "margin-top": -($('#s_'+unit_id).height()+7)})       
+
+  if($(window).width() > 480 && $(window).width() <= 567){
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-5)})       
   }
+
+  if($(window).width() > 320 && $(window).width() <= 480){
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()-7)})       
+  }
+
+  if($(window).width() < 320 ){
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+1), "margin-top": -($('#s_'+unit_id).height()-9)})       
+  }
+
 }
 
 function adjustAmenitiesPosition() {
