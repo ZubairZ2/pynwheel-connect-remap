@@ -200,8 +200,10 @@
                   .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                     %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                   %span Amenity image
-
-            .right-side.parent#panzomm-container
+            %div#tab
+              =button_tag " Map View",:onClick => "change_units_view(event, 'map_view')", :class => "fa fa-map-marker"
+              =button_tag " List View", :onClick => "change_units_view(event, 'list_view')", :class => "fas fa-list"
+            .right-side.parent.tabcontent.map_view#panzomm-container
               .image-map#zoomable.zoomable-map-container{style: "text-align: center"}
                 - if @community_info.has_floorplates?
                   - @floors.each do |floor|
@@ -241,8 +243,7 @@
               .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
                 %strong Oops!
                 There is nothing available on this floor that matches the parameters that you have selected.
-            .left-side
-
+            .left-side.tabcontent.list_view
               -all_details = JSON.parse(@units_with_floorplan_info)
               %div.webpage-left-list-view-title
                 %p#unit-title-count
@@ -570,7 +571,10 @@
   });
 
   var sortChange = document.getElementById('filter');
-  
+  sortChange.addEventListener('change', () => {
+    var floorChange = $("#slider li a.selected")[0].innerHTML
+    renderChangedUnits(floorChange, sortChange.value);
+  });
 
   function getFilteredUnits(units, type){
     var new_units = []
@@ -598,6 +602,7 @@
     var units = "#{@units_with_floorplan_info}";
         units = units.replace(/&quot;/g,'"');
         units = JSON.parse(units);
+        units = select_units_according_to_filters(units)
         var floorUnits = []
         if ("#{@community_info.has_floorplates?}" === "true" && floorChange){
           units.forEach((unitt) => {
@@ -648,7 +653,7 @@
             </div>
           </div>`;
         element.innerHTML += unit_details_div  
-        });
+    });
   }
 
   $("#show-more-price").click(function(){

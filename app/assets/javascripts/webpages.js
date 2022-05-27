@@ -835,6 +835,21 @@ function set_prices_according_to_units_to_display(floorplate_units, is_market_re
   }
 }
 
+function change_units_view(evt, type){
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementsByClassName(type)[0].style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
 
 function select_units_according_to_filters(floorplate_units) {
   var bedroom_base_units = [];
@@ -852,7 +867,6 @@ function select_units_according_to_filters(floorplate_units) {
   var square_feet = $('#square_feet').val() || $('#responsive_square_feet').val();
   var unit_bedroom = $('#unit_bedroom').val() || $('#responsive_unit_bedroom').val();
   var unit_availability = $('#available_unit').val() || $('#responsive_available_unit').val();
-  var sortChange = document.getElementById('filter');
   market_rent = market_rent.split('-');
   square_feet = square_feet.split('-');
   var minimum_market_rent = parseFloat(market_rent[0]);

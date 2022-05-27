@@ -2580,6 +2580,14 @@ ul.home-tabs li:hover a {
     height: 180px
 }
 
+#tab {
+    display: none;
+}
+
+#tab > button {
+    width: 50%;
+    background-color: #008aff;
+}
 
 .webpage-left-list-view-title {
     display: flex;
@@ -3533,11 +3541,33 @@ a#favoriteclickme {
         margin: 20px 0 7px 0;
     }
     .right-side {
-        width: auto
+        width: 70%;
     }
+    .left-side {
+        width: 30%;
+    }
+
+}
+
+.display-block {
+    display: block;
+}
+
+.dispay-none {
+    display: none;
 }
 
 @media (max-width:991px) {
+    .left-side {
+        display: none;
+        width: 100%;
+    }
+    #tab {
+        display: flex;
+    }
+    .right-side {
+        width: 100%;
+    }
     .skin-blue .main-header .logo {
         padding-top: 0px;
     }
