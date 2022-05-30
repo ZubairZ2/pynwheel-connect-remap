@@ -86,8 +86,6 @@ class YardiRentCafeService < BaseService
                     
                     if rentStr[0].to_i > 0
                       leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
-                    else
-                      leasing = leasing + rentStr[1] + ":" + unit.min_effective_rent.to_i.to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
                     end
 
                   end
@@ -162,8 +160,6 @@ class YardiRentCafeService < BaseService
                     rentStrs.each do |rentStr|
                       if rentStr[0].to_i > 0
                         leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
-                      else
-                        leasing = leasing + rentStr[1] + ":" + unit.min_effective_rent.to_i.to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
                       end
                     end
                   end
