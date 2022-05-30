@@ -415,7 +415,6 @@ class Api::V1::CommunitiesController < ActionController::Base
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       if @tour_user.present?
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
-        username = "#{@tour_user.first_name} #{@tour_user.last_name}"
         completed_tours = []
         schedule_tours = @tour_user.schedual_tours
         if schedule_tours.length > 0
@@ -423,7 +422,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             completed_tours << tour if tour.is_tour_completed
           end
         end
-        data = {name: username, completed_tours: completed_tours.count, visited_history: @visited_history}
+        data = {user: @tour_user, completed_tours: completed_tours.count, visited_history: @visited_history}
         render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
       else
         render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
