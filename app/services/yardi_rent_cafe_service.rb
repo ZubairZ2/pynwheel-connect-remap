@@ -82,8 +82,14 @@ class YardiRentCafeService < BaseService
                 rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
                 leasing = ""
                 if rentStrs.present?
-                    rentStrs.each do |rentStr|
-                    leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                  rentStrs.each do |rentStr|
+                    
+                    if rentStr[0].to_i > 0
+                      leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                    else
+                      leasing = leasing + rentStr[1] + ":" + unit.min_effective_rent.to_i.to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                    end
+
                   end
                 end
                 unit.lease_pricing = leasing
@@ -141,19 +147,27 @@ class YardiRentCafeService < BaseService
                   end
                   unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
                   unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
+                  
                   if unit.effective_rent <= 0
                     unit.effective_rent = 1.0
                   end
+
                   unit.manually_updated = false
                   unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
 
                   rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
                   leasing = ""
+
                   if rentStrs.present?
                     rentStrs.each do |rentStr|
-                      leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                      if rentStr[0].to_i > 0
+                        leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                      else
+                        leasing = leasing + rentStr[1] + ":" + unit.min_effective_rent.to_i.to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                      end
                     end
                   end
+
                   unit.lease_pricing = leasing
 
                   unit.save(validate: false)
@@ -293,16 +307,20 @@ class YardiRentCafeService < BaseService
   def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name)
     request_type = "pricingmatrix"
     url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
+   
     begin
       response = HTTParty.get(url)
       rent_matrix = JSON.parse(response.body)
       unless rent_matrix[0]["Error"].present?
         uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
         distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
+
         return distinct_data.map{|data| data.map{|r| [r["Rent"].to_i, r["Term"], r["Start_Date"], r["End_Date"]]}.min}
+
       else
         return nil
       end
+
     rescue => ex
       return nil
     end
