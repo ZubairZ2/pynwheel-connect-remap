@@ -201,8 +201,10 @@
                     %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                   %span Amenity image
             %div#tab
-              =button_tag " Map View",:onClick => "change_units_view(event, 'map_view')", :class => "fa fa-map-marker"
-              =button_tag " List View", :onClick => "change_units_view(event, 'list_view')", :class => "fas fa-list"
+              %div.tablinks.active_unit_view
+                =button_tag " Map View",:onClick => "change_units_view(event, 'map_view')", :class => "fa fa-map-marker"
+              %div.tablinks
+                =button_tag " List View", :onClick => "change_units_view(event, 'list_view')", :class => "fa fa-list"
             .right-side.parent.tabcontent.map_view#panzomm-container
               .image-map#zoomable.zoomable-map-container{style: "text-align: center"}
                 - if @community_info.has_floorplates?
@@ -239,7 +241,6 @@
                       - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
 
                         = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>amenity.name
-
               .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
                 %strong Oops!
                 There is nothing available on this floor that matches the parameters that you have selected.
@@ -255,9 +256,9 @@
                   units = units.replace(/&quot;/g,'"');
                   units = JSON.parse(units);
                   var is_floorplate = "#{@community_info.has_floorplates?}"
-                  var community_name = "#{@community_info.name}"
-                  console.log("yeasdasnd ")
-                  renderChangedUnits(units, is_floorplate, community_name, "");
+                  var community = "#{@community_info.name}"
+                  units = select_units_according_to_filters(units);
+                  renderChangedUnits(units, is_floorplate, community);
           %footer.c-footer
             .inner-footer
               .footer-logo
@@ -300,13 +301,14 @@
 = render partial: "unit_information_popup"
 = render partial: "3d_amenity_modal"
 
-#communityWebpagesData{ data: {community: @community.to_json, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json} }
+#communityWebpagesData{ data: {community: @community.to_json, is_floorplate: @community_info.has_floorplates?, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json} }
 
 :javascript
 
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
   var has_floorplate = "#{@community_info.has_floorplates?}";
+  var community_name = "#{@community_info.name}"
   var isSiteMap = "#{@community.sitemap.present?}"
   var img_width = "#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"
   var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"
@@ -488,8 +490,13 @@
       var i = $("#slider li a.selected").parent().parent().parent().index()
       $(".digits-list-item").removeClass("selected");
       $($(this).find(".digits-list-item")[i]).addClass("selected");
-      var floorChange = $("#slider li a.selected")[0].innerHTML
-      renderChangedUnits(floorChange);
+      var units = "#{@units_with_floorplan_info}";
+      units = units.replace(/&quot;/g,'"');
+      units = JSON.parse(units);
+      var is_floorplate = "#{@community_info.has_floorplates?}"
+      var community_name = "#{@community_info.name}"
+      units = select_units_according_to_filters(units);
+      renderChangedUnits(units, is_floorplate, community_name);
       }
       catch(err) {
       }
@@ -524,16 +531,14 @@
     }
   });
 
-  var sortChange = document.getElementById('filter');
-  sortChange.addEventListener('change', () => {
+  document.getElementById('filter').addEventListener('change', () => {
     var units = "#{@units_with_floorplan_info}";
     units = units.replace(/&quot;/g,'"');
     units = JSON.parse(units);
-    units = select_units_according_to_filters(units);
     var is_floorplate = "#{@community_info.has_floorplates?}"
     var community_name = "#{@community_info.name}"
-    var sort_value = sortChange.value;
-    renderChangedUnits(units, is_floorplate, community_name, sortChange.value);
+    units = select_units_according_to_filters(units)
+    renderChangedUnits(units, is_floorplate, community_name);
   });
 
   $("#show-more-price").click(function(){

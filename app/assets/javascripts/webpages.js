@@ -16,11 +16,14 @@ $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
+  is_floorplates = $("#communityWebpagesData").data("is_floorplate");
+
   if(webCommunity) {
     selectMap = webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps
     defaultMapType = webCommunity.web_map_type;
     _3dUnitsToBeSelected = select_units_according_to_filters(units)
+    renderChangedUnits(_3dUnitsToBeSelected, is_floorplates, webCommunity['name']);
     selected_units = _3dMapViewMarker()
     beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,_beansApiKey, 
       {
@@ -464,83 +467,7 @@ $(window).bind('load', function () {
   }
 });
 
-function getFilteredUnits(units, type){
-  var new_units = []
-  if (type === "Price: Low to High"){
-    new_units = units.sort((a,b) => a['market_rent'] - b['market_rent'])
-  } else if (type === "Price: High to Low"){
-    new_units = units.sort((a,b) => b['market_rent'] - a['market_rent'])
-  } else if (type === "Sq Ft: More to Less"){
-    new_units = units.sort((a,b) => b['square_feet'] - a['square_feet'])
-  } else if (type === "Sq Ft: Less to More"){
-    new_units = units.sort((a,b) => a['square_feet'] - b['square_feet'])
-  } else if (type === "Availability: Soonest to Latest"){
-    new_units = units.sort((a,b) => b['available_date'] - a['available_date'])
-  } else if (type === "Availability: Latest to Soonest"){
-    new_units = units.sort((a,b) => a['available_date'] - b['available_date'])
-  } else {
-    new_units = units;
-  }
-  return new_units
-}
 
-function renderChangedUnits(units, is_floorplate, community_name, sortType=""){
-  console.log('yes')
-  var element = document.getElementById("units-body");
-  element.innerHTML = ""
-      var floorUnits = []
-      if (is_floorplate === "true" && floorChange){
-        var floorChange = $("#slider li a.selected")[0].innerHTML
-        units.forEach((unitt) => {
-          if (unitt.floor.toString() === floorChange){
-            floorUnits.push(unitt)
-          }
-        });
-        document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
-      } else {
-        floorUnits = units;
-      }
-      if (sortType){
-        floorUnits = getFilteredUnits(floorUnits, sortType);
-      }
-      var filtered_units = floorUnits;
-      filtered_units.forEach((unit) => {
-        var unit_details_div = `
-        <div class='left-side-30-units' id='item_${unit['building'] !== "" ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}'>
-          <div class='image-styles'>
-            <img src=${unit['floorplan_image']} class='image-image-styles' />
-          </div>
-          <div class='unit-details-section'>
-            <p id='unit-detail-market-title'>
-              Unit # ${unit['building'] !== "" ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}
-            </p>
-            <p>
-              ${community_name}
-            </p>
-          </div>
-          <div class='unit-details-section'>
-            <p>
-            <i class='fa.fa-bed'> &nbsp ${unit['bedrooms']} Bed </i>
-            </p>
-            <p>
-            <i class='fa.fa-bath'> &nbsp ${unit['bathrooms']} Bath </i>
-            </p>
-            <p>
-            <i class='fa.fa-building'> &nbsp ${unit['square_feet']} Sq Ft </i>
-            </p>
-          </div>
-          <div class='unit-details-section'>
-            <p>
-              Available ${unit['available'] ? "Now" : unit['availability']}
-            </p>
-            <p>
-              $${unit['market_rent']}/month
-            </p>
-          </div>
-        </div>`;
-      element.innerHTML += unit_details_div  
-  });
-}
 
 function polygonClickPopup(feature) {
   let htmlToDisplay;
@@ -565,6 +492,7 @@ function unitHTMLToDisplay(unit) {
 
   return `<strong>Name: ${unitName}</strong>`;
 }
+
 
 function amenityHTMLToDisplay(amenity) {
   let htmlToDisplay = amenity.display_text;
@@ -693,7 +621,7 @@ function setFilters() {
   if (zero_bedroom) {
     $('#zero-bedroom-checkbox').addClass('active-filter');
     $('#zero-bedroom-checkbox').parent().removeClass('disabled');
-  } else {
+  } else {community_name
     $('#zero-bedroom-checkbox').parent().hide();
   }
 
@@ -708,7 +636,7 @@ function setFilters() {
     $('#two-bedroom-checkbox').addClass('active-filter');
     $('#two-bedroom-checkbox').parent().removeClass('disabled');
   } else {
-    $('#two-bedroom-checkbox').parent().hide();
+    $('#two-bedroom-checkbox').parent().hicommunity_namede();
   }
 
   if (three_bedroom) {
@@ -753,6 +681,7 @@ function showMarkers(market_rent_change = false) {
   $('.hidden-units').empty();
 
   var units_to_display = select_units_according_to_filters(units)
+  renderChangedUnits(units_to_display, is_floorplates, webCommunity['name']);
   if(selectMap === "3d-map" && enable3DMaps) {
     _3dFilteredUnits = units_to_display;
   }
@@ -821,6 +750,95 @@ function populate_current_units() {
   }
 
   showMarkers();
+}
+
+function getFilteredUnits(units, type){
+  var new_units = []
+  if (type === "Price: Low to High"){
+    new_units = units.sort((a,b) => a['market_rent'] - b['market_rent'])
+  } else if (type === "Price: High to Low"){
+    new_units = units.sort((a,b) => b['market_rent'] - a['market_rent'])
+  } else if (type === "Sq Ft: More to Less"){
+    new_units = units.sort((a,b) => b['square_feet'] - a['square_feet'])
+  } else if (type === "Sq Ft: Less to More"){
+    new_units = units.sort((a,b) => a['square_feet'] - b['square_feet'])
+  } else if (type === "Availability: Soonest to Latest"){
+    new_units = units.sort((a,b) => new Date(b['available_date']) - new Date(a['available_date']))
+  } else if (type === "Availability: Latest to Soonest"){
+    new_units = units.sort((a,b) => new Date(a['available_date']) - new Date(b['available_date']))
+  } else {
+    new_units = units;
+  }
+  return new_units
+}
+
+function click_marker_tag(id){
+  var marker_tags = document.getElementsByClassName('unit_marker');
+  Array.from(marker_tags).forEach(item => {
+    if (item.id === id ){
+      item.click();
+    }
+  })
+}
+
+function renderChangedUnits(units, is_floorplate, community){
+  var element = document.getElementById("units-body");
+  element.innerHTML = ""
+      var floorUnits = []
+      if (is_floorplate === "true"){
+        var floorChange = $("#slider li a.selected")[0].innerHTML
+        units.forEach((unitt) => {
+          if (unitt.floor.toString() === floorChange){
+            floorUnits.push(unitt)
+          }
+        });
+        document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
+      } else {
+        floorUnits = units;
+      }
+      sortType = document.getElementById('filter');
+      floorUnits = getFilteredUnits(floorUnits, sortType.value);
+      var filtered_units = floorUnits;
+      var website ="#{@community_info.website}"
+      filtered_units.forEach((unit) => {
+        var unit_details_div = `
+        <div class='left-side-30-units' id='item_${unit['building'] !== "" ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}'>
+          <div class='image-styles'>
+            <a class='image_link' href='##' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
+              <img src=${unit['floorplan_image']} class='image-image-styles' />
+            </a>
+          </div>
+          <div class='unit-details-section'>
+            <p id='unit-detail-market-title'>
+              Unit # ${unit['building'] !== "" ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}
+            </p>
+            <p>
+              ${community}
+            </p>
+          </div>
+          <div class='unit-details-section'>
+            <p>
+            <i class='fa.fa-bed'> &nbsp ${unit['bedrooms']} Bed </i>
+            </p>
+            <p>
+            <i class='fa.fa-bath'> &nbsp ${unit['bathrooms']} Bath </i>
+            </p>
+            <p>
+            <i class='fa.fa-building'> &nbsp ${unit['square_feet']} Sq Ft </i>
+            </p>
+          </div>
+          <div class='unit-details-section'>
+            <p>
+              Available ${unit['available'] ? "Now" : unit['available_date']}
+            </p>
+            <p>
+              $${unit['market_rent']}/month
+            </p>
+          </div>
+        </div>
+        `;
+      element.innerHTML += unit_details_div  
+  });
 }
 
 function disabled_enabled_anchors() {
@@ -922,10 +940,10 @@ function change_units_view(evt, type){
 
   tablinks = document.getElementsByClassName("tablinks");
   for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
+    tablinks[i].className = tablinks[i].className.replace(" active_unit_view", "");
   }
   document.getElementsByClassName(type)[0].style.display = "block";
-  evt.currentTarget.className += " active";
+  evt.target.parentElement.className += " active_unit_view";
 }
 
 

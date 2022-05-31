@@ -2544,6 +2544,7 @@ ul.home-tabs li:hover a {
     height: 100px;
 }
 
+
 .left-side {
     background-color: #00000014;
     padding: 15px;
@@ -2555,7 +2556,6 @@ ul.home-tabs li:hover a {
 }
 
 .right-side {
-	height: 100%;
 	width: 75%;
     float: left;
 }
@@ -2575,18 +2575,26 @@ ul.home-tabs li:hover a {
     font-size: 34px;
 }
 
-.image-styles > img {
+.image-styles > a >img {
     width: 250;
     height: 180px
 }
 
 #tab {
     display: none;
+    border-bottom: 1px solid rgb(206, 206, 206);
 }
 
-#tab > button {
-    width: 50%;
-    background-color: #008aff;
+.tablinks {
+    border: 0;
+}
+
+.tablinks > button {
+    margin: 0 15px                              ;
+    padding: 15px 15px;
+    font-size: 18px;
+    background-color: transparent;
+    border: 0;
 }
 
 .webpage-left-list-view-title {
@@ -3384,6 +3392,13 @@ a#favoriteclickme {
     color: #fff;
 }
 
+.active_unit_view {
+    border-bottom: 2px solid black;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+}
+
 .set-floor-modal-body {
     overflow: scroll;
     overflow-x: scroll;
@@ -3564,6 +3579,8 @@ a#favoriteclickme {
     }
     #tab {
         display: flex;
+        width: 100%;
+        justify-content: center;
     }
     .right-side {
         width: 100%;
