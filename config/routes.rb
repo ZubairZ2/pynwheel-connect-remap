@@ -645,6 +645,10 @@ Rails.application.routes.draw do
       post :perq_tour_webhook, to: 'perq_webhooks#perq_tour_webhook'
       post :save_data, to: 'dwelo_devices#load_data'
       post :device_lock_unlock, to: 'dwelo_devices#device_lock_or_unlock'
+      get :get_tour_user_by_tour, to: 'communities#get_tour_user_by_tour'
+      get :get_user_by_email, to: 'communities#get_user_by_email'
+      get :get_filtered_tours, to: 'communities#get_filtered_tours'
+      get :get_count_screen, to: 'communities#get_count_screen'
       resources :communities, only: :index do
         member do
           get :data

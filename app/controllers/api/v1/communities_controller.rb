@@ -408,6 +408,74 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+  def get_count_screen
+    data = Hash.new
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      @tour_user = TourUser.find_by_id params[:tour_user_id]
+      if @tour_user.present?
+        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
+        completed_tours = []
+        schedule_tours = @tour_user.schedual_tours
+        if schedule_tours.length > 0
+          schedule_tours.each do |tour|
+            completed_tours << tour if tour.is_tour_completed
+          end
+        end
+        data = {user: @tour_user, completed_tours: completed_tours.count, visited_history: @visited_history}
+        render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
+      else
+        render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
+      end
+    else
+      render :json=> {data: data, :status=>false, :message => "Invalid Token", code: 401}
+    end
+  end
+
+  def get_user_by_email
+    if params[:user_email]
+      @tour_user = TourUser.find_by(email: params[:user_email])
+      if @tour_user.present?
+        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
+        @scheduled_tours = []
+        if @tour_user.schedual_tours.present?
+          @tour_user.schedual_tours.each do |tour|
+            @scheduled_tours << tour if !tour.is_tour_completed && !date_compare(tour)
+          end
+        end
+        token = encoded(@tour_user.id)
+        render :json => {status: true, user: @tour_user, code: 200, access_token: token, visited_history: @visited_history, schedule_tour: @scheduled_tours.count}
+      else
+        render :json => {status: false, error: "Email not found", code: 400}
+      end
+    else
+      render :json => {status: false, error: "Email not provided", code: 400}
+    end
+  end
+
+  def get_tour_user_by_tour
+    data = Hash.new
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      @tour_user = TourUser.find_by_id params[:tour_user_id]
+      if @tour_user.present?
+        @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
+        community_visited = []
+        @tour_user.visited_stops.each do |stop|
+          community_visited << stop.tour.community
+        end
+        @scheduled_tours = @tour_user.schedual_tours
+        data = {visited_history: @visited_history, tour_user: @tour_user, scheduled: @scheduled_tours.count, visited: community_visited.uniq}
+        render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
+      else
+        render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
+      end
+    else
+      render :json=> {data: data, :status=>false, :message => "Invalid Token", code: 401}
+    end
+  end
+    
+
   def tour_user_data
     data = Hash.new
     access = grant_access (decoded(params[:token])) rescue false
@@ -427,6 +495,40 @@ class Api::V1::CommunitiesController < ActionController::Base
       end
     else
       render :json=> {data: data, :status=>false, :message => "Invalid Token", code: 401}
+    end
+  end
+
+  def get_filtered_tours
+    data = Hash.new
+    access = grant_access (decoded(params[:token])) rescue false
+    if api_access or access == true
+      @tour_user = TourUser.find_by_id params[:tour_user_id]
+      if @tour_user.present?
+        @scheduled_tours = @tour_user.schedual_tours
+        upcoming_tours = []
+        completed_tours = []
+        expired_tours = []
+        last_visit = nil
+        if @scheduled_tours.present?
+          @scheduled_tours.each do |tour|
+            if tour.present?
+              completed_tours << get_community_tour(tour) if tour.is_tour_completed
+              expired_tours << get_community_tour(tour) if !tour.is_tour_completed && date_compare(tour)
+              upcoming_tours << get_community_tour(tour) if !tour.is_tour_completed && !date_compare(tour)
+            end
+          end
+          last_visit = get_last_visited_community(@scheduled_tours)
+          data = { tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
+          render :json=> { data: data.as_json, :status=> true, :message => "data returned succesfully", code: 200 }
+        else
+          data = { tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours, completed: completed_tours, exipred: expired_tours }
+          render :json=> { data: data.as_json, :status=>true, code: 200 }
+        end
+      else
+        render :json=> { data: data, :status=>false, :message => "Invalid or Missing tour_user_id", code: 400 }
+      end
+    else
+      render :json=> { data: data, :status=>false, :message => "Invalid Token", code: 401 }
     end
   end
 
@@ -1284,6 +1386,46 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   private
+
+  def get_community_tour(tour)
+    if !tour.tour_date.nil?
+      d = tour.tour_date
+      t = tour.tour_time
+      dt = DateTime.new(d.year, d.month, d.day, t.hour, t.min)
+    else
+      dt = DateTime.now
+    end
+    tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
+    return {tour_type: tour_type, tour_time: dt, community: tour.community}
+  end
+
+  def get_last_visited_community(scheduled_tours)
+    completed_tours = []
+    scheduled_tours.order(:tour_time).each do |tour|
+      if (!tour.tour_time.nil?)
+        completed_tours << tour if tour.is_tour_completed
+      end
+    end
+    if completed_tours.present?
+      return {visited_time: completed_tours.last.tour_time, visited_community: completed_tours.last.community}
+    else
+      return nil
+    end
+  end
+
+  def date_compare(tour)
+    if tour.property_tour_type.eql?("unscheduled_self_tour") || tour.property_tour_type.eql?("remote_tour")
+      return false
+    else
+      d = tour.tour_date
+      t = tour.tour_time
+      tour_date_time = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec, t.zone)
+      new_date = Date.today
+      new_time = Time.now
+      new_date_time = DateTime.new(new_date.year, new_date.month, new_date.day, new_time.hour, new_time.min, new_time.sec, new_time.zone)
+      return tour_date_time <= new_date_time
+    end
+  end
 
   def send_user_arrival_email tour_user, community
     unless (tour_user&.tour_type === "virtual_tour" || tour_user.arrival_email_sent)

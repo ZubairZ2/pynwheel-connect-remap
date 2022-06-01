@@ -71,7 +71,6 @@ class Community < ApplicationRecord
   after_create :create_sms_email_content
 
   attr_accessor :default_community_id
-
   after_update :crop_image
   after_update :crop_secondary_image
   after_create :create_tour_also
@@ -88,6 +87,274 @@ class Community < ApplicationRecord
     include_association :design
   end
 
+  def as_json(options = {})
+    data = super(
+      :only => [:id , :name , :logo , :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :property_manager_name,:property_manager_phone,:property_manager_email , :website , :number_of_units], :methods => [:schedule_tour_url])
+    check_brand_access = options[:brand_pdf_feature]
+    if check_brand_access == true
+      data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())
+    else
+      data.merge!(:brand_feature_access => false)
+    end
+  end
+
+  def brand_details
+    self.brand_details_pdf
+  end
+
+  def community_code
+    (JWT.encode ({"community_id" => self.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256') if self.present?
+  end
+
+  def schedule_tour_url
+    community_code = self.community_code
+    return "#{ENV['HOST_URL']}scheduler_widget/test_widget?community_id=#{self.id}&community_code=#{community_code}&schedule_tours_page=true&direct=true"
+  end
+
+
+  def set_community_status(current_user)
+    return if self.blank?
+
+    set_community_details_status(current_user)
+    set_property_map_status(current_user)
+    set_floorplan_status(current_user)
+    set_gallery_images_status(current_user)
+    set_touch_vidoes_status(current_user)
+    set_data_provider_status(current_user)
+    touch_installation_specification(current_user)
+    set_lock_providers_status(current_user)
+    set_tour_stops_status(current_user)
+    set_visiting_hours_status(current_user)
+  end
+
+  def set_community_details_status(current_user)
+    return if self.blank?
+
+    community_status = status_string(check_community_requirments(self))
+    set_status_for_all(self,community_status,current_user)
+  end
+
+  def set_property_map_status(current_user)
+    return if self.sitemap.blank? && self.floorplates.blank?
+
+    if self.sitemap.present?
+      sitemap = self.sitemap
+      property_sitemap_status = status_string(self.sitemap&.image.present?)
+      set_status_for_all(sitemap,property_sitemap_status,current_user)
+
+    elsif self.floorplates.any?
+      floorplates = self.floorplates
+      floorplates.each do |floorplate|
+        property_floorplate_status = status_string(floorplate&.image.present?)
+        set_status_for_all(floorplate,property_floorplate_status,current_user)
+      end
+    end
+  end
+
+  def set_floorplan_status(current_user)
+    return if self.floorplans.blank?
+
+    self.floorplans.each do |floorplan|
+      floorplan_status = status_string(floorplan&.image.present?)
+      set_status_for_all(floorplan,floorplan_status,current_user)
+    end
+  end
+
+  def set_gallery_images_status(current_user)
+    return if self.galleries.blank?
+
+    self.galleries.each do |gallery|
+      gallery_images_status = status_string(gallery.name.present? && gallery&.gallery_images.present?)
+      set_status_for_all(gallery,gallery_images_status,current_user)
+    end
+  end
+
+  def set_touch_vidoes_status(current_user)
+    return if self.design.blank?
+    design = self.design
+    home_page_image_status(design,current_user)
+    home_page_video_status(design,current_user)
+  end
+
+  def home_page_image_status(design,current_user)
+    return if design.home_page_images.blank?
+    design.home_page_images.each do |touch_img|
+      touch_img_status = status_string(touch_img.name.present? & touch_img.image.present?)
+      set_status_for_all(touch_img,touch_img_status,current_user)
+    end
+  end
+
+  def home_page_video_status(design,current_user)
+    return if design.home_page_video.blank?
+
+    hp_video = design.home_page_video
+    touch_video_status = status_string(hp_video.video.url.present?)
+    set_status_for_all(hp_video,touch_video_status,current_user)
+  end
+
+  def set_data_provider_status(current_user)
+    return if self.data_provider.blank? && self.credential.blank?
+    provider_credential = self.credential
+    required_fields = check_required_fields_for_providers
+    status_attr = status_string(required_fields)
+    set_status_for_all(provider_credential,status_attr,current_user)
+    if self&.credential&.use_different_crm_provider
+      set_crm_status(current_user)
+    end
+  end
+
+  def check_required_fields_for_providers
+    credential = self.credential
+
+    case data_provider
+      when "psi"
+        credential.entrata_url.present? && credential.username.present? && credential.password.present? && credential.property_id.present?
+      when "yardirentcafe"
+        (credential.c_code.present? || credential.api_token.present?) && credential.p_code.present?
+      when "realpagesvc"
+        credential.site_id.present? && credential.pmc_id.present?
+      when "yardi"
+        credential.url.present? && credential.username.present? && credential.password.present? && credential.property_id.present? && credential.server_name.present? && credential.database.present? && credential.platform.present? && credential.interface_entity.present?
+      when "resman"
+        credential.resman_api_version.present? && credential.resman_account_id.present? && credential.resman_property_id.present?
+      when "zaremba"
+        credential.zaremba_username.present? && credential.zaremba_password.present? && credential.zaremba_filename.present? && credential.zaremba_property_id.present?
+      when "xml"
+        credential.xml_filename.present? && credential.xml_domain.present?
+      when "other"
+        credential.new_requested_data_provider.present?
+    end
+  end
+
+  def set_crm_status(current_user)
+    return if self.crm_credential.blank?
+    crm_credential = self.crm_credential
+    required_fields = check_crm_required_fields
+    status_attr = status_string(required_fields)
+    set_status_for_all(crm_credential,status_attr,current_user)
+  end
+
+  def check_crm_required_fields
+    return if self.crm_credential.crm_provider.blank?
+    crm_credential = self.crm_credential
+
+    case crm_credential.crm_provider
+      when "psi"
+        crm_credential.entrata_domain.present? && crm_credential.entrata_username.present? && crm_credential.entrata_password.present? && crm_credential.entrata_property_id.present?
+      when "yardirentcafe"
+        crm_credential.yardirentcafe_leads_api_user_name.present? && crm_credential.yardirentcafe_leads_api_password.present? && crm_credential.yardirentcafe_marketing_api_key.present? && crm_credential.yardirentcafe_company_code.present? && crm_credential.yardirentcafe_property_id.present? && crm_credential.yardirentcafe_property_code.present?
+      when "realpagesvc"
+        crm_credential.realpage_site_id.present? && crm_credential.realpage_pmc_id.present?
+      when "salesforce"
+        crm_credential.salesforce_username.present? && crm_credential.salesforce_password.present? && crm_credential.salesforce_client_id.present? && crm_credential.salesforce_secret_id.present? && crm_credential.salesforce_property_id.present?
+      when "knock"
+        crm_credential.knock_api_key.present? && crm_credential.knock_community_id.present? && crm_credential.knock_sms_consent_url.present?
+    end
+  end
+
+  def set_visiting_hours_status(current_user)
+    return unless self.self_tour
+    self_tour_visiting_hours(current_user) if self&.tour&.tour_setting&.allow_self_tour
+    guided_visiting_hours(current_user) if self&.tour&.tour_setting&.allow_guided_tour
+  end
+
+  def self_tour_visiting_hours(current_user)
+    return if self.opening_hours.blank?
+    self_visiting_hours = self.opening_hours
+    self_visiting_hours.each do |oh|
+      status_attr = status_string(oh.day.present? && oh.opening_time.present? && oh.closing_time.present?)
+      set_status_for_all(oh,status_attr,current_user)
+    end
+  end
+
+  def guided_visiting_hours(current_user)
+    return if self.guided_opening_hours.blank?
+    guided_visiting_hours = self.guided_opening_hours
+    guided_visiting_hours.each do |gh|
+      status_attr = status_string(gh.day.present? && gh.opening_time.present? && gh.closing_time.present? )
+      set_status_for_all(gh,status_attr,current_user)
+    end
+  end
+
+  def touch_installation_specification(current_user)
+    return if self.design.blank?
+    hardware_spec = self.design.pynwheel_touch_hardware_spec
+    status_attr = hardware_spec.present? ? SUBMITTED : nil
+    set_status_for_all(self.design,status_attr,current_user)
+  end
+
+  def check_community_requirments(community)
+    (community.name && community.email && community.phone && community.address && community.city && community.state && community.zip).present?
+  end
+
+  def check_required_hardware(product_options)
+    products_json = JSON.parse product_options
+    products_json['product_options']['pynwheel_touch']['options']['hardware'].present?
+  end
+
+  def set_tour_stops_status(current_user)
+    return if self.portal_tour&.portal_tour_stops.blank?
+    tour_stops = self.portal_tour.portal_tour_stops.compact
+    tour_stops.each do |ts|
+      status_attr = status_string(ts.name.present?)
+      set_status_for_all(ts,status_attr,current_user)
+    end
+  end
+
+  def set_lock_providers_status(current_user)
+    return if self.zerv.blank? && self.latch.blank? && self.dwelo.blank? && self.edge_state.blank? && self&.edge_state&.remote_locks.blank?
+    pynwheel_access_status(current_user)
+    latch_locks_status(current_user)
+    dwelo_locks_status(current_user)
+    remote_lock_status(current_user)
+  end
+
+  def pynwheel_access_status(current_user)
+    return if self.zerv.blank?
+    zerv_lock = self.zerv
+    status_attr = status_string(zerv_lock.facility_id.present? && zerv_lock.badge_id.present? && zerv_lock.card_format.present?)
+    set_status_for_all(zerv_lock,status_attr,current_user)
+  end
+
+  def latch_locks_status(current_user)
+    return if self.latch.blank?
+    latch = self.latch
+    status_attr = status_string(latch.client_id.present? && latch.client_secret.present?)
+    set_status_for_all(latch,status_attr,current_user)
+  end
+
+  def dwelo_locks_status(current_user)
+    return if self.dwelo.blank?
+    dwelo = self.dwelo
+    status_attr = status_string(dwelo.community_id.present? && dwelo.client_id.present? && dwelo.client_secret.present?)
+    set_status_for_all(dwelo,status_attr,current_user)
+  end
+
+  def remote_lock_status(current_user)
+    return if self.edge_state.blank?
+    remote_locks = self.edge_state&.remote_locks
+    remote_locks.each do |remote_lock|
+      status_attr = status_string(remote_lock.present?)
+      set_status_for_all(remote_lock,status_attr,current_user)
+    end
+  end
+
+  def status_string(present_required_fields)
+    present_required_fields ? SUBMITTED : IN_PROGRESS
+  end
+
+  def set_status_for_all(status_entity, status_attribute, current_user)
+    status_entity.build_status unless status_entity.status
+    status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user.id)
+  end
+
+  def set_community_time_zone
+    if self.latitude.present? && self.longitude.present?
+      time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
+      self.update_column :time_zone, time_zone
+    end
+  end
+  
   def unit_bedrooms_filters floorplans, unit_bedrooms = []
 
     if self&.community_tour&.tour_setting&.enable_tour_customization
@@ -1032,7 +1299,6 @@ s  end
 
     filtered_stops
   end
-
 
   def get_stops_with_floor_and_buildings(new_stops_arr)
     stops = []
