@@ -422,18 +422,6 @@ class Community < ApplicationRecord
   def get_community_favorite_stop
     self.favorite_stop.present? ? self.favorite_stop : FavoriteStop.new
   end
-  
-  def as_json(options = {})
-    data = super(
-      :only => [:id , :name , :logo , :address , :city , :state , :email , :phone , :zip, :property_manager_name,:property_manager_phone,:property_manager_email , :website , :number_of_units]
-    )
-    check_brand_access = options[:brand_pdf_feature]
-    if check_brand_access == true
-      data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())
-    else
-      data.merge!(:brand_feature_access => false)
-    end
-  end
 
   def brand_details
     self.brand_details_pdf
