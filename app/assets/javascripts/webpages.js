@@ -621,7 +621,7 @@ function setFilters() {
   if (zero_bedroom) {
     $('#zero-bedroom-checkbox').addClass('active-filter');
     $('#zero-bedroom-checkbox').parent().removeClass('disabled');
-  } else {community_name
+  } else {
     $('#zero-bedroom-checkbox').parent().hide();
   }
 

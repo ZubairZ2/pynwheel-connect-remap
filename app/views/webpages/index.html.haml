@@ -99,7 +99,16 @@
 
                 %div{:style => "text-align: center; padding-bottom: 9px;"}
                   %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"} Apply Filters
-          
+          :javascript
+            function get_units(){
+              var units = "#{@units_with_floorplan_info}";
+              units = units.replace(/&quot;/g,'"');
+              units = JSON.parse(units);
+              var is_floorplate = "#{@community_info.has_floorplates?}"
+              var community = "#{@community_info.name}"
+              units = select_units_according_to_filters(units);
+              return units
+            }
           - if @community_info.has_floorplates?
             .c-sidebar
               %a.c-sidebar-brand{:href => "#"}
@@ -252,12 +261,7 @@
                 = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]]), {:style => "min-width: 210"}
               %div#units-body
                 :javascript
-                  var units = "#{@units_with_floorplan_info}";
-                  units = units.replace(/&quot;/g,'"');
-                  units = JSON.parse(units);
-                  var is_floorplate = "#{@community_info.has_floorplates?}"
-                  var community = "#{@community_info.name}"
-                  units = select_units_according_to_filters(units);
+                  var units = get_units();
                   renderChangedUnits(units, is_floorplate, community);
           %footer.c-footer
             .inner-footer
@@ -490,12 +494,7 @@
       var i = $("#slider li a.selected").parent().parent().parent().index()
       $(".digits-list-item").removeClass("selected");
       $($(this).find(".digits-list-item")[i]).addClass("selected");
-      var units = "#{@units_with_floorplan_info}";
-      units = units.replace(/&quot;/g,'"');
-      units = JSON.parse(units);
-      var is_floorplate = "#{@community_info.has_floorplates?}"
-      var community_name = "#{@community_info.name}"
-      units = select_units_according_to_filters(units);
+      var units = get_units();
       renderChangedUnits(units, is_floorplate, community_name);
       }
       catch(err) {
@@ -532,12 +531,7 @@
   });
 
   document.getElementById('filter').addEventListener('change', () => {
-    var units = "#{@units_with_floorplan_info}";
-    units = units.replace(/&quot;/g,'"');
-    units = JSON.parse(units);
-    var is_floorplate = "#{@community_info.has_floorplates?}"
-    var community_name = "#{@community_info.name}"
-    units = select_units_according_to_filters(units)
+    var units = get_units();
     renderChangedUnits(units, is_floorplate, community_name);
   });
 
