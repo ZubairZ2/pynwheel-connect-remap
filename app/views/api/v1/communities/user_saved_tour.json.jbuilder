@@ -20,6 +20,8 @@ json.tours tours do |tour|
   json.x_plot @community.community_tour.x_plot
   json.y_plot @community.community_tour.y_plot
   json.image @community.community_tour.image.present? ? @community.community_tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url) rescue ""
+  json.display_rent @community.display_rent
+  json.display_pricing_options @community.display_pricing_options        
 
   json.visited_tour @visited_stops do |visited_stop|
     @tour = TourStop.find visited_stop rescue next
@@ -41,9 +43,10 @@ json.tours tours do |tour|
         json.floorplan_image @community.unit_floorplan_images(unit)
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
         json.video_link_button_label  unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
-        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""
+        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""        
+
         lease_pricing = []
-        if unit.lease_pricing.present?
+        if unit.lease_pricing.present? && @community.display_pricing_options
           str_split = unit.lease_pricing.split(';')
           str_split.each do |ss|
             str = ss.split(':')

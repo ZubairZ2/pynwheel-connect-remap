@@ -58,10 +58,12 @@ json.data @units do |u|
     json.bathrooms u.floorplan.bathrooms rescue 0
     json.image (u.image.present? ? u.image.url : u.floorplan.image.url) rescue ""
     json.update_apply ((u.provider == "resman" || u.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
-    
+    json.display_rent @community.display_rent
+    json.display_pricing_options @community.display_pricing_options
+
     lease_pricing = []
     begin
-        if u.lease_pricing.present?
+        if u.lease_pricing.present? && @community.display_pricing_options
           str_split = u.lease_pricing.split(';')
           str_split.each do |ss|
             str = ss.split(':')

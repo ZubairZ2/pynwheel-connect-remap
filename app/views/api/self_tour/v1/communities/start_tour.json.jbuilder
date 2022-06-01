@@ -1004,7 +1004,7 @@ json.tours @tours do |tour|
       json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit&.floorplan.present? && unit&.floorplan&.virtual_tour_url.present? ) ? unit&.floorplan&.virtual_tour_url : ""
       lease_pricing = []
 
-      if unit.lease_pricing.present? && !unit.modal_unit
+      if unit.lease_pricing.present? && !unit.modal_unit && @community.display_pricing_options
         str_split = unit.lease_pricing.split(';')
         str_split.each do |ss|
           str = ss.split(':')
@@ -1476,6 +1476,8 @@ json.tours @tours do |tour|
     json.enable_auto_zoom (@community.community_tour.present?) ? @community.community_tour.enable_auto_zoom : false
     json.show_map @community.show_map
     json.mdu @community.mdu
+    json.display_rent @community.display_rent
+    json.display_pricing_options @community.display_pricing_options
     json.pynwheel_access_username @community&.zerv&.username
     json.pynwheel_access_password @community&.zerv&.password
   end
