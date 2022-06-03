@@ -422,7 +422,7 @@ class Api::V1::CommunitiesController < ActionController::Base
             upcoming << get_community_tour(tour) if !tour.is_tour_completed && !date_compare(tour)
           end
         end
-        data = {user: @tour_user, upcoming: upcoming.count, visited_history: @visited_history}
+        data = {user: @tour_user, upcoming_tours: upcoming.count, visited_history: @visited_history}
         render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
       else
         render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
