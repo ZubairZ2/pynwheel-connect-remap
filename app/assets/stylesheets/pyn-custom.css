@@ -3208,6 +3208,15 @@ a#favoriteclickme {
     border-radius: 3px;
 }
 
+#marker-popover-unit {
+    width: 200px;
+    position: absolute;
+    z-index: 1000;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 3px;
+}
+
 #marker-popover .popupover-image {
     height: 125px;
     overflow: hidden;

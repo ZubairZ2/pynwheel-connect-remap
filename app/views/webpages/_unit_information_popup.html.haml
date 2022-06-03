@@ -1,5 +1,25 @@
 #marker-popover.media.hidden
-  .popup
-    %p.popup-title
-      Unit #
-      %b#popover-marketing-name
+  %b#popover-marketing-name
+  %i.fa.fa-heart.fav-heart.hidden
+  %p#popover-floorplan
+  .popupover-image{style: "text-align: center"}
+    %img#media-object{:alt => "Sample Image", :src => "/assets/default.jpeg"}/
+  .media-body
+    %p
+      %b#popover-square-feet
+      %small
+        Square Feet
+    %p
+      %b#popover-bathrooms
+      %small
+        Bathrooms
+    %p
+      %b#popover-bedrooms
+      %small
+        Bedrooms
+    %p
+      %small#hover-available-text Available
+      %b#popover-available-date
+    %p
+      - if @community.display_rent
+        %b#popover-price
