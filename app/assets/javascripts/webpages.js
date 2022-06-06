@@ -1330,8 +1330,9 @@ function overall_filtered_units(floorplate_units) {
 }
 
 function set_yardirentcafe_url(element){
-  var url = $(element).data('availability-url');
-  
+  // var url = $(element).data('availability-url');
+  let url =  element.getAttribute("data-availability-url")
+
   if(selectMap === "3d-map" && enable3DMaps) {
     url = _3dSelectedUnit.availability_url
   }
@@ -1340,7 +1341,8 @@ function set_yardirentcafe_url(element){
 }
 
 function set_psi_url(element) {
-  var url = $(element).data('availability-url');
+  // var url = $(element).data('availability-url');
+  let url =  element.getAttribute("data-availability-url")
 
   if(selectMap === "3d-map" && enable3DMaps) {
     url = _3dSelectedUnit.availability_url
@@ -1352,7 +1354,7 @@ function set_resman_url(element)
 {
   leaseTerm = $('#unitModal').find('#lease_term').val().split(' months')[0]
   date = new Date($('#leasing-start-date').val())
-  var url = $(element).data('availability-url') + "&leaseTerm=" + leaseTerm + "&moveInDate=" + date.toISOString().split('T')[0]
+  var url = element.getAttribute("data-availability-url") + "&leaseTerm=" + leaseTerm + "&moveInDate=" + date.toISOString().split('T')[0]
 
   
   if(selectMap === "3d-map" && enable3DMaps) {
@@ -1530,7 +1532,7 @@ function setModalAttributes(element) {
     $('#psi-anchor-tag').attr('data-unit-provider-id', $(element).data('unit-provider-id'));
     $('#psi-anchor-tag').attr('data-floorplan-provider-id', $(element).data('floorplan-provider-id'));
     $('#psi-anchor-tag').attr('data-lease-term', $(element).data('lease-term'));
-    $('#psi-anchor-tag').attr('data-availability-url', $(element).data('availability-url'));
+    $('#psi-anchor-tag').attr('data-availability-url', element.getAttribute("data-availability-url") );
     $("#leasing-start-date").datepicker('setDate', new Date($(element).data('available-date')));
     $('#leasing-start-date').datepicker('option', {dateFormat: 'mm/dd/yy', minDate: $(element).data('available-date') == "Now" ? new Date() : new Date($(element).data('available-date'))})
   } else if (dataProvider === 'realpagesvc') {
