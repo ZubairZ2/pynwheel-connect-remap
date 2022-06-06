@@ -316,61 +316,85 @@ $(window).bind('load', function () {
     /*popover*/
     if (!hasTouch()) {
       $(".marker")
-              .mouseenter(function (event) {
-                if ($(this).data('is-fav') || favoritesArr.includes($(this).data('unit-id'))) {
-                  $('.fav-heart').removeClass('hidden')
-                } else {
-                  $('.fav-heart').addClass('hidden')
-                }
-                $('#popover-marketing-name').html($(this).data('unit-marketing-name') + "</b>");            
-                  $('#popover-floorplan').html($(this).data('unit-description'))
-                  $('#popover-floorplan').html($(this).data('unit-lease-pricing'))
-                  $('#popover-floorplan').html($(this).data('floorplan-name'))
-                if ($(this).data('floorplan-image') != '') {
-                  $('#media-object').attr('src', $(this).data('floorplan-image'));
-                } else {
-                  $('#media-object').attr('src', '/assets/default.jpeg');
-                }
-                $('#popover-square-feet').html($(this).data('square-feet'));
-                $('#popover-bathrooms').html($(this).data('bathrooms'));
-                if ($('#popover-bathrooms').html() == '1') {
-                  $('#popover-bathrooms').siblings("small").html("Bathroom")
-                } else {
-                  $('#popover-bathrooms').siblings("small").html("Bathrooms")
-                }
-                $('#popover-bedrooms').html($(this).data('bedrooms'));
-                if ($('#popover-bedrooms').html() == '1') {
-                  $('#popover-bedrooms').siblings("small").html("Bedroom")
-                } else {
-                  $('#popover-bedrooms').siblings("small").html("Bedrooms")
-                }
+        .mouseenter(function (event) {
+          if ($(this).data('is-fav') || favoritesArr.includes($(this).data('unit-id'))) {
+            $('.fav-heart').removeClass('hidden')
+          } else {
+            $('.fav-heart').addClass('hidden')
+          }
+          $('#popover-marketing-name').html($(this).data('unit-marketing-name') + "</b>");            
+            $('#popover-floorplan').html($(this).data('unit-description'))
+            $('#popover-floorplan').html($(this).data('unit-lease-pricing'))
+            $('#popover-floorplan').html($(this).data('floorplan-name'))
+          if ($(this).data('floorplan-image') != '') {
+            $('#media-object').attr('src', $(this).data('floorplan-image'));
+          } else {
+            $('#media-object').attr('src', '/assets/default.jpeg');
+          }
+          $('#popover-square-feet').html($(this).data('square-feet'));
+          $('#popover-bathrooms').html($(this).data('bathrooms'));
+          if ($('#popover-bathrooms').html() == '1') {
+            $('#popover-bathrooms').siblings("small").html("Bathroom")
+          } else {
+            $('#popover-bathrooms').siblings("small").html("Bathrooms")
+          }
+          $('#popover-bedrooms').html($(this).data('bedrooms'));
+          if ($('#popover-bedrooms').html() == '1') {
+            $('#popover-bedrooms').siblings("small").html("Bedroom")
+          } else {
+            $('#popover-bedrooms').siblings("small").html("Bedrooms")
+          }
 
-                if ($(this).data('sold')) {
-                  $('#popover-available-date').html('');
-                  $('#hover-available-text').html('Sold')
-                } else {
-                  $('#hover-available-text').html('Available');
-                  $('#popover-available-date').html($(this).data('available-date'));
-                }
+          if ($(this).data('sold')) {
+            $('#popover-available-date').html('');
+            $('#hover-available-text').html('Sold')
+          } else {
+            $('#hover-available-text').html('Available');
+            $('#popover-available-date').html($(this).data('available-date'));
+          }
 
-                $('#popover-price').html(('$' + $(this).data('market-rent')))
+          $('#popover-price').html(('$' + $(this).data('market-rent')))
 
-                $($('#item_'+ $(this).data('unit-marketing-name')))[0].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+          $($('#unit_'+ $(this).data('unit-marketing-name')))[0].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
 
-                $('#item_'+ $(this).data('unit-marketing-name')).css({border: "1px solid red"})
+          var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
+          var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
+          $('#marker-popover').css({left: (new_dx + 25) + "px", top: (new_dy - 100) + "px"});
+          $('#marker-popover').removeClass('hidden');
+        })
+        .mouseleave(function () {
+          $('#marker-popover').addClass('hidden');
+        });
 
-                var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
-                var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
-                $('#marker-popover').css({left: (new_dx + 100) + "px", top: (new_dy - 100) + "px"});
-                $('#marker-popover-unit').css({left: (new_dx -75) + "px", top: (new_dy + 35) + "px",height: "35px", background: "red", margin: "0px", padding: "0px"});
-                $('#marker-popover').removeClass('hidden');
-                $('#marker-popover-unit').removeClass('hidden');
+      let focused_marker ;
 
-              })
-              .mouseleave(function () {
-                $('#marker-popover').addClass('hidden');
-                $(".left-side-30-units").css({border: "0px"})
-              });
+      $(document).on("mousemove", "div.left-side-30-units", function(e){
+        let unit_num;
+
+        if (e.target.classList[0] === "left-side-30-units"){
+          unit_num = e.target.id;
+        } else if(e.target.classList[0] === "image-styles"){
+          unit_num = e.target.parentElement.id;
+        } else if(e.target.classList[0] === "image-image-styles"){
+          unit_num = e.target.parentElement.parentElement.parentElement.id;
+        }
+        let all_markers =  document.getElementsByClassName('marker');
+          Array.from(all_markers).forEach((marker) => {
+            if (unit_num === `unit_${marker.dataset.unitMarketingName}`){
+              focused_marker = document.getElementById(marker.id);
+              focused_marker.childNodes[0].style.fontSize="25px";
+              $('#popover-marketing-unit').html(marker.dataset.unitMarketingName)
+              $('#marker-popover-unit').css({left: (marker.offsetLeft -75) + "px", top: (marker.offsetTop + 35) + "px",height: "35px", background: "red", margin: "0px", padding: "0px"});
+              $('#marker-popover-unit').removeClass('hidden');
+            }
+          })
+      });
+
+      $(document).on("mouseleave", "div.left-side-30-units", function(e){
+        focused_marker.childNodes[0].style.fontSize="20px";
+        $('#marker-popover-unit').addClass('hidden');
+      });
+        
     }
     ///////////////////////////////////////////////
     /*adjusting markers according to screen size*/
@@ -805,7 +829,7 @@ function renderChangedUnits(units, is_floorplate, community){
       var website ="#{@community_info.website}"
       filtered_units.forEach((unit) => {
         var unit_details_div = `
-        <div class='left-side-30-units' id='item_${unit['building'] !== "" ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}'>
+        <div class='left-side-30-units' id='unit_${unit['building'] !== "" ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}'>
           <div class='image-styles'>
             <a class='image_link' href='##' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
               <img src=${unit['floorplan_image']} class='image-image-styles' />

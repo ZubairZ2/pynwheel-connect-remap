@@ -2544,7 +2544,6 @@ ul.home-tabs li:hover a {
     height: 100px;
 }
 
-
 .left-side {
     background-color: #00000014;
     padding: 15px;
@@ -3197,6 +3196,11 @@ a#favoriteclickme {
 .popover h3.popover-title {
     margin: 0px;
     font-size: 16px;
+}
+
+.left-side-30-units:hover {
+    background-color: white;
+    border: 1px solid red;
 }
 
 #marker-popover {
