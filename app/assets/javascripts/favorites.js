@@ -89,9 +89,12 @@ function setAttributes(){
               {
                   sp = ""
               }
+
+            if (s[1] && parseInt(s[1]) > 0 ){
               lease.push(s[0] + " months " + sp + '<b>'+"$"+ s[1]+ '<b>' + '<br>')
               lease_price_arr.push(s[1])
               lease_months_arr.push(s[0])
+            }
           }
           if(lease_price_arr.every(a => a === lease_price_arr[0])){
             smallest_lease_month = Math.min(...lease_months_arr)

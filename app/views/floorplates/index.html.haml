@@ -330,7 +330,6 @@
         $('[datatoggle="floorplateDisplaPricePopover"]:first').popover({
         html: true,
         template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not pricing is displayed on the interactive property map and in the floor plan gallery.</div><div class="popover-footer"><a id="floorplateDisplaPricePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.</div><div class="popover-footer"><a id="floorplateDisplayOnHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
 
     $(document).on("click", "#floorplateDisplaPricePopoverClose" , function(){
