@@ -20,31 +20,26 @@
               = f.select :role, options_for_select(User::ROLES_DWELO_ADMIN,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
             - elsif current_user.is_community_admin?
               = f.select :role, options_for_select(User::ROLES_ADMIN,f.object.role),{},{class: "form-control validate[required]"}
-
-          .company-select-toggle{:style => "margin-top: 30px;margin-bottom: 30px;"}
-            %label Select Company:
+          
+          .community-select-toggle{:style => "margin-top: 30px;margin-bottom: 30px;"}
+            %label Select Community:
             .form-check
-              %input#existingCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "existing", :checked => "checked"}/
-              %label.form-check-label{:for => "existingCompanyToggle"}
+              %input#existingCommunityToggle.form-check-input{:name => "communitySelectToggle", :type => "radio", :value => "existing", :checked => "checked"}/
+              %label.form-check-label{:for => "existingCommunityToggle"}
                 Existing
             .form-check
-              %input#newCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "new"}/
-              %label.form-check-label{:for => "newCompanyToggle"}
+              %input#newCommunityToggle.form-check-input{:name => "communitySelectToggle", :type => "radio", :value => "new"}/
+              %label.form-check-label{:for => "newCommunityToggle"}
                 New
 
-          .pynwheel-new-company-form{:style => "display: table; width: 100%;"}
-            %div{style: "width: auto"}
-              %label Company Name
-              .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row
-                = text_field_tag "new_company_name", nil, :name => "user[new_company_name]", :class=>"form-control", :placeholder=>"Enter new company name"
-
-            %div{style: "width: auto"}
-              %label Community Names
-              .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row
-                = text_field_tag "new_community_names", nil,:name => "user[new_community_names]",:class=>"form-control" ,:placeholder=>"Enter new community names"
+          .company-select-toggle{:style => "margin-top: 30px;margin-bottom: 30px; display: none;"}
+            .form-check
+              %input#existingCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "checkbox"}/
+              %label.form-check-label{:for => "existingCompanyToggle"}
+                Existing Company
 
           .pynwheel-existing-company-form
-            .form-group
+            %div.existing-company-name.form-group
               - if current_user.is_super_admin?
                 = f.select :company, options_for_select(current_user.all_companies,f.object.role),{:include_blank => 'Select Company'},{class: "form-control validate[required] company_list"}
               - elsif current_user.is_dwelo_admin?
@@ -57,7 +52,7 @@
             - if current_user.is_super_admin? || current_user.is_dwelo_admin?
               .form-group.region_select.hide_it
 
-            .row
+            %div.existing-community-name.row
               .form-group
                 .row
                   .col-lg-6.col-sm-6.col-xs-6.col-md-6
@@ -68,6 +63,17 @@
                 .col-sm-1.col-xs-1.col-lg-12.col-md-12
                 .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
                   = f.select :community_ids, options_for_select(''),{},{class: "form-control communities_box",:multiple=>true}
+
+          .pynwheel-new-company-form{:style => "display: table; width: 100%;"}
+            %div.pynwheel-new-company-name{style: "width: auto"}
+              %label Company Name
+              .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row
+                = text_field_tag "new_company_name", nil, :name => "user[new_company_name]", :class=>"form-control", :placeholder=>"Enter new company name"
+
+            %div.pynwheel-new-community-name{style: "width: auto"}
+              %label Community Names
+              .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row
+                = text_field_tag "new_community_names", nil,:name => "user[new_community_names]",:class=>"form-control" ,:placeholder=>"Enter new community names"
             %br
 
             .chat_feature
@@ -88,6 +94,14 @@
                   .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
                     = select_tag :chat_community_ids, options_for_select(''),{class: "form-control communities_box",:multiple=>true}
 
+          
+          
+          
+          
+          
+          
+          
+          
           %br
 
           = render :partial=> 'product_options'
@@ -222,8 +236,12 @@
     handlePynwheelTouchOptionsVisibility(this.checked);
   });
 
-  $('input[type=radio][name=companySelectToggle]').change(function() {
-    handleCompanyFormVisibility(this.value);
+  $('input[type=checkbox][name=companySelectToggle]').change(function() {
+    handleCompanyFormVisibility(this.checked);
+  });
+
+  $('input[type=radio][name=communitySelectToggle]').change(function() {
+    handleCommunityFormVisibility(this.value);
   });
 
   $(document).on('change', '#regions', function() {
@@ -265,7 +283,7 @@
     //Additional Options
     handleAdditionaServicesOptionsVisibility(defaultOption);
 
-    handleCompanyFormVisibility("existing");
+    handleCommunityFormVisibility("existing");
 
   }
 
@@ -485,12 +503,34 @@
   }
 
   function handleCompanyFormVisibility(is_existing) {
-    if(is_existing == "existing") {
-      $(".pynwheel-existing-company-form").show();
-      $(".pynwheel-new-company-form").hide();
+    if(is_existing) {
+      $(".existing-company-name").show();
+      $(".pynwheel-new-company-name").hide();
+      $(".pynwheel-new-community-name").show();
     } else{
-      $(".pynwheel-existing-company-form").hide();
-      $(".pynwheel-new-company-form").show();
+        $(".existing-company-name").hide();
+        $(".existing-community-name").hide();
+        $(".pynwheel-new-company-name").show();
+        $(".pynwheel-new-community-name").show();
+    }
+  }
+
+  function handleCommunityFormVisibility(is_existing) {
+    if(is_existing == "existing") {
+      $(".existing-company-name").show();
+      $(".existing-community-name").show();
+      $(".pynwheel-new-company-name").hide();
+      $(".pynwheel-new-community-name").hide();
+      $(".company-select-toggle").hide();
+
+    } else{
+      $(".company-select-toggle").show();
+      $(".existing-company-name").hide();
+      $(".existing-community-name").hide();
+      $(".pynwheel-new-company-name").show();
+      $(".pynwheel-new-community-name").show();
+      let a = document.getElementById('existingCompanyToggle');
+      handleCompanyFormVisibility(a.checked);
     }
   }
 
