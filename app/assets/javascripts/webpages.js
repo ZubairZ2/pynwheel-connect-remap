@@ -829,7 +829,7 @@ function renderChangedUnits(units, is_floorplate, community){
       var website ="#{@community_info.website}"
       filtered_units.forEach((unit) => {
         var unit_details_div = `
-        <div class='left-side-30-units' id='unit_${unit['building'] !== null ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}'>
+        <div class='left-side-30-units' id='unit_${unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}'>
           <div class='image-styles'>
             <a class='image_link' href='##' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
               <img src=${unit['floorplan_image']} class='image-image-styles' />
@@ -837,7 +837,7 @@ function renderChangedUnits(units, is_floorplate, community){
           </div>
           <div class='unit-details-section'>
             <p id='unit-detail-market-title'>
-              Unit # ${unit['building'] !== null ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}
+              Unit # ${unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}
             </p>
             <p>
               ${community}
