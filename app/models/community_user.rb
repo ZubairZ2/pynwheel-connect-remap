@@ -115,8 +115,8 @@ class CommunityUser < ApplicationRecord
     total_number_of_sections = all_sections_with_status.count
     number_of_submitted_sections = new_statuses.pluck("submitted").compact.count rescue 0
     number_of_approved_sections = new_statuses.pluck("approved").compact.count rescue 0
-    submitted_percentage = percent_of(number_of_submitted_sections, new_statuses.length).to_i
-    approved_percentage = percent_of(number_of_approved_sections, new_statuses.length).to_i
+    submitted_percentage = percent_of(number_of_submitted_sections, new_statuses.length).to_i rescue 0
+    approved_percentage = percent_of(number_of_approved_sections, new_statuses.length).to_i rescue 0
     status_percentage = {submitted: submitted_percentage, approved: approved_percentage}
     status_percentage
   end
