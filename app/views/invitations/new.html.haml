@@ -35,11 +35,11 @@
           .company-select-toggle{:style => "margin-top: 30px;margin-bottom: 30px;"}
             %label Select Company:
             .form-check
-              %input#existingCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "existing", :checked => "checked"}/
+              %input#existingCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "existing"}/
               %label.form-check-label{:for => "existingCompanyToggle"}
                 Existing
             .form-check
-              %input#newCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "new"}/
+              %input#newCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "new", :checked => "checked"}/
               %label.form-check-label{:for => "newCompanyToggle"}
                 New
 
@@ -239,6 +239,10 @@
 
   $('input[type=radio][name=communitySelectToggle]').change(function() {
     handleCommunityFormVisibility(this.value);
+    user_role = $('#user_role').val()
+    if (is_regional_admin(user_role)){
+      add_region()
+    }
   });
 
   $(document).on('change', '#regions', function() {
@@ -505,10 +509,10 @@
       $(".pynwheel-new-company-name").hide();
       $(".pynwheel-new-community-name").show();
     } else{
-        $(".existing-company-name").hide();
-        $(".existing-community-name").hide();
-        $(".pynwheel-new-company-name").show();
-        $(".pynwheel-new-community-name").show();
+      $(".existing-company-name").hide();
+      $(".existing-community-name").hide();
+      $(".pynwheel-new-company-name").show();
+      $(".pynwheel-new-community-name").show();
     }
   }
 
@@ -519,15 +523,16 @@
       $(".pynwheel-new-company-name").hide();
       $(".pynwheel-new-community-name").hide();
       $(".company-select-toggle").hide();
-
+      $(".chat_feature").show();
     } else{
+      $(".chat_feature").hide();
       $(".company-select-toggle").show();
       $(".existing-company-name").hide();
       $(".existing-community-name").hide();
       $(".pynwheel-new-company-name").show();
       $(".pynwheel-new-community-name").show();
-      let a = document.getElementById('existingCompanyToggle');
-      handleCompanyFormVisibility(a.value);
+      let a = document.querySelector('input[type=radio][name=companySelectToggle]:checked').value;
+      handleCompanyFormVisibility(a)
     }
   }
 
@@ -619,17 +624,23 @@
     });
   }
   function add_region(){
-    selected_company =  $(".company_list").val()
-    data = { company: selected_company }
-    $('.region_select').removeClass('hide_it')
-    $.ajax({
-      url: "/companies/get_regions",
-      type: "GET",
-      data: data,
-      success: function(resp){
-        $('.region_select').html(resp)
-      }
-    });
+    let companyToggle = document.querySelector('input[type=radio][name=companySelectToggle]:checked').value;
+    let communityToggle = document.querySelector('input[type=radio][name=communitySelectToggle]:checked').value;
+    if (communityToggle === "existing"){
+      selected_company =  $(".company_list").val()
+      data = { company: selected_company }
+      $('.region_select').removeClass('hide_it')
+      $.ajax({
+        url: "/companies/get_regions",
+        type: "GET",
+        data: data,
+        success: function(resp){
+          $('.region_select').html(resp)
+        }
+      });
+    } else {
+      $('.region_select').addClass('hide_it')
+    }
   }
   function is_company_admin(val){
     return val == "Company admin"
