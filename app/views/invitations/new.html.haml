@@ -32,11 +32,16 @@
               %label.form-check-label{:for => "newCommunityToggle"}
                 New
 
-          .company-select-toggle{:style => "margin-top: 30px;margin-bottom: 30px; display: none;"}
+          .company-select-toggle{:style => "margin-top: 30px;margin-bottom: 30px;"}
+            %label Select Company:
             .form-check
-              %input#existingCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "checkbox"}/
+              %input#existingCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "existing", :checked => "checked"}/
               %label.form-check-label{:for => "existingCompanyToggle"}
-                Existing Company
+                Existing
+            .form-check
+              %input#newCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "new"}/
+              %label.form-check-label{:for => "newCompanyToggle"}
+                New
 
           .pynwheel-existing-company-form
             %div.existing-company-name.form-group
@@ -94,14 +99,6 @@
                   .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
                     = select_tag :chat_community_ids, options_for_select(''),{class: "form-control communities_box",:multiple=>true}
 
-          
-          
-          
-          
-          
-          
-          
-          
           %br
 
           = render :partial=> 'product_options'
@@ -236,8 +233,8 @@
     handlePynwheelTouchOptionsVisibility(this.checked);
   });
 
-  $('input[type=checkbox][name=companySelectToggle]').change(function() {
-    handleCompanyFormVisibility(this.checked);
+  $('input[type=radio][name=companySelectToggle]').change(function() {
+    handleCompanyFormVisibility(this.value);
   });
 
   $('input[type=radio][name=communitySelectToggle]').change(function() {
@@ -503,7 +500,7 @@
   }
 
   function handleCompanyFormVisibility(is_existing) {
-    if(is_existing) {
+    if(is_existing === "existing") {
       $(".existing-company-name").show();
       $(".pynwheel-new-company-name").hide();
       $(".pynwheel-new-community-name").show();
@@ -530,7 +527,7 @@
       $(".pynwheel-new-company-name").show();
       $(".pynwheel-new-community-name").show();
       let a = document.getElementById('existingCompanyToggle');
-      handleCompanyFormVisibility(a.checked);
+      handleCompanyFormVisibility(a.value);
     }
   }
 

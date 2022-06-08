@@ -37,8 +37,12 @@ class InvitationsController < Devise::InvitationsController
     user = User.find_by(email: email) if email.present?
 
     if user.present?
-      if params[:companySelectToggle].eql?("new")
-        invite_for_new_company(user)
+      if params[:communitySelectToggle].eql?("new")
+        if params[:companySelectToggle].eql?("new")
+          invite_for_new_company(user)
+        else
+          invite_for_existing_company_new_community(user)
+        end
       else
         invite_for_existing_company(user)
       end
@@ -50,6 +54,11 @@ class InvitationsController < Devise::InvitationsController
   def invite_for_new_company user
     company = Company.find_or_create_by(name: params[:user][:new_company_name].strip) if params[:user][:new_company_name].present?
     user.update(company_id: company.id)
+    create_community_users(user, company) if company.present?
+  end
+
+  def invite_for_existing_company_new_community user
+    company = Company.find params[:user][:company_id]
     create_community_users(user, company) if company.present?
   end
 
