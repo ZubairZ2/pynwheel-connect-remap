@@ -103,9 +103,11 @@ class Unit < ApplicationRecord
       str_split = self.lease_pricing.split(';')
 
       str_split.each do |ss|
-        str = ss.split(':')  
-        pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
-        lease_pricing << pricing_str
+        str = ss.split(':')
+        if str[1].to_i > 0
+          pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
+          lease_pricing << pricing_str
+        end  
       end
 
       lease_pricing = lease_pricing.sort_by {|x| x[0..1].to_i}

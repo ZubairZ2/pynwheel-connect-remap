@@ -68,11 +68,11 @@ json.data @units do |u|
           str_split.each do |ss|
             str = ss.split(':')
             pricing_str = []
-            pricing_str[0] = str[0]+" Month"
-            pricing_str[1] = "$"+str[1].to_i.to_s
-            # h = {"pricing_option" => pricing_str}
-            lease_pricing << pricing_str
-
+            if str[1].to_i > 0
+                pricing_str[0] = str[0]+" Month"
+                pricing_str[1] = "$"+str[1].to_i.to_s
+                lease_pricing << pricing_str
+            end
           end
           
           lease_pricing = lease_pricing.sort_by {|x| x[0][0..1].to_i}
