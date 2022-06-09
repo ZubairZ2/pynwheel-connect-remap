@@ -25,4 +25,22 @@ namespace :user_portal_data_migration do
       end
     end
   end
+
+  desc 'change the existing stand vendors under the pynwheel touch product options'
+  task :change_stand_vendor => :environment do
+    communities = Community.where.not(product_options: nil)
+    communities.each do |community|
+      parsed_product = JSON.parse(community["product_options"])
+      stand = parsed_product["product_options"]["pynwheel_touch"]["options"]["stand"]
+      if stand.eql?("Olea")
+        parsed_product["product_options"]["pynwheel_touch"]["options"]["stand"] = "Kiosk"
+      elsif stand.eql?("Chief")
+        parsed_product["product_options"]["pynwheel_touch"]["options"]["stand"] = "Upright"
+      else
+        next
+      end
+      stringified_product = JSON.generate(parsed_product)
+      community.update(product_options: stringified_product)
+    end
+  end
 end
