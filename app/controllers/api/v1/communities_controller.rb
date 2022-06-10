@@ -1399,7 +1399,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       dt = DateTime.now
     end
     tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
-    return {tour_type: tour_type, tour_time: dt, community: tour.community}
+    return {schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
   end
 
   def get_last_visited_community(scheduled_tours)
