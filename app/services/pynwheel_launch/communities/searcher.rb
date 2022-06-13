@@ -17,10 +17,16 @@ class PynwheelLaunch::Communities::Searcher
     else
       communities = CommunityUser.all
     end
-
+    communities = pynwheel_launch_access(communities)
     communities = distinct_user_communities(communities)
     communities = communities_by_search(communities) if search_params
     communities.order(created_at: :desc)
+  end
+
+  def pynwheel_launch_access(communities)
+    return unless communities.present?
+    community_users_ids = communities.joins(:community).where('communities.pynwheel_launch_access = ? ', 'true')
+    CommunityUser.where(id: community_users_ids)
   end
 
   def distinct_user_communities communities

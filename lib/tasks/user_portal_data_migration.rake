@@ -43,4 +43,9 @@ namespace :user_portal_data_migration do
       community.update(product_options: stringified_product)
     end
   end
+
+  desc 'activate pynwheel_launch for all communities'
+  task :change_pynwheel_launch_access => :environment do
+    Community.update_all(:pynwheel_launch_access => :true)
+  end
 end
