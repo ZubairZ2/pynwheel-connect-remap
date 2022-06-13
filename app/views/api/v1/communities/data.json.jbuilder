@@ -1292,6 +1292,7 @@ json.apartments do
   end
   json.apartment_page_name @community.apartment_page_name
   json.display_rent @community.display_rent
+  json.display_pricing_options @community.display_pricing_options
   json.display_sitemap @community.display_sitemap
   json.display_floorplan_gallery @community.display_floorplan_gallery
   json.display_available_date @community.display_available_date
@@ -1406,17 +1407,21 @@ json.apartments do
       json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
       json.square_feet unit.square_feet.present? && unit.square_feet > 1 ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
       if @community.display_rent
-        json.lease_pricing unit.lease_pricing.present? ? unit.lease_pricing.gsub('=>', ':') : nil
         lease_pricing = []
-        if unit.lease_pricing.present?
+        
+        if unit.lease_pricing.present? && @community.display_pricing_options
+          json.lease_pricing unit.lease_pricing.gsub('=>', ':')
+
           str_split = unit.lease_pricing.split(';')
           str_split.each do |ss|
             str = ss.split(':')
             pricing_str = []
-            pricing_str[0] = str[0]+" Month"
-            pricing_str[1] = "$"+str[1].to_i.to_s
-            # h = {"pricing_option" => pricing_str}
-            lease_pricing << pricing_str
+            if str[1].to_i > 0
+              pricing_str[0] = str[0]+" Month"
+              pricing_str[1] = "$"+str[1].to_i.to_s
+              # h = {"pricing_option" => pricing_str}
+              lease_pricing << pricing_str
+            end
 
           end
           
@@ -1425,12 +1430,19 @@ json.apartments do
           lease_pricing.each do |lp|
             lease_pricing2 << {"pricing_month" => lp[0],"pricing_rent" => lp[1]}
           end
+
           lease_pricing = lease_pricing2
+        
+        else
+          json.lease_pricing nil
         end
+
         json.lease_pricing_pynwheel_touch lease_pricing
+
       else
         json.lease_pricing nil
       end
+
       if unit.standard_image_url.present? || unit.secondary_image.present?
         json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url + (unit.crop_x.present? ? "?temp/"+unit.crop_x.to_s +  unit.standard_image_url.split('/')[ unit.standard_image_url.split('/').count - 1] : "")  : unit.standard_image_url + (unit.crop_x.present? ? "?temp/"+unit.crop_x.to_s +  unit.standard_image_url.split('/')[ unit.standard_image_url.split('/').count - 1] : "")) : nil
         json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url + (unit.crop_x_secondary.present? ? "?temp/"+unit.crop_x_secondary.to_s +  unit.secondary_image.url.split('/')[ unit.secondary_image.url.split('/').count - 1] : "") : unit.secondary_image.url + (unit.crop_x_secondary.present? ? "?temp/"+unit.crop_x_secondary.to_s + unit.secondary_image.url.split('/')[ unit.secondary_image.url.split('/').count - 1] : "")) : nil

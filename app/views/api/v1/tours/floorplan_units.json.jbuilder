@@ -58,26 +58,33 @@ json.data @units do |u|
         json.bathrooms u.floorplan.bathrooms rescue 0
         json.image (u.image.present? ? u.image.url : u.floorplan.image.url) rescue ""
         json.update_apply ((u.provider == "resman" || u.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
+        json.display_rent @community.display_rent
+        json.display_pricing_options @community.display_pricing_options
         
         lease_pricing = []
         begin
-            if u.lease_pricing.present?
+            if u.lease_pricing.present? && @community.display_pricing_options
               str_split = u.lease_pricing.split(';')
               str_split.each do |ss|
                 str = ss.split(':')
                 pricing_str = []
-                pricing_str[0] = str[0]+" Month"
-                pricing_str[1] = "$"+str[1].to_i.to_s
-                # h = {"pricing_option" => pricing_str}
-                lease_pricing << pricing_str
+
+                if str[1].to_i > 0
+                        pricing_str[0] = str[0]+" Month"
+                        pricing_str[1] = "$"+str[1].to_i.to_s
+                        # h = {"pricing_option" => pricing_str}
+                        lease_pricing << pricing_str
+                end
 
               end
               
               lease_pricing = lease_pricing.sort_by {|x| x[0][0..1].to_i}
               lease_pricing2 = []
+
               lease_pricing.each do |lp|
                 lease_pricing2 << {"pricing_month" => lp[0],"pricing_rent" => lp[1]}
               end
+
               lease_pricing = lease_pricing2
             end
         rescue => ex

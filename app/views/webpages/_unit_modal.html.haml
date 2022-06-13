@@ -58,14 +58,17 @@
             
             #unit-lease-pricing-text-li.availabilty-container
               %span.text-left.available-info
-              - if @community.display_rent
+
+              - if @community.display_rent && @community.display_pricing_options
                 %span#first-unit-lease-pricing
                 #pricing-option.hidden
                   %div{style: "max-height: 6em; overflow-y: auto;"}
                     %span#unit-lease-pricing
-              %span.text-right.show-more-option.available-info#leas-price-option
-                %a.show-more#show-more-price Show more prices
-                %a.show-more#hide-more-price.hidden Hide more prices
+
+                %span.text-right.show-more-option.available-info#leas-price-option
+                  %a.show-more#show-more-price Show more prices
+                  %a.show-more#hide-more-price.hidden Hide more prices
+
             .c-modal-sidebar-description
               %h4.des-heading Description
               %p.c-m-description#unit-description

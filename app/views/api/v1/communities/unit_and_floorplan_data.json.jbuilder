@@ -12,6 +12,7 @@ json.apartments do
   end
   json.apartment_page_name @community.apartment_page_name
   json.display_rent @community.display_rent
+  json.display_pricing_options @community.display_pricing_options
   json.display_sitemap @community.display_sitemap
   json.display_floorplan_gallery @community.display_floorplan_gallery
   json.display_available_date @community.display_available_date
@@ -97,10 +98,15 @@ json.apartments do
       # json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
       # json.square_feet unit.square_feet.present? && unit.square_feet > 1 ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
       if @community.display_rent
-        json.lease_pricing unit.lease_pricing.present? ? unit.lease_pricing.gsub('=>', ':') : nil
+        if unit.lease_pricing.present? && @community.display_pricing_options
+          json.lease_pricing unit.lease_pricing.gsub('=>', ':')
+        else
+          json.lease_pricing nil
+        end
       else
         json.lease_pricing nil
       end
+
       if unit.standard_image_url.present? || unit.secondary_image.present?
         # json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : nil
         # json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url : unit.secondary_image.url) : nil

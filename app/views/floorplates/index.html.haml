@@ -80,6 +80,7 @@
                           = check_box_tag :display_unit_on_homepage, true, @community.display_unit_on_homepage, class: "apartment-setting"
                           %label.label-primary{:for => "display_unit_on_homepage"}
                           %span.pl-15 Yes
+
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Display Price
@@ -92,6 +93,20 @@
                           = check_box_tag :display_rent, true, @community.display_rent, class: "apartment-setting-field"
                           %label.label-primary{:for => "display_rent"}
                           %span.pl-15 Yes
+                    
+                    .form-group
+                      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                        Display Pricing Options (Matrix)
+                        %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "floorplateDisplaPricePopover","data-content" => " "}
+                          %span#propertyDetailNameText
+                            Switching this will change whether or not pricing options is displayed on all products (Pynwheel Touch Map, Self Tour pricing, and Pynwheel Map).
+                      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                        .TriSea-technologies-Switch
+                          %span.pr-15 No
+                          = check_box_tag :display_pricing_options, true, @community.display_pricing_options, class: "apartment-setting-field"
+                          %label.label-primary{:for => "display_pricing_options"}
+                          %span.pl-15 Yes
+
                     .form-group
                       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                         Display Available date
@@ -315,7 +330,6 @@
         $('[datatoggle="floorplateDisplaPricePopover"]:first').popover({
         html: true,
         template: '<div class="popover" style="width: max-content;"><div class="arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not pricing is displayed on the interactive property map and in the floor plan gallery.</div><div class="popover-footer"><a id="floorplateDisplaPricePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Switching this will change whether or not there is a menu button for this page on the home page of the Pynwheel app.</div><div class="popover-footer"><a id="floorplateDisplayOnHomepagePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
 
     $(document).on("click", "#floorplateDisplaPricePopoverClose" , function(){

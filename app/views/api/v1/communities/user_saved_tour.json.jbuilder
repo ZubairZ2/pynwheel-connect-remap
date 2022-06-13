@@ -20,6 +20,8 @@ json.tours tours do |tour|
   json.x_plot @community.community_tour.x_plot
   json.y_plot @community.community_tour.y_plot
   json.image @community.community_tour.image.present? ? @community.community_tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url) rescue ""
+  json.display_rent @community.display_rent
+  json.display_pricing_options @community.display_pricing_options        
 
   json.visited_tour @visited_stops do |visited_stop|
     @tour = TourStop.find visited_stop rescue next
@@ -41,15 +43,17 @@ json.tours tours do |tour|
         json.floorplan_image @community.unit_floorplan_images(unit)
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
         json.video_link_button_label  unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
-        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""
+        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""        
+
         lease_pricing = []
-        if unit.lease_pricing.present?
+        if unit.lease_pricing.present? && @community.display_pricing_options
           str_split = unit.lease_pricing.split(';')
           str_split.each do |ss|
             str = ss.split(':')
-
-            pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
-            lease_pricing << pricing_str
+            if str[1].to_i > 0
+              pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
+              lease_pricing << pricing_str
+            end
 
           end
           lease_pricing = lease_pricing.sort_by {|x| x[0..1].to_i}
@@ -84,7 +88,7 @@ json.tours tours do |tour|
         json.update_apply ((unit.provider == "resman" || unit.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
         json.provider unit.provider
 
-        stop_dat = {"floorplan" => unit.floorplan_id, "floorplan_id" => unit.floorplan.id, "floorplan_full_name" => unit.floorplan.name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
+        stop_dat = {"floorplan" => unit.floorplan_id, "floorplan_id" => unit.floorplan.id, "floorplan_full_name" => unit.floorplan.name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
         
         json.stop_data stop_dat
         @unit_gallery_arr = []

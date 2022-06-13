@@ -69,7 +69,7 @@ class WebpagesController < ActionController::Base
           floorplan_image: unit.standard_image_url || unit&.floorplan&.standard_image_url || '/assets/default.jpeg',
           is_fav: unit&.community&.favorite_stop&.favorite_unit&.include?(unit.id.to_s),
           floorplan_name: unit&.floorplan.name,
-          lease_pricing: unit.lease_pricing,
+          lease_pricing: (unit.lease_pricing.present? && unit.community.display_pricing_options) ? unit.lease_pricing : "",
           description: unit.description || unit&.floorplan&.description
         }
         @units_with_floorplan_info << struct

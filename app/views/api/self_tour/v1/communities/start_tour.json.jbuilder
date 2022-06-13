@@ -1004,12 +1004,14 @@ json.tours @tours do |tour|
       json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit&.floorplan.present? && unit&.floorplan&.virtual_tour_url.present? ) ? unit&.floorplan&.virtual_tour_url : ""
       lease_pricing = []
 
-      if unit.lease_pricing.present? && !unit.modal_unit
+      if unit.lease_pricing.present? && !unit.modal_unit && @community.display_pricing_options
         str_split = unit.lease_pricing.split(';')
         str_split.each do |ss|
           str = ss.split(':')
-          pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
-          lease_pricing << pricing_str
+          if str[1].to_i > 0
+            pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
+            lease_pricing << pricing_str
+          end
         end
 
         lease_pricing = lease_pricing.sort_by {|x| x[0..1].to_i}
@@ -1050,7 +1052,7 @@ json.tours @tours do |tour|
       end
 
       floorplan_for_name = Floorplan.find_by(id: unit&.floorplan&.id)
-      stop_dat = {"floorplan" => (floorplan_for_name.name rescue ""),"floorplan_full_name" => (floorplan_for_name.name + "- #{(floorplan_for_name.bedrooms.present? ? (floorplan_for_name.bedrooms.to_i.to_s + " BR") : "") } / #{(floorplan_for_name.bathrooms.present? ? (floorplan_for_name.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
+      stop_dat = {"floorplan" => (floorplan_for_name.name rescue ""),"floorplan_full_name" => (floorplan_for_name.name + "- #{(floorplan_for_name.bedrooms.present? ? (floorplan_for_name.bedrooms.to_i.to_s + " BR") : "") } / #{(floorplan_for_name.bathrooms.present? ? (floorplan_for_name.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date, "display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
       json.stop_data stop_dat
       json.availability_url unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url
 
@@ -1476,6 +1478,8 @@ json.tours @tours do |tour|
     json.enable_auto_zoom (@community.community_tour.present?) ? @community.community_tour.enable_auto_zoom : false
     json.show_map @community.show_map
     json.mdu @community.mdu
+    json.display_rent @community.display_rent
+    json.display_pricing_options @community.display_pricing_options
     json.pynwheel_access_username @community&.zerv&.username
     json.pynwheel_access_password @community&.zerv&.password
   end
