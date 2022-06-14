@@ -1639,10 +1639,11 @@ function _3dUnitModalDisplay() {
 
 function leaseTermPricingOptions(ss) {
   var lease = [];
-  var first_lease_item = "";
-  var smallest_lease_month = "";
+  let first_lease_item = "";
+  let smallest_lease_month = "";
   var lease_price_arr = [];
   var lease_months_arr = [];
+
   var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
   ss = ss.sort(collator.compare).reverse();
   for (var i = 0; i < ss.length -1; i++) {
@@ -1663,22 +1664,27 @@ function leaseTermPricingOptions(ss) {
         lease_months_arr.push(s[0])
       }
   }
+
   if(lease_price_arr.every(a => a === lease_price_arr[0])){
-    smallest_lease_month = Math.min(...lease_months_arr)
-    var indexOfMinMonth = lease_months_arr.indexOf(smallest_lease_month.toString())
+    const lease_months_arr_numbers = lease_months_arr.map(str => { return Number(str); });
+    const indexOfMinMonth = lease_months_arr_numbers.indexOf(  Math.min(...lease_months_arr_numbers) )
     first_lease_item = lease[indexOfMinMonth]
+
     if (indexOfMinMonth > -1) {
       lease.splice(indexOfMinMonth, 1);
     }
   }
   else{
-    var smallest_lease_price = Math.min(...lease_price_arr)
-    var indexOfMinLease = lease_price_arr.indexOf(smallest_lease_price.toString())
+    const lease_price_arr_numbers = lease_price_arr.map(str => { return Number(str); });
+    const indexOfMinLease = lease_price_arr_numbers.indexOf( Math.min(...lease_price_arr_numbers) )
     first_lease_item = lease[indexOfMinLease]
+
     if (indexOfMinLease > -1) {
       lease.splice(indexOfMinLease, 1);
     }
+
   }
+
   var leaseTermOptions = ""
   
   for (let i = 0; i < lease_months_arr.length; ++i) {
