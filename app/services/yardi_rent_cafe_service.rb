@@ -39,29 +39,33 @@ class YardiRentCafeService < BaseService
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = r["MinimumRent"]
                 end
+                
                 unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                   unit.availability = "Unoccupied" if !unit.sold
                 end
+                
                 unit.availability = "Unoccupied" if !unit.sold
-                if r["AvailableDate"] != ""
+
+                if ( r["AvailableDate"] != "" && r["AvailableDate"] != nil )
                   unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                     unit.availability = "Unoccupied" if !unit.sold
                   end
-                  unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
 
+                  unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
                     unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
                   end
 
                 else
-                  unless unit.availability_is_updated.present? && unit.availability_is_updated
+                  unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                     unit.availability = "Occupied"
                   end
-                  unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
 
+                  unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
                     unit.available_date = ""
                   end
 
                 end
+
                 unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
                   if unit.availability == "Unoccupied"
                     unit.available = true if !unit.sold
@@ -69,6 +73,7 @@ class YardiRentCafeService < BaseService
                     unit.available = false
                   end
                 end
+
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
                 end
@@ -118,10 +123,12 @@ class YardiRentCafeService < BaseService
                   unless unit.availability_is_updated.present? && unit.availability_is_updated
                     unit.availability = "Unoccupied"
                   end
-                  if r["AvailableDate"] != ""
+
+                  if ( r["AvailableDate"] != "" && r["AvailableDate"] != nil )
                     unless unit.availability_is_updated.present? && unit.availability_is_updated
                       unit.availability = "Unoccupied"
                     end
+
                     unless unit.available_date_is_updated.present? && unit.available_date_is_updated
                       unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
                     end
@@ -130,19 +137,21 @@ class YardiRentCafeService < BaseService
                     unless unit.availability_is_updated.present? && unit.availability_is_updated
                       unit.availability = "Occupied"
                     end
+
                     unless unit.available_date_is_updated.present? && unit.available_date_is_updated
                       unit.available_date = ""
                     end
 
                   end
+
                   unless unit.available_is_updated.present? && unit.available_is_updated
                     if unit.availability == "Occupied"
                       unit.available = false
                     else
                       unit.available = true
                     end
-
                   end
+
                   unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
                   unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
                   
