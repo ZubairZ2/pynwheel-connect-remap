@@ -44,7 +44,7 @@ class YardiRentCafeService < BaseService
                   unit.availability = "Unoccupied" if !unit.sold
                 end
                 
-                unit.availability = "Unoccupied" if !unit.sold
+                # unit.availability = "Unoccupied" if !unit.sold
 
                 if ( r["AvailableDate"] != "" && r["AvailableDate"] != nil )
                   unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
