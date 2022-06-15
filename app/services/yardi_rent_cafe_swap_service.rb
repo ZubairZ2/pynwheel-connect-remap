@@ -43,7 +43,8 @@ class YardiRentCafeSwapService < BaseService
                 unit.effective_rent = r["MinimumRent"]
                 unit.square_feet = r["SQFT"] if r["SQFT"].present?
                 unit.availability = "Unoccupied"
-                if r["AvailableDate"] != ""
+
+                if ( r["AvailableDate"] != "" && r["AvailableDate"] != nil )
                   unit.available = true
                   unit.availability = "Unoccupied"
                   unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
@@ -52,6 +53,7 @@ class YardiRentCafeSwapService < BaseService
                   unit.availability = "Occupied"
                   unit.available_date = ""
                 end
+
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
                 end
@@ -86,7 +88,8 @@ class YardiRentCafeSwapService < BaseService
                 unit.square_feet = r["SQFT"] if r["SQFT"].present?
                 unit.market_rent = r["MinimumRent"]
                 unit.effective_rent = r["MinimumRent"]
-                if r["AvailableDate"] != ""
+
+                if ( r["AvailableDate"] != "" && r["AvailableDate"] != nil )
                   unit.available = true
                   unit.availability = "Unoccupied"
                   unit.available_date = Date.parse(set_availabilty_date(r["AvailableDate"]))
@@ -95,6 +98,7 @@ class YardiRentCafeSwapService < BaseService
                   unit.availability = "Occupied"
                   unit.available_date = ""
                 end
+
                 if unit.effective_rent <= 0
                   unit.effective_rent = 1.0
                 end
