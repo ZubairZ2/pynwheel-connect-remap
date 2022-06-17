@@ -159,7 +159,7 @@ class PynwheelLaunch::Communities::Searcher
       end
     elsif status.eql?(PARAM_100_CONTENT_SUBMITED) || status.eql?(PARAM_APPROVED)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED)}
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED)} && statuses.include?(received_status)
         selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_RELEASED)
