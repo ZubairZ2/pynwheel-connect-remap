@@ -43,4 +43,17 @@ namespace :user_portal_data_migration do
       community.update(product_options: stringified_product)
     end
   end
+
+  desc 'activate pynwheel_launch for all communities'
+  task :change_pynwheel_launch_access => :environment do
+    Community.update_all(:pynwheel_launch_access => :true)
+  end
+
+  desc 'Change current statuses of all community forms with new status flow'
+  task :change_current_status => :environment do
+    approved = Status.where(status: "approved")
+    approved.update_all(status: "form_approved")
+    deployed = Status.where(status: "deployed")
+    deployed.update_all(status: "released")
+  end
 end
