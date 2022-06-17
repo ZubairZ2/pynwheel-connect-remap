@@ -2545,14 +2545,70 @@ ul.home-tabs li:hover a {
 }
 
 .left-side {
-    float: right;
-    padding-left: 15px;
-    letter-spacing: 1px;
+    background-color: #00000014;
+    padding: 15px;
+	width: 25%;
+    float: left;
+    height: 85%;
+    overflow: scroll;
+    padding-bottom: 150px;
 }
 
 .right-side {
-	height: 100%;
-	width: 100%;
+	width: 75%;
+    float: left;
+}
+
+.left-side-30-units {
+    padding: 15px;
+}
+
+.image-styles {
+    display: flex;
+    justify-content: center;
+    background-color: white;
+    margin-bottom: 10px;
+}
+
+.fa-map-marker-alt {
+    font-size: 34px;
+}
+
+.image-styles > a >img {
+    width: 250;
+    height: 180px
+}
+
+#tab {
+    display: none;
+    border-bottom: 1px solid rgb(206, 206, 206);
+}
+
+.tablinks {
+    border: 0;
+}
+
+.tablinks > button {
+    margin: 0 15px                              ;
+    padding: 15px 15px;
+    font-size: 18px;
+    background-color: transparent;
+    border: 0;
+}
+
+.webpage-left-list-view-title {
+    display: flex;
+    padding: 10px 0px;
+    justify-content: space-between;
+}
+
+.unit-details-section {
+    padding: 5px 0 0 0;
+    display: flex;
+}
+
+.unit-details-section > p {
+    padding-left: 15px;
 }
 
 .transform-none {
@@ -3142,7 +3198,21 @@ a#favoriteclickme {
     font-size: 16px;
 }
 
+.left-side-30-units:hover {
+    background-color: white;
+    border: 1px solid red;
+}
+
 #marker-popover {
+    width: 200px;
+    position: absolute;
+    z-index: 1000;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 3px;
+}
+
+#marker-popover-unit {
     width: 200px;
     position: absolute;
     z-index: 1000;
@@ -3335,6 +3405,13 @@ a#favoriteclickme {
     color: #fff;
 }
 
+.active_unit_view {
+    border-bottom: 2px solid black;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+}
+
 .set-floor-modal-body {
     overflow: scroll;
     overflow-x: scroll;
@@ -3350,6 +3427,21 @@ a#favoriteclickme {
     color: white;
     font-weight: 600;
     cursor: not-allowed;
+}
+
+.popup {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border-radius: 10px;
+    border: 0 solid white;
+}
+
+.popup-title {
+    padding: 5px 0px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
 }
 
 .pin1 {
@@ -3477,11 +3569,35 @@ a#favoriteclickme {
         margin: 20px 0 7px 0;
     }
     .right-side {
-        width: auto
+        width: 70%;
     }
+    .left-side {
+        width: 30%;
+    }
+
+}
+
+.display-block {
+    display: block;
+}
+
+.dispay-none {
+    display: none;
 }
 
 @media (max-width:991px) {
+    .left-side {
+        display: none;
+        width: 100%;
+    }
+    #tab {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+    }
+    .right-side {
+        width: 100%;
+    }
     .skin-blue .main-header .logo {
         padding-top: 0px;
     }

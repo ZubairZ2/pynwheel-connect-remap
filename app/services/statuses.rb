@@ -3,6 +3,7 @@ class Statuses
     @community = community
     @current_user = current_user
     @status = status
+    @statuses = ["", nil ,"in_progress", "submitted", "form_approved", "application_in_qa", "approved", "released", "rejected"]
   end
 
   def update_statuses
@@ -22,7 +23,9 @@ class Statuses
   private
 
   def set_company_details_status
-    @community.company.set_status_for_all(@community.company, @status, @current_user) unless @community.company.blank?
+    if @statuses.find_index(@community.company.status.status) < @statuses.find_index(@status)
+      @community.company.set_status_for_all(@community.company, @status, @current_user) unless @community.company.blank?
+    end
   end
 
   def set_community_details_status

@@ -128,34 +128,58 @@ class PynwheelLaunch::Communities::Searcher
     statuses << floorplan_status(community)
     
     statuses << data_provider_status(community)
-    
-    statuses << visiting_hours_status(community) if community.self_tour
+    if community.product_options.nil?
+      self_tour = community.self_tour
+      pynwheel_touch = community.touchscreen_app
+    else
+      product_options = JSON.parse(community.product_options)
+      self_tour = product_options["product_options"]["self_tour"]["is_enabled"]
+      pynwheel_touch = product_options["product_options"]["pynwheel_touch"]["is_enabled"]
+    end
+
+    statuses << visiting_hours_status(community) if self_tour
       
-    statuses << touch_gallery_media_status(community) if community.touchscreen_app
+    statuses << touch_gallery_media_status(community) if pynwheel_touch
 
-    statuses << hardware_specs_status(community) if community.touchscreen_app
+    statuses << hardware_specs_status(community) if pynwheel_touch
     
-    statuses << lock_providers_status(community) if community.self_tour
+    statuses << lock_providers_status(community) if self_tour
 
-    statuses << home_page_media_status(community) if community.touchscreen_app
+    statuses << home_page_media_status(community) if pynwheel_touch
+    
     if status.eql?(IN_PROGRESS)
       received_status = status_value_check(status)
       if statuses.any?{|x| x.eql?(received_status) || x.nil?} && !statuses.all?{|x| x.eql?(received_status) || x.nil?}
         selected_communities << community.community_users.first
       end
-    elsif status.eql?(REJECTED)
+    elsif status.eql?(PARAM_REJECTED)
       received_status = status_value_check(status)
       if statuses.any?{|x| x.eql?(received_status)} && !statuses.all?{|x| x.eql?(received_status)}
         selected_communities << community.community_users.first
       end
-    elsif status.eql?(PARAM_100_CONTENT_SUBMITED) || status.eql?(PARAM_APPROVED_FOR_PRODUCTION)
+    elsif status.eql?(PARAM_100_CONTENT_SUBMITED) || status.eql?(PARAM_APPROVED)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) || x.eql?("deployed")}
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED)} && statuses.include?(received_status)
+        selected_communities << community.community_users.first
+      end
+    elsif status.eql?(PARAM_RELEASED)
+      received_status = status_value_check(status)
+      if statuses.all?{|x| x.eql?(received_status)}
         selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_NOT_STARTED)
       received_status = status_value_check(status)
       if statuses.all?{|x| x.eql?(received_status) || x.nil?}
+        selected_communities << community.community_users.first
+      end
+    elsif status.eql?(IN_PRODUCTION)
+      received_status = status_value_check(status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(APPLICATION_IN_QA) || x.eql?(APPROVED)} && statuses.include?(received_status)
+        selected_communities << community.community_users.first
+      end
+    elsif status.eql?(PARAM_APPLICATION_IN_QA)
+      received_status = status_value_check(status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(APPROVED)} && statuses.include?(received_status)
         selected_communities << community.community_users.first
       end
     end
@@ -167,10 +191,16 @@ class PynwheelLaunch::Communities::Searcher
       return "in_progress"
     elsif status.eql?(PARAM_100_CONTENT_SUBMITED)
       return "submitted"
-    elsif status.eql?(PARAM_APPROVED_FOR_PRODUCTION)
+    elsif status.eql?(PARAM_APPROVED)
       return "approved"
-    elsif status.eql?(REJECTED)
-      return "rejected"
+    elsif status.eql?(PARAM_REJECTED)
+      return REJECTED
+    elsif status.eql?(PARAM_RELEASED)
+      return RELEASED
+    elsif status.eql?(IN_PRODUCTION)
+      return "form_approved"
+    elsif status.eql?(PARAM_APPLICATION_IN_QA)
+      return APPLICATION_IN_QA
     end
   end
 
@@ -276,7 +306,9 @@ class PynwheelLaunch::Communities::Searcher
       return SUBMITTED if statuses.all?{|x| x.eql?(SUBMITTED)}
       return APPROVED if statuses.all?{|x| x.eql?(APPROVED)}
       return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.eql?(nil)}
-      return DEPLOYED if statuses.all?{|x| x.eql?(DEPLOYED)}
+      return RELEASED if statuses.all?{|x| x.eql?(RELEASED)}
+      return FORM_APPROVED if statuses.all?{|x| x.eql?(FORM_APPROVED)}
+      return APPLICATION_IN_QA if statuses.all?{|x| x.eql?(APPLICATION_IN_QA)}
     else
       return nil
     end

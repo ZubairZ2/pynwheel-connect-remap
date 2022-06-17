@@ -71,6 +71,8 @@ class CustomizeTourService
 
   def reset_user_tour_stops
     user_tour = user_customized_tour
+    Feedback.where(tour_id: user_tour&.id).destroy_all
+    TourStop.where(tour_id: user_tour&.id).destroy_all
     user_tour.destroy! if user_tour.present?
   end
 
