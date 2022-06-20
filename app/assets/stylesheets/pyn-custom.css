@@ -2549,9 +2549,8 @@ ul.home-tabs li:hover a {
     padding: 15px;
 	width: 25%;
     float: left;
-    height: 85%;
+    height: 90%;
     overflow: scroll;
-    padding-bottom: 150px;
 }
 
 .right-side {
@@ -5348,13 +5347,15 @@ ul.location-items span {
     height: 46px !important;
 }
 footer.c-footer {
-     position: fixed;
-    width: auto;
+    position: fixed;
+    display: flex;
+    justify-content: space-between;
+    width: 70%;
     left: 0px;
     right: 0;
     bottom: 0;
     background: white;
-    padding: 10px 110px 10px 10px;
+    padding: 10px;
 }
 .need-to .apply-now:active {
     background: white;
