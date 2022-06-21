@@ -101,7 +101,7 @@
                   %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"} Apply Filters
           
           - if @community_info.has_floorplates?
-            .c-sidebar
+            .c-sidebar#sidebar
               %a.c-sidebar-brand{:href => "#"}
                 .sidebar-logo
                   %h6 Floor
@@ -259,7 +259,7 @@
                   var community = "#{@community_info.name}"
                   units = select_units_according_to_filters(units);
                   renderChangedUnits(units, is_floorplate, community);
-          %footer.c-footer
+          %footer.c-footer#footer
             .inner-footer
               .footer-logo
                 %img{:src => "/assets/footer-logo.png"}/

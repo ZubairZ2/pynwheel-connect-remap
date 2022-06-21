@@ -3584,6 +3584,7 @@ a#favoriteclickme {
     display: none;
 }
 
+
 @media (max-width:991px) {
     .left-side {
         display: none;
@@ -5323,12 +5324,14 @@ ul.location-items span {
 }
 .zooming-content {
     float: left;
-    width: 20%;
+    width: auto;
     text-align: right;
 }
 .inner-footer {
-    display: inline-block;
     width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 .zooming-content .zooming-action {
     background: #e8e9e9;
@@ -5348,13 +5351,11 @@ ul.location-items span {
 }
 footer.c-footer {
     position: fixed;
-    display: flex;
-    justify-content: space-between;
-    width: 70%;
     left: 0px;
     right: 0;
-    bottom: 0;
+    width: 100%;
     background: white;
+    bottom: 70px;
     padding: 10px;
 }
 .need-to .apply-now:active {
@@ -5471,6 +5472,20 @@ html, .add-fav-body {
     font-size: 13px;
 }
 }
+
+@media only screen and (min-width: 1350px){
+    footer.c-footer{
+        width: 75%;
+        bottom: 0;
+    }
+}
+
+@media only screen and (min-width: 993px) and (max-width: 1350px){
+    footer.c-footer{
+        width: 70%;
+        bottom: 0;
+    }
+}
 @media screen and (min-width:568px) and (max-width:993px){
   .filters-alignment{
       text-align: unset !important;
@@ -5482,14 +5497,9 @@ html, .add-fav-body {
       z-index: 999;
   }
   .zooming-content {
-      width: 50%;
+      width: auto;
       text-align: left;
       padding-left: 0;
-  }
-  footer.c-footer {
-      background: white;
-      padding: 21px 24px 11px 25px;
-      border-top: 1px solid #cccccc59;
   }
   .floor-counts .product-single__thumb-arrow {
       padding-top: 10px;
@@ -5528,6 +5538,17 @@ html, .add-fav-body {
   }
 
 }
+
+@media screen and (min-width:350px) and (max-width:567px){
+    .header-buttons-groups .header-action-btn {
+        max-width: 109px;
+        font-size: 12px;
+    }
+    .header-buttons-groups .transparent-btn {
+        margin-right: 1px;
+    }
+  
+  }
 
 @media screen and (max-width:993px){
     #webpages-overlay-button {
@@ -5724,7 +5745,7 @@ ul.add-fav-options {
       width: 50%;
   }
   .zooming-content {
-      width: 50%;
+      width: auto;
   }
 	.c-wrapper {
     margin-left: 0 !important;
@@ -5766,11 +5787,6 @@ ul.add-fav-options {
       padding-left: 25px;
       padding-right: 25px;
       border-right: 1px solid #cccccc1c;
-  }
-  footer.c-footer {
-    bottom: 151px;
-    right: 0;
-    padding: 6px 15px 0 15px;
   }
   .custom-iframe-modeule .selection-fields {
       width: 100%;
@@ -6212,9 +6228,7 @@ ul.add-fav-options {
 .sitemap .c-wrapper {
     margin-right: 0 !important;
 }
-.sitemap footer.c-footer {
-    padding-right: 10px;
-}
+
 .no-fav{
 	overflow: hidden !important;
 }

@@ -1,9 +1,9 @@
 class Api::V2::OpeningHoursController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :load_community, only: %i[index create_opening_hours delete_opening_hours]
+  before_action :load_community, only: %i[index create_opening_hours delete_opening_hours check_visiting_hour]
 
   def index
-    if @community.self_tour
+    if check_visiting_hour
       visiting_hours = get_all_hours
       if visiting_hours.any?
         render json: { success: true, data: visiting_hours.as_json }
@@ -17,7 +17,7 @@ class Api::V2::OpeningHoursController < Api::V2::ApiApplicationController
 
   def create_opening_hours
     begin
-      if @community.self_tour
+      if check_visiting_hour
         values = params["data"]
         tour_params = JSON.parse(values)
         if tour_params.present?
@@ -45,7 +45,7 @@ class Api::V2::OpeningHoursController < Api::V2::ApiApplicationController
 
   def delete_opening_hours
     begin
-      if @community.self_tour
+      if check_visiting_hour
         tour_params = params["tours"]
         if tour_params.present?
           delete_self_visiting_hours(tour_params["hours_id"]) if tour_params["type"].eql?(SELF_TOUR)
@@ -60,6 +60,17 @@ class Api::V2::OpeningHoursController < Api::V2::ApiApplicationController
   end
 
   private
+
+  def check_visiting_hour
+    self_tour = false
+    if @community.product_options.nil?
+      self_tour = @community.self_tour
+    else
+      product_options = JSON.parse(@community.product_options)
+      self_tour = product_options["product_options"]["self_tour"]["is_enabled"]
+    end
+    self_tour
+  end
 
   def delete_self_visiting_hours(tour)
     delete_hour = OpeningHour.find_by(id: tour)

@@ -42,6 +42,16 @@ $(document).ready(function () {
 
     handleMapControl()
   }
+  let sidebarDiv = document.getElementById("sidebar")
+  if (sidebarDiv) {
+    let sidebarWidth =document.getElementById('sidebar').offsetWidth;
+    let footerWidth = document.getElementById("footer");
+    if (footerWidth.offsetWidth > 567) {
+      footerWidth.style.width = `${footerWidth.offsetWidth - sidebarWidth}px`
+    } else {
+      footerWidth.style.bottom = "130px";
+    }
+  }
 });
 
 function displayOverlayText() {
@@ -2024,6 +2034,8 @@ function display3DMap() {
     $(".c-sidebar").hide();
     let w1 = $(".digits-list-item").width();
     let w2 = $(".c-sidebar").width();
+    let footer = document.getElementsByClassName("c-footer")[0];
+    footer.style.width = w1 + w2;
     $(".digits-list-item").css("width", w1+w2);
     _3dMapViewMarkers();
   }  

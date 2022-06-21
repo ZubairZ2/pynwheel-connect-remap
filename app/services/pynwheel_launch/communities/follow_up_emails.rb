@@ -118,7 +118,8 @@ class PynwheelLaunch::Communities::FollowUpEmails
   def data_provider_status
     return nil if @community.data_provider.blank? && @community.credential.blank?
     data_provider_status = []
-    data_provider_status << @community.credential&.status&.status rescue nil
+    credential = Credential.where(community_id: @community.id).order(updated_at: :desc).first
+    data_provider_status << credential&.status&.status rescue nil
 
     if @community.credential&.use_different_crm_provider
       data_provider_status << @community.crm_credential&.status&.status rescue nil

@@ -134,7 +134,8 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   def data_provider_status
     return [] if @community.data_provider.blank? && @community.credential.blank?
     data_provider_status = []
-    data_provider_status << @community.credential&.status&.status_and_remarks_obj rescue nil
+    credential = Credential.where(community_id: @community.id).order(updated_at: :desc).first
+    data_provider_status << credential&.status&.status_and_remarks_obj rescue nil
 
     if @community.credential&.use_different_crm_provider
       data_provider_status << @community.crm_credential&.status&.status_and_remarks_obj rescue nil
@@ -230,8 +231,8 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
   def update_data_provider_status_and_remarks status, remarks
     return if @community.data_provider.blank? && @community.credential.blank?
-    
-    @community.credential&.status.update_attributes(status: status, remarks: remarks) 
+    credential = Credential.where(community_id: @community.id).order(updated_at: :desc).first
+    credential&.status.update_attributes(status: status, remarks: remarks) 
     @community.crm_credential&.status.update_attributes(status: status, remarks: remarks) if @community.credential&.use_different_crm_provider
   end
 
