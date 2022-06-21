@@ -38,10 +38,10 @@ class PynwheelLaunch::Communities::Searcher
   def communities_by_search(collection)
     query_string = "%#{params[:keyword].strip.downcase}%" if params[:keyword].present?
     company_ids = Company.where('lower(name) like ?' , query_string).pluck(:id)
-    communities = collection.joins(:community).where('lower(communities.name) like ? OR communities.company_id in (?)' , query_string , company_ids)
-    communities = search_by_products(collection , JSON.parse(params[:products])) if params[:products].present?
-    communities = search_by_status(collection , JSON.parse(params[:status])) if params[:status].present?
-    communities
+    collection = collection.joins(:community).where('lower(communities.name) like ? OR communities.company_id in (?)' , query_string , company_ids)
+    collection = search_by_products(collection , JSON.parse(params[:products])) if params[:products].present?
+    collection = search_by_status(collection , JSON.parse(params[:status])) if params[:status].present?
+    collection
   end
 
   def search_by_products(collection , products)
@@ -146,7 +146,6 @@ class PynwheelLaunch::Communities::Searcher
     statuses << lock_providers_status(community) if self_tour
 
     statuses << home_page_media_status(community) if pynwheel_touch
-    
     if status.eql?(IN_PROGRESS)
       received_status = status_value_check(status)
       if statuses.any?{|x| x.eql?(received_status) || x.nil?} && !statuses.all?{|x| x.eql?(received_status) || x.nil?}
@@ -237,7 +236,8 @@ class PynwheelLaunch::Communities::Searcher
   def data_provider_status(community)
     return nil if community.data_provider.blank? && community.credential.blank?
     data_provider_status = []
-    data_provider_status << community.credential&.status&.status
+    credential = Credential.where(community_id: community.id).order(updated_at: :desc).first
+    data_provider_status << credential&.status&.status
     if community.credential&.use_different_crm_provider
       data_provider_status << community.crm_credential&.status&.status
     end
@@ -246,11 +246,13 @@ class PynwheelLaunch::Communities::Searcher
 
   def visiting_hours_status(community)
     return nil if community.opening_hours.blank? && community.guided_opening_hours.blank?
-    visiting_hours_status = []
+    self_visiting_hours_status = []
+    guided_visiting_hours_status = []
     self_visiting_hours = community.opening_hours
     guided_visiting_hours = community.guided_opening_hours
-    self_visiting_hours.map {|oh| visiting_hours_status << oh&.status&.status} if self_visiting_hours.present?
-    guided_visiting_hours.map {|gh| visiting_hours_status << gh&.status&.status} if guided_visiting_hours.present?
+    self_visiting_hours.map {|oh| self_visiting_hours_status << oh&.status&.status} if self_visiting_hours.present?
+    guided_visiting_hours.map {|gh| guided_visiting_hours_status << gh&.status&.status} if guided_visiting_hours.present?
+    visiting_hours_status = guided_visiting_hours_status.compact + self_visiting_hours_status.compact
     status_check(visiting_hours_status)
   end
 

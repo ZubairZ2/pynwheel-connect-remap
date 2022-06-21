@@ -42,6 +42,16 @@ $(document).ready(function () {
 
     handleMapControl()
   }
+  let sidebarDiv = document.getElementById("sidebar")
+  if (sidebarDiv) {
+    let sidebarWidth =document.getElementById('sidebar').offsetWidth;
+    let footerWidth = document.getElementById("footer");
+    if (footerWidth.offsetWidth > 567) {
+      footerWidth.style.width = `${footerWidth.offsetWidth - sidebarWidth}px`
+    } else {
+      footerWidth.style.bottom = "130px";
+    }
+  }
 });
 
 function displayOverlayText() {
