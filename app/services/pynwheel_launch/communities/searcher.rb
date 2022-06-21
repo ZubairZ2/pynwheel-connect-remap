@@ -36,9 +36,11 @@ class PynwheelLaunch::Communities::Searcher
   end
 
   def communities_by_search(collection)
-    query_string = "%#{params[:keyword].strip.downcase}%" if params[:keyword].present?
-    company_ids = Company.where('lower(name) like ?' , query_string).pluck(:id)
-    collection = collection.joins(:community).where('lower(communities.name) like ? OR communities.company_id in (?)' , query_string , company_ids)
+    if params[:keyword].present?
+      query_string = "%#{params[:keyword].strip.downcase}%"
+      company_ids = Company.where('lower(name) like ?' , query_string).pluck(:id)
+      collection = collection.joins(:community).where('lower(communities.name) like ? OR communities.company_id in (?)' , query_string , company_ids)
+    end
     collection = search_by_products(collection , JSON.parse(params[:products])) if params[:products].present?
     collection = search_by_status(collection , JSON.parse(params[:status])) if params[:status].present?
     collection
