@@ -57,31 +57,42 @@ Rails.application.routes.draw do
   get 'listening_message', to: 'chats#listening_message'
   post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages'
   resources :analytics, only: [:index]
+
   resources :companies do
     resources :communities
     resources :community_groups
+
     resources :regions do
       delete :remove_community, on: :member
     end
+    
     resources :employees, :controller => 'users' do
       get :profile
     end
+    
     collection do
       get :get_regions
+      get :generate_webpages_report
     end
+
     member do
       get :generate_csv
       get :generate_csv_for_scheduled_records
     end
+
   end
+
   resources :community_groups do
+
     member do
       delete :remove_community
     end
+    
     collection do
       get :add_community
       post :save_community
     end
+    
     resources :group_design do
       member do
         post :save_home_page_images
@@ -93,7 +104,9 @@ Rails.application.routes.draw do
         post :set_loop_type
       end
     end
+
   end
+
   resources :communities do
     member do
       delete :remove_plots
@@ -106,6 +119,7 @@ Rails.application.routes.draw do
       get :floorplate_auto_plot_units
 
     end
+    
     collection do
       post :make_cordinate
       post :invitation_communities

@@ -86,6 +86,7 @@ class CompaniesController < ApplicationController
         end
       end
     end
+
     send_data(csv_file, :type => 'application/xlsx', :filename => "#{company.name}.csv")
   end
 
@@ -102,27 +103,36 @@ class CompaniesController < ApplicationController
         csv << fetch_tour_hitory_data_for_scheduled(sr)
       end
     end
+
     send_data(csv_file, :type => 'application/xlsx', :filename => "#{company.name} - Scheduled Records.csv")
   end
 
+  def generate_webpages_report
+    send_data(WebpagesReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-webpages-report.csv")
+  end
 
   private
+
   def set_company
     @company = Company.find params[:id]
   end
+  
   def company_params
     params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo,:inactivate, :creator_id)
   end
+  
   def fetch_communities_hash(company_id)
     communities = Community.where(company_id: params[:id]).pluck(:id, :name)
     communities.to_h
   end
+  
   def fetch_tour_status(tour_status)
     type = "Virtual Tour"
     type = "Self Tour" if ["self_tour", "Self Guided"].include?(tour_status)
     type = "Guided Tour" if ["guided_tour"].include?(tour_status)
     type
   end
+  
   def fetch_tour_hitory_data(tour_user,tour_history)
     obj = []
     arrived = tour_history.arrived.in_time_zone((tour_history.community_time_zone rescue 'UTC'))
@@ -172,6 +182,7 @@ class CompaniesController < ApplicationController
       end
     end
   end
+
   def fetch_tour_type(tour_type)
     type = "Virtual Tour"
     type = "Self Tour" if ["self_tour", "Self Guided"].include?(tour_type)

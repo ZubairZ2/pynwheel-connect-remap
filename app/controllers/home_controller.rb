@@ -1,6 +1,7 @@
 class HomeController < ApplicationController
   # include Error::ErrorHandler
   before_action :check_community
+  
   def index
   	if current_user.is_super_admin?
     	@communities = alphabetical_sort(Community.select(:id,:name,:updated_at,:company_id,:data_provider, :time_zone, :move_to_production, :data_provider_updated_on).includes(:company))
