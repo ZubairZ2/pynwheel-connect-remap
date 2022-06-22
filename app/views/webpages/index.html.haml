@@ -246,10 +246,11 @@
                 There is nothing available on this floor that matches the parameters that you have selected.
             .left-side.tabcontent.list_view
               -all_details = JSON.parse(@units_with_floorplan_info)
-              %div.webpage-left-list-view-title
-                %p#unit-title-count
-                  #{all_details.count} Units Found
-                = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]]), {:style => "min-width: 210"}
+              %div.left-side-title
+                %div.webpage-left-list-view-title
+                  %p#unit-title-count
+                    #{all_details.count} Units Found
+                  = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
               %div#units-body
                 :javascript
                   var units = "#{@units_with_floorplan_info}";

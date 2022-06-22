@@ -135,6 +135,13 @@ textarea {
     color: #555;
 }
 
+#filter{
+    font-family: Arial;
+    color: #555;
+    padding: 7px;
+    border-radius: 5px 5px 0 0;
+}
+
 .pynwheel-access-address-timer {
     font-size: 27px;
     margin-top: 22px;
@@ -2546,11 +2553,14 @@ ul.home-tabs li:hover a {
 
 .left-side {
     background-color: #00000014;
-    padding: 15px;
 	width: 25%;
     float: left;
     height: 90%;
     overflow: scroll;
+}
+
+.left-side-title {
+    width: 25%;
 }
 
 .right-side {
@@ -2595,10 +2605,25 @@ ul.home-tabs li:hover a {
     border: 0;
 }
 
+.left-side-title {
+    position: relative;
+    margin-bottom: 65px;
+}
+
 .webpage-left-list-view-title {
+    position: fixed;
+    width: 23%;
+    height: 50px;
+    padding: 0 10px;
+    background-color: rgb(219, 217, 205);
     display: flex;
-    padding: 10px 0px;
+    align-items: center;
     justify-content: space-between;
+    margin-bottom: 526px;
+}
+
+#unit-title-count {
+    margin: 0;
 }
 
 .unit-details-section {
@@ -3571,6 +3596,10 @@ a#favoriteclickme {
         width: 70%;
     }
     .left-side {
+        width: 30%;
+    }
+
+    .left-side-title {
         width: 30%;
     }
 
