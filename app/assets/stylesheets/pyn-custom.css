@@ -2552,11 +2552,13 @@ ul.home-tabs li:hover a {
 }
 
 .left-side {
-    background-color: #00000014;
+    background: rgb(232, 233, 233);
 	width: 25%;
-    float: left;
     height: 90%;
+    float: right;
+    position: relative;
     overflow: scroll;
+    z-index: 5;
 }
 
 .left-side-title {
@@ -2565,7 +2567,8 @@ ul.home-tabs li:hover a {
 
 .right-side {
 	width: 75%;
-    float: left;
+    position: absolute;
+    z-index: 0;
 }
 
 .left-side-30-units {
@@ -3224,7 +3227,9 @@ a#favoriteclickme {
 
 .left-side-30-units:hover {
     background-color: white;
-    border: 1px solid red;
+    border-style: solid;
+    border-radius: 5px;
+    border-color: red;
 }
 
 #marker-popover {
@@ -3455,17 +3460,30 @@ a#favoriteclickme {
 
 .popup {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     width: 100%;
-    border-radius: 10px;
-    border: 0 solid white;
 }
 
 .popup-title {
-    padding: 5px 0px;
+    padding: 5px;
     font-size: 18px;
     font-weight: bold;
     color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.popup-arrow{
+    transform: rotate(45deg);
+    position: absolute;
+    bottom: 54;
+    width: 25px;
+    height: 25px;
+    z-index: -1;
+    border: none;
+    border-radius: 2px;
 }
 
 .pin1 {
@@ -5167,6 +5185,9 @@ input:checked+.slider:before {
 
 
   .custom-iframe-modeule .app-header {
+    width: 100%;
+    position: relative;
+    z-index: 5;
     background: #e8e9e9;
 }
 body {
