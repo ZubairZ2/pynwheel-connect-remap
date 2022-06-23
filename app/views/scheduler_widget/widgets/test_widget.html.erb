@@ -817,7 +817,6 @@
         $("#tour_type").attr("disabled", true);
         if(!form_for_reschedule_tour){
           $("#tour_time").on("change", function() {
-
             if ($(this).val() != ""){
               day = (new Date($("#tour_date").val())).getDay()
               date = $("#tour_date").val()
@@ -1133,7 +1132,11 @@
 
         $('#tour_time').html(options)
         $('#tour_type').html('<option value="">Select Tour Type</option>')
-        
+
+        if(form_for_reschedule_tour && property_tour_type == "scheduled_tour" ) {
+          $(`#tour_time option[value="<%= @schedule_tour.tour_time&.strftime("%I:%M %P") %>"]`).attr("selected", true);
+          $('#tour_type').html('<option value="<%= @schedule_tour.tour_type %>"><%= @schedule_tour&.tour_type&.split('_').map(&:capitalize).join(' ') rescue ""%></option>')
+        }
       }
 
       function getFunnelAvailableTimes(schedule_tour_id, date, community_id) {

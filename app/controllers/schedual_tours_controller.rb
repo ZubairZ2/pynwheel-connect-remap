@@ -137,7 +137,7 @@ class SchedualToursController < ApplicationController
       appointment_time = (schedual_tour.tour_date.to_s +  " " + schedual_tour.tour_time.to_s.split(' ')[1]).to_datetime if schedual_tour.tour_date.present? and schedual_tour.tour_time.present?
       marketing_source = params[:marketing_source].present? ? params[:marketing_source] : "" rescue  ""
       community.realpage_insert_prospect(tu, appointment_time, marketing_source, desired_move_in_date) if community.present? and community.data_provider == "realpagesvc" # sending 'desired_move_in_date' for the parameter 'tour_time'
-      schedual_tour.add_user_in_zerv
+      # schedual_tour.add_user_in_zerv
     else
       render json: {message: "some errors occured"}, status: 'failed'
     end
@@ -398,8 +398,8 @@ class SchedualToursController < ApplicationController
       @community_opening_hours.each do |slot|
         time_slot << {"#{slot.day[0..2]}": "#{Time.zone.parse(slot.opening_time).strftime("%I:%M%p")} - #{Time.zone.parse(slot.closing_time).strftime("%I:%M%p")}"}
       end
+
       merged_slots = time_slot.each_with_object({}) { |h, o| h.each { |k,v| (o[k] ||= []) << v } }
-      # binding.pry
       merged_slots.each do |k,v|
         slot_str += "<b>#{k}:</b> #{v.join(' and ')}#{merged_slots.keys.last == k ? "" : ", "}"
         sms_slot_str += "#{k}: #{v.join(' and ')}#{merged_slots.keys.last == k ? "" : "\n"}"
@@ -546,7 +546,6 @@ Get information about your tour here: #{confirmation_page_link}"
       account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
       auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
       @client = Twilio::REST::Client.new(account_sid, auth_token)
-      # binding.pry
       
       message = @client.messages
         .create( 

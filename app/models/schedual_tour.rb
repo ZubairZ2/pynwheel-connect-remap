@@ -25,8 +25,8 @@ class SchedualTour < ApplicationRecord
   private 
 
   def cancel_funnel_appointment
-    return unless self.community.is_knock_community?
-    FunnelService.new(self).cancel_knock_appointment
+    return unless self.community.is_funnel_community?
+    FunnelService.new(self).cancel_funnel_appointment
   end
 
   def cancel_knock_appointment
