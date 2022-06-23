@@ -2561,10 +2561,6 @@ ul.home-tabs li:hover a {
     z-index: 5;
 }
 
-.left-side-title {
-    width: 25%;
-}
-
 .right-side {
 	width: 75%;
     position: absolute;
@@ -2609,20 +2605,20 @@ ul.home-tabs li:hover a {
 }
 
 .left-side-title {
+    display: flex;
+    justify-content: space-between;
     position: relative;
     margin-bottom: 65px;
 }
 
 .webpage-left-list-view-title {
     position: fixed;
-    width: 23%;
     height: 50px;
     padding: 0 10px;
     background-color: rgb(219, 217, 205);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 526px;
 }
 
 #unit-title-count {
@@ -3227,9 +3223,7 @@ a#favoriteclickme {
 
 .left-side-30-units:hover {
     background-color: white;
-    border-style: solid;
-    border-radius: 5px;
-    border-color: red;
+    border: 5px solid red !important;
 }
 
 #marker-popover {
@@ -3614,10 +3608,6 @@ a#favoriteclickme {
         width: 70%;
     }
     .left-side {
-        width: 30%;
-    }
-
-    .left-side-title {
         width: 30%;
     }
 

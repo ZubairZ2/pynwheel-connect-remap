@@ -43,6 +43,17 @@ $(document).ready(function () {
     handleMapControl()
   }
   let sidebarDiv = document.getElementById("sidebar")
+  let leftSideWidth = document.getElementsByClassName("left-side")[0].offsetWidth;
+    document.getElementsByClassName("webpage-left-list-view-title")[0].style.width = `${leftSideWidth}px`;
+    
+
+  // if ($(document).height() > $(window).height()) {
+  //   document.getElementsByClassName("webpage-left-list-view-title")[0].style.width = `${leftSideWidth-10}px`;
+  // } else {
+  //   document.getElementsByClassName("webpage-left-list-view-title")[0].style.width = `${leftSideWidth}px`;
+  // }
+
+  // $(".left-side-title")[0].css("width", `${leftSideWidth}px`);
   if (sidebarDiv) {
     let sidebarWidth =document.getElementById('sidebar').offsetWidth;
     let footerWidth = document.getElementById("footer");
@@ -54,7 +65,6 @@ $(document).ready(function () {
   }
   $(".popup-title").css("background-color", $(".fa-map-marker-alt")[0].style.color);
   $(".popup-arrow").css("background-color", $(".fa-map-marker-alt")[0].style.color);
-  $(".left-side-30-units:hover").css("border-color", $(".fa-map-marker-alt")[0].style.color);
 });
 
 function displayOverlayText() {
@@ -368,7 +378,7 @@ $(window).bind('load', function () {
 
           $('#popover-price').html(('$' + $(this).data('market-rent')))
           var marker_color_map = $(".fa-map-marker-alt")[0].style.color
-          $($('#unit_'+ $(this).data('unit-marketing-name')))[0].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+          $($('#unit_'+ $(this).data('unit-marketing-name')))[0].scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'start' });
           
           var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
           var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
@@ -723,7 +733,7 @@ function showMarkers(market_rent_change = false) {
   $('.hidden-units').empty();
 
   var units_to_display = select_units_according_to_filters(units)
-  renderChangedUnits(units_to_display, is_floorplates, webCommunity['name']);
+  // renderChangedUnits(units_to_display, false, webCommunity['name']);
   if(selectMap === "3d-map" && enable3DMaps) {
     _3dFilteredUnits = units_to_display;
   }
