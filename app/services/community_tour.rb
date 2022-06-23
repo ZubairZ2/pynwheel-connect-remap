@@ -33,6 +33,10 @@ class CommunityTour
       unless stop.stop_type == "building_starting_point" || stop.stop_type == "elevator" || (stop.latitude.present? && (stop.latitude + stop.longitude) < 1) && @community.show_map
         name = ""
         is_favorite = ""
+        bedrooms = ""
+        bathrooms = ""
+        pricing = ""
+        floorplan_image = ""
 
         if stop.stop_type == "unit"
           u = Unit.find_by_id stop.stop_id
@@ -40,6 +44,10 @@ class CommunityTour
           if u.present? && (u.available || u.modal_unit)
             name = (u.building.present? ? (u.building + "-") : "") + u.marketing_name + ((u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "") rescue "")
             is_favorite = @favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
+            bedrooms = u.floorplan.bedrooms.to_i
+            bathrooms = u.floorplan.bathrooms.to_i
+            pricing = u.floorplan.market_rent
+            floorplan_image = u.floorplan.standard_image_url
           else
             next
           end
@@ -58,6 +66,10 @@ class CommunityTour
             "id": new_stop.id,
             "stop_id": stop.id,
             "stop_type": stop.stop_type,
+            "bedrooms": bedrooms,
+            "bathrooms": bathrooms,
+            "pricing": pricing,
+            "floorplan_image": floorplan_image,
             "floor": new_stop&.floor,
             "building": new_stop&.building
           }
@@ -68,6 +80,10 @@ class CommunityTour
               "is_favorite": is_favorite,
               "id": new_stop.id,
               "stop_id": stop.id,
+              "bedrooms": bedrooms,
+              "bathrooms": bathrooms,
+              "pricing": pricing,
+              "floorplan_image": floorplan_image,
               "stop_type": stop.stop_type,
               "floor": new_stop&.floor,
               "building": new_stop&.building
@@ -91,7 +107,7 @@ class CommunityTour
 
   def get_floorplate_tour_stops
     add_start = true
-
+    
     if @scheduled_tour_stops.present?
       @stops_arr = @community.mdu ? @scheduled_tour_stops : @scheduled_tour_stops.where.not(stop_type: "unit").order(:sort)
       
