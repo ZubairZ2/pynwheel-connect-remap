@@ -40,11 +40,15 @@ class CommunityTour
         floorplan_image = ""
         available = ""
         available_date = ""
+        availability = ""
+        availability_url = ""
         if stop.stop_type == "unit"
           u = Unit.find_by_id stop.stop_id
           unit_id = u.id
           available = u.available
           available_date = u.available_date
+          availability = u.availability
+          availability_url = u.availability_url
           if u.present? && (u.available || u.modal_unit)
             name = (u.building.present? ? (u.building + "-") : "") + u.marketing_name + ((u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "") rescue "")
             is_favorite = @favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
@@ -72,7 +76,9 @@ class CommunityTour
             "stop_type": stop.stop_type,
             "unit_id": unit_id,
             "available": available,
+            "availability": availability,
             "available_date": available_date,
+            "availability_url": availability_url,
             "bedrooms": bedrooms,
             "bathrooms": bathrooms,
             "pricing": pricing,
@@ -89,7 +95,9 @@ class CommunityTour
               "stop_id": stop.id,
               "unit_id": unit_id,
               "available": available,
+              "availability": availability,
               "available_date": available_date,
+              "availability_url": availability_url,
               "bedrooms": bedrooms,
               "bathrooms": bathrooms,
               "pricing": pricing,
