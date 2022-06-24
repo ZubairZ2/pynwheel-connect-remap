@@ -33,14 +33,14 @@ class CommunityTour
       unless stop.stop_type == "building_starting_point" || stop.stop_type == "elevator" || (stop.latitude.present? && (stop.latitude + stop.longitude) < 1) && @community.show_map
         name = ""
         is_favorite = ""
+        unit_id = ""
         bedrooms = ""
         bathrooms = ""
         pricing = ""
         floorplan_image = ""
-
         if stop.stop_type == "unit"
           u = Unit.find_by_id stop.stop_id
-          
+          unit_id = u.id
           if u.present? && (u.available || u.modal_unit)
             name = (u.building.present? ? (u.building + "-") : "") + u.marketing_name + ((u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "") rescue "")
             is_favorite = @favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
@@ -66,6 +66,7 @@ class CommunityTour
             "id": new_stop.id,
             "stop_id": stop.id,
             "stop_type": stop.stop_type,
+            "unit_id": unit_id,
             "bedrooms": bedrooms,
             "bathrooms": bathrooms,
             "pricing": pricing,
@@ -80,6 +81,7 @@ class CommunityTour
               "is_favorite": is_favorite,
               "id": new_stop.id,
               "stop_id": stop.id,
+              "unit_id": unit_id,
               "bedrooms": bedrooms,
               "bathrooms": bathrooms,
               "pricing": pricing,
