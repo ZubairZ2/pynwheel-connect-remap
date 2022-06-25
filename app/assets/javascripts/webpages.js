@@ -65,6 +65,7 @@ $(document).ready(function () {
   }
   $(".popup-title").css("background-color", $(".fa-map-marker-alt")[0].style.color);
   $(".popup-arrow").css("background-color", $(".fa-map-marker-alt")[0].style.color);
+
 });
 
 function displayOverlayText() {
@@ -395,7 +396,6 @@ $(window).bind('load', function () {
 
       $(document).on("mousemove", "div.left-side-30-units", function(e){
         let unit_num;
-
         if (e.target.classList[0] === "left-side-30-units"){
           unit_num = e.target.id;
         } else if(e.target.classList[0] === "image-styles"){
@@ -406,17 +406,25 @@ $(window).bind('load', function () {
         let all_markers =  document.getElementsByClassName('marker');
           Array.from(all_markers).forEach((marker) => {
             if (unit_num === `unit_${marker.dataset.unitMarketingName}`){
-              focused_marker = document.getElementById(marker.id);
-              focused_marker.childNodes[0].style.fontSize="25px";
-              $('#popover-marketing-unit').html(marker.dataset.unitMarketingName)
-              $('#marker-popover-unit').css({left: (marker.offsetLeft -92) + "px", top: (marker.offsetTop + 36) + "px",height: "100px", background: "transparent", margin: "0px", padding: "0px"});
+              let selectedMarker = marker;
+              if(selectedMarker.classList.contains('overlapping-unit')){
+                Array.from(all_markers).forEach((findOverlappedMarker) => {
+                  if (selectedMarker.dataset.unitXPlot === findOverlappedMarker.dataset.unitXPlot && selectedMarker.dataset.unitYPlot === findOverlappedMarker.dataset.unitYPlot && !findOverlappedMarker.classList.contains("hidden-units")){
+                    selectedMarker = findOverlappedMarker;
+                  }
+                })
+              }
+              focused_marker = document.getElementById(selectedMarker.id);
+              // focused_marker.childNodes[0].style.fontSize="25px";
+              $('#popover-marketing-unit').html(selectedMarker.dataset.unitMarketingName)
+              $('#marker-popover-unit').css({left: (selectedMarker.offsetLeft -92) + "px", top: (selectedMarker.offsetTop + 36) + "px",height: "100px", background: "transparent", margin: "0px", padding: "0px"});
               $('#marker-popover-unit').removeClass('hidden');
             }
           })
       });
 
       $(document).on("mouseleave", "div.left-side-30-units", function(e){
-        focused_marker.childNodes[0].style.fontSize="20px";
+        // focused_marker.childNodes[0].style.fontSize="20px";
         $('#marker-popover-unit').addClass('hidden');
       });
         
@@ -733,7 +741,7 @@ function showMarkers(market_rent_change = false) {
   $('.hidden-units').empty();
 
   var units_to_display = select_units_according_to_filters(units)
-  // renderChangedUnits(units_to_display, false, webCommunity['name']);
+  // renderChangedUnits(units_to_display, is_floorplate, webCommunity['name']);
   if(selectMap === "3d-map" && enable3DMaps) {
     _3dFilteredUnits = units_to_display;
   }
