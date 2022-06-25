@@ -930,7 +930,7 @@ s  end
   end
 
   def create_default_gallery
-    default_galleries = ["appartments", "community"]
+    default_galleries = ["apartments", "community"]
     default_galleries.each do |gallery_name|
       self.galleries.create(name: gallery_name, is_default: true)
     end
