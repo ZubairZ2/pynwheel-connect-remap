@@ -23,7 +23,6 @@ $(document).ready(function () {
     enable3DMaps = webCommunity.enable_three_d_maps
     defaultMapType = webCommunity.web_map_type;
     _3dUnitsToBeSelected = select_units_according_to_filters(units)
-    renderChangedUnits(_3dUnitsToBeSelected, is_floorplates, webCommunity['name']);
     selected_units = _3dMapViewMarker()
     beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,_beansApiKey, 
       {
@@ -65,7 +64,10 @@ $(document).ready(function () {
   }
   $(".popup-title").css("background-color", $(".fa-map-marker-alt")[0].style.color);
   $(".popup-arrow").css("background-color", $(".fa-map-marker-alt")[0].style.color);
-
+  $(".custom-select").change(()=> {
+    var units_to_display = select_units_according_to_filters(units)
+    renderChangedUnits(units_to_display, is_floorplate, webCommunity['name']);
+  })
 });
 
 function displayOverlayText() {
@@ -736,7 +738,7 @@ function Toggle_maps(e) {
 }
 
 function showMarkers(market_rent_change = false) {
-
+  
   $('.marker').addClass('hidden');
   $('.hidden-units').empty();
 
