@@ -409,14 +409,14 @@ $(window).bind('load', function () {
               let selectedMarker = marker;
               if(selectedMarker.classList.contains('overlapping-unit')){
                 Array.from(all_markers).forEach((findOverlappedMarker) => {
-                  if (selectedMarker.dataset.unitXPlot === findOverlappedMarker.dataset.unitXPlot && selectedMarker.dataset.unitYPlot === findOverlappedMarker.dataset.unitYPlot && !findOverlappedMarker.classList.contains("hidden-units")){
-                    selectedMarker = findOverlappedMarker;
+                  if (selectedMarker.dataset.unitXPlot === findOverlappedMarker.dataset.unitXPlot && selectedMarker.dataset.unitYPlot === findOverlappedMarker.dataset.unitYPlot && !findOverlappedMarker.classList.contains("hidden") && selectedMarker.dataset.floor===findOverlappedMarker.dataset.floor){
+                    selectedMarker =findOverlappedMarker;
                   }
                 })
               }
               focused_marker = document.getElementById(selectedMarker.id);
-              // focused_marker.childNodes[0].style.fontSize="25px";
-              $('#popover-marketing-unit').html(selectedMarker.dataset.unitMarketingName)
+              focused_marker.childNodes[0].style.fontSize="25px";
+              $('#popover-marketing-unit').html(marker.dataset.unitMarketingName)
               $('#marker-popover-unit').css({left: (selectedMarker.offsetLeft -92) + "px", top: (selectedMarker.offsetTop + 36) + "px",height: "100px", background: "transparent", margin: "0px", padding: "0px"});
               $('#marker-popover-unit').removeClass('hidden');
             }
@@ -424,7 +424,7 @@ $(window).bind('load', function () {
       });
 
       $(document).on("mouseleave", "div.left-side-30-units", function(e){
-        // focused_marker.childNodes[0].style.fontSize="20px";
+        focused_marker.childNodes[0].style.fontSize="20px";
         $('#marker-popover-unit').addClass('hidden');
       });
         
@@ -864,7 +864,7 @@ function renderChangedUnits(units, is_floorplate, community){
         var unit_details_div = `
         <div class='left-side-30-units' id='unit_${unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}'>
           <div class='image-styles'>
-            <a class='image_link' href='##' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
+            <a class='image_link' href='#' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
               <img src=${unit['floorplan_image']} class='image-image-styles' />
             </a>
           </div>
