@@ -105,6 +105,9 @@
                       - if @community.display_rent
                         %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                         %span.per-month-price-text.text-p /month
+
+                %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.           
+            
             - elsif @community.credential.present? and @community.credential.apply_now.to_s == "separate_link"
               .m-filters
                 .m-filter-1.c-m-filter
@@ -115,11 +118,15 @@
                   %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                   %span.per-month-price-text /month
                 %a.apply-now.apply_now{:href => @community.credential.separate_link,:target => "_blank" } Apply Now
+              
+              %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.
+            
             - else
               .disabaled-apply-now
                 - if @community.display_rent
                   %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                   %span{style: 'font-size: 12px'} /month
+        
         .c-modal-wrapper.h-class
           .c-modal-body{:id => "#{unit.id}-zoomable-fav-image"}
             .c-m-iframe-content
