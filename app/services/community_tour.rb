@@ -42,10 +42,12 @@ class CommunityTour
         available_date = ""
         availability = ""
         availability_url = ""
+        floorplan_id = ""
         if stop.stop_type == "unit"
           u = Unit.find_by_id stop.stop_id
           unit_id = u.id
           available = u.available
+          floorplan_id = u.floorplan.id
           available_date = u.available_date
           availability = u.availability
           availability_url = u.availability_url
@@ -75,6 +77,7 @@ class CommunityTour
             "stop_id": stop.id,
             "stop_type": stop.stop_type,
             "unit_id": unit_id,
+            "floorplan_id": floorplan_id,
             "available": available,
             "availability": availability,
             "available_date": available_date,
@@ -93,6 +96,7 @@ class CommunityTour
               "is_favorite": is_favorite,
               "id": new_stop.id,
               "stop_id": stop.id,
+              "floorplan_id": floorplan_id,
               "unit_id": unit_id,
               "available": available,
               "availability": availability,
