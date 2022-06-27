@@ -34,11 +34,11 @@ class CommunityUser < ApplicationRecord
   end
 
   def company_details
-    user_company = self.user.company
+    user_company = self.community.company
     if user_company.present?
       user_company.as_json
     else
-      self.community.company.as_json
+      self.user.company.as_json
     end
   end
 
