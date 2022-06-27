@@ -2555,8 +2555,8 @@ ul.home-tabs li:hover a {
     background: rgb(232, 233, 233);
 	width: 25%;
     height: 90%;
-    float: right;
-    position: relative;
+    position: fixed;
+    right: 0;
     overflow: scroll;
     z-index: 5;
 }
@@ -2564,6 +2564,7 @@ ul.home-tabs li:hover a {
 .right-side {
 	width: 75%;
     position: absolute;
+    float: left;
     z-index: 0;
 }
 
@@ -3630,6 +3631,7 @@ a#favoriteclickme {
     #tab {
         display: flex;
         width: 100%;
+        z-index: 5;
         justify-content: center;
     }
     .right-side {
