@@ -22,7 +22,7 @@ class Company < ApplicationRecord
   has_many :communities, dependent: :destroy
   has_many :users, dependent: :destroy
   has_many :community_groups, dependent: :destroy
-  has_many :regions
+  has_many :regions, dependent: :destroy
   has_one :status, as: :statusable
   validates_uniqueness_of :name
 

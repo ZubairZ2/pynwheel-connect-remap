@@ -14,7 +14,7 @@
           - unless (params[:controller] == "companies"  || params[:controller] == "communities" || params[:controller] == "regions" || params[:controller] == "analytics") && params[:action] == "index"
             %span= current_company.name rescue ''
   - else
-    %a.logo{:href => company_communities_path(current_company)}
+    %a.logo{:href => current_company.present? ? company_communities_path(current_company) : ""}
       / mini logo for sidebar mini 50x50 pixels
       %span.logo-mini
         %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}/
