@@ -772,33 +772,13 @@
           }
           else {
             selected_day_slots = time_slots[day]
-          }
-          
-          
-          if (selected_date == today_date){
-            if(current_time_according_to_timzone !== ""){
-              today_time = current_time_according_to_timzone
-            }
-            else{
-              today_time = moment().zone(community_time_zone).format("HH:mm A")
-            }
-
-            today_datetime = moment(today_date + " " + today_time, "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A")
-            minus_day_slots = []
-
-            for (let i = 0; i < selected_day_slots.length; ++i) {
-              if (moment(selected_date + " " + selected_day_slots[i], "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A") >= today_datetime){
-                minus_day_slots.push(selected_day_slots[i])
-              }
-            }
-            selected_day_slots = minus_day_slots 
-          }
-          
+          }        
 
           if(is_funnel_community && !isEmpty(funnel_available_days)) {
             getFunnelTimes(schedule_tour_id, selected_date, community_id);            
           } 
           else {
+            selected_day_slots = get_time_slots(selected_day_slots);
             for (let i = 0; i < selected_day_slots.length; ++i) {
               options += `<option value="${selected_day_slots[i]}" >${selected_day_slots[i]}</option>`
             }
@@ -1125,6 +1105,7 @@
         let funnel_selected_day_slots = f_response.data;
 
         console.log("f_response", f_response);
+        funnel_selected_day_slots = get_time_slots(funnel_selected_day_slots);
 
         for (let i = 0; i <  funnel_selected_day_slots.length; ++i) {
           options += `<option value="${funnel_selected_day_slots[i]}" >${funnel_selected_day_slots[i]}</option>`
@@ -1154,7 +1135,6 @@
         });
       }
 
-
       function getKnockAvailableTimeSlots(knockData, selectedDate) {
         let selfGuided = knockData.self_guided_available_time_slots
         let inPerson = knockData.in_person_available_time_slots
@@ -1173,6 +1153,29 @@
         });
 
         return times
+      }
+
+      function get_time_slots(slots) {
+        if (selected_date == today_date){
+          if(current_time_according_to_timzone !== ""){
+            today_time = current_time_according_to_timzone
+          }
+          else{
+            today_time = moment().zone(community_time_zone).format("HH:mm A")
+          }
+
+          today_datetime = moment(today_date + " " + today_time, "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A")
+          minus_day_slots = []
+
+          for (let i = 0; i < slots.length; ++i) {
+            if (moment(selected_date + " " + slots[i], "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A") >= today_datetime){
+              minus_day_slots.push(slots[i])
+            }
+          }
+          slots = minus_day_slots 
+        }
+
+        return slots;
       }
       
 
