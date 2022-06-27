@@ -1980,6 +1980,13 @@ ul.amenities-list li a {
     color: #4c4c4c;
 }
 
+.map-body {
+    display: flex;
+    position: fixed;
+    width: 100%;
+    height: calc(100% - 89px);
+}
+
 .map-body-top {
     padding-top: 0 !important;
 }
@@ -2554,17 +2561,17 @@ ul.home-tabs li:hover a {
 .left-side {
     background: rgb(232, 233, 233);
 	width: 25%;
-    height: 90%;
-    position: fixed;
-    right: 0;
+    height: 100%;
+    position: relative;
     overflow: scroll;
     z-index: 5;
 }
 
 .right-side {
+    display: block;
 	width: 75%;
-    position: absolute;
-    float: left;
+    position: relative;
+    left: 0;
     z-index: 0;
 }
 
@@ -2609,7 +2616,7 @@ ul.home-tabs li:hover a {
     display: flex;
     justify-content: space-between;
     position: relative;
-    margin-bottom: 65px;
+    margin-bottom: 50px;
 }
 
 .webpage-left-list-view-title {
@@ -3839,6 +3846,7 @@ a#favoriteclickme {
         overflow: scroll;
     }
     .image-map img {
+        object-fit: contain;
     }
     .custom-icon {
         width: 20px;

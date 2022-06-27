@@ -41,23 +41,15 @@ $(document).ready(function () {
 
     handleMapControl()
   }
-  let sidebarDiv = document.getElementById("sidebar")
-  let leftSideWidth = document.getElementsByClassName("left-side")[0].offsetWidth;
-    document.getElementsByClassName("webpage-left-list-view-title")[0].style.width = `${leftSideWidth}px`;
-    
-
-  // if ($(document).height() > $(window).height()) {
-  //   document.getElementsByClassName("webpage-left-list-view-title")[0].style.width = `${leftSideWidth-10}px`;
-  // } else {
-  //   document.getElementsByClassName("webpage-left-list-view-title")[0].style.width = `${leftSideWidth}px`;
-  // }
-
-  // $(".left-side-title")[0].css("width", `${leftSideWidth}px`);
+  let sidebarDiv = document.getElementsByClassName('c-sidebar')[0]
+  let leftSideWidth = document.getElementsByClassName("left-side")[0];
+  let title = document.getElementsByClassName("webpage-left-list-view-title")[0];
+  title.style.width = `${leftSideWidth.offsetWidth}px`;
   if (sidebarDiv) {
-    let sidebarWidth =document.getElementById('sidebar').offsetWidth;
+    leftSideWidth.style.width = `${leftSideWidth.offsetWidth - sidebarDiv.offsetWidth}px`;
+    title.style.width = `${leftSideWidth.offsetWidth}px`;
     let footerWidth = document.getElementById("footer");
     if (footerWidth.offsetWidth > 567) {
-      footerWidth.style.width = `${footerWidth.offsetWidth - sidebarWidth}px`
     } else {
       footerWidth.style.bottom = "130px";
     }
@@ -419,7 +411,8 @@ $(window).bind('load', function () {
               focused_marker = document.getElementById(selectedMarker.id);
               focused_marker.childNodes[0].style.fontSize="25px";
               $('#popover-marketing-unit').html(marker.dataset.unitMarketingName)
-              $('#marker-popover-unit').css({left: (selectedMarker.offsetLeft -92) + "px", top: (selectedMarker.offsetTop + 36) + "px",height: "100px", background: "transparent", margin: "0px", padding: "0px"});
+              var position = selectedMarker.getBoundingClientRect();
+              $('#marker-popover-unit').css({left: (position.left -92) + "px", top: (position.top - 53) + "px",height: "100px", background: "transparent", margin: "0px", padding: "0px"});
               $('#marker-popover-unit').removeClass('hidden');
             }
           })
