@@ -389,7 +389,7 @@ $(window).bind('load', function () {
 
           $('#popover-price').html(('$' + $(this).data('market-rent')))
           var marker_color_map = $(".fa-map-marker-alt")[0].style.color
-          $($('#unit_'+ $(this).data('unit-marketing-name')))[0].scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'start' });
+          $($('#unit_'+ $(this).data('unit-marketing-name')))[0].scrollIntoView({behavior: 'smooth', block: 'center', inline: 'center' });
           
           var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
           var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
