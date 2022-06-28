@@ -200,12 +200,12 @@
                   .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                     %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                   %span Amenity image
+            %div#tab
+              %div.tablinks.active_unit_view
+                =button_tag " Map View",:onClick => "change_units_view(event, 'map_view')", :class => "fa fa-map-marker"
+              %div.tablinks
+                =button_tag " List View", :onClick => "change_units_view(event, 'list_view')", :class => "fa fa-list"
             %div.map-body
-              %div#tab
-                %div.tablinks.active_unit_view
-                  =button_tag " Map View",:onClick => "change_units_view(event, 'map_view')", :class => "fa fa-map-marker"
-                %div.tablinks
-                  =button_tag " List View", :onClick => "change_units_view(event, 'list_view')", :class => "fa fa-list"
               .right-side.parent.tabcontent.map_view#panzomm-container
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center"}
                   - if @community_info.has_floorplates?
@@ -275,7 +275,6 @@
                     .custom-icon{:style => "height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};"}
                       %i.fas.fa-camera-retro{:style => "color: #{amenity_marker_color}; font-size: #{camera_font_size}px; margin-top:#{camera_margin}px;"}
                     %span Amenity image
-              
               .div.map-instruction-text
                 %span 
                   %strong Note: 

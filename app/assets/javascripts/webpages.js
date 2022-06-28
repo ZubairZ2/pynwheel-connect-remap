@@ -45,13 +45,29 @@ $(document).ready(function () {
   let leftSideWidth = document.getElementsByClassName("left-side")[0];
   let title = document.getElementsByClassName("webpage-left-list-view-title")[0];
   title.style.width = `${leftSideWidth.offsetWidth}px`;
+  let inner_footer = $(".inner-footer")[0];
+  var windowWidth = $(window).width();
   if (sidebarDiv) {
     leftSideWidth.style.width = `${leftSideWidth.offsetWidth - sidebarDiv.offsetWidth}px`;
     title.style.width = `${leftSideWidth.offsetWidth}px`;
     let footerWidth = document.getElementById("footer");
-    if (footerWidth.offsetWidth > 567) {
-    } else {
+    if (windowWidth >= 567 && windowWidth <= 991) {
+      title.style.width = `Calc(100% - ${sidebarDiv.offsetWidth}px)`;
+      inner_footer.style.width = `Calc(100% - ${sidebarDiv.offsetWidth}px)`;
+    } else if (windowWidth >= 991 ) {
+      inner_footer.style.width = "100%"
+    }
+    else {
+      inner_footer.style.width = "100%"
+      inner_footer.style.marginBottom = 15;
       footerWidth.style.bottom = "130px";
+    }
+  } else {
+    if (windowWidth >= 567 && windowWidth <= 991) {
+      title.style.width = "100%";
+      inner_footer.style.marginBottom = 0;
+    } else if (windowWidth >= 991 ) {
+      inner_footer.style.width = "100%";
     }
   }
   $(".popup-title").css("background-color", $(".fa-map-marker-alt")[0].style.color);
@@ -2052,7 +2068,7 @@ function display3DMap() {
     $(".c-sidebar").hide();
     let w1 = $(".digits-list-item").width();
     let w2 = $(".c-sidebar").width();
-    $(".digits-list-item").css("width", w1+w2);
+    // $(".digits-list-item").css("width", w1+w2);
     _3dMapViewMarkers();
   }  
 }

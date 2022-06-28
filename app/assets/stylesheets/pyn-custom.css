@@ -2605,8 +2605,7 @@ ul.home-tabs li:hover a {
 }
 
 .tablinks > button {
-    margin: 0 15px                              ;
-    padding: 15px 15px;
+    padding: 15px;
     font-size: 18px;
     background-color: transparent;
     border: 0;
@@ -2614,8 +2613,6 @@ ul.home-tabs li:hover a {
 
 .left-side-title {
     display: flex;
-    justify-content: space-between;
-    position: relative;
     margin-bottom: 50px;
 }
 
@@ -3638,6 +3635,8 @@ a#favoriteclickme {
     #tab {
         display: flex;
         width: 100%;
+        background-color: white;
+        position: relative;
         z-index: 5;
         justify-content: center;
     }
@@ -5317,6 +5316,10 @@ body {
     display: block;
     font-weight: 400;
 }
+.zoomable-map-container{
+    display: block;
+    width: 100%;
+}
 .c-sidebar-nav {
     padding-left: 0;
     list-style: none;
@@ -5431,7 +5434,7 @@ footer.c-footer {
     transform: rotate(90deg);
 }
 .location-responsive {
-    padding: 0;
+    margin: 0;
     text-align: center;
     padding: 13px;
 }
@@ -5537,6 +5540,10 @@ html, .add-fav-body {
     }
 }
 @media screen and (min-width:568px) and (max-width:993px){
+
+    .c-body {
+        margin-bottom: 0;
+      } 
   .filters-alignment{
       text-align: unset !important;
   }
@@ -5590,6 +5597,9 @@ html, .add-fav-body {
 }
 
 @media screen and (min-width:350px) and (max-width:567px){
+    .webpage-left-list-view-title {
+        width: 100% !important;
+    }
     .header-buttons-groups .header-action-btn {
         max-width: 109px;
         font-size: 12px;
@@ -5685,7 +5695,7 @@ html, .add-fav-body {
     background: white;
   }
   .desktop-content{
-      display: none;
+      display: none !important;
   }
   .custom-iframe-modeule .selection-fields .selectable-field {
       display: none;
