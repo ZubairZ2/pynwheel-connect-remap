@@ -2575,6 +2575,10 @@ ul.home-tabs li:hover a {
     z-index: 0;
 }
 
+.left-side-30-units:last-child{
+    margin-bottom: 50px;
+}
+
 .left-side-30-units {
     padding: 15px;
 }
