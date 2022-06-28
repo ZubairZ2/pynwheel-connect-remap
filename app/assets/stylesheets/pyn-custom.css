@@ -5408,7 +5408,7 @@ footer.c-footer {
     right: 0;
     width: 100%;
     background: white;
-    bottom: 70px;
+    bottom: 0;
     padding: 10px;
 }
 .need-to .apply-now:active {
@@ -5548,9 +5548,11 @@ html, .add-fav-body {
       text-align: unset !important;
   }
   .custom-iframe-modeule .header-buttons-groups {
+      width: 100%;
+      text-align: center;
       position: fixed;
+      left: 25%;
       bottom: 9px;
-      right: 89px;
       z-index: 999;
   }
   .zooming-content {

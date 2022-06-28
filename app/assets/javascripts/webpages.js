@@ -961,7 +961,7 @@ function disabled_enabled_anchors() {
   }
   else{
     $('.custom-iframe-modeule').addClass('sitemap');
-    if($(window).width() < 993){
+    if($(window).width() < 567){
       $('.c-footer').css({"bottom": 70});
     }    
   }
