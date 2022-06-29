@@ -663,6 +663,8 @@ Rails.application.routes.draw do
       get :get_user_by_email, to: 'communities#get_user_by_email'
       get :get_filtered_tours, to: 'communities#get_filtered_tours'
       get :get_count_screen, to: 'communities#get_count_screen'
+      post :metro_send_analytics_data, to: 'communities#metro_send_analytics_data'
+      
       resources :communities, only: :index do
         member do
           get :data
