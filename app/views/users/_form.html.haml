@@ -87,7 +87,18 @@
     Last Name
     %span Specify last_name here  
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :last_name, :class=>"form-control validate[required]", :placeholder=>"Last Name" ,:maxlength=>"50" 
+    = f.text_field :last_name, :class=>"form-control validate[required]", :placeholder=>"Last Name" ,:maxlength=>"50"
+
+.form-group
+  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+    Activate Pynwheel Launch
+  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :pynwheel_launch_access
+      %label.label-primary{:for => "user_pynwheel_launch_access"}
+      %span.pl-15 Yes
+
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Upload Image

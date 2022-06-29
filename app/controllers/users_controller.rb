@@ -7,7 +7,7 @@ class UsersController < ApplicationController
 
   def index
     if current_user.is_super_admin?
-      @users = User.where(role: ["Community admin","Community manager","Super admin","visitor_detail_page", "Dwelo admin","Company admin","Regional admin","Community assistant"])
+      @users = User.where(role: ["Community admin","Community manager","Super admin","visitor_detail_page", "Dwelo admin","Company admin","Regional admin","Community assistant", "New Client"])
     elsif current_user.is_dwelo_admin?
       @users = User.where('id IN (?) or role IN (?)', Community.where(creator_id: User.where(role: ["Dwelo admin","Company admin","Regional admin"]).ids).collect{|c| c.users.map(&:id)}.flatten, ["Dwelo admin","Company admin","Regional admin"])
     elsif current_user.is_company_admin? || current_user.is_regional_admin?
