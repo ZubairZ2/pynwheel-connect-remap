@@ -5388,7 +5388,6 @@ ul.location-items span {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;
 }
 .zooming-content .zooming-action {
     background: #e8e9e9;
