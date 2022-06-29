@@ -5250,7 +5250,7 @@ body {
     padding-bottom: inherit;
 }
 .custom-iframe-modeule .header-buttons-groups {
-    text-align: right;
+    text-align: center;
     width: 42%;
 }
 .header-buttons-groups .header-action-btn {
@@ -5388,7 +5388,6 @@ ul.location-items span {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;
 }
 .zooming-content .zooming-action {
     background: #e8e9e9;
