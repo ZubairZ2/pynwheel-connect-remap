@@ -71,7 +71,7 @@ class User < ApplicationRecord
   def as_json
     super(
       :only => [:id , :first_name , :last_name , :email , :role] ,
-      :methods => [:name, :company_details]
+      :methods => [:is_user_authorized, :name, :company_details]
     )
   end
 
@@ -151,7 +151,11 @@ class User < ApplicationRecord
   end
 
   def verified_portal_user?
-    is_new_client? || is_super_admin?
+    is_new_client? || is_super_admin? || self.pynwheel_launch_access
+  end
+
+  def is_user_authorized
+    is_new_client? || is_super_admin? || self.pynwheel_launch_access
   end
 
   def is_admin?
