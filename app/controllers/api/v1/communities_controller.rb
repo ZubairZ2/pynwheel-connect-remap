@@ -435,7 +435,25 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def metro_send_analytics_data
-    
+    community = Community.find_by_id params[:community_id]
+
+    if community.present?
+      TrackSession.create!(
+        community_id: community.id, 
+        track_session_type: "metro", 
+        start_datetime: params["SessionStartime"].to_datetime.in_time_zone( community.time_zone ),
+        end_datetime: params["SessionEndTime"].to_datetime.in_time_zone( community.time_zone ),
+        session_id: params["SeessionId"],
+        visited_pages: [],
+        apply_click_counter: 0,
+        favorite_saved_counter: params["FavouritesSaved"],
+        favorite_sent_counter: params["FavouritesSent"],
+        price_opened_counter: params["PricingOpened"],
+        community_time_zone: community.time_zone 
+      )
+    end
+
+    render :json=> {:status=>true, code: 200}
   end
 
   def get_user_by_email
