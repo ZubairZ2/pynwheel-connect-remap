@@ -71,11 +71,11 @@ class ApplicationController < ActionController::Base
   end
 
   def get_redirection_link
-    if current_user.is_new_client?
-     ENV['PYNWHEEL_LUANCH']
-    else
+    # if current_user.is_new_client?
+    #  ENV['PYNWHEEL_LUANCH']
+    # else
      root_url
-    end
+    # end
   end
 
   def check_community

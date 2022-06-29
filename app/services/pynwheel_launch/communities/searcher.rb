@@ -1,5 +1,5 @@
 class PynwheelLaunch::Communities::Searcher
-  attr_reader :user , :params
+attr_reader :user , :params
   def initialize(user , params)
     @user = user
     @params = params
@@ -13,11 +13,25 @@ class PynwheelLaunch::Communities::Searcher
 
   def communities_by_role
     if user.is_new_client?
-      communities = user.community_users
-    else
+      communities = user&.community_users
+    elsif user.is_super_admin?
       communities = CommunityUser.all
+    elsif user.is_regional_admin?
+      communities = user&.region&.communties
+    elsif user.is_company_admin?
+      communities = user&.company&.communties
+    elsif user.is_dwelo_admin?
+      assigned_communities_ids = user.communities.ids # all assinged communities
+      dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).ids # all communities created by any dwelo admin
+      dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).ids # all communities under dwelo_companies (either created by dwelo_admin or super_admin)
+      ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
+      communities = CommunityUser.where(community_id: ids)
+    elsif user.is_community_admin?
+      communities = user&.community_users
     end
+
     communities = pynwheel_launch_access(communities)
+
     communities = distinct_user_communities(communities)
     communities = communities_by_search(communities) if search_params
     communities.order(created_at: :desc)
