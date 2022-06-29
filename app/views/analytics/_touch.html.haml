@@ -7,7 +7,7 @@
       Sessions
       %span= @date_range_text
   .box-body.maps-box
-    - if @metro_records.any? 
+    - if @metro_records.present? && @metro_records.any? 
       .row
         .col-lg-6.col-md-12.h-500
           %p.chart_heading Sessions
