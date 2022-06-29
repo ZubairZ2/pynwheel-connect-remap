@@ -419,7 +419,7 @@ $(window).bind('load', function () {
               let selectedMarker = marker;
               if(selectedMarker.classList.contains('overlapping-unit')){
                 Array.from(all_markers).forEach((findOverlappedMarker) => {
-                  if (selectedMarker.dataset.unitXPlot === findOverlappedMarker.dataset.unitXPlot && selectedMarker.dataset.unitYPlot === findOverlappedMarker.dataset.unitYPlot && !findOverlappedMarker.classList.contains("hidden") && selectedMarker.dataset.floor===findOverlappedMarker.dataset.floor){
+                  if (selectedMarker.dataset.unitXPlot === findOverlappedMarker.dataset.unitXPlot && selectedMarker.dataset.unitYPlot === findOverlappedMarker.dataset.unitYPlot && !findOverlappedMarker.classList.contains("hidden")){
                     selectedMarker =findOverlappedMarker;
                   }
                 })
