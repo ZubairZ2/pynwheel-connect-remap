@@ -822,7 +822,7 @@ function renderChangedUnits(units, is_floorplate, community){
   element.innerHTML = ""
       var floorUnits = []
       if (is_floorplate === "true"){
-        var floorChange = $("#slider li a.selected")[0].innerHTML
+        var floorChange = $("#slider li a.selected")[0].id;
         units.forEach((unitt) => {
           if (unitt.floor.toString() === floorChange){
             floorUnits.push(unitt)
