@@ -323,8 +323,10 @@ class Community < ApplicationRecord
   def set_visiting_hours_status(current_user)
     @tour = self.community_tour
     return unless self.self_tour
-    self_tour_visiting_hours(current_user) if @tour&.tour_setting&.allow_self_tour
-    guided_visiting_hours(current_user) if @tour&.tour_setting&.allow_guided_tour
+    # self_tour_visiting_hours(current_user) if @tour&.tour_setting&.allow_self_tour # commented this code so that the status shold be changed based on self tour in community setting
+    # guided_visiting_hours(current_user) if @tour&.tour_setting&.allow_guided_tour # commented this code so that the status shold be changed based on self tour in community setting
+    self_tour_visiting_hours(current_user)
+    guided_visiting_hours(current_user)
   end
 
   def self_tour_visiting_hours(current_user)
