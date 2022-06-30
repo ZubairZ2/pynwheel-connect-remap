@@ -20,14 +20,15 @@ attr_reader :user , :params
       ids = user&.region&.communities&.ids
       communities = CommunityUser.where(community_id: ids)
     elsif user.is_company_admin?
-      communities = user&.company&.communties
+      ids = user&.company&.communities.ids
+      communities = CommunityUser.where(community_id: ids)
     elsif user.is_dwelo_admin?
       assigned_communities_ids = user.communities.ids # all assinged communities
       dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).ids # all communities created by any dwelo admin
       dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).ids # all communities under dwelo_companies (either created by dwelo_admin or super_admin)
       ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
       communities = CommunityUser.where(community_id: ids)
-    elsif user.is_community_admin?
+    elsif user.is_community_admin? || user.is_community_manager?
       communities = user&.community_users
     end
 
