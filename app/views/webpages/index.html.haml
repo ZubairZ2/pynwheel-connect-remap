@@ -120,28 +120,28 @@
 
           .c-body{style: "overflow: hidden", position: "fixed"}
             - if @community.theme_name.include?('gables')
-              - fontsize = @community.design.present? && @community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : 30
+              - fontsize = @community&.design&.property_map_size_integer || 30
             - elsif @community.theme_name == 'modernist'
-              - fontsize = @community.design.present? && @community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size : 30
+              - fontsize = @community&.design&.modernist_property_map_size || 30
             - elsif @community.theme_name == 'futurist'
-              - fontsize = (@community.design.present? && @community.design.futurist_property_map_size.present?) ? @community.design.futurist_property_map_size : 30
+              - fontsize = @community&.design&.futurist_property_map_size || 30
             - elsif @community.theme_name == 'expressionist'
-              - fontsize = @community.design.present? && @community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size : 30
+              - fontsize = @community&.design&.expressionist_property_map_size || 30
             - elsif @community.theme_name == 'panther'
-              - fontsize = @community.design.present? && @community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size : 30
+              - fontsize = @community&.design&.panther_property_map_size || 30
             - else
               - fontsize = 30
 
             - if @community.theme_name.include?('gables')
-              - map_marker_color = @community.design.present? && @community.design.property_map_color.present? ? @community.design.property_map_color : "#d37474"
+              - map_marker_color = @community&.design&.property_map_color || "#d37474"
             - elsif @community.theme_name == 'modernist'
-              - map_marker_color = @community.design.present? && @community.design.modernist_map_marker_color == 'no color' || @community.design.modernist_map_marker_color == '' ? (@community.design.present? && @community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.present? ? @community.design.modernist_map_marker_color : '#cf492f'
+              - map_marker_color = ( ['no color', ''].include?(@community&.design&.modernist_map_marker_color) ) ? (@community&.design&.primary_color || '#cf492f') : (@community&.design&.modernist_map_marker_color || '#cf492f')
             - elsif @community.theme_name == 'futurist'
-              - map_marker_color = (@community.design.present? && @community.design.futurist_property_map_marker_color.present?) ? @community.design.futurist_property_map_marker_color : "#d37474"
+              - map_marker_color = @community&.design&.futurist_property_map_marker_color || "#d37474"
             - elsif @community.theme_name == 'expressionist'
-              - map_marker_color = @community.design.present? && @community.design.expressionist_property_map_marker_color.present? ? @community.design.expressionist_property_map_marker_color : "#d37474"
+              - map_marker_color = @community&.design&.expressionist_property_map_marker_color || "#d37474"
             - elsif @community.theme_name == 'panther'
-              - map_marker_color = @community.design.present? && @community.design.panther_property_map_marker_color.present? ? @community.design.panther_property_map_marker_color : "#d37474"
+              - map_marker_color = @community&.design&.panther_property_map_marker_color || "#d37474"
             - else
               - map_marker_color = 'rgba(247, 0, 0, 0.61)'
 
@@ -153,15 +153,15 @@
             - spanSize_size = ((9 / 25.0).to_f * (fontsize.to_f)).to_f
 
             - if @community.theme_name.include?('gables')
-              - marker_font_size = @community.design.present? && @community.design.amenity_map_marker_size_integer.present? ? @community.design.amenity_map_marker_size_integer : 30
+              - marker_font_size = @community&.design&.amenity_map_marker_size_integer || 30
             - elsif @community.theme_name == 'modernist'
-              - marker_font_size = @community.design.present? && @community.design.modernist_amenity_map_size.present? ? @community.design.modernist_amenity_map_size : 30
+              - marker_font_size = @community&.design&.modernist_amenity_map_size || 30
             - elsif @community.theme_name == 'futurist'
-              - marker_font_size = (@community.design.present? && @community.design.futurist_amenity_map_size.present?) ? @community.design.futurist_amenity_map_size : 30
+              - marker_font_size = @community&.design&.futurist_amenity_map_size || 30
             - elsif @community.theme_name == 'expressionist'
-              - marker_font_size = @community.design.present? && @community.design.expressionist_amenity_map_size.present? ? @community.design.expressionist_amenity_map_size : 30
+              - marker_font_size = @community&.design&.expressionist_amenity_map_size || 30
             - elsif @community.theme_name == 'panther'
-              - marker_font_size = @community.design.present? && @community.design.panther_amenity_map_size.present? ? @community.design.panther_amenity_map_size : 30
+              - marker_font_size = @community&.design&.panther_amenity_map_size || 30
             - else
               - fontsize = 30
             - if fontsize.to_i > 33
@@ -173,15 +173,15 @@
             - top_margin_var = -2#(fontsize.to_i - 30)/ 1.7
 
             - if @community.theme_name.include?('gables')
-              - amenity_marker_color = @community.design.present? && @community.design.amenity_map_marker_color.present? ? @community.design.amenity_map_marker_color : "#d37474"
+              - amenity_marker_color = @community&.design&.amenity_map_marker_color || "#d37474"
             - elsif @community.theme_name == 'modernist'
-              - amenity_marker_color = @community.design.present? && @community.design.modernists_amenity_map_marker_color == 'no color' || @community.design.modernists_amenity_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.present? ? @community.design.modernists_amenity_map_marker_color : '#cf492f'
+              - amenity_marker_color = ( ['no color', ''].include?(@community.design.modernists_amenity_map_marker_color) ) ? (@community&.design&.primary_color || '#cf492f') : (@community&.design&.modernists_amenity_map_marker_color || '#cf492f')
             - elsif @community.theme_name == 'futurist'
-              - amenity_marker_color = (@community.design.present? && @community.design.futurist_amenity_map_marker_color.present?) ? @community.design.futurist_amenity_map_marker_color : "#d37474"
+              - amenity_marker_color = @community&.design&.futurist_amenity_map_marker_color || "#d37474"
             - elsif @community.theme_name == 'expressionist'
-              - amenity_marker_color = @community.design.present? && @community.design.expressionist__amenity_map_marker_color.present? ? @community.design.expressionist__amenity_map_marker_color : "#d37474"
+              - amenity_marker_color = @community&.design&.expressionist__amenity_map_marker_color || "#d37474"
             - elsif @community.theme_name == 'panther'
-              - amenity_marker_color = @community.design.present? && @community.design.panther_amenity_map_marker_color.present? ? @community.design.panther_amenity_map_marker_color : "#d37474"
+              - amenity_marker_color = @community&.design&.panther_amenity_map_marker_color || "#d37474"
             - else
               - amenity_marker_color = 'rgba(247, 0, 0, 0.61)'
 
@@ -246,7 +246,7 @@
                   %strong Oops!
                   There is nothing available on this floor that matches the parameters that you have selected.
               .left-side.tabcontent.list_view
-                -all_details = JSON.parse(@units_with_floorplan_info)
+                -all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
                 %div.left-side-title
                   %div.webpage-left-list-view-title
                     %p#unit-title-count

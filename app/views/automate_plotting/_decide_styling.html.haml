@@ -1,26 +1,26 @@
 - if @community.theme_name.include?('gables')
-  - @marker_color = @community.design.property_map_color.present? ? @community.design.property_map_color : "#d37474"
+  - @marker_color = @community&.design&.property_map_color || "#d37474"
 - elsif @community.theme_name == 'modernist'
-  - @marker_color = @community.design.modernist_map_marker_color == 'no color' || @community.design.modernist_map_marker_color == '' ? (@community.design.primary_color.present? ? @community.design.primary_color : '#cf492f') : @community.design.modernist_map_marker_color
+  - @marker_color = ( ['no color', ''].include?( @community.design.modernist_map_marker_color ) ) ? (@community&.design&.primary_color : '#cf492f') : @community&.design&.modernist_map_marker_color
 - elsif @community.theme_name == 'futurist'
-  - @marker_color = @community.design.futurist_property_map_marker_color.present? ? @community.design.futurist_property_map_marker_color : "#d37474"
+  - @marker_color = @community&.design&.futurist_property_map_marker_color || "#d37474"
 - elsif @community.theme_name == 'expressionist'
-  - @marker_color = @community.design.expressionist_property_map_marker_color.present? ? @community.design.expressionist_property_map_marker_color : "#d37474"
+  - @marker_color = @community&.design&.expressionist_property_map_marker_color || "#d37474"
 - elsif @community.theme_name == 'panther'
-  - @marker_color = @community.design.panther_property_map_marker_color.present? ? @community.design.panther_property_map_marker_color : "#d37474"
+  - @marker_color = @community&.design&.panther_property_map_marker_color || "#d37474"
 - else
   - @marker_color = 'rgba(247, 0, 0, 0.61)'
 -#-
 - if @community.theme_name.include?('gables')
-  - @fontsize = @community.design.property_map_size_integer.present? ? @community.design.property_map_size_integer : 30
+  - @fontsize = @community&.design&.property_map_size_integer || 30
 - elsif @community.theme_name == 'modernist'
-  - @fontsize = @community.design.modernist_property_map_size.present? ? @community.design.modernist_property_map_size : 30
+  - @fontsize = @community&.design&.modernist_property_map_size || 30
 - elsif @community.theme_name == 'futurist'
-  - @fontsize = @community.design.futurist_property_map_size.present? ? @community.design.futurist_property_map_size : 30
+  - @fontsize = @community&.design&.futurist_property_map_size || 30
 - elsif @community.theme_name == 'expressionist'
-  - @fontsize = @community.design.expressionist_property_map_size.present? ? @community.design.expressionist_property_map_size : 30
+  - @fontsize = @community&.design&.expressionist_property_map_size || 30
 - elsif @community.theme_name == 'panther'
-  - @fontsize = @community.design.panther_property_map_size.present? ? @community.design.panther_property_map_size : 30
+  - @fontsize = @community&.design&.panther_property_map_size || 30
 - else
   - @fontsize = 30
 
