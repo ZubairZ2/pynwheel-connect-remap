@@ -89,7 +89,7 @@ class Community < ApplicationRecord
 
   def as_json(options = {})
     data = super(
-      :only => [:id , :name , :logo , :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :property_manager_name,:property_manager_phone,:property_manager_email , :website , :number_of_units], :methods => [:schedule_tour_url, :community_code])
+      :only => [:id , :name , :logo , :address , :city , :longitude, :latitude, :state , :email , :description, :phone , :zip, :property_manager_name,:property_manager_phone,:property_manager_email , :website , :number_of_units], :methods => [:schedule_tour_url, :community_code])
     check_brand_access = options[:brand_pdf_feature]
     if check_brand_access == true
       data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())

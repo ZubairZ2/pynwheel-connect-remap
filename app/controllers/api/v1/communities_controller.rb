@@ -489,10 +489,10 @@ class Api::V1::CommunitiesController < ActionController::Base
         TourUserCustomization.new(@community, @tour_user).customize_tour
         @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id)
-        
-        data = {visited_history: @visited_history, tour_user: @tour_user}
-
-        render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
+        visiting_hours = @community&.opening_hours.present? ? @community&.opening_hours : []
+        @gallery = @community&.galleries.present? ?  @community&.galleries.order(:sort) : []
+        data = {visited_history: @visited_history, tour_user: @tour_user, community: @community, visiting_hours: visiting_hours.as_json, propety_images: @gallery.as_json}
+        render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200, token: params[:token]}
       else
         render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}
       end
