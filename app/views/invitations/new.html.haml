@@ -182,7 +182,10 @@
 
   $('#user_role').change(function(){
     user_role = $('#user_role').val()
+    let communityRadio = document.querySelectorAll('input[name=communitySelectToggle]')[1]
+    communityRadio.disabled = false;
     if (is_regional_admin(user_role)){
+      communityRadio.disabled = true;
       $('.chat_feature').removeClass('hide_it')
       $(".company_list").val("").trigger("change");
       add_region()
