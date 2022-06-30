@@ -70,7 +70,11 @@ class InvitationsController < Devise::InvitationsController
           user_community = CommunityUser.find_by(community_id: community, user_id: user.id) rescue nil
 
           existing_community = Community.find_by_id community
-          existing_community.update(product_options: params[:product_options])
+          
+          parsed_products = JSON.parse(params[:product_options])
+          self_tour = parsed_products["product_options"]["self_tour"]["is_enabled"]
+          pynwheel_touch = parsed_products["product_options"]["pynwheel_touch"]["is_enabled"]
+          existing_community.update(product_options: params[:product_options], move_to_production: false, self_tour: self_tour, touchscreen_app: pynwheel_touch)
           existing_community.set_community_status(current_user) if existing_community.present?
 
           unless user_community.present?
@@ -87,11 +91,12 @@ class InvitationsController < Devise::InvitationsController
   def create_community_users user, company
     params[:user][:new_community_names].split(",").each do |name|
       name = name.strip
-
       community = Community.find_or_create_by(name: name, company_id: company.id)
-      community.update(product_options: params[:product_options], move_to_production: false)
+      parsed_products = JSON.parse(params[:product_options])
+      self_tour = parsed_products["product_options"]["self_tour"]["is_enabled"]
+      pynwheel_touch = parsed_products["product_options"]["pynwheel_touch"]["is_enabled"]
+      community.update(product_options: params[:product_options], move_to_production: false, self_tour: self_tour, touchscreen_app: pynwheel_touch)
       community.set_community_status(current_user) if community.present?
-
       user_community = CommunityUser.find_by(community_id: community.id, user_id: user.id) rescue nil
 
       unless user_community.present?
