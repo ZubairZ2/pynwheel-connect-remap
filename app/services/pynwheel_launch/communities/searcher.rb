@@ -30,6 +30,8 @@ attr_reader :user , :params
       communities = CommunityUser.where(community_id: ids)
     elsif user.is_community_admin? || user.is_community_manager?
       communities = user&.community_users
+    else
+      communities = user&.community_users
     end
 
     communities = pynwheel_launch_access(communities)
