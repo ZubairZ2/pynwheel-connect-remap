@@ -17,7 +17,8 @@ attr_reader :user , :params
     elsif user.is_super_admin?
       communities = CommunityUser.all
     elsif user.is_regional_admin?
-      communities = user&.region&.communties
+      ids = user&.region&.communities&.ids
+      communities = CommunityUser.where(community_id: ids)
     elsif user.is_company_admin?
       communities = user&.company&.communties
     elsif user.is_dwelo_admin?
