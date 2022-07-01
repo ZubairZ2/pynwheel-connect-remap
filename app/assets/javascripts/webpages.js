@@ -822,7 +822,7 @@ function renderChangedUnits(units, is_floorplate, community){
   element.innerHTML = ""
       var floorUnits = []
       if (is_floorplate === "true"){
-        var floorChange = $("#slider li a.selected")[0].innerHTML
+        var floorChange = $("#slider li a.selected")[0].id;
         units.forEach((unitt) => {
           if (unitt.floor.toString() === floorChange){
             floorUnits.push(unitt)
@@ -1536,12 +1536,12 @@ function hasTouch() {
 }
 
 function disable_rent_filter_options(min_rent) {
+  min_rent = parseInt(min_rent)
   var select = document.getElementById("market_rent");
   for (var i = 1; i < select.length; i++) {
     var option = select.options[i];
     var option_rent = option.value.split('-');
     var maximum_option_rent = parseFloat(option_rent[1]);
-
     if (min_rent >= maximum_option_rent)
       $("#market_rent option[value=" + min_rent + "]").show()
       // $("#market_rent option[value=" + option.value + "]").show()
