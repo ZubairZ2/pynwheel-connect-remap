@@ -2624,13 +2624,16 @@ ul.home-tabs li:hover a {
     position: fixed;
     height: 50px;
     padding: 0 10px;
-    background-color: rgb(219, 217, 205);
+    background-color: #E8E9E9;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-#unit-title-count {
+#unit-title-count{
+    font-size: 14px;
+    font-weight: bold;
+    font-family: 'Raleway', sans-serif;
     margin: 0;
 }
 
