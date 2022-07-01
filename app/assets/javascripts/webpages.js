@@ -2034,7 +2034,12 @@ function display3DMap() {
     footerWidth.style.width = mapWidth;
   }
   else {
-    let mapWidth = (windowWidth - sideBarWidth)
+    let mapWidth;
+    if (sideBarWidth){
+      mapWidth = (windowWidth - sideBarWidth);
+    } else {
+      mapWidth = windowWidth;
+    }
     $(".beans-map-container").css("width", mapWidth);
     footerWidth.style.width = mapWidth;
   }
@@ -2072,6 +2077,7 @@ function display2DMap() {
   let inner_footer = $(".inner-footer")[0];
   let footerWidth = document.getElementById("footer");
   var windowWidth = $(window).width();
+  footerWidth.style.width = `${windowWidth - (leftSideWidth.offsetWidth)}px`;
   if (selectMap !== "3d-map"){
     if (sidebarDiv) {
       leftSideWidth.style.width = `${windowWidth - (sidebarDiv.offsetWidth + rightSideWidth.offsetWidth)}px`;
