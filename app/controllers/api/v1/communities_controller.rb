@@ -444,7 +444,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         start_datetime: params["SessionStartime"].to_datetime.in_time_zone( community.time_zone ),
         end_datetime: params["SessionEndTime"].to_datetime.in_time_zone( community.time_zone ),
         session_id: params["SeessionId"],
-        visited_pages: [],
+        visited_pages: params["additionalPage"],
         apply_click_counter: 0,
         favorite_saved_counter: params["FavouritesSaved"],
         favorite_sent_counter: params["FavouritesSent"],
