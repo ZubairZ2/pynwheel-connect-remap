@@ -6186,9 +6186,15 @@ ul.add-fav-options {
     margin-top: 17px;
     margin-bottom: 14px;
 }
+
 .c-popup .c-m-iframe-content img {
     width: auto;
     max-height: 400px;
+}
+
+.modal-middle-section {
+    overflow-y: scroll;
+    height: 241px;
 }
 
 .c-m-iframe-content {
@@ -6224,7 +6230,7 @@ ul.add-fav-options {
 .show-more-option{
     position: fixed;
     padding: 0;
-    left: 28%;
+    left: 27%;
 }
 
 .show-pricing-options{
@@ -6394,7 +6400,7 @@ ul.add-fav-options {
 }
 .description-text{
     overflow: auto;
-    height: 100px;
+    max-height: 100px;
 }
 .alert_message{
     margin-left: 290px;
@@ -6484,11 +6490,16 @@ ul.add-fav-options {
     }
 }
 .c-modal-sidebar-filters-bottom {
-    position: relative;
+    position: absolute;
     bottom: 0%;
-    width: 100%;
-    /* padding: 10px; */
+    width: 40%;
+    padding: 10px;
 }
+
+.unit-buttons {
+ padding: 10px;   
+}
+
 .c-m-iframe-content-bottom{
     margin-bottom: 65px;
 }

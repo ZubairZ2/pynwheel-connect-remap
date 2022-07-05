@@ -1,7 +1,7 @@
 #unitModal.modal.fade{:role => "dialog"}
   .c-popup
     .c-modal
-      .c-modal-dialog
+      .c-modal-dialog.modal-xl
         .c-modal-header
           %h5.c-modal-title#unit-marketing-name
           %i.propertyDetailName{style: "display: block"}
@@ -31,50 +31,51 @@
                 %img{:src => "/assets/minus.png"}/
               %a.refresh-action.zooming-action.reset-res-modal.zoom-controls{:href => "#"}
                 %img{:src => "/assets/refresh.png"}/
-            .module-info
-              %ul.module-list
-                %li
-                  %b
-                    %img{:src => "/assets/bedroom-icon.png"}/
-                    %span#bedrooms
-                  %span.bedrooms
-                    Bedrooms
-                %li
-                  %b
-                    %img{:src => "/assets/bathroom-icon.png"}/
-                    %span#bathrooms
-                  %span.bathrooms
-                    Bathrooms
-                %li
-                  %b
-                    %img{:src => "/assets/sq-feet-icon.png"}/
-                    %span#square-feet 
-                  Sq Feet
+            .modal-middle-section
+              .module-info
+                %ul.module-list
+                  %li
+                    %b
+                      %img{:src => "/assets/bedroom-icon.png"}/
+                      %span#bedrooms
+                    %span.bedrooms
+                      Bedrooms
+                  %li
+                    %b
+                      %img{:src => "/assets/bathroom-icon.png"}/
+                      %span#bathrooms
+                    %span.bathrooms
+                      Bathrooms
+                  %li
+                    %b
+                      %img{:src => "/assets/sq-feet-icon.png"}/
+                      %span#square-feet 
+                    Sq Feet
 
-            .availabilty-container-start
-              %span.available-heading#available-text
-              %b
-                %span#available-date
-            
-            #unit-lease-pricing-text-li.availabilty-container
-              %span.text-left.available-info
+              .availabilty-container-start
+                %span.available-heading#available-text
+                %b
+                  %span#available-date
+              
+              #unit-lease-pricing-text-li.availabilty-container
+                %span.text-left.available-info
 
-              - if @community.display_rent && @community.display_pricing_options
-                %span#first-unit-lease-pricing
-                #pricing-option.hidden
-                  %div{style: "max-height: 6em; overflow-y: auto;"}
-                    %span#unit-lease-pricing
+                - if @community.display_rent && @community.display_pricing_options
+                  %span#first-unit-lease-pricing
+                  #pricing-option.hidden
+                    %div{style: "max-height: 6em; overflow-y: auto;"}
+                      %span#unit-lease-pricing
 
-                %span.text-right.show-more-option.available-info#leas-price-option
-                  %a.show-more#show-more-price Show more prices
-                  %a.show-more#hide-more-price.hidden Hide more prices
+                  %span.text-right.show-more-option.available-info#leas-price-option
+                    %a.show-more#show-more-price Show more prices
+                    %a.show-more#hide-more-price.hidden Hide more prices
 
-            .c-modal-sidebar-description
-              %h4.des-heading Description
-              %p.c-m-description#unit-description
+              .c-modal-sidebar-description
+                %h4.des-heading Description
+                %p.c-m-description#unit-description
 
-            %div{style: "padding: 0px 0px 8px 7px"}
-              .unit-buttons
+              %div{style: "padding: 0px 0px 8px 7px"}
+                .unit-buttons
             .c-modal-sidebar-filters
               - if @community_info.credential.present? and @community_info.credential.apply_now.to_s == "true"
                 .m-filters

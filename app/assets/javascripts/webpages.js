@@ -1696,7 +1696,7 @@ function setModalAttributes(element) {
   }
 
   if (dataProvider == 'yardi' || dataProvider == 'yardirentcafe'){
-    $('#floorplan-image').css({"max-width": 310});
+    // $('#floorplan-image').css({"max-width": 310});
     $('.c-modal-footer').css({"padding-bottom": 7});
     $('.m-filters').hide();
 
