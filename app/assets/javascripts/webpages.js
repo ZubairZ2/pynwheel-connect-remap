@@ -836,6 +836,7 @@ function renderChangedUnits(units, is_floorplate, community){
       floorUnits = getFilteredUnits(floorUnits, sortType.value);
       var filtered_units = floorUnits;
       var website ="#{@community_info.website}"
+
       filtered_units.forEach((unit) => {
         var unit_details_div = `
         <div class='left-side-30-units' id='unit_${unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}'>
@@ -864,8 +865,8 @@ function renderChangedUnits(units, is_floorplate, community){
             </p>
           </div>
           <div class='unit-details-section'>
-            <p>
-              Available ${unit['available'] ? "Now" : unit['available_date']}
+            <p id='right-bar-unit-availability'>
+              ${ get_unit_availability(unit) }
             </p>
             <p>
               $${unit['market_rent']}/month
@@ -2150,7 +2151,29 @@ function applyFilters(){
   $("#unit_availability").html(selected_available_unit);
   $("#bedroom_responsive").html(selected_unit_bedrooms);
   $('.mobile-filter-mega-menu').slideToggle()
+}
 
+function get_unit_availability(unit) {
+  let todayDate = new Date();
+  let availableDate = new Date(unit.available_date);
+  let availableDateString = "";
+
+  if (unit.sold) {
+    availableDateString = "Unavailable"
+  } else {
+    if (unit.available && availableDate) {
+      if(availableDate <= todayDate) {
+        availableDateString = "Now"
+      } else {
+        date_arr = unit.available_date.split("-");
+        availableDateString = "Available: " + (`${date_arr[1]}/${date_arr[2]}/${date_arr[0]}`)
+      }
+    } else {
+      availableDateString = "Unavailable"
+    }
+  }
+
+  return availableDateString;
 }
 
 $(document).on('click','.share-favorite',function(){
