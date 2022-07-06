@@ -20,28 +20,6 @@
               = f.select :role, options_for_select(User::ROLES_DWELO_ADMIN,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
             - elsif current_user.is_community_admin?
               = f.select :role, options_for_select(User::ROLES_ADMIN,f.object.role),{},{class: "form-control validate[required]"}
-          
-          .community-select-toggle{:style => "margin-top: 30px;margin-bottom: 30px;"}
-            %label Select Community:
-            .form-check
-              %input#existingCommunityToggle.form-check-input{:name => "communitySelectToggle", :type => "radio", :value => "existing", :checked => "checked"}/
-              %label.form-check-label{:for => "existingCommunityToggle"}
-                Existing
-            .form-check
-              %input#newCommunityToggle.form-check-input{:name => "communitySelectToggle", :type => "radio", :value => "new"}/
-              %label.form-check-label{:for => "newCommunityToggle"}
-                New
-
-          .company-select-toggle{:style => "margin-top: 30px;margin-bottom: 30px;"}
-            %label Select Company:
-            .form-check
-              %input#existingCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "existing"}/
-              %label.form-check-label{:for => "existingCompanyToggle"}
-                Existing
-            .form-check
-              %input#newCompanyToggle.form-check-input{:name => "companySelectToggle", :type => "radio", :value => "new", :checked => "checked"}/
-              %label.form-check-label{:for => "newCompanyToggle"}
-                New
 
           .pynwheel-existing-company-form
             %div.existing-company-name.form-group
@@ -82,7 +60,7 @@
             %br
 
             .chat_feature
-              .row{:style => "text-align: center; margin-top: 50px; margin-bottom: 30px;"}
+              .row{:style => "text-align: center; margin-top: 30px; margin-bottom: 15px;"}
                 %label
                   Enable Chat
 
