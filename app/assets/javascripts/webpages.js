@@ -2159,17 +2159,17 @@ function get_unit_availability(unit) {
   let availableDateString = "";
 
   if (unit.sold) {
-    availableDateString = "Unavailable"
+    availableDateString = "Unavailable:"
   } else {
     if (unit.available && availableDate) {
       if(availableDate <= todayDate) {
-        availableDateString = "Now"
+        availableDateString = "Available: Now"
       } else {
         date_arr = unit.available_date.split("-");
         availableDateString = "Available: " + (`${date_arr[1]}/${date_arr[2]}/${date_arr[0]}`)
       }
     } else {
-      availableDateString = "Unavailable"
+      availableDateString = "Unavailable:"
     }
   }
 
