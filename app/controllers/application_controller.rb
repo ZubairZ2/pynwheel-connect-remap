@@ -188,7 +188,7 @@ class ApplicationController < ActionController::Base
   end
 
   def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:region_id,:role,:community_ids=>[]])
+    devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:pynwheel_launch_access,:pynwheel_connect_access,:region_id,:role,:community_ids=>[]])
     devise_parameter_sanitizer.permit(:accept_invitation, keys: [:first_name, :last_name, :avatar])
   end
 end

@@ -75,6 +75,11 @@ class User < ApplicationRecord
     )
   end
 
+  def active_for_authentication?
+    super && self.pynwheel_connect_access
+  end
+  
+
   def company_details
     user_company = self.company || self.communities.last.company
     if user_company.present?

@@ -12,7 +12,7 @@
       .col-md-8.col-lg-5.col-sm-12.col-xs-12
         .text-center
           %h3 Send Invitation
-        = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post} do |f|
+        = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => {:method => :post, :id => "invitation_form"} do |f|
           .form-group
             - if current_user.is_super_admin?
               = f.select :role, options_for_select(User::ROLES,f.object.role),{},{class: "form-control validate[required] col-sm-12 col-xs-12"}
@@ -46,24 +46,11 @@
                 .col-sm-1.col-xs-1.col-lg-12.col-md-12
                 .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
                   = f.select :community_ids, options_for_select(''),{},{class: "form-control communities_box",:multiple=>true}
-
-          .pynwheel-new-company-form{:style => "display: table; width: 100%;"}
-            %div.pynwheel-new-company-name{style: "width: auto"}
-              %label Company Name
-              .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row
-                = text_field_tag "new_company_name", nil, :name => "user[new_company_name]", :class=>"form-control", :placeholder=>"Enter new company name"
-
-            %div.pynwheel-new-community-name{style: "width: auto"}
-              %label Community Names
-              .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row
-                = text_field_tag "new_community_names", nil,:name => "user[new_community_names]",:class=>"form-control" ,:placeholder=>"Enter new community names"
-            %br
-
+          %br
             .chat_feature
               .row{:style => "text-align: center; margin-top: 30px; margin-bottom: 15px;"}
                 %label
                   Enable Chat
-
               .row
                 .form-group
                   .row
@@ -76,23 +63,37 @@
                   .col-sm-1.col-xs-1.col-lg-12.col-md-12
                   .col-sm-10.col-xs-10.col-lg-12.col-md-12{:style => "text-align: -webkit-center;"}
                     = select_tag :chat_community_ids, options_for_select(''),{class: "form-control communities_box",:multiple=>true}
-
           %br
+          
+          %div#access-control{style: "margin-bottom: 15px;"}
+            .form-group{style: "padding-top: 20px;"}
+              %label.col-sm-12.col-lg-6.col-md-6.col-xs-12.control-label
+                Pynwheel Connect
+              .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = f.check_box :pynwheel_connect_access, :checked => "checked", :class => "pynwheel_connect"
+                  %label.label-primary{:for => "user_pynwheel_connect_access"}
+                  %span.pl-5 Yes
 
-          = render :partial=> 'product_options'
-
-          = hidden_field_tag "product_options", product_defualt_options.to_json
-
-          %br
+            .form-group
+              %label.col-sm-12.col-lg-6.col-md-6.col-xs-12.control-label
+                Pynwheel Launch
+              .col-sm-12.col-lg-6.col-md-6.col-xs-12
+                .TriSea-technologies-Switch
+                  %span.pr-15 No
+                  = f.check_box :pynwheel_launch_access, :checked => "checked", :class => "pynwheel_launch"
+                  %label.label-primary{:for => "user_pynwheel_launch_access"}
+                  %span.pl-5 Yes
+            %p#access-control-error{style: "display: none; text-align: center; background: white;"}
+              please select atlease one option
           .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row{style: "display: inline-flex;width: 100%;"}
             %span.to-input.fa.fa-envelope
             .all-mail
             = f.text_area :email, name: "user[email]", :class=>"form-control", :placeholder=>"Email",:maxlength=>"50", autofocus: true
-
           %input.to-submit-id{:name => "to_sumbit", :type => "hidden"}/
           -# %button.btn.btn-primary.btn-block#invitation-submit-btn{ type: 'button' } Submit
-
-          = f.submit "Send Invitation", :class=>"btn btn-primary btn-block invitation-submit-btn"
+          = f.submit "Send Invitation", :class=>"btn btn-primary btn-block invitation-submit-btn", data: { disable_with: false }
           = link_to "Cancel", company_employees_path(current_company), :class=>"btn btn-default btn-block"
         .text-center
           %p.copy-right © 2018 Pynwheel
@@ -112,6 +113,16 @@
     }
     }
   });
+
+  $("#invitation_form").submit(function(event){
+    let pynwheelConnect = document.getElementsByClassName('pynwheel_connect')[0].checked;
+    let pynwheelLaunch = document.getElementsByClassName('pynwheel_launch')[0].checked;
+    if (!pynwheelConnect && !pynwheelLaunch){
+      event.preventDefault();
+      $('#access-control').css('border', '2px solid red');
+      $('#access-control-error').css('display', 'block');
+    }
+  });
   $(document).on('click','.cancel-email',function(){
     var toCancel = $(this).data('email-to-cancel');
     $(this).parent().remove();
@@ -123,15 +134,6 @@
 
   $('#user_community_ids').multiSelect();
   $('#chat_community_ids').multiSelect();
-
-  var defaultProductOptionsJson = JSON.parse($('input[name=product_options]').val());
-  var updatedProductOptionsJson = defaultProductOptionsJson
-
-  productDefaultOptions();
-
-  $(".invitation-submit-btn").on('click', function() {
-    setProductOptions();
-  });
 
   $(".company_list").change(function(){
     console.log("change called")
@@ -160,10 +162,7 @@
 
   $('#user_role').change(function(){
     user_role = $('#user_role').val()
-    let communityRadio = document.querySelectorAll('input[name=communitySelectToggle]')[1]
-    communityRadio.disabled = false;
     if (is_regional_admin(user_role)){
-      communityRadio.disabled = true;
       $('.chat_feature').removeClass('hide_it')
       $(".company_list").val("").trigger("change");
       add_region()
@@ -179,51 +178,6 @@
       add_or_replace_options()
     }
 
-    handleProductOptionBasedOnUserRole(user_role);
-  });
-
-  $("#additional-services").on('change', function() {
-    handleAdditionaServicesOptionsVisibility(this.checked);
-  });
-
-  $("#graphic-design-services").on('change', function() {
-    handleGraphicDesignServicesOptionsVisibility(this.checked);
-  });
-
-  $("#pynwheel-access-other").on('change', function() {
-    handelPynwheelAccessOtherOptionsVisibility(this.checked);
-  });
-
-  $("#pynwheel-access").on('change', function() {
-    handlePynwheelAccessOptionsVisibility(this.checked);
-  });
-
-  $("#pynwheel-remote-lock").on('change', function() {
-    handlePynwheelRemoteLockOptionsVisibility(this.checked);
-  });
-
-  $("#pynwheel-self-tour-hardware").on('change', function() {
-     handlePynwheelSelfTourHardwareOptionsVisibility(this.checked);
-  });
-
-  $("#pynwheel-self-tour").on('change', function() {
-    handlePynwheelSelfTourOptionsVisibility(this.checked);
-  });
-
-  $("#pynwheel-touch").on('change', function() {
-    handlePynwheelTouchOptionsVisibility(this.checked);
-  });
-
-  $('input[type=radio][name=companySelectToggle]').change(function() {
-    handleCompanyFormVisibility(this.value);
-  });
-
-  $('input[type=radio][name=communitySelectToggle]').change(function() {
-    handleCommunityFormVisibility(this.value);
-    user_role = $('#user_role').val()
-    if (is_regional_admin(user_role)){
-      add_region()
-    }
   });
 
   $(document).on('change', '#regions', function() {
@@ -235,252 +189,12 @@
     add_or_replace_options()
   });
 
-  function handleProductOptionBasedOnUserRole(role) {
-    if(role == 'New Client') {
-      $("#product_options").removeClass("hide");
-    } else {
-      $("#product_options").addClass("hide");
-    }
-  }
-
-  function productDefaultOptions() {
-    let defaultOption = false;
-
-    //User role
-    handleProductOptionBasedOnUserRole("");
-
-    //Pynwheel touch options
-    handlePynwheelTouchOptionsVisibility(defaultOption);
-
-    //Pynwheel self tour options
-    handlePynwheelSelfTourOptionsVisibility(defaultOption);
-    handlePynwheelSelfTourHardwareOptionsVisibility(defaultOption);
-    handlePynwheelRemoteLockOptionsVisibility(defaultOption);
-    handlePynwheelAccessOptionsVisibility(defaultOption);
-    handelPynwheelAccessOtherOptionsVisibility(defaultOption);
-
-    //Graphic Design
-    handleGraphicDesignServicesOptionsVisibility(defaultOption);
-
-    //Additional Options
-    handleAdditionaServicesOptionsVisibility(defaultOption);
-
-    handleCommunityFormVisibility("existing");
-
-  }
-
-  function setProductOptions() {
-    if(user_role == 'New Client') {
-      selfTourOptions();
-      pynwheelTouchOptions();
-      pynwheelMapOptions();
-      graphicDesignServicesOptions();
-      additionalServicesOptions();
-      isDweloCommunity();
-    }
-    else {
-      updatedProductOptionsJson = defaultProductOptionsJson;
-    }
-    $('input[name=product_options]').val(JSON.stringify(updatedProductOptionsJson))
-  }
-
   function isDweloCommunity() {
     if ( $("#pynwheel-dwelo-community-option").prop('checked') ) {
       updatedProductOptionsJson["dwelo_community"] = true;
 
     } else {
       updatedProductOptionsJson["dwelo_community"] = false;
-    }
-  }
-
-  function setRemoteLockDefaultOption() {
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["is_enabled"] = false;
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["igloo"] = 0;
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["schlage"] = 0;
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["yale"] = 0;
-  }
-
-  function setLatchDefaultOption( is_selected = false) {
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["igloo"] = is_selected;
-  }
-
-  function setIglooDefaultOption( is_selected = false) {
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["latch"] = is_selected;
-  }
-
-
-  function pynwheelAccessDefaultOptions() {
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["is_enabled"] = false;
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["deadbolts"] = 0;
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["pyns"] = 0;
-    pynwheelAccessOtherDefaultOption();
-  }
-
-  function pynwheelAccessOtherDefaultOption() {
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["is_enabled"] = false;
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["options"]["type"] = "";
-    updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["options"]["quantity"] = 0;
-  }
-
-  function pynwheelAccessOtherOption() {
-     if ( $("#pynwheel-access-other").prop('checked') ) {
-      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["is_enabled"] = true;
-      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["options"]["type"] = $("#other-type").val();
-      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["others"]["options"]["quantity"] =  parseInt( $("#other-quantity").val() );
-
-     } else {
-       pynwheelAccessOtherDefaultOption();
-     }
-  }
-
-  function pynwheelAccessOption() {
-    if ( $("#pynwheel-access").prop('checked') ) {
-      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["is_enabled"] = true;
-      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["deadbolts"] = parseInt( $("#deadbolts-quantity").val() );
-      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["pynwheel_access"]["options"]["pyns"] = parseInt( $("#pyns-quantity").val() );
-      pynwheelAccessOtherOption();
-
-    } else {
-      pynwheelAccessDefaultOptions();
-    }
-  }
-
-  function latchOption() {
-    if ( $("#pynwheel-latch").prop('checked') ) {
-      setLatchDefaultOption(true)
-    } else {
-      setLatchDefaultOption(false);
-    }
-  }
-
-  function iglooOption() {
-    if ( $("#pynwheel-igloo").prop('checked') ) {
-      setIglooDefaultOption(true)
-    } else {
-      setIglooDefaultOption(false);
-    }
-  }
-
-  function remoteLockOption() {
-    if ( $("#pynwheel-remote-lock").prop('checked') ) {
-      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["is_enabled"] = true;
-      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["igloo"] = parseInt( $("#igloo-quantity").val() );
-      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["schlage"] = parseInt( $("#yale-quantity").val() );
-      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["options"]["remote_lock"]["options"]["yale"] = parseInt( $("#schlage-quantity").val() );
-
-    } else {
-      setRemoteLockDefaultOption();
-    }
-  }
-
-  function hardwareOptions( isHardwareRequired ) {
-    if ( isHardwareRequired ) {
-      latchOption();
-      iglooOption();
-      pynwheelAccessOption();
-      remoteLockOption();
-
-    } else {
-      setLatchDefaultOption(false);
-      setIglooDefaultOption(false);
-      pynwheelAccessDefaultOptions();
-      setRemoteLockDefaultOption();
-    }
-  }
-
-  function isHardwareRequired( isSelfTourEnabled ) {
-    if ( isSelfTourEnabled ) {
-      if ( $("#pynwheel-self-tour-hardware").prop('checked') ) {
-        updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["is_enabled"] = true;
-        hardwareOptions( true );
-
-      } else {
-
-        updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["is_enabled"] = false;
-        hardwareOptions( false);
-      }
-
-    } else {
-      updatedProductOptionsJson["product_options"]["self_tour"]["options"]["hardware_required"]["is_enabled"] = false;
-      setLatchDefaultOption(false);
-      setIglooDefaultOption(false)
-      pynwheelAccessDefaultOptions();
-      setRemoteLockDefaultOption();
-    }
-
-  }
-
-  function selfTourOptions() {
-    if ( $("#pynwheel-self-tour").prop('checked') ) {
-      updatedProductOptionsJson["product_options"]["self_tour"]["is_enabled"] = true;
-      isHardwareRequired( true );
-
-    } else {
-
-      updatedProductOptionsJson["product_options"]["self_tour"]["is_enabled"] = false;
-      isHardwareRequired( false );
-    }
-  }
-
-  function pynwheelTouchOptions() {
-    if ( $("#pynwheel-touch").prop('checked') ) {
-      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["is_enabled"] = true;
-      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["design_style"] = $("input[name='touchDesignStyleRadio']:checked").val();
-      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["hardware"] = $("input[name='touchScreenRadio']:checked").val();
-      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["installation"] = $("input[name='touchInstallationRadio']:checked").val();
-      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["stand"] = $("input[name='touchStandRadio']:checked").val();
-
-    } else {
-
-      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["is_enabled"] = false;
-      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["design_style"] = "Futurnist";
-      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["hardware"] = "No Touchscreen";
-      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["installation"] = "No";
-      updatedProductOptionsJson["product_options"]["pynwheel_touch"]["options"]["stand"] = "Chief";
-
-    }
-  }
-
-  function pynwheelMapOptions() {
-    if ( $("#pynwheel-maps").prop('checked') ) {
-      updatedProductOptionsJson["product_options"]["pynwheel_maps"] = true;
-
-    } else {
-
-      updatedProductOptionsJson["product_options"]["pynwheel_maps"] = false;
-    }
-  }
-
-  function graphicDesignServicesOptions() {
-    if ( $("#graphic-design-services").prop('checked') ) {
-      updatedProductOptionsJson["product_options"]["graphic_design_services"]["is_enabled"] = true;
-      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["floorplans"]["2d"] = parseInt( $("#floor-plan-2d-quantity").val() );
-      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["floorplans"]["3d"] = parseInt( $("#floor-plan-3d-quantity").val() );
-      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["site_plan"] = parseInt( $("#site-plan-quantity").val() );
-
-    } else {
-
-      updatedProductOptionsJson["product_options"]["graphic_design_services"]["is_enabled"] = false;
-      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["floorplans"]["2d"] = 0;
-      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["floorplans"]["3d"] = 0;
-      updatedProductOptionsJson["product_options"]["graphic_design_services"]["options"]["site_plan"] = 0;
-
-    }
-  }
-
-  function additionalServicesOptions() {
-    if ( $("#additional-services").prop('checked') ) {
-      updatedProductOptionsJson["product_options"]["additional_options"]["is_enabled"] = true;
-      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["panoskin_tour_package"] = parseInt( $("#panoskin-tour-package-quantity").val() );
-      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["photography"] = parseInt( $("#photography-quantity").val() );
-      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["virtual_staging"] = parseInt( $("#virtual-staging-quantity").val() );
-
-    } else {
-
-      updatedProductOptionsJson["product_options"]["additional_options"]["is_enabled"] = false;
-      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["panoskin_tour_package"] = 0;
-      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["photography"] = 0;
-      updatedProductOptionsJson["product_options"]["additional_options"]["options"]["virtual_staging"] = 0;
     }
   }
 
@@ -496,67 +210,6 @@
       $(".pynwheel-new-community-name").show();
     }
   }
-
-  function handleCommunityFormVisibility(is_existing) {
-    if(is_existing == "existing") {
-      $(".existing-company-name").show();
-      $(".existing-community-name").show();
-      $(".pynwheel-new-company-name").hide();
-      $(".pynwheel-new-community-name").hide();
-      $(".company-select-toggle").hide();
-      $(".chat_feature").show();
-    } else{
-      $(".chat_feature").hide();
-      $(".company-select-toggle").show();
-      $(".existing-company-name").hide();
-      $(".existing-community-name").hide();
-      $(".pynwheel-new-company-name").show();
-      $(".pynwheel-new-community-name").show();
-      let a = document.querySelector('input[type=radio][name=companySelectToggle]:checked').value;
-      handleCompanyFormVisibility(a)
-    }
-  }
-
-  function handleAdditionaServicesOptionsVisibility(is_checked) {
-    productVisibilityHandler(".additional-services-options", is_checked)
-  }
-
-  function handleGraphicDesignServicesOptionsVisibility(is_checked) {
-    productVisibilityHandler(".graphic-design-services-options", is_checked);
-  }
-
-  function handelPynwheelAccessOtherOptionsVisibility(is_checked) {
-    productVisibilityHandler(".pynwheel-access-other-options", is_checked);
-  }
-
-  function handlePynwheelAccessOptionsVisibility(is_checked) {
-    productVisibilityHandler(".pynwheel-access-options", is_checked);
-  }
-
-  function handlePynwheelRemoteLockOptionsVisibility(is_checked) {
-    productVisibilityHandler(".pynwheel-remote-lock-options", is_checked);
-  }
-
-  function handlePynwheelSelfTourHardwareOptionsVisibility(is_checked) {
-    productVisibilityHandler(".pynwheel-self-tour-hardware-options", is_checked);
-  }
-
-  function handlePynwheelSelfTourOptionsVisibility (is_checked) {
-    productVisibilityHandler(".pynwheel-self-tour-sub-options", is_checked);
-  }
-
-  function handlePynwheelTouchOptionsVisibility(is_checked) {
-    productVisibilityHandler(".pynwheel-touch-sub-options", is_checked);
-  }
-
-  function productVisibilityHandler(selector, is_checked) {
-     if(is_checked) {
-      $(selector).removeClass("hide");
-    } else {
-      $(selector).addClass("hide");
-    }
-  }
-
 
   function enable_disable_communities(){
     user_role = $('#user_role').val()
@@ -605,23 +258,17 @@
     });
   }
   function add_region(){
-    let companyToggle = document.querySelector('input[type=radio][name=companySelectToggle]:checked').value;
-    let communityToggle = document.querySelector('input[type=radio][name=communitySelectToggle]:checked').value;
-    if (communityToggle === "existing"){
-      selected_company =  $(".company_list").val()
-      data = { company: selected_company }
-      $('.region_select').removeClass('hide_it')
-      $.ajax({
-        url: "/companies/get_regions",
-        type: "GET",
-        data: data,
-        success: function(resp){
-          $('.region_select').html(resp)
-        }
-      });
-    } else {
-      $('.region_select').addClass('hide_it')
-    }
+    selected_company =  $(".company_list").val()
+    data = { company: selected_company }
+    $('.region_select').removeClass('hide_it')
+    $.ajax({
+      url: "/companies/get_regions",
+      type: "GET",
+      data: data,
+      success: function(resp){
+        $('.region_select').html(resp)
+      }
+    });
   }
   function is_company_admin(val){
     return val == "Company admin"
