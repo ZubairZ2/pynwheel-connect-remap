@@ -1592,7 +1592,7 @@ DEPENDENCIES
   ziptz
 
 RUBY VERSION
-   ruby 2.5.0p0
+   ruby 2.7.1p83
 
 BUNDLED WITH
    2.2.7
