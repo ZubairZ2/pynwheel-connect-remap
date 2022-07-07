@@ -1,7 +1,7 @@
 - if @community.theme_name.include?('gables')
   - @marker_color = @community&.design&.property_map_color || "#d37474"
 - elsif @community.theme_name == 'modernist'
-  - @marker_color = ( ['no color', ''].include?( @community.design.modernist_map_marker_color ) ) ? (@community&.design&.primary_color : '#cf492f') : @community&.design&.modernist_map_marker_color
+  - @marker_color = ( ['no color', ''].include?( @community&.design&.modernist_map_marker_color ) ) ? (@community&.design&.primary_color || '#cf492f') : @community&.design&.modernist_map_marker_color
 - elsif @community.theme_name == 'futurist'
   - @marker_color = @community&.design&.futurist_property_map_marker_color || "#d37474"
 - elsif @community.theme_name == 'expressionist'
