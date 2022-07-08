@@ -71,11 +71,14 @@ class ApplicationController < ActionController::Base
   end
 
   def get_redirection_link
-    # if current_user.is_new_client?
-    #  ENV['PYNWHEEL_LUANCH']
-    # else
+    # if current_user.pynwheel_launch_access && current_user.pynwheel_connect_access
+    # "http://localhost:3000/access_selection.html"
+    # elsif current_user.pynwheel_launch_access && !current_user.pynwheel_connect_access
+    if current_user.pynwheel_launch_access
+     ENV['PYNWHEEL_LUANCH']
+    else
      root_url
-    # end
+    end
   end
 
   def check_community

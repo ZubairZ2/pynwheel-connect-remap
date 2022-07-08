@@ -12,25 +12,40 @@ class InvitationsController < Devise::InvitationsController
 
     flash[:notice] = "Invitations sent ....!"
 
-    redirect_to root_path
+    # redirect_to root_path
   end
 
   def invite_resource
     params[:user][:email].split(",").each do |email|
       email = email.strip
-
-      User.invite!(
-        {
-          :email => email,
-          :role => params[:user][:role],
-          :company_id => params[:user][:company_id],
-          :region_id => params[:user][:region_id],
-          :community_ids => params[:user][:community_ids],
-          :pynwheel_launch_access => params[:user][:pynwheel_launch_access],
-          :pynwheel_connect_access => params[:user][:pynwheel_connect_access],
-        },
-        current_inviter)
-
+      user_exist = User.find_by(email: email)
+      if !user_exist.nil?
+        previous_pynwheel_launch = user_exist.pynwheel_launch_access
+        previous_pynwheel_connect = user_exist.pynwheel_connect_access
+        new_pynwheel_launch = change_to_boolean(params[:user][:pynwheel_launch_access])
+        new_pynwheel_connect = change_to_boolean(params[:user][:pynwheel_connect_access])
+        if (new_pynwheel_connect && !new_pynwheel_launch)
+          InviteMailer.pynwheel_connect_invite_email(user_exist).deliver
+        elsif (new_pynwheel_launch && !new_pynwheel_connect)
+          InviteMailer.pynwheel_launch_invite_email(user_exist).deliver
+        else
+          InviteMailer.pynwheel_connect_invite_email(user_exist).deliver
+        end
+        user_exist.update(pynwheel_launch_access: new_pynwheel_launch, pynwheel_connect_access: new_pynwheel_connect)
+        user_exist.save
+      else
+        User.invite!(
+          {
+            :email => email,
+            :role => params[:user][:role],
+            :company_id => params[:user][:company_id],
+            :region_id => params[:user][:region_id],
+            :community_ids => params[:user][:community_ids],
+            :pynwheel_launch_access => params[:user][:pynwheel_launch_access],
+            :pynwheel_connect_access => params[:user][:pynwheel_connect_access],
+          },
+          current_inviter)
+      end
       after_invite_path_for(current_inviter, email)
     end
   end
@@ -39,29 +54,10 @@ class InvitationsController < Devise::InvitationsController
     user = User.find_by(email: email) if email.present?
 
     if user.present?
-      if params[:communitySelectToggle].eql?("new")
-        if params[:companySelectToggle].eql?("new")
-          invite_for_new_company(user)
-        else
-          invite_for_existing_company_new_community(user)
-        end
-      else
-        invite_for_existing_company(user)
-      end
+      invite_for_existing_company(user)
     end
 
     company_employees_path(current_company)
-  end
-
-  def invite_for_new_company user
-    company = Company.find_or_create_by(name: params[:user][:new_company_name].strip) if params[:user][:new_company_name].present?
-    user.update(company_id: company.id)
-    create_community_users(user, company) if company.present?
-  end
-
-  def invite_for_existing_company_new_community user
-    company = Company.find params[:user][:company_id]
-    create_community_users(user, company) if company.present?
   end
 
   def invite_for_existing_company user
@@ -102,5 +98,11 @@ class InvitationsController < Devise::InvitationsController
       end
 
     end
+  end
+
+  private
+
+  def change_to_boolean(value)
+    return ActiveModel::Type::Boolean.new.cast(value)
   end
 end
