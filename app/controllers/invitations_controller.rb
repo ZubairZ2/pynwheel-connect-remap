@@ -12,7 +12,7 @@ class InvitationsController < Devise::InvitationsController
 
     flash[:notice] = "Invitations sent ....!"
 
-    # redirect_to root_path
+    redirect_to root_path
   end
 
   def invite_resource
