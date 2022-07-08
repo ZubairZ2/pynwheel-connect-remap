@@ -351,13 +351,16 @@
                                   %td
                                     %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
                                       %p Welcome to Pynwheel, We are excited to work with you! The next step in our process is creating an account to provide information for your Pynwheel app(s).
+                                
 
                                 %tr
                                   %td
                                     %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
                                       %div{:style => "display: inline-flex"}
                                         %p{:style => "margin-right: 10px;"} To set up your account
-                                        = link_to "click here", accept_invitation_url(@resource, :invitation_token => @token), :style => "margin: auto"
+                                        %a{href: 'https://pynwheellaunch.com', :style => "border: 0;"}
+                                          %p
+                                            click here
 
                                 %tr
                                   %td
@@ -371,15 +374,6 @@
                                       %p Production Manager
                                       %p 303-640-3652
                                       %a{ :href => "mailto:support@pynwheel.com"} support@pynwheel.com
-
-                                %tr
-                                  %td
-                                    %div{:style => "height:15px;"}
-                                %tr
-                                  %td
-                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"} 
-                                      - if @resource.invitation_due_at
-                                        = t("devise.mailer.invitation_instructions.accept_until", due_date: l(@resource.invitation_due_at, format: :'devise.mailer.invitation_instructions.accept_until_format'))
 
                                 %tr
                                   %td

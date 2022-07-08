@@ -73,11 +73,14 @@ class ApplicationController < ActionController::Base
   end
 
   def get_redirection_link
-    # if current_user.is_new_client?
-    #  ENV['PYNWHEEL_LUANCH']
-    # else
+    # if current_user.pynwheel_launch_access && current_user.pynwheel_connect_access
+    # "http://localhost:3000/access_selection.html"
+    # elsif current_user.pynwheel_launch_access && !current_user.pynwheel_connect_access
+    if current_user.pynwheel_launch_access
+     ENV['PYNWHEEL_LUANCH']
+    else
      root_url
-    # end
+    end
   end
 
   def check_community
@@ -190,7 +193,7 @@ class ApplicationController < ActionController::Base
   end
 
   def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:region_id,:role,:community_ids=>[]])
+    devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:pynwheel_launch_access,:pynwheel_connect_access,:region_id,:role,:community_ids=>[]])
     devise_parameter_sanitizer.permit(:accept_invitation, keys: [:first_name, :last_name, :avatar])
   end
 end

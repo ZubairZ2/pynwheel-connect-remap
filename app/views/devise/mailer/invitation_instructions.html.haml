@@ -1,4 +1,4 @@
-- if @resource.is_new_client?
-  = render "new_role_invitation"
-- else
+- if @resource.pynwheel_connect_access
   = render "prev_role_invitation"
+- else @resource.pynwheel_launch_access
+  = render "new_role_invitation"
