@@ -1,6 +1,5 @@
 class InvitationsController < Devise::InvitationsController
   # include Error::ErrorHandler
-
    def new
      #authorize! :invite,current_user
      super
@@ -29,8 +28,7 @@ class InvitationsController < Devise::InvitationsController
         elsif (new_pynwheel_launch && !new_pynwheel_connect)
           InviteMailer.pynwheel_launch_invite_email(user_exist).deliver
         elsif new_pynwheel_launch && new_pynwheel_connect
-          InviteMailer.pynwheel_launch_invite_email(user_exist).deliver
-          InviteMailer.pynwheel_connect_invite_email(user_exist).deliver
+          InviteMailer.pynwheel_both_invite_email(user_exist).deliver
         else
           InviteMailer.pynwheel_connect_invite_email(user_exist).deliver
         end
@@ -55,7 +53,6 @@ class InvitationsController < Devise::InvitationsController
 
   def after_invite_path_for(resource, email)
     user = User.find_by(email: email) if email.present?
-
     if user.present?
       invite_for_existing_company(user)
     end
@@ -81,7 +78,6 @@ class InvitationsController < Devise::InvitationsController
             user_community.update!(enable_community_id: community, chat_enable: true)
           end
         end
-
       end
     end
   end
