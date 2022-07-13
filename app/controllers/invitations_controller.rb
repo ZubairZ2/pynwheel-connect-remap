@@ -37,45 +37,20 @@ class InvitationsController < Devise::InvitationsController
         user_exist.update(pynwheel_launch_access: new_pynwheel_launch, pynwheel_connect_access: new_pynwheel_connect)
         user_exist.save
       else
-        if change_to_boolean(params[:user][:pynwheel_launch_access]) && change_to_boolean(params[:user][:pynwheel_connect_access])
-          user_connect_invite(email, current_inviter)
-          user_launch_invite(email, current_inviter)
-        else
-            if change_to_boolean(params[:user][:pynwheel_launch_access])
-              user_launch_invite(email, current_inviter)
-            else
-              user_connect_invite(email, current_inviter)
-            end
-        end
+        User.invite!(
+          {
+            :email => email,
+            :role => params[:user][:role],
+            :company_id => params[:user][:company_id],
+            :region_id => params[:user][:region_id],
+            :community_ids => params[:user][:community_ids],
+            :pynwheel_connect_access => params[:user][:pynwheel_connect_access],
+            :pynwheel_launch_access => params[:user][:pynwheel_launch_access],
+          },
+          current_inviter)
       end
       after_invite_path_for(current_inviter, email)
     end
-  end
-
-  def user_connect_invite(email, current_inviter)
-    user = User.invite!(
-      {
-        :email => email,
-        :role => params[:user][:role],
-        :company_id => params[:user][:company_id],
-        :region_id => params[:user][:region_id],
-        :community_ids => params[:user][:community_ids],
-        :pynwheel_connect_access => params[:user][:pynwheel_connect_access],
-      },
-      current_inviter)
-  end
-
-  def user_launch_invite(email, current_inviter)
-    user = User.invite!(
-      {
-        :email => email,
-        :role => params[:user][:role],
-        :company_id => params[:user][:company_id],
-        :region_id => params[:user][:region_id],
-        :community_ids => params[:user][:community_ids],
-        :pynwheel_launch_access => params[:user][:pynwheel_launch_access],
-      },
-      current_inviter)
   end
 
   def after_invite_path_for(resource, email)
