@@ -34,6 +34,7 @@ class CommunityTour
         name = ""
         is_favorite = ""
         unit_id = ""
+        modal_unit = false
         bedrooms = ""
         bathrooms = ""
         pricing = ""
@@ -46,6 +47,7 @@ class CommunityTour
         if stop.stop_type == "unit"
           u = Unit.find_by_id stop.stop_id
           unit_id = u.id
+          modal_unit = u.modal_unit
           available = u.available
           floorplan_id = u.floorplan.id
           available_date = u.available_date
@@ -75,6 +77,7 @@ class CommunityTour
             "is_favorite": is_favorite,
             "id": new_stop.id,
             "stop_id": stop.id,
+            "modal_unit": modal_unit,
             "stop_type": stop.stop_type,
             "unit_id": unit_id,
             "floorplan_id": floorplan_id,
@@ -98,6 +101,7 @@ class CommunityTour
               "stop_id": stop.id,
               "floorplan_id": floorplan_id,
               "unit_id": unit_id,
+              "modal_unit": modal_unit,
               "available": available,
               "availability": availability,
               "available_date": available_date,
