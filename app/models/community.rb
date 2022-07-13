@@ -182,16 +182,16 @@ class Community < ApplicationRecord
   def set_community_status(current_user)
     return if self.blank?
 
-    set_community_details_status(current_user)
-    set_property_map_status(current_user)
-    set_floorplan_status(current_user)
-    set_gallery_images_status(current_user)
-    set_touch_vidoes_status(current_user)
-    set_data_provider_status(current_user)
-    touch_installation_specification(current_user)
-    set_lock_providers_status(current_user)
-    set_tour_stops_status(current_user)
-    set_visiting_hours_status(current_user)
+    # set_community_details_status(current_user)
+    # set_property_map_status(current_user)
+    # set_floorplan_status(current_user)
+    # set_gallery_images_status(current_user)
+    # set_touch_vidoes_status(current_user)
+    # set_data_provider_status(current_user)
+    # touch_installation_specification(current_user)
+    # set_lock_providers_status(current_user)
+    # set_tour_stops_status(current_user)
+    # set_visiting_hours_status(current_user)
   end
 
   def set_community_details_status(current_user)
@@ -932,7 +932,7 @@ s  end
   end
 
   def create_default_gallery
-    default_galleries = ["apartments", "community"]
+    default_galleries = ["Apartments", "Community"]
     default_galleries.each do |gallery_name|
       self.galleries.create(name: gallery_name, is_default: true)
     end
