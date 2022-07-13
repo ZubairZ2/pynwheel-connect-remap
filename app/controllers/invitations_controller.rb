@@ -28,6 +28,9 @@ class InvitationsController < Devise::InvitationsController
           InviteMailer.pynwheel_connect_invite_email(user_exist).deliver
         elsif (new_pynwheel_launch && !new_pynwheel_connect)
           InviteMailer.pynwheel_launch_invite_email(user_exist).deliver
+        elsif new_pynwheel_launch && new_pynwheel_connect
+          InviteMailer.pynwheel_launch_invite_email(user_exist).deliver
+          InviteMailer.pynwheel_connect_invite_email(user_exist).deliver
         else
           InviteMailer.pynwheel_connect_invite_email(user_exist).deliver
         end
@@ -41,8 +44,8 @@ class InvitationsController < Devise::InvitationsController
             :company_id => params[:user][:company_id],
             :region_id => params[:user][:region_id],
             :community_ids => params[:user][:community_ids],
-            :pynwheel_launch_access => params[:user][:pynwheel_launch_access],
             :pynwheel_connect_access => params[:user][:pynwheel_connect_access],
+            :pynwheel_launch_access => params[:user][:pynwheel_launch_access],
           },
           current_inviter)
       end

@@ -1,0 +1,411 @@
+!!! Strict
+%html{:xmlns => "http://www.w3.org/1999/xhtml"}
+  %head
+    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+    %meta{:content => "width=device-width, initial-scale=1.0", :name => "viewport"}/
+    %meta{:content => "IE=edge,chrome=1", "http-equiv" => "X-UA-Compatible"}/
+    %meta{:content => "telephone=no", :name => "format-detection"}/
+    / disable auto telephone linking in iOS
+    %title Welcome
+    :css
+      body,#bodyTable,#bodyCell,#bodyCell{
+           height:100% !important;
+           margin:0;
+           padding:0;
+           width:100% !important;
+           font-family:Helvetica, Arial, "Lucida Grande", sans-serif;
+         }
+         table{
+           border-collapse:collapse;
+         }
+         table[id=bodyTable]{
+           width:100%!important;
+           margin:auto;
+           max-width:620px!important;
+           color:#7A7A7A;
+           font-weight:normal;
+         }
+         img,a img{
+           border:0;
+           outline:none;
+           text-decoration:none;
+           height:auto;
+           line-height:100%;
+         }
+         a{
+           text-decoration:none !important;
+           border-bottom:1px solid;
+         }
+         h1,h2,h3,h4,h5,h6{
+           color:#5F5F5F;
+           font-weight:normal;
+           font-family:Helvetica;
+           font-size:20px;
+           line-height:125%;
+           text-align:Left;
+           letter-spacing:normal;
+           margin-top:0;
+           margin-right:0;
+           margin-bottom:10px;
+           margin-left:0;
+           padding-top:0;
+           padding-bottom:0;
+           padding-left:0;
+           padding-right:0;
+         }
+         .ReadMsgBody{
+           width:100%;
+         }
+         .ExternalClass{
+           width:100%;
+         }
+         .ExternalClass,.ExternalClass p,.ExternalClass span,.ExternalClass font,.ExternalClass td,.ExternalClass div{
+           line-height:100%;
+         }
+         table,td{
+           mso-table-lspace:0pt;
+           mso-table-rspace:0pt;
+         }
+         img{
+           -ms-interpolation-mode:bicubic;
+           display:block;
+           outline:none;
+           text-decoration:none;
+         }
+         body,table,td,p,a,li,blockquote{
+           -ms-text-size-adjust:100%;
+           -webkit-text-size-adjust:100%;
+           font-weight:normal!important;
+         }
+         .ExternalClass td[class=ecxflexibleContainerBox] h3{
+           padding-top:10px !important;
+         }
+         h1{
+           display:block;
+           font-size:26px;
+           font-style:normal;
+           font-weight:normal;
+           line-height:100%;
+         }
+         h2{
+           display:block;
+           font-size:20px;
+           font-style:normal;
+           font-weight:normal;
+           line-height:120%;
+         }
+         h3{
+           display:block;
+           font-size:17px;
+           font-style:normal;
+           font-weight:normal;
+           line-height:110%;
+         }
+         h4{
+           display:block;
+           font-size:18px;
+           font-style:italic;
+           font-weight:normal;
+           line-height:100%;
+         }
+         .flexibleImage{
+           height:auto;
+         }
+         .linkRemoveBorder{
+           border-bottom:0 !important;
+         }
+         table[class=flexibleContainerCellDivider]{
+           padding-bottom:0 !important;
+           padding-top:0 !important;
+         }
+         body,#bodyTable{
+           background-color:#E1E1E1;
+         }
+         #emailHeader{
+           background-color:#E1E1E1;
+         }
+         #emailBody{
+           background-color:#FFFFFF;
+         }
+         #emailFooter{
+           background-color:#CCCCCC;
+         }
+         .textContent,.textContentLast{
+           color:#8B8B8B;
+           font-family:Helvetica;
+           font-size:16px;
+           line-height:125%;
+           text-align:Left;
+         }
+         .textContent a,.textContentLast a{
+           color:#205478;
+           text-decoration:underline;
+         }
+         .nestedContainer{
+           background-color:#F8F8F8;
+           border:1px solid #CCCCCC;
+         }
+         .emailButton{
+           background-color:#205478;
+           border-collapse:separate;
+         }
+         .buttonContent{
+           color:#FFFFFF;
+           font-family:Helvetica;
+           font-size:18px;
+           font-weight:bold;
+           line-height:100%;
+           padding:15px;
+           text-align:center;
+         }
+         .buttonContent a{
+           color:#FFFFFF;
+           display:block;
+           text-decoration:none!important;
+           border:0!important;
+         }
+         .emailCalendar{
+           background-color:#FFFFFF;
+           border:1px solid #CCCCCC;
+         }
+         .emailCalendarMonth{
+           background-color:#205478;
+           color:#FFFFFF;
+           font-family:Helvetica, Arial, sans-serif;
+           font-size:16px;
+           font-weight:bold;
+           padding-top:10px;
+           padding-bottom:10px;
+           text-align:center;
+         }
+         .emailCalendarDay{
+           color:#205478;
+           font-family:Helvetica, Arial, sans-serif;
+           font-size:60px;
+           font-weight:bold;
+           line-height:100%;
+           padding-top:20px;
+           padding-bottom:20px;
+           text-align:center;
+         }
+         .imageContentText{
+           margin-top:10px;
+           line-height:0;
+         }
+         .imageContentText a{
+           line-height:0;
+         }
+         .email-logo {
+            width: 200px;
+            height: 100px;
+            margin: auto;
+         }
+         .companyText {
+            margin-top: 0;
+            text-align: center;
+            color: #000000;
+         }
+         #invisibleIntroduction{
+           display:none !important;
+         }
+         span[class=ios-color-hack] a{
+           color:#275100!important;
+           text-decoration:none!important;
+         }
+         span[class=ios-color-hack2] a{
+           color:#205478!important;
+           text-decoration:none!important;
+         }
+         span[class=ios-color-hack3] a{
+           color:#8B8B8B!important;
+           text-decoration:none!important;
+         }
+         .a[href^=tel],a[href^=sms]{
+           text-decoration:none!important;
+           color:#606060!important;
+           pointer-events:none!important;
+           cursor:default!important;
+         }
+         .mobile_link a[href^=tel],.mobile_link a[href^=sms]{
+           text-decoration:none!important;
+           color:#606060!important;
+           pointer-events:auto!important;
+           cursor:default!important;
+         }
+         @media only screen and (max-width: 480px){
+          body{
+           width:100% !important;
+           min-width:100% !important;
+         }
+      
+       }  
+         @media only screen and (max-width: 480px){
+          table[id=emailHeader],table[id=emailBody],table[id=emailFooter],table[class=flexibleContainer]{
+           width:100% !important;
+         }
+      
+        } 
+        @media only screen and (max-width: 480px){
+          td[class=flexibleContainerBox],td[class=flexibleContainerBox] table{
+           display:block;
+           width:100%;
+           text-align:center !important;
+         }
+      
+        } 
+        @media only screen and (max-width: 480px){
+          td[class=imageContent] img{
+           height:auto !important;
+           width:100% !important;
+           max-width:100% !important;
+         }
+      
+        } 
+        @media only screen and (max-width: 480px){
+          img[class=flexibleImage]{
+           height:auto !important;
+           width:100% !important;
+           max-width:100% !important;
+         }
+      
+        } 
+        @media only screen and (max-width: 480px){
+          img[class=flexibleImageSmall]{
+           height:auto !important;
+           width:auto !important;
+         }
+      
+        } 
+        @media only screen and (max-width: 480px){
+          table[class=flexibleContainerBoxNext]{
+           padding-top:10px !important;
+         }
+      
+        } 
+        @media only screen and (max-width: 480px){
+          table[class=emailButton]{
+           width:100% !important;
+         }
+      
+        } @media only screen and (max-width: 480px){
+          td[class=buttonContent]{
+           padding:0 !important;
+         }
+      
+        } 
+        @media only screen and (max-width: 480px){
+          td[class=buttonContent] a{
+           padding:15px !important;
+         }
+      }
+  %body{:bgcolor => "#E1E1E1", :leftmargin => "0", :marginheight => "0", :marginwidth => "0", :offset => "0", :topmargin => "0"}
+    %center{:style => "background-color:#E1E1E1;"}
+      %table#bodyTable{:border => "0", :cellpadding => "0", :cellspacing => "0", :height => "100%", :style => "table-layout: fixed;max-width:100% !important;width: 100% !important;min-width: 100% !important;", :width => "100%"}
+        %tr
+          %td#bodyCell{:align => "center", :valign => "top"}
+            %table#emailHeader{:bgcolor => "#E1E1E1", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
+              %tr
+                %td{:align => "center", :valign => "top"}
+                  %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                    %tr
+                      %td{:align => "center", :valign => "top"}
+                        %table.flexibleContainer{:border => "0", :cellpadding => "10", :cellspacing => "0", :width => "620"}
+                          %tr
+                            %td.flexibleContainerCell{:valign => "top", :width => "620"}
+                              %table{:align => "left", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                                %tr
+                                  %td#invisibleIntroduction.flexibleContainerBox{:align => "left", :style => "display:none !important;", :valign => "middle"}
+                                    %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "max-width:100%;", :width => "100%"}
+                                      %tr
+                                        %td.textContent{:align => "left"}
+                                          %div{:style => "font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#828282;text-align:center;line-height:120%;"}
+            %table#emailBody{:bgcolor => "#FFFFFF", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
+              %tr
+                %td{:align => "center", :valign => "top"}
+                  %table{:bgcolor => "#CCCCCC", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF;", :width => "100%"}
+                    %tr
+                      %td{:align => "center", :valign => "top"}
+                        %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
+                          %tr
+                            %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
+                              %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                                %tr
+                                  %td{:style => "padding: 0px 20px; text-align: center;"}
+                                    = image_tag "pynwheel-default-logo.png", :style => "width: 200px; margin: auto;"
+                                    %p.companyText Pynwheel Inc.
+
+                  %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                    %tr
+                      %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
+                        %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                          %tr
+                            %td{:align => "center", :valign => "top"}
+                              %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                                %tr
+                                  %td.textContent{:valign => "top"}
+                                    %h3{:style => "color:#000000;line-height:125%;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:normal;margin-top:0;margin-bottom:3px;text-align:left;"}
+                                      = succeed "," do
+                                        %b= t("devise.mailer.invitation_instructions.hello", email: @resource.email)
+
+                                %tr
+                                  %td
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
+                                      %p Welcome to Pynwheel, You are invited to <strong>Pynwheel Launch</strong> and <strong>Pynwheel Connect</strong>. We are excited to work with you! The next step in our process is creating an account to provide information for your Pynwheel app(s).
+
+                                %tr
+                                  %td
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
+                                      %div{:style => "display: inline-flex"}
+                                        %p{:style => "margin-right: 10px;"} To set up your account
+                                        = link_to "click here", accept_invitation_url(@resource, :invitation_token => @token), :style => "margin: auto"
+
+                                %tr
+                                  %td
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:10px;"}
+                                      %p Please let me know if you have any questions!     
+                              
+                                %tr
+                                  %td
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:10px;"}
+                                      %p Kellie Ferrell
+                                      %p Production Manager
+                                      %p 303-640-3652
+                                      %a{ :href => "mailto:support@pynwheel.com"} support@pynwheel.com
+
+                                %tr
+                                  %td
+                                    %div{:style => "height:15px;"}
+                                %tr
+                                  %td
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"} 
+                                      - if @resource.invitation_due_at
+                                        = t("devise.mailer.invitation_instructions.accept_until", due_date: l(@resource.invitation_due_at, format: :'devise.mailer.invitation_instructions.accept_until_format'))
+
+                                %tr
+                                  %td
+                                    %div{:style => "height:25px;"}
+            %table#emailFooter{:bgcolor => "#CCCCCC", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
+              %tr
+                %td
+                  %table#templateBody{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                    %tr
+                      %td{:align => "center", :valign => "top"}
+                        %table.templateContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "background-color:#CCCCCC ; ", :width => ""}
+                          %tr
+                            %td.bodyContainer{:style => "padding-top:10px;", :valign => "top"}
+                              %table.mcnTextBlock{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                                %tbody.mcnTextBlockOuter
+                                  %tr
+                                    %td.mcnTextBlockInner{:valign => "top"}
+                                      %table.mcnTextContentContainer{:align => "center", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => ""}
+                                        %tbody
+                                          %tr
+                                            %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 15px; padding-left: 18px; color:#000000; text-align:center;", :valign => "top"}
+                                              %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
+                                                Pynwheel Inc. Denver, Colorado  
+                                              
+                                              %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
+                                                303-640-3652
+
+                                              %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
+                                                © 2021 Pynwheel.com. All Rights Reserved.
