@@ -434,6 +434,12 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+  def metro_send_analytics_data
+    community = Community.find_by_id params[:community_id]
+    MetroAnalyticsService.new(community).create_analytics_session(params) if community.present?
+    render :json=> {:status=>true, code: 200}
+  end
+
   def get_user_by_email
     user_email = params[:user_email].downcase
     if user_email.present?
