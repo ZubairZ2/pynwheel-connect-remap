@@ -1,4 +1,4 @@
-- if @resource.pynwheel_connect_access
-  = render "prev_role_invitation"
-- else @resource.pynwheel_launch_access
+- if @resource.pynwheel_launch_access
   = render "new_role_invitation"
+- else
+  = render "prev_role_invitation"
