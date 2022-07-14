@@ -65,7 +65,7 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(resource_or_scope)
-    get_redirection_link
+    root_url
   end
 
   def after_accept_path_for(resource_or_scope)
