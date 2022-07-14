@@ -85,8 +85,8 @@
                   = f.check_box :pynwheel_launch_access, :class => "pynwheel_launch"
                   %label.label-primary{:for => "user_pynwheel_launch_access"}
                   %span.pl-5 Yes
-            %p#access-control-error{style: "display: none; text-align: center; background: white;"}
-              please select atlease one option
+            %p#access-control-error{style: "display: none; text-align: center; color: red;"}
+              ** Please select atleast one access!
           .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row{style: "display: inline-flex;width: 100%;"}
             %span.to-input.fa.fa-envelope
             .all-mail
@@ -121,8 +121,15 @@
       event.preventDefault();
       $('#access-control').css('border', '2px solid red');
       $('#access-control-error').css('display', 'block');
+      reset_alert_styles();
     }
   });
+  function reset_alert_styles(){
+    setTimeout(() => { 
+      $('#access-control').css('border', 'none');
+      $('#access-control-error').css('display', 'none');
+    }, 5000);
+  }
   $(document).on('click','.cancel-email',function(){
     var toCancel = $(this).data('email-to-cancel');
     $(this).parent().remove();
