@@ -90,7 +90,7 @@
           .col-sm-12.col-xs-12.col-lg-12.col-md-12.email-id-row{style: "display: inline-flex;width: 100%;"}
             %span.to-input.fa.fa-envelope
             .all-mail
-            = f.text_area :email, name: "user[email]", :class=>"form-control", :placeholder=>"Email",:maxlength=>"50", autofocus: true
+            = f.text_area :email, name: "user[email]", :class=>"form-control", :placeholder=>"Email",:maxlength=>"50", autofocus: true, :required => "required"
           %input.to-submit-id{:name => "to_sumbit", :type => "hidden"}/
           -# %button.btn.btn-primary.btn-block#invitation-submit-btn{ type: 'button' } Submit
           = f.submit "Send Invitation", :class=>"btn btn-primary btn-block invitation-submit-btn", data: { disable_with: false }
