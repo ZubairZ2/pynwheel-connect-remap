@@ -154,17 +154,17 @@ class PsiService < BaseService
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
 
         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-          if u["Units"]["Unit"]["MarketRent"].present?
+          if u["EffectiveRent"].present?
+            unit.market_rent = u["EffectiveRent"]
+            unit.effective_rent = u["EffectiveRent"]
+
+          elsif u["Units"]["Unit"]["MarketRent"].present?
             unit.market_rent = u["Units"]["Unit"]["MarketRent"]
             unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
 
           elsif u["Units"]["Unit"]["UnitRent"].present?
             unit.market_rent = u["Units"]["Unit"]["UnitRent"]
             unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
-
-          elsif u["EffectiveRent"].present?
-            unit.market_rent = u["EffectiveRent"]
-            unit.effective_rent = u["EffectiveRent"]
 
           else
             unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
@@ -238,17 +238,17 @@ class PsiService < BaseService
         end
 
         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
-          if u["Units"]["Unit"]["MarketRent"].present?
+          if u["EffectiveRent"].present?
+            unit.market_rent = u["EffectiveRent"]
+            unit.effective_rent = u["EffectiveRent"]
+
+          elsif u["Units"]["Unit"]["MarketRent"].present?
             unit.market_rent = u["Units"]["Unit"]["MarketRent"]
             unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
 
           elsif u["Units"]["Unit"]["UnitRent"].present?
             unit.market_rent = u["Units"]["Unit"]["UnitRent"]
             unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
-
-          elsif u["EffectiveRent"].present?
-            unit.market_rent = u["EffectiveRent"]
-            unit.effective_rent = u["EffectiveRent"]
 
           else
             unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
@@ -786,6 +786,5 @@ class PsiService < BaseService
   def save_website_column_of_community(response)
     community = Community.find credentials.community_id
   end
-
 
 end

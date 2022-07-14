@@ -107,17 +107,17 @@ class PsiSwapService < BaseService
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
         # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
 
-        if u["Units"]["Unit"]["MarketRent"].present?
+        if u["EffectiveRent"].present?
+          unit.market_rent = u["EffectiveRent"]
+          unit.effective_rent = u["EffectiveRent"]
+
+        elsif u["Units"]["Unit"]["MarketRent"].present?
           unit.market_rent = u["Units"]["Unit"]["MarketRent"]
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
 
         elsif u["Units"]["Unit"]["UnitRent"].present?
           unit.market_rent = u["Units"]["Unit"]["UnitRent"]
           unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
-
-        elsif u["EffectiveRent"].present?
-          unit.market_rent = u["EffectiveRent"]
-          unit.effective_rent = u["EffectiveRent"]
 
         else
           unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
@@ -174,18 +174,19 @@ class PsiSwapService < BaseService
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
+
         # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-        if u["Units"]["Unit"]["MarketRent"].present?
+        if u["EffectiveRent"].present?
+          unit.market_rent = u["EffectiveRent"]
+          unit.effective_rent = u["EffectiveRent"]
+
+        elsif u["Units"]["Unit"]["MarketRent"].present?
           unit.market_rent = u["Units"]["Unit"]["MarketRent"]
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
 
         elsif u["Units"]["Unit"]["UnitRent"].present?
           unit.market_rent = u["Units"]["Unit"]["UnitRent"]
           unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
-
-        elsif u["EffectiveRent"].present?
-          unit.market_rent = u["EffectiveRent"]
-          unit.effective_rent = u["EffectiveRent"]
 
         else
           unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
