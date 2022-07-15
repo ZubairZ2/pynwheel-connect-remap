@@ -72,7 +72,7 @@ class ApplicationController < ActionController::Base
 
   def get_redirection_link
     if current_user.pynwheel_launch_access && current_user.pynwheel_connect_access
-    "#{root_url}/access_selection.html"
+    "#{root_url}access_selection.html"
     elsif current_user.pynwheel_launch_access
      ENV['PYNWHEEL_LUANCH']
     else
