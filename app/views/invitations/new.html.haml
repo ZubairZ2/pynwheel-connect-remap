@@ -72,7 +72,7 @@
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
-                  = f.check_box :pynwheel_connect_access, :checked => "checked", :class => "pynwheel_connect"
+                  = f.check_box :pynwheel_connect_access, :checked => "false", :class => "pynwheel_connect"
                   %label.label-primary{:for => "user_pynwheel_connect_access"}
                   %span.pl-5 Yes
 
@@ -82,7 +82,7 @@
               .col-sm-12.col-lg-6.col-md-6.col-xs-12
                 .TriSea-technologies-Switch
                   %span.pr-15 No
-                  = f.check_box :pynwheel_launch_access, :class => "pynwheel_launch"
+                  = f.check_box :pynwheel_launch_access, :checked => "checked", :class => "pynwheel_launch"
                   %label.label-primary{:for => "user_pynwheel_launch_access"}
                   %span.pl-5 Yes
             %p#access-control-error{style: "display: none; text-align: center; color: red;"}
