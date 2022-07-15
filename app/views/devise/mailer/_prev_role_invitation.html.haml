@@ -128,7 +128,7 @@
            background-color:#FFFFFF;
          }
          #emailFooter{
-           background-color:#253339;
+           background-color:#CCCCCC;
          }
          .textContent,.textContentLast{
            color:#8B8B8B;
@@ -195,6 +195,16 @@
          .imageContentText a{
            line-height:0;
          }
+         .email-logo {
+            width: 200px;
+            height: 100px;
+            margin: auto;
+         }
+         .companyText {
+            margin-top: 0;
+            text-align: center;
+            color: #000000;
+         }
          #invisibleIntroduction{
            display:none !important;
          }
@@ -227,62 +237,62 @@
            width:100% !important;
            min-width:100% !important;
          }
-
-       }
+      
+       }  
          @media only screen and (max-width: 480px){
           table[id=emailHeader],table[id=emailBody],table[id=emailFooter],table[class=flexibleContainer]{
            width:100% !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           td[class=flexibleContainerBox],td[class=flexibleContainerBox] table{
            display:block;
            width:100%;
            text-align:center !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           td[class=imageContent] img{
            height:auto !important;
            width:100% !important;
            max-width:100% !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           img[class=flexibleImage]{
            height:auto !important;
            width:100% !important;
            max-width:100% !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           img[class=flexibleImageSmall]{
            height:auto !important;
            width:auto !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           table[class=flexibleContainerBoxNext]{
            padding-top:10px !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           table[class=emailButton]{
            width:100% !important;
          }
-
+      
         } @media only screen and (max-width: 480px){
           td[class=buttonContent]{
            padding:0 !important;
          }
-
-        }
+      
+        } 
         @media only screen and (max-width: 480px){
           td[class=buttonContent] a{
            padding:15px !important;
@@ -312,7 +322,7 @@
             %table#emailBody{:bgcolor => "#FFFFFF", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
               %tr
                 %td{:align => "center", :valign => "top"}
-                  %table{:bgcolor => "#253339", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF;", :width => "100%"}
+                  %table{:bgcolor => "#CCCCCC", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF;", :width => "100%"}
                     %tr
                       %td{:align => "center", :valign => "top"}
                         %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
@@ -320,68 +330,67 @@
                             %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
                               %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                                 %tr
-                                  %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
-                                    %h1{:style => "    color: #fff;text-align: left;margin-top: 20px;margin-bottom: 20px;font-weight: bold;text-transform: uppercase;letter-spacing: 2px;"} Pynwheel
-              %tr
-                %td{:align => "center", :valign => "top"}
+                                  %td{:style => "padding: 0px 20px; text-align: center;"}
+                                    = image_tag "pynwheel-default-logo.png", :style => "width: 200px; margin: auto;"
+                                    %p.companyText Pynwheel Inc.
+
                   %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                     %tr
-                      %td{:align => "center", :valign => "top"}
-                        %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
+                      %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
+                        %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                           %tr
-                            %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
-                              %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                            %td{:align => "center", :valign => "top"}
+                              %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                                 %tr
-                                  %td{:align => "center", :valign => "top"}
-                                    %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :height => "10", :width => "100%"}
-                                      %tr
-                                        %td
-                                    %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
-                                      %tr
-                                        %td{:align => "center", :style => "color:#425c81;;font-family:Helvetica,Arial,sans-serif;font-size:25px;"}
-                                          %b Welcome to Pynwheel Connect!
-                                    %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :height => "50", :width => "100%"}
-                                      %tr
-                                        %td
-                                    %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
-                                      %tr
-                                        %td.textContent{:valign => "top"}
-                                          %h3{:style => "color:#000000;line-height:125%;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:normal;margin-top:0;margin-bottom:3px;text-align:left;"}
-                                            = succeed "," do
-                                              %b= t("devise.mailer.invitation_instructions.hello", email: @resource.email)
+                                  %td.textContent{:valign => "top"}
+                                    %h3{:style => "color:#000000;line-height:125%;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:normal;margin-top:0;margin-bottom:3px;text-align:left;"}
+                                      = succeed "," do
+                                        %b= t("devise.mailer.invitation_instructions.hello", email: @resource.email)
 
-                                      %tr
-                                        %td
-                                          %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                                            = t("devise.mailer.invitation_instructions.someone_invited_you", url: root_url)
+                                %tr
+                                  %td
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
+                                      %p Welcome to Pynwheel Connect! We are excited to work with you. The next step in our process is to create an account so that you can provide information for your Pynwheel apps.
 
-                                      %tr
-                                        %td
-                                          %div{:style => "height:15px;"}
+                                %tr
+                                  %td
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
+                                      %div{:style => "display: inline-flex"}
+                                        %p{:style => "margin-right: 10px;"} To set up your account
+                                        = link_to "click here", accept_invitation_url(@resource, :invitation_token => @token), :style => "margin: auto"
 
-                                      %tr
-                                        %td
-                                          %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                                            = link_to t("devise.mailer.invitation_instructions.accept"), accept_invitation_url(@resource, :invitation_token => @token)
-                                      %tr
-                                        %td
-                                          %div{:style => "height:15px;"}
-                                      %tr
-                                        %td
-                                          %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                                            - if @resource.invitation_due_at
-                                              = t("devise.mailer.invitation_instructions.accept_until", due_date: l(@resource.invitation_due_at, format: :'devise.mailer.invitation_instructions.accept_until_format'))
+                                %tr
+                                  %td
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:10px;"}
+                                      %p Please let me know if you have any questions!     
+                              
+                                %tr
+                                  %td
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:10px;"}
+                                      %p Kellie Ferrell
+                                      %p Production Manager
+                                      %p 303-640-3652
+                                      %a{ :href => "mailto:support@pynwheel.com"} support@pynwheel.com
 
-                                      %tr
-                                        %td
-                                          %div{:style => "height:25px;"}
-            %table#emailFooter{:bgcolor => "#253339", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
+                                %tr
+                                  %td
+                                    %div{:style => "height:15px;"}
+                                %tr
+                                  %td
+                                    %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"} 
+                                      - if @resource.invitation_due_at
+                                        = t("devise.mailer.invitation_instructions.accept_until", due_date: l(@resource.invitation_due_at, format: :'devise.mailer.invitation_instructions.accept_until_format'))
+
+                                %tr
+                                  %td
+                                    %div{:style => "height:25px;"}
+            %table#emailFooter{:bgcolor => "#CCCCCC", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
               %tr
                 %td
                   %table#templateBody{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                     %tr
                       %td{:align => "center", :valign => "top"}
-                        %table.templateContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "background-color:#253339 ; ", :width => ""}
+                        %table.templateContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "background-color:#CCCCCC ; ", :width => ""}
                           %tr
                             %td.bodyContainer{:style => "padding-top:10px;", :valign => "top"}
                               %table.mcnTextBlock{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
@@ -391,6 +400,12 @@
                                       %table.mcnTextContentContainer{:align => "center", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => ""}
                                         %tbody
                                           %tr
-                                            %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 15px; padding-left: 18px; color:#FFFFFF; text-align:center;", :valign => "top"}
+                                            %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 15px; padding-left: 18px; color:#000000; text-align:center;", :valign => "top"}
                                               %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
-                                                © 2018 Pynwheel.com. All Rights Reserved.
+                                                Pynwheel Inc. Denver, Colorado  
+                                              
+                                              %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
+                                                303-640-3652
+
+                                              %p{:style => "text-align:center; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height: 24px;margin: 0;"}
+                                                © 2021 Pynwheel.com. All Rights Reserved.
