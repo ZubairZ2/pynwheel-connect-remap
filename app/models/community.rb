@@ -54,6 +54,7 @@ class Community < ApplicationRecord
   has_one :three_d_maps_configuration, dependent: :destroy
   has_many :comments , as: :commentable
   has_one :portal_tour, dependent: :destroy
+  has_one :other_lock, dependent: :destroy
   has_one :status, as: :statusable
 
   accepts_nested_attributes_for :credential

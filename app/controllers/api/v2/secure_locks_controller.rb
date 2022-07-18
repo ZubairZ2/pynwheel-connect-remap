@@ -25,6 +25,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
         latch_lock(lock) if type.eql?(LATCH)
         igloo_home_lock(lock) if type.eql?(IGLOOHOME)
         zerv_lock(lock) if type.eql?(ZERV)
+        other_lock(lock) if type.eql?(OTHERLOCK)
       end
       unique_locks_provider = @locks_provider.uniq
       @community.update_attributes(multiple_locks_provider: unique_locks_provider)
@@ -58,6 +59,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     success = delete_latch_lock  if @type.eql?(LATCH)
     success = delete_igloohome_lock if @type.eql?(IGLOOHOME)
     success = delete_zerv_lock if @type.eql?(ZERV)
+    success = delete_other_lock if @type.eql?(OTHERLOCK)
     locks = get_all_locks
     if success
       render json: { success: success, data: locks.as_json }
@@ -65,8 +67,6 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
       render json: { success: false, message: "Failed to delete secure lock" }
     end
   end
-
-  private
 
   def delete_latch_file
     lock = Latch.find_by_id(params["id"])
@@ -139,6 +139,13 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
 
   def delete_zerv_lock
     lock = Zerv.find(params["id"])
+    if lock.present?
+      return true if lock.destroy!
+    end
+  end
+
+  def delete_other_lock
+    lock = OtherLock.find(params["id"])
     if lock.present?
       return true if lock.destroy!
     end
@@ -223,11 +230,21 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     end
   end
 
+  def other_lock(lock)
+    if @community.other_lock.present?
+      other_lock = @community.other_lock
+      other_lock.update_attributes(description: lock["description"])
+    else
+      @community.create_other_lock(description: lock["description"])
+    end
+  end
+
   def get_all_locks
     edge_state = @community.edge_state
     dwelo = @community.dwelo
     latch = @community.latch
     zerv = @community.zerv
+    other_lock = @community.other_lock
     igloo_home = @community.igloohome
     locks = []
     if edge_state.present?
@@ -242,6 +259,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     locks << { type: LATCHCLIENT, details: latch } if latch.present?
     locks << { type: ZERVCLIENT, details: zerv } if zerv.present?
     locks << { type: IGLOOHOMECLIENT, details: igloo_home } if igloo_home.present?
+    locks << { type: OTHERLOCK, details: other_lock } if other_lock.present?
     locks
   end
 
