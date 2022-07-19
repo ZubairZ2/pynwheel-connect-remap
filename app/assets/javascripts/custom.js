@@ -607,6 +607,7 @@ function showYardiRentCafeFields(){
     $('#limit_result_field').show();
     $('#yardirentcafe_option').show();
     $('#data-replace-update-buttons').hide();
+    $('#yardirentcafe_api_options').show();
 }
 
 function showRealPageSVCFields(){
