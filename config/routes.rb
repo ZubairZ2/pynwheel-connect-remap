@@ -623,7 +623,8 @@ Rails.application.routes.draw do
         member do
           get  :get_pynwheel_touch_hardware_spec, to: 'hardware_specs#get_pynwheel_touch_hardware_spec'
           post :add_pynwheel_touch_hardware_spec, to: 'hardware_specs#add_pynwheel_touch_hardware_spec'
-          delete :delete_pynwheel_touch_hardware_spec, to: 'hardware_specs#delete_pynwheel_touch_hardware_spec'
+          delete :delete_hardware_spec_details, to: 'hardware_specs#delete_hardware_spec_details'
+          delete :delete_pynwheel_touch_hardware_spec_image, to: 'hardware_specs#delete_pynwheel_touch_hardware_spec_image'
           post :add_comment
           post :get_products
           post :update_status_and_remarks

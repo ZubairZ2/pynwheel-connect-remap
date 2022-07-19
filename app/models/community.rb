@@ -55,6 +55,7 @@ class Community < ApplicationRecord
   has_many :comments , as: :commentable
   has_one :portal_tour, dependent: :destroy
   has_one :other_lock, dependent: :destroy
+  has_one :hardware_spec
   has_one :status, as: :statusable
 
   accepts_nested_attributes_for :credential
