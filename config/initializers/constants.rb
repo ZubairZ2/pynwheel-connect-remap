@@ -58,3 +58,4 @@ FORM_APPROVED = "form_approved"
 PARAM_APPROVED = "approved"
 PARAM_REJECTED = "Rejected"
 IN_PRODUCTION = "In Production"
+YARDI_RENT_CAFE_API_BASE_URLS = ["https://api.rentcafe.com","https://api.rentcafe.co.uk"]
