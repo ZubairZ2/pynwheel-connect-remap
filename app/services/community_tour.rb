@@ -61,9 +61,9 @@ class CommunityTour
             bedrooms = u.floorplan.bedrooms.to_i
             bathrooms = u.floorplan.bathrooms.to_i
             pricing = u.floorplan.market_rent
-            floorplan_image = u.floorplan.image
+            floorplan_image = u.floorplan.image ? u.floorplan&.image.url : null 
             primary_floorplan = u.floorplan.standard_image_url
-            secondary_floorplan = u.floorplan.secondary_image
+            secondary_floorplan = u.floorplan.secondary_image ? u.floorplan.secondary_image : null
           else
             next
           end
