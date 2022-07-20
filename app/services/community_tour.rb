@@ -61,9 +61,9 @@ class CommunityTour
             bedrooms = u.floorplan.bedrooms.to_i
             bathrooms = u.floorplan.bathrooms.to_i
             pricing = u.floorplan.market_rent
-            floorplan_image = u.floorplan.image ? u.floorplan&.image.url : null 
-            primary_floorplan = u.floorplan.standard_image_url
-            secondary_floorplan = u.floorplan.secondary_image ? u.floorplan.secondary_image.url : null
+            floorplan_image = u.image ? u.image.url : null 
+            primary_floorplan = u.standard_image_url
+            secondary_floorplan = u.secondary_image ? u.secondary_image.url : null
           else
             next
           end
@@ -77,7 +77,7 @@ class CommunityTour
 
         if @community.is_sitemap
           available_stops << {
-            "name": modal_unit ? "#{name} (Modal)" : name,
+            "name": modal_unit ? "#{name} (Model)" : name,
             "is_favorite": is_favorite,
             "id": new_stop.id,
             "stop_id": stop.id,
