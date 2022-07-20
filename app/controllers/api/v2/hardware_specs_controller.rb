@@ -14,14 +14,15 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
   def add_pynwheel_touch_hardware_spec
     hardware = params[:hardware]
     if hardware.present?
+      hardware_spec = ""
       if hardware["id"].present?
         hardware_spec = HardwareSpec.find hardware["id"]
         hardware_spec.update_attributes(name: hardware["name"], phone: hardware["phone"], image: hardware["image"])
-        render :json => {success: true, data: hardware_spec.as_json}
       else
         hardware_spec = @community.create_hardware_spec(name: hardware["name"], phone: hardware["phone"], image: hardware["image"])
-        render :json => {success: true, data: hardware_spec.as_json}
       end
+      render :json => {success: true, data: hardware_spec.as_json}
+      @community.touch_installation_specification(current_pynwheel_user)
       # if @community.update_attributes(pynwheel_touch_hardware_spec: hardware["image"], hardware_spec_installer_name: hardware[:name], hardware_spec_installer_phone: hardware[:phone])
       #   @community.touch_installation_specification(current_pynwheel_user)
       #   email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
@@ -52,7 +53,7 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
     hardware_spec = @community.hardware_spec
     if !hardware_spec.image.nil?
       hardware_spec.remove_image!
-      # @community.touch_installation_specification(current_pynwheel_user)
+      @community.touch_installation_specification(current_pynwheel_user)
       render json: {success: true, messgae: "Pynwheel touch hardware spec deleted successfully."}
     else
       render json: {success: false, message: "Unable to delete pynwheel touch hardware spec"}

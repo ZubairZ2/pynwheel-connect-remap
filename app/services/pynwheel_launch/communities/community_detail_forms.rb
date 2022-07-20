@@ -162,9 +162,9 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def hardware_specs_status
-    return [] if @community.design.blank?
-    hardware_spec = @community.design.pynwheel_touch_hardware_spec
-    hardware_status = hardware_spec.present? ? @community&.design&.status&.status_and_remarks_obj : nil
+    return [] if @community.hardware_spec.nil?
+    hardware_spec = @community.hardware_spec
+    hardware_status = hardware_spec.present? ? @community&.hardware_spec&.status&.status_and_remarks_obj : nil
     [hardware_status].compact
   end
 
@@ -249,8 +249,8 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def update_hardware_specs_status_and_remarks status, remarks
-    return if @community.design.blank?
-    @community&.design&.status.update_attributes(status: status, remarks: remarks) if @community.design.pynwheel_touch_hardware_spec.present?
+    return if @community.hardware_spec.nil?
+    @community&.hardware_spec&.status.update_attributes(status: status, remarks: remarks) if @community&.hardware_spec.present?
   end
 
   def update_home_page_media_status_and_remarks status, remarks

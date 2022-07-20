@@ -144,9 +144,9 @@ class PynwheelLaunch::Communities::FollowUpEmails
   end
 
   def hardware_specs_status
-    return nil if @community.design.blank?
-    hardware_spec = @community.design.pynwheel_touch_hardware_spec
-    hardware_status = hardware_spec.present? ? @community&.design&.status&.status : nil
+    return nil if @community&.hardware_spec.blank?
+    hardware_spec = @community.hardware_spec
+    hardware_status = hardware_spec.present? ? @community&.hardware_spec&.status&.status : nil
     hardware_status
   end
 

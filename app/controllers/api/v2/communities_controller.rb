@@ -65,6 +65,10 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   def update_status_and_remarks
     if @community.present? && @community_user.present?
       PynwheelLaunch::Communities::CommunityDetailForms.new(@community).update_status_and_remarks(params[:detail_type], params[:status][:name], params[:status][:remarks])
+      if @community.production_started_date.nil? && params[:status][:name].eql?(FORM_APPROVED)
+        @community.production_started_date = DateTime.now
+        @community.save
+      end
       render :json => {:success => true , data: @community_user.as_json}
     else
       render :json => {:success => false , :message=> "Community or community user not found"}
@@ -74,7 +78,12 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   def move_to_production
     if (@community && @community_user && @current_user).present?
       Statuses.new(@community, @current_user, params[:status]).update_statuses
-      @community.update(move_to_production: true)
+
+      @community.move_to_production = true
+      if @community.released_date.nil? && params["status"].eql?(RELEASED)
+        @community.released_date = DateTime.now
+      end
+      @community.save
       FollowUpMailer.send_moved_to_production(@community).deliver
       render :json => {:success => true , data: @community_user.as_json}
     else

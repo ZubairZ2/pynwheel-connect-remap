@@ -80,7 +80,7 @@ class Statuses
   end
 
   def touch_installation_specification
-    @community.set_status_for_all(@community.design, @status, @current_user) unless @community&.design.blank?
+    @community.set_status_for_all(@community.hardware_spec, @status, @current_user) unless @community&.hardware_spec.blank?
   end
 
   def set_lock_providers_status
