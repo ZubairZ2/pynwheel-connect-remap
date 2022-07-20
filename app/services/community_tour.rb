@@ -63,7 +63,7 @@ class CommunityTour
             pricing = u.floorplan.market_rent
             floorplan_image = u.floorplan.image ? u.floorplan&.image.url : null 
             primary_floorplan = u.floorplan.standard_image_url
-            secondary_floorplan = u.floorplan.secondary_image ? u.floorplan.secondary_image : null
+            secondary_floorplan = u.floorplan.secondary_image ? u.floorplan.secondary_image.url : null
           else
             next
           end
