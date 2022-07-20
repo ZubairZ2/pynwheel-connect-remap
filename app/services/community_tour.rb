@@ -45,6 +45,7 @@ class CommunityTour
         available_date = ""
         availability = ""
         availability_url = ""
+        lease_pricing=[]
         floorplan_id = ""
         if stop.stop_type == "unit"
           u = Unit.find_by_id stop.stop_id
@@ -93,6 +94,7 @@ class CommunityTour
             "bedrooms": bedrooms,
             "bathrooms": bathrooms,
             "pricing": pricing,
+            "lease_pricing": lease_pricing,
             "floorplan_image": floorplan_image,
             "primary_floorplan": primary_floorplan,
             "secondary_floorplan": secondary_floorplan,
@@ -116,6 +118,7 @@ class CommunityTour
               "bedrooms": bedrooms,
               "bathrooms": bathrooms,
               "pricing": pricing,
+              "lease_pricing": lease_pricing,
               "floorplan_image": floorplan_image,
               "primary_floorplan": primary_floorplan,
               "secondary_floorplan": secondary_floorplan,
