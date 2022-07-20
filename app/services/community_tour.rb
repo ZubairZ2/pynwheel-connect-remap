@@ -63,20 +63,23 @@ class CommunityTour
             bedrooms = u.floorplan.bedrooms.to_i
             bathrooms = u.floorplan.bathrooms.to_i
             pricing = u.floorplan.market_rent
-            floorplan_image = u.floorplan.image ? u.floorplan.image.url : null 
-            primary_floorplan = u.floorplan.standard_image_url
-            secondary_floorplan = u.floorplan.secondary_image ? u.floorplan.secondary_image.url : null
+            floorplan_image = u.present? ? (u.image.present? ? u.image.url : (u&.floorplan&.image.present? ? u&.floorplan&.image.url : nil rescue nil) ): nil
+            primary_floorplan = u.present? ? (u.standard_image_url.present? ? u.standard_image_url : (u&.floorplan&.standard_image_url.present? ? u&.floorplan&.standard_image_url : nil rescue nil) ): nil
+            secondary_floorplan = u.present? ? (u.secondary_image.present? ? u.secondary_image.url : (u&.floorplan&.secondary_image.present? ? u&.floorplan&.secondary_image.url : nil rescue nil) ): nil
           else
             next
           end
 
         else
+          a = Amenity.find_by_id stop.stop_id
+          floorplan_image = a.image.present? ? a.image.url : nil
+          primary_floorplan = a.standard_image_url.present? ? a.standard_image_url : nil
+          secondary_floorplan = nil
           name =  stop.name
           is_favorite = @favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
         end
 
         new_stop = stop.stop_type.classify.constantize.find_by_id(stop.stop_id)
-
         if @community.is_sitemap
           available_stops << {
             "name": modal_unit ? "#{name} (Model)" : name,
