@@ -3,7 +3,7 @@ class Statuses
     @community = community
     @current_user = current_user
     @status = status
-    @statuses = ["", nil ,"in_progress", "submitted", "form_approved", "application_in_qa", "approved", "released", "rejected"]
+    @statuses = ["", nil ,"in_progress", "submitted", "form_approved", "application_in_qa", "approved", "released", "in_production", "rejected"]
   end
 
   def update_statuses
