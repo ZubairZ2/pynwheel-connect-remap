@@ -139,7 +139,6 @@ attr_reader :user , :params
 
   def get_communities_statuses(community, status, selected_communities)
     statuses = []
-
     statuses << company_status(community)
 
     statuses << community_status(community)
@@ -212,7 +211,7 @@ attr_reader :user , :params
     elsif status.eql?(PARAM_100_CONTENT_SUBMITED)
       return "submitted"
     elsif status.eql?(PARAM_APPROVED)
-      return "approved"
+      return "form_approved"
     elsif status.eql?(PARAM_REJECTED)
       return REJECTED
     elsif status.eql?(PARAM_RELEASED)
