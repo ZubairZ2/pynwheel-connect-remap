@@ -548,7 +548,7 @@ class AnalyticsController < ApplicationController
       @average_number_of_stops_per_session_tour_stop = visited_stops.uniq.size / tour_keys.size
       tour_stop_ids = visited_stops.pluck(:tour_stop_id)
       tour_stops = TourStop.where(id: tour_stop_ids)
-      stops = tour_stops.pluck(:stop_type, :stop_id)
+      stops = tour_stops.where.not(stop_id: nil).pluck(:stop_type, :stop_id)
       stops.each do |arr|
         stop = arr.first.camelcase.constantize.find arr.last
         if arr.first == "unit"
