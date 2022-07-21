@@ -54,6 +54,8 @@ class Community < ApplicationRecord
   has_one :three_d_maps_configuration, dependent: :destroy
   has_many :comments , as: :commentable
   has_one :portal_tour, dependent: :destroy
+  has_one :other_lock, dependent: :destroy
+  has_one :hardware_spec
   has_one :status, as: :statusable
 
   accepts_nested_attributes_for :credential
@@ -89,7 +91,7 @@ class Community < ApplicationRecord
 
   def as_json(options = {})
     data = super(
-      :only => [:id , :name , :logo , :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units], :methods => [:schedule_tour_url, :community_code])
+      :only => [:id , :name , :logo , :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date], :methods => [:schedule_tour_url, :community_code])
     check_brand_access = options[:brand_pdf_feature]
     if check_brand_access == true
       data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())
@@ -348,10 +350,10 @@ class Community < ApplicationRecord
   end
 
   def touch_installation_specification(current_user)
-    return if self.design.blank?
-    hardware_spec = self.design.pynwheel_touch_hardware_spec
-    status_attr = hardware_spec.present? ? SUBMITTED : nil
-    set_status_for_all(self.design,status_attr,current_user)
+    return if self.hardware_spec.nil?
+    hardware_spec = self.hardware_spec
+    status_attr = status_string(hardware_spec&.name.present? && hardware_spec&.phone.present? && hardware_spec&.image.present? )
+    set_status_for_all(self.hardware_spec, status_attr, current_user)
   end
 
   def check_community_requirments(community)

@@ -3,7 +3,7 @@ class Statuses
     @community = community
     @current_user = current_user
     @status = status
-    @statuses = ["", nil ,"in_progress", "submitted", "form_approved", "application_in_qa", "approved", "released", "rejected"]
+    @statuses = ["", nil ,"in_progress", "submitted", "form_approved", "application_in_qa", "approved", "released", "in_production", "rejected"]
   end
 
   def update_statuses
@@ -80,7 +80,7 @@ class Statuses
   end
 
   def touch_installation_specification
-    @community.set_status_for_all(@community.design, @status, @current_user) unless @community&.design.blank?
+    @community.set_status_for_all(@community.hardware_spec, @status, @current_user) unless @community&.hardware_spec.blank?
   end
 
   def set_lock_providers_status

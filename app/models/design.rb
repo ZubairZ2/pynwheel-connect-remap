@@ -178,6 +178,11 @@ class Design < ApplicationRecord
 			new_object.gallery_button_on_image = original_object.gallery_button_on_image
 		})
 	end
+
+	def as_json
+		super(:only => [:id, :pynwheel_touch_hardware_spec, :hardware_spec_installer_name, :hardware_spec_installer_phone])
+	end
+
 	def has_images_loop_type?
 		loop_type == "images"
 	end
