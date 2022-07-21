@@ -178,7 +178,7 @@ attr_reader :user , :params
       end
     elsif status.eql?(PARAM_100_CONTENT_SUBMITED) || status.eql?(PARAM_APPROVED)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED)} && statuses.include?(received_status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(APPLICATION_IN_PRODUCTION)} && statuses.include?(received_status)
         selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_RELEASED)
