@@ -127,6 +127,7 @@ attr_reader :user , :params
     selected_communities = []
     statuses.values.each do |status|
       communities_id = collection.pluck(:community_id).uniq
+
       communities_collection = Community.includes(:status, :community_users, design: [:status, {home_page_images: :status}, {home_page_video: :status}], sitemap: :status, company: :status, floorplates: :status, floorplans: :status, credential: :status, crm_credential: :status, opening_hours: :status, guided_opening_hours: :status, galleries: :status, zerv: :status, latch: :status, dwelo: :status, edge_state: [remote_locks: :status]).where(id: communities_id)
       communities_collection.each do |community|
         get_communities_statuses(community, status, selected_communities)
@@ -161,7 +162,7 @@ attr_reader :user , :params
       
     statuses << touch_gallery_media_status(community) if pynwheel_touch
 
-    statuses << hardware_specs_status(community) if pynwheel_touch
+    # statuses << hardware_specs_status(community) if pynwheel_touch
     
     statuses << lock_providers_status(community) if self_tour
 
@@ -193,7 +194,7 @@ attr_reader :user , :params
       end
     elsif status.eql?(IN_PRODUCTION)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(APPLICATION_IN_QA) || x.eql?(APPROVED)} && statuses.include?(received_status)
+      if statuses.all?{|x| x.eql?(received_status) } && statuses.include?(received_status)
         selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_APPLICATION_IN_QA)
@@ -217,7 +218,7 @@ attr_reader :user , :params
     elsif status.eql?(PARAM_RELEASED)
       return RELEASED
     elsif status.eql?(IN_PRODUCTION)
-      return "form_approved"
+      return "in_production"
     elsif status.eql?(PARAM_APPLICATION_IN_QA)
       return APPLICATION_IN_QA
     end
@@ -330,7 +331,7 @@ attr_reader :user , :params
       return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.eql?(nil)}
       return RELEASED if statuses.all?{|x| x.eql?(RELEASED)}
       return FORM_APPROVED if statuses.all?{|x| x.eql?(FORM_APPROVED)}
-      return APPLICATION_IN_QA if statuses.all?{|x| x.eql?(APPLICATION_IN_QA)}
+      return APPLICATION_IN_PRODUCTION if statuses.all?{|x| x.eql?(APPLICATION_IN_PRODUCTION)}
     else
       return nil
     end
