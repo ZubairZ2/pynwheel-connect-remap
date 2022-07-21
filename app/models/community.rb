@@ -130,10 +130,10 @@ class Community < ApplicationRecord
   end
 
   def property_map_width map
-    if map.present?
-      if map.width.to_i > 0
+    if map&.present?
+      if map&.width.to_i > 0
         map.width.to_f
-      elsif map.image.url.present?
+      elsif map&.image&.url.present?
         image = MiniMagick::Image.open(get_map_url(map))
         image[:width].to_f
       else
@@ -145,10 +145,10 @@ class Community < ApplicationRecord
   end
 
   def property_map_height map
-    if map.present?
-      if map.height.to_i > 0
+    if map&.present?
+      if map&.height.to_i > 0
         map.height.to_f
-      elsif map.image.url.present?
+      elsif map&.image.url.present?
         image = MiniMagick::Image.open(get_map_url(map))
         image[:height].to_f
       else
