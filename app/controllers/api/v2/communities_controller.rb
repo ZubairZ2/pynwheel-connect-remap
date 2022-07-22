@@ -78,13 +78,12 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   def move_to_production
     if (@community && @community_user && @current_user).present?
       Statuses.new(@community, @current_user, params[:status]).update_statuses
-
       @community.move_to_production = true
       if @community.released_date.nil? && params["status"].eql?(RELEASED)
         @community.released_date = DateTime.now
       end
       @community.save
-      FollowUpMailer.send_moved_to_production(@community).deliver
+      send_emails(@community, params["status"])
       render :json => {:success => true , data: @community_user.as_json}
     else
       render :json => {:success => false , :message=> "Community or community user not found"}
@@ -92,6 +91,17 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   end
 
   private
+
+  def send_emails(community, status)
+    if status.eql?(APPLICATION_IN_PRODUCTION)
+      FollowUpMailer.send_moved_to_production(community).deliver
+    elsif status.eql?(RELEASED)
+      FollowUpMailer.marketing_email(community).deliver
+      FollowUpMailer.customer_success_email(community).deliver
+      FollowUpMailer.accounting_email(community).deliver
+      FollowUpMailer.released_application_email(community)
+    end
+  end
 
   def check_brand_access
     community_user = params[:community_user_id]
