@@ -176,7 +176,12 @@ attr_reader :user , :params
       if statuses.any?{|x| x.eql?(received_status)} && !statuses.all?{|x| x.eql?(received_status)}
         selected_communities << community.community_users.first
       end
-    elsif status.eql?(PARAM_100_CONTENT_SUBMITED) || status.eql?(PARAM_APPROVED)
+    elsif status.eql?(PARAM_100_CONTENT_SUBMITED)
+      received_status = status_value_check(status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(PARAM_APPROVED) || x.eql?(FORM_APPROVED) || x.eql?(APPLICATION_IN_PRODUCTION)} && statuses.include?(received_status)
+        selected_communities << community.community_users.first
+      end
+    elsif status.eql?(PARAM_APPROVED)
       received_status = status_value_check(status)
       if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(APPLICATION_IN_PRODUCTION)} && statuses.include?(received_status)
         selected_communities << community.community_users.first
