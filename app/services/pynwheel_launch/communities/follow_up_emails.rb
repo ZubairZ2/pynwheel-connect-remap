@@ -19,6 +19,18 @@ class PynwheelLaunch::Communities::FollowUpEmails
     end
   end
 
+  def non_production_communities_email
+    forms = forms_list
+    if forms.present?
+      readable_forms_status = get_readable_form_status(forms)
+      if forms.any?{|x| x[:status].eql?(IN_PROGRESS) || x[:status].eql?(nil)}
+        return {type: APPLICATION_NOT_STARTED, data: readable_forms_status}
+      else
+        return {}
+      end
+    end
+  end
+
   private
 
   def mendatory_detail_forms
@@ -48,10 +60,10 @@ class PynwheelLaunch::Communities::FollowUpEmails
         name: LOCK_PROVIDER,
         status: lock_providers_status
       },
-      {
-        name: TOUR_STOPS,
-        status: tour_stops_status
-      },
+      # {
+      #   name: TOUR_STOPS,
+      #   status: tour_stops_status
+      # },
       {
         name: VISITING_HOURS,
         status: visiting_hours_status
@@ -69,10 +81,10 @@ class PynwheelLaunch::Communities::FollowUpEmails
         name: TOUCH_HOME_PAGE_MEDIA,
         status: home_page_media_status
       },
-      {
-        name: HARDWARE_SPECS,
-        status: hardware_specs_status
-      }
+      # {
+      #   name: HARDWARE_SPECS,
+      #   status: hardware_specs_status
+      # }
     ]
   end
 
@@ -178,10 +190,12 @@ class PynwheelLaunch::Communities::FollowUpEmails
     latch = @community.latch
     dwelo = @community.dwelo
     remote_locks = @community.edge_state&.remote_locks
+    other_locks = @community.other_lock
 
     locks_status << zerv&.status&.status rescue nil if zerv.present?
     locks_status << latch&.status&.status rescue nil if latch.present?
     locks_status << dwelo&.status&.status rescue nil if dwelo.present?
+    locks_status << other_locks&.status&.status rescue nil if other_locks.present?
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status rescue nil}
@@ -214,10 +228,14 @@ class PynwheelLaunch::Communities::FollowUpEmails
     case status
     when SUBMITTED
       return "Submitted"
-    when APPROVED
+    when APPROVED || FORM_APPROVED
       return "Approved"
     when IN_PROGRESS
       return "In Progress..."
+    when APPLICATION_IN_PRODUCTION
+      return "Application in Production"
+    when RELEASED
+      return "Application Released"
     when REJECTED
       return "Rejected"
     when DEPLOYED

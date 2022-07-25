@@ -340,13 +340,12 @@
                           %tr
                             %td
                               %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-                                %p The <strong>#{@community.touchscreen_app ? "Touch App" : ""} #{@community.touchscreen_app && @community.self_tour ? "," : ""} #{@community.self_tour ? "Self Tour App" : ""} </strong> is complete for <strong>#{@community.company.name} - #{@community.name}</strong>. Please review. If approved, Release in pynwheellaunch.com
+                                %p The <strong>#{@community.touchscreen_app ? "Touch App" : ""} #{@community.touchscreen_app && @community.self_tour ? "," : ""} #{@community.self_tour ? "Self Tour App" : ""} </strong> for <strong>#{@community.company.name} - #{@community.name}</strong> has been released. Please send a welcome kit and Self Tour signage (if applicable) to:
+                                - if @community.property_manager_name.present?
+                                  %strong #{@community.property_manager_name}
+                                - if @community.address.present?
+                                  %strong #{@community.address}
 
-                          %tr
-                            %td
-                              %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:5px;"}
-                                %p Thank you!
-                                %p  support@pynwheel.com
                             %tr
                               %td
                                 %div{:style => "height:15px;"}

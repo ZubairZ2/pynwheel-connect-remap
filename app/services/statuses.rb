@@ -11,13 +11,27 @@ class Statuses
     set_community_details_status
     set_property_map_status
     set_floorplan_status
-    set_gallery_images_status
-    set_touch_vidoes_status
     set_data_provider_status
-    touch_installation_specification
-    set_lock_providers_status
-    set_tour_stops_status
-    set_visiting_hours_status
+    self_tour = false
+    pynwheel_touch = false
+    if @community.product_options.nil?
+      self_tour = @community.self_tour
+      pynwheel_touch = @community.touchscreen_app
+    else
+      product_options = JSON.parse(@community.product_options)
+      self_tour = product_options["product_options"]["self_tour"]["is_enabled"]
+      pynwheel_touch = product_options["product_options"]["pynwheel_touch"]["is_enabled"]
+    end
+    if self_tour
+      set_lock_providers_status
+      set_tour_stops_status
+      set_visiting_hours_status
+    end
+    if pynwheel_touch
+      set_gallery_images_status
+      set_touch_vidoes_status
+      touch_installation_specification
+    end
   end
 
   private
