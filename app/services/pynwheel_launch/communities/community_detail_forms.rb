@@ -193,11 +193,13 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     zerv = @community.zerv
     latch = @community.latch
     dwelo = @community.dwelo
+    other_lock = @community.other_lock
     remote_locks = @community.edge_state&.remote_locks
 
     locks_status << zerv&.status&.status_and_remarks_obj rescue nil if zerv.present?
     locks_status << latch&.status&.status_and_remarks_obj rescue nil if latch.present?
     locks_status << dwelo&.status&.status_and_remarks_obj rescue nil if dwelo.present?
+    locks_status << other_lock&.status&.status_and_remarks_obj rescue nil if !other_lock.nil?
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status_and_remarks_obj rescue nil}
@@ -279,11 +281,13 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     zerv = @community.zerv
     latch = @community.latch
     dwelo = @community.dwelo
+    other_lock = @community.other_lock
     remote_locks = @community.edge_state&.remote_locks
 
     zerv&.status.update_attributes(status: status, remarks: remarks) if zerv.present?
     latch&.status.update_attributes(status: status, remarks: remarks) if latch.present?
     dwelo&.status.update_attributes(status: status, remarks: remarks) if dwelo.present?
+    other_lock&.status.update_attributes(status: status, remarks: remarks) if !other_lock.nil?
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| remote_lock&.status.update_attributes(status: status, remarks: remarks) }

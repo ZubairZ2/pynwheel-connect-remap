@@ -314,10 +314,12 @@ attr_reader :user , :params
     latch = community.latch
     dwelo = community.dwelo
     remote_locks = community.edge_state&.remote_locks
+    other_lock = community.other_lock
 
     locks_status << zerv&.status&.status rescue nil if zerv.present?
     locks_status << latch&.status&.status rescue nil if latch.present?
     locks_status << dwelo&.status&.status rescue nil if dwelo.present?
+    locks_status << other_lock&.status&.status rescue nil if other_lock.present?
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status rescue nil}

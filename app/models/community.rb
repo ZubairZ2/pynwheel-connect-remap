@@ -380,6 +380,14 @@ class Community < ApplicationRecord
     latch_locks_status(current_user)
     dwelo_locks_status(current_user)
     remote_lock_status(current_user)
+    set_other_lock_status(current_user)
+  end
+
+  def set_other_lock_status(current_user)
+    return if self.other_lock.nil?
+    other_lock = self.other_lock
+    status_attr = status_string(other_lock.description.present?)
+    set_status_for_all(other_lock,status_attr,current_user)
   end
 
   def pynwheel_access_status(current_user)
