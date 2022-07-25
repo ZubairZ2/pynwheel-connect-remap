@@ -1,4 +1,4 @@
-`class PynwheelLaunch::Communities::FollowUpEmails
+class PynwheelLaunch::Communities::FollowUpEmails
   def initialize(community)
     @community = community
   end
