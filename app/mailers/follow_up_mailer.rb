@@ -16,7 +16,7 @@ class FollowUpMailer < ApplicationMailer
     @forms = data
     @community = community
     @form_submitted = form_submitted
-    mail(to: "abdul.manan@intagleo.com", subject: "#{@community.name} - Data submitted for review")
+    mail(to: "shahzamanamjad@gmail.com", subject: "#{@community.name} - Data submitted for review")
   end
 
   def self.non_production_communities_email(community, forms)
@@ -36,28 +36,28 @@ class FollowUpMailer < ApplicationMailer
 
   def send_moved_to_production(community)
     @community = community
-    mail(to: "support@pynwheel.com", subject: "Final Approval for #{@community.company.name} - #{@community.name}")
+    mail(to: "shahzamanamjad@gmail.com", subject: "Final Approval for #{@community.company.name} - #{@community.name}")
   end
 
   def marketing_email(community)
     @community = community
-    mail(to: "support@pynwheel.com", subject: "Marketing: Send Welcome Kit to #{@community.company.name} - #{@community.name}")
+    mail(to: "shahzamanamjad@gmail.com", subject: "Marketing: Send Welcome Kit to #{@community.company.name} - #{@community.name}")
   end
 
   def customer_success_email(community)
     @community = community
-    mail(to: "support@pynwheel.com", subject: "Customer Success: Schedule Orientation for #{@community.company.name} - #{@community.name}")
+    mail(to: "shahzamanamjad@gmail.com", subject: "Customer Success: Schedule Orientation for #{@community.company.name} - #{@community.name}")
   end
   
   def accounting_email(community)
     @community = community
-    mail(to: "support@pynwheel.com", subject: "Accounting: Set up recurring billing for #{@community.company.name} - #{@community.name}")
+    mail(to: "shahzamanamjad@gmail.com", subject: "Accounting: Set up recurring billing for #{@community.company.name} - #{@community.name}")
   end
 
   def self.released_application_email(community)
     @community = community
     @users = @community.users.pluck(:email)
-    @users.push("support@pynwheel.com")
+    @users.push("shahzamanamjad@gmail.com")
     if community.touchscreen_app && !community.self_tour
       @users.each do |user|
         released_app_touch(user, community).deliver
