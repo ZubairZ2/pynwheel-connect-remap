@@ -101,6 +101,7 @@ class Statuses
     @community.set_status_for_all(@community.zerv, @status, @current_user)  unless @community.zerv.blank?
     @community.set_status_for_all(@community.latch, @status, @current_user)  unless @community.latch.blank?
     @community.set_status_for_all(@community.dwelo, @status, @current_user)  unless @community.dwelo.blank?
+    @community.set_status_for_all(@community.other_lock, @status, @current_user)  unless @community.other_lock.nil?
 
     unless @community.edge_state.blank?
       remote_locks = @community.edge_state&.remote_locks

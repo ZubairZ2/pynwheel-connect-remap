@@ -195,7 +195,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
     locks_status << zerv&.status&.status rescue nil if zerv.present?
     locks_status << latch&.status&.status rescue nil if latch.present?
     locks_status << dwelo&.status&.status rescue nil if dwelo.present?
-    locks_status << other_locks&.status&.status rescue nil if other_locks.present?
+    locks_status << other_locks&.status&.status rescue nil if !other_locks.nil?
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status rescue nil}
