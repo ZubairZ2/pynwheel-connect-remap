@@ -166,6 +166,7 @@ attr_reader :user , :params
     statuses << lock_providers_status(community) if self_tour
 
     statuses << home_page_media_status(community) if pynwheel_touch
+        
     if status.eql?(IN_PROGRESS)
       received_status = status_value_check(status)
       if statuses.any?{|x| x.eql?(received_status) || x.nil?} && !statuses.all?{|x| x.eql?(received_status) || x.nil?}
@@ -319,7 +320,7 @@ attr_reader :user , :params
     locks_status << zerv&.status&.status rescue nil if zerv.present?
     locks_status << latch&.status&.status rescue nil if latch.present?
     locks_status << dwelo&.status&.status rescue nil if dwelo.present?
-    locks_status << other_lock&.status&.status rescue nil if other_lock.present?
+    locks_status << other_lock&.status&.status rescue nil if !other_lock.nil?
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status rescue nil}
