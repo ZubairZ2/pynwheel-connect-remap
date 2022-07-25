@@ -19,6 +19,21 @@ class FollowUpMailer < ApplicationMailer
     mail(to: "abdul.manan@intagleo.com", subject: "#{@community.name} - Data submitted for review")
   end
 
+  def self.non_production_communities_email(community, forms)
+    @users = community.users.pluck(:email)
+    @users.each do |user|
+      send_non_production_emails(community, user, forms).deliver
+    end
+
+  end
+
+  def send_non_production_emails(community, user, forms)
+    @user = user
+    @community = community
+    @forms = forms  
+    mail(to: user, subject: "Your Application for #{@community.company.name} - #{@community.name}")
+  end
+
   def send_moved_to_production(community)
     @community = community
     mail(to: "support@pynwheel.com", subject: "Final Approval for #{@community.company.name} - #{@community.name}")
