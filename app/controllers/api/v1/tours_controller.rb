@@ -478,7 +478,7 @@ iPhone Users:
   end
 
   def set_community_tour_user
-    @community ||= Community.find(params[:community_id])
+    @community ||= Community.find_by_id params[:community_id]
   end
 
   def share_tour_data
