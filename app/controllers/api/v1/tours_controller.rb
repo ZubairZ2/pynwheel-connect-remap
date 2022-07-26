@@ -211,7 +211,7 @@ iPhone Users:
     end
   end
 
-  def tou_user_login
+  def tour_user_login
     if @tour_user.present?
       render :json => { :success => false, :message => "User with this email or phone number already exist!"}
     else
