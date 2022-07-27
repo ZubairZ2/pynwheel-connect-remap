@@ -107,7 +107,7 @@ class CommunityTour
         else
           if new_stop&.floor.present? && new_stop&.building.present?
             available_stops << {
-              "name": name,
+              "name": modal_unit ? "#{name} (Model)" : name,
               "is_favorite": is_favorite,
               "id": new_stop.id,
               "stop_id": stop.id,
