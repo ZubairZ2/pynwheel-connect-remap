@@ -14,6 +14,7 @@ class AnalyticsController < ApplicationController
     @pesent_end_dattime_metro_records = @metro_records.where.not(end_datetime: nil)
     @self_tour_records = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
+    @min_date = TrackSession.order('created_at asc').first
     apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
     

@@ -1,4 +1,5 @@
 $(document).ready(function() {
+  setAnalyticsTab()
   if ($(".filter_select2").length > 0){
     $('.filter_select2').select2({
       width: 'resolve'
@@ -7,9 +8,11 @@ $(document).ready(function() {
     $('#no-sidemenu .breadcrumb').css('display', 'block')
     $('#no-sidemenu .breadcrumb').css('margin', '0px')
   }
+
   $('input[name="timeframe"]').on('apply.daterangepicker', function (ev, picker) {
     set_url()
   });
+
   function default_method() {
     var start = moment($('#start_date').val());
     var end = moment($('#end_date').val());
@@ -32,12 +35,22 @@ $(document).ready(function() {
 
     cb(start, end);
   };
+
   $('.filter_select2').on('select2:select', function (e) { 
     disable_another_selects(e.target.id)
     set_url()      
   });
+
+  $('a[data-toggle="tab"]').on('click', function(){
+    if ($(this).html() == "Touch") {
+      window.localStorage.setItem('tab', "Touch");
+    }else {
+      window.localStorage.setItem('tab', "SelfTour");
+    };
+  });
   
 });
+
 function disable_another_selects(current_select){
   switch(current_select){
     case "companies":
@@ -64,6 +77,7 @@ function disable_another_selects(current_select){
       // code block
   }
 }
+
 function set_url(){
   params = {}
   params["community"] = $('#communities').val()
@@ -88,5 +102,15 @@ function set_url(){
     else
       url = url + `${key}=${value}` 
   }
+
   window.location.href = url
+}
+
+function setAnalyticsTab() {
+  let tabName = window.localStorage.getItem('tab');
+  if(tabName && tabName == "Touch") {
+    $('a[href="#s-touch"]').tab("show");
+  } else {
+    $('a[href="#self-tour-tab"]').tab("show");
+  }
 }
