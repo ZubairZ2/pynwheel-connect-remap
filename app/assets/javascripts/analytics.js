@@ -1,5 +1,4 @@
 $(document).ready(function() {
-  setAnalyticsTab()
   if ($(".filter_select2").length > 0){
     $('.filter_select2').select2({
       width: 'resolve'
@@ -44,11 +43,14 @@ $(document).ready(function() {
   $('a[data-toggle="tab"]').on('click', function(){
     if ($(this).html() == "Touch") {
       window.localStorage.setItem('tab', "Touch");
+      setDatePickerMinDate(minDateForTouch);
     }else {
       window.localStorage.setItem('tab', "SelfTour");
+      setDatePickerMinDate(minDateForSelfTour);
     };
   });
-  
+
+  setAnalyticsTab();  
 });
 
 function disable_another_selects(current_select){
@@ -108,9 +110,18 @@ function set_url(){
 
 function setAnalyticsTab() {
   let tabName = window.localStorage.getItem('tab');
+
   if(tabName && tabName == "Touch") {
     $('a[href="#s-touch"]').tab("show");
+    setDatePickerMinDate(minDateForTouch);
   } else {
     $('a[href="#self-tour-tab"]').tab("show");
+    setDatePickerMinDate(minDateForSelfTour);
   }
+}
+
+function setDatePickerMinDate(min_Date) {
+  $('.date_range_filter').daterangepicker({
+    minDate: new Date(min_Date)
+  });
 }

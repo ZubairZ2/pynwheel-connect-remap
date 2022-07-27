@@ -70,3 +70,11 @@
           /   =# render 'maps'
           #s-touch.tab-pane.fade{:role => "tabpanel"}
             = render 'touch'
+
+:javascript
+  var minDateForSelfTour = "#{@min_date_for_self_tour}"
+  var minDateForTouch = "#{@min_date_for_touch}"
+  console.log("minDateForSelfTour:  ", minDateForSelfTour)
+  console.log("minDateForTouch:  ", minDateForTouch)
+
+
