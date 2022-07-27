@@ -16,7 +16,7 @@ class AnalyticsController < ApplicationController
     @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     
     @min_date_for_self_tour = tour_histories.order('created_at asc')&.first&.created_at
-    @min_date_for_touch = track_sessions.order('created_at asc')&.first&.created_at
+    @min_date_for_touch = track_sessions.where(track_session_type: "metro").order('created_at asc')&.first&.created_at
 
     apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
