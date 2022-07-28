@@ -58,7 +58,7 @@ class CommunityTour
           availability_url = u.availability_url
           lease_pricing = u.get_unit_leasing_price
           if u.present? && (u.available || u.modal_unit)
-            name = (u.building.present? ? (u.building + "-") : "") + u.marketing_name + ((u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "") rescue "")
+            name = (u.building.present? ? (u.building + "-") : "") + u.marketing_name
             is_favorite = @favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
             bedrooms = u.floorplan.bedrooms.to_i
             bathrooms = u.floorplan.bathrooms.to_i
