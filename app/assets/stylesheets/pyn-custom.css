@@ -6193,7 +6193,7 @@ ul.add-fav-options {
 
 .c-popup .c-m-iframe-content img {
     width: auto;
-    max-height: 400px;
+    /* max-height: 400px; */
 }
 
 .modal-middle-section {
