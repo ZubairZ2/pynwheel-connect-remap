@@ -15,9 +15,7 @@ attr_reader :user , :params
     if user.is_new_client?
       communities = user&.community_users
     elsif user.is_super_admin?
-      # communities = CommunityUser.all
-      communities = CommunityUser.where(community_id: 1754)
-
+      communities = CommunityUser.all
     elsif user.is_regional_admin?
       ids = user&.region&.communities&.ids
       communities = CommunityUser.where(community_id: ids)
@@ -181,12 +179,12 @@ attr_reader :user , :params
       end
     elsif status.eql?(PARAM_100_CONTENT_SUBMITED)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(PARAM_APPROVED) || x.eql?(FORM_APPROVED) || x.eql?(APPLICATION_IN_PRODUCTION)} && statuses.include?(received_status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(PARAM_APPROVED) || x.eql?(APPLICATION_IN_REVIEW) } && statuses.include?(received_status)
         selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_APPROVED)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(APPLICATION_IN_PRODUCTION)} && statuses.include?(received_status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(APPLICATION_IN_REVIEW)} && statuses.include?(received_status)
         selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_RELEASED)
@@ -219,7 +217,7 @@ attr_reader :user , :params
     elsif status.eql?(PARAM_100_CONTENT_SUBMITED)
       return "submitted"
     elsif status.eql?(PARAM_APPROVED)
-      return "form_approved"
+      return "approved"
     elsif status.eql?(PARAM_REJECTED)
       return REJECTED
     elsif status.eql?(PARAM_RELEASED)
