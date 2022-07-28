@@ -61,7 +61,7 @@ class Resman4SwapService < BaseService
         unit.floorplan_id = u["Units"]["Unit"]["UnitType"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
 
-        if u["EffectiveRent"].present?
+        if u["EffectiveRent"].present? && u["EffectiveRent"]["min"].present?
           unit.effective_rent = u["EffectiveRent"]["min"]
         elsif u["Units"]["Unit"]["MarketRent"].present?
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
@@ -100,7 +100,7 @@ class Resman4SwapService < BaseService
         unit.floorplan_id = u["Units"]["Unit"]["UnitType"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
        
-        if u["EffectiveRent"].present?
+        if u["EffectiveRent"].present? && u["EffectiveRent"]["min"].present?
           unit.effective_rent = u["EffectiveRent"]["min"]
         elsif u["Units"]["Unit"]["MarketRent"].present?
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
@@ -215,19 +215,21 @@ class Resman4SwapService < BaseService
   end
 
   def get_unit_lease_prising unit, leasing = ""
-    if unit["Pricing"]["MITS_OfferTerm"].kind_of?(Array)
-      unit["Pricing"]["MITS_OfferTerm"].each do |pr|
-        rent = pr["EffectiveRent"]
-        term = pr["Term"]
+    if (unit && unit["Pricing"]).present?
+      if unit["Pricing"]["MITS_OfferTerm"].kind_of?(Array)
+        unit["Pricing"]["MITS_OfferTerm"].each do |pr|
+          rent = pr["EffectiveRent"]
+          term = pr["Term"]
+
+          leasing = leasing + term.to_s + ":" + rent.to_s + ";"
+        end
+
+      elsif unit["Pricing"]["MITS_OfferTerm"].kind_of?(Object)
+        rent = unit["Pricing"]["MITS_OfferTerm"]["EffectiveRent"]
+        term = unit["Pricing"]["MITS_OfferTerm"]["Term"]
 
         leasing = leasing + term.to_s + ":" + rent.to_s + ";"
       end
-
-    elsif unit["Pricing"]["MITS_OfferTerm"].kind_of?(Object)
-      rent = unit["Pricing"]["MITS_OfferTerm"]["EffectiveRent"]
-      term = unit["Pricing"]["MITS_OfferTerm"]["Term"]
-
-      leasing = leasing + term.to_s + ":" + rent.to_s + ";"
     end
 
     leasing
