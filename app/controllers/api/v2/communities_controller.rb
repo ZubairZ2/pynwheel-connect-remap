@@ -65,7 +65,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   def update_status_and_remarks
     if @community.present? && @community_user.present?
       PynwheelLaunch::Communities::CommunityDetailForms.new(@community).update_status_and_remarks(params[:detail_type], params[:status][:name], params[:status][:remarks])
-      if @community.production_started_date.nil? && params[:status][:name].eql?(FORM_APPROVED)
+      if @community.production_started_date.nil? && params[:status][:name].eql?(APPROVED)
         @community.production_started_date = DateTime.now
         @community.save
       end
@@ -79,7 +79,8 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
     if (@community && @community_user && @current_user).present?
       Statuses.new(@community, @current_user, params[:status]).update_statuses
       @community.move_to_production = true
-      @community.released_date = DateTime.now
+      @community.submitted_final_approval_date = DateTime.now if params[:status].eql?(APPLICATION_IN_REVIEW)
+      @community.released_date = DateTime.now if params[:status].eql?(RELEASED)
       @community.save
       send_emails(@community, params["status"])
       render :json => {:success => true , data: @community_user.as_json}
