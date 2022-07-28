@@ -40,16 +40,16 @@ class PynwheelLaunch::Communities::FollowUpEmails
         status: community_status
       },
       {
+        name: PROPERTY_MANAGEMENT_SYSTEM,
+        status: data_provider_status
+      },
+      {
         name: PROPERTY_MAP_IMAGES,
         status: property_map_status
       },
       {
         name: FLOORPLAN_IMAGES,
         status: floorplan_status
-      },
-      {
-        name: PROPERTY_MANAGEMENT_SYSTEM,
-        status: data_provider_status
       }
     ]
   end
@@ -232,8 +232,8 @@ class PynwheelLaunch::Communities::FollowUpEmails
       return "Approved"
     when IN_PROGRESS
       return "In Progress..."
-    when APPLICATION_IN_PRODUCTION
-      return "Application in Production"
+    when APPLICATION_IN_REVIEW
+      return "Submitted for Review"
     when RELEASED
       return "Application Released"
     when REJECTED

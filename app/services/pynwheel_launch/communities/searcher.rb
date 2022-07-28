@@ -166,7 +166,7 @@ attr_reader :user , :params
     statuses << lock_providers_status(community) if self_tour
 
     statuses << home_page_media_status(community) if pynwheel_touch
-        
+
     if status.eql?(IN_PROGRESS)
       received_status = status_value_check(status)
       if statuses.any?{|x| x.eql?(received_status) || x.nil?} && !statuses.all?{|x| x.eql?(received_status) || x.nil?}
@@ -179,12 +179,12 @@ attr_reader :user , :params
       end
     elsif status.eql?(PARAM_100_CONTENT_SUBMITED)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(PARAM_APPROVED) || x.eql?(FORM_APPROVED) || x.eql?(APPLICATION_IN_PRODUCTION)} && statuses.include?(received_status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(PARAM_APPROVED) || x.eql?(APPLICATION_IN_REVIEW) } && statuses.include?(received_status)
         selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_APPROVED)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(APPLICATION_IN_PRODUCTION)} && statuses.include?(received_status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(APPLICATION_IN_REVIEW)} && statuses.include?(received_status)
         selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_RELEASED)
@@ -197,9 +197,9 @@ attr_reader :user , :params
       if statuses.all?{|x| x.eql?(received_status) || x.nil?}
         selected_communities << community.community_users.first
       end
-    elsif status.eql?(IN_PRODUCTION)
+    elsif status.eql?(APPLICATION_IN_REVIEW)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) } && statuses.include?(received_status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) } && statuses.include?(received_status)
         selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_APPLICATION_IN_QA)
@@ -217,13 +217,13 @@ attr_reader :user , :params
     elsif status.eql?(PARAM_100_CONTENT_SUBMITED)
       return "submitted"
     elsif status.eql?(PARAM_APPROVED)
-      return "form_approved"
+      return "approved"
     elsif status.eql?(PARAM_REJECTED)
       return REJECTED
     elsif status.eql?(PARAM_RELEASED)
       return RELEASED
-    elsif status.eql?(IN_PRODUCTION)
-      return "in_production"
+    elsif status.eql?(APPLICATION_IN_REVIEW)
+      return "in_review"
     elsif status.eql?(PARAM_APPLICATION_IN_QA)
       return APPLICATION_IN_QA
     end
@@ -338,7 +338,7 @@ attr_reader :user , :params
       return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.eql?(nil)}
       return RELEASED if statuses.all?{|x| x.eql?(RELEASED)}
       return FORM_APPROVED if statuses.all?{|x| x.eql?(FORM_APPROVED)}
-      return APPLICATION_IN_PRODUCTION if statuses.all?{|x| x.eql?(APPLICATION_IN_PRODUCTION)}
+      return APPLICATION_IN_REVIEW if statuses.all?{|x| x.eql?(APPLICATION_IN_REVIEW)}
     else
       return nil
     end

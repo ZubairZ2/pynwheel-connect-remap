@@ -12,6 +12,12 @@ class FollowUpMailer < ApplicationMailer
     mail()
   end
 
+  def preview_appliation_submit_for_review(community, user)
+    @community = community
+    @user = user
+    mail()
+  end
+
   def send_submitted_form(community, form_submitted, data)
     @forms = data
     @community = community

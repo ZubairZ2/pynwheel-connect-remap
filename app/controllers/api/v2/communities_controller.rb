@@ -79,9 +79,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
     if (@community && @community_user && @current_user).present?
       Statuses.new(@community, @current_user, params[:status]).update_statuses
       @community.move_to_production = true
-      if @community.released_date.nil? && params["status"].eql?(RELEASED)
-        @community.released_date = DateTime.now
-      end
+      @community.released_date = DateTime.now
       @community.save
       send_emails(@community, params["status"])
       render :json => {:success => true , data: @community_user.as_json}

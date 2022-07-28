@@ -605,6 +605,7 @@ Rails.application.routes.draw do
         delete :delete_lock_files, to: 'secure_locks#delete_lock_files'
         post :send_follow_up_emails, to: 'follow_up_emails#send_follow_up_emails'
         get :preview_follow_up_email, to: 'follow_up_emails#preview_follow_up_email'
+        get :preview_submit_for_review_email, to: 'follow_up_emails#preview_submit_for_review_email'
         resources :community_floor_plans do
           member do
             delete :delete_floorplan_amenity

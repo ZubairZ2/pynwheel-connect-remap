@@ -799,9 +799,9 @@ function getFilteredUnits(units, type){
   } else if (type === "Sq Ft: Less to More"){
     new_units = units.sort((a,b) => a['square_feet'] - b['square_feet'])
   } else if (type === "Availability: Soonest to Latest"){
-    new_units = units.sort((a,b) => new Date(b['available_date']) - new Date(a['available_date']))
-  } else if (type === "Availability: Latest to Soonest"){
     new_units = units.sort((a,b) => new Date(a['available_date']) - new Date(b['available_date']))
+  } else if (type === "Availability: Latest to Soonest"){
+    new_units = units.sort((a,b) => new Date(b['available_date']) - new Date(a['available_date']))
   } else {
     new_units = units;
   }
