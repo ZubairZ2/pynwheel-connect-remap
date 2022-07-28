@@ -3,7 +3,9 @@ $(document).ready(function() {
     $('.filter_select2').select2({
       width: 'resolve'
     });
-    default_method();
+    
+    setAnalyticsTab();  
+    
     $('#no-sidemenu .breadcrumb').css('display', 'block')
     $('#no-sidemenu .breadcrumb').css('margin', '0px')
   }
@@ -12,46 +14,49 @@ $(document).ready(function() {
     set_url()
   });
 
-  function default_method() {
-    var start = moment($('#start_date').val());
-    var end = moment($('#end_date').val());
-    function cb(start, end) {
-      $('.date_range_filter span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-    }
-
-    $('.date_range_filter').daterangepicker({
-        startDate: start,
-        endDate: end,
-        ranges: {
-           'Today': [moment(), moment()],
-           'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-           'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-           'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-           'This Month': [moment().startOf('month'), moment().endOf('month')],
-           'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-        }
-    }, cb);
-
-    cb(start, end);
-  };
-
   $('.filter_select2').on('select2:select', function (e) { 
     disable_another_selects(e.target.id)
-    set_url()      
+    set_url()
   });
 
   $('a[data-toggle="tab"]').on('click', function(){
     if ($(this).html() == "Touch") {
       window.localStorage.setItem('tab', "Touch");
-      setDatePickerMinDate(minDateForTouch);
+      default_method(minDateForTouch);
+      set_url();
     }else {
       window.localStorage.setItem('tab', "SelfTour");
-      setDatePickerMinDate(minDateForSelfTour);
+      default_method(minDateForSelfTour);
+      set_url();
     };
   });
 
-  setAnalyticsTab();  
 });
+
+function default_method(min_date) {
+  var start = moment($('#start_date').val());
+  var end = moment($('#end_date').val());
+
+  function cb(start, end) {
+    $('.date_range_filter span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+  }
+
+  $('.date_range_filter').daterangepicker({
+      startDate: start,
+      endDate: end,
+      minDate: new Date(min_date),
+      ranges: {
+         'Today': [moment(), moment()],
+         'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+         'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+         'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+         'This Month': [moment().startOf('month'), moment().endOf('month')],
+         'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+      }
+  }, cb);
+
+  cb(start, end);
+};
 
 function disable_another_selects(current_select){
   switch(current_select){
@@ -76,7 +81,6 @@ function disable_another_selects(current_select){
       $("#regions").val("")
       break;
     default:
-      // code block
   }
 }
 
@@ -113,15 +117,9 @@ function setAnalyticsTab() {
 
   if(tabName && tabName == "Touch") {
     $('a[href="#s-touch"]').tab("show");
-    setDatePickerMinDate(minDateForTouch);
+    default_method(minDateForTouch);
   } else {
     $('a[href="#self-tour-tab"]').tab("show");
-    setDatePickerMinDate(minDateForSelfTour);
+    default_method(minDateForSelfTour);
   }
-}
-
-function setDatePickerMinDate(min_Date) {
-  $('.date_range_filter').daterangepicker({
-    minDate: new Date(min_Date)
-  });
 }
