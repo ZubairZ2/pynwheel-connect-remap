@@ -562,7 +562,7 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
-    
+  
     namespace :self_tour do
       namespace :v1 do
         resources :communities do
@@ -573,6 +573,11 @@ Rails.application.routes.draw do
           post :check_lock_access
           delete :start_tour
         end
+
+        resources :tour_users do
+          delete :delete_account
+        end
+
       end
     end
 
