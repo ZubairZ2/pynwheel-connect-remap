@@ -9,14 +9,14 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
         render :json=> {:status=>false, :message => "Something went wrong on server!", status_code: 500}
       end
     else
-      render :json=> {:status=>false, :message => "User with Id #{params[:tour_user_id]} not found!", status_code: 401}
+      render :json=> {:status=>false, :message => "User with Id #{params[:id]} not found!", status_code: 401}
     end
   end
 
   private
 
   def load_tour_user
-    @tour_user ||= TourUser.find_by_id params[:tour_user_id]
+    @tour_user ||= TourUser.find_by_id params[:id]
   end
 
   def destroy_user

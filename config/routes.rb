@@ -575,7 +575,9 @@ Rails.application.routes.draw do
         end
 
         resources :tour_users do
-          delete :delete_account
+          member do
+            delete :delete_account
+          end
         end
 
       end
