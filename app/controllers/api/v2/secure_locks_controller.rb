@@ -236,6 +236,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
       other_lock.update_attributes(description: lock["description"])
     else
       @community.create_other_lock(description: lock["description"])
+      @lock_provider << OTHERLOCK
     end
   end
 

@@ -22,7 +22,7 @@ class FollowUpMailer < ApplicationMailer
     @forms = data
     @community = community
     @form_submitted = form_submitted
-    mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} - Data submitted for review")
+    mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} - Form submitted for review")
   end
 
   def self.non_production_communities_email(community, forms)
