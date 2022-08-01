@@ -54,10 +54,10 @@ class SchedualToursController < ApplicationController
     f_name = params[:tour_user][:first_name].present? ? params[:tour_user][:first_name] : ""
     l_name = params[:tour_user][:last_name].present? ? params[:tour_user][:last_name] : ""
     tu = TourUser.new name: (f_name + " " + l_name), first_name: params[:tour_user][:first_name], last_name: params[:tour_user][:last_name], email: params[:tour_user][:email].downcase, phone_number: phone_number, card_expiry: params[:tour_user][:card_expiry] unless tu.present?
-    tu.name = (f_name + " " + l_name)
-    tu.first_name = f_name
-    tu.last_name = l_name
-    tu.phone_number = phone_number if phone_number.present?
+    # tu.name = (f_name + " " + l_name)
+    # tu.first_name = f_name
+    # tu.last_name = l_name
+    # tu.phone_number = phone_number if phone_number.present?
     tu.desired_bedroom = params[:desired_bedroom]
     tu.card_last_digits = params[:last_digits] if params[:last_digits].present?
     tu.is_sms_enabled = params[:tour_user][:is_sms_enabled] == "0" ? false : true
