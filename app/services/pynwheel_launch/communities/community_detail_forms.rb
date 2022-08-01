@@ -186,7 +186,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def lock_providers_status
-    return [] if @community.zerv.blank? && @community.latch.blank? && @community.dwelo.blank? && @community.edge_state.blank? && @community&.edge_state&.remote_locks.blank?
+    return [] if @community.zerv.blank? && @community.latch.blank? && @community.dwelo.blank? && @community.edge_state.blank? && @community&.edge_state&.remote_locks.blank? && @community.other_lock.nil?
     
     locks_status = []
     
