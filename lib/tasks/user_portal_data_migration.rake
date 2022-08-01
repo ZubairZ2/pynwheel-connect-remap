@@ -66,4 +66,12 @@ namespace :user_portal_data_migration do
     in_review = Status.where(status: "application_in_qa")
     in_review.update_all(status: "in_review")
   end
+  
+  desc 'Change amenity names for existing communities'
+  task :change_current_status => :environment do
+    yoga = Amenity.where(amenity_type: ["Yoga Studio"]).countaction_controller
+    yoga.update_all(amenity_type: "Yoga Studio / Fitness Studio")
+    business = Amenity.where(amenity_type: ["Business Center", "Business Lounge"]).countaction_controller
+    business.update_all(amenity_type: "Business Center / Lounge")
+  end
 end
