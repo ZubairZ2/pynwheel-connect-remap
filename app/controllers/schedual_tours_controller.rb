@@ -45,7 +45,7 @@ class SchedualToursController < ApplicationController
   
   def create_tour_user_from
     phone_number = make_phone
-    tu = TourUser.where("lower(email) = ? OR phone_number = ?", params[:email].downcase, phone_number)&.last
+    tu = TourUser.where("lower(email) = ? OR phone_number = ?", params[:tour_user][:email].downcase, phone_number)&.last
     # tu = tu.last if tu.present?
 
     community = Community.find_by_id params[:community_id]
