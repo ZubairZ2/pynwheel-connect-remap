@@ -55,7 +55,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @disable_day_of_week = @community.collect_disable_days
     @stepping = @community.community_tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.community_tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.community_tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.community_tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
     @tour_type = @schedule_tour.tour_type if @reschedule_tour.present?
-    @axisting_tour_users = scheduled_tour_users @community
+    @existing_tour_users = scheduled_tour_users @community
 
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
     if @use_yardi_as_lead
@@ -114,7 +114,10 @@ class SchedulerWidget::WidgetsController < ApplicationController
   def scheduled_tour_users community
     scheduled_tours = SchedualTour.where(community_id: community.id).where.not(tour_user_id: nil)
     tour_user_ids = scheduled_tours_in_future(scheduled_tours, community)
-    TourUser.where(id: tour_user_ids).pluck(:email).uniq
+    emails = TourUser.where(id: tour_user_ids).pluck(:email).uniq
+    phone_numbers = TourUser.where(id: tour_user_ids).pluck(:phone_number).uniq
+
+    {emails: emails, phone_numbers: phone_numbers}
   end
 
   def scheduled_tours_in_future(scheduled_tours, community, tour_user_ids = [], community_time_zone = nil)
