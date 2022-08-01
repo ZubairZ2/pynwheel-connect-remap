@@ -61,13 +61,20 @@
               %a#self-tour-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-self-tour", :role => "tab"} Self Tour
             / %li{:role => "presentation",:class => ""}
             /   %a#maps-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-maps", :role => "tab"} Maps
-            / %li{:role => "presentation",:class => ""}
-            /   %a#maps-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-maps", :role => "tab"} Touch
+            %li{:role => "presentation",:class => ""}
+              %a#maps-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-touch", :role => "tab"} Touch
 
           #s-self-tour.tab-pane.fade.in.active{:role => "tabpanel"}
             = render 'self_tour'
           / #s-maps.tab-pane.fade{:role => "tabpanel"}
           /   =# render 'maps'
-          / #s-touch.tab-pane.fade{:role => "tabpanel"}
-          /   =# render 'touch'
+          #s-touch.tab-pane.fade{:role => "tabpanel"}
+            = render 'touch'
+
+:javascript
+  var minDateForSelfTour = "#{@min_date_for_self_tour}"
+  var minDateForTouch = "#{@min_date_for_touch}"
+  console.log("minDateForSelfTour:  ", minDateForSelfTour)
+  console.log("minDateForTouch:  ", minDateForTouch)
+
 

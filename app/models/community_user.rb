@@ -19,7 +19,7 @@ class CommunityUser < ApplicationRecord
     super(
       :only => [:id] ,
       :include => {
-            :community => {:only => [:id  , :name] , :include => {
+            :community => {:only => [:id  , :name, :production_started_date, :released_date, :submitted_final_approval_date] , :include => {
               :comments => {:only => [:id , :content , :created_at] , :include => {
                 :creator => {:only => [:id , :first_name , :last_name]}
                 }}
@@ -34,11 +34,11 @@ class CommunityUser < ApplicationRecord
   end
 
   def company_details
-    user_company = self.user.company
+    user_company = self.community.company
     if user_company.present?
       user_company.as_json
     else
-      self.community.company.as_json
+      self.user.company.as_json
     end
   end
 

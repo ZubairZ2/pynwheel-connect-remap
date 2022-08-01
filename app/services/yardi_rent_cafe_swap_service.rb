@@ -16,9 +16,9 @@ class YardiRentCafeSwapService < BaseService
         api_token = credentials.api_token
         #property_code = credentials.p_code
         if api_token.present?
-          @url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
+          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
         else
-          @url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
+          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
         end
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
@@ -58,7 +58,7 @@ class YardiRentCafeSwapService < BaseService
                   unit.effective_rent = 1.0
                 end
 
-                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
+                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
                 leasing = ""
                 if rentStrs.present?
                   rentStrs.each do |rentStr|
@@ -103,7 +103,7 @@ class YardiRentCafeSwapService < BaseService
                   unit.effective_rent = 1.0
                 end
 
-                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"])
+                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
                 leasing = ""
                 if rentStrs.present?
                   rentStrs.each do |rentStr|
@@ -142,9 +142,9 @@ class YardiRentCafeSwapService < BaseService
         api_token = credentials.api_token
         #property_code = credentials.p_code
         if api_token.present?
-          @url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
+          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
         else
-          @url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
+          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
         end
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
@@ -247,9 +247,9 @@ class YardiRentCafeSwapService < BaseService
     end
   end
 
-  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name)
+  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name, credentials)
     request_type = "pricingmatrix"
-    url = "https://api.rentcafe.com/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
+    url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
     begin
       response = HTTParty.get(url)
       rent_matrix = JSON.parse(response.body)

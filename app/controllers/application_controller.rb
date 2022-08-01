@@ -10,6 +10,8 @@ class ApplicationController < ActionController::Base
   helper_method :alphabetical_sort
   helper_method :show_chat_support
   before_action :load_tour_users_chats
+  # Heroku version upgrade
+
   
   def current_community
   	if params[:community_id].present?
@@ -63,7 +65,7 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(resource_or_scope)
-    get_redirection_link
+    root_url
   end
 
   def after_accept_path_for(resource_or_scope)
@@ -71,7 +73,9 @@ class ApplicationController < ActionController::Base
   end
 
   def get_redirection_link
-    if current_user.is_new_client?
+    if current_user.pynwheel_launch_access && current_user.pynwheel_connect_access
+    "#{root_url}access_selection.html"
+    elsif current_user.pynwheel_launch_access
      ENV['PYNWHEEL_LUANCH']
     else
      root_url
@@ -188,7 +192,7 @@ class ApplicationController < ActionController::Base
   end
 
   def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:region_id,:role,:community_ids=>[]])
+    devise_parameter_sanitizer.permit(:invite, keys: [:company_id,:pynwheel_launch_access,:pynwheel_connect_access,:region_id,:role,:community_ids=>[]])
     devise_parameter_sanitizer.permit(:accept_invitation, keys: [:first_name, :last_name, :avatar])
   end
 end

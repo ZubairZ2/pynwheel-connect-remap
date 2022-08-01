@@ -3,7 +3,7 @@ class Statuses
     @community = community
     @current_user = current_user
     @status = status
-    @statuses = ["", nil ,"in_progress", "submitted", "form_approved", "application_in_qa", "approved", "released", "rejected"]
+    @statuses = [ "", nil ,"in_progress", "submitted", "approved", "in_review", "released", "rejected" ]
   end
 
   def update_statuses
@@ -11,13 +11,27 @@ class Statuses
     set_community_details_status
     set_property_map_status
     set_floorplan_status
-    set_gallery_images_status
-    set_touch_vidoes_status
     set_data_provider_status
-    touch_installation_specification
-    set_lock_providers_status
-    set_tour_stops_status
-    set_visiting_hours_status
+    self_tour = false
+    pynwheel_touch = false
+    if @community.product_options.nil?
+      self_tour = @community.self_tour
+      pynwheel_touch = @community.touchscreen_app
+    else
+      product_options = JSON.parse(@community.product_options)
+      self_tour = product_options["product_options"]["self_tour"]["is_enabled"]
+      pynwheel_touch = product_options["product_options"]["pynwheel_touch"]["is_enabled"]
+    end
+    if self_tour
+      set_lock_providers_status
+      set_tour_stops_status
+      set_visiting_hours_status
+    end
+    if pynwheel_touch
+      set_gallery_images_status
+      set_touch_vidoes_status
+      touch_installation_specification
+    end
   end
 
   private
@@ -80,13 +94,14 @@ class Statuses
   end
 
   def touch_installation_specification
-    @community.set_status_for_all(@community.design, @status, @current_user) unless @community&.design.blank?
+    @community.set_status_for_all(@community.hardware_spec, @status, @current_user) unless @community&.hardware_spec.blank?
   end
 
   def set_lock_providers_status
     @community.set_status_for_all(@community.zerv, @status, @current_user)  unless @community.zerv.blank?
     @community.set_status_for_all(@community.latch, @status, @current_user)  unless @community.latch.blank?
     @community.set_status_for_all(@community.dwelo, @status, @current_user)  unless @community.dwelo.blank?
+    @community.set_status_for_all(@community.other_lock, @status, @current_user)  unless @community.other_lock.nil?
 
     unless @community.edge_state.blank?
       remote_locks = @community.edge_state&.remote_locks

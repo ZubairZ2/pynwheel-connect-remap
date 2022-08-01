@@ -63,23 +63,22 @@ class Resman4Service < BaseService
       end
     end
   end
-  def save_resman_units(units,property_id)
 
+  def save_resman_units(units,property_id)
     unit_present =  Unit.where("community_id = ? AND provider IN (?)",  credentials.community_id,  ["resman"]).map{|x| x.provider_unit_id.gsub('*','-')}
     units.each do |u|
       vacateDate = ""
       unit = Unit.find_by(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["IDValue"].gsub('*','-'))#.first_or_initialize
+
       if unit.present?
 
-        # unit.property_id = property_id
-        # unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
-        # unit.marketing_name = u["Id"]
-        # unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
-        
-        unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
-        unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
+        if u["EffectiveRent"].present? 
+          unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
+          unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
+        end
+       
         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-          if u["EffectiveRent"].present?
+          if u["EffectiveRent"].present? && u["EffectiveRent"]["Min"].present?
             unit.effective_rent = u["EffectiveRent"]["Min"]
           elsif u["Units"]["Unit"]["MarketRent"].present?
             unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
@@ -88,13 +87,6 @@ class Resman4Service < BaseService
 
         unit.lease_pricing = get_unit_lease_prising(u)
 
-        # unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-        #   if u["Units"]["Unit"]["MarketRent"].present?
-        #     unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-        #   end
-        # end 
-
-        # unit.floor = u["FloorLevel"]
         if u["Availability"].present? && u["Availability"]["MadeReadyDate"].present?
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = "Unoccupied" if !unit.sold
@@ -109,6 +101,7 @@ class Resman4Service < BaseService
             unit.availability = "Occupied"
           end
         end
+
         unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
           if unit.availability == "Unoccupied"
             unit.available = true if !unit.sold
@@ -124,16 +117,14 @@ class Resman4Service < BaseService
         if $units_availability_url.present?
           unit.availability_url = $units_availability_url + "&unitNumber=#{u["IDValue"]}"
         end
-
-        # building = u["Unit"]["MITS:Information"]["MITS:BuildingID"]
-        # unit.building = building.present? ? building.gsub("Building ", "") : ""
-        # unit.manually_updated = false
+        
         @unit_record << unit.provider_unit_id.gsub('*','-')
         unit.save(validate: false)
 
       else
         vacateDate = ""
         unit = Unit.where(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["IDValue"].gsub('*','-')).first_or_initialize
+
         unless unit.manual_override
           unit.property_id = property_id
           unit.unit_type = u["Units"]["Unit"]["UnitType"]
@@ -145,16 +136,21 @@ class Resman4Service < BaseService
           unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
             unit.floorplan_id = u["Units"]["Unit"]["UnitType"]
           end
-          unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
-          unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
+          
+          if u["EffectiveRent"].present?
+            unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
+            unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
+          end
+
           unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
             unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-            if u["EffectiveRent"].present?
+            if u["EffectiveRent"].present? && u["EffectiveRent"]["Min"].present?
               unit.effective_rent = u["EffectiveRent"]["Min"]
             elsif u["Units"]["Unit"]["MarketRent"].present?
               unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
             end
           end
+
           unless unit.floor_is_updated.present? && unit.floor_is_updated
             unit.floor = u["FloorLevel"]
           end
@@ -214,28 +210,6 @@ class Resman4Service < BaseService
     floorplans.each do |f|
       floorplan = Floorplan.find_by(provider: "resman",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"])#.first_or_initialize
       if floorplan.present?
-        # floorplan.property_id = property_id
-        # floorplan.name = f["Name"]
-        # floorplan.unit_count = f["UnitCount"]
-        # floorplan.units_available = f["UnitsAvailable"]
-        # floorplan.deposit = f["Deposit"]["Amount"]["Value"]
-        # if f["FloorplanAvailabilityURL"].present?
-        #   floorplan.availability_url = f["FloorplanAvailabilityURL"]
-        # end
-        # puts  f["FloorplanAvailabilityURL"]
-        # room_types = f["Room"]
-        # room_types.each do |rt|
-        #   if rt["Type"] == "Bedroom"
-        #     floorplan.bedrooms = rt["Count"]
-        #   else
-        #     floorplan.bathrooms = rt["Count"]
-        #   end
-        # end
-        # if f["SquareFeet"]["Min"].to_f > 0
-        #   floorplan.square_feet = f["SquareFeet"]["Min"]
-        # else
-        #   floorplan.square_feet = f["SquareFeet"]["Max"]
-        # end
         unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && floorplan.manual_override
           if f["MarketRent"]["Min"].to_f > 0
             floorplan.market_rent = f["MarketRent"]["Min"]
@@ -294,19 +268,21 @@ class Resman4Service < BaseService
   end
 
   def get_unit_lease_prising unit, leasing = ""
-    if unit["Pricing"]["MITS_OfferTerm"].kind_of?(Array)
-      unit["Pricing"]["MITS_OfferTerm"].each do |pr|
-        rent = pr["EffectiveRent"]
-        term = pr["Term"]
+    if (unit && unit["Pricing"]).present?
+      if unit["Pricing"]["MITS_OfferTerm"].kind_of?(Array)
+        unit["Pricing"]["MITS_OfferTerm"].each do |pr|
+          rent = pr["EffectiveRent"]
+          term = pr["Term"]
+
+          leasing = leasing + term.to_s + ":" + rent.to_s + ";"
+        end
+
+      elsif unit["Pricing"]["MITS_OfferTerm"].kind_of?(Object)
+        rent = unit["Pricing"]["MITS_OfferTerm"]["EffectiveRent"]
+        term = unit["Pricing"]["MITS_OfferTerm"]["Term"]
 
         leasing = leasing + term.to_s + ":" + rent.to_s + ";"
       end
-
-    elsif unit["Pricing"]["MITS_OfferTerm"].kind_of?(Object)
-      rent = unit["Pricing"]["MITS_OfferTerm"]["EffectiveRent"]
-      term = unit["Pricing"]["MITS_OfferTerm"]["Term"]
-
-      leasing = leasing + term.to_s + ":" + rent.to_s + ";"
     end
 
     leasing

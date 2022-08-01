@@ -20,10 +20,9 @@ $(document).ready(function () {
 
   if(webCommunity) {
     selectMap = webCommunity.web_map_type;
-    enable3DMaps = webCommunity.enable_three_d_maps
+    enable3DMaps = webCommunity.enable_three_d_maps;
     defaultMapType = webCommunity.web_map_type;
     _3dUnitsToBeSelected = select_units_according_to_filters(units)
-    renderChangedUnits(_3dUnitsToBeSelected, is_floorplates, webCommunity['name']);
     selected_units = _3dMapViewMarker()
     beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,_beansApiKey, 
       {
@@ -41,16 +40,6 @@ $(document).ready(function () {
       });
 
     handleMapControl()
-  }
-  let sidebarDiv = document.getElementById("sidebar")
-  if (sidebarDiv) {
-    let sidebarWidth =document.getElementById('sidebar').offsetWidth;
-    let footerWidth = document.getElementById("footer");
-    if (footerWidth.offsetWidth > 567) {
-      footerWidth.style.width = `${footerWidth.offsetWidth - sidebarWidth}px`
-    } else {
-      footerWidth.style.bottom = "130px";
-    }
   }
 });
 
@@ -364,23 +353,24 @@ $(window).bind('load', function () {
           }
 
           $('#popover-price').html(('$' + $(this).data('market-rent')))
-
-          $($('#unit_'+ $(this).data('unit-marketing-name')))[0].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-
+          var marker_color_map = $(".fa-map-marker-alt")[0].style.color
+          $($('#unit_'+ $(this).data('unit-marketing-name')))[0].scrollIntoView({behavior: 'smooth', block: 'center', inline: 'center' });
+          
           var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
           var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
           $('#marker-popover').css({left: (new_dx + 25) + "px", top: (new_dy - 100) + "px"});
           $('#marker-popover').removeClass('hidden');
+          $($('#unit_'+ $(this).data('unit-marketing-name'))).css("border", `5px solid ${marker_color_map}`)
         })
         .mouseleave(function () {
           $('#marker-popover').addClass('hidden');
+          $($('#unit_'+ $(this).data('unit-marketing-name'))).css("border", "none")
         });
 
       let focused_marker ;
 
       $(document).on("mousemove", "div.left-side-30-units", function(e){
         let unit_num;
-
         if (e.target.classList[0] === "left-side-30-units"){
           unit_num = e.target.id;
         } else if(e.target.classList[0] === "image-styles"){
@@ -391,10 +381,19 @@ $(window).bind('load', function () {
         let all_markers =  document.getElementsByClassName('marker');
           Array.from(all_markers).forEach((marker) => {
             if (unit_num === `unit_${marker.dataset.unitMarketingName}`){
-              focused_marker = document.getElementById(marker.id);
+              let selectedMarker = marker;
+              if(selectedMarker.classList.contains('overlapping-unit')){
+                Array.from(all_markers).forEach((findOverlappedMarker) => {
+                  if (selectedMarker.dataset.unitXPlot === findOverlappedMarker.dataset.unitXPlot && selectedMarker.dataset.unitYPlot === findOverlappedMarker.dataset.unitYPlot && !findOverlappedMarker.classList.contains("hidden")){
+                    selectedMarker =findOverlappedMarker;
+                  }
+                })
+              }
+              focused_marker = document.getElementById(selectedMarker.id);
               focused_marker.childNodes[0].style.fontSize="25px";
               $('#popover-marketing-unit').html(marker.dataset.unitMarketingName)
-              $('#marker-popover-unit').css({left: (marker.offsetLeft -75) + "px", top: (marker.offsetTop + 35) + "px",height: "35px", background: "red", margin: "0px", padding: "0px"});
+              var position = selectedMarker.getBoundingClientRect();
+              $('#marker-popover-unit').css({left: (position.left -92) + "px", top: (position.top - 53) + "px",height: "100px", background: "transparent", margin: "0px", padding: "0px"});
               $('#marker-popover-unit').removeClass('hidden');
             }
           })
@@ -713,12 +712,12 @@ function Toggle_maps(e) {
 }
 
 function showMarkers(market_rent_change = false) {
-
+  
   $('.marker').addClass('hidden');
   $('.hidden-units').empty();
 
   var units_to_display = select_units_according_to_filters(units)
-  renderChangedUnits(units_to_display, is_floorplates, webCommunity['name']);
+  // renderChangedUnits(units_to_display, is_floorplate, webCommunity['name']);
   if(selectMap === "3d-map" && enable3DMaps) {
     _3dFilteredUnits = units_to_display;
   }
@@ -800,9 +799,9 @@ function getFilteredUnits(units, type){
   } else if (type === "Sq Ft: Less to More"){
     new_units = units.sort((a,b) => a['square_feet'] - b['square_feet'])
   } else if (type === "Availability: Soonest to Latest"){
-    new_units = units.sort((a,b) => new Date(b['available_date']) - new Date(a['available_date']))
-  } else if (type === "Availability: Latest to Soonest"){
     new_units = units.sort((a,b) => new Date(a['available_date']) - new Date(b['available_date']))
+  } else if (type === "Availability: Latest to Soonest"){
+    new_units = units.sort((a,b) => new Date(b['available_date']) - new Date(a['available_date']))
   } else {
     new_units = units;
   }
@@ -823,7 +822,7 @@ function renderChangedUnits(units, is_floorplate, community){
   element.innerHTML = ""
       var floorUnits = []
       if (is_floorplate === "true"){
-        var floorChange = $("#slider li a.selected")[0].innerHTML
+        var floorChange = $("#slider li a.selected")[0].id;
         units.forEach((unitt) => {
           if (unitt.floor.toString() === floorChange){
             floorUnits.push(unitt)
@@ -837,11 +836,12 @@ function renderChangedUnits(units, is_floorplate, community){
       floorUnits = getFilteredUnits(floorUnits, sortType.value);
       var filtered_units = floorUnits;
       var website ="#{@community_info.website}"
+
       filtered_units.forEach((unit) => {
         var unit_details_div = `
         <div class='left-side-30-units' id='unit_${unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}'>
           <div class='image-styles'>
-            <a class='image_link' href='##' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
+            <a class='image_link' href='#' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
               <img src=${unit['floorplan_image']} class='image-image-styles' />
             </a>
           </div>
@@ -865,8 +865,8 @@ function renderChangedUnits(units, is_floorplate, community){
             </p>
           </div>
           <div class='unit-details-section'>
-            <p>
-              Available ${unit['available'] ? "Now" : unit['available_date']}
+            <p id='right-bar-unit-availability'>
+              ${ get_unit_availability(unit) }
             </p>
             <p>
               $${unit['market_rent']}/month
@@ -927,7 +927,7 @@ function disabled_enabled_anchors() {
   }
   else{
     $('.custom-iframe-modeule').addClass('sitemap');
-    if($(window).width() < 993){
+    if($(window).width() < 567){
       $('.c-footer').css({"bottom": 70});
     }    
   }
@@ -1537,12 +1537,12 @@ function hasTouch() {
 }
 
 function disable_rent_filter_options(min_rent) {
+  min_rent = parseInt(min_rent)
   var select = document.getElementById("market_rent");
   for (var i = 1; i < select.length; i++) {
     var option = select.options[i];
     var option_rent = option.value.split('-');
     var maximum_option_rent = parseFloat(option_rent[1]);
-
     if (min_rent >= maximum_option_rent)
       $("#market_rent option[value=" + min_rent + "]").show()
       // $("#market_rent option[value=" + option.value + "]").show()
@@ -1697,7 +1697,7 @@ function setModalAttributes(element) {
   }
 
   if (dataProvider == 'yardi' || dataProvider == 'yardirentcafe'){
-    $('#floorplan-image').css({"max-width": 310});
+    // $('#floorplan-image').css({"max-width": 310});
     $('.c-modal-footer').css({"padding-bottom": 7});
     $('.m-filters').hide();
 
@@ -2022,21 +2022,35 @@ function display3DMap() {
   $(".div.map-instruction-text").removeClass('hidden');
   // display3DMapInstructions();
   let windowWidth = window.innerWidth;
+  let footerWidth = document.getElementById("footer");
   let sideBarWidth = $(".c-sidebar").innerWidth();
   if($(window).width() <= 567){
+    footerWidth.style.bottom = "140px";
+    $('.map-instruction-text').hide();
     $(".beans-map-container").css("width", windowWidth);
+    footerWidth.style.width = windowWidth;
+  } else if (windowWidth >= 567 && windowWidth <= 991){
+    $('.map-instruction-text').hide();
+    let mapWidth = (windowWidth - sideBarWidth)
+    footerWidth.style.width = mapWidth;
   }
   else {
-    let mapWidth = (windowWidth - sideBarWidth)
+    let mapWidth;
+    if (sideBarWidth){
+      mapWidth = (windowWidth - sideBarWidth);
+    } else {
+      mapWidth = windowWidth;
+    }
     $(".beans-map-container").css("width", mapWidth);
+    footerWidth.style.width = mapWidth;
   }
   if(defaultMapType != "3d-map"){
     $(".c-sidebar").hide();
     let w1 = $(".digits-list-item").width();
     let w2 = $(".c-sidebar").width();
-    $(".digits-list-item").css("width", w1+w2);
+    // $(".digits-list-item").css("width", w1+w2);
     _3dMapViewMarkers();
-  }  
+  }
 }
 
 function display2DMap() {
@@ -2056,7 +2070,48 @@ function display2DMap() {
   if(defaultMapType == "3d-map"){
     showMarkers();
   }
-  
+  let sidebarDiv = document.getElementsByClassName('c-sidebar')[0]
+  let leftSideWidth = document.getElementsByClassName("left-side")[0];
+  let rightSideWidth = document.getElementsByClassName("right-side")[0];
+  let title = document.getElementsByClassName("webpage-left-list-view-title")[0];
+  title.style.width = `${leftSideWidth.offsetWidth}px`;
+  let inner_footer = $(".inner-footer")[0];
+  let footerWidth = document.getElementById("footer");
+  var windowWidth = $(window).width();
+  footerWidth.style.width = `${windowWidth - (leftSideWidth.offsetWidth)}px`;
+  if (selectMap !== "3d-map"){
+    if (sidebarDiv) {
+      leftSideWidth.style.width = `${windowWidth - (sidebarDiv.offsetWidth + rightSideWidth.offsetWidth)}px`;
+      title.style.width = `${leftSideWidth.offsetWidth}px`;
+      let footerWidth = document.getElementById("footer");
+      if (windowWidth >= 567 && windowWidth <= 991) {
+        title.style.width = `Calc(100% - ${sidebarDiv.offsetWidth}px)`;
+        inner_footer.style.width = `Calc(100% - ${sidebarDiv.offsetWidth}px)`;
+        footerWidth.style.width = `${windowWidth - (sidebarDiv.offsetWidth)}px`;
+      } else if (windowWidth >= 991 ) {
+        inner_footer.style.width = "100%";
+        footerWidth.style.width = `${windowWidth - (sidebarDiv.offsetWidth + leftSideWidth.offsetWidth)}px`;
+      }
+      else {
+        inner_footer.style.width = "100%"
+        inner_footer.style.marginBottom = 15;
+        footerWidth.style.bottom = "130px";
+      }
+    } else {
+      if (windowWidth >= 567 && windowWidth <= 991) {
+        title.style.width = "100%";
+        inner_footer.style.marginBottom = 0;
+      } else if (windowWidth >= 991 ) {
+        inner_footer.style.width = "100%";
+      }
+    }
+    $(".popup-title").css("background-color", $(".fa-map-marker-alt")[0].style.color);
+    $(".popup-arrow").css("background-color", $(".fa-map-marker-alt")[0].style.color);
+    $(".custom-select").change(()=> {
+      var units_to_display = select_units_according_to_filters(units)
+      renderChangedUnits(units_to_display, is_floorplate, webCommunity['name']);
+    })
+  }
 }
 
 function _3dFilterByFloor(floor) {
@@ -2096,7 +2151,29 @@ function applyFilters(){
   $("#unit_availability").html(selected_available_unit);
   $("#bedroom_responsive").html(selected_unit_bedrooms);
   $('.mobile-filter-mega-menu').slideToggle()
+}
 
+function get_unit_availability(unit) {
+  let todayDate = new Date();
+  let availableDate = new Date(unit.available_date);
+  let availableDateString = "";
+
+  if (unit.sold) {
+    availableDateString = "Unavailable:"
+  } else {
+    if (unit.available && availableDate) {
+      if(availableDate <= todayDate) {
+        availableDateString = "Available: Now"
+      } else {
+        date_arr = unit.available_date.split("-");
+        availableDateString = "Available: " + (`${date_arr[1]}/${date_arr[2]}/${date_arr[0]}`)
+      }
+    } else {
+      availableDateString = "Unavailable:"
+    }
+  }
+
+  return availableDateString;
 }
 
 $(document).on('click','.share-favorite',function(){

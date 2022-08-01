@@ -78,13 +78,15 @@ class Resman4StaticService < BaseService
           unit.floorplan_id = u["Units"]["Unit"]["UnitType"]
         end
         
-        unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
-        unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
-        
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+        if u["EffectiveRent"].present?
+          unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
+          unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
+        end
+
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
           unit.effective_rent = 1.0 #Setting rent to avoid validation issues
 
-          if u["EffectiveRent"].present?
+          if u["EffectiveRent"].present? && u["EffectiveRent"]["Min"].present?
             unit.effective_rent = u["EffectiveRent"]["Min"]
 
           elsif u["Units"]["Unit"]["MarketRent"].present?
@@ -205,19 +207,21 @@ class Resman4StaticService < BaseService
   end
 
   def get_unit_lease_prising unit, leasing = ""
-    if unit["Pricing"]["MITS_OfferTerm"].kind_of?(Array)
-      unit["Pricing"]["MITS_OfferTerm"].each do |pr|
-        rent = pr["EffectiveRent"]
-        term = pr["Term"]
+    if (unit && unit["Pricing"]).present?
+      if unit["Pricing"]["MITS_OfferTerm"].kind_of?(Array)
+        unit["Pricing"]["MITS_OfferTerm"].each do |pr|
+          rent = pr["EffectiveRent"]
+          term = pr["Term"]
+
+          leasing = leasing + term.to_s + ":" + rent.to_s + ";"
+        end
+
+      elsif unit["Pricing"]["MITS_OfferTerm"].kind_of?(Object)
+        rent = unit["Pricing"]["MITS_OfferTerm"]["EffectiveRent"]
+        term = unit["Pricing"]["MITS_OfferTerm"]["Term"]
 
         leasing = leasing + term.to_s + ":" + rent.to_s + ";"
       end
-
-    elsif unit["Pricing"]["MITS_OfferTerm"].kind_of?(Object)
-      rent = unit["Pricing"]["MITS_OfferTerm"]["EffectiveRent"]
-      term = unit["Pricing"]["MITS_OfferTerm"]["Term"]
-
-      leasing = leasing + term.to_s + ":" + rent.to_s + ";"
     end
 
     leasing

@@ -66,29 +66,23 @@ class ResmanStaticService < BaseService
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
         unit.lease_pricing = nil
+
         unless unit.name_is_updated.present? && unit.name_is_updated
           unit.marketing_name = u["Id"]
         end
+        
         unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
           unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
         end
         
-        # unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
-        # unit.max_effective_rent = u["EffectiveRent"]["Max"] if u["EffectiveRent"]["Max"].present?
-        # unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-        #   unit.effective_rent = 1.0 #Setting rent to avoid validation issues
-        #   if u["EffectiveRent"].present?
-        #   unit.effective_rent = u["EffectiveRent"]["Min"]
-        #   elsif u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
-        #     unit.effective_rent = u["Unit"]["MITS:Information"]["MITS:MarketRent"]
-        #   end
-        # end
-
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+          unit.effective_rent = 1.0 #Setting rent to avoid validation issues
           if u["Unit"]["MITS:Information"]["MITS:MarketRent"].present?
             unit.effective_rent = u["Unit"]["MITS:Information"]["MITS:MarketRent"]
+          elsif u["EffectiveRent"].present? && u["EffectiveRent"]["Avg"].present?
+            unit.effective_rent = u["EffectiveRent"]["Avg"]
           end
-        end 
+        end
 
         unless unit.floor_is_updated.present? && unit.floor_is_updated
           unit.floor = u["FloorLevel"]
@@ -103,18 +97,13 @@ class ResmanStaticService < BaseService
           month = u["Availability"]["MadeReadyDate"]["Month"]
           day = u["Availability"]["MadeReadyDate"]["Day"]
           vacateDate = Date.parse("#{year}-#{month}-#{day}")
-          # unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-          #   if vacateDate >= Date.today
-          #     unit.availability = "Unoccupied"
-          #   else
-          #     unit.availability = "Unoccupied"
-          #   end
-          # end
+
         else
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = "Occupied"
           end
         end
+
         unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
           if unit.availability == "Occupied"
             unit.available = false
@@ -122,6 +111,7 @@ class ResmanStaticService < BaseService
             unit.available = true
           end
         end
+        
         unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
           unit.available_date = vacateDate
 

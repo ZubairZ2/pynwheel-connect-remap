@@ -162,9 +162,9 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def hardware_specs_status
-    return [] if @community.design.blank?
-    hardware_spec = @community.design.pynwheel_touch_hardware_spec
-    hardware_status = hardware_spec.present? ? @community&.design&.status&.status_and_remarks_obj : nil
+    return [] if @community.hardware_spec.nil?
+    hardware_spec = @community.hardware_spec
+    hardware_status = hardware_spec.present? ? @community&.hardware_spec&.status&.status_and_remarks_obj : nil
     [hardware_status].compact
   end
 
@@ -193,11 +193,13 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     zerv = @community.zerv
     latch = @community.latch
     dwelo = @community.dwelo
+    other_lock = @community.other_lock
     remote_locks = @community.edge_state&.remote_locks
 
     locks_status << zerv&.status&.status_and_remarks_obj rescue nil if zerv.present?
     locks_status << latch&.status&.status_and_remarks_obj rescue nil if latch.present?
     locks_status << dwelo&.status&.status_and_remarks_obj rescue nil if dwelo.present?
+    locks_status << other_lock&.status&.status_and_remarks_obj rescue nil if !other_lock.nil?
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status_and_remarks_obj rescue nil}
@@ -249,8 +251,8 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def update_hardware_specs_status_and_remarks status, remarks
-    return if @community.design.blank?
-    @community&.design&.status.update_attributes(status: status, remarks: remarks) if @community.design.pynwheel_touch_hardware_spec.present?
+    return if @community.hardware_spec.nil?
+    @community&.hardware_spec&.status.update_attributes(status: status, remarks: remarks) if @community&.hardware_spec.present?
   end
 
   def update_home_page_media_status_and_remarks status, remarks
@@ -279,11 +281,13 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     zerv = @community.zerv
     latch = @community.latch
     dwelo = @community.dwelo
+    other_lock = @community.other_lock
     remote_locks = @community.edge_state&.remote_locks
 
     zerv&.status.update_attributes(status: status, remarks: remarks) if zerv.present?
     latch&.status.update_attributes(status: status, remarks: remarks) if latch.present?
     dwelo&.status.update_attributes(status: status, remarks: remarks) if dwelo.present?
+    other_lock&.status.update_attributes(status: status, remarks: remarks) if !other_lock.nil?
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| remote_lock&.status.update_attributes(status: status, remarks: remarks) }

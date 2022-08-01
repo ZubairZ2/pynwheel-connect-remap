@@ -14,7 +14,7 @@ module YardiRentCafeServices
     end
 
     def url message
-      "#{ENV['YARDI_LEADS_API_BASE_URL']}?requestType=#{request_type}&firstName=#{first_name}&lastName=#{last_name}&phone=#{phone}&message=#{message}&email=#{email}&username=#{user_name}&password=#{password}&source=#{source}&secondarySource=#{secondary_source}&addr1=#{address_1}&addr2=#{address_2}&city=#{city}&state=#{state}&ZIPCode=#{zip_code}&propertyCode=#{property_code}&propertyId=#{property_id}&apiToken=#{api_token}"
+      "#{@community.credential.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&firstName=#{first_name}&lastName=#{last_name}&phone=#{phone}&message=#{message}&email=#{email}&username=#{user_name}&password=#{password}&source=#{source}&secondarySource=#{secondary_source}&addr1=#{address_1}&addr2=#{address_2}&city=#{city}&state=#{state}&ZIPCode=#{zip_code}&propertyCode=#{property_code}&propertyId=#{property_id}&apiToken=#{api_token}"
     end
 
     def request_type

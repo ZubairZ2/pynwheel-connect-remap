@@ -8,9 +8,17 @@ class Users::SessionsController < Devise::SessionsController
     # end
 
     # POST /resource/sign_in
-    # def create
-    #   super
-    # end
+    def create
+        super do |resource|
+            unless resource.pynwheel_connect_access
+                sign_out
+                message = resource.pynwheel_launch_access ? "Sorry! you don't have access for Pynwheel Connect. You are only authorized for Pynwheel launch" : "Sorry! you don't have access for Pynwhhel Connect."
+                flash[:error] = message
+                redirect_to :back
+                return
+            end
+        end
+    end
 
     # DELETE /resource/sign_out
 
@@ -24,6 +32,12 @@ class Users::SessionsController < Devise::SessionsController
 
         super
     end
+
+    # def configure_sign_in_params
+    #     userEmail = params[:user][:email]
+    #     user_exist = User.find_by(email: email)
+
+    # end
 
      # protected
      # If you have extra params to permit, append them to the sanitizer.

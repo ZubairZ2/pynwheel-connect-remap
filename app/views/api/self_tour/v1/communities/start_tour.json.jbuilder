@@ -1181,12 +1181,12 @@ json.tours @tours do |tour|
     end
 
     elsif stop.stop_type == "building_starting_point"
-      bsp = BuildingStartingPoint.find stop.stop_id
+      bsp = BuildingStartingPoint.find_by_id stop.stop_id
       json.type "starting_point"
-      json.name bsp.name
-      json.directional_text bsp.directional_text
-      floorplate_image = @community.floorplates.map{|x| x if (x.floors.include? bsp.floor)}.compact.first rescue nil
-      json.floorplate_image floorplate_image.image.url  rescue ""
+      json.name bsp&.name
+      json.directional_text bsp&.directional_text
+      floorplate_image = @community.floorplates.map{|x| x if (x.floors.include? bsp&.floor)}.compact.first rescue nil
+      json.floorplate_image floorplate_image&.image&.url  rescue ""
       json.image_width @community.property_map_width(floorplate_image)
       json.image_height @community.property_map_height(floorplate_image)
 

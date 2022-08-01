@@ -562,7 +562,7 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
-    
+  
     namespace :self_tour do
       namespace :v1 do
         resources :communities do
@@ -573,6 +573,13 @@ Rails.application.routes.draw do
           post :check_lock_access
           delete :start_tour
         end
+
+        resources :tour_users do
+          member do
+            delete :delete_account
+          end
+        end
+
       end
     end
 
@@ -605,6 +612,7 @@ Rails.application.routes.draw do
         delete :delete_lock_files, to: 'secure_locks#delete_lock_files'
         post :send_follow_up_emails, to: 'follow_up_emails#send_follow_up_emails'
         get :preview_follow_up_email, to: 'follow_up_emails#preview_follow_up_email'
+        get :preview_submit_for_review_email, to: 'follow_up_emails#preview_submit_for_review_email'
         resources :community_floor_plans do
           member do
             delete :delete_floorplan_amenity
@@ -623,7 +631,8 @@ Rails.application.routes.draw do
         member do
           get  :get_pynwheel_touch_hardware_spec, to: 'hardware_specs#get_pynwheel_touch_hardware_spec'
           post :add_pynwheel_touch_hardware_spec, to: 'hardware_specs#add_pynwheel_touch_hardware_spec'
-          delete :delete_pynwheel_touch_hardware_spec, to: 'hardware_specs#delete_pynwheel_touch_hardware_spec'
+          delete :delete_hardware_spec_details, to: 'hardware_specs#delete_hardware_spec_details'
+          delete :delete_pynwheel_touch_hardware_spec_image, to: 'hardware_specs#delete_pynwheel_touch_hardware_spec_image'
           post :add_comment
           post :get_products
           post :update_status_and_remarks
@@ -663,6 +672,8 @@ Rails.application.routes.draw do
       get :get_user_by_email, to: 'communities#get_user_by_email'
       get :get_filtered_tours, to: 'communities#get_filtered_tours'
       get :get_count_screen, to: 'communities#get_count_screen'
+      post '/communities/:community_id/metro_send_analytics_data', to: 'communities#metro_send_analytics_data'
+      
       resources :communities, only: :index do
         member do
           get :data

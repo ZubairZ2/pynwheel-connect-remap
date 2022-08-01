@@ -1,5 +1,5 @@
 class PynwheelLaunch::Communities::Searcher
-  attr_reader :user , :params
+attr_reader :user , :params
   def initialize(user , params)
     @user = user
     @params = params
@@ -13,11 +13,29 @@ class PynwheelLaunch::Communities::Searcher
 
   def communities_by_role
     if user.is_new_client?
-      communities = user.community_users
-    else
+      communities = user&.community_users
+    elsif user.is_super_admin?
       communities = CommunityUser.all
+    elsif user.is_regional_admin?
+      ids = user&.region&.communities&.ids
+      communities = CommunityUser.where(community_id: ids)
+    elsif user.is_company_admin?
+      ids = user&.company&.communities.ids
+      communities = CommunityUser.where(community_id: ids)
+    elsif user.is_dwelo_admin?
+      assigned_communities_ids = user.communities.ids # all assinged communities
+      dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).ids # all communities created by any dwelo admin
+      dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).ids # all communities under dwelo_companies (either created by dwelo_admin or super_admin)
+      ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
+      communities = CommunityUser.where(community_id: ids)
+    elsif user.is_community_admin? || user.is_community_manager?
+      communities = user&.community_users
+    else
+      communities = user&.community_users
     end
+
     communities = pynwheel_launch_access(communities)
+
     communities = distinct_user_communities(communities)
     communities = communities_by_search(communities) if search_params
     communities.order(created_at: :desc)
@@ -109,6 +127,7 @@ class PynwheelLaunch::Communities::Searcher
     selected_communities = []
     statuses.values.each do |status|
       communities_id = collection.pluck(:community_id).uniq
+
       communities_collection = Community.includes(:status, :community_users, design: [:status, {home_page_images: :status}, {home_page_video: :status}], sitemap: :status, company: :status, floorplates: :status, floorplans: :status, credential: :status, crm_credential: :status, opening_hours: :status, guided_opening_hours: :status, galleries: :status, zerv: :status, latch: :status, dwelo: :status, edge_state: [remote_locks: :status]).where(id: communities_id)
       communities_collection.each do |community|
         get_communities_statuses(community, status, selected_communities)
@@ -120,7 +139,6 @@ class PynwheelLaunch::Communities::Searcher
 
   def get_communities_statuses(community, status, selected_communities)
     statuses = []
-
     statuses << company_status(community)
 
     statuses << community_status(community)
@@ -143,11 +161,12 @@ class PynwheelLaunch::Communities::Searcher
       
     statuses << touch_gallery_media_status(community) if pynwheel_touch
 
-    statuses << hardware_specs_status(community) if pynwheel_touch
+    # statuses << hardware_specs_status(community) if pynwheel_touch
     
     statuses << lock_providers_status(community) if self_tour
 
     statuses << home_page_media_status(community) if pynwheel_touch
+
     if status.eql?(IN_PROGRESS)
       received_status = status_value_check(status)
       if statuses.any?{|x| x.eql?(received_status) || x.nil?} && !statuses.all?{|x| x.eql?(received_status) || x.nil?}
@@ -158,9 +177,14 @@ class PynwheelLaunch::Communities::Searcher
       if statuses.any?{|x| x.eql?(received_status)} && !statuses.all?{|x| x.eql?(received_status)}
         selected_communities << community.community_users.first
       end
-    elsif status.eql?(PARAM_100_CONTENT_SUBMITED) || status.eql?(PARAM_APPROVED)
+    elsif status.eql?(PARAM_100_CONTENT_SUBMITED)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED)} && statuses.include?(received_status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(PARAM_APPROVED) || x.eql?(APPLICATION_IN_REVIEW) } && statuses.include?(received_status)
+        selected_communities << community.community_users.first
+      end
+    elsif status.eql?(PARAM_APPROVED)
+      received_status = status_value_check(status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(APPLICATION_IN_REVIEW)} && statuses.include?(received_status)
         selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_RELEASED)
@@ -173,9 +197,9 @@ class PynwheelLaunch::Communities::Searcher
       if statuses.all?{|x| x.eql?(received_status) || x.nil?}
         selected_communities << community.community_users.first
       end
-    elsif status.eql?(IN_PRODUCTION)
+    elsif status.eql?(APPLICATION_IN_REVIEW)
       received_status = status_value_check(status)
-      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) || x.eql?(APPLICATION_IN_QA) || x.eql?(APPROVED)} && statuses.include?(received_status)
+      if statuses.all?{|x| x.eql?(received_status) || x.eql?(RELEASED) } && statuses.include?(received_status)
         selected_communities << community.community_users.first
       end
     elsif status.eql?(PARAM_APPLICATION_IN_QA)
@@ -198,8 +222,8 @@ class PynwheelLaunch::Communities::Searcher
       return REJECTED
     elsif status.eql?(PARAM_RELEASED)
       return RELEASED
-    elsif status.eql?(IN_PRODUCTION)
-      return "form_approved"
+    elsif status.eql?(APPLICATION_IN_REVIEW)
+      return "in_review"
     elsif status.eql?(PARAM_APPLICATION_IN_QA)
       return APPLICATION_IN_QA
     end
@@ -291,10 +315,12 @@ class PynwheelLaunch::Communities::Searcher
     latch = community.latch
     dwelo = community.dwelo
     remote_locks = community.edge_state&.remote_locks
+    other_lock = community.other_lock
 
     locks_status << zerv&.status&.status rescue nil if zerv.present?
     locks_status << latch&.status&.status rescue nil if latch.present?
     locks_status << dwelo&.status&.status rescue nil if dwelo.present?
+    locks_status << other_lock&.status&.status rescue nil if !other_lock.nil?
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status rescue nil}
@@ -312,7 +338,7 @@ class PynwheelLaunch::Communities::Searcher
       return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.eql?(nil)}
       return RELEASED if statuses.all?{|x| x.eql?(RELEASED)}
       return FORM_APPROVED if statuses.all?{|x| x.eql?(FORM_APPROVED)}
-      return APPLICATION_IN_QA if statuses.all?{|x| x.eql?(APPLICATION_IN_QA)}
+      return APPLICATION_IN_REVIEW if statuses.all?{|x| x.eql?(APPLICATION_IN_REVIEW)}
     else
       return nil
     end

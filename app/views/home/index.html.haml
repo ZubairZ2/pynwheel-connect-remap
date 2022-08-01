@@ -20,7 +20,7 @@
               %a.btn.btn-success.pull-right.mb-20{:href => "/companies"}
                 List all companies
         .col-md-2
-          - if ["development@intagleo.com", "awais@pynwheel.com", "jennifer@pynwheel.com", "kellie@pynwheel.com"].include?(current_user.email)
+          - if ["johnhall@pynwheel.com", "lizzy@pynwheel.com", "development@intagleo.com", "awais@pynwheel.com", "jennifer@pynwheel.com", "kellie@pynwheel.com"].include?(current_user.email)
             .mt-35
               %a.btn.btn-success.pull-right.mb-20{:href => "/companies/generate_webpages_report", :format => "csv"}
                 Webpages report

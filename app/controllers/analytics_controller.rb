@@ -14,8 +14,13 @@ class AnalyticsController < ApplicationController
     @pesent_end_dattime_metro_records = @metro_records.where.not(end_datetime: nil)
     @self_tour_records = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
+    
+    @min_date_for_self_tour = tour_histories.order('created_at asc')&.first&.created_at
+    @min_date_for_touch = track_sessions.where(track_session_type: "metro").order('created_at asc')&.first&.created_at
+
     apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
+    
     # For Webpage
     if false && @maps_records.any? && (@product_type == "all" || @product_type == "maps")
       collect_session_each_day_data(start_date, @days_count, @maps_records, :start_datetime, "maps")
@@ -28,8 +33,9 @@ class AnalyticsController < ApplicationController
       favourite_sent_track_session(start_date, @days_count, @maps_records, "maps")
       price_opened_track_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
     end
+
     # For Metro 
-    if false && @metro_records.any? && (@product_type == "all" || @product_type == "touch")
+    if @metro_records.any? && (@product_type == "all" || @product_type == "touch")
       collect_session_each_day_data(start_date, @days_count, @metro_records, :start_datetime, "metro")
       collect_session_each_day_data_in_minutes(start_date, @days_count, @pesent_end_dattime_metro_records, :start_datetime, :end_datetime, "metro")
       collect_session_each_day_data_in_hours(@metro_records, :start_datetime, "metro")
@@ -42,6 +48,7 @@ class AnalyticsController < ApplicationController
       price_opened_track_session(start_date, @days_count, @metro_records, :start_datetime, "metro")
       visits_per_session_page(@metro_records)
     end
+
     # For Self Tour
     if @self_tour_records.any? && (@product_type == "all" || @product_type == "self_tour")
       collect_session_each_day_data(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
@@ -74,7 +81,7 @@ class AnalyticsController < ApplicationController
   private
     
     def apply_filters(params)
-      @product_type = params[:product_type].present? ? params[:product_type] : "self_tour"
+      @product_type = params[:product_type].present? ? params[:product_type] : "all"
       @admin_type = params[:admin_type] if params[:admin_type]
       @community_id = params[:community] if params[:community].present?
       @company_id = params[:company] if params[:company].present?
@@ -108,17 +115,15 @@ class AnalyticsController < ApplicationController
     end
 
     def collect_session_each_day_data(start_date, days_count, total_records, start_attr_name, for_device_type)
-
       sessions_each_day_hash = return_empty_hash(days_count,start_date)
       records_start_date = total_records.pluck(start_attr_name).map(&:to_date)
       uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
-
       uniq_start_date_size.times do |i|
         sessions_each_day_hash[uniq_start_date[i]] = records_start_date.count(uniq_start_date[i])
         records_start_date = records_start_date - [uniq_start_date[i]]
       end
-      visited_days_count = total_records.pluck(:arrived).map {|x| x.strftime("%d")}.uniq.count
+      visited_days_count = for_device_type == "self_tour" ? total_records.pluck(:arrived).map {|x| x.strftime("%d")}.uniq.count : 1
       instance_variable_set("@track_session_count_#{for_device_type}", total_records.count)
       instance_variable_set("@avg_track_session_#{for_device_type}", total_records.count / visited_days_count)
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
@@ -547,7 +552,7 @@ class AnalyticsController < ApplicationController
       @average_number_of_stops_per_session_tour_stop = visited_stops.uniq.size / tour_keys.size
       tour_stop_ids = visited_stops.pluck(:tour_stop_id)
       tour_stops = TourStop.where(id: tour_stop_ids)
-      stops = tour_stops.pluck(:stop_type, :stop_id)
+      stops = tour_stops.where.not(stop_id: nil).pluck(:stop_type, :stop_id)
       stops.each do |arr|
         stop = arr.first.camelcase.constantize.find arr.last
         if arr.first == "unit"

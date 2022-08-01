@@ -56,4 +56,14 @@ namespace :user_portal_data_migration do
     deployed = Status.where(status: "deployed")
     deployed.update_all(status: "released")
   end
+
+  desc 'Change all form_approved statuses to approved'
+  task :change_status => :environment do
+    approved = Status.where(status: "form_approved")
+    approved.update_all(status: "approved")
+    released = Status.where(status: "deployed")
+    released.update_all(status: "released")
+    in_review = Status.where(status: "application_in_qa")
+    in_review.update_all(status: "in_review")
+  end
 end

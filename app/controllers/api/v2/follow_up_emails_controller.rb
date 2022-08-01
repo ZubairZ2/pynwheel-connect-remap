@@ -1,6 +1,6 @@
 class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :set_community, only: [:preview_follow_up_email, :send_follow_up_emails]
+  before_action :set_community, only: [:preview_follow_up_email, :send_follow_up_emails, :preview_submit_for_review_email]
   before_action :set_user, only: [:preview_follow_up_email, :send_follow_up_emails]
 
   def preview_follow_up_email
@@ -10,6 +10,13 @@ class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
       email_body = preview_email(email)
       render :json => {:success => true, :email => {email: email_body[:email], subject: email_body[:subject], emails: @users.pluck(:email)}}
     end
+  end
+
+  def preview_submit_for_review_email
+    email = "support@pynwheel.com"
+    subject = "App Production Complete For #{@community.company.name} #{@community.name}"
+    email_body = FollowUpMailer.preview_appliation_submit_for_review(@community, current_user)
+    render :json => {:success => true, :email => {email: email, subject: subject, body: email_body}}
   end
 
   def send_follow_up_emails

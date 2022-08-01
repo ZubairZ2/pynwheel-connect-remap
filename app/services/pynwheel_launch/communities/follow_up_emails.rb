@@ -19,6 +19,18 @@ class PynwheelLaunch::Communities::FollowUpEmails
     end
   end
 
+  def non_production_communities_email
+    forms = forms_list
+    if forms.present?
+      readable_forms_status = get_readable_form_status(forms)
+      if forms.any?{|x| x[:status].eql?(IN_PROGRESS) || x[:status].eql?(nil)}
+        return {type: APPLICATION_NOT_STARTED, data: readable_forms_status}
+      else
+        return {}
+      end
+    end
+  end
+
   private
 
   def mendatory_detail_forms
@@ -28,16 +40,16 @@ class PynwheelLaunch::Communities::FollowUpEmails
         status: community_status
       },
       {
+        name: PROPERTY_MANAGEMENT_SYSTEM,
+        status: data_provider_status
+      },
+      {
         name: PROPERTY_MAP_IMAGES,
         status: property_map_status
       },
       {
         name: FLOORPLAN_IMAGES,
         status: floorplan_status
-      },
-      {
-        name: PROPERTY_MANAGEMENT_SYSTEM,
-        status: data_provider_status
       }
     ]
   end
@@ -48,10 +60,10 @@ class PynwheelLaunch::Communities::FollowUpEmails
         name: LOCK_PROVIDER,
         status: lock_providers_status
       },
-      {
-        name: TOUR_STOPS,
-        status: tour_stops_status
-      },
+      # {
+      #   name: TOUR_STOPS,
+      #   status: tour_stops_status
+      # },
       {
         name: VISITING_HOURS,
         status: visiting_hours_status
@@ -69,20 +81,27 @@ class PynwheelLaunch::Communities::FollowUpEmails
         name: TOUCH_HOME_PAGE_MEDIA,
         status: home_page_media_status
       },
-      {
-        name: HARDWARE_SPECS,
-        status: hardware_specs_status
-      }
+      # {
+      #   name: HARDWARE_SPECS,
+      #   status: hardware_specs_status
+      # }
     ]
   end
 
   def forms_list
     detail_forms = mendatory_detail_forms
     pynwheel_touch_forms = forms_for_touch_app
-    pynwheel_touch_forms.each {|x| detail_forms << x} if @community.touchscreen_app
+    if @community.product_options.nil?
+      self_tour = @community.self_tour
+      pynwheel_touch = @community.touchscreen_app
+    else
+      product_options = JSON.parse(@community.product_options)
+      self_tour = product_options["product_options"]["self_tour"]["is_enabled"]
+      pynwheel_touch = product_options["product_options"]["pynwheel_touch"]["is_enabled"]
+    end
+    pynwheel_touch_forms.each {|x| detail_forms << x} if pynwheel_touch
     self_tour_forms = forms_for_self_tour
-
-    if @community.self_tour
+    if self_tour
       self_tour_forms.each do |x|
         detail_forms << x
       end
@@ -137,9 +156,9 @@ class PynwheelLaunch::Communities::FollowUpEmails
   end
 
   def hardware_specs_status
-    return nil if @community.design.blank?
-    hardware_spec = @community.design.pynwheel_touch_hardware_spec
-    hardware_status = hardware_spec.present? ? @community&.design&.status&.status : nil
+    return nil if @community&.hardware_spec.blank?
+    hardware_spec = @community.hardware_spec
+    hardware_status = hardware_spec.present? ? @community&.hardware_spec&.status&.status : nil
     hardware_status
   end
 
@@ -171,10 +190,12 @@ class PynwheelLaunch::Communities::FollowUpEmails
     latch = @community.latch
     dwelo = @community.dwelo
     remote_locks = @community.edge_state&.remote_locks
+    other_locks = @community.other_lock
 
     locks_status << zerv&.status&.status rescue nil if zerv.present?
     locks_status << latch&.status&.status rescue nil if latch.present?
     locks_status << dwelo&.status&.status rescue nil if dwelo.present?
+    locks_status << other_locks&.status&.status rescue nil if !other_locks.nil?
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status rescue nil}
@@ -207,10 +228,14 @@ class PynwheelLaunch::Communities::FollowUpEmails
     case status
     when SUBMITTED
       return "Submitted"
-    when APPROVED
+    when APPROVED || FORM_APPROVED
       return "Approved"
     when IN_PROGRESS
       return "In Progress..."
+    when APPLICATION_IN_REVIEW
+      return "Submitted for Review"
+    when RELEASED
+      return "Application Released"
     when REJECTED
       return "Rejected"
     when DEPLOYED
