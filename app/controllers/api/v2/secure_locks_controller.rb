@@ -29,7 +29,8 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
       end
       unique_locks_provider = @locks_provider.uniq
       @community.update_attributes(multiple_locks_provider: unique_locks_provider)
-      @community.set_lock_providers_status(current_pynwheel_user)
+      # binding.pry
+      @community.set_lock_providers_status(current_user)
       locks = get_all_locks
       render json: { success: true, data: locks.as_json }
     rescue => e
@@ -236,7 +237,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
       other_lock.update_attributes(description: lock["description"])
     else
       @community.create_other_lock(description: lock["description"])
-      @lock_provider << OTHERLOCK
+      @locks_provider << OTHERLOCK
     end
   end
 
