@@ -3,12 +3,12 @@ class Api::V2::PortalToursController < Api::V2::ApiApplicationController
   before_action :load_community, :only => [:add_tour_step_details, :get_tour_step_details, :delete_tour_stop]
 
   def get_tour_step_details
-      @tour = @community.portal_tour
-      if @tour.present?
-        render json: {success: true, data: @tour.as_json}
-      else
-        render json: {success: false, message: "No Tour Found"}
-      end
+    @tour = @community.portal_tour
+    if @tour.present?
+      render json: {success: true, data: @tour.as_json}
+    else
+      render json: {success: false, message: "No Tour Found"}
+    end
   end
 
   def add_tour_step_details
@@ -75,11 +75,11 @@ class Api::V2::PortalToursController < Api::V2::ApiApplicationController
     if tour["id"].present?
       tour_stop = PortalTourStop.find tour["id"]
       if tour_stop.present?
-        tour_stop.update_attributes(stop_type: tour["type"], starting_point: tour["starting_point"], name: tour["name"], description: tour["description"], direction: tour["direction"], video_link: tour["video_link"])
+        tour_stop.update_attributes(stop_type: tour["type"], starting_point: tour["starting_point"], name: tour["name"], description: tour["description"], direction: tour["direction"], video_link: tour["video_link"], tour_stop_details: tour["amenity_details"], amenity_type: tour["amenity_type"])
         @tour_stop = tour_stop
       end
     else
-      @tour_stop = @tour.portal_tour_stops.create(stop_type: tour["type"], starting_point: tour["starting_point"], name: tour["name"], description: tour["description"], direction: tour["direction"], video_link: tour["video_link"])
+      @tour_stop = @tour.portal_tour_stops.create(stop_type: tour["type"], starting_point: tour["starting_point"], name: tour["name"], description: tour["description"], direction: tour["direction"], video_link: tour["video_link"], tour_stop_details: tour["amenity_details"], amenity_type: tour["amenity_type"])
     end
     galleries = tour["image"]
     if galleries.present?

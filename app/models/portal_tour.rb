@@ -7,7 +7,7 @@ class PortalTour < ApplicationRecord
     super(
       :only => [:id, :start_tour, :max_tour] ,
       :include => {
-        :portal_tour_stops => {:only => [:id, :stop_type, :name, :description, :starting_point, :direction, :video_link] ,
+        :portal_tour_stops => {:only => [:id, :stop_type, :name, :description, :starting_point, :direction, :video_link, :amenity_type, :tour_stop_details] ,
           :include => {
             :portal_tour_stop_galleries => {:only => [:id , :image , :description] }
           }
