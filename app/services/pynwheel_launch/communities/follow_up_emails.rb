@@ -60,10 +60,10 @@ class PynwheelLaunch::Communities::FollowUpEmails
         name: LOCK_PROVIDER,
         status: lock_providers_status
       },
-      # {
-      #   name: TOUR_STOPS,
-      #   status: tour_stops_status
-      # },
+      {
+        name: TOUR_STOPS,
+        status: tour_stops_status
+      },
       {
         name: VISITING_HOURS,
         status: visiting_hours_status

@@ -113,9 +113,9 @@ class Statuses
   end
 
   def set_tour_stops_status
-    @tour = @community.community_tour
-    unless @tour.tour_stops.blank?
-      tour_stops = @tour.tour_stops.compact
+    @tour = @community.portal_tour
+    unless @tour.portal_tour_stops.blank?
+      tour_stops = @tour.portal_tour_stops.compact
 
       tour_stops.each do |stop|
         @community.set_status_for_all(stop, @status, @current_user)

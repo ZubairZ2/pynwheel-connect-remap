@@ -161,6 +161,8 @@ attr_reader :user , :params
       
     statuses << touch_gallery_media_status(community) if pynwheel_touch
 
+    statuses << tour_stops_status(community) if self_tour
+
     # statuses << hardware_specs_status(community) if pynwheel_touch
     
     statuses << lock_providers_status(community) if self_tour
@@ -294,6 +296,15 @@ attr_reader :user , :params
     hardware_spec = community.design.pynwheel_touch_hardware_spec
     hardware_status = hardware_spec.present? ? community&.design&.status&.status : nil
     hardware_status
+  end
+
+  def tour_stops_status(community)
+    return nil if community.portal_tour&.portal_tour_stops.blank?
+    tour_stops = community.portal_tour&.portal_tour_stops
+    
+    tour_stops_status = tour_stops.map {|ts| ts&.status&.status rescue nil}
+    status = status_check(tour_stops_status)
+    status
   end
 
   def home_page_media_status(community)
