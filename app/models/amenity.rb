@@ -58,7 +58,7 @@ class Amenity < ApplicationRecord
   # validate :image_size
   AMENITY_TYPE = [["Select an amenity type",""],["Leasing Center", "Leasing Center"],["Fitness Center", "Fitness Center"],["Pool", "Pool"], ["Yoga Studio / Fitness Studio","Yoga Studio / Fitness Studio"],["Dog Park","Dog Park"],
     ["Playground","Playground"],["Clubhouse / Resident Lounge","Clubhouse / Resident Lounge"],["Game Room","Game Room"],["Dog Wash","Dog Wash"],["Package Locker","Package Locker"],["Mail Room","Mail Room"],
-    ["Conference Room","Conference Room"],["Business Center","Business Center"],["Rooftop Lounge","Rooftop Lounge"], ["Other", "Other"]]
+    ["Conference Room","Conference Room"],["Business Center / Lounge","Business Center / Lounge"], ["Other", "Other"]]
 
   def get_amenity_galleries galler_obj = []
     galler_obj << {
