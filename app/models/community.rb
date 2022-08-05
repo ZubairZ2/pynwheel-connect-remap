@@ -264,7 +264,8 @@ class Community < ApplicationRecord
 
   def set_data_provider_status(current_user)
     return if self.data_provider.blank? && self.credential.blank?
-    provider_credential = self.credential
+    community = Community.find_by_id (self.id)
+    provider_credential = community.credential
     required_fields = check_required_fields_for_providers
     status_attr = status_string(required_fields)
     set_status_for_all(provider_credential,status_attr,current_user)
@@ -274,8 +275,8 @@ class Community < ApplicationRecord
   end
 
   def check_required_fields_for_providers
-    credential = self.credential
-
+    community = Community.find_by_id (self.id)
+    credential = community.credential
     case data_provider
       when "psi"
         credential.entrata_url.present? && credential.username.present? && credential.password.present? && credential.property_id.present?

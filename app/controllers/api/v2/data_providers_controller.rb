@@ -17,12 +17,12 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       @credential = update_data_provider_credentials
       if @credential.present?
         @community.set_data_provider_status(current_pynwheel_user)
-        email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-        email[:data].each do |mail|
-          if mail[:name].eql?(PROPERTY_MANAGEMENT_SYSTEM) && mail[:status].eql?("Submitted")
-            FollowUpMailer.send_submitted_form(@community, PROPERTY_MANAGEMENT_SYSTEM, email[:data]).deliver_later
-          end
-        end
+        # email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
+        # email[:data].each do |mail|
+        #   if mail[:name].eql?(PROPERTY_MANAGEMENT_SYSTEM) && mail[:status].eql?("Submitted")
+        #     FollowUpMailer.send_submitted_form(@community, PROPERTY_MANAGEMENT_SYSTEM, email[:data]).deliver_later
+        #   end
+        # end
         render json: {success: true, error_code: 200, message: "#{data_provider} updated successfully", data: @credential.as_json(data_provider)}
       else
         render :json => {:success => false, :error_code => 500, :message => @credential&.errors&.full_messages}
@@ -46,7 +46,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
         update_crm_credentials if credential&.use_different_crm_provider
       end      
     else
-      create_data_provider(community_credentials)
+      credential = create_data_provider(community_credentials)
     end
     credential
   end
@@ -63,6 +63,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       credential.update_attributes(community_id: @community.id)
       update_crm_credentials if (params[:use_different_crm_provider] || credential&.use_different_crm_provider)
     end
+    credential
   end
 
   def update_crm_credentials
