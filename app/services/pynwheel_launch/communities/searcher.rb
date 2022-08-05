@@ -15,7 +15,9 @@ attr_reader :user , :params
     if user.is_new_client?
       communities = user&.community_users
     elsif user.is_super_admin?
-      communities = CommunityUser.all
+      # communities = CommunityUser.all
+      communities = CommunityUser.where(community_id: 1776)
+
     elsif user.is_regional_admin?
       ids = user&.region&.communities&.ids
       communities = CommunityUser.where(community_id: ids)
@@ -156,7 +158,6 @@ attr_reader :user , :params
       self_tour = product_options["product_options"]["self_tour"]["is_enabled"]
       pynwheel_touch = product_options["product_options"]["pynwheel_touch"]["is_enabled"]
     end
-
     statuses << visiting_hours_status(community) if self_tour
       
     statuses << touch_gallery_media_status(community) if pynwheel_touch
@@ -319,7 +320,7 @@ attr_reader :user , :params
   end
 
   def lock_providers_status(community)
-    return nil if community.zerv.blank? && community.latch.blank? && community.dwelo.blank? && community.edge_state.blank? && community&.edge_state&.remote_locks.blank?
+    return nil if community.zerv.blank? && community.latch.blank? && community.dwelo.blank? && community.edge_state.blank? && community&.edge_state&.remote_locks.blank? && community.other_lock.nil?
     locks_status = []
     
     zerv = community.zerv
