@@ -23,7 +23,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
 
   def update
     if @community.update(community_params)
-      @community.set_community_details_status(current_pynwheel_user)
+      @community.set_community_details_status(current_pynwheel_user, params["community"]["status"])
       render :json => {data: @community.as_json(@brand_pdf_feature) , :message => "Community Details updated succesfully."}
     else
       render :json => {:success => false, :message => @community.errors.full_messages}
@@ -150,6 +150,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   end
 
   def community_params
+    params.permit(:status)
     params.require(:community).permit(:name , :logo , :address , :city , :state , :email , :phone , :zip, :property_manager_name,:property_manager_phone,:property_manager_email , :website , :number_of_units , :brand_details_pdf)
   end
 

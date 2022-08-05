@@ -196,10 +196,13 @@ class Community < ApplicationRecord
     # set_visiting_hours_status(current_user)
   end
 
-  def set_community_details_status(current_user)
+  def set_community_details_status(current_user, status)
     return if self.blank?
-
-    community_status = status_string(check_community_requirments(self))
+    if status.nil?
+      community_status = status_string(check_community_requirments(self))
+    else
+      community_status = status
+    end
     set_status_for_all(self,community_status,current_user)
   end
 
@@ -262,12 +265,16 @@ class Community < ApplicationRecord
     set_status_for_all(hp_video,touch_video_status,current_user)
   end
 
-  def set_data_provider_status(current_user)
+  def set_data_provider_status(current_user, status)
     return if self.data_provider.blank? && self.credential.blank?
     community = Community.find_by_id (self.id)
     provider_credential = community.credential
     required_fields = check_required_fields_for_providers
-    status_attr = status_string(required_fields)
+    if status.empty?
+      status_attr = status_string(required_fields)
+    else
+      status_attr = status
+    end
     set_status_for_all(provider_credential,status_attr,current_user)
     if self&.credential&.use_different_crm_provider
       set_crm_status(current_user)
