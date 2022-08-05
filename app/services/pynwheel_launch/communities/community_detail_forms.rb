@@ -276,7 +276,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def update_lock_providers_status_and_remarks status, remarks
-    return if @community.zerv.blank? && @community.latch.blank? && @community.dwelo.blank? && @community.edge_state.blank? && @community&.edge_state&.remote_locks.blank?
+    return if @community.zerv.blank? && @community.latch.blank? &&@community.other_lock.nil? && @community.dwelo.blank? && @community.edge_state.blank? && @community&.edge_state&.remote_locks.blank?
     
     zerv = @community.zerv
     latch = @community.latch
