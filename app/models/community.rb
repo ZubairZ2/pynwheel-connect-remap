@@ -206,18 +206,25 @@ class Community < ApplicationRecord
     set_status_for_all(self,community_status,current_user)
   end
 
-  def set_property_map_status(current_user)
+  def set_property_map_status(current_user, status)
     return if self.sitemap.blank? && self.floorplates.blank?
 
     if self.is_sitemap
       sitemap = self.sitemap
-      property_sitemap_status = status_string(self.sitemap&.image&.url.present?)
+      if status.empty?
+        property_sitemap_status = status_string(self.sitemap&.image&.url.present?)
+      else
+        property_sitemap_status = "in_progress"
+      end
       set_status_for_all(sitemap,property_sitemap_status,current_user)
-
     elsif self.floorplates.any?
       floorplates = self.floorplates
       floorplates.each do |floorplate|
+        if status.empty?
         property_floorplate_status = status_string(floorplate&.image&.url.present?)
+        else
+          property_floorplate_status = "in_progress"
+        end
         set_status_for_all(floorplate,property_floorplate_status,current_user)
       end
     end
