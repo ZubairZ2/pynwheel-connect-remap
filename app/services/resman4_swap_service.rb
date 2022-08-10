@@ -42,10 +42,13 @@ class Resman4SwapService < BaseService
   def save_resman_units(units,property_id)
     units.each do |u|
       vacateDate = ""
+      
       unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"])
+      
       if unit.count > 1
         unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"], floorplan_id: Floorplan.find_by(name: u["Units"]["Unit"]["FloorplanName"]).provider_floorplan_id)
       end
+      
       if unit.count > 1
         unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"], building: u["Units"]["Unit"]["BuildingName"].present? ? u["Units"]["Unit"]["BuildingName"] : "")
       end
@@ -61,8 +64,8 @@ class Resman4SwapService < BaseService
         unit.floorplan_id = u["Units"]["Unit"]["UnitType"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
 
-        if u["EffectiveRent"].present? && u["EffectiveRent"]["min"].present?
-          unit.effective_rent = u["EffectiveRent"]["min"]
+        if u["EffectiveRent"].present? && u["EffectiveRent"]["Min"].present?
+          unit.effective_rent = u["EffectiveRent"]["Min"]
         elsif u["Units"]["Unit"]["MarketRent"].present?
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
         end
@@ -100,8 +103,8 @@ class Resman4SwapService < BaseService
         unit.floorplan_id = u["Units"]["Unit"]["UnitType"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
        
-        if u["EffectiveRent"].present? && u["EffectiveRent"]["min"].present?
-          unit.effective_rent = u["EffectiveRent"]["min"]
+        if u["EffectiveRent"].present? && u["EffectiveRent"]["Min"].present?
+          unit.effective_rent = u["EffectiveRent"]["Min"]
         elsif u["Units"]["Unit"]["MarketRent"].present?
           unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
         end
