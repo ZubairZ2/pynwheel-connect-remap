@@ -437,12 +437,17 @@ iPhone Users:
   private
 
   def existing_user_error_message tour_user
-    if tour_user&.email&.downcase == params[:email]&.downcase && tour_user&.phone_number == params[:phone_number]
+    user_with_email = TourUser.where(email: params[:email]&.downcase).last
+    user_with_phone_number = TourUser.where(phone_number: params[:phone_number]).last
+
+    if user_with_email.present? && user_with_phone_number.present?
       "Provided email and phone number already exists!"
-    elsif tour_user&.phone_number == params[:phone_number]
+    elsif user_with_phone_number.present?
       "Provided phone number already exists!"
-    else
+    elsif user_with_email.present?
       "Provided email already exists!"
+    else
+      "Something went wrong!"
     end
   end
 
