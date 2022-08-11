@@ -37,7 +37,7 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   def verify_otp
     if @tour_user.present?
       if @tour_user.pin_code === params[:pin_code].to_s
-        render json: {message: "User is verified successfully", success_code: 200, status: true, tour_user: @tour_user, access_token: encoded(@tour_user.id)}
+        render json: {message: "User is verified successfully", success_code: 200, status: true, data: user_tours_data(@tour_user), access_token: encoded(@tour_user.id)}
       else
         render json: {message: "OTP is wrong or expired", success_code: 404, status: false}
       end
@@ -47,6 +47,53 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   end
 
   private
+
+  def user_tours_data tour_user
+    visited_history = VisitedStop.exists?(tour_user_id:  tour_user.id)
+
+    upcoming = []
+    completed_tours = []
+    schedule_tours = tour_user.schedual_tours
+
+    if schedule_tours.length > 0
+      schedule_tours.each do |tour|
+        upcoming << get_community_tour(tour) if !tour.is_tour_completed && !date_compare(tour)
+        completed_tours << get_community_tour(tour) if tour.is_tour_completed
+      end
+    end
+
+    {user: tour_user, upcoming_tours: upcoming.count, completed_tours:  completed_tours.count, visited_history: visited_history}
+  end
+
+  def get_community_tour tour
+    if !tour.tour_date.nil?
+      d = tour.tour_date
+      t = tour.tour_time
+      dt = DateTime.new(d.year, d.month, d.day, t.hour, t.min)
+    else
+      dt = DateTime.now
+    end
+
+    tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
+    
+    return {schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
+  end
+
+  def date_compare tour
+    if tour.tour_time.nil?
+      return false
+
+    else
+      d = tour.tour_date
+      t = tour.tour_time
+      tour_date_time = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec, t.zone)
+      new_date = Date.today
+      new_time = Time.now
+      new_date_time = DateTime.new(new_date.year, new_date.month, new_date.day, new_time.hour, new_time.min, new_time.sec, new_time.zone)
+      
+      return tour_date_time <= new_date_time
+    end
+  end
 
   def load_tour_user
     @tour_user ||= TourUser.find_by_id params[:id]
