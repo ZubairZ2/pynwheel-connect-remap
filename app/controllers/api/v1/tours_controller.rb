@@ -213,7 +213,7 @@ iPhone Users:
 
   def tour_user_login
     if @tour_user.present?
-      render :json => { :success => false, :message => "User with this email or phone number already exist!"}
+      render :json => { :success => false, :message => existing_user_error_message(@tour_user) }
     else
       @tour_user = create_new_tour_user
       render :json => { :success => true, :message => "New User has been created successfuly!", tour_user: @tour_user, token: generate_encoded_token(@tour_user), allowed_email: is_community_allows_user(@community, @tour_user) }
@@ -435,6 +435,16 @@ iPhone Users:
   end
 
   private
+
+  def existing_user_error_message tour_user
+    if tour_user&.email&.downcase == params[:email]&.downcase && tour_user&.phone_number == params[:phone_number]
+      "Provided email and phone number already exists!"
+    elsif tour_user&.phone_number == params[:phone_number]
+      "Provided phone number already exists!"
+    else
+      "Provided email already exists!"
+    end
+  end
 
   def generate_encoded_token tu
     begin
