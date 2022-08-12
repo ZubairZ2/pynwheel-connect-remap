@@ -115,6 +115,12 @@ attr_reader :user , :params
           selected_communities.push(community_user)
         end
       end
+      if product == "pynwheel_access"
+        product_status = get_nested_products(product_options , product)
+        if product_status == true
+          selected_communities.push(community_user)
+        end
+      end
       product_hash = get_nested_products(product_options , product)
       product_status = get_nested_products(product_hash , "is_enabled")
       if product_status == true
