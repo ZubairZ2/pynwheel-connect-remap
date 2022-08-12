@@ -46,16 +46,19 @@ class FollowUpMailer < ApplicationMailer
   end
 
   def marketing_email(community)
+    @apps_text = get_apps_text(community)
     @community = community
     mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "Marketing: Send Welcome Kit to #{@community.company.name} - #{@community.name}")
   end
 
   def customer_success_email(community)
+    @apps_text = get_apps_text(community)
     @community = community
     mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "Customer Success: Schedule Orientation for #{@community.company.name} - #{@community.name}")
   end
   
   def accounting_email(community)
+    @apps_text = get_apps_text(community)
     @community = community
     mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "Accounting: Set up recurring billing for #{@community.company.name} - #{@community.name}")
   end
@@ -80,6 +83,7 @@ class FollowUpMailer < ApplicationMailer
   end
 
   def released_app_self_tour(user, community)
+    @app_text = get_apps_text(community)
     @community = community
     @user = user
     mail(to: @user, subject: "Your Pynwheel Applications have been completed!")
@@ -107,6 +111,22 @@ class FollowUpMailer < ApplicationMailer
     @body = body
     @users = user
       mail(to: @users, subject: subject)
+  end
+
+  def get_apps_text community
+    map_app = false
+    self_tour = false
+    pynwheel_touch = false
+    if community.product_options.nil?
+      self_tour = community.self_tour
+      pynwheel_touch = community.touchscreen_app
+    else
+      product_options = JSON.parse(community.product_options)
+      self_tour = product_options["product_options"]["self_tour"]["is_enabled"]
+      pynwheel_touch = product_options["product_options"]["pynwheel_touch"]["is_enabled"]
+      map_app = product_options["product_options"]["pynwheel_maps"]
+    end
+    "#{pynwheel_touch ? 'Touch App':''}#{pynwheel_touch && (self_tour) ? ', ':''}#{self_tour ? 'Self Tour App':''}#{(pynwheel_touch || self_tour ) && map_app ? ', ' : ''}#{map_app ? 'Map' : ''}"
   end
 
 end

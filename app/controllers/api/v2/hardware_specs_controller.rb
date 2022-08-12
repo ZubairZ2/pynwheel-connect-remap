@@ -13,6 +13,7 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
 
   def add_pynwheel_touch_hardware_spec
     hardware = params[:hardware]
+    @status = params["status"]
     if hardware.present?
       hardware_spec = ""
       if hardware["id"].present?
@@ -21,16 +22,14 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
       else
         hardware_spec = @community.create_hardware_spec(name: hardware["name"], phone: hardware["phone"], image: hardware["image"])
       end
+      @community.touch_installation_specification(current_pynwheel_user, @status)
+      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
+        email[:data].each do |mail|
+          if mail[:name].eql?(HARDWARE_SPECS) && mail[:status].eql?("Submitted")
+            FollowUpMailer.send_submitted_form(@community, HARDWARE_SPECS, email[:data]).deliver
+          end
+        end
       render :json => {success: true, data: hardware_spec.as_json}
-      @community.touch_installation_specification(current_pynwheel_user)
-      # if @community.update_attributes(pynwheel_touch_hardware_spec: hardware["image"], hardware_spec_installer_name: hardware[:name], hardware_spec_installer_phone: hardware[:phone])
-      #   @community.touch_installation_specification(current_pynwheel_user)
-      #   email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-      #   email[:data].each do |mail|
-      #     if mail[:name].eql?(HARDWARE_SPECS) && mail[:status].eql?("Submitted")
-      #       FollowUpMailer.send_submitted_form(@community, HARDWARE_SPECS, email[:data]).deliver_later
-      #     end
-      #   end
     else
       render json: {success: false, message: "Unable to add hardsware spec image"}
     end
@@ -53,7 +52,7 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
     hardware_spec = @community.hardware_spec
     if !hardware_spec.image.nil?
       hardware_spec.remove_image!
-      @community.touch_installation_specification(current_pynwheel_user)
+      @community.touch_installation_specification(current_pynwheel_user, "")
       render json: {success: true, messgae: "Pynwheel touch hardware spec deleted successfully."}
     else
       render json: {success: false, message: "Unable to delete pynwheel touch hardware spec"}

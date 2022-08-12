@@ -14,6 +14,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
 
   def add_homepage_design
     homepage_params = params['homepage_design']
+    @status = params["status"]
     @type = params['homepage_type']
     homepage_params.values.each do |homepage|
       homepage_id = homepage['id']
@@ -32,7 +33,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
       end
     end
     media = all_design
-    @community.set_touch_vidoes_status(current_pynwheel_user)
+    @community.set_touch_vidoes_status(current_pynwheel_user, @status)
     email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
     email[:data].each do |mail|
       if mail[:name].eql?(TOUCH_HOME_PAGE_MEDIA) && mail[:status].eql?('Submitted')
@@ -49,7 +50,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
       @homevideo = HomePageVideo.where(design_id: @community.design.id).first
       if @homevideo.present?
         if @homevideo.destroy!
-          @community.set_touch_vidoes_status(current_pynwheel_user)
+          @community.set_touch_vidoes_status(current_pynwheel_user, "")
           render json: { success: true, error_code: 200, message: 'Homepage video deleted successfully',
                          data: nil }
         else
@@ -66,7 +67,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
         @home_page_image = design.home_page_images.find_by(id: params[:homepage_image_id])
         if @home_page_image.present?
           if @home_page_image.destroy!
-            @community.set_touch_vidoes_status(current_pynwheel_user)
+            @community.set_touch_vidoes_status(current_pynwheel_user, "")
             render json: { success: true, error_code: 200, message: 'Homepage image deleted successfully',
                            data: nil }
           else

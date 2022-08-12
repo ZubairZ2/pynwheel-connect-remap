@@ -240,7 +240,6 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
   def update_visiting_hours_status_and_remarks status, remarks
     return if @community.opening_hours.blank? && @community.guided_opening_hours.blank?
-
     @community&.opening_hours.each {|oh| oh&.status.update_attributes(status: status, remarks: remarks) } if @community&.opening_hours.present?
     @community&.guided_opening_hours.each {|gh| gh&.status.update_attributes(status: status, remarks: remarks) } if @community&.guided_opening_hours.present?
   end

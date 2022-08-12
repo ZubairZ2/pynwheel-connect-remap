@@ -19,6 +19,7 @@ class Api::V2::OpeningHoursController < Api::V2::ApiApplicationController
     begin
       if check_visiting_hour
         values = params["data"]
+        @status = params["status"]
         tour_params = JSON.parse(values)
         if tour_params.present?
           tour_params.values.each_with_index do |tour, index|
@@ -28,7 +29,7 @@ class Api::V2::OpeningHoursController < Api::V2::ApiApplicationController
         end
       end
       visiting_hours = get_all_hours
-      @community.set_visiting_hours_status(current_pynwheel_user)
+      @community.set_visiting_hours_status(current_pynwheel_user, @status)
       email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
       email[:data].each do |mail|
         if mail[:name].eql?(VISITING_HOURS) && mail[:status].eql?("Submitted")
@@ -52,7 +53,7 @@ class Api::V2::OpeningHoursController < Api::V2::ApiApplicationController
           delete_guided_visiting_hours(tour_params["hours_id"]) if tour_params["type"].eql?(GUIDED_TOUR)
         end
       end
-      @community.set_visiting_hours_status(current_pynwheel_user)
+      @community.set_visiting_hours_status(current_pynwheel_user, "")
       render json: { success: true, message: "Visiting hour deleted successfully!" }
     rescue => exception
       render json: { success: false, message: exception.message }

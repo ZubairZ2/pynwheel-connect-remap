@@ -81,10 +81,10 @@ class PynwheelLaunch::Communities::FollowUpEmails
         name: TOUCH_HOME_PAGE_MEDIA,
         status: home_page_media_status
       },
-      # {
-      #   name: HARDWARE_SPECS,
-      #   status: hardware_specs_status
-      # }
+      {
+        name: HARDWARE_SPECS,
+        status: hardware_specs_status
+      }
     ]
   end
 
@@ -207,13 +207,14 @@ class PynwheelLaunch::Communities::FollowUpEmails
 
   def visiting_hours_status
     return nil if @community.opening_hours.blank? && @community.guided_opening_hours.blank?
-    visiting_hours_status = []
+    self_visiting_hours_status = []
+    guided_visiting_hours_status = []
     self_visiting_hours = @community.opening_hours
     guided_visiting_hours = @community.guided_opening_hours
-    self_visiting_hours.each {|oh| visiting_hours_status << oh&.status&.status rescue nil} if self_visiting_hours.present?
-    guided_visiting_hours.each {|gh| visiting_hours_status << gh&.status&.status rescue nil} if guided_visiting_hours.present?
-    status = status_check(visiting_hours_status)
-    status
+    self_visiting_hours.map {|oh| self_visiting_hours_status << oh&.status&.status} if self_visiting_hours.present?
+    guided_visiting_hours.map {|gh| guided_visiting_hours_status << gh&.status&.status} if guided_visiting_hours.present?
+    visiting_hours_status = guided_visiting_hours_status.compact + self_visiting_hours_status.compact
+    status_check(visiting_hours_status)
   end
 
   def get_readable_form_status(forms)
@@ -247,9 +248,13 @@ class PynwheelLaunch::Communities::FollowUpEmails
 
   def status_check(statuses)
     if !statuses.empty?
+      return REJECTED if statuses.any?{|x| x.eql?(REJECTED)}
       return SUBMITTED if statuses.all?{|x| x.eql?(SUBMITTED)}
       return APPROVED if statuses.all?{|x| x.eql?(APPROVED)}
       return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.eql?(nil)}
+      return RELEASED if statuses.all?{|x| x.eql?(RELEASED)}
+      return FORM_APPROVED if statuses.all?{|x| x.eql?(FORM_APPROVED)}
+      return APPLICATION_IN_REVIEW if statuses.all?{|x| x.eql?(APPLICATION_IN_REVIEW)}
     else
       return nil
     end

@@ -14,6 +14,7 @@ class Api::V2::PortalToursController < Api::V2::ApiApplicationController
   def add_tour_step_details
     begin
       if @community.present?
+        @status = params["status"]
         tour = params['tour']
         @portal_tour = @community.portal_tour
         if @portal_tour.present?
@@ -29,7 +30,7 @@ class Api::V2::PortalToursController < Api::V2::ApiApplicationController
           end
         end
       end
-      @community.set_tour_stops_status(current_pynwheel_user)
+      @community.set_tour_stops_status(current_pynwheel_user, @status)
       email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
         email[:data].each do |mail|
           if mail[:name].eql?(TOUR_STOPS) && mail[:status].eql?("Submitted")
@@ -60,7 +61,7 @@ class Api::V2::PortalToursController < Api::V2::ApiApplicationController
       tour_stop = PortalTourStop.find params["tour_stop_id"]
       if tour_stop.present?
         if tour_stop.destroy!
-          @community.set_tour_stops_status(current_pynwheel_user)
+          @community.set_tour_stops_status(current_pynwheel_user, "")
           render json: {success: true, message: "Tour stop deleted successfully"}
         else
           render json: {success: false, message: tour_stop.errors.full_messages}
