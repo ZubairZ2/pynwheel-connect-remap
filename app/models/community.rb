@@ -630,6 +630,10 @@ class Community < ApplicationRecord
     end
   end
 
+  def is_funnel_community?
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential&.crm_provider === "funnel" && self.crm_credential&.funnel_community_id.present? && self.crm_credential&.funnel_api_key.present?
+  end
+
   def is_knock_community?
     self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential&.crm_provider === "knock" && self.crm_credential&.knock_community_id.present? && self.crm_credential&.knock_api_key.present?
   end

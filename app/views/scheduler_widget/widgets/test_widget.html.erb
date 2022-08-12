@@ -202,6 +202,8 @@
     <div class="divLoading hidden"></div>
     <%= content_tag(:div, "", id: 'knock-data', data: { available_time_slots: @knock_available_slots.to_json, is_knock_community: @is_knock_community })%>
 
+    <%= content_tag(:div, "", id: 'funnel-data', data: { funnel_available_days: @funnel_available_days.to_json, is_funnel_community: @is_funnel_community })%>
+
     <%= link_to("#{@scheduler_widget_setting.btn_text}", "url",id: "schedule_btn", style: "width: #{@scheduler_widget_setting.btn_width}; height: #{@scheduler_widget_setting.btn_height}; font-size: #{@scheduler_widget_setting.btn_font_size}; background-color: #{@scheduler_widget_setting.btn_color}; border-color: #{@scheduler_widget_setting.btn_color}; font-family: #{@scheduler_widget_setting.btn_font}; align-items: center; display: inline-grid; margin: 10px; padding: 0px;",class: "btn btn-success btn-lg hidden", data: { toggle: "modal", target: "#modalLoginForm", backdrop: "static"}) %>
      
     <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
@@ -265,6 +267,7 @@
                     <%= text_field_tag :tour_date, "", :class=>tour_date_class, :placeholder=>"Tour Date",:maxlength=>"10",:autocomplete=>"off", :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
                   </div>
                   <%= hidden_field_tag 'time_slot_hash', @time_slots.to_json %>
+
                   <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_time">
                     <label>Tour Time <span class="asterisk_color" >*</span></label>
                     <%= select_tag :tour_time , options_for_select([]),:class => "form-control", :include_blank => 'Select time slot', :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
@@ -520,6 +523,11 @@
       var hidden_tour_type_value;
       var knock_available_time_slots;
       var is_knock_community = false;
+
+      var funnel_available_days;
+      var is_funnel_community = false;
+      var selected_day_slots = [];
+
       var knock_tour_types = []
       var schedule_tour_only = "<%= @community.community_tour.only_scheduled_tour %>";
       var community_id = <%= raw @community.id %>;
@@ -553,7 +561,8 @@
         knock_available_time_slots = $("#knock-data").data("availableTimeSlots");
         is_knock_community = $("#knock-data").data("isKnockCommunity");
 
-       debugger;
+        funnel_available_days = $("#funnel-data").data("funnelAvailableDays");
+        is_funnel_community = $("#funnel-data").data("isFunnelCommunity");
 
         if(form_for_reschedule_tour){
           $("#desired_move_in_date").val(move_in_date).attr('selected', true)
@@ -746,7 +755,13 @@
           var time_slots = JSON.parse( $('#time_slot_hash').val() )
           day = (new Date($(this).val())).getDay()
           tour_time = '<%= @schedule_tour&.tour_time&.strftime("%I:%M %P") %>'
+          schedule_tour_id = '<%= @schedule_tour.id %>'
+
           options = '<option value="">Select Time Slot</option>'
+          
+          selected_date = moment($(this).val()).zone(community_time_zone).format("YYYY/MM/DD")
+          today_date = moment().zone(community_time_zone).format("YYYY/MM/DD")
+
 
           if(is_knock_community && !isEmpty(knock_available_time_slots)) {
             selected_day_slots = getKnockAvailableTimeSlots(knock_available_time_slots, moment($(this).val()).format("MM-DD-YYYY"))
@@ -757,36 +772,28 @@
           }
           else {
             selected_day_slots = time_slots[day]
-          }
-          selected_date = moment($(this).val()).zone(community_time_zone).format("YYYY/MM/DD")
-          today_date = moment().zone(community_time_zone).format("YYYY/MM/DD")
-          if (selected_date == today_date){
-            if(current_time_according_to_timzone !== ""){
-              today_time = current_time_according_to_timzone
-            }
-            else{
-              today_time = moment().zone(community_time_zone).format("HH:mm A")
-            }
-            today_datetime = moment(today_date + " " + today_time, "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A")
-            minus_day_slots = []
+          }        
+
+          if(is_funnel_community && !isEmpty(funnel_available_days)) {
+            getFunnelTimes(schedule_tour_id, selected_date, community_id);            
+          } 
+          else {
+            selected_day_slots = get_time_slots(selected_day_slots);
             for (let i = 0; i < selected_day_slots.length; ++i) {
-              if (moment(selected_date + " " + selected_day_slots[i], "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A") >= today_datetime){
-                minus_day_slots.push(selected_day_slots[i])
-              }
+              options += `<option value="${selected_day_slots[i]}" >${selected_day_slots[i]}</option>`
             }
-            selected_day_slots = minus_day_slots 
+
+            $('#tour_time').html(options)
+            $('#tour_type').html('<option value="">Select Tour Type</option>')
           }
-          for (let i = 0; i < selected_day_slots.length; ++i) {
-            options += `<option value="${selected_day_slots[i]}" >${selected_day_slots[i]}</option>`
-          }
-          $('#tour_time').html(options)
-          $('#tour_type').html('<option value="">Select Tour Type</option>')
+
           if(form_for_reschedule_tour && property_tour_type == "scheduled_tour" ) {
             $(`#tour_time option[value="<%= @schedule_tour.tour_time&.strftime("%I:%M %P") %>"]`).attr("selected", true);
             $('#tour_type').html('<option value="<%= @schedule_tour.tour_type %>"><%= @schedule_tour&.tour_type&.split('_').map(&:capitalize).join(' ') rescue ""%></option>')
           }
           
         });
+
         $("#tour_type").attr("disabled", true);
         if(!form_for_reschedule_tour){
           $("#tour_time").on("change", function() {
@@ -891,8 +898,29 @@
         var d = new Date();
         var currentDay = d.getDay();
         
+        if(is_funnel_community && !isEmpty(funnel_available_days)) {
+
+          let minimumDate = moment();
+          if (funnel_available_days.length > 0) {
+            minimumDate = funnel_available_days[0];
+            minimumDate = minimumDate.replaceAll("-", "/");
+          }
+
+          $('.schedule_datepicker').datetimepicker({
+              format : 'MM/DD/YYYY',
+              defaultDate: minimumDate, 
+              minDate: minimumDate, // moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
+              showTodayButton: true,
+              showClear: true,
+              showClose: true,
+              useCurrent: true,
+              toolbarPlacement: "bottom",
+              stepping: steps,
+              enabledDates: funnel_available_days
+          });
+        }
         // Knock Date Picker
-        if(is_knock_community && !isEmpty(knock_available_time_slots)) {
+        else if(is_knock_community && !isEmpty(knock_available_time_slots)) {
           let minimumDate = moment();
           if (knock_available_time_slots.available_dates.length > 0) {
             minimumDate = knock_available_time_slots.available_dates[0];
@@ -1072,6 +1100,41 @@
         return JSON.stringify(obj) === JSON.stringify({});
       }
 
+      async function getFunnelTimes(schedule_tour_id, date, community_id) {
+        let f_response =  await getFunnelAvailableTimes(schedule_tour_id, date, community_id);
+        let funnel_selected_day_slots = f_response.data;
+
+        console.log("f_response", f_response);
+        funnel_selected_day_slots = get_time_slots(funnel_selected_day_slots);
+
+        for (let i = 0; i <  funnel_selected_day_slots.length; ++i) {
+          options += `<option value="${funnel_selected_day_slots[i]}" >${funnel_selected_day_slots[i]}</option>`
+        }
+
+        $('#tour_time').html(options)
+        $('#tour_type').html('<option value="">Select Tour Type</option>')
+
+        if(form_for_reschedule_tour && property_tour_type == "scheduled_tour" ) {
+          $(`#tour_time option[value="<%= @schedule_tour.tour_time&.strftime("%I:%M %P") %>"]`).attr("selected", true);
+          $('#tour_type').html('<option value="<%= @schedule_tour.tour_type %>"><%= @schedule_tour&.tour_type&.split('_').map(&:capitalize).join(' ') rescue ""%></option>')
+        }
+      }
+
+      function getFunnelAvailableTimes(schedule_tour_id, date, community_id) {
+        return new Promise(function(resolve, reject) {
+          $.ajax({
+            url: '/schedual_tours/get_funnel_available_times',
+            data: {schedule_tour_id, schedule_tour_id, date: date, community_id: community_id},
+            success: function(data) {
+              resolve(data)
+            },
+            error: function(err) {
+              reject(err)
+            }
+          });
+        });
+      }
+
       function getKnockAvailableTimeSlots(knockData, selectedDate) {
         let selfGuided = knockData.self_guided_available_time_slots
         let inPerson = knockData.in_person_available_time_slots
@@ -1090,6 +1153,29 @@
         });
 
         return times
+      }
+
+      function get_time_slots(slots) {
+        if (selected_date == today_date){
+          if(current_time_according_to_timzone !== ""){
+            today_time = current_time_according_to_timzone
+          }
+          else{
+            today_time = moment().zone(community_time_zone).format("HH:mm A")
+          }
+
+          today_datetime = moment(today_date + " " + today_time, "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A")
+          minus_day_slots = []
+
+          for (let i = 0; i < slots.length; ++i) {
+            if (moment(selected_date + " " + slots[i], "YYYY/MM/DD HH:mm: A").zone(community_time_zone).format("YYYY/MM/DD HH:mm: A") >= today_datetime){
+              minus_day_slots.push(slots[i])
+            }
+          }
+          slots = minus_day_slots 
+        }
+
+        return slots;
       }
       
 

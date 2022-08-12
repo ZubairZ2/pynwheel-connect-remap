@@ -24,6 +24,8 @@ Rails.application.routes.draw do
     # member do
     # end
     get :get_tour_type, on: :collection
+    get :get_funnel_available_times, on: :collection
+
   end
   post :map_dwelo_locks, to: 'dwelos#map_dwelo_locks'
   # selfie matching
