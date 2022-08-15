@@ -15,6 +15,7 @@ class FollowUpMailer < ApplicationMailer
   def preview_appliation_submit_for_review(community, user)
     @community = community
     @user = user
+    @apps_text = get_apps_text(community)
     mail()
   end
 
