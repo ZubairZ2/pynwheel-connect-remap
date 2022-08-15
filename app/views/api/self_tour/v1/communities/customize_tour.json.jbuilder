@@ -7,7 +7,7 @@ json.community_address @community.address
 json.community_logo @community.logo
 json.community_latitude @community.latitude
 json.community_longitude @community.longitude
-json.chat_enabled @community.chat_control && @community.is_chat_available ? true : false
+json.chat_enabled @community.chat_control
 json.schedule_enabled @community.scheduler_widget
 json.community_schedule_tour @community.schedule_tour_url
 json.is_sitemap @community.is_sitemap
