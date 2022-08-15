@@ -74,4 +74,15 @@ namespace :user_portal_data_migration do
     business = Amenity.where(amenity_type: ["Business Center", "Business Lounge"])
     business.update_all(amenity_type: "Business Center / Lounge")
   end
+
+  desc 'change default value to true for pynwheel access settings'
+  task :change_product_options_for_pynwheel_access => :environment do
+    communities = Community.where(pynwheel_launch_access: true).where.not(product_options: [nil, ""])
+    communities.each do |community|
+      product_options = JSON.parse(community.product_options)
+      product_options["product_options"]["pynwheel_access"] = community.pynwheel_access
+      product_options_string = JSON.generate(product_options)
+      community.update(product_options: product_options_string)
+    end
+  end
 end

@@ -115,6 +115,12 @@ attr_reader :user , :params
           selected_communities.push(community_user)
         end
       end
+      if product == "pynwheel_access"
+        product_status = get_nested_products(product_options , product)
+        if product_status == true
+          selected_communities.push(community_user)
+        end
+      end
       product_hash = get_nested_products(product_options , product)
       product_status = get_nested_products(product_hash , "is_enabled")
       if product_status == true
@@ -156,7 +162,6 @@ attr_reader :user , :params
       self_tour = product_options["product_options"]["self_tour"]["is_enabled"]
       pynwheel_touch = product_options["product_options"]["pynwheel_touch"]["is_enabled"]
     end
-
     statuses << visiting_hours_status(community) if self_tour
       
     statuses << touch_gallery_media_status(community) if pynwheel_touch
@@ -319,7 +324,7 @@ attr_reader :user , :params
   end
 
   def lock_providers_status(community)
-    return nil if community.zerv.blank? && community.latch.blank? && community.dwelo.blank? && community.edge_state.blank? && community&.edge_state&.remote_locks.blank?
+    return nil if community.zerv.blank? && community.latch.blank? && community.dwelo.blank? && community.edge_state.blank? && community&.edge_state&.remote_locks.blank? && community.other_lock.nil?
     locks_status = []
     
     zerv = community.zerv

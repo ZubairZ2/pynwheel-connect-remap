@@ -32,10 +32,13 @@ class Company < ApplicationRecord
     )
   end
 
-  def set_company_details_status(current_user)
+  def set_company_details_status(current_user, status)
     return if self.blank?
-
-    company_status = status_string(check_company_requirement(self))
+    if status.nil?
+      company_status = status_string(check_company_requirement(self))
+    else
+      company_status = status
+    end
     set_status_for_all(self, company_status, current_user)
   end
 

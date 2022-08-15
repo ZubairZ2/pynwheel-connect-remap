@@ -15,6 +15,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     begin
       @locks_provider = @community.multiple_locks_provider
       lock_params = params['secure_locks']
+      @status = params["status"]
       lock_params.values.each do |lock|
         type = lock['type']
         lock_id = lock['id']
@@ -29,8 +30,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
       end
       unique_locks_provider = @locks_provider.uniq
       @community.update_attributes(multiple_locks_provider: unique_locks_provider)
-      # binding.pry
-      @community.set_lock_providers_status(current_user)
+      @community.set_lock_providers_status(current_user, @status)
       locks = get_all_locks
       render json: { success: true, data: locks.as_json }
     rescue => e

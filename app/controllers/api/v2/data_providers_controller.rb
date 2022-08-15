@@ -16,7 +16,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       data_provider = @community.data_provider
       @credential = update_data_provider_credentials
       if @credential.present?
-        @community.set_data_provider_status(current_pynwheel_user)
+        @community.set_data_provider_status(current_pynwheel_user, params["status"])
         email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
         email[:data].each do |mail|
           if mail[:name].eql?(PROPERTY_MANAGEMENT_SYSTEM) && mail[:status].eql?("Submitted")
@@ -46,7 +46,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
         update_crm_credentials if credential&.use_different_crm_provider
       end      
     else
-      create_data_provider(community_credentials)
+      credential = create_data_provider(community_credentials)
     end
     credential
   end
@@ -63,6 +63,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       credential.update_attributes(community_id: @community.id)
       update_crm_credentials if (params[:use_different_crm_provider] || credential&.use_different_crm_provider)
     end
+    credential
   end
 
   def update_crm_credentials
@@ -113,6 +114,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
   end
 
   def credential_params
+    params.permit(:status)
     params.require(:credential).permit(:id,:url,:entrata_url,:username,:password, :perq_property_id, :is_perq_allowed,
       :property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,:api_token,:p_code,:apply_now,
       :allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id,
@@ -121,6 +123,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
   end
 
   def crm_credential_params
+    params.permit(:status)
     params.require(:crm_credential).permit(:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id,
       :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username,
       :yardirentcafe_leads_api_user_name, :yardirentcafe_leads_api_password, :yardirentcafe_marketing_api_key,

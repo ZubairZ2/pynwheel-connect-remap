@@ -196,77 +196,108 @@ class Community < ApplicationRecord
     # set_visiting_hours_status(current_user)
   end
 
-  def set_community_details_status(current_user)
+  def set_community_details_status(current_user, status)
     return if self.blank?
-
-    community_status = status_string(check_community_requirments(self))
+    if status.nil?
+      community_status = status_string(check_community_requirments(self))
+    else
+      community_status = status
+    end
     set_status_for_all(self,community_status,current_user)
   end
 
-  def set_property_map_status(current_user)
+  def set_property_map_status(current_user, status)
     return if self.sitemap.blank? && self.floorplates.blank?
 
     if self.is_sitemap
       sitemap = self.sitemap
-      property_sitemap_status = status_string(self.sitemap&.image&.url.present?)
+      if status.empty?
+        property_sitemap_status = status_string(self.sitemap&.image&.url.present?)
+      else
+        property_sitemap_status = "in_progress"
+      end
       set_status_for_all(sitemap,property_sitemap_status,current_user)
-
     elsif self.floorplates.any?
       floorplates = self.floorplates
       floorplates.each do |floorplate|
+        if status.empty?
         property_floorplate_status = status_string(floorplate&.image&.url.present?)
+        else
+          property_floorplate_status = "in_progress"
+        end
         set_status_for_all(floorplate,property_floorplate_status,current_user)
       end
     end
   end
 
-  def set_floorplan_status(current_user)
+  def set_floorplan_status(current_user, status)
     return if self.floorplans.blank?
 
     self.floorplans.each do |floorplan|
-      floorplan_status = status_string(floorplan&.image&.url.present?)
+      if status.empty?
+        floorplan_status = status_string(floorplan&.image&.url.present?)
+      else
+        floorplan_status = status
+      end
       set_status_for_all(floorplan,floorplan_status,current_user)
     end
   end
 
-  def set_gallery_images_status(current_user)
+  def set_gallery_images_status(current_user, status)
     return if self.galleries.blank?
 
     self.galleries.each do |gallery|
-      gallery_images_status = status_string(gallery.name.present? && gallery&.gallery_images.present?)
+      if status.empty?
+        gallery_images_status = status_string(gallery.name.present? && gallery&.gallery_images.present?)
+      else
+        gallery_images_status = status
+      end
       set_status_for_all(gallery,gallery_images_status,current_user)
     end
   end
 
-  def set_touch_vidoes_status(current_user)
+  def set_touch_vidoes_status(current_user, status)
     return if self.design.blank?
     design = self.design
-    home_page_image_status(design,current_user)
-    home_page_video_status(design,current_user)
+    home_page_image_status(design,current_user, status)
+    home_page_video_status(design,current_user, status)
   end
 
-  def home_page_image_status(design,current_user)
+  def home_page_image_status(design,current_user, status)
     return if design.home_page_images.blank?
 
     design.home_page_images.each do |touch_img|
-      touch_img_status = status_string(touch_img.name.present? & touch_img.image&.url.present?)
+      if status.empty?
+        touch_img_status = status_string(touch_img.name.present? & touch_img.image&.url.present?)
+      else
+        touch_img_status = status
+      end
       set_status_for_all(touch_img,touch_img_status,current_user)
     end
   end
 
-  def home_page_video_status(design,current_user)
+  def home_page_video_status(design,current_user, status)
     return if design.home_page_video.blank?
 
     hp_video = design.home_page_video
-    touch_video_status = status_string(hp_video.video.url.present?)
+    if status.empty?
+      touch_video_status = status_string(hp_video.video.url.present?)
+    else
+      touch_video_status = status
+    end
     set_status_for_all(hp_video,touch_video_status,current_user)
   end
 
-  def set_data_provider_status(current_user)
+  def set_data_provider_status(current_user, status)
     return if self.data_provider.blank? && self.credential.blank?
-    provider_credential = self.credential
+    community = Community.find_by_id (self.id)
+    provider_credential = community.credential
     required_fields = check_required_fields_for_providers
-    status_attr = status_string(required_fields)
+    if status.empty?
+      status_attr = status_string(required_fields)
+    else
+      status_attr = status
+    end
     set_status_for_all(provider_credential,status_attr,current_user)
     if self&.credential&.use_different_crm_provider
       set_crm_status(current_user)
@@ -274,8 +305,8 @@ class Community < ApplicationRecord
   end
 
   def check_required_fields_for_providers
-    credential = self.credential
-
+    community = Community.find_by_id (self.id)
+    credential = community.credential
     case data_provider
       when "psi"
         credential.entrata_url.present? && credential.username.present? && credential.password.present? && credential.property_id.present?
@@ -322,37 +353,49 @@ class Community < ApplicationRecord
     end
   end
 
-  def set_visiting_hours_status(current_user)
+  def set_visiting_hours_status(current_user, status)
     @tour = self.community_tour
     return unless self.self_tour
     # self_tour_visiting_hours(current_user) if @tour&.tour_setting&.allow_self_tour # commented this code so that the status shold be changed based on self tour in community setting
     # guided_visiting_hours(current_user) if @tour&.tour_setting&.allow_guided_tour # commented this code so that the status shold be changed based on self tour in community setting
-    self_tour_visiting_hours(current_user)
-    guided_visiting_hours(current_user)
+    self_tour_visiting_hours(current_user, status)
+    guided_visiting_hours(current_user, status)
   end
 
-  def self_tour_visiting_hours(current_user)
+  def self_tour_visiting_hours(current_user, status)
     return if self.opening_hours.blank?
     self_visiting_hours = self.opening_hours
     self_visiting_hours.each do |oh|
-      status_attr = status_string(oh.day.present? && oh.opening_time.present? && oh.closing_time.present?)
+      if status.empty?
+        status_attr = status_string(oh.day.present? && oh.opening_time.present? && oh.closing_time.present?)
+      else
+        status_attr = status
+      end
       set_status_for_all(oh,status_attr,current_user)
     end
   end
 
-  def guided_visiting_hours(current_user)
+  def guided_visiting_hours(current_user, status)
     return if self.guided_opening_hours.blank?
     guided_visiting_hours = self.guided_opening_hours
     guided_visiting_hours.each do |gh|
-      status_attr = status_string(gh.day.present? && gh.opening_time.present? && gh.closing_time.present? )
+      if status.empty?
+        status_attr = status_string(gh.day.present? && gh.opening_time.present? && gh.closing_time.present? )
+      else
+        status_attr = status
+      end
       set_status_for_all(gh,status_attr,current_user)
     end
   end
 
-  def touch_installation_specification(current_user)
+  def touch_installation_specification(current_user, status)
     return if self.hardware_spec.nil?
     hardware_spec = self.hardware_spec
-    status_attr = status_string(hardware_spec&.name.present? && hardware_spec&.phone.present? && hardware_spec&.image.present? )
+    if status.empty?
+      status_attr = status_string(hardware_spec&.name.present? && hardware_spec&.phone.present? && hardware_spec&.image.present? )
+    else
+      status_attr = status
+    end
     set_status_for_all(self.hardware_spec, status_attr, current_user)
   end
 
@@ -365,60 +408,84 @@ class Community < ApplicationRecord
     products_json['product_options']['pynwheel_touch']['options']['hardware'].present?
   end
 
-  def set_tour_stops_status(current_user)
+  def set_tour_stops_status(current_user, status)
     return if self.portal_tour&.portal_tour_stops.blank?
     tour_stops = self.portal_tour.portal_tour_stops.compact
     tour_stops.each do |ts|
-      status_attr = status_string(ts.name.present?)
+      if status.empty?
+        status_attr = status_string(ts.name.present?)
+      else
+        status_attr = status
+      end
       set_status_for_all(ts,status_attr,current_user)
     end
   end
 
-  def set_lock_providers_status(current_user)
+  def set_lock_providers_status(current_user, status)
     if self.zerv.blank? && self.latch.blank? && self.dwelo.blank? && self.edge_state.blank? && self&.edge_state&.remote_locks.blank? && self.other_lock.nil?
       return
     else
-      pynwheel_access_status(current_user)
-      latch_locks_status(current_user)
-      dwelo_locks_status(current_user)
-      remote_lock_status(current_user)
-      set_other_lock_status(current_user)
+      pynwheel_access_status(current_user, status)
+      latch_locks_status(current_user, status)
+      dwelo_locks_status(current_user, status)
+      remote_lock_status(current_user, status)
+      set_other_lock_status(current_user, status)
     end
   end
 
-  def set_other_lock_status(current_user)
+  def set_other_lock_status(current_user, status)
     return if self.other_lock.nil?
     other_lock = self.other_lock
-    status_attr = status_string(other_lock.description.present?)
+    if status.empty?
+      status_attr = status_string(other_lock.description.present?)
+    else
+      status_attr = status
+    end
     set_status_for_all(other_lock,status_attr,current_user)
   end
 
-  def pynwheel_access_status(current_user)
+  def pynwheel_access_status(current_user, status)
     return if self.zerv.blank?
     zerv_lock = self.zerv
-    status_attr = status_string(zerv_lock.facility_id.present? && zerv_lock.badge_id.present? && zerv_lock.card_format.present?)
+    if status.empty?
+      status_attr = status_string(zerv_lock.facility_id.present? && zerv_lock.badge_id.present? && zerv_lock.card_format.present?)
+    else
+      status_attr = status
+    end
     set_status_for_all(zerv_lock,status_attr,current_user)
   end
 
-  def latch_locks_status(current_user)
+  def latch_locks_status(current_user, status)
     return if self.latch.blank?
     latch = self.latch
-    status_attr = status_string(latch.client_id.present? && latch.client_secret.present?)
+    if status.empty?
+      status_attr = status_string(latch.client_id.present? && latch.client_secret.present?)
+    else
+      status_attr = status
+    end
     set_status_for_all(latch,status_attr,current_user)
   end
 
-  def dwelo_locks_status(current_user)
+  def dwelo_locks_status(current_user, status)
     return if self.dwelo.blank?
     dwelo = self.dwelo
-    status_attr = status_string(dwelo.community_id.present? && dwelo.client_id.present? && dwelo.client_secret.present?)
+    if status.empty?
+      status_attr = status_string(dwelo.community_id.present? && dwelo.client_id.present? && dwelo.client_secret.present?)
+    else
+      status_attr = status
+    end
     set_status_for_all(dwelo,status_attr,current_user)
   end
 
-  def remote_lock_status(current_user)
+  def remote_lock_status(current_user, status)
     return if self.edge_state.blank?
     remote_locks = self.edge_state&.remote_locks
     remote_locks.each do |remote_lock|
-      status_attr = status_string(remote_lock.present?)
+      if status.empty?
+        status_attr = status_string(remote_lock.present?)
+      else
+        status_attr = status
+      end
       set_status_for_all(remote_lock,status_attr,current_user)
     end
   end

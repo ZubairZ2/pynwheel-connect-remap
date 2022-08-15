@@ -63,12 +63,18 @@ class CommunityUser < ApplicationRecord
   end
 
   def get_client_products
-    available_products = ["self_tour" , "pynwheel_touch" , "pynwheel_maps" , "graphic_design_services" , "additional_options"]
+    available_products = ["self_tour" , "pynwheel_touch" , "pynwheel_maps" , "graphic_design_services" , "additional_options", "pynwheel_access"]
     selected_products = []
     product_options = JSON.parse(self.community.product_options)
     available_products.each do |product|
       if product == "pynwheel_maps"
         product_status = nested_hash_value(product_options , "pynwheel_maps")
+        if product_status == true
+          selected_products.push(product)
+        end
+      end
+      if product == "pynwheel_access"
+        product_status = nested_hash_value(product_options , "pynwheel_access")
         if product_status == true
           selected_products.push(product)
         end
