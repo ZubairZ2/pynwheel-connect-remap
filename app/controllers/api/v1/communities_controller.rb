@@ -440,10 +440,10 @@ class Api::V1::CommunitiesController < ActionController::Base
     render :json=> {:status=>true, code: 200}
   end
 
-  def get_user_by_email
-    user_email = params[:user_email].downcase
-    if user_email.present?
-      @tour_user = TourUser.find_by(email: user_email)
+  def get_tour_user
+    tour_user_id = params[:tour_user_id].downcase
+    if tour_user_id.present?
+      @tour_user = TourUser.find_by(email: tour_user_id)
       if @tour_user.present?
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
         @scheduled_tours = []
@@ -452,8 +452,8 @@ class Api::V1::CommunitiesController < ActionController::Base
             @scheduled_tours << tour if !tour.is_tour_completed && !date_compare(tour)
           end
         end
-        token = encoded(@tour_user.id)
-        render :json => {status: true, user: @tour_user, code: 200, access_token: token, visited_history: @visited_history, schedule_tour: @scheduled_tours.count}
+
+        render :json => {status: true, user: @tour_user, code: 200, visited_history: @visited_history, schedule_tour: @scheduled_tours.count}
       else
         render :json => {status: false, error: "Email not found", code: 400}
       end
@@ -495,9 +495,9 @@ class Api::V1::CommunitiesController < ActionController::Base
         TourUserCustomization.new(@community, @tour_user).customize_tour
         @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id ,tour_id: @tour.id)
-        
-        data = {visited_history: @visited_history, tour_user: @tour_user}
-
+        visiting_hours = @community&.opening_hours.present? ? @community&.opening_hours : []
+        @gallery = @community&.galleries.present? ?  @community&.galleries.order(:sort) : []
+        data = {visited_history: @visited_history, tour_user: @tour_user, community: @community, visiting_hours: visiting_hours.as_json, property_images: @gallery.as_json}
         render :json=> {data: data, :status=>true, :message => "data retuned succesfully", code: 200}
       else
         render :json=> {data: data, :status=>false, :message => "Invalid or Missing comunity_id/tour_user_id", code: 400}

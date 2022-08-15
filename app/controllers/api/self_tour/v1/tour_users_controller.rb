@@ -1,0 +1,142 @@
+class Api::SelfTour::V1::TourUsersController < ActionController::Base
+  include ApplicationHelper
+
+  before_action :load_tour_user, only: :delete_account
+  before_action :get_tour_user_by_phone_number, only: [:generate_otp, :verify_otp]
+  before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
+
+  def delete_account
+    if @tour_user.present?
+      if destroy_user
+        render :json=> {:status=>true, :message => "User account permanently deleted!", status_code: 200}
+      else
+        render :json=> {:status=>false, :message => "Something went wrong on server!", status_code: 500}
+      end
+    else
+      render :json=> {:status=>false, :message => "User with Id #{params[:id]} not found!", status_code: 401}
+    end
+  end
+
+  def generate_otp
+    if @tour_user.present?
+      if @tour_user.phone_number === @apple_test_number
+        render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true }
+      else
+        @tour_user.update(pin_code: random_otp)
+        sms_otp_to_mobile()
+        # execute job after 15 minutes(900 seconds) to expire the OTP
+        ExpireOtpJob.perform_in(900, @tour_user)
+    
+        render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true}
+      end
+    else
+      render json: {message: "User not found", success_code: 404, status: false, is_zerv_lock: false, zerv_credentials: {}}
+    end
+  end
+
+  def verify_otp
+    if @tour_user.present?
+      if @tour_user.pin_code === params[:pin_code].to_s
+        render json: {message: "User is verified successfully", success_code: 200, status: true, data: user_tours_data(@tour_user), access_token: encoded(@tour_user.id)}
+      else
+        render json: {message: "OTP is wrong or expired", success_code: 404, status: false}
+      end
+    else
+      render json: {message: "User not found", success_code: 404, status: false}
+    end
+  end
+
+  private
+
+  def user_tours_data tour_user
+    visited_history = VisitedStop.exists?(tour_user_id:  tour_user.id)
+
+    upcoming = []
+    completed_tours = []
+    schedule_tours = tour_user.schedual_tours
+
+    if schedule_tours.length > 0
+      schedule_tours.each do |tour|
+        upcoming << get_community_tour(tour) if !tour.is_tour_completed && !date_compare(tour)
+        completed_tours << get_community_tour(tour) if tour.is_tour_completed
+      end
+    end
+
+    {user: tour_user, upcoming_tours: upcoming.count, completed_tours:  completed_tours.count, visited_history: visited_history}
+  end
+
+  def get_community_tour tour
+    if !tour.tour_date.nil?
+      d = tour.tour_date
+      t = tour.tour_time
+      dt = DateTime.new(d.year, d.month, d.day, t.hour, t.min)
+    else
+      dt = DateTime.now
+    end
+
+    tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
+    
+    return {schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
+  end
+
+  def date_compare tour
+    if tour.tour_time.nil?
+      return false
+
+    else
+      d = tour.tour_date
+      t = tour.tour_time
+      tour_date_time = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec, t.zone)
+      new_date = Date.today
+      new_time = Time.now
+      new_date_time = DateTime.new(new_date.year, new_date.month, new_date.day, new_time.hour, new_time.min, new_time.sec, new_time.zone)
+      
+      return tour_date_time <= new_date_time
+    end
+  end
+
+  def load_tour_user
+    @tour_user ||= TourUser.find_by_id params[:id]
+  end
+
+  def destroy_user
+    begin
+      VisitedStop.where(tour_user_id: @tour_user&.id).destroy_all
+      Feedback.where(tour_user_id: @tour_user&.id).destroy_all
+      IglooGuest.where(tour_user_id: @tour_user&.id).destroy_all
+      ZervGuest.where(tour_user_id: @tour_user&.id).destroy_all
+      IgloohomeGuest.where(tour_user_id: @tour_user&.id).destroy_all
+      AsGuest.where(tour_user_id: @tour_user&.id).destroy_all
+      UserStripe.where(tour_user_id: @tour_user&.id).destroy_all
+      TourHistory.where(tour_user_id: @tour_user&.id).destroy_all
+      SchedualTour.where(tour_user_id: @tour_user&.id).destroy_all
+      Prospect.where(tour_user_id: @tour_user&.id).destroy_all
+      Chatroom.where(tour_user_id: @tour_user&.id).destroy_all
+      LatchGuest.where(tour_user_id: @tour_user&.id).destroy_all
+      Tour.where(tour_user_id: @tour_user&.id).destroy_all
+      @tour_user.destroy!
+      
+    rescue
+      false
+    end
+  end
+
+  def sms_otp_to_mobile
+    to_phone_number = @tour_user.phone_number
+    message_body = "Verification code #{ @tour_user.pin_code }. Code will expire in 15 minutes."
+    TwilioSmsService.new().send_sms(message_body, to_phone_number)
+  end
+
+  def get_tour_user_by_phone_number
+    @tour_user = TourUser.find_by_phone_number(params[:phone_number])
+  end
+
+  def get_apple_store_test_number
+    @apple_test_number = "+10123456789"
+  end
+
+  def random_otp
+    rand(0000..9999).to_s.rjust(4, "0")
+  end
+  
+end

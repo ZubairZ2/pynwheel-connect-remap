@@ -33,41 +33,98 @@ class CommunityTour
       unless stop.stop_type == "building_starting_point" || stop.stop_type == "elevator" || (stop.latitude.present? && (stop.latitude + stop.longitude) < 1) && @community.show_map
         name = ""
         is_favorite = ""
-
+        unit_id = ""
+        modal_unit = false
+        bedrooms = ""
+        bathrooms = ""
+        pricing = ""
+        floorplan_image = ""
+        primary_floorplan = ""
+        secondary_floorplan = ""
+        available = ""
+        available_date = ""
+        availability = ""
+        availability_url = ""
+        lease_pricing=[]
+        floorplan_id = ""
         if stop.stop_type == "unit"
           u = Unit.find_by_id stop.stop_id
-          
+          unit_id = u.id
+          modal_unit = u.modal_unit
+          available = u.available
+          floorplan_id = u.floorplan.id
+          available_date = u.available_date
+          availability = u.availability
+          availability_url = u.availability_url
+          lease_pricing = u.get_unit_leasing_price
           if u.present? && (u.available || u.modal_unit)
-            name = (u.building.present? ? (u.building + "-") : "") + u.marketing_name + ((u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "") rescue "")
+            name = (u.building.present? ? (u.building + "-") : "") + u.marketing_name
             is_favorite = @favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
+            bedrooms = u.floorplan.bedrooms.to_i
+            bathrooms = u.floorplan.bathrooms.to_i
+            pricing = u.floorplan.market_rent
+            floorplan_image = u.present? ? (u.image.present? ? u.image.url : (u&.floorplan&.image.present? ? u&.floorplan&.image.url : nil rescue nil) ): nil
+            primary_floorplan = u.present? ? (u.standard_image_url.present? ? u.standard_image_url : (u&.floorplan&.standard_image_url.present? ? u&.floorplan&.standard_image_url : nil rescue nil) ): nil
+            secondary_floorplan = u.present? ? (u.secondary_image.present? ? u.secondary_image.url : (u&.floorplan&.secondary_image.present? ? u&.floorplan&.secondary_image.url : nil rescue nil) ): nil
           else
             next
           end
 
         else
+          a = Amenity.find_by_id stop.stop_id
+          floorplan_image = a.image.present? ? a.image.url : nil
+          primary_floorplan = a.standard_image_url.present? ? a.standard_image_url : nil
+          secondary_floorplan = nil
           name =  stop.name
           is_favorite = @favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
         end
 
         new_stop = stop.stop_type.classify.constantize.find_by_id(stop.stop_id)
-
         if @community.is_sitemap
           available_stops << {
-            "name": name,
+            "name": modal_unit ? "#{name} (Model)" : name,
             "is_favorite": is_favorite,
             "id": new_stop.id,
             "stop_id": stop.id,
+            "modal_unit": modal_unit,
             "stop_type": stop.stop_type,
+            "unit_id": unit_id,
+            "floorplan_id": floorplan_id,
+            "available": available,
+            "availability": availability,
+            "available_date": available_date,
+            "availability_url": availability_url,
+            "bedrooms": bedrooms,
+            "bathrooms": bathrooms,
+            "pricing": pricing,
+            "lease_pricing": lease_pricing,
+            "floorplan_image": floorplan_image,
+            "primary_floorplan": primary_floorplan,
+            "secondary_floorplan": secondary_floorplan,
             "floor": new_stop&.floor,
             "building": new_stop&.building
           }
         else
           if new_stop&.floor.present? && new_stop&.building.present?
             available_stops << {
-              "name": name,
+              "name": modal_unit ? "#{name} (Model)" : name,
               "is_favorite": is_favorite,
               "id": new_stop.id,
               "stop_id": stop.id,
+              "floorplan_id": floorplan_id,
+              "unit_id": unit_id,
+              "modal_unit": modal_unit,
+              "available": available,
+              "availability": availability,
+              "available_date": available_date,
+              "availability_url": availability_url,
+              "bedrooms": bedrooms,
+              "bathrooms": bathrooms,
+              "pricing": pricing,
+              "lease_pricing": lease_pricing,
+              "floorplan_image": floorplan_image,
+              "primary_floorplan": primary_floorplan,
+              "secondary_floorplan": secondary_floorplan,
               "stop_type": stop.stop_type,
               "floor": new_stop&.floor,
               "building": new_stop&.building
@@ -91,7 +148,7 @@ class CommunityTour
 
   def get_floorplate_tour_stops
     add_start = true
-
+    
     if @scheduled_tour_stops.present?
       @stops_arr = @community.mdu ? @scheduled_tour_stops : @scheduled_tour_stops.where.not(stop_type: "unit").order(:sort)
       

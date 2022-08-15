@@ -564,7 +564,7 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
-    
+  
     namespace :self_tour do
       namespace :v1 do
         resources :communities do
@@ -574,6 +574,17 @@ Rails.application.routes.draw do
           get :generate_locks_accesses
           post :check_lock_access
           delete :start_tour
+        end
+
+        resources :tour_users do
+          member do
+            delete :delete_account
+          end
+
+          collection do
+            post :generate_otp
+            post :verify_otp
+          end
         end
       end
     end
@@ -664,7 +675,7 @@ Rails.application.routes.draw do
       post :save_data, to: 'dwelo_devices#load_data'
       post :device_lock_unlock, to: 'dwelo_devices#device_lock_or_unlock'
       get :get_tour_user_by_tour, to: 'communities#get_tour_user_by_tour'
-      get :get_user_by_email, to: 'communities#get_user_by_email'
+      get :get_tour_user, to: 'communities#get_tour_user'
       get :get_filtered_tours, to: 'communities#get_filtered_tours'
       get :get_count_screen, to: 'communities#get_count_screen'
       post '/communities/:community_id/metro_send_analytics_data', to: 'communities#metro_send_analytics_data'

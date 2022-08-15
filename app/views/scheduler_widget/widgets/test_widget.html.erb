@@ -294,7 +294,6 @@
               <div class="form-group w-left-50 w-100">
                 <label>Email Address <span class="asterisk_color" >*</span></label>
                 <%= f.email_field :email, class: "form-control", placeholder: "Email Address", id: "tour_user_email", required: 'required' %>
-                <span class="reshedule-notification" style="display: <%= @tour_user.id.present? && !@reschedule_tour && @schedule_tour.is_tour_completed ? "block" : "none" %>">A user with this email address already has a scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
               </div>
               <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_phone.nil? ? true : current_community.community_tour.tour_setting.show_phone) %>
                 <div class="form-group w-20 w-100">
@@ -307,9 +306,11 @@
                 </div>
                 <div class="form-group w-30 w-100">
                   <label>Phone Number <span class="asterisk_color" >*</span></label> 
-                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", maxlength: 15 , required: 'required', id: "user_phone_number_field" %>
+                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", minlength: 10, maxlength: 10 , required: 'required', id: "user_phone_number_field" %>
                 </div>
               <% end %>
+              <span class="reshedule-notification" style="display: <%= @tour_user.id.present? && !@reschedule_tour && @schedule_tour.is_tour_completed ? "block" : "none" %>">A user with this email address already has a scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
+
               <div class="clearfix"></div>
 
               <% if @credit_card_required %>
@@ -458,7 +459,7 @@
                 <span class="no-tour-time-error" style="display: none; color: red; margin-bottom: 5px;">*There is no slot available. please check your available slots in tour setting page</span>
               <%# <% end %>
               <%= hidden_field_tag 'limit_tour_type_error_arr', [].to_json %>
-              <%= hidden_field_tag 'existing_tour_user_email_arr', @axisting_tour_users.to_json %>
+              <%= hidden_field_tag 'existing_tour_user_email_arr', @existing_tour_users.to_json %>
               <div>
                 <% if @reschedule_tour %>
                   <button id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
@@ -718,12 +719,18 @@
             $('.divLoading').addClass('hidden');
         }
 
+      $("#user_phone_number_field").keyup(function() {
+        const existing_tour_users = JSON.parse($("#existing_tour_user_email_arr").val());
+        const isPhone = isPhoneNumberExist(existing_tour_users.phone_numbers);
+        const isEmail = isEmailExist(existing_tour_users.emails);
+        displayNotification(isEmail, isPhone);
+      });
+
       $("#tour_user_email").keyup(function() {
-        existing_tour_users = JSON.parse($("#existing_tour_user_email_arr").val())
-        if(existing_tour_users.indexOf($("#tour_user_email").val()) !== -1 && tour_is_completed)
-          $(".reshedule-notification").css("display", "block");
-        else 
-          $(".reshedule-notification").css("display", "none");
+        const existing_tour_users = JSON.parse($("#existing_tour_user_email_arr").val());
+        const isEmail = isEmailExist(existing_tour_users.emails);
+        const isPhone = isPhoneNumberExist(existing_tour_users.phone_numbers);
+        displayNotification(isEmail, isPhone);
       });
 
       $('.select_property_tour').change(function() {
@@ -1089,6 +1096,47 @@
         }
 
       });
+
+      function displayNotification(isEmail,   isPhone) {
+        if(isPhone && isEmail){
+          $(".reshedule-notification").html('A user with this email and phone number already has a scheduled tour, if you submit again with this email and phone number your tour will be rescheduled!');
+          $(".reshedule-notification").css("display", "block");
+
+        } else if (isEmail) {
+          $(".reshedule-notification").html('A user with this email already has a scheduled tour, if you submit again with this email your tour will be rescheduled!');
+          $(".reshedule-notification").css("display", "block");
+
+        } else if(isPhone) {
+          $(".reshedule-notification").html('A user with this phone number already has a scheduled tour, if you submit again with this phone number your tour will be rescheduled!');
+          $(".reshedule-notification").css("display", "block");
+
+        }else {
+          $(".reshedule-notification").css("display", "none");
+        }
+      }
+
+      function isEmailExist(arrayOfEmails) {
+        if(arrayOfEmails && arrayOfEmails.indexOf($("#tour_user_email").val()) !== -1 && tour_is_completed)
+          return true;
+        else 
+          return false;
+      }
+      
+      function isPhoneNumberExist(arrayOfPhoneNumbers) {
+        const phoneNumber = $("#user_phone_number_field").val();
+
+        const match = arrayOfPhoneNumbers.find(element => {
+          if ((element.slice(-10) == phoneNumber) && tour_is_completed) {
+            return true;
+          }
+        });
+
+        if (match !== undefined) {
+          return true;
+        } else {
+          return false;
+        }
+      }
 
       function isEmpty(obj) {
         for(var prop in obj) {

@@ -1,6 +1,8 @@
 class Api::V1::ToursController < ActionController::Base
   #before_action :set_community, only: [:data,:ios_data,:email_favorites]
   # before_action :set_community, only: :email_favorites
+  before_action :set_tour_user, only: :tour_user_login
+  before_action :set_community_tour_user, only: :tour_user_login
   include ApplicationHelper
   include StripeServices
   require 'securerandom'
@@ -210,35 +212,11 @@ iPhone Users:
   end
 
   def tour_user_login
-    ph_nm = params[:phone_number]
-    phone_number = ph_nm[0] == "1" ? "+" + ph_nm : ((ph_nm[0] != "+" and ph_nm[0] != "1") ? ("+1" + ph_nm) : ph_nm) if ph_nm.present?
-    tu = TourUser.where("lower(email) = ?", params[:email].downcase)&.first
-    if tu.blank?
-      tu = TourUser.create(email: params[:email].downcase, name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false, is_authentiq_verified: false, is_checkpoint_verified: false, authentiq_verified_at: nil, checkpoint_verified_at: nil, is_sms_enabled: params[:is_sms_enabled])
+    if @tour_user.present?
+      render :json => { :success => false, :message => existing_user_error_message(@tour_user) }
     else
-      tu.update_attributes(name: params[:first_name] + " " + params[:last_name], first_name: params[:first_name], last_name: params[:last_name], phone_number: phone_number, id_selfie_mismatch: false, is_authentiq_verified: false, is_checkpoint_verified: false, authentiq_verified_at: nil, checkpoint_verified_at: nil, is_sms_enabled: params[:is_sms_enabled])
-    end
-
-    begin
-      secure_random = SecureRandom.hex
-      payload = { tour_user_id: tu.id, license_key: params[:license_key], secure_random: secure_random }
-      # session[tu.id.to_i] = secure_random
-      (TourUser.find tu.id).update_attributes(secure_random: secure_random)
-      @token = encoded(payload)
-    rescue => ex
-      @token = nil
-    end
-
-    community = Community.find_by_id params[:community_id]
-    allow = true
-    if tu.present?
-      if community.present? and community.restrict_access
-        allow = false unless community.allowed_emails.pluck(:email).include?(tu.email.downcase)
-      end
-      render :json => { :success => true, :message => "User present", tour_user: tu, token: @token, allowed_email: false } and return if allow == false
-      render :json => { :success => true, :message => "User present", tour_user: tu, token: @token, allowed_email: true }
-    else
-      render :json => { :success => false, :message => "User not present" }
+      @tour_user = create_new_tour_user
+      render :json => { :success => true, :message => "New User has been created successfuly!", tour_user: @tour_user, token: generate_encoded_token(@tour_user), allowed_email: is_community_allows_user(@community, @tour_user) }
     end
   end
 
@@ -458,6 +436,66 @@ iPhone Users:
 
   private
 
+  def existing_user_error_message tour_user
+    user_with_email = TourUser.where(email: params[:email]&.downcase).last
+    user_with_phone_number = TourUser.where(phone_number: params[:phone_number]).last
+
+    if user_with_email.present? && user_with_phone_number.present?
+      "Provided email and phone number already exists!"
+    elsif user_with_phone_number.present?
+      "Provided phone number already exists!"
+    elsif user_with_email.present?
+      "Provided email already exists!"
+    else
+      "Something went wrong!"
+    end
+  end
+
+  def generate_encoded_token tu
+    begin
+      secure_random = SecureRandom.hex
+      payload = { tour_user_id: tour_user.id, license_key: params[:license_key], secure_random: secure_random }
+      tour_user.update_attributes(secure_random: secure_random)
+      token = encoded(payload)
+    rescue => ex
+      token = nil
+    end
+
+    token
+  end
+
+  def create_new_tour_user
+    TourUser.create(
+      email: params[:email].downcase, 
+      name: "#{params[:first_name]} #{params[:last_name]}", 
+      first_name: params[:first_name], 
+      last_name: params[:last_name], 
+      phone_number: params[:phone_number], 
+      id_selfie_mismatch: false, 
+      is_authentiq_verified: false, 
+      is_checkpoint_verified: false, 
+      authentiq_verified_at: nil, 
+      checkpoint_verified_at: nil, 
+      is_sms_enabled: params[:is_sms_enabled]
+    )
+  end
+
+  def is_community_allows_user community, tour_user, allow = true
+    if community.present? and community.restrict_access
+      allow = false unless community.allowed_emails.pluck(:email).include?(tour_user.email.downcase)
+    end     
+
+    allow
+  end
+
+  def set_tour_user
+    @tour_user ||= TourUser.where("lower(email) = ? OR phone_number = ?", params[:email].downcase, params[:phone_number])&.first
+  end
+
+  def set_community_tour_user
+    @community ||= Community.find_by_id params[:community_id]
+  end
+
   def share_tour_data
     st = SharedTour.joins(:tour => [:tour_stops, :community])
   end
@@ -473,4 +511,5 @@ iPhone Users:
   def feedback_params
     params.permit(:comment, :rating, :tour_id, :tour_user_id, :is_cancelled, :cancelled_at)
   end
+
 end
