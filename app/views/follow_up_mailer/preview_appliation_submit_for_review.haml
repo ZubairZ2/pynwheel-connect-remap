@@ -2,7 +2,7 @@
 %tr
   %td
     %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;font-weight:600;"}
-      %p The #{@community.touchscreen_app ? "Touch App" : ""} #{@community.touchscreen_app && @community.self_tour ? "," : ""} #{@community.self_tour ? "Self Tour App" : ""} #{@community.touchscreen_app && @community.self_tour ? "," : ""} Map has been completed for #{@community.company.name} - #{@community.name}.
+      %p The #{@apps_text} has been completed for #{@community.company.name} - #{@community.name}.
       %p Pynwheel Touch Code: 
       %p Please review and provide feedback to production or approve in Pynwheel Launch.
       %p Submitted by: #{@user.first_name} #{@user.last_name}
