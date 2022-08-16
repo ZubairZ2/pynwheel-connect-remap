@@ -469,7 +469,7 @@
                   <% if @community.self_tour && (@community.scheduler_widget.nil? ? true : @community.scheduler_widget) && !@community.locked %>
                     <button id ="confirm_reservation" class="btn_popup">Submit</button>
                   <% else %>
-                    <span style = "color: red"><strong>Sorry</strong>, for the inconvenience. It seems <strong> <%= @community.name %> </strong> does not offer self tours or it's under construction. For inquiries call the property at property phone number <strong> <%= @community.phone %> </strong> or <strong> <%= @community.email %> </strong> at property email address.
+                    <span style = "color: red"><strong>Sorry</strong> for the inconvenience. It seems <strong> <%= @community.name %> </strong> does not offer self tours or it's under construction. For inquiries please call the property at <strong> <%= @community.phone %> </strong> or email <strong> <%= @community.email %> </strong>.
                     </span>
                     <br></br>
                     <button type="button" class="disable-submit-btn" disabled>Submit</button>
