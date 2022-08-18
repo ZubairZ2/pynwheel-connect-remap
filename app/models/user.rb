@@ -76,7 +76,7 @@ class User < ApplicationRecord
   end
 
   def company_details
-    user_company = self.company || self.communities.last.company
+    user_company = self.company || self.communities&.last&.company
     if user_company.present?
       user_company.as_json
     end
