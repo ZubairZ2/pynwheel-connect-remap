@@ -81,21 +81,23 @@ class KnockService < BaseService
     new_hash = Hash.new
     new_hash = knock_slots
 
-    knock_slots.each do |slot|
-      date = slot[0].split("-")
-      date = date[1]+"/"+date[0]+"/"+date[2]
-      date_day = Time.parse(date).strftime("%A")
-
-      select_slot = pynwheel_slots.map{|d| d if d[0] === date_day}.compact
-      select_slot = select_slot[0] if select_slot[0].present?
-
-      if select_slot.present? && select_slot[1].present? && select_slot[2].present?
-        start_time = Time.strptime(select_slot[1], "%H:%M")  if select_slot.present? && select_slot[1].present?  
-        end_time = Time.strptime(select_slot[2], "%H:%M")  if select_slot.present? && select_slot[2].present?
-
-        new_hash[slot[0]] = slot[1].map{|v| v if Time.strptime(@community.get_time_in_24_hours_format(v),"%H:%M").between?(start_time, end_time) }.compact
-      else
-        new_hash[slot[0]] = []
+    if knock_slots.present?
+      knock_slots.each do |slot|
+        date = slot[0].split("-")
+        date = date[1]+"/"+date[0]+"/"+date[2]
+        date_day = Time.parse(date).strftime("%A")
+  
+        select_slot = pynwheel_slots.map{|d| d if d[0] === date_day}.compact
+        select_slot = select_slot[0] if select_slot[0].present?
+  
+        if select_slot.present? && select_slot[1].present? && select_slot[2].present?
+          start_time = Time.strptime(select_slot[1], "%H:%M")  if select_slot.present? && select_slot[1].present?  
+          end_time = Time.strptime(select_slot[2], "%H:%M")  if select_slot.present? && select_slot[2].present?
+  
+          new_hash[slot[0]] = slot[1].map{|v| v if Time.strptime(@community.get_time_in_24_hours_format(v),"%H:%M").between?(start_time, end_time) }.compact
+        else
+          new_hash[slot[0]] = []
+        end
       end
     end
 
