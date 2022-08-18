@@ -18,10 +18,10 @@ class Api::V2::PortalToursController < Api::V2::ApiApplicationController
         tour = params['tour']
         @portal_tour = @community.portal_tour
         if @portal_tour.present?
-          @portal_tour.update_attributes(start_tour: tour["start_tour"], max_tour: tour["max_tours"])
+          @portal_tour.update_attributes(start_tour: tour["start_tour"], max_tour: tour["max_tours"], start_tour_point: tour["start_tour_point"])
           @tour = @portal_tour
         else
-          @tour = @community.create_portal_tour(start_tour: tour["start_tour"], max_tour: tour["max_tours"])
+          @tour = @community.create_portal_tour(start_tour: tour["start_tour"], max_tour: tour["max_tours"], start_tour_point: tour["start_tour_point"])
         end
         tour_stop = params["tour_stop"]
         if tour_stop.present?
