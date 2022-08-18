@@ -4,6 +4,7 @@ json.redirect_url @redirect_url
 json.communities @communities do |community|
   if !(community.locked == true) && community.company.inactivate == false
     json.id community.id
+    json.community_code community.community_code
     json.crm_provider community.community_crm_provider
     json.name community.name + (community.city.present? ? " - " + community.city : " - ")  + (community.state.present? ? + ", "  + community.state  : "")
     json.email community.email.present? ? community.email : "" 
@@ -13,6 +14,5 @@ json.communities @communities do |community|
     json.longitude community.longitude
     json.address community.address
     json.logo community.logo.url
-
   end
 end
