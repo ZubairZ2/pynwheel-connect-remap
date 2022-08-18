@@ -5,7 +5,7 @@ class PortalTour < ApplicationRecord
 
   def as_json
     super(
-      :only => [:id, :start_tour, :max_tour] ,
+      :only => [:id, :start_tour, :max_tour, :start_tour_point] ,
       :include => {
         :portal_tour_stops => {:only => [:id, :stop_type, :name, :description, :starting_point, :direction, :video_link, :amenity_type, :tour_stop_details] ,
           :include => {
