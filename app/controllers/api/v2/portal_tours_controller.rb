@@ -94,7 +94,11 @@ class Api::V2::PortalToursController < Api::V2::ApiApplicationController
     if gallery["id"].present?
       tour_gallery = PortalTourStopGallery.find gallery["id"]
       if tour_gallery.present?
-        tour_gallery.update_attributes(image: gallery["image"], description: gallery["image_description"])
+        if gallery["image"].present?
+          tour_gallery.update_attributes(image: gallery["image"], description: gallery["image_description"])
+        else
+          tour_gallery.update_attributes(description: gallery["image_description"])
+        end
       end
     else
       @tour_stop.portal_tour_stop_galleries.create(image: gallery["image"], description: gallery["image_description"])
