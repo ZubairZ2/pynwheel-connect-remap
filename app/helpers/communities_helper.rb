@@ -145,7 +145,7 @@ module CommunitiesHelper
   end
 
   def check_tour_user_card_info(community, tour_user)
-    community.community_tour.verification_type == "authenteq" && community.community_tour.tour_setting.charge_user_for_id_verfication && community.community_tour.visual_id_verification && tour_user.strip_customer_id.blank?
+    community&.community_tour&.verification_type == "authenteq" && community&.community_tour&.tour_setting&.charge_user_for_id_verfication && community&.community_tour&.visual_id_verification && tour_user&.strip_customer_id.blank?
   end
 
   def check_visual_id_verification(tour_user, community)
