@@ -5,6 +5,7 @@ class Community < ApplicationRecord
   mount_base64_uploader :secondary_logo, AvatarUploader
   mount_base64_uploader :self_tour_logo, AvatarUploader
   mount_base64_uploader :brand_details_pdf , PdfUploader
+  mount_base64_uploader :file, DesignUploader
 
   belongs_to :company
   belongs_to :community_group
@@ -91,7 +92,7 @@ class Community < ApplicationRecord
 
   def as_json(options = {})
     data = super(
-      :only => [:id , :name , :logo , :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date], :methods => [:schedule_tour_url, :community_code])
+      :only => [:id , :name , :logo , :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date], :methods => [:schedule_tour_url, :community_code])
     check_brand_access = options[:brand_pdf_feature]
     if check_brand_access == true
       data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())
@@ -212,7 +213,7 @@ class Community < ApplicationRecord
     if self.is_sitemap
       sitemap = self.sitemap
       if status.empty?
-        property_sitemap_status = status_string(self.sitemap&.image&.url.present?)
+        property_sitemap_status = status_string(self.sitemap&.image&.url.present? || self.sitemap&.file&.url.present?)
       else
         property_sitemap_status = "in_progress"
       end
@@ -221,7 +222,7 @@ class Community < ApplicationRecord
       floorplates = self.floorplates
       floorplates.each do |floorplate|
         if status.empty?
-        property_floorplate_status = status_string(floorplate&.image&.url.present?)
+          property_floorplate_status = status_string(floorplate&.image&.url.present? || floorplate&.file&.url.present?)
         else
           property_floorplate_status = "in_progress"
         end
@@ -235,7 +236,7 @@ class Community < ApplicationRecord
 
     self.floorplans.each do |floorplan|
       if status.empty?
-        floorplan_status = status_string(floorplan&.image&.url.present?)
+        floorplan_status = status_string(floorplan&.image&.url.present? || floorplan&.file&.url.present?)
       else
         floorplan_status = status
       end

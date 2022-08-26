@@ -14,6 +14,7 @@ class Sitemap < ApplicationRecord
   serialize :map_ocr_data, Array
   mount_uploader :image, SiteMapUploader
   mount_uploader :label_image, SiteMapUploader
+  mount_uploader :file, DesignUploader
 
   belongs_to :community
   has_many :amenities, as: :amenityable
@@ -26,11 +27,9 @@ class Sitemap < ApplicationRecord
 
   def as_json
     super(
-      :only => [:id , :image , :label_image]
+      :only => [:id ,:image, :file, :label_image]
     )
   end
-
-  validates :image, :presence => {message: "cannot be blank. Please upload site map image first."}
 
   def get_sitemap_units_data units
     sitemap_units = []

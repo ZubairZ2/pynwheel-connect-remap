@@ -162,7 +162,7 @@ class Resman4StaticService < BaseService
       floorplan.property_id = property_id
       
       unless floorplan.name_is_updated.present? && floorplan.name_is_updated
-        floorplan.name = f["Name"]
+        floorplan.name = f["Name"] + " " + f["Id"]
       end
 
       floorplan.unit_count = f["UnitCount"]

@@ -25,12 +25,16 @@ class CommunityUser < ApplicationRecord
                 }}
               }}
           },
-      :methods => [:invitation_date , :company_details , :community_products, :status_in_percentage, :community_detail_forms]
+      :methods => [:invitation_date , :company_details , :floorplan_count ,:community_products, :status_in_percentage, :community_detail_forms]
     )
   end
 
   def invitation_date
     self.created_at
+  end
+
+  def floorplan_count
+    self&.community&.floorplans&.count
   end
 
   def company_details
