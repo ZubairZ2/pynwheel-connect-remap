@@ -106,6 +106,11 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       if community_credentials.update(credential_params)
         credential = community_credentials
         update_crm_credentials if credential&.use_different_crm_provider
+        if !params["crm_credential"].present? && @community.crm_crendential.present?
+          @community.crm_credential.destroy!
+          @community.credential.use_different_crm_provider = false
+          @community.credential.save!
+        end
       end      
     else
       credential = create_data_provider(community_credentials)
