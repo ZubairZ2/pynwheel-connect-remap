@@ -3,24 +3,24 @@ namespace :yardi_voyager do
   desc 'Update yardi voyager provider unit id'
 
   task :update_yardi_voyager_provider_unit_id => :environment do
-    puts "--------------------- Yardi provider unit id updation start ------------------------"
-    Community.where(id: "621").each do |community|
-      community.units.each do |unit|
-        
-        puts "--------------------------------------- Community #{community.id} data updation started: -------------------------------------------------------------------"
-        
-        property_id = unit.property_id
-        provider_unit_id =  unit.marketing_name
-        
-        puts "provider_unit_id - #{provider_unit_id}-#{property_id}"
+    Community.where(data_provider: "yardi").each do |community|
+      
+      begin
 
-        unit.update(provider_unit_id: "#{provider_unit_id}-#{property_id}")
+        if community.units.present?
+          community.units.where(x_plot: 0).destroy_all
+          community.units.each do |unit|
+            property_id = unit.property_id
+            marketing_name =  unit.marketing_name
+            provider_unit_id = property_id.present? ? "#{marketing_name}-#{property_id}" : marketing_name
+            unit.update(provider_unit_id: provider_unit_id)
+          end
+        end
 
-
-        puts "--------------------------------------- Community #{community.id} data updation ended ------------------------------------------------------------------------"
+      rescue
+        next
       end
-    end
 
-    puts "--------------------- Yardi provider unit id updation end ------------------------"
+    end
   end
 end
