@@ -21,20 +21,27 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
         if floorplan_id.present?
           @floorplan = @community.floorplans.find_by_id(floorplan_id)
           if @floorplan.present?
-            if @floorplan.update(name: floorplan["name"], image: floorplan["image"])
-              if floorplan["aminities"].present?
-                floorplan["aminities"].values.each do |amenity|
-                  if !amenity[:id].present?
-                    @floorplan.amenities.create(image: amenity["image"])
-                  end
+            if floorplan["image"].present?
+              @floorplan.remove_file!
+               @floorplan.update(name: floorplan["name"], image: floorplan["image"])
+            end
+            if floorplan["file"].present?
+              @floorplan.remove_image!
+               @floorplan.update(name: floorplan["name"], file: floorplan["file"])
+            end
+            if floorplan["aminities"].present?
+              floorplan["aminities"].values.each do |amenity|
+                if !amenity[:id].present?
+                  @floorplan.amenities.create(image: amenity["image"])
                 end
               end
-              PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "update", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
             end
+            # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "update", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
           end
         else
           @floorplan = @community.floorplans.new(name: floorplan["name"])
           @floorplan.image = floorplan[:image] if floorplan[:image].present?
+          @floorplan.file = floorplan[:file] if floorplan[:file].present?
           if @floorplan.save
             if floorplan["aminities"].present?
               floorplan["aminities"].values.each do |aminity|
@@ -42,7 +49,7 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
               end
             end
           end
-          PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "create", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
+          # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "create", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
         end
       end
       @community.set_floorplan_status(current_pynwheel_user, @status)
@@ -52,7 +59,7 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
           FollowUpMailer.send_submitted_form(@community, FLOORPLAN_IMAGES, email[:data]).deliver_later
         end
       end
-      floorplans = @community.floorplans
+      floorplans = @community.floorplans.order(created_at: :desc)
       render json: { success: true, message: "floorplan has been updated successfully.", data: floorplans.as_json }
     rescue => ex
       render json: { success: false, error_code: 400, message: "#{ex.message}, please verify and try again." }, status: 400
@@ -61,8 +68,12 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
 
   def delete_floorplan_image
     if @load_floorplan.present?
-      @load_floorplan.remove_image!
-      @load_floorplan.standard_image_url = nil
+      if @load_floorplan.image.present?
+        @load_floorplan.remove_image!
+        @load_floorplan.standard_image_url = nil
+      else
+        @load_floorplan.remove_file!
+      end
       if @load_floorplan.save
         @community.set_floorplan_status(current_pynwheel_user, "")
         render :json => {:success => true, :error_code => 200, :message => "Floorplan images deleted successfully", data: nil}
@@ -92,7 +103,8 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
     if @load_floorplan.present?
       if @load_floorplan.destroy!
         @community.set_floorplan_status(current_pynwheel_user, "")
-        render :json => {:success => true, :error_code => 200, :message => "Floorplan deleted successfully", data: nil}
+        floorplans = @community.floorplans.order(created_at: :desc)
+        render :json => {:success => true, :error_code => 200, data: floorplans.as_json, :message => "Floorplan deleted successfully"}
       else
         render :json => {:success => false, :error_code => 500, :message => @load_floorplan.errors.full_messages}
       end

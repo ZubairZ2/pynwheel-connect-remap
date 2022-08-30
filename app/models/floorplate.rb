@@ -29,6 +29,7 @@ class Floorplate < ApplicationRecord
 
   mount_uploader :image, SiteMapUploader
   mount_uploader :label_image, SiteMapUploader
+  mount_uploader :file, DesignUploader
 
   belongs_to :community
   has_many :units, dependent: :destroy
@@ -39,7 +40,7 @@ class Floorplate < ApplicationRecord
   has_one :status, as: :statusable
 
   validates_uniqueness_of :name, scope: :community_id, if: -> { name.present? }
-  validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}, on: [:create]
+  validates :image, :presence => {message: "cannot be blank. Please upload Floor Plate image first."}, if: -> { image.present? }
   validates_with FloorValidator
 
   before_destroy :reset_units_plots
@@ -71,7 +72,7 @@ class Floorplate < ApplicationRecord
 
   def as_json
     super(
-      :only => [:id , :name , :range , :image , :label_image]
+      :only => [:id , :name , :range , :image , :label_image, :file]
     )
   end
 

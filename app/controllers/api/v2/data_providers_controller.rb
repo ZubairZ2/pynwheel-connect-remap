@@ -7,10 +7,72 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       @data_provider = @community.data_provider
       @credential = @community.credential
       render json: {success: true, error_code: 200, data: @credential.as_json(@data_provider)}
-    end     
+    end
+  end
+
+  def replace_imported_data
+    begin
+      @community.units.destroy_all
+      @community.floorplans.destroy_all
+
+      stop_id = @community.community_tour.tour_stops.where(stop_type: "unit").destroy_all
+      VisitedStop.where(tour_stop_id: stop_id.pluck(:id)).destroy_all
+      CustomizeTourService.new(@community, nil).remove_community_tour_stops
+      update_data_provider
+      data_provider = @community.data_provider
+      @credential = update_data_provider_credentials
+      if @credential.present?
+        connection =test_connection
+        if connection[:xml].to_s.include?("error") || connection[:xml].to_s.include?("Error")
+          render json: {success: false, error_code: 200, message: "Invalid Credentials", data: @credential.as_json(data_provider)}
+        else
+          @community.data_is_imported
+          @community.set_data_provider_status(current_pynwheel_user, params["status"])
+          email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
+          email[:data].each do |mail|
+            if mail[:name].eql?(PROPERTY_MANAGEMENT_SYSTEM) && mail[:status].eql?("Submitted")
+              FollowUpMailer.send_submitted_form(@community, PROPERTY_MANAGEMENT_SYSTEM, email[:data]).deliver_later
+            end
+          end
+          render json: {success: true, error_code: 200, message: "Valid credentials. Data import succeeded.", data: @credential.as_json(data_provider)}
+        end
+      else
+        render :json => {:success => false, :error_code => 500, :message => @credential&.errors&.full_messages}
+      end
+    rescue => res
+      render json: { success: false, error_code: 400, message: "#{res.message}" }, status: 400
+    end
   end
 
   def update_data_provider_and_credentials
+    begin
+      update_data_provider
+      data_provider = @community.data_provider
+      @credential = update_data_provider_credentials
+      if @credential.present?
+        connection =test_connection
+        if connection[:xml].to_s.include?("error") || connection[:xml].to_s.include?("Error")
+          render json: {success: false, error_code: 200, message: "Invalid Credentials", data: @credential.as_json(data_provider)}
+        else
+          @community.data_is_imported
+          @community.set_data_provider_status(current_pynwheel_user, params["status"])
+          email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
+          email[:data].each do |mail|
+            if mail[:name].eql?(PROPERTY_MANAGEMENT_SYSTEM) && mail[:status].eql?("Submitted")
+              FollowUpMailer.send_submitted_form(@community, PROPERTY_MANAGEMENT_SYSTEM, email[:data]).deliver_later
+            end
+          end
+          render json: {success: true, error_code: 200, message: "Valid credentials. Data import succeeded.", data: @credential.as_json(data_provider)}
+        end
+      else
+        render :json => {:success => false, :error_code => 500, :message => @credential&.errors&.full_messages}
+      end
+    rescue => res
+      render json: { success: false, error_code: 400, message: "#{res.message}" }, status: 400
+    end
+  end
+
+  def update_finish_later_data_provider_and_credentials
     begin
       update_data_provider
       data_provider = @community.data_provider
@@ -93,15 +155,15 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     if @community.credentials_are_present?
       if xml = @community.connect_to_provider
         begin
-          render :xml => xml
+          return :xml => xml
         rescue
-          render json: {success: false,message: "Please enter correct credentials in settings before importing data.", data: nil}
+          return {success: false, message: "Please enter correct credentials in settings before importing data.", data: nil}
         end
       else
-        render json: {success: false,message: "Please enter correct credentials in settings before importing data.", data: nil}
+        return {success: false, message: "Please enter correct credentials in settings before importing data.", data: nil}
       end
     else
-      render json: {success: false,message: "Please enter credentials in settings before importing data.", data: nil}
+      return {success: false, message: "Please enter credentials in settings before importing data.", data: nil}
     end
   end
 

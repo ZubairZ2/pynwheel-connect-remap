@@ -2,6 +2,7 @@ class Floorplan < ApplicationRecord
   include StandardUrl
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :secondary_image, AvatarUploader
+  mount_base64_uploader :file, DesignUploader
   belongs_to :community
   has_many :amenities, as: :amenityable
   has_one :status, as: :statusable
@@ -15,7 +16,7 @@ class Floorplan < ApplicationRecord
 
   def as_json
     super(
-      :only => [:id, :name, :image], :include => {
+      :only => [:id, :name, :image, :file], :include => {
         :amenities => {:only => [:id  , :image] } }
     )
   end

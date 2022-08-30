@@ -72,7 +72,11 @@ class RealPageSvcSwapService < BaseService
                 floorplan.provider_floorplan_id = fp[:FloorPlanID]
                 floorplan.name = fp[:FloorPlanNameMarketing]
                 if fp[:FloorPlanName].present?
-                  floorplan.name = fp[:FloorPlanName]
+                  if fp[:FloorPlanCode].present?
+                    floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+                  else
+                    floorplan.name = fp[:FloorPlanName]
+                  end
                 elsif fp[:FloorPlanCode].present?
                   if fp[:FloorPlanCode] != fp[:FloorPlanName]
                     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]

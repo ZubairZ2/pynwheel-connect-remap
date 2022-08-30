@@ -593,6 +593,8 @@ Rails.application.routes.draw do
       post '/communities/:community_id/update_galleries', to: 'galleries#update_galleries'
       get '/communities/:community_id/community_data_provider', to: 'data_providers#get_community_data_provider'
       post '/communities/:community_id/update_data_provider', to: 'data_providers#update_data_provider_and_credentials'
+      post '/communities/:community_id/replace_imported_data', to: 'data_providers#replace_imported_data'
+      post '/communities/:community_id/save_finsih_later_data_provider', to: 'data_providers#update_finish_later_data_provider_and_credentials'
       get '/communities/:community_id/test_connection', to: 'data_providers#test_connection'
       resources :user_details do
         member do
@@ -645,6 +647,7 @@ Rails.application.routes.draw do
           post :move_to_production
           put :update_products
           get :get_community_detail_forms
+          delete :delete_community_logo
         end
         resources :galleries do
           member do

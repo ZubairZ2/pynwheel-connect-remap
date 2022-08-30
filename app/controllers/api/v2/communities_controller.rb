@@ -22,6 +22,14 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   end
 
   def update
+    community = params[:community]
+    if community["logo"].present?
+      @community.remove_file!
+      update_community = @community.update(name: community["name"] , logo: community["logo"] , address:  community["address"], city: community["city"], state: community["state"], email: community["email"], phone: community["phone"], zip: community["zip"], property_manager_name: community["property_manager_name"], property_manager_phone: community["property_manager_phone"],property_manager_email:  community["property_manager_email"], website: community["website"] , number_of_units: community["number_of_units"] , brand_details_pdf: community["brand_details_pdf"])
+    else
+      @community.remove_logo!
+      update_community = @community.update(name: community["name"] , file: community["file"] , address:  community["address"], city: community["city"], state: community["state"], email: community["email"], phone: community["phone"], zip: community["zip"], property_manager_name: community["property_manager_name"], property_manager_phone: community["property_manager_phone"],property_manager_email:  community["property_manager_email"], website: community["website"] , number_of_units: community["number_of_units"] , brand_details_pdf: community["brand_details_pdf"])
+    end
     if @community.update(community_params)
       @community.set_community_details_status(current_pynwheel_user, params["community"]["status"])
       render :json => {data: @community.as_json(@brand_pdf_feature) , :message => "Community Details updated succesfully."}
@@ -36,6 +44,20 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
       render :json => {data: @comment.as_json, :message => "Comment added succesfully."}
     else
       render :json => {:success => false, :message => @comment.errors.full_messages}
+    end
+  end
+
+  def delete_community_logo
+    if @community&.logo&.url.present?
+      @community.remove_logo!
+    else
+      @community.remove_file!
+    end
+    @community.save
+    if !@community&.logo&.url.present? && !@community&.file&.url.present?
+      render :json => {:success => true, data: @community.as_json , :message => "Community logo deleted succesfully."}
+    else
+      render :json => {:success => false, :message => @community.errors.full_messages}
     end
   end
 
@@ -152,7 +174,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
 
   def community_params
     params.permit(:status)
-    params.require(:community).permit(:name , :logo , :address , :city , :state , :email , :phone , :zip, :property_manager_name,:property_manager_phone,:property_manager_email , :website , :number_of_units , :brand_details_pdf)
+    params.require(:community).permit(:name , :logo , :address , :city , :state , :email , :phone , :zip, :property_manager_name, :file, :property_manager_phone,:property_manager_email , :website , :number_of_units , :brand_details_pdf)
   end
 
 end
