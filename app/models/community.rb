@@ -1693,7 +1693,6 @@ s  end
   end
 
   def make_slots_from_missing_time_slots(reverse_count, start_time_str, end_time_str, missing_slots, current_date_time_slots, guided_slots_from_top)
-    # binding.pry
     past_time_slot_not_covered = []
     future_time_slot_not_covered = []
     middle_slots = []

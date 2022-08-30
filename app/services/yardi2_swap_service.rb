@@ -19,8 +19,7 @@ class Yardi2SwapService < BaseService
         platform = credentials.platform
         property_id = property_id
         interface_entity = credentials.interface_entity
-        license_key = "MIIBEAYJKwYBBAGCN1gDoIIBATCB/gYKKwYBBAGCN1gDAaCB7zCB7AIDAgABAgJoAQICAIAEAAQQ2FmfN1tFqyeZQ1fa/1z4ZwSByCkDaWALe5MmClQdZwPml6BM7nrW2EYTUGcyEZhPBcmg3jAti00FERTYCMwbvHbxbiJsxPJp3gI9KnJylMHdPOWGNHqxucl6daa4Sh/ZnxWmpitQQDax3vGRfAa6R7mb+fzmRtQ6vedcx02a0i87sA4VXryzoOipqFoKkKMlMs+tiKL5z5FA0eOiA3j3MmO8C6CHMNWS9ZozJ0RwpDl6tvP+PchfNZQGbb5fVN4puqHzN4UDMaD4u2CN5rxqU7z8Zyw6hknTYNhi"
-        
+        license_key = YARDI_LICENSE_KEY
         response = HTTParty.post(
             url,
             :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
