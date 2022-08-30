@@ -158,7 +158,6 @@ class Resman4StaticService < BaseService
 
   def save_resman_floorplans(floorplans,property_id)
     floorplans.each do |f|
-      binding.pry
       floorplan = Floorplan.where(provider: "resman",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"]).first_or_initialize
       floorplan.property_id = property_id
       
