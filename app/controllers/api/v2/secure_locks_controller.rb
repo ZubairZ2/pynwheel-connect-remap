@@ -232,11 +232,11 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   end
 
   def other_lock(lock)
-    if @community.other_lock.present?
-      other_lock = @community.other_lock
-      other_lock.update_attributes(description: lock["description"])
+    if lock["id"].present?
+      other_lock = OtherLock.find lock["id"]
+      other_lock.update_attributes(description: lock["description"], area_type: lock["otherType"])
     else
-      @community.create_other_lock(description: lock["description"])
+      @community.other_locks.create(description: lock["description"], area_type: lock["otherType"])
       @locks_provider << OTHERLOCK
     end
   end
@@ -246,7 +246,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     dwelo = @community.dwelo
     latch = @community.latch
     zerv = @community.zerv
-    other_lock = @community.other_lock
+    other_lock = @community.other_locks
     igloo_home = @community.igloohome
     locks = []
     if edge_state.present?

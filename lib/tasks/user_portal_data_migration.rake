@@ -85,4 +85,13 @@ namespace :user_portal_data_migration do
       community.update(product_options: product_options_string)
     end
   end
+
+  desc 'change default existing other locks to unit'
+  task :change_existing_other_locks_to_unit => :environment do
+    other_locks = OtherLock.where(area_type: [nil, ""])
+    other_locks.each do |lock|
+      lock.area_type = "unit"
+      lock.save!
+    end
+  end
 end

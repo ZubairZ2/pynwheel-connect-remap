@@ -37,6 +37,8 @@ class Community < ApplicationRecord
   has_many :elevators, dependent: :destroy
   has_many :doors, dependent: :destroy
   has_many :access_points, -> { where("attached_with_type = 'Floorplate' OR attached_with_type = 'Sitemap'") }, class_name: 'Door', dependent: :destroy
+  has_many :other_locks, dependent: :destroy
+
 
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy
@@ -54,7 +56,6 @@ class Community < ApplicationRecord
   has_one :three_d_maps_configuration, dependent: :destroy
   has_many :comments , as: :commentable
   has_one :portal_tour, dependent: :destroy
-  has_one :other_lock, dependent: :destroy
   has_one :hardware_spec
   has_one :status, as: :statusable
 
@@ -434,14 +435,16 @@ class Community < ApplicationRecord
   end
 
   def set_other_lock_status(current_user, status)
-    return if self.other_lock.nil?
-    other_lock = self.other_lock
-    if status.empty?
-      status_attr = status_string(other_lock.description.present?)
-    else
-      status_attr = status
+    return unless self.other_locks.present?
+    other_locks = self.other_locks
+    other_locks.each do |lock|
+      if status.empty?
+        status_attr = status_string(lock.description.present?)
+      else
+        status_attr = status
+      end
+      set_status_for_all(lock,status_attr,current_user)
     end
-    set_status_for_all(other_lock,status_attr,current_user)
   end
 
   def pynwheel_access_status(current_user, status)
