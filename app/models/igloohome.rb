@@ -4,6 +4,7 @@ class Igloohome < ApplicationRecord
   belongs_to :community
   has_many :igloohome_locks, dependent: :destroy
   mount_uploader :file, CsvfileUploader
+  has_one :status, as: :statusable
   # mount_uploader :file, SchlagelockUploader
 
   def as_json

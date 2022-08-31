@@ -324,20 +324,26 @@ attr_reader :user , :params
   end
 
   def lock_providers_status(community)
-    return nil if community.zerv.blank? && community.latch.blank? && community.dwelo.blank? && community.edge_state.blank? && community&.edge_state&.remote_locks.blank? && community.other_locks.nil?
+    return nil if community.zerv.blank? && community.latch.blank? && community.dwelo.blank? && community.edge_state.blank? && community&.edge_state&.remote_locks.blank? && community&.edge_state&.yale.blank? && community&.edge_state&.schlage.blank? && community.other_locks.blank? && community.igloohome.blank?
     locks_status = []
     
     zerv = community.zerv
     latch = community.latch
     dwelo = community.dwelo
     remote_locks = community.edge_state&.remote_locks
+    yale_locks = community.edge_state&.yale
+    schlage_locks = community.edge_state&.schlage
+    igloohome_lock = community.igloohome
     other_locks = community.other_locks
 
     locks_status << zerv&.status&.status rescue nil if zerv.present?
     locks_status << latch&.status&.status rescue nil if latch.present?
     locks_status << dwelo&.status&.status rescue nil if dwelo.present?
+    locks_status << igloohome_lock&.status&.status rescue nil if igloohome_lock.present?
+    schlage_locks.each {|lock| locks_status << lock&.status&.status rescue nil } if schlage_locks.present?
+    yale_locks.each {|lock| locks_status << lock&.status&.status rescue nil } if yale_locks.present?
     other_locks.each {|lock| locks_status << lock&.status&.status rescue nil } if other_locks.present?
-  
+
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status rescue nil}
