@@ -12,7 +12,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       puts params.inspect
 
       if webhook_form_validate
-          @tour_user = create_or_update_tour_user        
+          @tour_user = create_or_update_tour_user(@tour_user)
           timezone = @community.get_time_zone()
           community_id = @community&.id rescue ""
           date = Date.strptime(params[:tourDate], '%m/%d/%Y')
@@ -20,7 +20,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
           schedual_tour = @community&.schedual_tours&.where(tour_user_id: @tour_user.id).last
           scheduled_tours = @community&.schedual_tours&.where(tour_user_id: @tour_user.id)
           stops_list = scheduled_tours.last.stops_list rescue []
-          tour_is_in_future = is_tour_in_future(@community,schedual_tour,timezone) 
+          tour_is_in_future = is_tour_in_future(@community, schedual_tour,timezone) 
 
             if schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future
               puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN UPDATED >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -54,7 +54,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
     if !tour_user.present?
       tour_user =  TourUser.create!(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: (params[:neighborFirstName] + " " + params[:neighborLastName]), email: params[:neighborEmail].downcase, phone_number: params[:neighborPhone])
     else
-      tour_user.update_attributes(first_name: params[:neighborFirstName],last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: params[:neighborEmail].downcase, phone_number: params[:neighborPhone]) 
+      tour_user.update_attributes(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: params[:neighborEmail].downcase, phone_number: params[:neighborPhone]) 
     end
 
     tour_user
