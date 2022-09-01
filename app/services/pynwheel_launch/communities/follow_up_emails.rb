@@ -191,9 +191,9 @@ class PynwheelLaunch::Communities::FollowUpEmails
     latch = @community.latch
     dwelo = @community.dwelo
     remote_locks = @community.edge_state&.remote_locks
-    yale_locks = community.edge_state&.yale
-    schlage_locks = community.edge_state&.schlage
-    igloohome_lock = community.igloohome
+    yale_locks = @community.edge_state&.yale
+    schlage_locks = @community.edge_state&.schlage
+    igloohome_lock = @community.igloohome
     other_locks = @community.other_locks
 
     locks_status << zerv&.status&.status rescue nil if zerv.present?
