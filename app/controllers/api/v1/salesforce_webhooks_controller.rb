@@ -1,10 +1,8 @@
 class Api::V1::SalesforceWebhooksController < ActionController::Base
   before_action :set_tour_user, only: :salesforce_tour_webhook
   before_action :set_tour_user_by_email, only: :salesforce_cancel_tour_webhook
-  before_action :set_community_by_id, only: :salesforce_tour_webhook
-  before_action :set_community_by_name, only: :salesforce_tour_webhook
-  before_action :set_community_by_id, only: :salesforce_cancel_tour_webhook
-  before_action :set_community_by_name, only: :salesforce_cancel_tour_webhook
+  before_action :set_community_by_id
+  before_action :set_community_by_name
 
   def salesforce_tour_webhook
     begin
@@ -12,24 +10,31 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
       puts params.inspect
 
       if webhook_form_validate
-          @tour_user = create_or_update_tour_user(@tour_user)
-          timezone = @community.get_time_zone()
-          community_id = @community&.id rescue ""
-          date = Date.strptime(params[:tourDate], '%m/%d/%Y')
-          tour_date = date.strftime('%Y-%m-%d')  if date.present?
-          schedual_tour = @community&.schedual_tours&.where(tour_user_id: @tour_user.id).last
-          scheduled_tours = @community&.schedual_tours&.where(tour_user_id: @tour_user.id)
-          stops_list = scheduled_tours.last.stops_list rescue []
-          tour_is_in_future = is_tour_in_future(@community, schedual_tour,timezone) 
+        @tour_user = create_or_update_tour_user
 
-            if schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future
-              puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN UPDATED >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-              schedual_tour.update_attributes(salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId], stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime] , tour_type: params[:tourType], created_by: "salesforce", created_at: Time.now)
-            else
-              puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN CREATE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-              schedual_tour = SchedualTour.create!(salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId], stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime], tour_type: params[:tourType] , created_by: "salesforce")
-              schedual_tour.save!
-            end
+        puts 
+        timezone = @community.get_time_zone()
+        community_id = @community&.id rescue ""
+        date = Date.strptime(params[:tourDate], '%m/%d/%Y')
+        tour_date = date.strftime('%Y-%m-%d')  if date.present?
+        schedual_tour = @community&.schedual_tours&.where(tour_user_id: @tour_user.id).last
+        scheduled_tours = @community&.schedual_tours&.where(tour_user_id: @tour_user.id)
+        stops_list = scheduled_tours.last.stops_list rescue []
+        tour_is_in_future = is_tour_in_future(@community, schedual_tour, timezone) 
+
+        puts "------------------ Hello ---------------------------------------"
+        puts @tour_user.inspect
+        puts @community.inspect
+        puts tour_is_in_future
+        puts schedual_tour
+         
+        if schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future
+          puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN UPDATED >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          schedual_tour.update_attributes(salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId], stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime] , tour_type: params[:tourType], created_by: "salesforce", created_at: Time.now)
+        else
+          puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN CREATE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          schedual_tour = SchedualTour.create!(salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId], stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime], tour_type: params[:tourType] , created_by: "salesforce")
+        end
 
         if schedual_tour.present?
           render :json => {:success=> true, :message => "Salesforce tour submitted successfully", :status => 200}
@@ -50,14 +55,14 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
 
   private
 
-  def create_or_update_tour_user tour_user
-    if !tour_user.present?
-      tour_user =  TourUser.create!(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: (params[:neighborFirstName] + " " + params[:neighborLastName]), email: params[:neighborEmail].downcase, phone_number: params[:neighborPhone])
+  def create_or_update_tour_user
+    if !@tour_user.present?
+      @tour_user =  TourUser.create!(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: (params[:neighborFirstName] + " " + params[:neighborLastName]), email: params[:neighborEmail].downcase, phone_number: params[:neighborPhone])
     else
-      tour_user.update_attributes(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: params[:neighborEmail].downcase, phone_number: params[:neighborPhone]) 
+      @tour_user.update_attributes(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: params[:neighborEmail].downcase, phone_number: params[:neighborPhone]) 
     end
 
-    tour_user
+    @tour_user
   end
 
   def destroy_salesforce_scheduled_tour
