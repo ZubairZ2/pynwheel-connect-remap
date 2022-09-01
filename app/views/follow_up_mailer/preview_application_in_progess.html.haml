@@ -5,13 +5,16 @@
 %tr
   %td
     %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
-      %p I just wanted to touch base as we're missing some content that we need before we can move into production: Following is the status of so far via Pynwheel Launch.
+      %p I just wanted to touch base as we're missing some content that we need before we can move into production: Following is the status of what you have submitted so far via Pynwheel Launch.
 %tr
   %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
     %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:135%;"}
       %p
         - @forms.each_with_index do |form, index|
-          #{index + 1}. #{form[:name]} - #{form[:status]}
+          -if form[:status].eql?("Not Provided") || form[:status].eql?("Attention Required")
+            #{index + 1}. #{form[:name]} - <strong>#{form[:status]}</strong>
+          -else
+            #{index + 1}. #{form[:name]} - #{form[:status]}
           %br
 %tr
   %td
@@ -25,11 +28,9 @@
   %td
     %div{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:15px;margin-bottom:0;margin-top:3px;color:#000000;line-height:25%;"}
       %p
-        Kellie Ferrell
+        Thank you!
       %p
-        Production Manager
-      %p
-        303-640-3652
+        Pynwheel Support
       %p
         %a{ :href => "mailto:support@pynwheel.com"} support@pynwheel.com
 
