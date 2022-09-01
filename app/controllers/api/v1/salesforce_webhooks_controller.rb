@@ -1,69 +1,46 @@
 class Api::V1::SalesforceWebhooksController < ActionController::Base
-  before_action :set_tour_user, only: :salesforce_cancel_tour_webhook
+  before_action :set_tour_user, only: :salesforce_tour_webhook
+  before_action :set_tour_user_by_email, only: :salesforce_cancel_tour_webhook
+  before_action :set_community_by_id, only: :salesforce_tour_webhook
+  before_action :set_community_by_name, only: :salesforce_tour_webhook
   before_action :set_community_by_id, only: :salesforce_cancel_tour_webhook
   before_action :set_community_by_name, only: :salesforce_cancel_tour_webhook
 
   def salesforce_tour_webhook
     begin
-    neighborEmail = params[:neighborEmail] if params[:neighborEmail].present?
-    phone_number = params[:neighborPhone] rescue ""
-    last_name = params[:neighborLastName] if params[:neighborLastName].present?
-    first_name = params[:neighborFirstName] if params[:neighborFirstName].present?
-    tourDate =  params[:tourDate] if params[:tourDate].present?
-    tourTime = params[:tourTime] if params[:tourTime].present?
-    tourType = params[:tourType] if params[:tourType].present?
-    tourBookingId = params[:tourBookingId] if params[:tourBookingId].present?
-    tourBookingName = params[:tourBookingName] if params[:tourBookingName].present?
-    if webhook_form_validate(tourBookingName, tourBookingId, neighborEmail, last_name, first_name,tourDate, tourTime, tourType)
-      @tour_user = TourUser.where(email: neighborEmail.downcase) if neighborEmail.present?
-      @tour_user = @tour_user.last if @tour_user.present?
-      if !@tour_user.present?
-        @tour_user = TourUser.new(first_name: first_name,last_name: last_name, name: first_name + " " + last_name, email: neighborEmail.downcase, phone_number: phone_number)
-        @tour_user.name = (first_name + " " + last_name)
-        @tour_user.first_name = first_name
-        @tour_user.last_name = last_name
-        @tour_user.phone_number = phone_number if phone_number.present?
-        @tour_user.save!
-      else
-        @tour_user.update_attributes(first_name: params[:neighborFirstName],last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: neighborEmail.downcase, phone_number: params[:neighborPhone]) 
-      end
-        neighborhoodName = params[:neighborhoodName] if params[:neighborhoodName].present?
-        neighborhoodId = params[:neighborhoodId] if params[:neighborhoodId].present?
-        if neighborhoodId.present?
-          crm_credential = CrmCredential.find_by(salesforce_property_id: neighborhoodId) rescue "" 
-          community = crm_credential.community if crm_credential.present? 
-        end
-        if neighborhoodId.present? && crm_credential.present? && community&.crm_credential&.salesforce_property_id == neighborhoodId        
-          @community = community
-        else
-          @community = Community.find_by(name: neighborhoodName) rescue ""
-        end
-        timezone = @community.get_time_zone()
-        community_id = @community&.id rescue ""
-        date = Date.strptime(tourDate, '%m/%d/%Y')  if tourDate.present?
-        tour_date = date.strftime('%Y-%m-%d')  if date.present?
-        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< IN SALESFORCE WEBHOOK >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        schedual_tour = @community&.schedual_tours&.where(tour_user_id: @tour_user.id).last
+      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< IN SALESFORCE WEBHOOK >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+      puts params.inspect
+
+      if webhook_form_validate
+          @tour_user = create_or_update_tour_user        
+          timezone = @community.get_time_zone()
+          community_id = @community&.id rescue ""
+          date = Date.strptime(params[:tourDate], '%m/%d/%Y')
+          tour_date = date.strftime('%Y-%m-%d')  if date.present?
+          schedual_tour = @community&.schedual_tours&.where(tour_user_id: @tour_user.id).last
           scheduled_tours = @community&.schedual_tours&.where(tour_user_id: @tour_user.id)
           stops_list = scheduled_tours.last.stops_list rescue []
           tour_is_in_future = is_tour_in_future(@community,schedual_tour,timezone) 
-          if schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future
-            schedual_tour.update_attributes(salesforce_tour_booking_name: tourBookingName, salesforce_tour_booking_id: tourBookingId, stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: tourTime , tour_type: tourType, created_by: "salesforce", created_at: Time.now)
-          else
-            puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN CREATE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-            schedual_tour = SchedualTour.create!(salesforce_tour_booking_name: tourBookingName, salesforce_tour_booking_id: tourBookingId, stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: tourTime, tour_type: tourType , created_by: "salesforce")
-            schedual_tour.save!
-          end
 
-      if schedual_tour.present?
-        render :json => {:success=> true, :message => "Salesforce tour submitted successfully", :status => 200}
-      else
-        render :json => {:success=> false, :message => "Salesforce tour could not be submitted", :status => 200}
+            if schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future
+              puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN UPDATED >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+              schedual_tour.update_attributes(salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId], stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime] , tour_type: params[:tourType], created_by: "salesforce", created_at: Time.now)
+            else
+              puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN CREATE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+              schedual_tour = SchedualTour.create!(salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId], stops_list: stops_list, community_id: community_id, tour_user_id: @tour_user.id ,user_time_zone: timezone, tour_date: tour_date, tour_time: params[:tourTime], tour_type: params[:tourType] , created_by: "salesforce")
+              schedual_tour.save!
+            end
+
+        if schedual_tour.present?
+          render :json => {:success=> true, :message => "Salesforce tour submitted successfully", :status => 200}
+        else
+          render :json => {:success=> false, :message => "Salesforce tour could not be submitted", :status => 200}
+        end
       end
-    end    
-  rescue Exception
-    render :json => {:success=> false, :message => "Some Error occured", :status => 500}
-  end
+
+    rescue Exception
+      render :json => {:success=> false, :message => "Some Error occured", :status => 500}
+    end
   end
 
   def salesforce_cancel_tour_webhook
@@ -72,6 +49,16 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
   end
 
   private
+
+  def create_or_update_tour_user tour_user
+    if !tour_user.present?
+      tour_user =  TourUser.create!(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: (params[:neighborFirstName] + " " + params[:neighborLastName]), email: params[:neighborEmail].downcase, phone_number: params[:neighborPhone])
+    else
+      tour_user.update_attributes(first_name: params[:neighborFirstName],last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: params[:neighborEmail].downcase, phone_number: params[:neighborPhone]) 
+    end
+
+    tour_user
+  end
 
   def destroy_salesforce_scheduled_tour
     schedual_tour = @tour_user.schedual_tours.where(created_by: "salesforce", community_id: @community&.id, salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId]).last
@@ -87,33 +74,40 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
     @community ||= Community.where(name: params[:neighborhoodName]).last
   end
 
-  def set_tour_user
+  def set_tour_user_by_email
     @tour_user ||= TourUser.where(email: params[:neighborEmail].downcase).last
   end
 
-  def webhook_form_validate(tourBookingName, tourBookingId, neighborEmail, last_name, first_name,tourDate, tourTime, tourType)
-    if !tourBookingName.present?
+  def set_tour_user
+    @tour_user ||= TourUser.where("lower(email) = ? OR phone_number = ?", params[:neighborEmail].downcase, params[:neighborPhone])&.last
+  end
+
+  def webhook_form_validate
+    if !params[:tourBookingName].present?
       render :json => {:success=> false, :message => "Tour Booking Name cannot be empty", :status => 400}
       return false
-    elsif !tourBookingId.present?
+    elsif !params[:tourBookingId].present?
       render :json => {:success=> false, :message => "Tour Booking Id cannot be empty", :status => 400}
       return false
-    elsif !neighborEmail.present?
+    elsif !params[:neighborEmail].present?
       render :json => {:success=> false, :message => "Email cannot be empty", :status => 400}
       return false
-    elsif !last_name.present?
+    elsif !params[:neighborPhone].present?
+      render :json => {:success=> false, :message => "Phone number cannot be empty", :status => 400}
+      return false
+    elsif !params[:neighborLastName].present?
       render :json => {:success=> false, :message => "Last name cannot be empty", :status => 400}
       return false
-    elsif !first_name.present?
+    elsif !params[:neighborFirstName].present?
       render :json => {:success=> false, :message => "First name cannot be empty", :status => 400}
       return false  
-    elsif !tourDate.present?
+    elsif !params[:tourDate].present?
       render :json => {:success=> false, :message => "Tour date cannot be empty", :status => 400}
       return false
-    elsif !tourTime.present?
+    elsif !params[:tourTime].present?
       render :json => {:success=> false, :message => "Tour time cannot be empty", :status => 400}
       return false
-    elsif !tourType.present?
+    elsif !params[:tourType].present?
       render :json => {:success=> false, :message => "Tour type cannot be empty", :status => 400}
       return false
     else
