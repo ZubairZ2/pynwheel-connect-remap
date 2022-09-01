@@ -308,7 +308,6 @@ class SchedualToursController < ApplicationController
     KnockService.new(@schedual_tour).knock_crm(true)
     FunnelService.new(@schedual_tour).funnel_crm(true)
 
-
     @schedual_tour.update_attributes(tour_date: date, tour_time: tour_time, day_diff: day_diff)
     
     set_daily_email_sent = false

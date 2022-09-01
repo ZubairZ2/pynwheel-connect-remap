@@ -489,7 +489,7 @@ iPhone Users:
   end
 
   def set_tour_user
-    @tour_user ||= TourUser.where("lower(email) = ? OR phone_number = ?", params[:email].downcase, params[:phone_number])&.first
+    @tour_user ||= TourUser.where("lower(email) = ? OR phone_number = ?", params[:email].downcase, params[:phone_number])&.last
   end
 
   def set_community_tour_user
