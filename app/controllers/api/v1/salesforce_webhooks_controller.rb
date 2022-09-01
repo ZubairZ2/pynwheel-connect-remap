@@ -115,7 +115,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
   end
 
   def make_phone_number
-    "+1#{params[:neighborPhone]&.gsub!(/[^0-9A-Za-z]/, '')}"
+    "+1#{params[:neighborPhone]&.tr('(), ,-', '')}"
   end
 
   def is_tour_in_future(community, tour, timezone)
