@@ -27,7 +27,7 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     / Google Font
     %link{:href => "https://fonts.googleapis.com/css?family=Raleway:100,200,300,400,500,600,700,800,900", :rel => "stylesheet"}/
-  %body.floor-plan{:style => "background-color:#303a3c;"}
+  %body.floor-plan{:style => "background-color:#303a3c;overflow: auto !important;"}
     - if @community.data_provider == "realpagesvc"
       #ollWidget
       <script language="javascript" src="https://property.onesite.realpage.com/oll/eol/widget?siteId=#{@community.credential.site_id}&container=ollWidget"></script>
