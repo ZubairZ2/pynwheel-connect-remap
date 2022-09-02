@@ -1323,7 +1323,7 @@ json.tours @tours do |tour|
 
       json.video_link_button_label amenity.video_link_button_label
       json.video_link amenity.video_link.present? ? amenity.video_link : ""
-      floorplate_image = (amenity.amenityable.image.present? ? amenity.amenityable : nil) if amenity.amenityable.present? rescue nil
+      floorplate_image = (amenity.amenityable.image.url.present? ? amenity.amenityable : nil) if amenity.amenityable.present? rescue nil
       json.floorplate_image floorplate_image.image.url  rescue 0
       json.image_width @community.property_map_width(floorplate_image)
       json.image_height @community.property_map_height(floorplate_image)

@@ -1,6 +1,7 @@
 class PsiSwapService < BaseService
   @@floorplanHash = Hash.new
   def perform
+    com_test = Community.find credentials.community_id
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -45,9 +46,11 @@ class PsiSwapService < BaseService
               floorplans << f
             end
           end
+          
           save_psi_floorplans(floorplans,property_id)
           save_psi_units(units,property_id)
-          community_data_updated_on()
+          com_test&.community_data_updated_on()
+
           # save_website_column_of_community(response)
           end
       rescue => e
@@ -56,11 +59,6 @@ class PsiSwapService < BaseService
     end
     fill_psi_pricing_details
     # rename_provider
-  end
-
-  def community_data_updated_on 
-    com = Community.find credentials.community_id
-    com.update(data_provider_updated_on: Time.now.to_s) if com.present?
   end
 
   def save_psi_units(units,property_id)

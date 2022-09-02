@@ -148,6 +148,7 @@ class RealPageSvcSwapService < BaseService
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
         community_id = credentials.community_id
+        community = Community.find_by_id community_id
         response = HTTParty.post(
             url,
             :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -173,6 +174,7 @@ class RealPageSvcSwapService < BaseService
           ')
         result = Ox.load(response.body, mode: :hash)
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
+          community&.community_data_updated_on()
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
           units.each do |u|
 
@@ -181,9 +183,11 @@ class RealPageSvcSwapService < BaseService
               hit = false
 
               unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber])
+             
               unless unit.count == 1
                 unit = Unit.where(community_id: community_id,marketing_name: u[:UnitNumber], building: u[:BuildingNumber])
               end
+
               if unit.present?
                 unit = unit.first
                 unit.provider = "realpagesvc_new"

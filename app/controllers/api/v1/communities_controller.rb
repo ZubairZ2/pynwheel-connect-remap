@@ -1423,17 +1423,15 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def date_compare(tour)
-    if tour.tour_time.nil?
-      return false
+    if tour.present?
+      if (tour.tour_date && tour.tour_time).present?
+        (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(tour&.community&.get_time_zone()) < Time.now.in_time_zone(tour&.community&.get_time_zone())
+      else
+        return false
+      end
     else
-      d = tour.tour_date
-      t = tour.tour_time
-      tour_date_time = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec, t.zone)
-      new_date = Date.today
-      new_time = Time.now
-      new_date_time = DateTime.new(new_date.year, new_date.month, new_date.day, new_time.hour, new_time.min, new_time.sec, new_time.zone)
-      return tour_date_time <= new_date_time
-    end
+      return false
+    end    
   end
 
   def send_user_arrival_email tour_user, community

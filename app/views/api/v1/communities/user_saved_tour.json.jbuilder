@@ -157,7 +157,7 @@ json.tours tours do |tour|
         json.show_long_stop_description show_long_stop_description
         json.stop_description (show_long_stop_description ? amenity_description[0..description_limit - 1] : amenity_description)
         json.long_stop_description  styling_start + amenity.description.gsub('red','') + styling_end rescue ""
-        floorplate_image = (amenity.amenityable.image.present? ? amenity.amenityable : nil) if amenity.amenityable.present? rescue nil
+        floorplate_image = (amenity.amenityable.image.url.present? ? amenity.amenityable : nil) if amenity.amenityable.present? rescue nil
 
         json.floorplate_image floorplate_image.image.url rescue ""
         json.floorplan_image []

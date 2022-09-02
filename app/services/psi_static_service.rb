@@ -1,6 +1,7 @@
 class PsiStaticService < BaseService
   @@floorplanHash = Hash.new
   def perform
+    com_test = Community.find credentials.community_id
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -45,13 +46,15 @@ class PsiStaticService < BaseService
           end
           save_psi_floorplans(floorplans,property_id)
           save_psi_units(units,property_id)
-          community_data_updated_on()
+          com_test&.community_data_updated_on()
+
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
             cred.save
           rescue => err
           end
+          
           # save_website_column_of_community(response)
           #else
           #puts '-----------------------------' , response["response"]["error"]["message"]
@@ -76,11 +79,6 @@ class PsiStaticService < BaseService
     end
     fill_psi_pricing_details(1)
     fill_psi_pricing_details(0)
-  end
-
-  def community_data_updated_on 
-    com = Community.find credentials.community_id
-    com.update(data_provider_updated_on: Time.now.to_s) if com.present?
   end
 
   def save_psi_units(units,property_id)
