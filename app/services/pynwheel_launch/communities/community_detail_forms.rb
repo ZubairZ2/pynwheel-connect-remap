@@ -59,6 +59,22 @@ class PynwheelLaunch::Communities::CommunityDetailForms
       {
         name: FLOORPLAN_IMAGES,
         status: floorplan_status
+      },
+      {
+        name: DESIGN_DIRECTION,
+        status: floorplan_status
+      },
+      {
+        name: AMENITY_IMAGES,
+        status: floorplan_status
+      },
+      {
+        name: EBROCHURE,
+        status: floorplan_status
+      },
+      {
+        name: ADDITIONAL_PAGES,
+        status: floorplan_status
       }
     ]
   end

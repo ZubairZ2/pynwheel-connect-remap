@@ -61,3 +61,7 @@ PARAM_APPROVED = "approved"
 PARAM_REJECTED = "Rejected"
 IN_PRODUCTION = "In Production"
 YARDI_RENT_CAFE_API_BASE_URLS = ["https://api.rentcafe.com","https://api.rentcafe.co.uk"]
+DESIGN_DIRECTION = "Design Direction"
+AMENITY_IMAGES = "Amenity Images"
+EBROCHURE = "eBrochure"
+ADDITIONAL_PAGES = "Additional Pages"
