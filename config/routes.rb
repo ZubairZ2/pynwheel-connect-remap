@@ -607,6 +607,10 @@ Rails.application.routes.draw do
         resources :community_amenity
         post :add_community_amenity, to: 'community_amenity#add_community_amenity'
 
+        resources :community_additional_pages
+        post :add_additional_pages, to: 'community_additional_pages#add_additional_pages'
+        delete :delete_imagepage_image, to: 'community_additional_pages#delete_imagepage_image'
+
         delete :delete_property_map, to: 'community_property_map#delete_property_map'
         delete :delete_label_image, to: 'community_property_map#delete_label_image'
         delete :change_property_type, to: 'community_property_map#change_property_type'

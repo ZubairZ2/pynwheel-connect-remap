@@ -28,5 +28,22 @@ class Imagepage < ApplicationRecord
   scope :active, -> { where(hide_page: false) }
   validates_with WebAndImageValidator
 
+  def as_json
+    super(
+      :only => [:id, :name], :methods => [:media]
+    )
+  end
+
+  def media
+    media_arr = []
+    self.additional_images.each do |gallery_img|
+      media_arr << {
+        id: gallery_img.id,
+        name: gallery_img.name,
+        image: gallery_img.image
+      }
+    end
+    media_arr
+  end
  
 end
