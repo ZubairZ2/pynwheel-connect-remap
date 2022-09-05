@@ -50,7 +50,7 @@ class Amenity < ApplicationRecord
   has_one :tour_stop, as: :stop, dependent: :destroy
   
   scope :plotted_amenities, -> { where("x_plot > ? or y_plot > ?", 0, 0) }
-  validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}
+  validates :image, :presence => {message: "cannot be blank. Please upload Amenity image first."}, if: -> { image.present? }
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_amenity_image
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
@@ -60,6 +60,11 @@ class Amenity < ApplicationRecord
     ["Playground","Playground"],["Clubhouse / Resident Lounge","Clubhouse / Resident Lounge"],["Game Room","Game Room"],["Dog Wash","Dog Wash"],["Package Locker","Package Locker"],["Mail Room","Mail Room"],
     ["Conference Room","Conference Room"],["Business Center / Lounge","Business Center / Lounge"], ["Other", "Other"]]
 
+  def as_json
+    super(
+      :only => [:id, :name, :image]
+    )
+  end
   def get_amenity_galleries galler_obj = []
     galler_obj << {
       image: self.image
