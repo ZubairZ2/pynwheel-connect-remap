@@ -1,6 +1,6 @@
 class Api::V1::SalesforceWebhooksController < ActionController::Base
-  before_action :set_tour_user, only: :salesforce_tour_webhook
-  before_action :set_tour_user_by_email, only: :salesforce_cancel_tour_webhook
+  # before_action :set_tour_user, only: :salesforce_tour_webhook
+  before_action :set_tour_user_by_email, only: [:salesforce_tour_webhook, :salesforce_cancel_tour_webhook]
   before_action :set_community_by_id
   before_action :set_community_by_name
 
@@ -91,9 +91,6 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
     elsif !params[:neighborEmail].present?
       render :json => {:success=> false, :message => "Email cannot be empty", :status => 400}
       return false
-    elsif !params[:neighborPhone].present?
-      render :json => {:success=> false, :message => "Phone number cannot be empty", :status => 400}
-      return false
     elsif !params[:neighborLastName].present?
       render :json => {:success=> false, :message => "Last name cannot be empty", :status => 400}
       return false
@@ -115,7 +112,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
   end
 
   def make_phone_number
-    "+1#{params[:neighborPhone]&.tr('(), ,-', '')}"
+    params[:neighborPhone].present? ? "+1#{params[:neighborPhone]&.tr('(), ,-', '')}" : ""
   end
 
   def is_tour_in_future(community, tour, timezone)
