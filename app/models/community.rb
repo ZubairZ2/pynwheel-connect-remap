@@ -58,6 +58,7 @@ class Community < ApplicationRecord
   has_one :other_lock, dependent: :destroy
   has_one :hardware_spec
   has_one :status, as: :statusable
+  has_one :design_direction
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
