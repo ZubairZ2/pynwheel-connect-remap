@@ -53,7 +53,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
     if !@tour_user.present?
       @tour_user =  TourUser.create!(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: (params[:neighborFirstName] + " " + params[:neighborLastName]), email: params[:neighborEmail].downcase, phone_number: make_phone_number)
     else
-      @tour_user.update_attributes(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: params[:neighborEmail].downcase, phone_number: make_phone_number) 
+      @tour_user.update_attributes(first_name: params[:neighborFirstName], last_name: params[:neighborLastName], name: params[:neighborFirstName] + " " + params[:neighborLastName], email: params[:neighborEmail].downcase, phone_number: (make_phone_number).present? ? make_phone_number : @tour_user.phone_number) 
     end
 
     @tour_user
