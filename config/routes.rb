@@ -607,6 +607,11 @@ Rails.application.routes.draw do
         resources :community_amenity
         post :add_community_amenity, to: 'community_amenity#add_community_amenity'
 
+        resources :design_direction do
+          delete :delete_design_image
+        end
+        
+
         resources :community_additional_pages
         post :add_additional_pages, to: 'community_additional_pages#add_additional_pages'
         delete :delete_imagepage_image, to: 'community_additional_pages#delete_imagepage_image'
