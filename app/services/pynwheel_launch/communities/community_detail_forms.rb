@@ -3,11 +3,36 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     @community = community
   end
 
+  def design_direction_form_require
+    return false if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return true if products["product_options"]["pynwheel_touch"]["is_enabled"] && (products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Modernist Horizontal") || products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Modernist Vertical") || products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Expressionist"))
+    false
+  end
+
+  def amenity_images_form_require
+    return false if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return true if !products["product_options"]["self_tour"]["is_enabled"] && (products["product_options"]["pynwheel_touch"]["is_enabled"] || products["product_options"]["pynwheel_maps"])
+    false
+  end
+
+  def additional_pages_form_require
+    return false if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return true if !products["product_options"]["self_tour"]["is_enabled"] && products["product_options"]["pynwheel_touch"]["is_enabled"] && !products["product_options"]["pynwheel_maps"]
+    false
+  end
+
   def get_community_detail_forms(products)
     community_products = products
     detail_forms = mendatory_detail_forms
+    detail_forms << design_direction_form if design_direction_form_require
+    detail_forms << amenity_images_form if amenity_images_form_require
+    detail_forms << additiona_pages_form if additional_pages_form_require
     forms_for_touch_app(community_products).each {|x| detail_forms << x} if products.include?("pynwheel_touch")
     forms_for_self_tour(community_products).each {|a| detail_forms << a} if products.include?("self_tour")
+
     detail_forms
   end
 
@@ -38,6 +63,27 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     end
   end
 
+  def design_direction_form
+    {
+      name: DESIGN_DIRECTION,
+      status: company_status
+    }
+  end
+
+  def amenity_images_form
+    {
+      name: AMENITY_IMAGES,
+      status: company_status
+    }
+  end
+
+  def additiona_pages_form
+    {
+      name: ADDITIONAL_PAGES,
+      status: company_status
+    }
+  end
+
   def mendatory_detail_forms
     [
       {
@@ -61,20 +107,8 @@ class PynwheelLaunch::Communities::CommunityDetailForms
         status: floorplan_status
       },
       {
-        name: DESIGN_DIRECTION,
-        status: floorplan_status
-      },
-      {
-        name: AMENITY_IMAGES,
-        status: floorplan_status
-      },
-      {
         name: EBROCHURE,
-        status: floorplan_status
-      },
-      {
-        name: ADDITIONAL_PAGES,
-        status: floorplan_status
+        status: company_status
       }
     ]
   end
