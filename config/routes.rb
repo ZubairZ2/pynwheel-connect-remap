@@ -603,14 +603,19 @@ Rails.application.routes.draw do
       end
       resources :communities do
         resources :community_property_map
-        
+
         resources :community_amenity
         post :add_community_amenity, to: 'community_amenity#add_community_amenity'
 
         resources :design_direction do
           delete :delete_design_image
         end
-        
+
+        resources :ebrochures do
+          post :add_favorite_ebrochure
+          delete :delete_ebrochure_weblink
+          delete :delete_ebrouchure_image
+        end
 
         resources :community_additional_pages
         post :add_additional_pages, to: 'community_additional_pages#add_additional_pages'
