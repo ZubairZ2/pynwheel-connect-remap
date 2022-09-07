@@ -1,14 +1,12 @@
 class Api::V1::SalesforceWebhooksController < ActionController::Base
   # before_action :set_tour_user, only: :salesforce_tour_webhook
   before_action :set_tour_user_by_email, only: [:salesforce_tour_webhook, :salesforce_cancel_tour_webhook]
+  before_action :set_logs, only: :salesforce_tour_webhook
   before_action :set_community_by_id
   before_action :set_community_by_name
 
   def salesforce_tour_webhook
     begin
-      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< IN SALESFORCE WEBHOOK >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-      puts params.inspect
-
       if webhook_form_validate
         @tour_user = create_or_update_tour_user
         date = Date.strptime(params[:tourDate], '%m/%d/%Y')
@@ -39,10 +37,8 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
 
   def schedule_salesforce_tour schedual_tour, tour_is_in_future, stops_list, tour_date
     if schedual_tour.present? && !schedual_tour.is_tour_completed && tour_is_in_future
-      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN UPDATED >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
       schedual_tour.update_attributes(salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId], stops_list: stops_list, community_id: @community&.id, tour_user_id: @tour_user.id ,user_time_zone: @community.get_time_zone(), tour_date: tour_date, tour_time: params[:tourTime] , tour_type: params[:tourType], created_by: "salesforce", created_at: Time.now)
     else
-      puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SCHEDULE TOUR HAS BEEN CREATE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
       schedual_tour = SchedualTour.create!(salesforce_tour_booking_name: params[:tourBookingName], salesforce_tour_booking_id: params[:tourBookingId], stops_list: stops_list, community_id: @community&.id, tour_user_id: @tour_user.id ,user_time_zone: @community.get_time_zone(), tour_date: tour_date, tour_time: params[:tourTime], tour_type: params[:tourType] , created_by: "salesforce")
     end
 
@@ -125,5 +121,14 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
     else
       return false
     end    
+  end
+
+  def set_logs
+    WebHookLog.create(
+      type: "salesforce",
+      community_id: params[:neighborhoodId],
+      community_name: params[:neighborhoodName],
+      params: params[:salesforce_webhook]
+    )
   end
 end
