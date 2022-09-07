@@ -20,7 +20,13 @@ class Api::V2::DesignDirectionController < Api::V2::ApiApplicationController
 
   def update
     if @design_direction.present?
-      if @design_direction.update(design_params)
+      design_params= params["design_direction"]
+      if design_params["image"].blank?
+        updated = @design_direction.update(hex_colors: design_params["hex_colors"], direction: design_params["direction"], additional_direction: design_params["additional_direction"])
+      else
+        updated = @design_direction.update(image: design_params["image"],hex_colors: design_params["hex_colors"], direction: design_params["direction"], additional_direction: design_params["additional_direction"])
+      end
+      if updated
         render json: { success: true, data: @design_direction.as_json, message: "Design direction updated successfully!" }
       else
         render json: { success: true, data: nil, message: "Failed to update design direction!" }
@@ -55,10 +61,6 @@ class Api::V2::DesignDirectionController < Api::V2::ApiApplicationController
     @design_direction = DesignDirection.find params[:id]
     rescue ActiveRecord::RecordNotFound
       render json: { success: false, error_code: 400, message: 'Community not found', data: nil }, status: :not_found
-  end
-
-  def design_params
-    params.require(:design_direction).permit(:id, :image, :hex_colors, :direction, :additional_direction, :status)
   end
 
   def load_community
