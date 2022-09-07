@@ -24,12 +24,20 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     false
   end
 
+  def hardware_spec_form_require
+    return true if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return false if products["product_options"]["pynwheel_touch"]["options"]["installation"].eql?("No")
+    true
+  end
+
   def get_community_detail_forms(products)
     community_products = products
     detail_forms = mendatory_detail_forms
     detail_forms << design_direction_form if design_direction_form_require
     detail_forms << amenity_images_form if amenity_images_form_require
     detail_forms << additiona_pages_form if additional_pages_form_require
+    detail_forms << hardware_spec_form if hardware_spec_form_require
     forms_for_touch_app(community_products).each {|x| detail_forms << x} if products.include?("pynwheel_touch")
     forms_for_self_tour(community_products).each {|a| detail_forms << a} if products.include?("self_tour")
 
@@ -61,6 +69,13 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     when HARDWARE_SPECS
       update_hardware_specs_status_and_remarks(status, remarks)
     end
+  end
+
+  def hardware_spec_form
+    {
+      name: HARDWARE_SPECS,
+      status: hardware_specs_status
+    }
   end
 
   def design_direction_form
@@ -143,10 +158,6 @@ class PynwheelLaunch::Communities::CommunityDetailForms
       {
         name: TOUCH_HOME_PAGE_MEDIA,
         status: home_page_media_status
-      },
-      {
-        name: HARDWARE_SPECS,
-        status: hardware_specs_status
       }
     ]
   end
