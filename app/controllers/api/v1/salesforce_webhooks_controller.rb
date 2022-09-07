@@ -125,7 +125,7 @@ class Api::V1::SalesforceWebhooksController < ActionController::Base
 
   def set_logs
     WebHookLog.create(
-      type: "salesforce",
+      webhook_type: "salesforce",
       community_id: params[:neighborhoodId],
       community_name: params[:neighborhoodName],
       params: params[:salesforce_webhook]
