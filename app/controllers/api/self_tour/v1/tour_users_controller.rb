@@ -127,7 +127,7 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
     TwilioSmsService.new().send_sms(message_body, to_phone_number)
   end
 
-  def get_tour_user_by_phone_number
+  def set_tour_user
     @tour_user ||= TourUser.where(phone_number: params[:phone_number])&.last
   end
 
