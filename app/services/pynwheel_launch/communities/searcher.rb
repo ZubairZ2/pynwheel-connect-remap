@@ -429,10 +429,10 @@ attr_reader :user , :params
   end
 
   def hardware_spec_form_require(community)
-    return true if community.product_options.nil?
+    return false if community.product_options.nil?
     products = JSON.parse(community.product_options)
-    return false if products["product_options"]["pynwheel_touch"]["options"]["installation"].eql?("No")
-    true
+    return true if products["product_options"]["pynwheel_touch"]["options"]["installation"].eql?("Yes")
+    false
   end
 
 

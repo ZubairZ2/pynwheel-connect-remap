@@ -309,7 +309,7 @@ class Community < ApplicationRecord
   def set_design_direction_status(current_user, status)
     return if self&.design_direction&.blank?
     if status.empty? || status.nil?
-      design_direction = status_string(self&.design_direction&.image&.url.present?)
+      design_direction = status_string(self&.design_direction&.image&.url.present? || self&.design_direction&.file&.url.present?)
     else
       design_direction = status
     end

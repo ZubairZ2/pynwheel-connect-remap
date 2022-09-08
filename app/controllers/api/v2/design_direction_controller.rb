@@ -22,10 +22,14 @@ class Api::V2::DesignDirectionController < Api::V2::ApiApplicationController
     if @design_direction.present?
       design_params= params["design_direction"]
       @status = params["status"] || ""
-      if design_params["image"].blank?
-        updated = @design_direction.update(hex_colors: design_params["hex_colors"], direction: design_params["direction"], additional_direction: design_params["additional_direction"])
-      else
+      if design_params["image"].present?
+        @design_direction.remove_file!
         updated = @design_direction.update(image: design_params["image"],hex_colors: design_params["hex_colors"], direction: design_params["direction"], additional_direction: design_params["additional_direction"])
+      elsif design_params["file"].present?
+        @design_direction.remove_image!
+        updated = @design_direction.update(file: design_params["file"],hex_colors: design_params["hex_colors"], direction: design_params["direction"], additional_direction: design_params["additional_direction"])
+      else
+        updated = @design_direction.update(hex_colors: design_params["hex_colors"], direction: design_params["direction"], additional_direction: design_params["additional_direction"])
       end
       if updated
         @community.set_design_direction_status(current_pynwheel_user, @status)
@@ -38,8 +42,10 @@ class Api::V2::DesignDirectionController < Api::V2::ApiApplicationController
 
   def delete_design_image
     if @design_direction_image.present?
-      if @design_direction_image&.image&.url&.present?
-        @design_direction_image.remove_image!
+      image_type = params["get_design_type"]
+      if image_type.present?
+        @design_direction_image.remove_image! if image_type.eql?("image")
+        @design_direction_image.remove_file! if image_type.eql?("file")
         if @design_direction_image.save
           @community.set_design_direction_status(current_pynwheel_user, "")
           render json: { success: true, message: "Design Direction image deleted successfully!", data: @design_direction_image.as_json }
