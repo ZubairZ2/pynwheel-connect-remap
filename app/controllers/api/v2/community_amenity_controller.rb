@@ -20,6 +20,7 @@ class Api::V2::CommunityAmenityController < Api::V2::ApiApplicationController
   def add_community_amenity
     begin
       amenity_params = params["amenity"]
+      @status = params["status"] || ""
       amenity_params.values.each do |amenity|
         if amenity["id"].present?
           update_community_amenity(amenity)
@@ -28,6 +29,7 @@ class Api::V2::CommunityAmenityController < Api::V2::ApiApplicationController
         end
       end
       amenities = @community.amenities
+      @community.set_community_amenity_status(current_pynwheel_user, @status)
       if amenities.present?
         render json: {success: true, data: amenities.as_json}
       end
@@ -40,6 +42,7 @@ class Api::V2::CommunityAmenityController < Api::V2::ApiApplicationController
     if @amenity.present?
       if @amenity.destroy!
         amenities = @community.amenities
+        @community.set_community_amenity_status(current_pynwheel_user, "")
         render json: {success: true, message: "Amenity deleted successfully", data: amenities.as_json}
       end
     else

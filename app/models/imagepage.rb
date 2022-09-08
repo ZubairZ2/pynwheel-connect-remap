@@ -20,6 +20,7 @@ class Imagepage < ApplicationRecord
   include RailsSortable::Model
   set_sortable :sort
 
+  has_one :status, as: :statusable
   has_many :additional_images, dependent: :destroy
   validates_uniqueness_of :name, scope: :community_id
   validates_presence_of :name

@@ -19,6 +19,7 @@
 class AdditionalImage < ApplicationRecord
 	include RailsSortable::Model
   belongs_to :imagepage
+	has_one :status, as: :statusable
   set_sortable :sort  
 	mount_uploader :image, AvatarUploader
 	before_create :set_image_name
@@ -30,5 +31,5 @@ class AdditionalImage < ApplicationRecord
 	end
 	def set_image_name
   	self.name = image.file.filename
-  end
+	end
 end

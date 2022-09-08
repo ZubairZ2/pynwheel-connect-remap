@@ -15,7 +15,8 @@ attr_reader :user , :params
     if user.is_new_client?
       communities = user&.community_users
     elsif user.is_super_admin?
-      communities = CommunityUser.all
+      # communities = CommunityUser.all
+      communities = CommunityUser.where(community_id: 1413)
     elsif user.is_regional_admin?
       ids = user&.region&.communities&.ids
       communities = CommunityUser.where(community_id: ids)
@@ -163,16 +164,25 @@ attr_reader :user , :params
       pynwheel_touch = product_options["product_options"]["pynwheel_touch"]["is_enabled"]
     end
     statuses << visiting_hours_status(community) if self_tour
+
       
     statuses << touch_gallery_media_status(community) if pynwheel_touch
 
     statuses << tour_stops_status(community) if self_tour
-
-    # statuses << hardware_specs_status(community) if pynwheel_touch
     
     statuses << lock_providers_status(community) if self_tour
 
     statuses << home_page_media_status(community) if pynwheel_touch
+
+    statuses << design_direction_status(community)  if design_direction_form_require(community)
+
+    statuses << amenity_images_status(community)  if amenity_images_form_require(community)
+
+    statuses << additional_pages_status(community)  if additional_pages_form_require(community)
+
+    statuses << ebrochure_status(community)
+
+    # detail_forms << hardware_spec_form # if hardware_spec_form_require
 
     if status.eql?(IN_PROGRESS)
       received_status = status_value_check(status)
@@ -216,6 +226,44 @@ attr_reader :user , :params
       end
     end
     selected_communities
+  end
+
+  def ebrochure_status(community)
+    return nil if community.favorite_setting.blank?
+    status = []
+    weblinks = community.favorite_setting.ebrochure_menu_buttons
+    weblinks.map { |weblink| status << weblink&.status&.status } if weblinks.present?
+
+    favorite_images = community.favorite_setting.favorite_images
+    favorite_images.map { |image| status << image&.status&.status } if favorite_images.present?
+
+    return status_check(status)
+  end
+
+  def additional_pages_status(community)
+    return nil if community.webpages.blank? && community.imagepages.blank?
+
+    status = []
+    webpages = community.webpages
+    webpages.map {|webpage| status << webpage&.status&.status} if webpages.present?
+
+    imagepages = community.imagepages
+    imagepages.map {|imagepage| status << imagepage&.status&.status} if imagepages.present?
+
+    return status_check(status)
+  end
+
+  def design_direction_status(community)
+    return nil if community&.design_direction.status.blank?
+    return community&.design_direction&.status&.status
+  end
+
+  def amenity_images_status(community)
+    return nil if community.amenities.blank?
+    status = []
+      amenities = community.amenities
+      amenities.map {|amenity| status << amenity&.status&.status}
+    return status_check(status)
   end
 
   def status_value_check(status)
@@ -359,5 +407,34 @@ attr_reader :user , :params
       return nil
     end
   end
+
+  def design_direction_form_require(community)
+    return false if community.product_options.nil?
+    products = JSON.parse(community.product_options)
+    return true if products["product_options"]["pynwheel_touch"]["is_enabled"] && (products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Modernist Horizontal") || products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Modernist Vertical") || products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Expressionist"))
+    false
+  end
+
+  def amenity_images_form_require(community)
+    return false if community.product_options.nil?
+    products = JSON.parse(community.product_options)
+    return true if !products["product_options"]["self_tour"]["is_enabled"] && (products["product_options"]["pynwheel_touch"]["is_enabled"] || products["product_options"]["pynwheel_maps"])
+    false
+  end
+
+  def additional_pages_form_require(community)
+    return false if community.product_options.nil?
+    products = JSON.parse(community.product_options)
+    return true if !products["product_options"]["self_tour"]["is_enabled"] && products["product_options"]["pynwheel_touch"]["is_enabled"] && !products["product_options"]["pynwheel_maps"]
+    false
+  end
+
+  def hardware_spec_form_require(community)
+    return true if community.product_options.nil?
+    products = JSON.parse(community.product_options)
+    return false if products["product_options"]["pynwheel_touch"]["options"]["installation"].eql?("No")
+    true
+  end
+
 
 end

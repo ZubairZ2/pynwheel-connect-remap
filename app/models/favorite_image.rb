@@ -15,6 +15,7 @@ class FavoriteImage < ApplicationRecord
   has_paper_trail
   mount_uploader :image, AvatarUploader
   belongs_to :favorite_setting
+  has_one :status, as: :statusable
   include RailsSortable::Model
   set_sortable :sort
   def is_video?

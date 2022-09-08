@@ -14,10 +14,12 @@ class Api::V2::EbrochuresController < Api::V2::ApiApplicationController
   def add_favorite_ebrochure
     begin
       if @favorite_setting.present?
+        @status = params['status'] || ""
         ebrochure_params = params['ebrochure']
         add_favorite_image(ebrochure_params['images']) if ebrochure_params['images'].present?
         add_ebrochure_weblink(ebrochure_params['weblink']) if ebrochure_params['weblink'].present?
       end
+      @community.set_ebrochure_status(current_pynwheel_user, @status)
       render json: { success: true, data: @favorite_setting.as_json }
     rescue => e
       render json: { success: false, message: e.message }
@@ -30,6 +32,7 @@ class Api::V2::EbrochuresController < Api::V2::ApiApplicationController
       if weblink_id.present?
         @weblink = EbrochureMenuButton.find weblink_id
         if @weblink.destroy!
+          @community.set_ebrochure_status(current_pynwheel_user, "")
           render json: { success: true, message: "Weblink deleted successfully!", data: @favorite_setting.as_json }
         else
           render json: { success: false, message: "Failed to delete weblink!", data: nil }
@@ -44,6 +47,7 @@ class Api::V2::EbrochuresController < Api::V2::ApiApplicationController
       delete_image = FavoriteImage.find image_id
       if delete_image.present?
         if delete_image.destroy!
+          @community.set_ebrochure_status(current_pynwheel_user, "")
           render json: {success: true, data: @favorite_setting.as_json}
         else
           render json: {success: false, data: nil, message: "Failed to delete image!"}

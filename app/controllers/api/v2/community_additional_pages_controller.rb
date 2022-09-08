@@ -20,11 +20,12 @@ class Api::V2::CommunityAdditionalPagesController < Api::V2::ApiApplicationContr
     begin
       pages_params = params['additional_pages']
       return unless pages_params.present?
-
+      @status = params["status"] || ""
       pages_params.values.each do |page|
         add_webpage(page) if page['type'].eql?(WEBPAGE)
         add_imagepage(page) if page['type'].eql?(IMAGEPAGE)
       end
+      @community.set_additional_pages_status(current_pynwheel_user, @status)
       additional_pages = all_additional_pages
       if additional_pages.present?
         render json: { success: true, data: additional_pages.as_json }
@@ -40,6 +41,7 @@ class Api::V2::CommunityAdditionalPagesController < Api::V2::ApiApplicationContr
     if @page.present?
       if @page.destroy!
         additional_pages = all_additional_pages
+        @community.set_additional_pages_status(current_pynwheel_user, "")
         render json: { success: true, data: additional_pages.as_json, message: "Additional page deleted successfully!" }
       else
         render json: { success: false, data: nil, message: 'Failed to delete additional page!' }
@@ -53,6 +55,7 @@ class Api::V2::CommunityAdditionalPagesController < Api::V2::ApiApplicationContr
     if params['image_id'].present?
       additional_image = AdditionalImage.find params['image_id']
       if additional_image.destroy!
+        @community.set_additional_pages_status(current_pynwheel_user, "")
         additional_pages = all_additional_pages
         render json: { success: true, data: additional_pages.as_json, message: 'Image deleted successfully!' }
       else

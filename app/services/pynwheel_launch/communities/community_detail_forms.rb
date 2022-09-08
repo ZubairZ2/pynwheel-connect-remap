@@ -34,12 +34,13 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   def get_community_detail_forms(products)
     community_products = products
     detail_forms = mendatory_detail_forms
-    detail_forms << design_direction_form if design_direction_form_require
-    detail_forms << amenity_images_form if amenity_images_form_require
-    detail_forms << additiona_pages_form if additional_pages_form_require
     detail_forms << hardware_spec_form if hardware_spec_form_require
     forms_for_touch_app(community_products).each {|x| detail_forms << x} if products.include?("pynwheel_touch")
     forms_for_self_tour(community_products).each {|a| detail_forms << a} if products.include?("self_tour")
+    detail_forms << design_direction_form if design_direction_form_require
+    detail_forms << amenity_images_form if amenity_images_form_require
+    detail_forms << ebrochure_form
+    detail_forms << additional_pages_form if additional_pages_form_require
 
     detail_forms
   end
@@ -68,35 +69,15 @@ class PynwheelLaunch::Communities::CommunityDetailForms
       update_home_page_media_status_and_remarks(status, remarks)
     when HARDWARE_SPECS
       update_hardware_specs_status_and_remarks(status, remarks)
+    when DESIGN_DIRECTION
+      update_design_direction_status_and_remarks(status, remarks)
+    when AMENITY_IMAGES
+      update_amenity_images_status_and_remarks(status, remarks)
+    when ADDITIONAL_PAGES
+      update_additional_pages_status_and_remarks(status, remarks)
+    when EBROCHURE
+      update_ebrochure_status_and_remarks(status, remarks)
     end
-  end
-
-  def hardware_spec_form
-    {
-      name: HARDWARE_SPECS,
-      status: hardware_specs_status
-    }
-  end
-
-  def design_direction_form
-    {
-      name: DESIGN_DIRECTION,
-      status: company_status
-    }
-  end
-
-  def amenity_images_form
-    {
-      name: AMENITY_IMAGES,
-      status: company_status
-    }
-  end
-
-  def additiona_pages_form
-    {
-      name: ADDITIONAL_PAGES,
-      status: company_status
-    }
   end
 
   def mendatory_detail_forms
@@ -120,10 +101,6 @@ class PynwheelLaunch::Communities::CommunityDetailForms
       {
         name: FLOORPLAN_IMAGES,
         status: floorplan_status
-      },
-      {
-        name: EBROCHURE,
-        status: company_status
       }
     ]
   end
@@ -145,6 +122,41 @@ class PynwheelLaunch::Communities::CommunityDetailForms
         status: visiting_hours_status
       }
     ]
+  end
+
+  def hardware_spec_form
+    {
+      name: HARDWARE_SPECS,
+      status: hardware_specs_status
+    }
+  end
+
+  def design_direction_form
+    {
+      name: DESIGN_DIRECTION,
+      status: design_direction_status
+    }
+  end
+
+  def amenity_images_form
+    {
+      name: AMENITY_IMAGES,
+      status: amenity_images_status
+    }
+  end
+
+  def ebrochure_form
+    {
+      name: EBROCHURE,
+      status: ebrochure_status
+    }
+  end
+
+  def additional_pages_form
+    {
+      name: ADDITIONAL_PAGES,
+      status: additional_pages_status
+    }
   end
 
   def forms_for_touch_app(products)
@@ -172,6 +184,42 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   def community_status
     return [] if @community.status.blank?
     [@community&.status&.status_and_remarks_obj]
+  end
+
+  def ebrochure_status
+    return [] if @community.favorite_setting.blank?
+    status = []
+    weblinks = @community.favorite_setting.ebrochure_menu_buttons
+    weblinks.map {|weblink| status << weblink&.status&.status_and_remarks_obj} if weblinks.present?
+
+    favorite_images = @community.favorite_setting.favorite_images
+    favorite_images.map {|image| status << image&.status&.status_and_remarks_obj} if favorite_images.present?
+
+    status.compact.uniq
+  end
+
+  def additional_pages_status
+    return [] if @community.webpages.blank? && @community.imagepages.blank?
+    status = []
+    webpages = @community.webpages
+    webpages.map {|webpage| status << webpage&.status&.status_and_remarks_obj} if webpages.present?
+
+    imagepages = @community.imagepages
+    imagepages.map {|imagepage| status << imagepage&.status&.status_and_remarks_obj} if imagepages.present?
+    status.compact.uniq
+  end
+
+  def design_direction_status
+    return [] if @community&.design_direction&.status.blank?
+
+    [@community&.design_direction&.status&.status_and_remarks_obj]
+  end
+
+  def amenity_images_status
+    return [] if @community.amenities.blank?
+    amenities = @community.amenities
+    amenities_status = amenities.map {|amenity| amenity&.status&.status_and_remarks_obj rescue nil}
+    amenities_status.compact.uniq
   end
 
   def property_map_status
@@ -352,6 +400,33 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| remote_lock&.status.update_attributes(status: status, remarks: remarks) }
     end
+  end
+
+  def update_design_direction_status_and_remarks status, remarks
+    return if @community&.design_direction&.blank?
+    @community&.design_direction&.status.update_attributes(status: status, remarks: remarks) if @community&.design_direction.present?
+  end
+
+  def update_amenity_images_status_and_remarks status, remarks
+    return if @community.amenities.blank?
+    @community.amenities.each {|amenity| amenity&.status.update_attributes(status: status, remarks: remarks) }
+  end
+
+  def update_additional_pages_status_and_remarks status, remarks
+    return if @community.imagepages.blank? && @community.webpages.blank?
+    @community.imagepages.each {|imagepage| imagepage&.status.update_attributes(status: status, remarks: remarks) } if @community.imagepages.present?
+    @community.webpages.each {|webpage| webpage&.status.update_attributes(status: status, remarks: remarks) } if @community.webpages.present?
+
+  end
+
+  def update_ebrochure_status_and_remarks status, remarks
+    return if @community.favorite_setting.blank?
+    weblinks = @community.favorite_setting.ebrochure_menu_buttons
+    weblinks.each {|weblink| weblink&.status.update_attributes(status: status, remarks: remarks) } if weblinks.present?
+
+    images = @community.favorite_setting.favorite_images
+    images.each {|image| image&.status.update_attributes(status: status, remarks: remarks) } if images.present?
+
   end
 
 end

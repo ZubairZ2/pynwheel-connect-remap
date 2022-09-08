@@ -31,6 +31,7 @@ class Amenity < ApplicationRecord
   belongs_to :amenityable, polymorphic: true
   belongs_to :community
   has_many :amenity_galleries, dependent: :destroy
+  has_one :status, as: :statusable
   
   has_many :paths, as: :map_path
   has_many :path_points, through: :paths

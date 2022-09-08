@@ -13,4 +13,5 @@
 class EbrochureMenuButton < ApplicationRecord
   has_paper_trail
   belongs_to :favorite_setting
+  has_one :status, as: :statusable
 end

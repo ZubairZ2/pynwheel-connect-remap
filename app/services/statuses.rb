@@ -32,9 +32,37 @@ class Statuses
       set_touch_vidoes_status
       touch_installation_specification
     end
+    set_design_direction_status if design_direction_form_require
+    set_amenity_images_status if amenity_images_form_require
+    set_ebrochure_status
+    set_additional_pages_status if additional_pages_form_require
   end
 
   private
+
+  def set_design_direction_status
+    @community.set_status_for_all(@community.design_direction, @status, @current_user) unless @community&.design_direction.blank?
+  end
+
+  def set_amenity_images_status
+    binding.pry
+    amenities = @community.amenities
+    amenities.each {|image| @community.set_status_for_all(image, @status, @current_user)} if amenities.present?
+  end
+
+  def set_additional_pages_status
+    webpages = @community.webpages
+    image_pages = @community.imagepages
+    webpages.each {|webpage| @community.set_status_for_all(webpage, @status, @current_user)} if webpages.present?
+    image_pages.each {|image| @community.set_status_for_all(image, @status, @current_user)} if image_pages.present?
+  end
+
+  def set_ebrochure_status
+    weblinks = @community.favorite_setting.ebrochure_menu_buttons
+    favorite_images = @community.favorite_setting.favorite_images
+    weblinks.each {|weblink| @community.set_status_for_all(weblink, @status, @current_user)} if weblinks.present?
+    favorite_images.each {|image| @community.set_status_for_all(image, @status, @current_user)} if favorite_images.present?
+  end
 
   def set_company_details_status
     if @statuses.find_index(@community.company.status.status) < @statuses.find_index(@status)
@@ -143,6 +171,34 @@ class Statuses
       end
       
     end
+  end
+
+  def design_direction_form_require
+    return false if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return true if products["product_options"]["pynwheel_touch"]["is_enabled"] && (products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Modernist Horizontal") || products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Modernist Vertical") || products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Expressionist"))
+    false
+  end
+
+  def amenity_images_form_require
+    return false if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return true if !products["product_options"]["self_tour"]["is_enabled"] && (products["product_options"]["pynwheel_touch"]["is_enabled"] || products["product_options"]["pynwheel_maps"])
+    false
+  end
+
+  def additional_pages_form_require
+    return false if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return true if !products["product_options"]["self_tour"]["is_enabled"] && products["product_options"]["pynwheel_touch"]["is_enabled"] && !products["product_options"]["pynwheel_maps"]
+    false
+  end
+
+  def hardware_spec_form_require
+    return true if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return false if products["product_options"]["pynwheel_touch"]["options"]["installation"].eql?("No")
+    true
   end
 
 end
