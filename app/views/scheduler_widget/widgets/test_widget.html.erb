@@ -719,18 +719,10 @@
             $('.divLoading').addClass('hidden');
         }
 
-      $("#user_phone_number_field").keyup(function() {
-        const existing_tour_users = JSON.parse($("#existing_tour_user_email_arr").val());
-        const isPhone = isPhoneNumberExist(existing_tour_users.phone_numbers);
-        const isEmail = isEmailExist(existing_tour_users.emails);
-        displayNotification(isEmail, isPhone);
-      });
-
       $("#tour_user_email").keyup(function() {
         const existing_tour_users = JSON.parse($("#existing_tour_user_email_arr").val());
         const isEmail = isEmailExist(existing_tour_users.emails);
-        const isPhone = isPhoneNumberExist(existing_tour_users.phone_numbers);
-        displayNotification(isEmail, isPhone);
+        displayNotification(isEmail);
       });
 
       $('.select_property_tour').change(function() {
@@ -1097,17 +1089,9 @@
 
       });
 
-      function displayNotification(isEmail,   isPhone) {
-        if(isPhone && isEmail){
-          $(".reshedule-notification").html('A user with this email and phone number already has a scheduled tour, if you submit again with this email and phone number your tour will be rescheduled!');
-          $(".reshedule-notification").css("display", "block");
-
-        } else if (isEmail) {
+      function displayNotification(isEmail) {
+        if (isEmail) {
           $(".reshedule-notification").html('A user with this email already has a scheduled tour, if you submit again with this email your tour will be rescheduled!');
-          $(".reshedule-notification").css("display", "block");
-
-        } else if(isPhone) {
-          $(".reshedule-notification").html('A user with this phone number already has a scheduled tour, if you submit again with this phone number your tour will be rescheduled!');
           $(".reshedule-notification").css("display", "block");
 
         }else {

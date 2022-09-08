@@ -2,7 +2,7 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   include ApplicationHelper
 
   before_action :load_tour_user, only: :delete_account
-  before_action :get_tour_user_by_phone_number, only: [:generate_otp, :verify_otp]
+  before_action :set_tour_user, only: [:generate_otp, :verify_otp]
   before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
 
   def delete_account
@@ -127,8 +127,8 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
     TwilioSmsService.new().send_sms(message_body, to_phone_number)
   end
 
-  def get_tour_user_by_phone_number
-    @tour_user = TourUser.find_by_phone_number(params[:phone_number])
+  def set_tour_user
+    @tour_user ||= TourUser.where(phone_number: params[:phone_number])&.last
   end
 
   def get_apple_store_test_number
