@@ -212,12 +212,11 @@ iPhone Users:
   end
 
   def tour_user_login
-    if @tour_user.present?
-      render :json => { :success => false, :message => existing_user_error_message(@tour_user) }
-    else
+    unless @tour_user.present?
       @tour_user = create_new_tour_user
-      render :json => { :success => true, :message => "New User has been created successfuly!", tour_user: @tour_user, token: generate_encoded_token(@tour_user), allowed_email: is_community_allows_user(@community, @tour_user) }
     end
+
+    render :json => { :success => true, :message => "New User has been created successfuly!", tour_user: @tour_user, token: generate_encoded_token(@tour_user), allowed_email: is_community_allows_user(@community, @tour_user) }
   end
 
   def save_shared_tour
@@ -490,6 +489,15 @@ iPhone Users:
 
   def set_tour_user
     @tour_user ||= TourUser.where("lower(email) = ? OR phone_number = ?", params[:email].downcase, params[:phone_number])&.last
+    if @tour_user.present?
+      @tour_user.update(
+        name: "#{params[:first_name]} #{params[:last_name]}",
+        last_name: params[:last_name], 
+        first_name: params[:first_name], 
+        phone_number: params[:phone_number],
+        email: params[:email].downcase
+      )
+    end
   end
 
   def set_community_tour_user
