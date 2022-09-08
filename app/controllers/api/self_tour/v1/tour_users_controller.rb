@@ -127,13 +127,8 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
     TwilioSmsService.new().send_sms(message_body, to_phone_number)
   end
 
-  # def set_tour_user_for_generate_otp
-  #   tour_user = TourUser.where(phone_number: params[:phone_number])
-  #   @tour_user = (tour_user.count === 1) ? tour_user.last : nil
-  # end
-
-  def set_tour_user
-    @tour_user ||= TourUser.where(phone_number: params[:phone_number]).last
+  def get_tour_user_by_phone_number
+    @tour_user ||= TourUser.where(phone_number: params[:phone_number])&.last
   end
 
   def get_apple_store_test_number
