@@ -488,14 +488,13 @@ iPhone Users:
   end
 
   def set_tour_user
-    @tour_user ||= TourUser.where("lower(email) = ? OR phone_number = ?", params[:email].downcase, params[:phone_number])&.last
+    @tour_user ||= TourUser.where(email: params[:email].downcase)&.last
     if @tour_user.present?
       @tour_user.update(
         name: "#{params[:first_name]} #{params[:last_name]}",
         last_name: params[:last_name], 
         first_name: params[:first_name], 
-        phone_number: params[:phone_number],
-        email: params[:email].downcase
+        phone_number: params[:phone_number]
       )
     end
   end
