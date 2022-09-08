@@ -73,8 +73,10 @@ class Api::V2::EbrochuresController < Api::V2::ApiApplicationController
 
   def add_favorite_image(images)
     images.each_value do |image|
-      @favorite_setting.favorite_images.delete_all if @favorite_setting.favorite_images.present?
-      @favorite_setting.favorite_images.create(image: image['image'])
+      if image['image'].present?
+        @favorite_setting.favorite_images.delete_all if @favorite_setting.favorite_images.present?
+        @favorite_setting.favorite_images.create(image: image['image'])
+      end
     end
   end
 
