@@ -2,7 +2,8 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   include ApplicationHelper
 
   before_action :load_tour_user, only: :delete_account
-  before_action :set_tour_user, only: [:generate_otp, :verify_otp]
+  before_action :set_tour_user_generate_otp, only: :generate_otp
+  before_action :set_tour_user, only: :verify_otp
   before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
 
   def delete_account
@@ -125,6 +126,11 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
     to_phone_number = @tour_user.phone_number
     message_body = "Verification code #{ @tour_user.pin_code }. Code will expire in 15 minutes."
     TwilioSmsService.new().send_sms(message_body, to_phone_number)
+  end
+
+  def set_tour_user_generate_otp
+    tour_users = TourUser.where(phone_number: params[:phone_number])
+    @tour_user = (tour_users.count === 1) ? tour_users.last : nil
   end
 
   def set_tour_user
