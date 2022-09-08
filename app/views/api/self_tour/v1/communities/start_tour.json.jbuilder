@@ -386,6 +386,8 @@ json.tours @tours do |tour|
     end
   end
 
+  new_stops_arr = new_stops_arr.map{|x| x if ((x.is_a? Tour) or (x.stop_id.present?)) }.compact if new_stops_arr.present?
+
   json.tour_stop new_stops_arr.compact do |stop|
     unless @community.auto_wayfinding
       begin
