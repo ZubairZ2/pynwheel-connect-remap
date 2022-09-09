@@ -23,11 +23,7 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
       if @tour_user.phone_number === @apple_test_number
         render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true }
       else
-        @tour_user.update(pin_code: random_otp)
-        sms_otp_to_mobile()
-        # execute job after 15 minutes(900 seconds) to expire the OTP
-        ExpireOtpJob.perform_in(900, @tour_user)
-    
+        send_otp_phone    
         render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true}
       end
     else
@@ -48,6 +44,13 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   end
 
   private
+
+  def send_otp_phone
+    @tour_user.update(pin_code: random_otp)
+    sms_otp_to_mobile()
+    # execute job after 15 minutes(900 seconds) to expire the OTP
+    ExpireOtpJob.perform_in(900, @tour_user)
+  end
 
   def user_tours_data tour_user
     visited_history = VisitedStop.exists?(tour_user_id:  tour_user.id)
