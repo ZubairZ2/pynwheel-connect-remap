@@ -22,6 +22,7 @@ class Imagepage < ApplicationRecord
 
   has_one :status, as: :statusable
   has_many :additional_images, dependent: :destroy
+  has_many :additional_files, dependent: :destroy
   validates_uniqueness_of :name, scope: :community_id
   validates_presence_of :name
   validates_length_of :name, :maximum => 50
@@ -31,7 +32,7 @@ class Imagepage < ApplicationRecord
 
   def as_json
     super(
-      :only => [:id, :name], :methods => [:media]
+      :only => [:id, :name], :methods => [:media, :file]
     )
   end
 
@@ -46,5 +47,16 @@ class Imagepage < ApplicationRecord
     end
     media_arr
   end
- 
+
+  def file
+    file_arr = []
+    self.additional_files.each do |file|
+      file_arr << {
+        id: file.id,
+        name: file.name,
+        file: file.file
+      }
+    end
+    file_arr
+  end
 end

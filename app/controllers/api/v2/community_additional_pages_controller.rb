@@ -52,20 +52,35 @@ class Api::V2::CommunityAdditionalPagesController < Api::V2::ApiApplicationContr
   end
 
   def delete_imagepage_image
-    if params['image_id'].present?
-      additional_image = AdditionalImage.find params['image_id']
-      if additional_image.destroy!
+    begin
+      file_type = params['get_file_type']
+      if file_type.present?
+        delete_additional_file(params['file_id']) if file_type.eql?("file")
+        delete_additional_image(params['file_id']) if file_type.eql?("image")
         @community.set_additional_pages_status(current_pynwheel_user, "")
         additional_pages = all_additional_pages
         render json: { success: true, data: additional_pages.as_json, message: 'Image deleted successfully!' }
-      else
-        render json: { success: false, data: nil, message: 'Failed to delete image!' }
       end
+    rescue => e
+      render json: { success: false, data: nil, message: 'e.messages' }
     end
-
   end
 
   private
+
+  def delete_additional_file file_id
+    file = AdditionalFile.find file_id
+    if file.present?
+      file.destroy!
+    end
+  end
+
+  def delete_additional_image file_id
+    image = AdditionalImage.find file_id
+    if image.present?
+      image.destroy!
+    end
+  end
 
   def add_webpage(page)
     if page['id'].present?
@@ -79,12 +94,15 @@ class Api::V2::CommunityAdditionalPagesController < Api::V2::ApiApplicationContr
   def add_imagepage(page)
     if page['id'].present?
       update_page = Imagepage.find page['id']
-      image_page = update_page.update(name: page['name'])
+      update_page.update(name: page['name'])
     else
       update_page = @community.imagepages.create!(name: page['name'])
     end
     if page["gallery"].present?
       add_additional_images(update_page, page["gallery"])
+    end
+    if page["files"].present?
+      add_additional_files(update_page, page["files"])
     end
   end
 
@@ -92,6 +110,14 @@ class Api::V2::CommunityAdditionalPagesController < Api::V2::ApiApplicationContr
     images.values.each do |image|
       if image['id'].nil?
         imagepage.additional_images.create!(image: image['image'])
+      end
+    end
+  end
+
+  def add_additional_files(imagepage, files)
+    files.values.each do |file|
+      if file['id'].nil?
+        imagepage.additional_files.create!(file: file['file'])
       end
     end
   end
