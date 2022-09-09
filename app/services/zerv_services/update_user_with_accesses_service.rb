@@ -55,7 +55,6 @@ module ZervServices
                 "firstName": tour_user.first_name,
                 "lastName": tour_user.last_name,
                 "phoneNumber":  tour_user.phone_number,
-                "email": tour_user.email,
                 "id": zerv_user["id"],
                 "image": nil,
                 "cardFormat": @cardFormat,
@@ -108,7 +107,7 @@ module ZervServices
 
         def stop_access_time community, pynwheel_access_user, logs, mac_id, access_log_entries = []
             location_name = (community.company.name + ' - ' + community.name).downcase.parameterize.gsub("-", "").gsub("_", "")
-            community_logs = logs.map{|log| log if log["locationName"].present? && log["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name}.compact
+            community_logs = logs.map{|log| log if log["locationName"].present? && ( (lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name) || (lock["locationName"] == community.address) )}.compact
 
             community_logs.each do |log|
                 if log["phoneNumber"].to_s === pynwheel_access_user.phone_number[1..-1] && log["deviceMACId"] === mac_id
