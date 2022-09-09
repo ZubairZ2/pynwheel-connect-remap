@@ -4,7 +4,7 @@ class InsertZervLocksJob < ApplicationJob
     def perform(locks, zerv)
         community = zerv.community
         location_name = (community.company.name + ' - ' + community.name).downcase.parameterize.gsub("-", "").gsub("_", "")
-        community_locks = locks["listGetDevices"].map{|lock| lock if lock["locationName"].present? && ( (lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name) || (community.address.present? && lock["locationName"] == community.address ) )}.compact
+        community_locks = locks["listGetDevices"].map{|lock| lock if lock["locationName"].present? && ( (lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name) || (community.address.present? && match_address(lock["locationName"], community.address) ) )}.compact
 
         unless community_locks.blank?
             community_locks.each do |lock|
@@ -24,5 +24,12 @@ class InsertZervLocksJob < ApplicationJob
             end
         end
     end
+
+    def match_address zerv_device_addr, property_addr
+        device_address = zerv_device_addr.split(",")
+        street_address = device_address[0]
+        street_address == property_addr
+    end
+  
 
 end

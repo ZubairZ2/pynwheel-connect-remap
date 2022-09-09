@@ -107,7 +107,7 @@ module ZervServices
 
         def stop_access_time community, pynwheel_access_user, logs, mac_id, access_log_entries = []
             location_name = (community.company.name + ' - ' + community.name).downcase.parameterize.gsub("-", "").gsub("_", "")
-            community_logs = logs.map{|log| log if log["locationName"].present? && ( (lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name) || (lock["locationName"] == community.address) )}.compact
+            community_logs = logs.map{|log| log if log["locationName"].present? && ( (lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name) || (community.address.present? && match_address(lock["locationName"], community.address) ) )}.compact
 
             community_logs.each do |log|
                 if log["phoneNumber"].to_s === pynwheel_access_user.phone_number[1..-1] && log["deviceMACId"] === mac_id
@@ -117,6 +117,13 @@ module ZervServices
 
             latest_access_time(access_log_entries)
         end
+
+        def match_address zerv_device_addr, property_addr
+            device_address = zerv_device_addr.split(",")
+            street_address = device_address[0]
+            street_address == property_addr
+          end
+      
 
         def latest_access_time access_log_entries, max_date = nil, max_date_log = nil
             if access_log_entries.present?
