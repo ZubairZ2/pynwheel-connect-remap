@@ -26,6 +26,12 @@ class Api::V2::CommunityAdditionalPagesController < Api::V2::ApiApplicationContr
         add_imagepage(page) if page['type'].eql?(IMAGEPAGE)
       end
       @community.set_additional_pages_status(current_pynwheel_user, @status)
+      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
+      email[:data].each do |mail|
+        if mail[:name].eql?(ADDITIONAL_PAGES) && mail[:status].eql?("Submitted")
+          FollowUpMailer.send_submitted_form(@community, ADDITIONAL_PAGES, email[:data]).deliver_later
+        end
+      end
       additional_pages = all_additional_pages
       if additional_pages.present?
         render json: { success: true, data: additional_pages.as_json }

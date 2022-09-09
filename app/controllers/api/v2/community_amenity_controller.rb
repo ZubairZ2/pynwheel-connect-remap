@@ -30,6 +30,12 @@ class Api::V2::CommunityAmenityController < Api::V2::ApiApplicationController
       end
       amenities = @community.amenities
       @community.set_community_amenity_status(current_pynwheel_user, @status)
+      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
+      email[:data].each do |mail|
+        if mail[:name].eql?(AMENITY_IMAGES) && mail[:status].eql?("Submitted")
+          FollowUpMailer.send_submitted_form(@community, AMENITY_IMAGES, email[:data]).deliver_later
+        end
+      end
       if amenities.present?
         render json: {success: true, data: amenities.as_json}
       end
