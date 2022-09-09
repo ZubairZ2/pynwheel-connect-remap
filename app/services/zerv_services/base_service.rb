@@ -36,12 +36,18 @@ module ZervServices
     def current_community_zerv_locks(locks)
       community = @zerv.community
       location_name = (community.company.name + ' - ' + community.name).downcase.parameterize.gsub("-", "").gsub("_", "")
-      locks["listGetDevices"] = locks["listGetDevices"].map{|lock| lock if lock["locationName"].present? && lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name}.compact
+      locks["listGetDevices"] = locks["listGetDevices"].map{|lock| lock if lock["locationName"].present? && ( (lock["locationName"].downcase.parameterize.gsub("-", "").gsub("_", "") == location_name) || (community.address.present? && match_address(lock["locationName"], community.address) ) ) }.compact
       if locks["listGetDevices"].length == 0
         locks["listGetDevices"] = "No locks are presnet"
       end
 
       return locks
+    end
+
+    def match_address zerv_device_addr, property_addr
+      device_address = zerv_device_addr.split(",")
+      street_address = device_address[0]
+      street_address == property_addr
     end
 
     def base_url

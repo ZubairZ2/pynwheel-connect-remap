@@ -38,7 +38,6 @@ module ZervServices
                 "firstName": tour_user.first_name,
                 "lastName": tour_user.last_name,
                 "phoneNumber":  tour_user.phone_number,
-                "email": tour_user.email,
                 "image": nil,
                 "cardFormat": @cardFormat,
                 "facilityId": @facilityId,
