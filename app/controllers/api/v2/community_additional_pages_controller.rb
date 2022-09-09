@@ -25,11 +25,16 @@ class Api::V2::CommunityAdditionalPagesController < Api::V2::ApiApplicationContr
         add_webpage(page) if page['type'].eql?(WEBPAGE)
         add_imagepage(page) if page['type'].eql?(IMAGEPAGE)
       end
+      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(ADDITIONAL_PAGES)
       @community.set_additional_pages_status(current_pynwheel_user, @status)
       email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
       email[:data].each do |mail|
         if mail[:name].eql?(ADDITIONAL_PAGES) && mail[:status].eql?("Submitted")
-          FollowUpMailer.send_submitted_form(@community, ADDITIONAL_PAGES, email[:data]).deliver_later
+          if previous_status[0][:name].eql?(REJECTED)
+            FollowUpMailer.send_re_submitted_form(@community, ADDITIONAL_PAGES, email[:data]).deliver_later
+          else
+            FollowUpMailer.send_submitted_form(@community, ADDITIONAL_PAGES, email[:data]).deliver_later
+          end
         end
       end
       additional_pages = all_additional_pages

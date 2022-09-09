@@ -26,6 +26,13 @@ class FollowUpMailer < ApplicationMailer
     mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} - Form submitted for review")
   end
 
+  def send_re_submitted_form(community, form_submitted, data)
+    @forms = data
+    @community = community
+    @form_submitted = form_submitted
+    mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} - Form re-submitted for review after report")
+  end
+
   def self.non_production_communities_email(community, forms)
     @users = community.users.pluck(:email)
     @users.each do |user|
@@ -39,6 +46,19 @@ class FollowUpMailer < ApplicationMailer
     @community = community
     @forms = forms  
     mail(to: user, subject: "Your Application for #{@community.company.name} - #{@community.name}")
+  end
+
+  def self.application_approved(community)
+    users = community.users.pluck(:email)
+    users.each do |user|
+      send_application_approved_email(community, user).deliver
+    end
+  end
+
+  def send_application_approved_email(community, user)
+    @user = user
+    @community = community
+    mail(to: @user, cc: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} Your Application is Going into Production")
   end
 
   def send_moved_to_production(community)

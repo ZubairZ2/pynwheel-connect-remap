@@ -52,11 +52,16 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
           # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "create", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
         end
       end
+      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(FLOORPLAN_IMAGES)
       @community.set_floorplan_status(current_pynwheel_user, @status)
       email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
       email[:data].each do |mail|
         if mail[:name].eql?(FLOORPLAN_IMAGES) && mail[:status].eql?("Submitted")
-          FollowUpMailer.send_submitted_form(@community, FLOORPLAN_IMAGES, email[:data]).deliver_later
+          if previous_status[0][:name].eql?(REJECTED)
+            FollowUpMailer.send_re_submitted_form(@community, FLOORPLAN_IMAGES, email[:data]).deliver_later
+          else
+            FollowUpMailer.send_submitted_form(@community, FLOORPLAN_IMAGES, email[:data]).deliver_later
+          end
         end
       end
       floorplans = @community.floorplans.order(created_at: :desc)

@@ -19,11 +19,16 @@ class Api::V2::EbrochuresController < Api::V2::ApiApplicationController
         add_favorite_image(ebrochure_params['images']) if ebrochure_params['images'].present?
         add_ebrochure_weblink(ebrochure_params['weblink']) if ebrochure_params['weblink'].present?
       end
+      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(EBROCHURE)
       @community.set_ebrochure_status(current_pynwheel_user, @status)
       email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
         email[:data].each do |mail|
           if mail[:name].eql?(EBROCHURE) && mail[:status].eql?("Submitted")
-            FollowUpMailer.send_submitted_form(@community, EBROCHURE, email[:data]).deliver_later
+            if previous_status[0][:name].eql?(REJECTED)
+              FollowUpMailer.send_re_submitted_form(@community, EBROCHURE, email[:data]).deliver_later
+            else
+              FollowUpMailer.send_submitted_form(@community, EBROCHURE, email[:data]).deliver_later
+            end
           end
         end
       render json: { success: true, data: @favorite_setting.as_json }

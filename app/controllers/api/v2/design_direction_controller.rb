@@ -32,11 +32,16 @@ class Api::V2::DesignDirectionController < Api::V2::ApiApplicationController
         updated = @design_direction.update(hex_colors: design_params["hex_colors"], direction: design_params["direction"], additional_direction: design_params["additional_direction"])
       end
       if updated
+        previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(DESIGN_DIRECTION)
         @community.set_design_direction_status(current_pynwheel_user, @status)
         email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
         email[:data].each do |mail|
           if mail[:name].eql?(DESIGN_DIRECTION) && mail[:status].eql?("Submitted")
-            FollowUpMailer.send_submitted_form(@community, DESIGN_DIRECTION, email[:data]).deliver_later
+            if previous_status[0][:name].eql?(REJECTED)
+              FollowUpMailer.send_re_submitted_form(@community, DESIGN_DIRECTION, email[:data]).deliver_later
+            else
+              FollowUpMailer.send_submitted_form(@community, DESIGN_DIRECTION, email[:data]).deliver_later
+            end
           end
         end
         render json: { success: true, data: @design_direction.as_json, message: "Design direction updated successfully!" }

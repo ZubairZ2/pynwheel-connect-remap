@@ -22,11 +22,16 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
       else
         hardware_spec = @community.create_hardware_spec(name: hardware["name"], phone: hardware["phone"], image: hardware["image"])
       end
+      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(HARDWARE_SPECS)
       @community.touch_installation_specification(current_pynwheel_user, @status)
       email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
         email[:data].each do |mail|
           if mail[:name].eql?(HARDWARE_SPECS) && mail[:status].eql?("Submitted")
-            FollowUpMailer.send_submitted_form(@community, HARDWARE_SPECS, email[:data]).deliver
+            if previous_status[0][:name].eql?(REJECTED)
+              FollowUpMailer.send_re_submitted_form(@community, HARDWARE_SPECS, email[:data]).deliver_later
+            else
+              FollowUpMailer.send_submitted_form(@community, HARDWARE_SPECS, email[:data]).deliver_later
+            end
           end
         end
       render :json => {success: true, data: hardware_spec.as_json}

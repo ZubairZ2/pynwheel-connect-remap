@@ -3,6 +3,41 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     @community = community
   end
 
+  def check_status_of_specific_form(form_type)
+    case form_type
+    when COMPANY_DETAILS
+      company_status
+    when COMMUNITY_DETAILS
+      community_status
+    when PROPERTY_MAP_IMAGES
+      property_map_status
+    when FLOORPLAN_IMAGES
+      floorplan_status
+    when PROPERTY_MANAGEMENT_SYSTEM
+      data_provider_status
+    when LOCK_PROVIDER
+      lock_providers_status
+    when TOUR_STOPS
+      tour_stops_status
+    when VISITING_HOURS
+      visiting_hours_status
+    when TOUCH_GALLERY_MEDIA
+      touch_gallery_media_status
+    when TOUCH_HOME_PAGE_MEDIA
+      home_page_media_status
+    when HARDWARE_SPECS
+      hardware_specs_status
+    when DESIGN_DIRECTION
+      design_direction_status
+    when AMENITY_IMAGES
+      amenity_images_status
+    when ADDITIONAL_PAGES
+      additional_pages_status
+    when EBROCHURE
+      ebrochure_status
+    end
+  end
+
   def design_direction_form_require
     return false if @community.product_options.nil?
     products = JSON.parse(@community.product_options)

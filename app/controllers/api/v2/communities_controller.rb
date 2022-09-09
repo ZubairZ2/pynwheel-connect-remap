@@ -31,7 +31,18 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
       update_community = @community.update(name: community["name"] , file: community["file"] , address:  community["address"], city: community["city"], state: community["state"], email: community["email"], phone: community["phone"], zip: community["zip"], property_manager_name: community["property_manager_name"], property_manager_phone: community["property_manager_phone"],property_manager_email:  community["property_manager_email"], website: community["website"] , number_of_units: community["number_of_units"] , brand_details_pdf: community["brand_details_pdf"])
     end
     if @community.update(community_params)
+      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(COMMUNITY_DETAILS) 
       @community.set_community_details_status(current_pynwheel_user, params["community"]["status"])
+      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
+      email[:data].each do |mail|
+        if mail[:name].eql?(COMMUNITY_DETAILS) && mail[:status].eql?('Submitted')
+          if previous_status[0][:name].eql?(REJECTED)
+            FollowUpMailer.send_re_submitted_form(@community, COMMUNITY_DETAILS, email[:data]).deliver_later
+          else
+            FollowUpMailer.send_submitted_form(@community, COMMUNITY_DETAILS, email[:data]).deliver_later
+          end
+        end
+      end
       render :json => {data: @community.as_json(@brand_pdf_feature) , :message => "Community Details updated succesfully."}
     else
       render :json => {:success => false, :message => @community.errors.full_messages}
@@ -88,6 +99,12 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   def update_status_and_remarks
     if @community.present? && @community_user.present?
       PynwheelLaunch::Communities::CommunityDetailForms.new(@community).update_status_and_remarks(params[:detail_type], params[:status][:name], params[:status][:remarks])
+      if params[:status][:name].eql?(APPROVED)
+        application_approved = PynwheelLaunch::Communities::FollowUpEmails.new(@community).move_to_production_auto_email
+        if application_approved
+          FollowUpMailer.application_approved(@community)
+        end
+      end
       if @community.production_started_date.nil? && params[:status][:name].eql?(APPROVED)
         @community.production_started_date = DateTime.now
         @community.save
