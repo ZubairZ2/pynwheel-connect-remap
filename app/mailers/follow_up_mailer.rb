@@ -17,8 +17,12 @@ class FollowUpMailer < ApplicationMailer
       email = PynwheelLaunch::Communities::FollowUpEmails.new(community).send_emails
       email[:data].each do |mail|
         if mail[:name].eql?(form) && mail[:status].eql?('Submitted')
-          if previous_status[0]&[:name]&.eql?(REJECTED)
-            send_re_submitted_form(community, form, email[:data]).deliver
+          if !previous_status.empty? || !previous_status[0].nil?
+            if previous_status[0][:name].eql?(REJECTED)
+              send_re_submitted_form(community, form, email[:data]).deliver
+            else
+              send_submitted_form(community, form, email[:data]).deliver
+            end
           else
             send_submitted_form(community, form, email[:data]).deliver
           end

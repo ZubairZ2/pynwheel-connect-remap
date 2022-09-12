@@ -289,7 +289,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
   end
 
   def design_direction_status
-    return nil if @community&.design_direction.status.blank?
+    return nil if @community&.design_direction&.status&.blank?
     @community&.design_direction&.status&.status
   end
 

@@ -29,16 +29,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
           @community.data_is_imported
           previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
           @community.set_data_provider_status(current_pynwheel_user, params["status"])
-          email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-          email[:data].each do |mail|
-            if mail[:name].eql?(PROPERTY_MANAGEMENT_SYSTEM) && mail[:status].eql?("Submitted")
-              if previous_status[0][:name].eql?(REJECTED)
-                FollowUpMailer.send_re_submitted_form(@community, PROPERTY_MANAGEMENT_SYSTEM, email[:data]).deliver_later
-              else
-                FollowUpMailer.send_submitted_form(@community, PROPERTY_MANAGEMENT_SYSTEM, email[:data]).deliver_later
-              end
-            end
-          end
+          FollowUpMailer.send_email_after_form_submission(@community, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
           render json: {success: true, error_code: 200, message: "Valid credentials. Data import succeeded.", data: @credential.as_json(data_provider)}
         end
       else
@@ -80,12 +71,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       @credential = update_data_provider_credentials
       if @credential.present?
         @community.set_data_provider_status(current_pynwheel_user, params["status"])
-        email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-        email[:data].each do |mail|
-          if mail[:name].eql?(PROPERTY_MANAGEMENT_SYSTEM) && mail[:status].eql?("Submitted")
-            FollowUpMailer.send_submitted_form(@community, PROPERTY_MANAGEMENT_SYSTEM, email[:data]).deliver_later
-          end
-        end
+        FollowUpMailer.send_email_after_form_submission(@community, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
         render json: {success: true, error_code: 200, message: "#{data_provider} updated successfully", data: @credential.as_json(data_provider)}
       else
         render :json => {:success => false, :error_code => 500, :message => @credential&.errors&.full_messages}
