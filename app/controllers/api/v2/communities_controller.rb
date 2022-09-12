@@ -33,16 +33,7 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
     if @community.update(community_params)
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(COMMUNITY_DETAILS) 
       @community.set_community_details_status(current_pynwheel_user, params["community"]["status"])
-      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-      email[:data].each do |mail|
-        if mail[:name].eql?(COMMUNITY_DETAILS) && mail[:status].eql?('Submitted')
-          if previous_status[0][:name].eql?(REJECTED)
-            FollowUpMailer.send_re_submitted_form(@community, COMMUNITY_DETAILS, email[:data]).deliver_later
-          else
-            FollowUpMailer.send_submitted_form(@community, COMMUNITY_DETAILS, email[:data]).deliver_later
-          end
-        end
-      end
+      FollowUpMailer.send_email_after_form_submission(@community, COMMUNITY_DETAILS, previous_status)
       render :json => {data: @community.as_json(@brand_pdf_feature) , :message => "Community Details updated succesfully."}
     else
       render :json => {:success => false, :message => @community.errors.full_messages}

@@ -31,16 +31,7 @@ class Api::V2::OpeningHoursController < Api::V2::ApiApplicationController
       visiting_hours = get_all_hours
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(VISITING_HOURS)
       @community.set_visiting_hours_status(current_pynwheel_user, @status)
-      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-      email[:data].each do |mail|
-        if mail[:name].eql?(VISITING_HOURS) && mail[:status].eql?("Submitted")
-          if previous_status[0][:name].eql?(REJECTED)
-            FollowUpMailer.send_re_submitted_form(@community, VISITING_HOURS, email[:data]).deliver_later
-          else
-            FollowUpMailer.send_submitted_form(@community, VISITING_HOURS, email[:data]).deliver_later
-          end
-        end
-      end
+      FollowUpMailer.send_email_after_form_submission(@community, VISITING_HOURS, previous_status)
       if visiting_hours.any?
         render json: { success: true, data: visiting_hours.as_json }
       end

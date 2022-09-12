@@ -32,16 +32,7 @@ class Api::V2::PortalToursController < Api::V2::ApiApplicationController
       end
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(TOUR_STOPS)
       @community.set_tour_stops_status(current_pynwheel_user, @status)
-      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-        email[:data].each do |mail|
-          if mail[:name].eql?(TOUR_STOPS) && mail[:status].eql?("Submitted")
-            if previous_status[0][:name].eql?(REJECTED)
-              FollowUpMailer.send_re_submitted_form(@community, TOUR_STOPS, email[:data]).deliver_later
-            else
-              FollowUpMailer.send_submitted_form(@community, TOUR_STOPS, email[:data]).deliver_later
-            end
-          end
-        end
+      FollowUpMailer.send_email_after_form_submission(@community, TOUR_STOPS, previous_status)
       render json: {success: true, data: @tour.as_json}
     rescue => exception
       render json: {success: false, message: exception}

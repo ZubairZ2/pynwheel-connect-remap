@@ -34,16 +34,7 @@ class Api::V2::DesignDirectionController < Api::V2::ApiApplicationController
       if updated
         previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(DESIGN_DIRECTION)
         @community.set_design_direction_status(current_pynwheel_user, @status)
-        email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-        email[:data].each do |mail|
-          if mail[:name].eql?(DESIGN_DIRECTION) && mail[:status].eql?("Submitted")
-            if previous_status[0][:name].eql?(REJECTED)
-              FollowUpMailer.send_re_submitted_form(@community, DESIGN_DIRECTION, email[:data]).deliver_later
-            else
-              FollowUpMailer.send_submitted_form(@community, DESIGN_DIRECTION, email[:data]).deliver_later
-            end
-          end
-        end
+        FollowUpMailer.send_email_after_form_submission(@community, DESIGN_DIRECTION, previous_status)
         render json: { success: true, data: @design_direction.as_json, message: "Design direction updated successfully!" }
       else
         render json: { success: true, data: nil, message: "Failed to update design direction!" }

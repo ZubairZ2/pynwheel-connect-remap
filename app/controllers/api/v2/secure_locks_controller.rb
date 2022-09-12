@@ -32,16 +32,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
       @community.update_attributes(multiple_locks_provider: unique_locks_provider)
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(LOCK_PROVIDER) 
       @community.set_lock_providers_status(current_user, @status)
-      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-      email[:data].each do |mail|
-        if mail[:name].eql?(LOCK_PROVIDER) && mail[:status].eql?('Submitted')
-          if previous_status[0][:name].eql?(REJECTED)
-            FollowUpMailer.send_re_submitted_form(@community, LOCK_PROVIDER, email[:data]).deliver_later
-          else
-            FollowUpMailer.send_submitted_form(@community, LOCK_PROVIDER, email[:data]).deliver_later
-          end
-        end
-      end
+      FollowUpMailer.send_email_after_form_submission(@community, LOCK_PROVIDER, previous_status)
       locks = get_all_locks
       render json: { success: true, data: locks.as_json }
     rescue => e

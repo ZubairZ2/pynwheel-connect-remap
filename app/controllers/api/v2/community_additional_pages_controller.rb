@@ -27,16 +27,7 @@ class Api::V2::CommunityAdditionalPagesController < Api::V2::ApiApplicationContr
       end
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(ADDITIONAL_PAGES)
       @community.set_additional_pages_status(current_pynwheel_user, @status)
-      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-      email[:data].each do |mail|
-        if mail[:name].eql?(ADDITIONAL_PAGES) && mail[:status].eql?("Submitted")
-          if previous_status[0][:name].eql?(REJECTED)
-            FollowUpMailer.send_re_submitted_form(@community, ADDITIONAL_PAGES, email[:data]).deliver_later
-          else
-            FollowUpMailer.send_submitted_form(@community, ADDITIONAL_PAGES, email[:data]).deliver_later
-          end
-        end
-      end
+      FollowUpMailer.send_email_after_form_submission(@community, ADDITIONAL_PAGES, previous_status)
       additional_pages = all_additional_pages
       if additional_pages.present?
         render json: { success: true, data: additional_pages.as_json }

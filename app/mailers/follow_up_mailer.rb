@@ -12,6 +12,19 @@ class FollowUpMailer < ApplicationMailer
     mail()
   end
 
+  def self.send_email_after_form_submission(community, form, previous_status)
+    email = PynwheelLaunch::Communities::FollowUpEmails.new(community).send_emails
+    email[:data].each do |mail|
+      if mail[:name].eql?(form) && mail[:status].eql?('Submitted')
+        if previous_status[0][:name].eql?(REJECTED)
+          send_re_submitted_form(community, form, email[:data]).deliver
+        else
+          send_submitted_form(community, form, email[:data]).deliver
+        end
+      end
+    end
+  end
+
   def preview_appliation_submit_for_review(community, user)
     @community = community
     @user = user

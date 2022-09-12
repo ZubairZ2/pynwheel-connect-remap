@@ -1,4 +1,4 @@
-class Api::V2::CommunityAmenityController < Api::V2::ApiApplicationController
+app/controllers/api/v2/data_providers_controller.rbclass Api::V2::CommunityAmenityController < Api::V2::ApiApplicationController
 
   before_action :doorkeeper_authorize!
   before_action :load_community
@@ -31,16 +31,7 @@ class Api::V2::CommunityAmenityController < Api::V2::ApiApplicationController
       amenities = @community.amenities
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(AMENITY_IMAGES)
       @community.set_community_amenity_status(current_pynwheel_user, @status)
-      email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-      email[:data].each do |mail|
-        if mail[:name].eql?(AMENITY_IMAGES) && mail[:status].eql?("Submitted")
-          if previous_status[0][:name].eql?(REJECTED)
-            FollowUpMailer.send_re_submitted_form(@community, AMENITY_IMAGES, email[:data]).deliver_later
-          else
-            FollowUpMailer.send_submitted_form(@community, AMENITY_IMAGES, email[:data]).deliver_later
-          end
-        end
-      end
+      FollowUpMailer.send_email_after_form_submission(@community, AMENITY_IMAGES, previous_status)
       if amenities.present?
         render json: {success: true, data: amenities.as_json}
       end
