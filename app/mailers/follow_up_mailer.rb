@@ -17,7 +17,7 @@ class FollowUpMailer < ApplicationMailer
       email = PynwheelLaunch::Communities::FollowUpEmails.new(community).send_emails
       email[:data].each do |mail|
         if mail[:name].eql?(form) && mail[:status].eql?('Submitted')
-          if !previous_status.empty? || !previous_status[0].nil?
+          if !previous_status[0].nil?
             if previous_status[0][:name].eql?(REJECTED)
               send_re_submitted_form(community, form, email[:data]).deliver
             else
@@ -78,7 +78,8 @@ class FollowUpMailer < ApplicationMailer
   def self.non_production_communities_email(community, forms)
     @users = community.users.pluck(:email)
     @users.each do |user|
-      send_non_production_emails(community, user, forms).deliver unless user.is_dwelo_admin?
+      user = User.find_by(email: user)
+      send_non_production_emails(community, user.email, forms).deliver unless user.is_dwelo_admin?
     end
   end
 
@@ -92,7 +93,8 @@ class FollowUpMailer < ApplicationMailer
   def self.application_approved(community)
     users = community.users.pluck(:email)
     users.each do |user|
-      send_application_approved_email(community, user).deliver unless user.is_dwelo_admin?
+      user = User.find_by(email: user)
+      send_application_approved_email(community, user.email).deliver unless user.is_dwelo_admin?
     end
   end
 
@@ -108,15 +110,18 @@ class FollowUpMailer < ApplicationMailer
     @users.push(ENV["FOLLOW_UP_EMAIL"])
     if community.touchscreen_app && !community.self_tour
       @users.each do |user|
-        released_app_touch(user, community).deliver unless user.is_dwelo_admin?
+        user = User.find_by(email: user)
+        released_app_touch(user.email, community).deliver unless user.is_dwelo_admin?
       end
     elsif !community.touchscreen_app && community.self_tour
       @users.each do |user|
-        released_app_self_tour(user, community).deliver unless user.is_dwelo_admin?
+        user = User.find_by(email: user)
+        released_app_self_tour(user.email, community).deliver unless user.is_dwelo_admin?
       end
     elsif community.touchscreen_app && community.self_tour
       @users.each do |user|
-        released_app_self_tour_touch(user, community).deliver unless user.is_dwelo_admin?
+        user = User.find_by(email: user)
+        released_app_self_tour_touch(user.email, community).deliver unless user.is_dwelo_admin?
       end
     end
   end
@@ -142,7 +147,8 @@ class FollowUpMailer < ApplicationMailer
 
   def self.send_email_request(users, subject, body)
     users.each do |user|
-      send_email(user, subject, body).deliver unless user.is_dwelo_admin?
+      user = User.find_by(email: user)
+      send_email(user.email, subject, body).deliver unless user.is_dwelo_admin?
     end
   end
 
