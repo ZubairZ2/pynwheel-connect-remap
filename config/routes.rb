@@ -75,6 +75,8 @@ Rails.application.routes.draw do
     collection do
       get :get_regions
       get :generate_webpages_report
+      get :generate_salesforce_report
+
     end
 
     member do

@@ -14,7 +14,7 @@
           %p.mb-30
             This Dwelo admin feature allows you to directly access any dwelo community in the system </br>
       - if can? :read, Company     
-        .col-md-4
+        .col-md-2
           - if current_user.is_super_admin? or current_user.is_dwelo_admin?
             .mt-35
               %a.btn.btn-success.pull-right.mb-20{:href => "/companies"}
@@ -24,6 +24,12 @@
             .mt-35
               %a.btn.btn-success.pull-right.mb-20{:href => "/companies/generate_webpages_report", :format => "csv"}
                 Webpages report
+
+        .col-md-2
+          - if ["johnhall@pynwheel.com", "lizzy@pynwheel.com", "development@intagleo.com", "awais@pynwheel.com", "jennifer@pynwheel.com", "kellie@pynwheel.com"].include?(current_user.email)
+            .mt-35
+              %a.btn.btn-success.pull-right.mb-20{:href => "/companies/generate_salesforce_report", :format => "csv"}
+                Salesforce report
 
     .box.box-widget.panel-box
       #new-search-area

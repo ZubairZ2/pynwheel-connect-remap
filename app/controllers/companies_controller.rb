@@ -111,6 +111,10 @@ class CompaniesController < ApplicationController
     send_data(WebpagesReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-webpages-report.csv")
   end
 
+  def generate_salesforce_report
+    send_data(SalesforceReportService.new().get_report() , :type => 'application/xlsx', :filename => "salesforce-properties-report.csv")
+  end
+
   private
 
   def set_company
