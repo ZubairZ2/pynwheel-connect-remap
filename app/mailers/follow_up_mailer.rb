@@ -46,34 +46,6 @@ class FollowUpMailer < ApplicationMailer
     mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} - Form re-submitted for review after report")
   end
 
-  def self.non_production_communities_email(community, forms)
-    @users = community.users.pluck(:email)
-    @users.each do |user|
-      send_non_production_emails(community, user, forms).deliver
-    end
-
-  end
-
-  def send_non_production_emails(community, user, forms)
-    @user = user
-    @community = community
-    @forms = forms  
-    mail(to: user, subject: "Your Application for #{@community.company.name} - #{@community.name}")
-  end
-
-  def self.application_approved(community)
-    users = community.users.pluck(:email)
-    users.each do |user|
-      send_application_approved_email(community, user).deliver
-    end
-  end
-
-  def send_application_approved_email(community, user)
-    @user = user
-    @community = community
-    mail(to: @user, cc: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} Your Application is Going into Production")
-  end
-
   def send_moved_to_production(community)
     @community = community
     mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "Final Approval for #{@community.company.name} - #{@community.name}")
@@ -97,21 +69,48 @@ class FollowUpMailer < ApplicationMailer
     mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "Accounting: Set up recurring billing for #{@community.company.name} - #{@community.name}")
   end
 
+  def self.non_production_communities_email(community, forms)
+    @users = community.users.pluck(:email)
+    @users.each do |user|
+      send_non_production_emails(community, user, forms).deliver unless user.is_dwelo_admin?
+    end
+  end
+
+  def send_non_production_emails(community, user, forms)
+    @user = user
+    @community = community
+    @forms = forms  
+    mail(to: user, subject: "Your Application for #{@community.company.name} - #{@community.name}")
+  end
+
+  def self.application_approved(community)
+    users = community.users.pluck(:email)
+    users.each do |user|
+      send_application_approved_email(community, user).deliver unless user.is_dwelo_admin?
+    end
+  end
+
+  def send_application_approved_email(community, user)
+    @user = user
+    @community = community
+    mail(to: @user, cc: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} Your Application is Going into Production")
+  end
+
   def self.released_application_email(community)
     @community = community
     @users = @community.users.pluck(:email)
     @users.push(ENV["FOLLOW_UP_EMAIL"])
     if community.touchscreen_app && !community.self_tour
       @users.each do |user|
-        released_app_touch(user, community).deliver
+        released_app_touch(user, community).deliver unless user.is_dwelo_admin?
       end
     elsif !community.touchscreen_app && community.self_tour
       @users.each do |user|
-        released_app_self_tour(user, community).deliver
+        released_app_self_tour(user, community).deliver unless user.is_dwelo_admin?
       end
     elsif community.touchscreen_app && community.self_tour
       @users.each do |user|
-        released_app_self_tour_touch(user, community).deliver
+        released_app_self_tour_touch(user, community).deliver unless user.is_dwelo_admin?
       end
     end
   end
@@ -137,7 +136,7 @@ class FollowUpMailer < ApplicationMailer
 
   def self.send_email_request(users, subject, body)
     users.each do |user|
-      send_email(user, subject, body).deliver
+      send_email(user, subject, body).deliver unless user.is_dwelo_admin?
     end
   end
 

@@ -123,13 +123,15 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   private
 
   def send_emails(community, status)
-    if status.eql?(APPLICATION_IN_PRODUCTION)
-      FollowUpMailer.send_moved_to_production(community).deliver
-    elsif status.eql?(RELEASED)
-      FollowUpMailer.marketing_email(community).deliver
-      FollowUpMailer.customer_success_email(community).deliver
-      FollowUpMailer.accounting_email(community).deliver
-      FollowUpMailer.released_application_email(community)
+    unless community.company.name.include?("Dwelo")
+      if status.eql?(APPLICATION_IN_PRODUCTION)
+        FollowUpMailer.send_moved_to_production(community).deliver
+      elsif status.eql?(RELEASED)
+        FollowUpMailer.marketing_email(community).deliver
+        FollowUpMailer.customer_success_email(community).deliver
+        FollowUpMailer.accounting_email(community).deliver
+        FollowUpMailer.released_application_email(community)
+      end
     end
   end
 
