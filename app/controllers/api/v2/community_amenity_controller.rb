@@ -1,4 +1,4 @@
-app/controllers/api/v2/data_providers_controller.rbclass Api::V2::CommunityAmenityController < Api::V2::ApiApplicationController
+class Api::V2::CommunityAmenityController < Api::V2::ApiApplicationController
 
   before_action :doorkeeper_authorize!
   before_action :load_community
