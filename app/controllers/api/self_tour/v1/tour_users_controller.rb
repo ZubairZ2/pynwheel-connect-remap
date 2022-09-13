@@ -132,8 +132,14 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   end
 
   def set_tour_user_generate_otp
-    tour_users = TourUser.where(phone_number: params[:phone_number])
-    @tour_user = (tour_users.count === 1) ? tour_users.last : nil
+    if params[:tour_user_id].present?
+      # For registration screen
+      @tour_user ||= TourUser.find_by_id(params[:tour_user_id])
+    else
+      # For login screen
+      tour_users = TourUser.where(phone_number: params[:phone_number])
+      @tour_user ||= (tour_users.count === 1) ? tour_users.last : nil
+    end
   end
 
   def set_tour_user
