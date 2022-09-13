@@ -143,7 +143,13 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   end
 
   def set_tour_user
-    @tour_user ||= TourUser.where(phone_number: params[:phone_number])&.last
+    if params[:tour_user_id].present?
+      # For registration screen
+      @tour_user ||= TourUser.find_by_id(params[:tour_user_id])
+    else
+      # For login screen
+      @tour_user ||= TourUser.where(phone_number: params[:phone_number])&.last
+    end
   end
 
   def get_apple_store_test_number
