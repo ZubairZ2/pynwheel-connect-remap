@@ -169,11 +169,11 @@ class FollowUpMailer < ApplicationMailer
     "#{pynwheel_touch ? 'Touch App':''}#{pynwheel_touch && (self_tour) ? ', ':''}#{self_tour ? 'Self Tour App':''}#{(pynwheel_touch || self_tour ) && map_app ? ', ' : ''}#{map_app ? 'Map' : ''}"
   end
 
-  def is_user_not_dwelo(email)
+  def self.is_user_not_dwelo(email)
     if email.present?
       user = User.find_by(email: email)
       unless user.nil?
-        user.is_dwelo_admin? ? false : true
+        return user.role.eql?("Dwelo admin") ? false : true
       else
         true
       end
