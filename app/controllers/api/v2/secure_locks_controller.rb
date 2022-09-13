@@ -269,6 +269,6 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     @community = Community.find params[:community_id]
   rescue ActiveRecord::RecordNotFound
     render json: { success: false, error_code: 400, message: 'Community not found', data: nil },
-           status: :not_found
+          status: :not_found
   end
 end

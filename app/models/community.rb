@@ -423,7 +423,7 @@ class Community < ApplicationRecord
   end
 
   def set_lock_providers_status(current_user, status)
-    if self.zerv.blank? && self.latch.blank? && self.dwelo.blank? && self.edge_state.blank? && self&.edge_state&.remote_locks.blank?  && self&.edge_state&.yale.blank? && self.other_lock.nil?
+    if self.zerv.blank? && self.latch.blank? && self.dwelo.blank? && self.edge_state.blank? && self&.edge_state&.remote_locks.blank?  && self&.edge_state&.yale.blank? && self.other_locks.nil?
       return
     else
       pynwheel_access_status(current_user, status)
