@@ -48,6 +48,7 @@ class Api::V2::HardwareSpecsController < Api::V2::ApiApplicationController
     hardware_spec = @community.hardware_spec
     if !hardware_spec.image.nil?
       hardware_spec.remove_image!
+      hardware_spec.save!
       @community.touch_installation_specification(current_pynwheel_user, "")
       render json: {success: true, messgae: "Pynwheel touch hardware spec deleted successfully."}
     else

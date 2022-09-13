@@ -105,11 +105,10 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     if community_credentials.present?
       credential = community_credentials.new(credential_params)
     else
-      credential = Credential.new(credential_params)
+      credential = @community.create_credential(credential_params)
     end
     
-    if credential.save
-      credential.update_attributes(community_id: @community.id)
+    if credential
       update_crm_credentials if (params[:use_different_crm_provider] || credential&.use_different_crm_provider)
     end
     credential
@@ -138,6 +137,9 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     end
   end
 
+  
+  private 
+
   def test_connection
     if @community.credentials_are_present?
       if xml = @community.connect_to_provider
@@ -153,8 +155,6 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       return {success: false, message: "Please enter credentials in settings before importing data.", data: nil}
     end
   end
-
-  private 
 
   def set_community
     @community = Community.find params[:community_id]

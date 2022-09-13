@@ -148,6 +148,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
         detail_forms << x
       end
     end
+    detail_forms << hardware_spec_form if hardware_spec_form_require
     detail_forms << design_direction_form if design_direction_form_require
     detail_forms << amenity_images_form if amenity_images_form_require
     detail_forms << ebrochure_form

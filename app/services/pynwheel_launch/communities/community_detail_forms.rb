@@ -309,7 +309,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     return [] if @community.hardware_spec.nil?
     hardware_spec = @community.hardware_spec
     hardware_status = hardware_spec.present? ? @community&.hardware_spec&.status&.status_and_remarks_obj : nil
-    [hardware_status].compact
+    [hardware_status]
   end
 
   def home_page_media_status
