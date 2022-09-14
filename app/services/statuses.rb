@@ -45,7 +45,6 @@ class Statuses
   end
 
   def set_amenity_images_status
-    binding.pry
     amenities = @community.amenities
     amenities.each {|image| @community.set_status_for_all(image, @status, @current_user)} if amenities.present?
   end

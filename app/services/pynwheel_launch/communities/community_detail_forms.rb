@@ -72,6 +72,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     detail_forms << hardware_spec_form if hardware_spec_form_require
     forms_for_touch_app(community_products).each {|x| detail_forms << x} if products.include?("pynwheel_touch")
     forms_for_self_tour(community_products).each {|a| detail_forms << a} if products.include?("self_tour")
+    detail_forms << floorplan_form if @community&.floorplans&.count > 0
     detail_forms << design_direction_form if design_direction_form_require
     detail_forms << amenity_images_form if amenity_images_form_require
     detail_forms << ebrochure_form
@@ -132,12 +133,15 @@ class PynwheelLaunch::Communities::CommunityDetailForms
       {
         name: PROPERTY_MAP_IMAGES,
         status: property_map_status
-      },
-      {
-        name: FLOORPLAN_IMAGES,
-        status: floorplan_status
       }
     ]
+  end
+
+  def floorplan_form
+    {
+      name: FLOORPLAN_IMAGES,
+      status: floorplan_status
+    }
   end
 
   def forms_for_self_tour(products)
