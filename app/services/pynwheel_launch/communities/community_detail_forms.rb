@@ -318,6 +318,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
   def home_page_media_status
     return [] if @community.design.blank? && @community.design&.home_page_images.blank? && @community.design&.home_page_video.blank?
+    home_page_medias_status = []
     home_page_images = @community.design.home_page_images
     home_page_video = @community.design.home_page_video
     home_page_medias_status = home_page_images.map {|hp_img| hp_img&.status&.status_and_remarks_obj rescue nil} if home_page_images.present?

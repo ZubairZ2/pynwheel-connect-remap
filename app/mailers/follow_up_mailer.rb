@@ -90,9 +90,11 @@ class FollowUpMailer < ApplicationMailer
   end
 
   def self.application_approved(community)
-    users = community.users.pluck(:email)
-    users.each do |user|
-      send_application_approved_email(community, user).deliver if is_user_not_dwelo(user)
+    unless community&.company&.name.include?("Dwelo")
+      users = community.users.pluck(:email)
+      users.each do |user|
+        send_application_approved_email(community, user).deliver if is_user_not_dwelo(user)
+      end
     end
   end
 
