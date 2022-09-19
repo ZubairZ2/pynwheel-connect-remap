@@ -192,7 +192,7 @@ class PsiStaticService < BaseService
       floorplan.property_id = property_id
 
       unless floorplan.name_is_updated.present? && floorplan.name_is_updated
-        floorplan.name = f["Name"] + " " + f["Identification"]["IDValue"].to_s
+        floorplan.name = f["Name"]
       end
 
       if f["MarketRent"]["@attributes"]["Min"].to_f > 0

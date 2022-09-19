@@ -342,7 +342,7 @@ class PsiService < BaseService
         floorplan.provider = "psi"
 
         unless floorplan.name_is_updated.present? && floorplan.name_is_updated
-          floorplan.name = f["Name"] + " " + f["Identification"]["IDValue"].to_s
+          floorplan.name = f["Name"]
         end
 
         floorplan.unit_count = f["UnitsAvailable"]

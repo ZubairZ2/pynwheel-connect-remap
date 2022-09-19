@@ -248,7 +248,7 @@ class PsiSwapService < BaseService
         floorplan.provider = "psi"
         floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
         floorplan.property_id = property_id
-        floorplan.name = f["Name"] + " " + f["Identification"]["IDValue"].to_s
+        floorplan.name = f["Name"]
         floorplan.unit_count = f["UnitsAvailable"]
         floorplan.units_available = f["DisplayedUnitsAvailable"]
         floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
@@ -296,7 +296,7 @@ class PsiSwapService < BaseService
         floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
         floorplan.provider = "psi"
         floorplan.property_id = property_id
-        floorplan.name = f["Name"] + " " + f["Identification"]["IDValue"].to_s
+        floorplan.name = f["Name"]
         floorplan.unit_count = f["UnitsAvailable"]
         floorplan.units_available = f["DisplayedUnitsAvailable"]
         floorplan.deposit = f["Deposit"]["Amount"]["ValueRange"]["@attributes"]["Min"]
