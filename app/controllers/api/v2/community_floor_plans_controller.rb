@@ -21,34 +21,11 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
         if floorplan_id.present?
           @floorplan = @community.floorplans.find_by_id(floorplan_id)
           if @floorplan.present?
-            if floorplan["image"].present?
-              @floorplan.remove_file!
-               @floorplan.update(name: floorplan["name"], image: floorplan["image"])
-            end
-            if floorplan["file"].present?
-              @floorplan.remove_image!
-               @floorplan.update(name: floorplan["name"], file: floorplan["file"])
-            end
-            if floorplan["aminities"].present?
-              floorplan["aminities"].values.each do |amenity|
-                if !amenity[:id].present?
-                  @floorplan.amenities.create(image: amenity["image"])
-                end
-              end
-            end
+            update_floorplan(floorplan)
             # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "update", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
           end
         else
-          @floorplan = @community.floorplans.new(name: floorplan["name"])
-          @floorplan.image = floorplan[:image] if floorplan[:image].present?
-          @floorplan.file = floorplan[:file] if floorplan[:file].present?
-          if @floorplan.save
-            if floorplan["aminities"].present?
-              floorplan["aminities"].values.each do |aminity|
-                @amenity = @floorplan.amenities.create(image: aminity["image"])
-              end
-            end
-          end
+          create_floorplan(floorplan)
           # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "create", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
         end
       end
@@ -110,6 +87,38 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
   end
 
   private
+
+  def update_floorplan(floorplan)
+    if floorplan["image"].present?
+      @floorplan.remove_file!
+       @floorplan.update(name: floorplan["name"], image: floorplan["image"])
+    elsif floorplan["file"].present?
+      @floorplan.remove_image!
+       @floorplan.update(name: floorplan["name"], file: floorplan["file"])
+    else
+      @floorplan.update(name: floorplan["name"])
+    end
+    if floorplan["aminities"].present?
+      floorplan["aminities"].values.each do |amenity|
+        if !amenity[:id].present?
+          @floorplan.amenities.create(image: amenity["image"])
+        end
+      end
+    end
+  end
+
+  def create_floorplan(floorplan)
+    @floorplan = @community.floorplans.new(name: floorplan["name"])
+    @floorplan.image = floorplan[:image] if floorplan[:image].present?
+    @floorplan.file = floorplan[:file] if floorplan[:file].present?
+    if @floorplan.save
+      if floorplan["aminities"].present?
+        floorplan["aminities"].values.each do |aminity|
+          @amenity = @floorplan.amenities.create(image: aminity["image"])
+        end
+      end
+    end
+  end
 
   def load_floorplan
     @load_floorplan = @community.floorplans.find_by(id: params[:id])
