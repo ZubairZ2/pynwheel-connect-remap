@@ -6,7 +6,7 @@ class Floorplan < ApplicationRecord
   belongs_to :community
   has_many :amenities, as: :amenityable
   has_one :status, as: :statusable
-  validates_uniqueness_of :name, scope: :community, on: [:create, :update]
+  # validates_uniqueness_of :name, scope: :community, on: [:create, :update]
   validates_uniqueness_of :provider_floorplan_id, scope: :community, if: -> { provider_floorplan_id.present? }
   after_commit :populate_image_urls, on: [:create, :update]
   validates :market_rent, :numericality => { greater_than_or_equal_to: -1 }, if: -> { market_rent.present? }

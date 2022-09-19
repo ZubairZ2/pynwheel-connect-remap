@@ -59,14 +59,10 @@ class RealPageSvcStaticService < BaseService
               unless floorplan.name_is_updated.present? && floorplan.name_is_updated
 
                 if fp[:FloorPlanName].present?
-                  if fp[:FloorPlanCode].present?
-                    floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
-                  else
-                    floorplan.name = fp[:FloorPlanName]
-                  end
+                  floorplan.name = fp[:FloorPlanName]
                 elsif fp[:FloorPlanCode].present?
                   if fp[:FloorPlanCode] != fp[:FloorPlanName]
-                    floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+                    floorplan.name = fp[:FloorPlanName]
                   else
                     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
                   end

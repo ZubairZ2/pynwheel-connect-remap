@@ -135,7 +135,7 @@ class ResmanStaticService < BaseService
       floorplan = Floorplan.where(provider: "resman",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize
       floorplan.property_id = property_id
       unless floorplan.name_is_updated.present? && floorplan.name_is_updated
-        floorplan.name = f["Name"] + " - " + f["Id"].to_s
+        floorplan.name = f["Name"]
       end
 
       floorplan.unit_count = f["UnitCount"]
