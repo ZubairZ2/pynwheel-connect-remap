@@ -423,6 +423,8 @@ class Community < ApplicationRecord
         crm_credential.salesforce_username.present? && crm_credential.salesforce_password.present? && crm_credential.salesforce_client_id.present? && crm_credential.salesforce_secret_id.present? && crm_credential.salesforce_property_id.present?
       when "knock"
         crm_credential.knock_api_key.present? && crm_credential.knock_community_id.present? && crm_credential.knock_sms_consent_url.present?
+      when "funnel"
+        crm_credential.funnel_api_key.present? && crm_credential.funnel_community_id.present?
     end
   end
 
