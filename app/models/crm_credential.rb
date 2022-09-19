@@ -52,7 +52,7 @@ class CrmCredential < ApplicationRecord
   end
 
   def credential_present?
-  	if self.entrata_domain.present? || realpage_site_id.present? || salesforce_username.present? || funnel_api_key.present?
+  	if self.entrata_domain.present? || realpage_site_id.present? || salesforce_username.present? || funnel_api_key.present? || knock_community_id.present? || yardirentcafe_leads_api_user_name.present?
   		(true)
   	else
   		(false)
