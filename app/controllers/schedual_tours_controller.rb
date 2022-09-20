@@ -227,8 +227,9 @@ class SchedualToursController < ApplicationController
     unless community.is_funnel_community?
       tour_types = @is_knock_community ? KnockService.new(@schedual_tour).knock_available_tour_types( params[:date], params[:day], params[:time]) : @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(@schedual_tour, date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
       render json: {tour_types: tour_types.uniq,limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
-    else      
-      render json: {tour_types: [["self_tour", "Self Tour"], ["guided_tour", "Guided Tour"]] ,limit_exceded_tour_types: [], schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
+    else
+
+      render json: {tour_types:  community_allowed_tour_types(community),limit_exceded_tour_types: [], schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
     end
 
   end
@@ -356,6 +357,24 @@ class SchedualToursController < ApplicationController
   end
 
   private
+
+    def community_allowed_tour_types community
+      tour = community.community_tour
+
+      if tour.present?
+        if (tour&.tour_setting&.allow_self_tour) && (tour&.tour_setting&.allow_guided_tour)
+          [["self_tour", "Self Tour"], ["guided_tour", "Guided Tour"]]
+        elsif tour&.tour_setting&.allow_self_tour
+          [["self_tour", "Self Tour"]]
+        elsif tour&.tour_setting&.allow_guided_tour
+          [["guided_tour", "Guided Tour"]]
+        else
+          []
+        end
+      else
+        []
+      end
+    end
 
 
     def scheduled_tour_users community
