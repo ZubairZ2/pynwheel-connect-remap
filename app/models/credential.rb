@@ -54,7 +54,7 @@ class Credential < ApplicationRecord
 
   def crm_credential_provider
     community = self.community
-    return {} unless self.use_different_crm_provider && community.crm_credential.crm_provider.present?
+    return {} unless community&.crm_credential&.crm_provider.present?
     community.crm_credential.crm_provider_credentials
   end
 
