@@ -71,7 +71,6 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       @credential = update_data_provider_credentials
       if @credential.present?
         @community.set_data_provider_status(current_pynwheel_user, params["status"])
-        FollowUpMailer.send_email_after_form_submission(@community, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
         render json: {success: true, error_code: 200, message: "#{data_provider} updated successfully", data: @credential.as_json(data_provider)}
       else
         render :json => {:success => false, :error_code => 500, :message => @credential&.errors&.full_messages}
