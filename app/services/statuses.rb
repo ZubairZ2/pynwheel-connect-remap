@@ -104,7 +104,7 @@ class Statuses
     @community.set_status_for_all(@community.igloohome, @status, @current_user)  unless @community.igloohome.blank?
 
     unless @community.other_locks.blank?
-      other_locks = @community&.remote_locks
+      other_locks = @community&.other_locks
 
       other_locks.each do |lock|
         @community.set_status_for_all(lock, @status, @current_user)
