@@ -30,7 +30,7 @@ class CommunityUser < ApplicationRecord
   end
 
   def invitation_date
-    self.created_at
+    CommunityUser.where(community_id: self.community_id).order(created_at: :asc)[0].created_at
   end
 
   def floorplan_count
