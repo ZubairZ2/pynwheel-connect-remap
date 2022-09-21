@@ -61,7 +61,7 @@ class Amenity < ApplicationRecord
     ["Playground","Playground"],["Clubhouse / Resident Lounge","Clubhouse / Resident Lounge"],["Game Room","Game Room"],["Dog Wash","Dog Wash"],["Package Locker","Package Locker"],["Mail Room","Mail Room"],
     ["Conference Room","Conference Room"],["Business Center / Lounge","Business Center / Lounge"], ["Other", "Other"]]
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :name, :image]
     )
