@@ -253,7 +253,7 @@ attr_reader :user , :params
   end
 
   def design_direction_status(community)
-    return nil if community&.design_direction.status.blank?
+    return nil if community&.design_direction&.status.blank?
     return community&.design_direction&.status&.status
   end
 
