@@ -21,6 +21,17 @@ class Api::V1::IgloohomesController < ActionController::Base
     end
   end
 
+  def unpairing
+    response = unpair_igloo_device(params[:lock_id]) if params[:lock_id].present?
+    if response.present? && response["payload"].present?
+      unless response["payload"].to_s == "Not Found"
+        render :json=> {status: true, message: "Lock with Id: #{params[:lock_id]} unpaired successfully"}
+      else
+        render :json=> {status: false, message: "Lock with Id: #{params[:lock_id]} not found"}
+      end
+    end
+  end
+
 
   private
 

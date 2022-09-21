@@ -33,4 +33,19 @@ module IgloohomeApisHelper
     OpenStruct.new({success?: true, error: nil, payload: response})
   end
 
+  def unpair_igloo_device lock_id
+    url = "#{ENV["IGLOOHOME_API_BASE_URL"]}/v2/locks/#{lock_id}"
+
+    response = HTTParty.delete(url,
+      headers: { 
+        'Content-Type' => 'application/json',
+        'X-IGLOOCOMPANY-APIKEY' => ENV["IGLOOHOME_API_KEY"]
+      })
+
+  rescue HTTParty::Error => e
+    OpenStruct.new({success?: false, error: e, payload: nil})
+  else
+    OpenStruct.new({success?: true, error: nil, payload: response})
+  end
+
 end
