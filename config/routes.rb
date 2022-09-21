@@ -723,6 +723,7 @@ Rails.application.routes.draw do
         collection do
           get :timezone
           post :pairing
+          delete :unpairing
         end
       end
 
