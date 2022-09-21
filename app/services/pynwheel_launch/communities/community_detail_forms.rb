@@ -186,25 +186,34 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def lock_providers_status
-    return [] if @community.zerv.blank? && @community.latch.blank? && @community.dwelo.blank? && @community.edge_state.blank? && @community&.edge_state&.remote_locks.blank? && @community.other_lock.nil?
+    return [] if @community.zerv.blank? && @community.latch.blank? && @community.dwelo.blank? && @community.edge_state.blank? && @community&.edge_state&.remote_locks.blank? && @community&.edge_state&.yale.blank? && @community&.edge_state&.schlage.blank? && @community.other_locks.blank? && @community.igloohome.blank?
     
     locks_status = []
     
     zerv = @community.zerv
     latch = @community.latch
     dwelo = @community.dwelo
-    other_lock = @community.other_lock
+    other_locks = @community.other_locks
+    yale_locks = @community.edge_state&.yale
+    schlage_locks = @community.edge_state&.schlage
+    igloohome_lock = @community.igloohome
     remote_locks = @community.edge_state&.remote_locks
 
     locks_status << zerv&.status&.status_and_remarks_obj rescue nil if zerv.present?
     locks_status << latch&.status&.status_and_remarks_obj rescue nil if latch.present?
     locks_status << dwelo&.status&.status_and_remarks_obj rescue nil if dwelo.present?
-    locks_status << other_lock&.status&.status_and_remarks_obj rescue nil if !other_lock.nil?
+    locks_status << igloohome_lock&.status&.status_and_remarks_obj rescue nil if igloohome_lock.present?
+    schlage_locks.each {|lock| locks_status << lock&.status&.status_and_remarks_obj rescue nil } if schlage_locks.present?
+    yale_locks.each {|lock| locks_status << lock&.status&.status_and_remarks_obj rescue nil } if yale_locks.present?
+    if other_locks.present?
+      other_locks.each do |lock|
+        locks_status << lock&.status&.status_and_remarks_obj rescue nil 
+      end
+    end
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status_and_remarks_obj rescue nil}
     end
-
     locks_status.compact.uniq
   end
 
@@ -275,18 +284,25 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def update_lock_providers_status_and_remarks status, remarks
-    return if @community.zerv.blank? && @community.latch.blank? &&@community.other_lock.nil? && @community.dwelo.blank? && @community.edge_state.blank? && @community&.edge_state&.remote_locks.blank?
+    return if @community.zerv.blank? && @community.latch.blank? && @community.dwelo.blank? && @community.edge_state.blank? && @community&.edge_state&.remote_locks.blank? && @community&.edge_state&.yale.blank? && @community&.edge_state&.schlage.blank? && @community.other_locks.blank? && @community.igloohome.blank?
     
     zerv = @community.zerv
     latch = @community.latch
     dwelo = @community.dwelo
-    other_lock = @community.other_lock
+    other_locks = @community.other_locks
+    yale_locks = @community.edge_state&.yale
+    schlage_locks = @community.edge_state&.schlage
+    igloohome_lock = @community.igloohome
     remote_locks = @community.edge_state&.remote_locks
 
     zerv&.status.update_attributes(status: status, remarks: remarks) if zerv.present?
     latch&.status.update_attributes(status: status, remarks: remarks) if latch.present?
     dwelo&.status.update_attributes(status: status, remarks: remarks) if dwelo.present?
-    other_lock&.status.update_attributes(status: status, remarks: remarks) if !other_lock.nil?
+    igloohome_lock&.status.update_attributes(status: status, remarks: remarks) if igloohome_lock.present?
+
+    schlage_locks.each {|lock| lock&.status.update_attributes(status: status, remarks: remarks) } if schlage_locks.present?
+    yale_locks.each {|lock| lock&.status.update_attributes(status: status, remarks: remarks) } if yale_locks.present?
+    other_locks.each {|lock| lock&.status.update_attributes(status: status, remarks: remarks) } if other_locks.present?
     
     unless remote_locks.nil?
       remote_locks.each {|remote_lock| remote_lock&.status.update_attributes(status: status, remarks: remarks) }

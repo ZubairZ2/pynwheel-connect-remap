@@ -38,6 +38,8 @@ class Community < ApplicationRecord
   has_many :elevators, dependent: :destroy
   has_many :doors, dependent: :destroy
   has_many :access_points, -> { where("attached_with_type = 'Floorplate' OR attached_with_type = 'Sitemap'") }, class_name: 'Door', dependent: :destroy
+  has_many :other_locks, dependent: :destroy
+
 
   has_one :credential, dependent: :destroy
   has_one :crm_credential, dependent: :destroy
@@ -55,7 +57,6 @@ class Community < ApplicationRecord
   has_one :three_d_maps_configuration, dependent: :destroy
   has_many :comments , as: :commentable
   has_one :portal_tour, dependent: :destroy
-  has_one :other_lock, dependent: :destroy
   has_one :hardware_spec
   has_one :status, as: :statusable
 
@@ -423,26 +424,68 @@ class Community < ApplicationRecord
   end
 
   def set_lock_providers_status(current_user, status)
-    if self.zerv.blank? && self.latch.blank? && self.dwelo.blank? && self.edge_state.blank? && self&.edge_state&.remote_locks.blank? && self.other_lock.nil?
+    if self.zerv.blank? && self.latch.blank? && self.dwelo.blank? && self.edge_state.blank? && self&.edge_state&.remote_locks.blank?  && self&.edge_state&.yale.blank? && self.other_locks.nil?
       return
     else
       pynwheel_access_status(current_user, status)
       latch_locks_status(current_user, status)
       dwelo_locks_status(current_user, status)
       remote_lock_status(current_user, status)
+      yale_lock_status(current_user, status)
       set_other_lock_status(current_user, status)
+      schlage_lock_status(current_user, status)
+      igloohome_lock_status(current_user, status)
+    end
+  end
+
+  def igloohome_lock_status(current_user, status)
+    return if self.igloohome.blank?
+    igloohome = self.igloohome
+    if status.empty?
+      status_attr = status_string(igloohome.email.present? && igloohome.file.present?)
+    else
+      status_attr = status
+    end
+    set_status_for_all(igloohome,status_attr,current_user)
+  end
+
+  def yale_lock_status(current_user, status)
+    return if self.edge_state.blank?
+    yale_locks = self.edge_state&.yale
+    yale_locks.each do |lock|
+      if status.empty?
+        status_attr = status_string(lock.present?)
+      else
+        status_attr = status
+      end
+      set_status_for_all(lock,status_attr,current_user)
+    end
+  end
+
+  def schlage_lock_status(current_user, status)
+    return if self.edge_state.blank?
+    schlage_locks = self.edge_state&.schlage
+    schlage_locks.each do |lock|
+      if status.empty?
+        status_attr = status_string(lock.present?)
+      else
+        status_attr = status
+      end
+      set_status_for_all(lock,status_attr,current_user)
     end
   end
 
   def set_other_lock_status(current_user, status)
-    return if self.other_lock.nil?
-    other_lock = self.other_lock
-    if status.empty?
-      status_attr = status_string(other_lock.description.present?)
-    else
-      status_attr = status
+    return unless self.other_locks.present?
+    other_locks = self.other_locks
+    other_locks.each do |lock|
+      if status.empty?
+        status_attr = status_string(lock.description.present?)
+      else
+        status_attr = status
+      end
+      set_status_for_all(lock,status_attr,current_user)
     end
-    set_status_for_all(other_lock,status_attr,current_user)
   end
 
   def pynwheel_access_status(current_user, status)
