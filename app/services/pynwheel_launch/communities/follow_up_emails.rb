@@ -330,7 +330,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
     when IN_PROGRESS
       return "In Progress..."
     when APPLICATION_IN_REVIEW
-      return "Submitted for Review"
+      return "Approved"
     when RELEASED
       return "Application Released"
     when REJECTED

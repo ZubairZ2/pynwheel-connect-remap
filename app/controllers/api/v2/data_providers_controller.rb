@@ -125,15 +125,8 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
 
   def create_crm_credential(crm_credentials)
     return unless params[:crm_credential].present?
-    if crm_credentials.present?
-      crm_credential = crm_credentials.new(crm_credential_params)
-    else
-      crm_credential = CrmCredential.new(crm_credential_params)
-    end
-    
-    if crm_credential.save
-      crm_credential.update_attributes(community_id: @community.id)
-    end
+    crm_credentials = @community.create_crm_credential(crm_credential_params)
+    crm_credentials
   end
 
   
