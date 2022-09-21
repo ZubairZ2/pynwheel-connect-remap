@@ -3,6 +3,17 @@ class PynwheelLaunch::Communities::FollowUpEmails
     @community = community
   end
 
+  def move_to_production_auto_email
+    forms = forms_list
+    if forms.present?
+      readable_forms_status = get_readable_form_status(forms)
+      if forms.all?{ |x| x[:status].eql?(APPROVED) || x[:status].eql?(RELEASED) || x[:status].eql?(APPLICATION_IN_REVIEW) }
+        return true
+      end
+    end
+    false
+  end
+
   def send_emails
     forms = forms_list
     if forms.present?
@@ -11,8 +22,8 @@ class PynwheelLaunch::Communities::FollowUpEmails
         return {type: APPLICATION_NOT_STARTED, data: readable_forms_status}
       elsif forms.any?{|x| x[:status].eql?(IN_PROGRESS) || x[:status].eql?(nil)} && !forms.all?{|x| x[:status].eql?(IN_PROGRESS) ||x[:status].eql?(nil)}
         return {type: APPLICATION_IN_PROGRESS, data: readable_forms_status}
-      elsif forms.all?{|x| x[:status].eql?(SUBMITTED)}
-        return {type: APPLICATION_SUBMITTED, data: readable_forms_status}
+      # elsif forms.all?{|x| x[:status].eql?(SUBMITTED) || x[:status].eql?(APPROVED) || x[:status].eql?(RELEASED) || x[:status].eql?(APPLICATION_IN_REVIEW)} && forms.any?{|x| x[:status].eql?(SUBMITTED)} 
+      #   return {type: APPLICATION_SUBMITTED, data: readable_forms_status}
       else
         return {data: readable_forms_status}
       end
@@ -46,12 +57,15 @@ class PynwheelLaunch::Communities::FollowUpEmails
       {
         name: PROPERTY_MAP_IMAGES,
         status: property_map_status
-      },
-      {
-        name: FLOORPLAN_IMAGES,
-        status: floorplan_status
       }
     ]
+  end
+
+  def floorplan_form
+    {
+      name: FLOORPLAN_IMAGES,
+      status: floorplan_status
+    }
   end
 
   def forms_for_self_tour
@@ -80,12 +94,43 @@ class PynwheelLaunch::Communities::FollowUpEmails
       {
         name: TOUCH_HOME_PAGE_MEDIA,
         status: home_page_media_status
-      },
-      {
-        name: HARDWARE_SPECS,
-        status: hardware_specs_status
       }
     ]
+  end
+
+  def hardware_spec_form
+    {
+      name: HARDWARE_SPECS,
+      status: hardware_specs_status
+    }
+  end
+
+  def design_direction_form
+    {
+      name: DESIGN_DIRECTION,
+      status: design_direction_status
+    }
+  end
+
+  def amenity_images_form
+    {
+      name: AMENITY_IMAGES,
+      status: amenity_images_status
+    }
+  end
+
+  def ebrochure_form
+    {
+      name: EBROCHURE,
+      status: ebrochure_status
+    }
+  end
+
+  def additional_pages_form
+    {
+      name: ADDITIONAL_PAGES,
+      status: additional_pages_status
+    }
   end
 
   def forms_list
@@ -106,6 +151,12 @@ class PynwheelLaunch::Communities::FollowUpEmails
         detail_forms << x
       end
     end
+    detail_forms << floorplan_form if @community&.floorplans&.count > 0
+    detail_forms << hardware_spec_form if hardware_spec_form_require
+    detail_forms << design_direction_form if design_direction_form_require
+    detail_forms << amenity_images_form if amenity_images_form_require
+    detail_forms << ebrochure_form
+    detail_forms << additional_pages_form if additional_pages_form_require
     detail_forms
   end
 
@@ -224,6 +275,44 @@ class PynwheelLaunch::Communities::FollowUpEmails
     status_check(visiting_hours_status)
   end
 
+  def ebrochure_status
+    return nil if @community.favorite_setting.blank?
+    status = []
+    weblinks = @community.favorite_setting.ebrochure_menu_buttons
+    weblinks.map { |weblink| status << weblink&.status&.status } if weblinks.present?
+
+    favorite_images = @community.favorite_setting.favorite_images
+    favorite_images.map { |image| status << image&.status&.status } if favorite_images.present?
+
+    status_check(status.compact)
+  end
+
+  def additional_pages_status
+    return nil if @community.webpages.blank? && @community.imagepages.blank?
+
+    status = []
+    webpages = @community.webpages
+    webpages.map {|webpage| status << webpage&.status&.status} if webpages.present?
+
+    imagepages = @community.imagepages
+    imagepages.map {|imagepage| status << imagepage&.status&.status} if imagepages.present?
+
+    status_check(status.compact)
+  end
+
+  def design_direction_status
+    return nil if @community&.design_direction&.status&.blank?
+    @community&.design_direction&.status&.status
+  end
+
+  def amenity_images_status
+    return nil if @community.amenities.blank?
+    status = []
+      amenities = @community.amenities
+      amenities.map {|amenity| status << amenity&.status&.status}
+    status_check(status.compact)
+  end
+
   def get_readable_form_status(forms)
     readable_form_status = [];
     forms.each do |form|
@@ -245,7 +334,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
     when RELEASED
       return "Application Released"
     when REJECTED
-      return "Rejected"
+      return "Attention Required"
     when DEPLOYED
       return "Deployed"
     else
@@ -265,6 +354,34 @@ class PynwheelLaunch::Communities::FollowUpEmails
     else
       return nil
     end
+  end
+
+  def design_direction_form_require
+    return false if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return true if products["product_options"]["pynwheel_touch"]["is_enabled"] && (products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Modernist Horizontal") || products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Modernist Vertical") || products["product_options"]["pynwheel_touch"]["options"]["design_style"].eql?("Expressionist"))
+    false
+  end
+
+  def amenity_images_form_require
+    return false if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return true if !products["product_options"]["self_tour"]["is_enabled"] && (products["product_options"]["pynwheel_touch"]["is_enabled"] || products["product_options"]["pynwheel_maps"])
+    false
+  end
+
+  def additional_pages_form_require
+    return false if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return true if !products["product_options"]["self_tour"]["is_enabled"] && products["product_options"]["pynwheel_touch"]["is_enabled"] && !products["product_options"]["pynwheel_maps"]
+    false
+  end
+
+  def hardware_spec_form_require
+    return false if @community.product_options.nil?
+    products = JSON.parse(@community.product_options)
+    return true if products["product_options"]["pynwheel_touch"]["options"]["installation"].eql?("Yes")
+    false
   end
 
 end

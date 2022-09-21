@@ -54,7 +54,7 @@ class Credential < ApplicationRecord
 
   def crm_credential_provider
     community = self.community
-    return {} unless self.use_different_crm_provider && community.crm_credential.crm_provider.present?
+    return {} unless community&.crm_credential&.crm_provider.present?
     community.crm_credential.crm_provider_credentials
   end
 
@@ -152,7 +152,7 @@ class Credential < ApplicationRecord
 
   def change_to_scheduled_tours_for_sf
     community = self.community
-    if self.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"
+    if self.use_different_crm_provider && community&.crm_credential&.crm_provider == "salesforce"
       self.community.community_tour.update_columns(only_scheduled_tour: true)
       self.community.update_columns(scheduler_widget: false)
     end

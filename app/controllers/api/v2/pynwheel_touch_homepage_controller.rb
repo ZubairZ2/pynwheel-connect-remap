@@ -33,13 +33,9 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
       end
     end
     media = all_design
+    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(TOUCH_HOME_PAGE_MEDIA)
     @community.set_touch_vidoes_status(current_pynwheel_user, @status)
-    email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-    email[:data].each do |mail|
-      if mail[:name].eql?(TOUCH_HOME_PAGE_MEDIA) && mail[:status].eql?('Submitted')
-        FollowUpMailer.send_submitted_form(@community, TOUCH_HOME_PAGE_MEDIA, email[:data]).deliver_later
-      end
-    end
+    FollowUpMailer.send_email_after_form_submission(@community, TOUCH_HOME_PAGE_MEDIA, previous_status)
     render json: { success: true, data: media.as_json }
   rescue StandardError => e
     render json: { success: false, message: e.message }

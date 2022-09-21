@@ -22,6 +22,16 @@ class FavoriteSetting < ApplicationRecord
   has_many :ebrochure_menu_buttons, dependent: :destroy
   validate :page_name_length_validate
 
+  def as_json
+    super(
+      :only => [:id],
+      :include => {
+        :favorite_images => {:only => [:id, :image]},
+        :ebrochure_menu_buttons => {:only => [:id, :name, :url]}
+      }
+    )
+  end
+
   def page_name_length_validate
     if attributes['favorite_name'].present?
       words = attributes['favorite_name'].split(" ")

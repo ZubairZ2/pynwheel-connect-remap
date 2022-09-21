@@ -9,7 +9,7 @@ class DesignUploader < CarrierWave::Uploader::Base
   end
 
   def size_range
-    0..25000.kilobytes
+    0..150000.kilobytes
   end
 
 end

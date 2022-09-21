@@ -27,13 +27,9 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
           render json: {success: false, error_code: 200, message: "Invalid Credentials", data: @credential.as_json(data_provider)}
         else
           @community.data_is_imported
+          previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
           @community.set_data_provider_status(current_pynwheel_user, params["status"])
-          email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-          email[:data].each do |mail|
-            if mail[:name].eql?(PROPERTY_MANAGEMENT_SYSTEM) && mail[:status].eql?("Submitted")
-              FollowUpMailer.send_submitted_form(@community, PROPERTY_MANAGEMENT_SYSTEM, email[:data]).deliver_later
-            end
-          end
+          FollowUpMailer.send_email_after_form_submission(@community, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
           render json: {success: true, error_code: 200, message: "Valid credentials. Data import succeeded.", data: @credential.as_json(data_provider)}
         end
       else
@@ -55,13 +51,9 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
           render json: {success: false, error_code: 200, message: "Invalid Credentials", data: @credential.as_json(data_provider)}
         else
           @community.data_is_imported
+          previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
           @community.set_data_provider_status(current_pynwheel_user, params["status"])
-          email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-          email[:data].each do |mail|
-            if mail[:name].eql?(PROPERTY_MANAGEMENT_SYSTEM) && mail[:status].eql?("Submitted")
-              FollowUpMailer.send_submitted_form(@community, PROPERTY_MANAGEMENT_SYSTEM, email[:data]).deliver_later
-            end
-          end
+          FollowUpMailer.send_email_after_form_submission(@community, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
           render json: {success: true, error_code: 200, message: "Valid credentials. Data import succeeded.", data: @credential.as_json(data_provider)}
         end
       else
@@ -79,12 +71,6 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       @credential = update_data_provider_credentials
       if @credential.present?
         @community.set_data_provider_status(current_pynwheel_user, params["status"])
-        email = PynwheelLaunch::Communities::FollowUpEmails.new(@community).send_emails
-        email[:data].each do |mail|
-          if mail[:name].eql?(PROPERTY_MANAGEMENT_SYSTEM) && mail[:status].eql?("Submitted")
-            FollowUpMailer.send_submitted_form(@community, PROPERTY_MANAGEMENT_SYSTEM, email[:data]).deliver_later
-          end
-        end
         render json: {success: true, error_code: 200, message: "#{data_provider} updated successfully", data: @credential.as_json(data_provider)}
       else
         render :json => {:success => false, :error_code => 500, :message => @credential&.errors&.full_messages}
@@ -118,11 +104,10 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     if community_credentials.present?
       credential = community_credentials.new(credential_params)
     else
-      credential = Credential.new(credential_params)
+      credential = @community.create_credential(credential_params)
     end
     
-    if credential.save
-      credential.update_attributes(community_id: @community.id)
+    if credential
       update_crm_credentials if (params[:use_different_crm_provider] || credential&.use_different_crm_provider)
     end
     credential
@@ -151,6 +136,9 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     end
   end
 
+  
+  private 
+
   def test_connection
     if @community.credentials_are_present?
       if xml = @community.connect_to_provider
@@ -166,8 +154,6 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       return {success: false, message: "Please enter credentials in settings before importing data.", data: nil}
     end
   end
-
-  private 
 
   def set_community
     @community = Community.find params[:community_id]
@@ -190,7 +176,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username,
       :yardirentcafe_leads_api_user_name, :yardirentcafe_leads_api_password, :yardirentcafe_marketing_api_key,
       :yardirentcafe_company_code, :yardirentcafe_property_id, :yardirentcafe_property_code,:salesforce_password, 
-      :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :knock_api_key, :knock_community_id, :knock_sms_consent_url, :salesforce_grant_type)
+      :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :knock_api_key, :knock_community_id, :knock_sms_consent_url, :salesforce_grant_type, :funnel_community_id, :funnel_api_key)
   end
 
 end

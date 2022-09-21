@@ -15,6 +15,8 @@ class CrmCredential < ApplicationRecord
 		    salesforce_crm_credentials
       when "knock"
 		    knock_crm_credentials
+      when "funnel"
+		    funnel_crm_credentials
     end
   end
 
@@ -45,8 +47,12 @@ class CrmCredential < ApplicationRecord
 	  {knock_api_key: self.knock_api_key, knock_community_id: self.knock_community_id, knock_sms_consent_url: self.knock_sms_consent_url}
   end
 
+  def funnel_crm_credentials
+	  {funnel_api_key: self.funnel_api_key, funnel_community_id: self.funnel_community_id}
+  end
+
   def credential_present?
-  	if self.entrata_domain.present? || realpage_site_id.present? || salesforce_username.present?
+  	if self.entrata_domain.present? || realpage_site_id.present? || salesforce_username.present? || funnel_api_key.present? || knock_community_id.present? || yardirentcafe_leads_api_user_name.present?
   		(true)
   	else
   		(false)

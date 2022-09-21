@@ -99,6 +99,36 @@ class InvitationsController < Devise::InvitationsController
     end
   end
 
+  def update
+    raw_invitation_token = update_resource_params[:invitation_token]
+    self.resource = accept_resource
+    invitation_accepted = resource.errors.empty?
+
+    yield resource if block_given?
+
+    if invitation_accepted
+      if resource.class.allow_insecure_sign_in_after_accept
+        flash_message = resource.active_for_authentication? ? :updated : :updated_not_active
+        set_flash_message :notice, flash_message if is_flashing_format?
+        resource.after_database_authentication
+        sign_in(resource_name, resource)
+        respond_with resource, location: after_accept_path_for(resource)
+      else
+        if resource.pynwheel_launch_access && resource.pynwheel_connect_access
+          link = "#{root_url}access_selection.html"
+        elsif resource.pynwheel_launch_access
+          link = ENV['PYNWHEEL_LUANCH']
+        else
+          link = root_url
+        end
+        redirect_to link
+      end
+    else
+      resource.invitation_token = raw_invitation_token
+      respond_with_navigational(resource) { render :edit, status: :unprocessable_entity }
+    end
+  end
+
   private
 
   def change_to_boolean(value)

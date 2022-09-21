@@ -31,7 +31,9 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
       update_community = @community.update(name: community["name"] , file: community["file"] , address:  community["address"], city: community["city"], state: community["state"], email: community["email"], phone: community["phone"], zip: community["zip"], property_manager_name: community["property_manager_name"], property_manager_phone: community["property_manager_phone"],property_manager_email:  community["property_manager_email"], website: community["website"] , number_of_units: community["number_of_units"] , brand_details_pdf: community["brand_details_pdf"])
     end
     if @community.update(community_params)
+      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(COMMUNITY_DETAILS) 
       @community.set_community_details_status(current_pynwheel_user, params["community"]["status"])
+      FollowUpMailer.send_email_after_form_submission(@community, COMMUNITY_DETAILS, previous_status)
       render :json => {data: @community.as_json(@brand_pdf_feature) , :message => "Community Details updated succesfully."}
     else
       render :json => {:success => false, :message => @community.errors.full_messages}
@@ -88,6 +90,12 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   def update_status_and_remarks
     if @community.present? && @community_user.present?
       PynwheelLaunch::Communities::CommunityDetailForms.new(@community).update_status_and_remarks(params[:detail_type], params[:status][:name], params[:status][:remarks])
+      if params[:status][:name].eql?(APPROVED)
+        application_approved = PynwheelLaunch::Communities::FollowUpEmails.new(@community).move_to_production_auto_email
+        if application_approved
+          FollowUpMailer.application_approved(@community)
+        end
+      end
       if @community.production_started_date.nil? && params[:status][:name].eql?(APPROVED)
         @community.production_started_date = DateTime.now
         @community.save
@@ -115,13 +123,15 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   private
 
   def send_emails(community, status)
-    if status.eql?(APPLICATION_IN_PRODUCTION)
-      FollowUpMailer.send_moved_to_production(community).deliver
-    elsif status.eql?(RELEASED)
-      FollowUpMailer.marketing_email(community).deliver
-      FollowUpMailer.customer_success_email(community).deliver
-      FollowUpMailer.accounting_email(community).deliver
-      FollowUpMailer.released_application_email(community)
+    unless community.company.name.include?("Dwelo")
+      if status.eql?(APPLICATION_IN_PRODUCTION)
+        FollowUpMailer.send_moved_to_production(community).deliver
+      elsif status.eql?(RELEASED)
+        FollowUpMailer.marketing_email(community).deliver
+        FollowUpMailer.customer_success_email(community).deliver
+        FollowUpMailer.accounting_email(community).deliver
+        FollowUpMailer.released_application_email(community)
+      end
     end
   end
 

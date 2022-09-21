@@ -59,6 +59,7 @@ class Community < ApplicationRecord
   has_one :portal_tour, dependent: :destroy
   has_one :hardware_spec
   has_one :status, as: :statusable
+  has_one :design_direction
 
   accepts_nested_attributes_for :credential
   accepts_nested_attributes_for :design
@@ -93,7 +94,7 @@ class Community < ApplicationRecord
 
   def as_json(options = {})
     data = super(
-      :only => [:id , :name , :logo , :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date], :methods => [:schedule_tour_url, :community_code])
+      :only => [:id , :name , :logo , :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date, :product_options], :methods => [:schedule_tour_url, :community_code])
     check_brand_access = options[:brand_pdf_feature]
     if check_brand_access == true
       data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())
@@ -306,6 +307,77 @@ class Community < ApplicationRecord
     end
   end
 
+  def set_design_direction_status(current_user, status)
+    return if self&.design_direction&.blank?
+    if status.empty? || status.nil?
+      design_direction = status_string(self&.design_direction&.image&.url.present? || self&.design_direction&.file&.url.present?)
+    else
+      design_direction = status
+    end
+    set_status_for_all(self&.design_direction,design_direction,current_user)
+  end
+
+  def set_community_amenity_status(current_user, status)
+    return if self.amenities.blank?
+
+    self.amenities.each do |amenity|
+      if status.empty?
+        amenity_status = status_string(amenity&.image&.url.present?)
+      else
+        amenity_status = status
+      end
+      set_status_for_all(amenity,amenity_status,current_user)
+    end
+  end
+
+  def set_additional_pages_status(current_user, status)
+    return if self.webpages.blank? && self.imagepages.blank?
+    webpages = self.webpages
+    webpages.each do |webpage|
+      if status.empty?
+        webpage_status = status_string(webpage&.name.present? && webpage&.url.present?)
+      else
+        webpage_status = status
+      end
+      set_status_for_all(webpage,webpage_status,current_user)
+    end
+    imagepages = self.imagepages
+    imagepages.each do |imagepage|
+      if status.empty?
+        imagepage_status = status_string(imagepage&.name.present?)
+      else
+        imagepage_status = status
+      end
+      set_status_for_all(imagepage,imagepage_status,current_user)
+    end
+  end
+
+  def set_ebrochure_status(current_user, status)
+    return if self.favorite_setting.blank?
+    weblinks = self.favorite_setting.ebrochure_menu_buttons
+    if weblinks.present?
+      weblinks.each do |weblink|
+        if status.empty?
+          weblink_status = status_string(weblink&.name.present? && weblink&.url.present?)
+        else
+          weblink_status = status
+        end
+        set_status_for_all(weblink,weblink_status,current_user)
+      end
+    end
+    images = self.favorite_setting.favorite_images
+    if images.present?
+      images.each do |image|
+        if status.empty?
+          image_status = status_string(image&.image&.url.present?)
+        else
+          image_status = status
+        end
+        set_status_for_all(image,image_status,current_user)
+      end
+    end
+  end
+
   def check_required_fields_for_providers
     community = Community.find_by_id (self.id)
     credential = community.credential
@@ -352,6 +424,8 @@ class Community < ApplicationRecord
         crm_credential.salesforce_username.present? && crm_credential.salesforce_password.present? && crm_credential.salesforce_client_id.present? && crm_credential.salesforce_secret_id.present? && crm_credential.salesforce_property_id.present?
       when "knock"
         crm_credential.knock_api_key.present? && crm_credential.knock_community_id.present? && crm_credential.knock_sms_consent_url.present?
+      when "funnel"
+        crm_credential.funnel_api_key.present? && crm_credential.funnel_community_id.present?
     end
   end
 

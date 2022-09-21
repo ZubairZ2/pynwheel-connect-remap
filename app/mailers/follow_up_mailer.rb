@@ -12,6 +12,25 @@ class FollowUpMailer < ApplicationMailer
     mail()
   end
 
+  def self.send_email_after_form_submission(community, form, previous_status)
+    unless community.company.name.include?("Dwelo")
+      email = PynwheelLaunch::Communities::FollowUpEmails.new(community).send_emails
+      email[:data].each do |mail|
+        if mail[:name].eql?(form) && mail[:status].eql?('Submitted')
+          if !previous_status[0].nil?
+            if previous_status[0][:name].eql?(REJECTED)
+              send_re_submitted_form(community, form, email[:data]).deliver
+            else
+              send_submitted_form(community, form, email[:data]).deliver
+            end
+          else
+            send_submitted_form(community, form, email[:data]).deliver
+          end
+        end
+      end
+    end
+  end
+
   def preview_appliation_submit_for_review(community, user)
     @community = community
     @user = user
@@ -26,19 +45,11 @@ class FollowUpMailer < ApplicationMailer
     mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} - Form submitted for review")
   end
 
-  def self.non_production_communities_email(community, forms)
-    @users = community.users.pluck(:email)
-    @users.each do |user|
-      send_non_production_emails(community, user, forms).deliver
-    end
-
-  end
-
-  def send_non_production_emails(community, user, forms)
-    @user = user
+  def send_re_submitted_form(community, form_submitted, data)
+    @forms = data
     @community = community
-    @forms = forms  
-    mail(to: user, subject: "Your Application for #{@community.company.name} - #{@community.name}")
+    @form_submitted = form_submitted
+    mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} - Form re-submitted for review after report")
   end
 
   def send_moved_to_production(community)
@@ -64,21 +75,51 @@ class FollowUpMailer < ApplicationMailer
     mail(to: ENV["FOLLOW_UP_EMAIL"], subject: "Accounting: Set up recurring billing for #{@community.company.name} - #{@community.name}")
   end
 
+  def self.non_production_communities_email(community, forms)
+    @users = community.users.pluck(:email)
+    @users.each do |user|
+      send_non_production_emails(community, user, forms).deliver if is_user_not_dwelo(user)
+    end
+  end
+
+  def send_non_production_emails(community, user, forms)
+    @user = user
+    @community = community
+    @forms = forms  
+    mail(to: user, subject: "Your Application for #{@community.company.name} - #{@community.name}")
+  end
+
+  def self.application_approved(community)
+    unless community&.company&.name.include?("Dwelo")
+      users = community.users.pluck(:email)
+      users.each do |user|
+        send_application_approved_email(community, user).deliver if is_user_not_dwelo(user)
+      end
+    end
+  end
+
+  def send_application_approved_email(community, user)
+    @user = user
+    @community = community
+    mail(to: @user, cc: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} Your Application is Going into Production")
+  end
+
   def self.released_application_email(community)
     @community = community
     @users = @community.users.pluck(:email)
+
     @users.push(ENV["FOLLOW_UP_EMAIL"])
     if community.touchscreen_app && !community.self_tour
       @users.each do |user|
-        released_app_touch(user, community).deliver
+        released_app_touch(user, community).deliver if is_user_not_dwelo(user)
       end
     elsif !community.touchscreen_app && community.self_tour
       @users.each do |user|
-        released_app_self_tour(user, community).deliver
+        released_app_self_tour(user, community).deliver if is_user_not_dwelo(user)
       end
     elsif community.touchscreen_app && community.self_tour
       @users.each do |user|
-        released_app_self_tour_touch(user, community).deliver
+        released_app_self_tour_touch(user, community).deliver if is_user_not_dwelo(user)
       end
     end
   end
@@ -104,7 +145,7 @@ class FollowUpMailer < ApplicationMailer
 
   def self.send_email_request(users, subject, body)
     users.each do |user|
-      send_email(user, subject, body).deliver
+      send_email(user, subject, body).deliver if is_user_not_dwelo(user)
     end
   end
 
@@ -128,6 +169,17 @@ class FollowUpMailer < ApplicationMailer
       map_app = product_options["product_options"]["pynwheel_maps"]
     end
     "#{pynwheel_touch ? 'Touch App':''}#{pynwheel_touch && (self_tour) ? ', ':''}#{self_tour ? 'Self Tour App':''}#{(pynwheel_touch || self_tour ) && map_app ? ', ' : ''}#{map_app ? 'Map' : ''}"
+  end
+
+  def self.is_user_not_dwelo(email)
+    if email.present?
+      user = User.find_by(email: email)
+      unless user.nil?
+        return user.role.eql?("Dwelo admin") ? false : true
+      else
+        true
+      end
+    end
   end
 
 end
