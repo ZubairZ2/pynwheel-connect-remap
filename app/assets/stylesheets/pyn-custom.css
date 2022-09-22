@@ -2245,6 +2245,7 @@ ul.home-tabs li:hover a {
 .jcrop-holder {
     position: relative;
     z-index: 5;
+    margin: auto;
 }
 
 .video-box {
