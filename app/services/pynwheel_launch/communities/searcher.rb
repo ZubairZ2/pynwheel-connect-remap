@@ -16,6 +16,7 @@ attr_reader :user , :params
       communities = user&.community_users
     elsif user.is_super_admin?
       communities = CommunityUser.all
+      # communities = CommunityUser.where(community_id: 1618)
     elsif user.is_regional_admin?
       ids = user&.region&.communities&.ids
       communities = CommunityUser.where(community_id: ids)
@@ -151,7 +152,7 @@ attr_reader :user , :params
     
     statuses << property_map_status(community)
     
-    statuses << floorplan_status(community)
+    statuses << floorplan_status(community) if community.floorplans.count.positive?
     
     statuses << data_provider_status(community)
     if community.product_options.nil?
@@ -182,7 +183,6 @@ attr_reader :user , :params
     statuses << ebrochure_status(community)
 
     # detail_forms << hardware_spec_form # if hardware_spec_form_require
-
     if status.eql?(IN_PROGRESS)
       received_status = status_value_check(status)
       if statuses.any?{|x| x.eql?(received_status) || x.nil?} && !statuses.all?{|x| x.eql?(received_status) || x.nil?}

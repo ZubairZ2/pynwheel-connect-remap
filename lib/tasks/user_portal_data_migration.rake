@@ -94,4 +94,19 @@ namespace :user_portal_data_migration do
       lock.save!
     end
   end
+
+  desc 'Adjust the crm_credential status according to crdential'
+  task :crm_credentials_status_issue => :environment do
+    communities = Community.where(pynwheel_launch_access: true)
+    communities.each do |community|
+      if community&.credential.present?
+        credential_status = community&.credential&.status&.status
+        crm_credential = community.crm_credential
+        if crm_credential.present?
+          crm_credential.create_status(status: credential_status) if crm_credential.status.nil?
+          crm_credential.status.update(status: credential_status) unless crm_credential.status.nil?
+        end
+      end
+    end
+  end
 end
