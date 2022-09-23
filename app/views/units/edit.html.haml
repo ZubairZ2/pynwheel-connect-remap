@@ -76,8 +76,23 @@
           .modal-footer
             = submit_tag 'Submit',:class=>"btn btn-success"
             %button.btn.btn-primary{"data-dismiss" => "modal", :type => "button"} Cancel
-
+.row
+  .col-md-12{:style => "bottom: 51px;"}
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-md-12.col-lg-12
+              %button.btn-primary.done_btn.mb-20{:onclick => "unit_edit_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
+                DONE
 :javascript
+  function unit_edit_goBack() {
+    if (window.history.length == 1)
+      window.location.reload();
+    else
+      window.history.back();
+  }
+
 
   $("#unit_secondary_image").change(function(){
       readSecondaryURL(this);   
