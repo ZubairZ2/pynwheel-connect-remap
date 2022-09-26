@@ -11,6 +11,7 @@
       $.post("/sortable/reorder", $(this).sortable('serialize'))
     }
 
+
     this.sortable(setting);
   };
 

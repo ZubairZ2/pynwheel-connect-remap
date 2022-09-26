@@ -1,24 +1,63 @@
-.modal-dialog{:style=>"overflow-y: initial width: 1300px !important; width: 1300px;"}
+-# .modal-dialog{:style=>"overflow-y: initial width: 1300px !important; width: 1300px;"}
+.modal-dialog.modal-lg
   .modal-content
     = form_for @amenity_gallery_image,url: community_amenity_amenity_gallery_path(@community,@amenity,@amenity_gallery_image),method: :put do |f|
       .modal-body
-        .image-crop{:style=>"overflow-y: auto;"}
+        .image-crop{:style=>"overflow: auto; text-align: center; height: 400px;"}
           = image_tag @amenity_gallery_image.image.url, id: "cropbox"
-        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+        -# %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
           %span{"aria-hidden" => "true"}
             %i.fa.fa-close
         .form-group
-          %label{:for => "exampleInputEmail1"} Image Title
+          %label{:for => "edit_gallery_image_title"} Image Title
           = f.text_field :name , class: "form-control", placeholder: "Name"
+
         .form-group
-          %label{:for => "exampleInputEmail1"} Image Description
-          = f.text_area :description , class: "form-control", placeholder: "Description", :maxlength=>"70"
-        -#.form-group
-        -#  %label{:for => "exampleInputEmail1"} Directional Text
-        -#  = f.text_area :directional_text , class: "form-control", placeholder: "Directional Text", :maxlength=>"70"
+          %label
+            Description
+            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+              %span#propertyDetailNameText
+                This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
+
+          = f.text_area :description, :class=>"form-control edit_gallery_image_description_field edit_gallery_image_wysihtml5", :placeholder=>"Description"
+          %span.edit_gallery_image_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
+
         .form-group
           %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
             Apply Changes
             %i.fa.fa-check
         .clearfix
-}
+
+:javascript
+  $('.edit_gallery_image_wysihtml5').each(function(i, elem) {
+    $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+      events: {
+          load:function(){
+              $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+                if (wysihtml5Editor.getValue() != "")
+                {
+                  var text_split = $('.edit_gallery_image_description_count').text().split(" ")
+                  var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                  $('.edit_gallery_image_description_count').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+                }
+              });
+              var wysihtml5Editor = $('#amenity_gallery_description').data("wysihtml5").editor;
+              var t = wysihtml5Editor.getValue();
+              if(t!= '')
+              {
+                t1 = t.substr(0, 90)
+                t2 = t.substr(90, t.length)
+                t2 = t2.fontcolor("red");
+                wysihtml5Editor.setValue(t1 + t2);
+                var text_split = $('.edit_gallery_image_description_count').text().split(" ")
+                var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                $('.edit_gallery_image_description_count').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+              }
+          },
+
+        change: function() {
+          $('.edit_gallery_image_description_field').change();
+        }
+      }
+    });
+  });
