@@ -3650,7 +3650,7 @@ a#favoriteclickme {
         width: 100%;
         background-color: white;
         position: relative;
-        z-index: 5;
+        z-index: 4;
         justify-content: center;
     }
     .right-side {
@@ -5704,7 +5704,7 @@ html, .add-fav-body {
       display: block;
   }
   .responsive-legends{
-    z-index: 99;
+    z-index: 4;
     position: relative;
     background: white;
   }
