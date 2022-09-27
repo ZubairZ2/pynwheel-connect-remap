@@ -2,6 +2,11 @@ i = 0
 description_limit = ENV["DESCRIPTION_LIMIT"].to_i
 need_original_id_arr = ["elevator", "building_starting_point"]
 is_zerv_lock_present = false
+is_igloohome_lock_present = false
+is_latch_lock_present = false
+is_edgestate_lock_present = false
+is_dwello_lock_present = false
+
 styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
 styling_end = '</p></div>'
 json.tours @tours do |tour|
@@ -528,9 +533,9 @@ json.tours @tours do |tour|
         if stop_lock_provider == "Latch" and @community.latch.present? and stop.latch_locks.present?
           lch = ShortestPath.return_stop_lock(stop) if @community.latch.present?
           if lch.present?
-  
             latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.latch_locks.first.stop_id, guest_of_stop_type: "Tour", status: "active") if @tour_user.present?
             if latch_guest.present?
+              is_latch_lock_present = true
               json.guest_pin ''
               json.latch_link latch_guest.latch_link
               json.unit_dwelo_lock_id ''
@@ -554,6 +559,7 @@ json.tours @tours do |tour|
           if rml.present?
             if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
               igloo_guest = IglooGuest.find_by(stop_id: stop.edgestate_locks.first.stop_id, tour_user_id: @tour_user.id, status: "active")
+              is_edgestate_lock_present = true
               if igloo_guest.nil? 
                 pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
                 json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
@@ -638,6 +644,7 @@ json.tours @tours do |tour|
         elsif stop_lock_provider == "Dwelo"
           dwelo_lock = ShortestPath.return_stop_lock(stop)
           if dwelo_lock.present?
+            is_dwello_lock_present = true
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id dwelo_lock.device_id
@@ -679,6 +686,7 @@ json.tours @tours do |tour|
           igloohome_lock = IgloohomeLock.where(igloohome_id:  @community.igloohome.id, stop_id: stop.id, stop_type: stop.class.name).last
          
           if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && (igloohome_guest.guest_bluetooth_key.present? || igloohome_guest.guest_pin.present?)
+            is_igloohome_lock_present = true
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
@@ -740,6 +748,7 @@ json.tours @tours do |tour|
           if rml.present?
             if @tour_user.present? and @tour_user.as_guests.find_by(community_id: @community.id).present?
               igloo_guest = IglooGuest.find_by(stop_id: stop.stop_id, tour_user_id: @tour_user.id, status: "active")
+              is_edgestate_lock_present = true
               if igloo_guest.nil? 
                 pin = @tour_user.as_guests.find_by(community_id: @community.id).edgestate_pin if @tour_user.as_guests.find_by(community_id: @community.id).present?
                 json.guest_pin "Use code " + pin + "# to enter." if pin.present? and rml.remote_lock_type != "igloo_lock"
@@ -787,6 +796,7 @@ json.tours @tours do |tour|
               latch_guest = @tour_user.latch_guests.find_by(community_id: @community.id, guest_of_stop_id: stop.stop_id, guest_of_stop_type: stop.stop_type.classify, status: "active") if @tour_user.present?
             end
             if latch_guest.present?
+              is_latch_lock_present = true
               json.guest_pin ''
               json.latch_link latch_guest.latch_link
               json.unit_dwelo_lock_id ''
@@ -818,6 +828,7 @@ json.tours @tours do |tour|
           dwelo_lock = ShortestPath.return_stop_lock(_stop_)
           
           if dwelo_lock.present?
+            is_dwello_lock_present = true
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id dwelo_lock.device_id
@@ -885,6 +896,7 @@ json.tours @tours do |tour|
           igloohome_guest = @community.get_igloohome_guest(stop, @tour_user.id)         
           
           if igloohome_guest.present? && igloohome_lock.present? && igloohome_lock.device_id.present? && (igloohome_guest.guest_bluetooth_key.present? || igloohome_guest.guest_pin.present?)
+            is_igloohome_lock_present = true
             json.guest_pin ''
             json.latch_link ''
             json.unit_dwelo_lock_id ''
@@ -1470,6 +1482,11 @@ json.tours @tours do |tour|
     end
     
     json.authenticate_zerv is_zerv_lock_present
+    json.is_igloohome_lock_present is_igloohome_lock_present
+    json.is_latch_lock_present is_latch_lock_present
+    json.is_edgestate_lock_present is_edgestate_lock_present
+    json.is_dwello_lock_present is_dwello_lock_present
+
     json.tour_start_point_lock_type (@tour_user.tour_type != "virtual_tour" &&  @community.enable_locks)  ? @community.community_tour.lock_provider : ""
 
     json.current_position_marker_icon @community.community_tour.marker_icon_size.present? ? (@community.community_tour.marker_icon_size == "0" ? "19x25" : (@community.community_tour.marker_icon_size == "1" ? "17x23" : (@community.community_tour.marker_icon_size == "2" ? "15x21" : (@community.community_tour.marker_icon_size == "3" ? "13x19" : (@community.community_tour.marker_icon_size == "4" ? "11x17" : "19x25")  )) ) )  : "19x25"
