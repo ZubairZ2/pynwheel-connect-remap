@@ -19,7 +19,7 @@ class Gallery < ApplicationRecord
 	has_one :status, as: :statusable
 	validates :name, presence: true, uniqueness: {scope: :community}
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :name, :community_id, :is_default], :methods => [:media]
     )

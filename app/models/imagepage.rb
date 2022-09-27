@@ -30,7 +30,7 @@ class Imagepage < ApplicationRecord
   scope :active, -> { where(hide_page: false) }
   validates_with WebAndImageValidator
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :name], :methods => [:media, :file]
     )
