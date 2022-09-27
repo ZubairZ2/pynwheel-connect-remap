@@ -4,7 +4,7 @@
     = form_for @amenity_gallery_image,url: community_amenity_amenity_gallery_path(@community,@amenity,@amenity_gallery_image),method: :put do |f|
       .modal-body
         .image-crop{:style=>"overflow: auto; text-align: center; height: 400px;"}
-          = image_tag @amenity_gallery_image.image.url, id: "cropbox"
+          = image_tag @amenity_gallery_image.image.url, id: "cropbox", style: "width: 100%"
         -# %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
           %span{"aria-hidden" => "true"}
             %i.fa.fa-close
