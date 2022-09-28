@@ -62,7 +62,7 @@ class AvatarUploader < CarrierWave::Uploader::Base
     resize_to_fit(200, 200)
   end
 
-  process :quality => 40 , :if => :image?
+  # process :quality => 40 , :if => :image?
   process :resize_id_card
 
   # process optimize: [{quality: 20, level: 7}]
