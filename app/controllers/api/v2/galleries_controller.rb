@@ -24,7 +24,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
           gallery_images = gallery["image"] rescue []
           @gallery = @community.galleries.find_by_id(gallery_id)
           if @gallery.update_attributes(name: gallery["name"])
-            # PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "update",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
+            PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "update",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
           end
           update_gallery_images(@gallery, gallery_images)
         else
@@ -35,7 +35,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
               create_gallery_images(@gallery, img)
             end
           end
-          # PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
+          PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
         end
       end
       @galleries = @community.galleries
@@ -64,7 +64,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
           else
             @gallery_image.update_attributes(name: image_name, image: img["file"])
           end
-          # PaperTrail::Version.create(item_type: "GalleryImage",item_id: gallery.id,event: "update",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{gallery.name}' community_id: '#{@community.id}'")
+          PaperTrail::Version.create(item_type: "GalleryImage",item_id: gallery.id,event: "update",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{gallery.name}' community_id: '#{@community.id}'")
         end
       else
         create_gallery_images(gallery, img)
@@ -80,7 +80,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
     else
       gallery.gallery_images.create(image: file, community_id: @community.id)
     end
-    # PaperTrail::Version.create(item_type: "GalleryImage",item_id: gallery.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{gallery.name}' community_id: '#{@community.id}'")
+    PaperTrail::Version.create(item_type: "GalleryImage",item_id: gallery.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{gallery.name}' community_id: '#{@community.id}'")
   end
 
   def create_gallery_video(gallery, file)
@@ -95,7 +95,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
 
   def destroy
     if @gallery.present?
-      # PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "destroy",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
+      PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "destroy",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
       if @gallery.destroy
         @community.set_gallery_images_status(current_pynwheel_user, "in_progress")
         render :json => {:success => true, :error_code => 200, :message => "Gallery deleted successfully", data: nil}
@@ -108,7 +108,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   def delete_gallery_image
     if @gallery_image.present?
       file_type = @gallery_image.is_video? ? 'Video' : 'Image'
-      # PaperTrail::Version.create(item_type: "GalleryImage",item_id: @gallery_image.id,event: "destroy",community_id: @community.id, company_id: @community.company.id,whodunnit: current_pynwheel_user.id,object: "name: '#{@gallery_image.name}' gallery_id: #{@gallery_image.gallery_id} community_id: '#{@community.id}'")
+      PaperTrail::Version.create(item_type: "GalleryImage",item_id: @gallery_image.id,event: "destroy",community_id: @community.id, company_id: @community.company.id,whodunnit: current_pynwheel_user.id,object: "name: '#{@gallery_image.name}' gallery_id: #{@gallery_image.gallery_id} community_id: '#{@community.id}'")
       if @gallery_image.destroy
         @community.set_gallery_images_status(current_pynwheel_user, "in_progress")
         render :json => {:success => true, :error_code => 200, :message => "#{file_type} deleted successfully.", data: nil}

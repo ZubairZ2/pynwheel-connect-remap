@@ -59,6 +59,7 @@ class Api::V2::CommunityAdditionalPagesController < Api::V2::ApiApplicationContr
       if file_type.present?
         delete_additional_file(params['file_id']) if file_type.eql?("file")
         delete_additional_image(params['file_id']) if file_type.eql?("image")
+        @community.set_additional_pages_status(current_pynwheel_user, "in_progress")
         additional_pages = all_additional_pages
         render json: { success: true, data: additional_pages.as_json, message: 'Image deleted successfully!' }
       end
