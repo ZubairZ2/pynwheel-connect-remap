@@ -20,13 +20,15 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
       homepage_id = homepage['id']
       if @type.eql?(HOMEPAGE_VIDEO)
         homevideo = HomePageVideo.where(design_id: @community.design.id).first
-        homevideo.destroy if homevideo.present?
-        @uploader = HomePageVideo.new
-        if @uploader.save
-          @uploader.video = homepage['file']
-          @uploader.name = homepage['name']
-          @uploader.design_id = @community.design.id
-          @uploader.save
+        homevideo.destroy if homevideo.present? && homepage['file'].present?
+        if homepage['file'].present?
+          @uploader = HomePageVideo.new
+          if @uploader.save
+            @uploader.video = homepage['file']
+            @uploader.name = homepage['name']
+            @uploader.design_id = @community.design.id
+            @uploader.save
+          end
         end
       elsif !homepage_id.present?
         @community.design.home_page_images.create(image: homepage['file'])
