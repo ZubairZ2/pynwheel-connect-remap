@@ -189,6 +189,7 @@ Rails.application.routes.draw do
     get :import_page
     delete :delete_imported_data
     get :update_imported_data
+    get :update_community_data
     get :import
     get :import_pynwheel_access_users_data
     get :clean_psi_units_data

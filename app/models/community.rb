@@ -792,7 +792,25 @@ class Community < ApplicationRecord
     when "xml"
       swap_xml_data
     end
+  end
 
+  def update_community_provider_data
+    case data_provider
+    when "psi"
+      ImportPsiDataJob.perform_async self.credential.attributes.to_json
+    when "yardirentcafe"
+      ImportYardirentcafeDataJob.perform_async self.credential.attributes.to_json
+    when "realpagesvc"
+      ImportRealpageSvcDataJob.perform_async self.credential.attributes.to_json
+    when "yardi"
+      self.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(self.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(self.credential.attributes.to_json)
+    when "resman"
+      ((self.credential.resman_api_version === "GetMarketing4_0") ? ImportResman4DataJob.perform_async(self.credential.attributes.to_json) : ImportResmanDataJob.perform_async(self.credential.attributes.to_json))
+    when "zaremba"
+      ImportZarembaDataJob.perform_async self.credential.attributes.to_json
+    when "xml"
+      ImportXmlDataJob.perform_async self.credential.attributes.to_json
+    end
   end
 
   def community_crm_provider
