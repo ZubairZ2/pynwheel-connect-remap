@@ -482,7 +482,7 @@ json.tours @tours do |tour|
       json.x_plot stop.x_plot
       json.y_plot stop.y_plot
       json.is_favorite false
-      json.is_modal_unit (stop.stop_type == "unit") ? (Unit.find_by_id stop.stop_id)&.modal_unit : false
+      json.is_modal_unit false
       json.type "starting_point"
       json.name "Starting Point"
       json.directional_text counter != 0 ? "Your tour is completed! Now let's go back to where you started." : ""
@@ -1458,6 +1458,7 @@ json.tours @tours do |tour|
 
     @existing_path_points.flatten! unless @community.auto_wayfinding
     json.path_points @existing_path_points
+    json.is_modal_unit (stop.stop_type == "unit") ? (Unit.find_by_id stop.stop_id)&.modal_unit : false
 
     i+=1
     counter += 1
