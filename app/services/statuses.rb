@@ -128,40 +128,16 @@ class Statuses
     @community.set_status_for_all(@community.zerv, @status, @current_user)  unless @community.zerv.blank?
     @community.set_status_for_all(@community.latch, @status, @current_user)  unless @community.latch.blank?
     @community.set_status_for_all(@community.dwelo, @status, @current_user)  unless @community.dwelo.blank?
-    @community.set_status_for_all(@community.igloohome, @status, @current_user)  unless @community.igloohome.blank?
+    @community.set_status_for_all(@community.igloohome, @status, @current_user) unless @community.igloohome.blank?
+    @community.set_status_for_all(@community.yale, @status, @current_user) unless @community.yale.blank?
+    @community.set_status_for_all(@community.schlage, @status, @current_user) unless @community.schlage.blank?
+    @community.set_status_for_all(@community.launch_remote, @status, @current_user) unless @community.launch_remote.blank?
 
     unless @community.other_locks.blank?
       other_locks = @community&.other_locks
-
-      other_locks.each do |lock|
-        @community.set_status_for_all(lock, @status, @current_user)
-      end
+      other_locks.each { |lock| @community.set_status_for_all(lock, @status, @current_user) }
     end
 
-    unless @community.edge_state.blank?
-      schalge_locks = @community.edge_state&.schlage
-
-      schalge_locks.each do |lock|
-        @community.set_status_for_all(lock, @status, @current_user)
-      end
-    end
-
-    unless @community.edge_state.blank?
-      yale_locks = @community.edge_state&.yale
-
-      yale_locks.each do |lock|
-        @community.set_status_for_all(lock, @status, @current_user)
-      end
-    end
-    
-
-    unless @community.edge_state.blank?
-      remote_locks = @community.edge_state&.remote_locks
-
-      remote_locks.each do |remote_lock|
-        @community.set_status_for_all(remote_lock, @status, @current_user)
-      end
-    end
   end
 
   def set_tour_stops_status
