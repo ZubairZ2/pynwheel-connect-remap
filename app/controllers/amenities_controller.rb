@@ -69,14 +69,15 @@ class AmenitiesController < ApplicationController
     @amenity = Amenity.find(params[:id]) 
     if @amenity.update_attributes(amenity_params)
       update_locks()
-      begin
-        ts = TourStop.find_by(stop_id: @amenity.id)
-        if ts.present? && params[:amenity][:name].present?
-          ts.name = params[:amenity][:name]
-          ts.save
-        end
-      rescue => ex
-      end
+      # begin
+      #   ts = TourStop.find_by(stop_id: @amenity.id)
+      #   if ts.present? && params[:amenity][:name].present?
+      #     ts.name = params[:amenity][:name]
+      #     ts.save
+      #   end
+      # rescue => ex
+      # end
+      TourStop.where(stop_id: @amenity.id).update_all(name: params[:amenity][:name]) if params[:amenity][:name].present?
       if params[:unit].present? && params[:unit_render].present? && params[:unit_render] != "false"
           @unit = Unit.find(params[:unit]) rescue nil
           if @unit.present?
