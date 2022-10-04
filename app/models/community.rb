@@ -1241,7 +1241,7 @@ s  end
   end
 
   def favorites_page_name
-    self&.favorite_setting&.favorite_name || "Favorites"
+    self&.favorite_setting&.favorite_name&.titleize || "Favorites"
   end
 
   def filter_final_stops tour_stops
