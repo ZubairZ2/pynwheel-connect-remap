@@ -1240,6 +1240,10 @@ s  end
     User.find_by(id: self.creator_id)
   end
 
+  def favorites_page_name
+    self&.favorite_setting&.favorite_name || "Favorites"
+  end
+
   def filter_final_stops tour_stops
     amenity_stops = []
     filtered_stops = []
