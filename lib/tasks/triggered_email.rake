@@ -36,7 +36,7 @@ namespace :triggered_email do
         
         scheduler_link = "#{base_url}scheduler_widget/test_widget?scheduled_tour_id=#{schedule_tour.id}&community_id=#{community.id}&tour_user_id=#{tu.id}&reschedule_tour=true&direct=true&community_code=#{community_code}"
 
-        email_msg_with_st = "Hi, #{tu.name.titleize}. It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. Please click the link below to reschedule. <br><br><div style='align-item: center;'><a class='btn btn-success primary-button' href='#{scheduler_link}' id='sample_btn' style='padding: 8px !important; text-decoration: none; align-items: center; display: inline-grid; font-size: 14px; padding: 5px; color: white; border-radius: 4px; background-color: rgb(32, 163, 69); font-family: Roboto,RobotoDraft,Helvetica,Arial,sans-serif;'' target='_blank'>Reschedule My Tour!</a></div><br><br>Thank you!"
+        email_msg_with_st = "Hi, #{tu.name.titleize}. It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. Please click the link below to reschedule. <br><br><div><a class='btn btn-success primary-button reschedule-btn-link' href='#{scheduler_link}' id='sample_btn' target='_blank'>Reschedule My Tour!</a></div><br><br>Thank you!"
         
         text_msg_with_st = "Hi, #{tu.name.titleize}. It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. Please click the link below to reschedule. 
 
