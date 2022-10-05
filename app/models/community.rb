@@ -1240,6 +1240,19 @@ s  end
     User.find_by(id: self.creator_id)
   end
 
+  def get_currency_symbol
+    iso_numeric_code = self&.credential&.currency || "840"
+    Money::Currency.find_by_iso_numeric(iso_numeric_code)
+  end
+
+  def all_currencies(hash)
+    hash.inject([]) do |array, (id, attributes)|
+      array ||= []
+      array << ["#{attributes[:name]} (#{attributes[:iso_code]})", attributes[:iso_numeric]]
+      array
+    end
+  end
+
   def filter_final_stops tour_stops
     amenity_stops = []
     filtered_stops = []
