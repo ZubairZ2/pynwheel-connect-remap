@@ -260,7 +260,7 @@
                     var is_floorplate = "#{@community_info.has_floorplates?}"
                     var community = "#{@community_info.name}"
                     units = select_units_according_to_filters(units);
-                    renderChangedUnits(units, is_floorplate, community);
+                    //renderChangedUnits(units, is_floorplate, community);
           %footer.c-footer#footer
             .inner-footer
               .footer-logo
@@ -303,7 +303,7 @@
 = render partial: "unit_num_popup"
 = render partial: "3d_amenity_modal"
 
-#communityWebpagesData{ data: {community: @community.to_json, is_floorplate: @community_info.has_floorplates?, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json} }
+#communityWebpagesData{data: {currency: @community.get_currency_symbol(), community: @community.to_json, is_floorplate: @community_info.has_floorplates?, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json} }
 
 :javascript
 
@@ -314,7 +314,6 @@
   var isSiteMap = "#{@community.sitemap.present?}"
   var img_width = "#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"
   var img_height = "#{@community.sitemap.present? && @community.sitemap.image.present? ? @community.sitemap.image.width : nil}"
-
   var current_floor = "#{@floors.present? and @floors.size > 0 ? min_unit_floor : 0}";
   var floors = "#{@floors.present? and @floors.size > 0 ? @floors : []}";
   floors = JSON.parse(floors);

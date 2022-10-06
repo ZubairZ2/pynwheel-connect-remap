@@ -82,28 +82,28 @@
                 .filter-action
                   - if @community.data_provider == "realpagesvc"
                     - if @community.display_rent
-                      %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',', :value=>unit.available_date.present? ? available_date == "Now" ? Date.today : available_date : nil)}"
+                      %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',', :value=>unit.available_date.present? ? available_date == "Now" ? Date.today : available_date : nil)}"
                       %span.per-month-price-text.text-p /month
                     = link_to "Apply Now", apply_now_community_webpages_path(@community), :target=> "_blank", class: "apply-now apply_now"
                   - elsif @community.data_provider == "resman"
                     - if @community.display_rent
-                      %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                      %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                       %span.per-month-price-text.text-p /month
                     = link_to "Apply Now", "##",:onclick=>"set_resman_url_on_favorites(this);",:id=>"psi-anchor-tag","data-unit-id"=>(unit.id),"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-community-property-id"=>@community.credential.property_id, class: "apply-now apply_now"
                   - elsif @community.data_provider == "psi"
                     - if @community.display_rent
-                      %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                      %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                       %span.per-month-price-text.text-p /month
                     = link_to "Apply Now", "##",:onclick=>"set_psi_url_on_favorite(this);",:id=>"psi-anchor-tag","data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
                   - elsif @community.data_provider == "yardirentcafe"
                     - if @community.display_rent
-                      %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                      %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                       %span.per-month-price-text.text-p /month
                     = link_to "Apply Now", "##",:onclick=>"set_yardirentcafe_url_on_favrite(this);",:id=>"psi-anchor-tag", "data-community-property-id"=>@community.credential.property_id,"data-availability-url"=>(unit.availability_url.present? ? unit.availability_url : floorplan.availability_url),"data-website"=>@community.website,"data-uri"=>uri(@community.website),"data-unit-provider-id"=>unit.provider_unit_id,"data-floorplan-provider-id"=>floorplan.provider_floorplan_id, class: "apply-now apply_now"
                   - else
                     .unit-total-pricing{style: 'text-align: center'}
                       - if @community.display_rent
-                        %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                        %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                         %span.per-month-price-text.text-p /month
 
                 %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.           
@@ -115,7 +115,7 @@
                   %input.m-filter-1.c-m-filter.datepicker.leasing-start-date{:id => "#{unit.id}-leasing-start-date", :type => "text", :readonly => "readonly", :value=>unit.available_date.present? ? available_date == "Now" ? Date.today : available_date : nil}/
               .filter-action
                 - if @community.display_rent
-                  %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                  %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                   %span.per-month-price-text /month
                 %a.apply-now.apply_now{:href => @community.credential.separate_link,:target => "_blank" } Apply Now
               
@@ -124,7 +124,7 @@
             - else
               .disabaled-apply-now
                 - if @community.display_rent
-                  %span.c-m-total-price{id: "#{unit.id}-total-price"}= "$#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                  %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
                   %span{style: 'font-size: 12px'} /month
         
         .c-modal-wrapper.h-class

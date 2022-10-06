@@ -70,7 +70,7 @@ json.data @units do |u|
             pricing_str = []
             if str[1].to_i > 0
                 pricing_str[0] = str[0]+" Month"
-                pricing_str[1] = "$"+str[1].to_i.to_s
+                pricing_str[1] = @community.get_currency_symbol+str[1].to_i.to_s
                 lease_pricing << pricing_str
             end
           end

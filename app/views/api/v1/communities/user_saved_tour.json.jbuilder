@@ -51,7 +51,7 @@ json.tours tours do |tour|
           str_split.each do |ss|
             str = ss.split(':')
             if str[1].to_i > 0
-              pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
+              pricing_str = str[0]+" Month - #{@community.get_currency_symbol}"+str[1].to_i.to_s
               lease_pricing << pricing_str
             end
 
@@ -63,7 +63,7 @@ json.tours tours do |tour|
           end
           lease_pricing = lease_pricing2
         else
-          h = {"pricing_option" => "$"+ unit.effective_rent.to_i.to_s}
+          h = {"pricing_option" => @community.get_currency_symbol + unit.effective_rent.to_i.to_s}
           lease_pricing << h
         end
 

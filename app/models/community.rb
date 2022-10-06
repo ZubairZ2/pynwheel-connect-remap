@@ -1242,7 +1242,7 @@ s  end
 
   def get_currency_symbol
     iso_numeric_code = self&.credential&.currency || "840"
-    Money::Currency.find_by_iso_numeric(iso_numeric_code)
+    Money::Currency.find_by_iso_numeric(iso_numeric_code).symbol || "$"
   end
 
   def all_currencies(hash)
