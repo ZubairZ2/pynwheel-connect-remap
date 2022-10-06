@@ -1654,7 +1654,7 @@ json.favorite do
     json.email_bcc @community.favorite_setting.email_bcc
   else
     json.show_favorite_page true
-    json.favorite_page_name @community.favorites_page_name
+    json.favorite_page_name "Favorites"
   end
 end
 
