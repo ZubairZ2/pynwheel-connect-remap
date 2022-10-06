@@ -82,4 +82,14 @@ class TourStop < ApplicationRecord
     stop_lock_provider
   end
 
+  def get_latitude
+    actual_stop = self.stop_type.classify.constantize.find self.stop_id
+    actual_stop.x_plot
+  end
+  
+  def get_longitude
+    actual_stop = self.stop_type.classify.constantize.find self.stop_id
+    actual_stop.y_plot
+  end
+
 end

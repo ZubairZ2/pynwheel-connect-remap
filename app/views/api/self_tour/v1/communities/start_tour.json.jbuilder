@@ -418,7 +418,7 @@ json.tours @tours do |tour|
     if stop.is_a? TourStop
       if @community.show_map
         begin
-          if (stop&.latitude&.to_i + stop&.longitude&.to_i) < 1
+          if (stop&.get_latitude&.to_i + stop&.get_longitude&.to_i) < 1
             counter = counter + 1
             next
           end 
@@ -968,8 +968,8 @@ json.tours @tours do |tour|
     
     json.navigation_title navigation_title
     json.id stop.id rescue next
-    json.x_plot stop&.latitude&.to_i rescue next
-    json.y_plot stop&.longitude&.to_i
+    json.x_plot stop&.get_latitude&.to_i rescue next
+    json.y_plot stop&.get_longitude&.to_i
     json.unit_id stop.stop_id
     json.is_favorite favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
     
