@@ -1247,10 +1247,14 @@ s  end
 
   def all_currencies(hash)
     hash.inject([]) do |array, (id, attributes)|
-      array ||= []
-      array << ["#{attributes[:name]} (#{attributes[:iso_code]})", attributes[:iso_numeric]]
+      priority = attributes[:priority]
+      if (attributes[:iso_numeric] == "840" || attributes[:iso_numeric] == "826")
+        array ||= []
+        array << ["#{attributes[:name]} (#{attributes[:iso_code]})", attributes[:iso_numeric]]
+      end
+
       array
-    end
+    end.compact
   end
 
   def filter_final_stops tour_stops
