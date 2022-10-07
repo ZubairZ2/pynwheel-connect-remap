@@ -237,7 +237,7 @@ class ToursController < ApplicationController
     lock_provider = params[:lock_provider].present? ? params[:lock_provider] : ""
     building = params[:building].present? ? params[:building] : nil
 
-    @tours.update_all(name: name, latitude: latitude, longitude: longitude, starting_floor: starting_floor, access_code: access_code, lock_provider: lock_provider, building)
+    @tours.update_all(name: name, latitude: latitude, longitude: longitude, starting_floor: starting_floor, access_code: access_code, lock_provider: lock_provider, building: building)
 
     @tour = @community.community_tour
 
