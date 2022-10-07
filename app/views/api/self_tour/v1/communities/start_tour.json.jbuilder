@@ -15,10 +15,14 @@ json.tours @tours do |tour|
   json.tour_key  @tour_user.tour_key
   json.community_id @community.id
   json.name @community&.community_tour&.name
-  json.latitude @community&.community_tour&.latitude
-  json.longitude @community&.community_tour&.longitude
-  json.x_plot @community&.community_tour&.x_plot
-  json.y_plot @community&.community_tour&.y_plot
+  # json.latitude @community&.community_tour&.latitude
+  # json.longitude @community&.community_tour&.longitude
+  # json.x_plot @community&.community_tour&.x_plot
+  # json.y_plot @community&.community_tour&.y_plot
+  json.latitude @community&.tour&.x_plot
+  json.longitude @community&.tour&.y_plot
+  json.x_plot @community&.tour&.x_plot
+  json.y_plot @community&.tour&.y_plot
   json.is_sitemap @community.is_sitemap
 
   plates_name = {}
