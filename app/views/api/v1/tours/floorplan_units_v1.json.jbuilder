@@ -28,9 +28,9 @@ json.data @units do |u|
     json.unit_type u.unit_type
     json.marketing_name u.building.present? ? u.building + '-'+ u.marketing_name : u.marketing_name rescue u.marketing_name
     json.floorplan_id u.floorplan_id
-    json.market_rent u.market_rent
-    json.effective_rent u.effective_rent
-    json.rent u.effective_rent
+    json.market_rent "#{@community.get_currency_symbol}#{u.market_rent}"
+    json.effective_rent "#{@community.get_currency_symbol}#{u.effective_rent}"
+    json.rent "#{@community.get_currency_symbol}#{u.effective_rent}"
     json.availability u.availability
     begin
             json.available_date u.available_date < Date.today + 1 ? "Now" : u.available_date.strftime("%m").to_i.to_s + "/" + u.available_date.strftime("%d").to_i.to_s
