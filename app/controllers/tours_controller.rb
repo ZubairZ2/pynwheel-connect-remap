@@ -227,25 +227,30 @@ class ToursController < ApplicationController
   def save_starting_point
 
     @community = Community.find params[:community_id]
-    @tours = @community.community_tour
-    @tours.name = params[:name].present? ? params[:name] : ""
-    @tours.latitude = params[:latitude].present? ? params[:latitude] : ""
-    @tours.longitude = params[:longitude].present? ? params[:longitude] : ""
-    @tours.starting_floor = params[:starting_floor].present? ? params[:starting_floor] : nil
-    @tours.access_code = params[:access_code].present? ? params[:access_code] : nil
-    @tours.lock_provider = params[:lock_provider].present? ? params[:lock_provider] : ""
-    @tours.building = params[:building].present? ? params[:building] : nil
+    # @tours = @community.community_tour
+    @tours = Tour.where(community_id: @community.id)
+    name = params[:name].present? ? params[:name] : ""
+    latitude = params[:latitude].present? ? params[:latitude] : ""
+    longitude = params[:longitude].present? ? params[:longitude] : ""
+    starting_floor = params[:starting_floor].present? ? params[:starting_floor] : nil
+    access_code = params[:access_code].present? ? params[:access_code] : nil
+    lock_provider = params[:lock_provider].present? ? params[:lock_provider] : ""
+    building = params[:building].present? ? params[:building] : nil
 
-    if @tours.building.nil? && params[:building].present?
+    @tours.update_all(name: name, latitude: latitude, longitude: longitude, starting_floor: starting_floor, access_code: access_code, lock_provider: lock_provider, building)
+
+    @tour = @community.community_tour
+
+    if @tour.building.nil? && params[:building].present?
       flash[:error] = "Building can not be empty"
       redirect_to starting_point_community_tours_path(@community)
     else
-      if @tours.save
+      if @tour.save
         update_enable_locks()
         flash[:notice] = "Tour settings updated successfully."
         redirect_to starting_point_community_tours_path(@community)
       else
-        flash[:error] = @tours.errors.full_messages.join(',')
+        flash[:error] = @tour.errors.full_messages.join(',')
         redirect_to starting_point_community_tours_path(@community)
       end
     end
@@ -266,9 +271,7 @@ class ToursController < ApplicationController
   def ajaxplotstartingpoint
     tour = Tour.find params[:tour_id]
     if tour.present?
-      tour.x_plot = params[:x_plot]
-      tour.y_plot = params[:y_plot]
-      tour.save(validate: false)
+      Tour.where(community_id: tour.community_id).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot])
       PaperTrail::Version.create(item_type: "TourStopStartingPoint",item_id: tour.id,event: "update",whodunnit: current_user.id,community_id: tour.community_id, company_id: current_company.id,object: "name: '#{tour.name}' community_id: '#{tour.community_id}'") rescue nil
 
       render json: {tour: tour}, status: 200
@@ -282,9 +285,7 @@ class ToursController < ApplicationController
 
     @community = Community.find params[:community_id]
     if tour.present?
-      tour.x_plot = 0
-      tour.y_plot = 0
-      tour.save(validate: false)
+      Tour.where(community_id: @community.id).update_all(x_plot: 0, y_plot: 0)
       PaperTrail::Version.create(item_type: "TourStopStartingPoint",item_id: tour.id,event: "create",whodunnit: current_user.id,community_id: tour.community_id, company_id: current_company.id,object: "name: '#{tour.name}' community_id: '#{tour.community_id}'") rescue nil
 
       redirect_to starting_point_community_tours_path(@community)
