@@ -107,7 +107,7 @@ json.tours @tours do |tour|
             if add_bsp_entry
               begin
                 bsp = BuildingStartingPoint.find_by(community_id: @community.id,building: building)
-                bsp_stop = TourStop.find_by(stop_id: bsp.id,stop_type: "building_starting_point")
+                bsp_stop = TourStop.find_by(stop_id: bsp.id, stop_type: "building_starting_point")
                 bsp_stop.status = "Entry"
                 bsp_stop.name = "Building #{building}"
                 bsp_stop.building = bsp.building
