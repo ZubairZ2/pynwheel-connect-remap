@@ -67,3 +67,4 @@ EBROCHURE = "eBrochure"
 ADDITIONAL_PAGES = "Additional Pages"
 WEBPAGE = "webpage"
 IMAGEPAGE = "imagepage"
+MAJOR_CURRENCIES = ["840", "826", "124"]

@@ -1248,7 +1248,7 @@ s  end
   def all_currencies(hash)
     hash.inject([]) do |array, (id, attributes)|
       priority = attributes[:priority]
-      if (attributes[:iso_numeric] == "840" || attributes[:iso_numeric] == "826")
+      if (MAJOR_CURRENCIES.include?(attributes[:iso_numeric]))
         array ||= []
         array << ["#{attributes[:name]} (#{attributes[:iso_code]})", attributes[:iso_numeric]]
       end
