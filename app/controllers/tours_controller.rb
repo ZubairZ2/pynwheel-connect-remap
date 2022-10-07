@@ -227,30 +227,31 @@ class ToursController < ApplicationController
   def save_starting_point
 
     @community = Community.find params[:community_id]
-    # @tours = @community.community_tour
-    @tours = Tour.where(community_id: @community.id)
-    name = params[:name].present? ? params[:name] : ""
-    latitude = params[:latitude].present? ? params[:latitude] : ""
-    longitude = params[:longitude].present? ? params[:longitude] : ""
-    starting_floor = params[:starting_floor].present? ? params[:starting_floor] : nil
-    access_code = params[:access_code].present? ? params[:access_code] : nil
-    lock_provider = params[:lock_provider].present? ? params[:lock_provider] : ""
-    building = params[:building].present? ? params[:building] : nil
+    @tours = @community.community_tour
+    
+    all_tours = Tour.where(community_id: @community.id)
 
-    @tours.update_all(name: name, latitude: latitude, longitude: longitude, starting_floor: starting_floor, access_code: access_code, lock_provider: lock_provider, building: building)
-
-    @tour = @community.community_tour
-
-    if @tour.building.nil? && params[:building].present?
+    all_tours.each do |tour|
+      tour.name = params[:name].present? ? params[:name] : ""
+      tour.latitude = params[:latitude].present? ? params[:latitude] : ""
+      tour.longitude = params[:longitude].present? ? params[:longitude] : ""
+      tour.starting_floor = params[:starting_floor].present? ? params[:starting_floor] : nil
+      tour.access_code = params[:access_code].present? ? params[:access_code] : nil
+      tour.lock_provider = params[:lock_provider].present? ? params[:lock_provider] : ""
+      tour.building = params[:building].present? ? params[:building] : nil
+      tour.save(:validate => false)
+    end
+   
+    if @tours.building.nil? && params[:building].present?
       flash[:error] = "Building can not be empty"
       redirect_to starting_point_community_tours_path(@community)
     else
-      if @tour.save
+      if @tours.save
         update_enable_locks()
         flash[:notice] = "Tour settings updated successfully."
         redirect_to starting_point_community_tours_path(@community)
       else
-        flash[:error] = @tour.errors.full_messages.join(',')
+        flash[:error] = @tours.errors.full_messages.join(',')
         redirect_to starting_point_community_tours_path(@community)
       end
     end
