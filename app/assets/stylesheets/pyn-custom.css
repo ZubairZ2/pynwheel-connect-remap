@@ -5607,7 +5607,6 @@ html, .add-fav-body {
   .header-buttons-groups .transparent-btn {
       margin-right: 1px;
   }
-
 }
 
 @media screen and (min-width:350px) and (max-width:567px){
@@ -5803,6 +5802,9 @@ ul.add-fav-options {
       max-width: 119px;
       margin-right: 7px;
   }
+  .right-side {
+    height: 50%;
+}
   .custom-iframe-modeule .header-buttons-groups {
       right: 0;
       left: 0;
@@ -6199,8 +6201,7 @@ ul.add-fav-options {
 }
 
 .modal-middle-section {
-    overflow-y: scroll;
-    height: 241px;
+    /* height: 241px; */
 }
 
 .c-m-iframe-content {

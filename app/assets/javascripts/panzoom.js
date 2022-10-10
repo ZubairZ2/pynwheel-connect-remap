@@ -597,7 +597,7 @@ function createPanZoom(domElement, options) {
       var scaleMultiplier = 1 + (currentPinchLength / pinchZoomLength - 1) * pinchSpeed
 
       mouseX = (t1.clientX + t2.clientX)/2
-      mouseY = (t1.clientY + t2.clientY)/2
+      mouseY = (t1.clientY + t2.clientY)/2 - 225
 
       publicZoomTo(mouseX, mouseY, scaleMultiplier)
 

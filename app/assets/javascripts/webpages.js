@@ -234,7 +234,8 @@ $(window).bind('load', function () {
     var $area = document.getElementById('zoomable');
     webpagePanZoom = panzoom($area, 
       {
-        bounds: false, contain: 'automatic', smoothScroll: true,
+        bounds: true, contain: 'automatic', smoothScroll: true,
+        boundsPadding: 0.2,
         maxZoom: 5,
         minZoom: 1,
         minScale: 1,
@@ -265,7 +266,7 @@ $(window).bind('load', function () {
       e.stopImmediatePropagation();
     });
     var $marea = document.getElementById('zoomable-modal-image') 
-    modalPanZoom = panzoom($marea,{bounds: true, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
+    modalPanZoom = panzoom($marea,{bounds: true, boundsPadding: 0.4, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
       onTouch: function(e) {
         e.preventDefault();
         return false;
@@ -295,7 +296,7 @@ $(window).bind('load', function () {
       e.stopImmediatePropagation();
     });
     var imageArea = document.getElementById('zoomable-modal-image-responsive');
-    responsiveModalPanZoom = panzoom(imageArea,{bounds: true, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
+    responsiveModalPanZoom = panzoom(imageArea,{bounds: true, boundsPadding: 0.4, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
       onTouch: function(e) {
         e.preventDefault();
         return false;
