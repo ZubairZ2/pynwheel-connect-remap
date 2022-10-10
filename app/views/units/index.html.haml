@@ -10,56 +10,8 @@
           %small.text-primary
             = @community.code
     #units-index
-      -#.row
-      -#  .col-md-12
-      -#    .box.box-widget.panel-box.add-plan.pt-30
-      -#      = form_tag community_save_apartment_settings_path(@community) ,{:class => 'apartment-settings-form'} do
-      -#        = hidden_field_tag "community_id", @community.id
-      -#        .form-group
-      -#          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-      -#            Page Name
-      -#          .col-sm-12.col-lg-6.col-md-6.col-xs-12
-      -#            = text_field_tag :apartment_page_name, @community.apartment_page_name, :class=>"form-control apartment-setting-field"
-      -#
-      -#        .form-group
-      -#          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-      -#            Show this page
-      -#          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      -#            .TriSea-technologies-Switch
-      -#              %span.pr-15 No
-      -#              = check_box_tag :show_apartment, true, @community.show_apartment, class: "apartment-setting"
-      -#              %label.label-primary{:for => "show_apartment"}
-      -#              %span.pl-15 Yes
-      -#        .form-group
-      -#          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-      -#            Display Rent
-      -#          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      -#            .TriSea-technologies-Switch
-      -#              %span.pr-15 No
-      -#              = check_box_tag :display_rent, true, @community.display_rent, class: "apartment-setting-field"
-      -#              %label.label-primary{:for => "display_rent"}
-      -#              %span.pl-15 Yes
-      -#        .form-group
-      -#          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-      -#            Display property map/floorplate
-      -#          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      -#            .TriSea-technologies-Switch
-      -#              %span.pr-15 No
-      -#              = check_box_tag :display_sitemap, true, @community.display_sitemap, class: "apartment-setting-field"
-      -#              %label.label-primary{:for => "display_sitemap"}
-      -#              %span.pl-15 Yes
-      -#        .form-group
-      -#          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-      -#            Display on home page
-      -#          .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      -#            .TriSea-technologies-Switch
-      -#              %span.pr-15 No
-      -#              = check_box_tag :display_unit_on_homepage, true, @community.display_unit_on_homepage, class: "apartment-setting"
-      -#              %label.label-primary{:for => "display_unit_on_homepage"}
-      -#              %span.pl-15 Yes
-      -#
-      -#        = submit_tag 'Save', class: "hidden"
       = render 'index'
+
 :javascript
   $("#communities_at_units").change(function(){
     var community_id = $('#communities_at_units').val();
@@ -69,130 +21,112 @@
       type: "GET",
       dataType: "script"
     });
-  });   
+  });
 
-  // $('.apartment-setting-field').change(function(){
-  //   $('.apartment-settings-form').submit();
-  // });
-  //
-  // $('#show_apartment').change(function(){
-  //   if (!($(this).is(':checked')))
-  //   {
-  //     $('#display_unit_on_homepage').prop('checked',false);
-  //   }
-  //   $('.apartment-settings-form').submit();
-  // });
-  // $('#display_unit_on_homepage').change(function(){
-  //   if (!($('#show_apartment').is(':checked')))
-  //   {
-  //     $('#display_unit_on_homepage').prop('checked',false);
-  //
-  //   }
-  //   else
-  //   {
-  //     $('.apartment-settings-form').submit();
-  //   }
-  // });
-  if (!#{current_user.welcome_unit_page})
-  {
+  if (!#{current_user.welcome_unit_page}) {
     $('[data-toggle="unitMassOverridePopover"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Use this button to change data for multiple units at once, such as availability, floor number, details, and images. </div><div class="popover-footer"><a id="unitMassOverridePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+      html: true,
+      template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Use this button to change data for multiple units at once, such as availability, floor number, details, and images. </div><div class="popover-footer"><a id="unitMassOverridePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
-    $(document).on("click", "#unitMassOverridePopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="unitManualOverridePopover"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property"s property management software data feed.</div><div class="popover-footer"><a id="unitManualOverridePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });
+  $(document).on("click", "#unitMassOverridePopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="unitManualOverridePopover"]').popover({
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">When Manual Override is set to Yes, then the items that have been changed will not update automatically from the property"s property management software data feed.</div><div class="popover-footer"><a id="unitManualOverridePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
 
-    $(document).on("click", "#unitManualOverridePopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="unitGridNamePopover"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover"  style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the unit name will change how the name appears in the Pynwheel app.</div><div class="popover-footer"><a id="unitGridNamePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });
+  $(document).on("click", "#unitManualOverridePopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="unitGridNamePopover"]').popover({
+      html: true,
+      template: '<div class="popover pyn-popover"  style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the unit name will change how the name appears in the Pynwheel app.</div><div class="popover-footer"><a id="unitGridNamePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
 
-    $(document).on("click", "#unitGridNamePopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="unitGridFloorplanPopover"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the floor plan will change the floor plan associated with each unit.</div><div class="popover-footer"><a id="unitGridFloorplanPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });
+  $(document).on("click", "#unitGridNamePopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="unitGridFloorplanPopover"]').popover({
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the floor plan will change the floor plan associated with each unit.</div><div class="popover-footer"><a id="unitGridFloorplanPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
 
-    $(document).on("click", "#unitGridFloorplanPopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="unitGridPricePopover"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the price will change the price associated with each unit.</div><div class="popover-footer"><a id="unitGridPricePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });
+  $(document).on("click", "#unitGridFloorplanPopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="unitGridPricePopover"]').popover({
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the price will change the price associated with each unit.</div><div class="popover-footer"><a id="unitGridPricePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
 
-    $(document).on("click", "#unitGridPricePopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="unitGridAvailableDatePopover"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the Available Date will change when the unit is displayed as available as long as Available is set to "Yes."</div><div class="popover-footer"><a id="unitGridAvailableDatePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });
+  $(document).on("click", "#unitGridPricePopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="unitGridAvailableDatePopover"]').popover({
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the Available Date will change when the unit is displayed as available as long as Available is set to "Yes."</div><div class="popover-footer"><a id="unitGridAvailableDatePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
 
-    $(document).on("click", "#unitGridAvailableDatePopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="unitGridAvailablePopover"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing Available to "No" will exclude this unit from appearing as available in the app, regardless of the date that is set.</div><div class="popover-footer"><a id="unitGridAvailablePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });
+  $(document).on("click", "#unitGridAvailableDatePopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="unitGridAvailablePopover"]').popover({
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing Available to "No" will exclude this unit from appearing as available in the app, regardless of the date that is set.</div><div class="popover-footer"><a id="unitGridAvailablePopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
 
-    $(document).on("click", "#unitGridAvailablePopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="unitGridSoldPopover"]').popover({
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">This option is for For Sale properties only. When a Sold is set to Yes, then the details on the unit pop-up will show that the unit is sold.</div><div class="popover-footer"><a id="unitGridSoldPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });
-    //
-    $(document).on("click", "#unitGridSoldPopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="unitGridFloorPopover"]').popover({
-        placement: 'left',
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the Floor will change the floor that each unit appears on in the interactive map. Units will not appear on the interactive map unless a floor has been selected.</div><div class="popover-footer"><a id="unitGridInteriorImagesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });$(document).on("click", "#unitGridSoldPopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="unitGridInteriorImagesPopover"]').popover({
-        placement: 'left',
-        html: true,
-        template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Add or change images (such as interior photography or renderings) associated with each unit.</div><div class="popover-footer"><a id="unitGridInteriorImagesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });$(document).on("click", "#unitGridInteriorImagesPopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        $('[data-toggle="unitGridActionPopover"]').popover({
-        placement: 'left',
-        html: true,
-        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Click the edit icon to view or change the details associated with each such as building number, images, and details.</div><div class="popover-footer"><a id="unitGridActionPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
-      }).popover('show');
-    });
-    $(document).on("click", "#unitGridActionPopoverClose" , function(){
-        $(this).parents(".popover").popover('hide');
-        $(this).parents(".popover").addClass('hidden');
-        #{current_user.welcome_unit_page = true}
-        #{current_user.save}
-    });
+  $(document).on("click", "#unitGridAvailablePopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="unitGridSoldPopover"]').popover({
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">This option is for For Sale properties only. When a Sold is set to Yes, then the details on the unit pop-up will show that the unit is sold.</div><div class="popover-footer"><a id="unitGridSoldPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
+
+  $(document).on("click", "#unitGridSoldPopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="unitGridFloorPopover"]').popover({
+      placement: 'left',
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Changing the Floor will change the floor that each unit appears on in the interactive map. Units will not appear on the interactive map unless a floor has been selected.</div><div class="popover-footer"><a id="unitGridInteriorImagesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
+
+  $(document).on("click", "#unitGridSoldPopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="unitGridInteriorImagesPopover"]').popover({
+      placement: 'left',
+      html: true,
+      template: '<div class="popover pyn-popover" style="width: max-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Add or change images (such as interior photography or renderings) associated with each unit.</div><div class="popover-footer"><a id="unitGridInteriorImagesPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
+  
+  $(document).on("click", "#unitGridInteriorImagesPopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    $('[data-toggle="unitGridActionPopover"]').popover({
+      placement: 'left',
+      html: true,
+      template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding" style="color: ;">Click the edit icon to view or change the details associated with each such as building number, images, and details.</div><div class="popover-footer"><a id="unitGridActionPopoverClose" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+    }).popover('show');
+  });
+
+  $(document).on("click", "#unitGridActionPopoverClose" , function(){
+    $(this).parents(".popover").popover('hide');
+    $(this).parents(".popover").addClass('hidden');
+    #{current_user.welcome_unit_page = true}
+    #{current_user.save}
+  });
 
