@@ -6201,6 +6201,7 @@ ul.add-fav-options {
 }
 
 .modal-middle-section {
+    /* overflow-y: scroll; */
     /* height: 241px; */
 }
 
