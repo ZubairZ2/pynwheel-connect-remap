@@ -333,11 +333,8 @@ json.tours @tours do |tour|
       unit = Unit.find_by_id stop.stop_id
       if unit.present?
       json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
-      json.name (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
+      json.name unit.api_unit_marketing_name
       json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
-
-      
-
       unit_directional_text = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
       if unit_directional_text.size < description_limit
         show_directional_text = false
