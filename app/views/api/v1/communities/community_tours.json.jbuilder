@@ -78,7 +78,7 @@ json.tours @tours do |tour|
       if stop.stop_type == "unit"
         u = Unit.find_by_id stop.stop_id
         if u.present? && (u.available || u.modal_unit)
-          json.name (u.building.present? ? (u.building + "-") : "") + u.marketing_name + ((u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "") rescue "")
+          json.name u.api_unit_marketing_name + ((u.floorplan.bedrooms.present? ? " (" + u.floorplan.bedrooms.to_i.to_s + " BR)" : "") rescue "")
           json.is_favorite favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
         else
           next

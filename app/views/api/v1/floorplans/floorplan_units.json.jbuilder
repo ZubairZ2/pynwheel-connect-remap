@@ -32,7 +32,7 @@ json.units @units do |u|
   json.floorplate_id u.floorplate_id
   json.floorplan_id u.floorplan_id
   json.is_unit_already_available tour_stop.present? ? true : false
-  json.unit_name u.building.present? ? u.building + '-'+ u.marketing_name : u.marketing_name rescue u.marketing_name
+  json.unit_name u.api_unit_marketing_name
   json.unit_type u.unit_type
   json.x_plot u.x_plot
   json.y_plot u.y_plot
