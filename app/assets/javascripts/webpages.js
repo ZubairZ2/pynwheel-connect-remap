@@ -235,7 +235,7 @@ $(window).bind('load', function () {
     webpagePanZoom = panzoom($area, 
       {
         bounds: true, contain: 'automatic', smoothScroll: true,
-        boundsPadding: 0.2,
+        boundsPadding: 0.325,
         maxZoom: 5,
         minZoom: 1,
         minScale: 1,
@@ -1599,6 +1599,7 @@ function setModalAttributes(element) {
         }
         else
         {
+          $('#unitModal').find('.c-modal-sidebar-description').show();
           $('#unitModal').find('#unit-description').html($(element).data('unit-description'));
           $('#unit-description').addClass("description-text");
         }
