@@ -233,21 +233,18 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   end
 
   def get_all_locks
-    edge_state = @community.edge_state
     dwelo = @community.dwelo
     latch = @community.latch
     zerv = @community.zerv
     other_lock = @community.other_locks
     igloo_home = @community.igloohome
+    remote_lock = @community.launch_remote
+    yale_lock = @community.yale
+    schlage_lock = @community.schlage
     locks = []
-    if edge_state.present?
-      remote_lock = @community.launch_remote
-      locks << { type: REMOTELOCKCLIENT, details: remote_lock} if remote_lock.present?
-      yale_lock = @community.yale
-      locks << { type: YALELOCKCLIENT, details: yale_lock } if yale_lock.present?
-      schlage_lock = @community.schlage
-      locks << { type: SCHLAGELOCKCLIENT, details: schlage_lock } if schlage_lock.present?
-    end
+    locks << { type: REMOTELOCKCLIENT, details: remote_lock} if remote_lock.present?
+    locks << { type: YALELOCKCLIENT, details: yale_lock } if yale_lock.present?
+    locks << { type: SCHLAGELOCKCLIENT, details: schlage_lock } if schlage_lock.present?
     locks << { type: DWELO, details: dwelo } if dwelo.present?
     locks << { type: LATCHCLIENT, details: latch } if latch.present?
     locks << { type: ZERVCLIENT, details: zerv } if zerv.present?
