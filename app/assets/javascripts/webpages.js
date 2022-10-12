@@ -235,7 +235,7 @@ $(window).bind('load', function () {
     webpagePanZoom = panzoom($area, 
       {
         bounds: true, contain: 'automatic', smoothScroll: true,
-        boundsPadding: 0.325,
+        boundsPadding: 0.4,
         maxZoom: 5,
         minZoom: 1,
         minScale: 1,

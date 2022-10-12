@@ -42,7 +42,7 @@
               .app-logo
                 - if @community.community_logo
                   %a.logo{:href => @community.community_website}
-                    %img{:alt => "", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
+                    %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
               .selection-fields
                 .selectable-field
                   %label Bedrooms

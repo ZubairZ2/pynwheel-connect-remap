@@ -5205,6 +5205,11 @@ input:checked+.slider:before {
 body {
     font-family: 'Raleway', sans-serif;
 }
+
+.webpage_logo {
+    max-height: 50px;
+}
+
 .custom-iframe-modeule {
     margin: 0;
 }
@@ -5620,6 +5625,9 @@ html, .add-fav-body {
     .header-buttons-groups .transparent-btn {
         margin-right: 1px;
     }
+    .left-side-30-units:last-child {
+        margin-bottom: 340;
+      }
   
   }
 
