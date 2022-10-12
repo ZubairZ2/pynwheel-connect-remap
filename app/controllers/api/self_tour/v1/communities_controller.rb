@@ -153,7 +153,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         @tours = [tour]
 
         delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
-        # te = tour_stops_ids(tour, @tour_user, @community)
+        te = tour_stops_ids(tour, @tour_user, @community)
         te = []
         @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
         @community.save!
