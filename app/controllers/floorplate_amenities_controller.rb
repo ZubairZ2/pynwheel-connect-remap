@@ -59,12 +59,13 @@ class FloorplateAmenitiesController < ApplicationController
     @amenity.amenityable_id = params[:floorplate_id]
     @amenity.x_plot = params[:x_plot]
     @amenity.y_plot = params[:y_plot]
-    ts = TourStop.find_by(stop_id: @amenity.id)
-    if ts.present?
-      ts.latitude = @amenity.x_plot
-      ts.longitude = @amenity.y_plot
-      ts.save
-    end
+    # ts = TourStop.find_by(stop_id: @amenity.id)
+    # if ts.present?
+    #   ts.latitude = @amenity.x_plot
+    #   ts.longitude = @amenity.y_plot
+    #   ts.save
+    # end
+    TourStop.where(stop_id: @amenity.id).update_all(latitude: @amenity.x_plot, longitude: @amenity.y_plot)
     @amenity.floor = params[:floor]
     if @amenity.save(validate: false)
       render json: { amenity: @amenity }, status: 200
@@ -145,8 +146,8 @@ class FloorplateAmenitiesController < ApplicationController
       amenity.amenityable_type = nil
       amenity.amenityable_id = nil
       amenity.save(validate: false)
-      ts = TourStop.find_by(stop_id: amenity.id)
-      ts.destroy if ts.present?
+      ts = TourStop.where(stop_id: amenity.id)
+      ts.destroy_all if ts.present?
       Path.where(:map_path_to_id => amenity.id).destroy_all rescue ""
       Path.where(:map_path_from_id => amenity.id).destroy_all rescue ""
     end

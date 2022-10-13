@@ -141,17 +141,20 @@ class UnitsController < ApplicationController
         end
         @unit.available = false
       end
+
       if (params[:unit][:marketing_name].present? && params[:unit][:marketing_name] != @unit.marketing_name)
         @unit.name_is_updated = true
-        begin
-          ts = TourStop.find_by(stop_id: @unit.id)
-          if ts.present?
-            ts.name = params[:unit][:marketing_name]
-            ts.save
-          end
-        rescue => ex
-        end
+        # begin
+        #   ts = TourStop.find_by(stop_id: @unit.id)
+        #   if ts.present?
+        #     ts.name = params[:unit][:marketing_name]
+        #     ts.save
+        #   end
+        # rescue => ex
+        # end
+        TourStop.where(stop_id: @unit.id).update_all(name: params[:unit][:marketing_name])
       end
+
       if (params[:unit][:floorplan_id].present? && params[:unit][:floorplan_id] != @unit.floorplan_id)
         @unit.floorplan_id_is_updated = true
       end
@@ -343,12 +346,13 @@ class UnitsController < ApplicationController
       unit.x_plot = params[:x_plot]
       unit.y_plot = params[:y_plot]
       unit.save(validate: false)
-      ts = TourStop.find_by(stop_id: unit.id)
-      if ts.present?
-        ts.latitude = unit.x_plot
-        ts.longitude = unit.y_plot
-        ts.save
-      end
+      TourStop.where(stop_id: unit.id).update_all(latitude: unit.x_plot, longitude: unit.y_plot)
+      # if ts.present?
+      #   ts.update_all(latitude: unit.x_plot, longitude: unit.y_plot)
+      #   # ts.latitude = unit.x_plot
+      #   # ts.longitude = unit.y_plot
+      #   # ts.save
+      # end
       render json: { unit: unit }, status: 200
     else
       render json: {}, status: 404
@@ -364,12 +368,13 @@ class UnitsController < ApplicationController
       unit.y_plot = params[:y_plot]
       unit.floorplate_id = params[:floorplate_id]
       unit.save(validate: false)
-      ts = TourStop.find_by(stop_id: unit.id)
-      if ts.present?
-        ts.latitude = unit.x_plot
-        ts.longitude = unit.y_plot
-        ts.save
-      end
+      
+      TourStop.where(stop_id: unit.id).update_all(latitude: unit.x_plot, longitude: unit.y_plot)
+      # if ts.present?
+      #   ts.latitude = unit.x_plot
+      #   ts.longitude = unit.y_plot
+      #   ts.save
+      # end
       @test_units = Floorplate.find(params[:floorplate_id]).fetch_units
       render json: { unit: unit }, status: 200
     else
@@ -433,11 +438,13 @@ class UnitsController < ApplicationController
     @unit = Unit.find_by(provider_unit_id: params[:id], community_id: @community.id)
     @unit.x_plot = 0
     @unit.y_plot = 0
-    ts = TourStop.find_by(stop_id: @unit.id)
+
+    ts = TourStop.where(stop_id: @unit.id)
     if ts.present?
-      VisitedStop.where(tour_stop_id: ts.id).destroy_all
-      ts.destroy
+      VisitedStop.where(tour_stop_id: ts.ids).destroy_all
+      ts.destroy_all
     end
+
     if @unit.save(validate: false)
       if params[:floorplate].present?
         redirect_to community_floorplate_plotexp_path(current_community, @floorplate), notice: "The plot has been deleted successfully."
@@ -455,17 +462,18 @@ class UnitsController < ApplicationController
     @unit.x_plot = 0
     @unit.y_plot = 0
     @unit.floorplate_id = nil
-    ts = TourStop.find_by(stop_id: @unit.id) unless @unit.modal_unit
+    ts = TourStop.where(stop_id: @unit.id) unless @unit.modal_unit
     if @unit.modal_unit
       if ts.present?
-        ts.latitude = 0
-        ts.longitude = 0
-        ts.save
+        # ts.latitude = 0
+        # ts.longitude = 0
+        # ts.save
+        ts.update_all(latitude: 0, longitude: 0)
       end
     else
       if ts.present?
-        VisitedStop.where(tour_stop_id: ts.id).destroy_all
-        ts.destroy
+        VisitedStop.where(tour_stop_id: ts.ids).destroy_all
+        ts.destroy_all
       end
     end
 

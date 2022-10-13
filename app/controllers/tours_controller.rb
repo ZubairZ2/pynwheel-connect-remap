@@ -228,14 +228,20 @@ class ToursController < ApplicationController
 
     @community = Community.find params[:community_id]
     @tours = @community.community_tour
-    @tours.name = params[:name].present? ? params[:name] : ""
-    @tours.latitude = params[:latitude].present? ? params[:latitude] : ""
-    @tours.longitude = params[:longitude].present? ? params[:longitude] : ""
-    @tours.starting_floor = params[:starting_floor].present? ? params[:starting_floor] : nil
-    @tours.access_code = params[:access_code].present? ? params[:access_code] : nil
-    @tours.lock_provider = params[:lock_provider].present? ? params[:lock_provider] : ""
-    @tours.building = params[:building].present? ? params[:building] : nil
+    
+    all_tours = Tour.where(community_id: @community.id)
 
+    all_tours.each do |tour|
+      tour.name = params[:name].present? ? params[:name] : ""
+      tour.latitude = params[:latitude].present? ? params[:latitude] : ""
+      tour.longitude = params[:longitude].present? ? params[:longitude] : ""
+      tour.starting_floor = params[:starting_floor].present? ? params[:starting_floor] : nil
+      tour.access_code = params[:access_code].present? ? params[:access_code] : nil
+      tour.lock_provider = params[:lock_provider].present? ? params[:lock_provider] : ""
+      tour.building = params[:building].present? ? params[:building] : nil
+      tour.save(:validate => false)
+    end
+   
     if @tours.building.nil? && params[:building].present?
       flash[:error] = "Building can not be empty"
       redirect_to starting_point_community_tours_path(@community)
@@ -266,9 +272,7 @@ class ToursController < ApplicationController
   def ajaxplotstartingpoint
     tour = Tour.find params[:tour_id]
     if tour.present?
-      tour.x_plot = params[:x_plot]
-      tour.y_plot = params[:y_plot]
-      tour.save(validate: false)
+      Tour.where(community_id: tour.community_id).update_all(x_plot: params[:x_plot], y_plot: params[:y_plot])
       PaperTrail::Version.create(item_type: "TourStopStartingPoint",item_id: tour.id,event: "update",whodunnit: current_user.id,community_id: tour.community_id, company_id: current_company.id,object: "name: '#{tour.name}' community_id: '#{tour.community_id}'") rescue nil
 
       render json: {tour: tour}, status: 200
@@ -282,9 +286,7 @@ class ToursController < ApplicationController
 
     @community = Community.find params[:community_id]
     if tour.present?
-      tour.x_plot = 0
-      tour.y_plot = 0
-      tour.save(validate: false)
+      Tour.where(community_id: @community.id).update_all(x_plot: 0, y_plot: 0)
       PaperTrail::Version.create(item_type: "TourStopStartingPoint",item_id: tour.id,event: "create",whodunnit: current_user.id,community_id: tour.community_id, company_id: current_company.id,object: "name: '#{tour.name}' community_id: '#{tour.community_id}'") rescue nil
 
       redirect_to starting_point_community_tours_path(@community)
