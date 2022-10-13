@@ -1344,7 +1344,7 @@ json.apartments do
     if floorplans.any?{|f| f.provider_floorplan_id == unit.floorplan_id} && conditionAvailable
       floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
       units_floorplans << floorplan
-      json.marketing_name unit.unit_market
+      json.marketing_name unit.api_unit_marketing_name
       json.rent unit.effective_rent.present? ? unit.effective_rent : 0
       json.min_rent unit.effective_rent.present? ? unit.effective_rent : 0
       json.avg_rent unit.avg_effective_rent.present? ? unit.avg_effective_rent : 0

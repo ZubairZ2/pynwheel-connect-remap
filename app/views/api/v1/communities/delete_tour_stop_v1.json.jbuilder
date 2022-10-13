@@ -1027,7 +1027,7 @@ json.tours @tours do |tour|
       end
       current_floor = unit.floor
       json.image_list images
-      json.name (unit.building.present? ? (unit.building + "-") : "") + unit.marketing_name
+      json.name unit.api_unit_marketing_name
       json.floorplan_id unit&.floorplan&.id
       # json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
       floorplate_image = (unit.floorplate.image.present? ? unit.floorplate : nil) if unit.floorplate.present?  rescue nil

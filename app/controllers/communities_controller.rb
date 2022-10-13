@@ -797,6 +797,7 @@ class CommunitiesController < ApplicationController
     @community.show_apartment = params[:show_apartment].present? ? params[:show_apartment] : false
     @community.display_rent = params[:display_rent].present? ? params[:display_rent] : false
     @community.display_pricing_options = params[:display_pricing_options].present? ? params[:display_pricing_options] : false
+    @community.display_building = params[:display_building].present? ? params[:display_building] : false
     @community.display_available_date = params[:display_available_date].present? ? params[:display_available_date] : false
     @community.display_sitemap = params[:display_sitemap].present? ? params[:display_sitemap] : false
     @community.display_floorplan_gallery = params[:display_floorplan_gallery].present? ? params[:display_floorplan_gallery] : false
