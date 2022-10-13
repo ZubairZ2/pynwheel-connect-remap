@@ -226,9 +226,9 @@ class WebpagesController < ActionController::Base
     if favorite.present?
       favorite.unit_ids = []
       favorite.save
-      flash[:notice] = "Favorites cleared successfully."
+      flash[:notice] = "#{@community.favorites_page_name} cleared successfully."
     else
-      flash[:error] = "There are no favorites to delete."
+      flash[:error] = "There are no #{@community.favorites_page_name} to delete."
     end
     redirect_back(fallback_location:"/")
     #redirect_to favorites_community_webpages_path(@community.id)

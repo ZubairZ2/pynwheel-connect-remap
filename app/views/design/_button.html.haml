@@ -46,8 +46,8 @@
                       %span Upload Neighbourhood Button
                   %li
                     %a{"data-toggle" => "tab", :href => "#main-favorites"}
-                      Favorites
-                      %span Upload Favorites Button    
+                      #{@community.favorites_page_name}
+                      %span Upload #{@community.favorites_page_name} Button    
               .col-lg-9.col-xs-12.col-md-8
                 / Tab panes
                 .tab-content.tab-content-new
@@ -136,8 +136,8 @@
                       %span Upload Neighbourhood Button
                   %li
                     %a{"data-toggle" => "tab", :href => "#home-favorites"}
-                      Favorites
-                      %span Upload Favorites Button
+                      #{@community.favorites_page_name} 
+                      %span Upload #{@community.favorites_page_name} Button
                   %li
                     %a{"data-toggle" => "tab", :href => "#home-about"}
                       About

@@ -62,7 +62,7 @@
         .col-lg-10
           .form-group.mt-30
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-              Favorites button color
+              #{@community.favorites_page_name} button color
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               .input-group.colorpicker-style.hex-format-colorpicker
                 .input-group-addon
@@ -228,7 +228,7 @@
             %li
               %a{"data-toggle" => "tab", :href => "#Gallery-navigation-background-image-gables"} Gallery background image
             %li
-              %a{"data-toggle" => "tab", :href => "#favourites-navigation-background-image-gables"} Favorites background image
+              %a{"data-toggle" => "tab", :href => "#favourites-navigation-background-image-gables"} #{@community.favorites_page_name} background image
             %li
               %a{"data-toggle" => "tab", :href => "#additional-pages-navigation-background-image-gables"} Additional pages background image
           .tab-content
@@ -331,7 +331,7 @@
             #favourites-navigation-background-image-gables.tab-pane.fade
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-24.margin-bottom-30
-                  Upload Favorites background image
+                  Upload #{@community.favorites_page_name} background image
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -342,11 +342,11 @@
                 .col-lg-10
                   .form-group.mt-30
                     %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                      Favorites background image
+                      #{@community.favorites_page_name} background image
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
                       .select-logo.mb-20.mt-30
                         .select-logo-logo
-                          %a.preview-image{:href=>current_community.design.gable.favourite_bg_image_gables.present? ? current_community.design.gable.favourite_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Favorites Background Image"}
+                          %a.preview-image{:href=>current_community.design.gable.favourite_bg_image_gables.present? ? current_community.design.gable.favourite_bg_image_gables.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"#{@community.favorites_page_name} Background Image"}
                             = image_tag current_community.design.gable.favourite_bg_image_gables.present? ? current_community.design.gable.favourite_bg_image_gables.url : "default.jpeg",:height=>"auto",:width=>"100%",:id=>"favourite-bg-image-gables-preview-image"
                             = image_tag "exclamation-mark.png", class: "exal_favourite_bg_image_gables #{(current_community.design.gable.favourite_bg_image_gables.present? ? (current_community.design.gable.favourite_bg_image_gables.width < 200 && current_community.design.gable.favourite_bg_image_gables.height < 200) ? "" : "hidden" : "hidden")}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 

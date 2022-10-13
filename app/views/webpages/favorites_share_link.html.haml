@@ -3,7 +3,7 @@
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
     %meta{:charset => "utf-8"}/
     %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
-    %title Pynwheel | Favorites
+    %title Pynwheel | #{@community.favorites_page_name}
     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
     = csrf_meta_tags
     = stylesheet_link_tag 'jquery.mCustomScrollbar.css'
@@ -37,7 +37,7 @@
                 .plane-details
                   .plan-modal
                     %h1.mb-20.text-primary
-                      My Favorites
+                      My #{@community.favorites_page_name}
                     %h3= @community.name 
                     %p= @community.address 
                     %p= @community.website if @community.website.present?
