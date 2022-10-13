@@ -16,7 +16,7 @@ class FloorplanAmenityImagesJob < ApplicationJob
         
         begin
           puts "\n\n\n\n -------------------------------------"
-          puts success
+          puts "success"
           puts "\n\n\n\n -------------------------------------"
 
           floorplan_unit.amenities.create!(image: source, name: name, floorplan_amenity_id: amenity.id)
