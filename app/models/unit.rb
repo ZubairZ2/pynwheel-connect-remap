@@ -105,7 +105,7 @@ class Unit < ApplicationRecord
       str_split.each do |ss|
         str = ss.split(':')
         if str[1].to_i > 0
-          pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
+          pricing_str = str[0]+" Month - #{self.community.get_currency_symbol}"+str[1].to_i.to_s
           lease_pricing << pricing_str
         end  
       end
@@ -120,7 +120,7 @@ class Unit < ApplicationRecord
       lease_pricing = lease_pricing2
 
     else
-      h = {"pricing_option" => "$"+ self.effective_rent.to_i.to_s}
+      h = {"pricing_option" => self.community.get_currency_symbol+ self.effective_rent.to_i.to_s}
       lease_pricing << h
     end
 

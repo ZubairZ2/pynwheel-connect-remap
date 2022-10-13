@@ -51,7 +51,7 @@ json.tours tours do |tour|
           str_split.each do |ss|
             str = ss.split(':')
             if str[1].to_i > 0
-              pricing_str = str[0]+" Month - $"+str[1].to_i.to_s
+              pricing_str = str[0]+" Month - #{@community.get_currency_symbol}"+str[1].to_i.to_s
               lease_pricing << pricing_str
             end
 
@@ -63,7 +63,7 @@ json.tours tours do |tour|
           end
           lease_pricing = lease_pricing2
         else
-          h = {"pricing_option" => "$"+ unit.effective_rent.to_i.to_s}
+          h = {"pricing_option" => @community.get_currency_symbol + unit.effective_rent.to_i.to_s}
           lease_pricing << h
         end
 
@@ -88,7 +88,7 @@ json.tours tours do |tour|
         json.update_apply ((unit.provider == "resman" || unit.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
         json.provider unit.provider
 
-        stop_dat = {"floorplan" => unit.floorplan_id, "floorplan_id" => unit.floorplan.id, "floorplan_full_name" => unit.floorplan.name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
+        stop_dat = {"floorplan" => unit.floorplan_id, "floorplan_id" => unit.floorplan.id, "floorplan_full_name" => unit.floorplan.name,"effective_rent" => "#{@community.get_currency_symbol}#{unit.effective_rent}","available_date" => unit.available_date,"display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
         
         json.stop_data stop_dat
         @unit_gallery_arr = []

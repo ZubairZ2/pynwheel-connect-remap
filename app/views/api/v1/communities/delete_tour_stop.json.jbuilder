@@ -354,7 +354,7 @@ json.tours @tours do |tour|
           str = ss.split(':')
 
           if str[1].to_i > 0
-            pricing_str = str[0]+" Month - $"+str[1]
+            pricing_str = str[0]+" Month - #{@community.get_currency_symbol}"+str[1]
             # h = {"pricing_option" => pricing_str}
             lease_pricing << pricing_str
           end
@@ -367,7 +367,7 @@ json.tours @tours do |tour|
         end
         lease_pricing = lease_pricing2
       else
-        h = {"pricing_option" => "$"+ unit.effective_rent.to_s}
+        h = {"pricing_option" => @community.get_currency_symbol + unit.effective_rent.to_s}
         lease_pricing << h
       end
       if unit.modal_unit
@@ -375,7 +375,7 @@ json.tours @tours do |tour|
         @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id,unit.community_id,true) if unit.present?
         @units.each do |floorplan_unit|
           unless floorplan_unit.id == unit.id
-            pricing_str = {"pricing_option" => floorplan_unit.marketing_name + " $" + floorplan_unit.effective_rent.to_s} rescue next
+            pricing_str = {"pricing_option" => floorplan_unit.marketing_name + " #{@community.get_currency_symbol}" + floorplan_unit.effective_rent.to_s} rescue next
             lease_pricing << pricing_str
           end
         end

@@ -1243,6 +1243,23 @@ s  end
   def favorites_page_name
     self&.favorite_setting&.favorite_name&.titleize || "Favorites"
   end
+  
+  def get_currency_symbol
+    iso_numeric_code = self&.credential&.currency || "840"
+    Money::Currency.find_by_iso_numeric(iso_numeric_code).symbol || "$"
+  end
+
+  def all_currencies(hash)
+    hash.inject([]) do |array, (id, attributes)|
+      priority = attributes[:priority]
+      if (MAJOR_CURRENCIES.include?(attributes[:iso_numeric]))
+        array ||= []
+        array << ["#{attributes[:name]} (#{attributes[:iso_code]})", attributes[:iso_numeric]]
+      end
+
+      array
+    end.compact
+  end
 
   def filter_final_stops tour_stops
     amenity_stops = []

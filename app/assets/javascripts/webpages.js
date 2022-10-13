@@ -11,12 +11,15 @@ var _3dUnitsToBeSelected;
 var enable3DMaps;
 var image_width_2d;
 var maxSelectedPrice;
+var currency = "$";
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
   _3dConfigurations = $("#communityWebpagesData").data("mapConfigurations");
   is_floorplates = $("#communityWebpagesData").data("is_floorplate");
+  currency = $("#communityWebpagesData").data("currency");
+  renderChangedUnits(units, is_floorplate, community);
 
   if(webCommunity) {
     selectMap = webCommunity.web_map_type;
@@ -42,6 +45,7 @@ $(document).ready(function () {
     handleMapControl()
   }
 });
+
 
 function displayOverlayText() {
   let instruction = localStorage.getItem(`webpagesInstruction${webCommunity.id}`);
@@ -177,7 +181,7 @@ $(window).bind('load', function () {
     $('#lease_term').change(function () {
       var select = document.getElementById('lease_term');
       var option = select.options[select.selectedIndex];
-      $('#unitModal').find('#total-market-rent').html('$' + option.dataset.leasePrice);
+      $('#unitModal').find('#total-market-rent').html(currency + option.dataset.leasePrice);
     });
 
     $('#select-all-filters-checkbox').click(function () {
@@ -351,8 +355,8 @@ $(window).bind('load', function () {
             $('#hover-available-text').html('Available');
             $('#popover-available-date').html($(this).data('available-date'));
           }
-
-          $('#popover-price').html(('$' + $(this).data('market-rent')))
+        
+          $('#popover-price').html((currency + $(this).data('market-rent')))
           var marker_color_map = $(".fa-map-marker-alt")[0].style.color
           $($('#unit_'+ $(this).data('unit-marketing-name')))[0].scrollIntoView({behavior: 'smooth', block: 'center', inline: 'center' });
           
@@ -820,61 +824,63 @@ function click_marker_tag(id){
 function renderChangedUnits(units, is_floorplate, community){
   var element = document.getElementById("units-body");
   element.innerHTML = ""
-      var floorUnits = []
-      if (is_floorplate === "true"){
-        var floorChange = $("#slider li a.selected")[0].id;
-        units.forEach((unitt) => {
-          if (unitt.floor.toString() === floorChange){
-            floorUnits.push(unitt)
-          }
-        });
-        document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
-      } else {
-        floorUnits = units;
+  var floorUnits = []
+  if (is_floorplate === "true"){
+    var floorChange = $("#slider li a.selected")[0].id;
+    units.forEach((unitt) => {
+      if (unitt.floor.toString() === floorChange){
+        floorUnits.push(unitt)
       }
-      sortType = document.getElementById('filter');
-      floorUnits = getFilteredUnits(floorUnits, sortType.value);
-      var filtered_units = floorUnits;
-      var website ="#{@community_info.website}"
-
-      filtered_units.forEach((unit) => {
-        var unit_details_div = `
-        <div class='left-side-30-units' id='unit_${unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}'>
-          <div class='image-styles'>
-            <a class='image_link' href='#' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
-              <img src=${unit['floorplan_image']} class='image-image-styles' />
-            </a>
-          </div>
-          <div class='unit-details-section'>
-            <p id='unit-detail-market-title'>
-              Unit # ${unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}
-            </p>
-            <p>
-              ${community}
-            </p>
-          </div>
-          <div class='unit-details-section'>
-            <p>
-            <i class='fa.fa-bed'> &nbsp ${unit['bedrooms']} Bed </i>
-            </p>
-            <p>
-            <i class='fa.fa-bath'> &nbsp ${unit['bathrooms']} Bath </i>
-            </p>
-            <p>
-            <i class='fa.fa-building'> &nbsp ${unit['square_feet']} Sq Ft </i>
-            </p>
-          </div>
-          <div class='unit-details-section'>
-            <p id='right-bar-unit-availability'>
-              ${ get_unit_availability(unit) }
-            </p>
-            <p>
-              $${unit['market_rent']}/month
-            </p>
-          </div>
-        </div>
-        `;
-      element.innerHTML += unit_details_div  
+    });
+    document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
+  } else {
+    floorUnits = units;
+  }
+  
+  sortType = document.getElementById('filter');
+  floorUnits = getFilteredUnits(floorUnits, sortType.value);
+  var filtered_units = floorUnits;
+  var website ="#{@community_info.website}"
+  
+  filtered_units.forEach((unit) => {
+    var unit_details_div = `
+    <div class='left-side-30-units' id='unit_${unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}'>
+      <div class='image-styles'>
+        <a class='image_link' href='#' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
+          <img src=${unit['floorplan_image']} class='image-image-styles' />
+        </a>
+      </div>
+      <div class='unit-details-section'>
+        <p id='unit-detail-market-title'>
+          Unit # ${unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}
+        </p>
+        <p>
+          ${community}
+        </p>
+      </div>
+      <div class='unit-details-section'>
+        <p>
+        <i class='fa.fa-bed'> &nbsp ${unit['bedrooms']} Bed </i>
+        </p>
+        <p>
+        <i class='fa.fa-bath'> &nbsp ${unit['bathrooms']} Bath </i>
+        </p>
+        <p>
+        <i class='fa.fa-building'> &nbsp ${unit['square_feet']} Sq Ft </i>
+        </p>
+      </div>
+      <div class='unit-details-section'>
+        <p id='right-bar-unit-availability'>
+          ${ get_unit_availability(unit) }
+        </p>
+        <p>
+          ${currency + unit['market_rent']}/month
+        </p>
+      </div>
+    </div>
+    `;
+    
+    element.innerHTML += unit_details_div  
   });
 }
 
@@ -1635,8 +1641,8 @@ function setModalAttributes(element) {
       $('#unitModal').find('#available-date').html($(element).data('available-date'));
     }
   }
-  $('#unitModal').find('#market-rent').html('$' + $(element).data('market-rent'));
-  $('#unitModal').find('#total-market-rent').html('$' + $(element).data('market-rent'));
+  $('#unitModal').find('#market-rent').html(currency + $(element).data('market-rent'));
+  $('#unitModal').find('#total-market-rent').html(currency + $(element).data('market-rent'));
   
   ///////////////////////////////////////////
   var unit_id = $(element).data('unit-id');
@@ -1738,8 +1744,8 @@ function _3dUnitModalDisplay() {
       $('#unitModal').find('#available-date').html(_3dSelectedUnit.available_date);
     }
   }
-  $('#unitModal').find('#market-rent').html("$" + _3dSelectedUnit.market_rent);
-  $('#unitModal').find('#total-market-rent').html("$" + _3dSelectedUnit.market_rent + ".00");
+  $('#unitModal').find('#market-rent').html(currency + _3dSelectedUnit.market_rent);
+  $('#unitModal').find('#total-market-rent').html(currency + _3dSelectedUnit.market_rent + ".00");
 
   if (!_3dSelectedUnit.is_fav) {
     var community_id = webCommunity.id;
@@ -1815,7 +1821,7 @@ function leaseTermPricingOptions(ss) {
       }
     
       if (s[1] && parseInt(s[1]) > 0 ){
-        lease.push(s[0] + " months " + sp + '<b>'+"$"+ s[1]+ '<b>' + '<br>')
+        lease.push(s[0] + " months " + sp + '<b>'+currency+ s[1]+ '<b>' + '<br>')
         lease_price_arr.push(s[1])
         lease_months_arr.push(s[0])
       }
@@ -2146,11 +2152,15 @@ function applyFilters(){
   selected_square_feet = $("#responsive_square_feet option:selected").text();
   selected_available_unit = $("#responsive_available_unit option:selected").text();
   selected_unit_bedrooms = $("#responsive_unit_bedroom option:selected").text();
-  $("#max_price_responsive").html(selected_market_rent == "Select Max Price" ? "Max Price" : "$"+selected_market_rent);
+  $("#max_price_responsive").html(selected_market_rent == "Select Max Price" ? "Max Price" : currency+selected_market_rent);
   $("#sq_feet_responsive").html(selected_square_feet == "Select Min Sq Ft" ? "Min Sq Feet" : selected_square_feet);
   $("#unit_availability").html(selected_available_unit);
   $("#bedroom_responsive").html(selected_unit_bedrooms);
   $('.mobile-filter-mega-menu').slideToggle()
+}
+
+function get_market_rent(unit) {
+  
 }
 
 function get_unit_availability(unit) {

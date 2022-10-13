@@ -57,6 +57,7 @@ json.community_group @communities do |co|
   json.menu_button_shade @community_group.menu_button_shade
 
   json.community_name  @community.name
+  json.currency_symbol @community.get_currency_symbol()
   json.community_id  @community.id
   json.data_url "/api/v1/communities/#{@community.id}/data.json"
   json.company_name  Company.find_by(id: @community.company_id).name

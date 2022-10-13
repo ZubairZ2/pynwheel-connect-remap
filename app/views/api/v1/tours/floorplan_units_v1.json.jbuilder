@@ -28,9 +28,9 @@ json.data @units do |u|
     json.unit_type u.unit_type
     json.marketing_name u.api_unit_marketing_name
     json.floorplan_id u.floorplan_id
-    json.market_rent u.market_rent
-    json.effective_rent u.effective_rent
-    json.rent u.effective_rent
+    json.market_rent "#{@community.get_currency_symbol}#{u.market_rent}"
+    json.effective_rent "#{@community.get_currency_symbol}#{u.effective_rent}"
+    json.rent "#{@community.get_currency_symbol}#{u.effective_rent}"
     json.availability u.availability
     begin
             json.available_date u.available_date < Date.today + 1 ? "Now" : u.available_date.strftime("%m").to_i.to_s + "/" + u.available_date.strftime("%d").to_i.to_s
@@ -70,7 +70,7 @@ json.data @units do |u|
             pricing_str = []
             if str[1].to_i > 0
                 pricing_str[0] = str[0]+" Month"
-                pricing_str[1] = "$"+str[1].to_i.to_s
+                pricing_str[1] = @community.get_currency_symbol+str[1].to_i.to_s
                 lease_pricing << pricing_str
             end
           end

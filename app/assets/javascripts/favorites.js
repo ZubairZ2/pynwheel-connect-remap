@@ -91,7 +91,7 @@ function setAttributes(){
               }
 
             if (s[1] && parseInt(s[1]) > 0 ){
-              lease.push(s[0] + " months " + sp + '<b>'+"$"+ s[1]+ '<b>' + '<br>')
+              lease.push(s[0] + " months " + sp + '<b>'+currency+ s[1]+ '<b>' + '<br>')
               lease_price_arr.push(s[1])
               lease_months_arr.push(s[0])
             }
@@ -234,5 +234,5 @@ function changeEffectiveRent(element){
   unitId = $(element).data('unit-id');
   select = document.getElementById(unitId+'-lease_term');
   option = select.options[select.selectedIndex];
-  $('#'+unitId+'-total-price').html('$' + option.dataset.leasePrice)
+  $('#'+unitId+'-total-price').html(currency + option.dataset.leasePrice)
 }

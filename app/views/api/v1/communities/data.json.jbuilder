@@ -4,6 +4,7 @@ json.version @version
 json.data_provider @community.data_provider
 json.company_name @community.company.name
 json.community_name @community.name
+json.currency_symbol @community.get_currency_symbol()
 json.ui_settigs do
   json.selected_theme @community.temporary_theme_name
   if @community.temporary_theme_name.include?('gables') || @community.temporary_theme_name == 'modernist'
@@ -1418,7 +1419,7 @@ json.apartments do
             pricing_str = []
             if str[1].to_i > 0
               pricing_str[0] = str[0]+" Month"
-              pricing_str[1] = "$"+str[1].to_i.to_s
+              pricing_str[1] = @community.get_currency_symbol+str[1].to_i.to_s
               # h = {"pricing_option" => pricing_str}
               lease_pricing << pricing_str
             end

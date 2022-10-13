@@ -1174,6 +1174,9 @@ GEM
       unicode_utils (~> 1.4)
     crass (1.0.6)
     csv (1.0.0)
+    currency_select (1.0.0)
+      actionview (>= 4.2.0, < 6.0)
+      money (~> 6.0)
     delayed_job (4.1.8)
       activesupport (>= 3.0, < 6.1)
     delayed_job_active_record (4.1.4)
@@ -1310,6 +1313,8 @@ GEM
     minitest (5.14.1)
     momentjs-rails (2.20.1)
       railties (>= 3.1)
+    money (6.16.0)
+      i18n (>= 0.6.4, <= 2)
     multi_json (1.14.1)
     multi_xml (0.6.0)
     multipart-post (2.1.1)
@@ -1523,6 +1528,7 @@ DEPENDENCIES
   coffee-rails (~> 4.2)
   countries
   csv
+  currency_select
   delayed_job_active_record
   derailed_benchmarks
   devise
