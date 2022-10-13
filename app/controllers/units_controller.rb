@@ -114,6 +114,7 @@ class UnitsController < ApplicationController
   end
 
   def update
+    previous_floorplan_id = @unit.floorplan_id
     if params[:unit].present? and params[:unit][:image]
       @unit.crop_x = nil
     end
@@ -204,7 +205,7 @@ class UnitsController < ApplicationController
         end
         if @unit.update(unit_params)
           update_locks()
-          if params[:unit].present? and @unit.floorplan.present? and params[:unit][:floorplan_id] != @unit.floorplan.id
+          if params[:unit].present? and @unit.floorplan.present? and params[:unit][:floorplan_id] != previous_floorplan_id
             delete_previous_floorplan_images = "delete previous"
             if unit_previous_floorplan_amenities.present?
               AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
@@ -235,7 +236,7 @@ class UnitsController < ApplicationController
         if params[:unit][:manual_override].present? and params[:unit][:manual_override] == 'true'
           @unit.update(unit_params)
           update_locks()
-          if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != @unit.floorplan.id
+          if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != previous_floorplan_id
             delete_previous_floorplan_images = "delete previous"
             AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
             floorplan_amenities = @unit.floorplan.amenities rescue nil
@@ -267,7 +268,7 @@ class UnitsController < ApplicationController
 
             update_locks()
 
-            if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != @unit.floorplan.id
+            if params[:unit][:floorplan_id].present? and params[:unit][:floorplan_id] != previous_floorplan_id
               delete_previous_floorplan_images = "delete previous"
               AssignFloorplanImagesToUnitJob.perform_async unit_previous_floorplan_amenities, delete_previous_floorplan_images, @unit
               floorplan_amenities = @unit.floorplan.amenities rescue nil
