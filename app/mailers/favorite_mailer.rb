@@ -6,7 +6,7 @@ class FavoriteMailer < ApplicationMailer
     @community = community
     @units = units
     @to_email = email_to
-    mail(to: email_to, from: email_from, bcc: email_bcc, subject: "My #{@community.favorites_page_name}")
+    mail(to: email_to, from: email_from, bcc: email_bcc, subject: "My Ebrochure")
   end
 
   def email_favorites_text(email_from,email_to,email_bcc,email_body,favorites,units,ios,community)
@@ -16,7 +16,7 @@ class FavoriteMailer < ApplicationMailer
       @community = community
       @units = units
       @to_email = email_to
-      mail(to: email_bcc, from: email_from, subject: "My #{@community.favorites_page_name} Text Version")
+      mail(to: email_bcc, from: email_from, subject: "My Ebrochure Text Version")
   end
 
   def email_shared_tour(email_to,stops,community)

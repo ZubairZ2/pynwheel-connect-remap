@@ -7,7 +7,7 @@ class Api::V2::EbrochuresController < Api::V2::ApiApplicationController
     if favorite.present?
       render json: {success: true, data: favorite.as_json}
     else
-      render json: {success: false, data: nil, message: "#{@community.favorites_page_name} settings not found!"}
+      render json: {success: false, data: nil, message: "Favorite Settings not found!"}
     end
   end
 
