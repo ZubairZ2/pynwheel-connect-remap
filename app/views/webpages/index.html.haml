@@ -74,7 +74,8 @@
               .header-buttons-groups
                 - if @square_feet.present?
                   %a.transparent-btn.header-action-btn{:href => "#{favorites_community_webpages_path(@community)}",:target=>"_parent"}
-                    View
+                    View Saved
+                    %i.fa.fa-heart
                 - crm_provider = @community&.crm_credential&.crm_provider
                 - data_provider = @community&.data_provider
                 - if @community.self_tour && @community.scheduler_widget && (data_provider != "yardirentcafe" || data_provider != "yardi") && crm_provider != "yardirentcafe" 
