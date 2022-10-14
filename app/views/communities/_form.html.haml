@@ -4,11 +4,11 @@
     - if current_user.is_dwelo_admin?
       %i.unit_manualoverride.fa.fa-question-circle
         %span#unit_manualoverride_text
-          (Dwelo) will be added as default at the start of name. Changing the Name will change the name of the property on the #{@community.favorites_page_name} page.
+          (Dwelo) will be added as default at the start of name. Changing the Name will change the name of the property on the favorites page.
     - else
       %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailNamePopover1","data-content" => " "}
         %span#propertyDetailNameText
-          Changing the Name will change the name of the property on the #{@community.favorites_page_name} page.
+          Changing the Name will change the name of the property on the favorites page.
 
 
   .col-sm-12.col-lg-9.col-md-9.col-xs-12

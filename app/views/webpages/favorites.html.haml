@@ -3,7 +3,7 @@
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
     %meta{:charset => "utf-8"}/
     %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
-    %title Pynwheel | #{@community.favorites_page_name}
+    %title Pynwheel | Favorites
     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
     %script{:src => "https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"}
     %script{:src => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"}
@@ -38,12 +38,12 @@
               = image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :style => "width: 150px; padding: 1px 0px 5px 4px"
           - if @units.present?
             .need-to
-              %h3 Want to add #{@community.favorites_page_name}?
               %p{:style => "margin-bottom: 20px"} Explore available floor plans on the interactive site map.
               = link_to "Take me there", community_webpages_path, :class=> "btn btn-primary apply-now btn-block btn-lg",:target => "_parent"
           .need-to
             %h3 Want to share your list?
-            %p{:style => "margin-bottom: 20px"} Click the share button and share your #{@community.favorites_page_name} link
+            %p{:style => "margin-bottom: 20px"} Click the share button
+
             %button.btn.btn-primary.btn-block.btn-lg.apply-now.share-favorite{"data-toggle"=>"modal","data-target"=>"#share-favorites"} Share 
           .need-to
             %h3 Need to pare down your list?
@@ -79,9 +79,9 @@
   .modal-dialog
     .modal-content
       .modal-header
-        Clear #{@community.favorites_page_name}
+        Clear
       .modal-body
-        Are you sure? You want to clear all #{@community.favorites_page_name}.
+        Are you sure? You want to clear all selections?
       .modal-footer
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel   
         = link_to "Clear", clear_favorites_community_webpages_path(@community), :class=>"btn btn-danger btn-ok"
@@ -89,7 +89,7 @@
   .modal-dialog
     .modal-content
       .modal-header
-        Share #{@community.favorites_page_name} Link
+        Share
       .modal-body
         %input.form-control#url{:value => favorites_share_link_community_webpages_url(:community_id=>@community,:session_id=>(@favorite.present? ? @favorite.session_id : "" )  )}/
       .modal-footer

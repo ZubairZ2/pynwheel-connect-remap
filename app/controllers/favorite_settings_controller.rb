@@ -12,7 +12,7 @@ class FavoriteSettingsController < ApplicationController
 	def create
 		@favorite = @community.build_favorite_setting(favorite_params)
     if @favorite.save
-      flash[:notice] = "#{@community.favorites_page_name} settings created successfully."
+      flash[:notice] = "Created successfully."
       redirect_to community_favorite_settings_path(@community)
     else
       flash[:error] = @favorite.errors.full_messages.join(',')
@@ -29,7 +29,7 @@ class FavoriteSettingsController < ApplicationController
     else
       @favorite = @community.favorite_setting
       if @favorite.update(favorite_params)
-        flash[:notice] = "#{@community.favorites_page_name} settings updated successfully."
+        flash[:notice] = "Updated successfully."
         redirect_to community_favorite_settings_path(@community)
       else
         flash[:error] = @favorite.errors.full_messages.join(',')
