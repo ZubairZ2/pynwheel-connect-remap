@@ -230,12 +230,22 @@ $(window).bind('load', function () {
     // $('#zoomable a').on('touchstart', function (e) {
     //   e.stopImmediatePropagation();
     // });
+    function adjustBottomOfImageMap(x){
+      let rightSide = document.getElementsByClassName('right-side')[0]
+      rightSide.style.height = "50%";
+      if (x.matches && is_floorplate === "true"){
+        rightSide.style.bottom = "60px";
+      }
+    }
+
+    var x = window.matchMedia("(max-width: 567px)");
+    adjustBottomOfImageMap(x);
 
     var $area = document.getElementById('zoomable');
     webpagePanZoom = panzoom($area, 
       {
         bounds: true, contain: 'automatic', smoothScroll: true,
-        boundsPadding: 0.4,
+        boundsPadding: 0.3,
         maxZoom: 5,
         minZoom: 1,
         minScale: 1,

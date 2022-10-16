@@ -5813,9 +5813,13 @@ ul.add-fav-options {
       max-width: 119px;
       margin-right: 7px;
   }
-  .right-side {
-    height: 50%;
+.c-body {
+    max-height: 80%;
 }
+.c-popup .c-m-iframe-content img {
+    max-height: 150px;
+}
+
   .custom-iframe-modeule .header-buttons-groups {
       right: 0;
       left: 0;
@@ -6059,7 +6063,6 @@ ul.add-fav-options {
     margin-bottom: 0;
     font-weight: 500;
     margin-top: 0;
-    padding-top: 15px;
 }
 .c-modal-sidebar-description  .c-m-description {
     font-weight: 500;
@@ -6265,7 +6268,6 @@ ul.add-fav-options {
     padding-left: 13px;
     padding-right: 13px;
     background: white;
-    padding-bottom: 15px;
 }
 
 .c-connect-map-wrapper {
