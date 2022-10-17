@@ -1,11 +1,8 @@
 class ImportYardirentcafeDataJob < ApplicationJob
   include SuckerPunch::Job
+  workers 4
 
-  def perform(credentials)
-
-    # yardi_rent_cafe_static_service = YardiRentCafeStaticService.new(JSON.parse(credentials))
-    # yardi_rent_cafe_static_service.perform
-
+  def perform(credentials)e
     yardi_rent_cafe_service = YardiRentCafeService.new(JSON.parse(credentials))
     yardi_rent_cafe_service.perform
   end
