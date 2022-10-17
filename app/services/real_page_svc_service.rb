@@ -155,6 +155,8 @@ class RealPageSvcService < BaseService
         result = Ox.load(response.body, mode: :hash)
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
+          credentials&.community&.community_data_updated_on()
+          
           units.each do |u|
 
             if u.key?(:UnitObject)

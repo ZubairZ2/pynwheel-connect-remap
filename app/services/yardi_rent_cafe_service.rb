@@ -26,6 +26,8 @@ class YardiRentCafeService < BaseService
 
         unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardirentcafe"]).map{|x| x.provider_unit_id}
         if response[0]["Error"].nil?
+          credentials&.community&.community_data_updated_on()
+          
           response.each do |r|
             begin
               unit = Unit.find_by(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])#.first_or_initialize

@@ -44,9 +44,9 @@ class PsiStaticService < BaseService
               floorplans << f
             end
           end
+          
           save_psi_floorplans(floorplans,property_id)
           save_psi_units(units,property_id)
-          com_test&.community_data_updated_on()
 
           begin
             cred = Credential.find credentials.id

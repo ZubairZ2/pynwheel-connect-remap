@@ -70,6 +70,7 @@ class Yardi4Service < BaseService
           end
           save_yardi4_floorplans(floorplans)
           save_yardi4_units(ils_units,external_property_id)
+          credentials&.community&.community_data_updated_on()
           #else
           #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})

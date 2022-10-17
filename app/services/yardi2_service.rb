@@ -44,6 +44,8 @@ class Yardi2Service < BaseService
           end
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
+          credentials&.community&.community_data_updated_on()
+          
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil

@@ -44,7 +44,10 @@ class ZarembaService < BaseService
           response['PhysicalProperty']['Property'].present? && result['Floorplan'].class == Array && result["Floorplan"].each do |pro|
             floorplans << pro
           end
+
           save_zaremba_units(units,property_id)
+          credentials&.community&.community_data_updated_on()
+          
           if result["Floorplan"].class == Hash
             floorplans = result["Floorplan"]
             save_zaremba_single_floorplans(floorplans,property_id)

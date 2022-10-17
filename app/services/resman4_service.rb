@@ -30,6 +30,7 @@ class Resman4Service < BaseService
           $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
+          credentials&.community&.community_data_updated_on()
           # save_website_column_of_community(response)
           begin
             cred = Credential.find credentials.id
