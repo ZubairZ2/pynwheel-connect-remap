@@ -5792,6 +5792,10 @@ ul.add-fav-options {
         width: 100%;
     }
 
+    .c-connect-map-wrapper {
+        height: 85%;
+    }
+
     #webpages-overlay-button {
         top: 58% !important;
     }
