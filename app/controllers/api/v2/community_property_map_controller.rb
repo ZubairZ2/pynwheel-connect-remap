@@ -23,6 +23,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     property_type = params["community"]["property_type"]
     @status = params["status"]
     if property_type.eql?(SITEMAP)
+      @community.floorplates.delete_all if @community.floorplates.present?
       @community.is_sitemap = true
       @community.save
       property_map = add_sitemap_property(params)
@@ -98,6 +99,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
       end
     else
       if @community.floorplates.present?
+        @community.floorplates.delete_all
         @community.is_sitemap = true
         @community.save
         render :json => {:success => true, :error_code => 200, :message => "Mid high rise community details deleted successfully", data: nil}
