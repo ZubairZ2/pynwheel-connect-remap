@@ -99,7 +99,10 @@ class CustomizeTourService
   end
 
   def user_customized_tour
-    @tour_user.tours.where(community_id: @community&.id).last    
+    tour = @tour_user.tours.where(community_id: @community&.id).last
+    # tour = TourUserCustomization.new(@community, @tour_user).customize_tour
+
+    tour
   end
 
   def is_customization_enabled
