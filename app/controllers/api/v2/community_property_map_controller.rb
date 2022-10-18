@@ -32,9 +32,6 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
       type = SITEMAP
     else
       if @community.is_sitemap
-        if @community.sitemap.present?
-          @commuinity.sitemap.destroy!
-        end
         @community.is_sitemap = false
         @community.save
       end
@@ -55,8 +52,9 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     @type = params["property_type"]
     if @type.eql?(SITEMAP)
       if @community.sitemap.present?
-        if @community.sitemap.delete
-          @community.set_property_map_status(current_pynwheel_user, "")
+        if @community.sitemap.remove_image!
+          @community.sitemap.save
+          @community.set_property_map_status(current_pynwheel_user, "in_progress")
           render :json => {:success => true, :error_code => 200, :message => "Garden style community deleted successfully", data: nil}
         end
       end
