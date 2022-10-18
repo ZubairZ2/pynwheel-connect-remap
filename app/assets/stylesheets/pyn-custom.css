@@ -5792,8 +5792,17 @@ ul.add-fav-options {
         width: 100%;
     }
 
-    .c-connect-map-wrapper {
-        height: 85%;
+    .c-modal-footer-fav {
+        padding: 5px 24px 5px 0px !important;
+    }
+
+    .c-modal-sidebar-description .c-m-description {
+        height: 50px;
+        overflow: scroll;
+    }
+
+    .c-connect-map-wrapper .c-m-iframe-content img{
+        height: 200px;
     }
 
     #webpages-overlay-button {
@@ -6031,10 +6040,9 @@ ul.add-fav-options {
     display: inline-block;
     width: -webkit-fill-available;
     border-bottom: 1px solid #cccccc94;
-    padding: 0px 13px 15px 13px;
+    padding: 5px 13px 5px 13px;
     background: white;
     display: inline-block;
-    padding-top: 14px;
     max-width: 100%;
     width: 100%;
 }
@@ -6288,7 +6296,7 @@ ul.add-fav-options {
     background: white;
 }
 .c-connect-map-wrapper .c-modal-sidebar-inner .module-list {
-    padding: 25px 0 25px 0;
+    padding: 5px 0 5px 0;
 }
 .c-connect-map-wrapper .availabilty-container {
  }
