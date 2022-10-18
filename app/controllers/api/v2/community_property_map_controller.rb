@@ -23,9 +23,6 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     property_type = params["community"]["property_type"]
     @status = params["status"]
     if property_type.eql?(SITEMAP)
-      if @community.floorplates.present?
-        @community.floorplates.delete_all
-      end
       @community.is_sitemap = true
       @community.save
       property_map = add_sitemap_property(params)
@@ -95,15 +92,12 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     if type.eql?(SITEMAP)
       sitemap = @community.sitemap
       if sitemap.present?
-        if sitemap.delete
-          @community.is_sitemap = false
-          @community.save
-          render :json => {:success => true, :error_code => 200, :message => "Garden style community details deleted successfully", data: nil}
-        end
+        @community.is_sitemap = false
+        @community.save
+        render :json => {:success => true, :error_code => 200, :message => "Garden style community details deleted successfully", data: nil}
       end
     else
       if @community.floorplates.present?
-        @community.floorplates.delete_all
         @community.is_sitemap = true
         @community.save
         render :json => {:success => true, :error_code => 200, :message => "Mid high rise community details deleted successfully", data: nil}
@@ -114,14 +108,9 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
   private
 
   def add_sitemap_property(params)
-    sitemap_id = params["sitemap"]["id"]
-    if sitemap_id.present?
-      @sitemap = Sitemap.find_by_id(sitemap_id)
+    @sitemap = @community.sitemap || @community.create_sitemap
+    if @sitemap.present?
       @sitemap.update(sitemap_params)
-      # PaperTrail::Version.create(item_type: "Sitemap",item_id: @sitemap.id,event: "update",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "id: '#{@sitemap.id}' community_id: '#{@community.id}'") if @status.empty?
-    else
-      @community.create_sitemap(sitemap_params)
-      # PaperTrail::Version.create(item_type: "Sitemap",item_id: @community.sitemap.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "id: '#{@community.sitemap.id}' community_id: '#{@community.id}'") if @status.empty?
     end
     @property_map = @community.sitemap
   end
