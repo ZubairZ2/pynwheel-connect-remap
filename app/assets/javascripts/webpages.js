@@ -1607,10 +1607,11 @@ function setModalAttributes(element) {
         $('#unit-description-text-li').hide();
         $('#unitModal').find('.c-modal-sidebar-description').hide();
     }
+  
+  addVirtualTour(element);
 
-
-    $('#unitModal').find('#unit-marketing-name').html($(element).data('unit-marketing-name'));
-    $('#unitModal').find('#floorplan-name').html($(element).data('floorplan-name'));
+  $('#unitModal').find('#unit-marketing-name').html($(element).data('unit-marketing-name'));
+  $('#unitModal').find('#floorplan-name').html($(element).data('floorplan-name'));
   $('#unitModal').find('#square-feet').html($(element).data('square-feet'));
   $('#unitModal').find('#bathrooms').html($(element).data('bathrooms'));
   if ($('#unitModal').find('#bathrooms').html() == '1') {
@@ -1708,6 +1709,40 @@ function setModalAttributes(element) {
     $('.m-filters').hide();
 
   }
+}
+
+function addVirtualTour(element) {
+  removeFrame();
+  let label = $(element).data('unit-virtual-tour-label');
+  let url = $(element).data('unit-virtual-tour-url');
+
+  if(url != null && url != "") {
+    $('.virtual-tour-btn').css("display", "block");
+    $('.virtual-tour-btn').html(label);
+    $('#unitVirtualTourModal').find('#unitVirtualName').html($(element).data('unit-marketing-name'));
+    addFrame(url) ;
+
+  } else {
+    $('.virtual-tour-btn').css("display", "none");
+  }
+}
+
+function removeFrame() {
+  $("#virtual-tour-ifram-container").empty();
+}
+
+function addFrame(src) {
+  var ifrm = document.createElement("iframe");
+  ifrm.setAttribute("src", src);
+  ifrm.style.position = "absolute";
+  ifrm.style.top= 0;
+  ifrm.style.bottom= 0;
+  ifrm.style.left= 0;
+  ifrm.style.width= "100%";
+  ifrm.style.height= "100%";
+  ifrm.style.border= 0;
+
+  $("#virtual-tour-ifram-container").append(ifrm);
 }
 
 function _3dUnitModalDisplay() {

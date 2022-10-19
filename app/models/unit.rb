@@ -96,6 +96,21 @@ class Unit < ApplicationRecord
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   before_destroy :delete_data
 
+  def get_virtual_tour_label
+    self.virtual_tour_button_label.present? ? self.virtual_tour_button_label : "3D Tour"
+  end
+
+  def get_virtual_tour_url
+    if self&.virtual_tour_url.present?
+      self.virtual_tour_url
+    elsif self&.floorplan&.virtual_tour_url.present?
+      self.floorplan.virtual_tour_url
+    else
+      ""
+    end
+    # "https://3dplans.com/apps/hosting/buckingham_companies/aertson_midtown/?plan=Studio-S2"
+  end
+
   def get_unit_leasing_price
     lease_pricing = []
 
