@@ -5792,6 +5792,17 @@ ul.add-fav-options {
         width: 100%;
     }
 
+    .c-modal-sidebar-filters .m-filters {
+        padding: 3px 6px 3px 11px !important;
+    }
+
+    .c-modal-sidebar-filters .filter-action {
+        padding: 3px 20px 3px 20px !important;
+    }
+
+    .c-modal-sidebar-filters {
+        padding: 3px !important;
+    }
     .c-modal-footer-fav {
         padding: 5px 24px 5px 0px !important;
     }
