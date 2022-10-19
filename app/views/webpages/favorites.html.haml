@@ -96,6 +96,8 @@
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} cancel
         %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy to clipboard  
 
+#communityWebpagesFavoriteData{data: {currency: @community.get_currency_symbol()} }
+
 :javascript
   var data_provider = "#{@community.data_provider}"
   var units = "#{@fav_units_info}";

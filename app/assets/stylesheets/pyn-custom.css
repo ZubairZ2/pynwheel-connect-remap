@@ -5792,6 +5792,10 @@ ul.add-fav-options {
         width: 100%;
     }
 
+    .availabilty-container {
+        padding: 5px 13px 5px 13px !important;
+    }
+
     .c-modal-sidebar-filters .m-filters {
         padding: 3px 6px 3px 11px !important;
     }
@@ -5808,7 +5812,7 @@ ul.add-fav-options {
     }
 
     .c-modal-sidebar-description .c-m-description {
-        height: 50px;
+        height: 40px;
         overflow: scroll;
     }
 
@@ -6038,7 +6042,7 @@ ul.add-fav-options {
 }
 .c-modal-sidebar-inner .module-list li {
     display: inline-block;
-    padding: 0 0px 0 20px;
+    padding: 0 0px 0 10px;
 }
 .c-modal-sidebar-inner .module-list li img {
     width: 14px;
@@ -6307,7 +6311,7 @@ ul.add-fav-options {
     background: white;
 }
 .c-connect-map-wrapper .c-modal-sidebar-inner .module-list {
-    padding: 5px 0 5px 0;
+    padding: 5px;
 }
 .c-connect-map-wrapper .availabilty-container {
  }

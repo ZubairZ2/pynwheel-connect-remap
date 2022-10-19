@@ -57,6 +57,7 @@ function addAttributes(){
 }
 
 function setAttributes(){
+  var currency = $("#communityWebpagesFavoriteData").data("currency");
   for(var x = 0; x < units.length; x++) {
     var unit_id = units[x].id
     var lease_pricing = $('#'+unit_id+'-lease-pricing').text();
