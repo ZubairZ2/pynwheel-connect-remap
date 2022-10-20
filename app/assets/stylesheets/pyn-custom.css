@@ -5792,6 +5792,9 @@ ul.add-fav-options {
         width: 100%;
     }
 
+    .per-month-price-text {
+        left: 100px !important;
+    }
     .c-modal-sidebar-filters .filter-action .apply-now {
         padding: 6px !important;
     }
