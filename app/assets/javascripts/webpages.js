@@ -986,6 +986,13 @@ function set_prices_according_to_units_to_display(floorplate_units, is_market_re
 }
 
 function change_units_view(evt, type){
+  if (type === "list_view"){
+    document.getElementsByClassName('zoom-controls zooming-content-h')[0].style.visibility = 'hidden'
+    document.getElementsByClassName('zoom-controls zooming-content-h')[1].style.visibility = 'hidden'
+  } else {
+    document.getElementsByClassName('zoom-controls zooming-content-h')[0].style.visibility = 'visible'
+    document.getElementsByClassName('zoom-controls zooming-content-h')[1].style.visibility = 'visible'
+  }
   var i, tabcontent, tablinks;
   tabcontent = document.getElementsByClassName("tabcontent");
   for (i = 0; i < tabcontent.length; i++) {
