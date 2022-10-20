@@ -97,7 +97,13 @@ class Unit < ApplicationRecord
   before_destroy :delete_data
 
   def get_virtual_tour_label
-    self.virtual_tour_button_label.present? ? self.virtual_tour_button_label : "3D Tour"
+    if self&.virtual_tour_button_label.present?
+      self.virtual_tour_button_label
+    elsif self&.floorplan&.virtual_tour_button_label.present?
+      self.floorplan.virtual_tour_button_label
+    else
+      "3D Tour"
+    end
   end
 
   def get_virtual_tour_url
