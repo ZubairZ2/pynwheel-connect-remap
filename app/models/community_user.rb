@@ -25,12 +25,16 @@ class CommunityUser < ApplicationRecord
                 }}
               }}
           },
-      :methods => [:invitation_date , :company_details , :floorplan_count ,:community_products, :status_in_percentage, :community_detail_forms]
+      :methods => [:invitation_date , :company_details , :floorplan_count ,:community_products, :status_in_percentage, :community_detail_forms, :directional_text_characters]
     )
   end
 
   def invitation_date
     CommunityUser.where(community_id: self.community_id).order(created_at: :asc)[0].created_at
+  end
+
+  def directional_text_characters
+    ENV["DESCRIPTION_LIMIT"].to_i
   end
 
   def floorplan_count
