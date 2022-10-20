@@ -5793,7 +5793,7 @@ ul.add-fav-options {
     }
 
     .per-month-price-text {
-        left: 100px !important;
+        left: 115px !important;
     }
     .c-modal-sidebar-filters .filter-action .apply-now {
         padding: 6px !important;
@@ -5818,12 +5818,12 @@ ul.add-fav-options {
     }
 
     .c-modal-sidebar-description .c-m-description {
-        height: 40px;
+        height: 35px;
         overflow: scroll;
     }
 
     .c-connect-map-wrapper .c-m-iframe-content img{
-        height: 175px;
+        height: 150px;
     }
 
     #webpages-overlay-button {
