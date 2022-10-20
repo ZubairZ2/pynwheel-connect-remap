@@ -5792,6 +5792,9 @@ ul.add-fav-options {
         width: 100%;
     }
 
+    .c-modal-sidebar-filters .filter-action .apply-now {
+        padding: 6px !important;
+    }
     .availabilty-container {
         padding: 5px 13px 5px 13px !important;
     }
