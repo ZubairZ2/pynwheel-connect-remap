@@ -20,10 +20,10 @@
             Description
             %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
               %span#propertyDetailNameText
-                This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
+                This description will appear above the image. Only the first #{ENV["DESCRIPTION_LIMIT"].to_i} characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
 
           = f.text_area :description, :class=>"form-control amenity_edit_field amenity_edit_wysihtml5", :placeholder=>"Description"
-          %span.amenity_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
+          %span.amenity_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i}
 
         .form-group
           %button.btn.btn-success.pull-right.btn-sm.mt-20.mb-20#crop_image{:type => "submit"}
@@ -32,6 +32,7 @@
         .clearfix
 
 :javascript
+  var characterLimit = parseInt("#{ENV["DESCRIPTION_LIMIT"]}")
   $('.amenity_edit_wysihtml5').each(function(i, elem) {
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
         events: {
@@ -41,20 +42,20 @@
                   {
                     var text_split = $('.amenity_description_count').text().split(" ")
                     var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
-                    $('.amenity_description_count').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+                    $('.amenity_description_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
                   }
                 });
                 var wysihtml5Editor = $('#amenity_description').data("wysihtml5").editor;
                 var t = wysihtml5Editor.getValue();
                 if(t!= '')
                 {
-                  t1 = t.substr(0, 90)
-                  t2 = t.substr(90, t.length)
+                  t1 = t.substr(0, characterLimit)
+                  t2 = t.substr(characterLimit, t.length)
                   t2 = t2.fontcolor("red");
                   wysihtml5Editor.setValue(t1 + t2);
                   var text_split = $('.amenity_description_count').text().split(" ")
                   var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
-                  $('.amenity_description_count').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+                  $('.amenity_description_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
                 }
             },
         change: function() {
