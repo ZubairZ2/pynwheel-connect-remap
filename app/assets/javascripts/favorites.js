@@ -141,7 +141,7 @@ function zoomInOut(unit_id){
   var area = unit_id+'area'
   var favPanZoom = unit_id+'panzoom'
   area = document.getElementById(unit_id+'-zoomable-fav-image');
-    favPanZoom = panzoom(area,{bounds: true, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
+    favPanZoom = panzoom(area,{bounds: true, boundsPadding: 0.4, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
     onTouch: function(e) {
       e.preventDefault();
       return false;
@@ -171,7 +171,7 @@ function responsiveZoomInOut(unit_id){
   var imgArea = unit_id+'res-area'
   var resPanZoom = unit_id+'res-panzoom'
   imgArea = document.getElementById(unit_id+'-res-zoomable-image');
-  resPanZoom = panzoom(imgArea,{bounds: true, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
+  resPanZoom = panzoom(imgArea,{bounds: true, boundsPadding: 0.4, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
     onTouch: function(e) {
       e.preventDefault();
       return false;
