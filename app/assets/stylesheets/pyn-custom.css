@@ -5818,12 +5818,13 @@ ul.add-fav-options {
     }
 
     .c-modal-sidebar-description .c-m-description {
-        height: 35px;
+        height: 60px;
         overflow: scroll;
     }
 
-    .c-connect-map-wrapper .c-m-iframe-content img{
-        height: 150px;
+    .c-modal-sidebar {
+        height: 85%;
+        overflow: scroll;
     }
 
     #webpages-overlay-button {
