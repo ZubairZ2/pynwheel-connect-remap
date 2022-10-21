@@ -24,7 +24,7 @@
 
           = f.text_area :description, :class=>"form-control amenity_edit_field amenity_edit_wysihtml5", :placeholder=>"Description"
           %span.amenity_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i}
-
+          %span#characterLimitCount{:style => "display: none"} #{ENV["DESCRIPTION_LIMIT"].to_i}
         .form-group
           %button.btn.btn-success.pull-right.btn-sm.mt-20.mb-20#crop_image{:type => "submit"}
             Apply Changes
