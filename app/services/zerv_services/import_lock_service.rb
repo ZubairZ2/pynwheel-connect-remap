@@ -3,7 +3,6 @@ module ZervServices
 
         def execute(args)
             test_connection = args[:test_connection]
-
             url = base_url + "/clientdevice"
             id_token = get_id_token
 

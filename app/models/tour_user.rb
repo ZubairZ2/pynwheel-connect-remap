@@ -104,4 +104,34 @@ class TourUser < ApplicationRecord
   def customized_tour community
     ( (community.community_tour&.tour_setting&.enable_tour_customization) && (self.tours.where(community_id: community.id).last.present?) )
   end
+
+  def get_list_of_zerv_lock_ids tour, community, stop, new_stops_arr, counter, zev_mac_ids = []
+    return [] if community.is_sitemap
+
+    if stop.stop_type.classify == "Elevator"
+      next_stop = new_stops_arr[counter + 1]
+
+      next_actual_stop = next_stop.stop_type.classify.constantize.find_by_id next_stop.stop_id if (next_stop && next_stop&.stop_type && next_stop&.stop_id).present?
+      floor = next_actual_stop&.floor  if next_actual_stop.present?
+      building = next_actual_stop&.building if next_actual_stop.present?
+
+      if floor.present? && building.present?
+        tour_stops = tour.tour_stops.where(display_stop: true, stop_type: "elevator")
+        
+        tour_stops.each do |elevator_stop|
+          elevator = elevator_stop.stop_type.classify.constantize.find_by_id elevator_stop.stop_id if (elevator_stop && elevator_stop&.stop_type && elevator_stop&.stop_id).present?
+          
+          if (elevator.building == building) && ( elevator.floors.include?(floor) )
+            zrv = ShortestPath.return_stop_lock(elevator) if community.zerv.present?
+            if zrv.present?
+                zrv_guest = self.zerv_guests.find_by(community_id: community.id, guest_of_stop_type: elevator_stop.stop_type.classify, guest_of_stop_id: elevator_stop.stop_id, status: "active")
+              zev_mac_ids << zrv.mac_id if zrv_guest.present?
+            end
+          end
+        end
+      end
+    end
+
+    zev_mac_ids.compact.uniq
+  end
 end
