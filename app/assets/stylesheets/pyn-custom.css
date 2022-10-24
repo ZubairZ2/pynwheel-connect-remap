@@ -5851,9 +5851,6 @@ ul.add-fav-options {
 .c-body {
     max-height: 80%;
 }
-.c-popup .c-m-iframe-content img {
-    max-height: 150px;
-}
 
   .custom-iframe-modeule .header-buttons-groups {
       right: 0;
