@@ -5295,6 +5295,9 @@ body {
 .custom-iframe-modeule .c-wrapper {
     margin-right: 90px;
 }
+.floorplate_image {
+    overscroll-behavior: contain;
+}
 .header-buttons-groups .transparent-btn:hover {
     background: black;
     color: white;
