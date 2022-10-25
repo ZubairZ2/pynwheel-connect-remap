@@ -2,11 +2,16 @@
   .c-popup
     .c-modal
       .c-modal-dialog.modal-xl
-        .c-modal-header
+        .c-modal-header.virtual-tour-unit-modal-header 
           %h5.c-modal-title#unit-marketing-name
+
           %i.propertyDetailName{style: "display: block"}
             %span#propertyDetailNameText
               Added to Favorites.
+          
+          %a.virtual-tour-btn{:href => "", "data-toggle" => "modal", "data-target" => "#unitVirtualTourModal"}
+            3D Tour
+
           %button#close-modal.c-close{"data-dismiss" => "modal", :type => "button"}
             %span ×
         %aside.c-modal-sidebar
