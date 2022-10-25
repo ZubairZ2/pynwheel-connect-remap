@@ -106,6 +106,7 @@ gem 'ox'
 gem 'puma_worker_killer'
 gem 'pry-nav'
 gem 'chartjs-ror'
+gem 'activerecord-import', '~> 0.15.0'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
