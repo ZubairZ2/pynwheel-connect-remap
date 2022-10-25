@@ -624,7 +624,7 @@ class Community < ApplicationRecord
     end
   end
 
-  def community_data_updated_on 
+  def community_data_updated_on
     self.update(data_provider_updated_on: Time.now.to_s)
   end
 

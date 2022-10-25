@@ -8,7 +8,9 @@ class DataProvidersService
   def sync_psi_data
     return unless @communities.present?
     @communities.each do |community|
+      puts "\n\n --------- Started Updating: #{community.id} ------------- \n\n"
       ImportPsiDataJob.perform_async(community.credential.attributes.to_json)
+      sleep 30
     end
   end
 

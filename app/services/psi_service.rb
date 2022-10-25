@@ -61,7 +61,7 @@ class PsiService < BaseService
 
           save_psi_floorplans(floorplans, property_id)
           save_psi_units(units, property_id)
-          credentials&.community&.community_data_updated_on()
+          com_test&.community_data_updated_on()
 
           begin
             cred = Credential.find credentials.id
@@ -127,6 +127,7 @@ class PsiService < BaseService
   end
 
   def save_psi_units(units,property_id)
+    import_units = []
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["psi"]).map{|x| x.provider_unit_id}
     units.each do |u|
       vacateDate = ""
@@ -198,7 +199,8 @@ class PsiService < BaseService
         unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
       
         @unit_record << unit.provider_unit_id
-        unit.save(validate: false)
+        import_units << unit
+        # unit.save(validate: false)
       
       else
         unit = Unit.where(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s).first
@@ -297,25 +299,36 @@ class PsiService < BaseService
         unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
       
         unit.manually_updated = false
-        unit.save(validate: false)
+
+        import_units << unit
+        # unit.save(validate: false)
 
       end
     end
+      
+    update_or_create_units_records(import_units) if import_units.present?
 
     no_unit = unit_present - @unit_record
+    import_units = []
+
     if @unit_record.nil?
       no_unit = nil
     end
+
     no_unit.each do |un|
       unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
       unit.availability = "Occupied"
       unit.available = false
       unit.available_date = nil
-      unit.save(validate: false) unless unit.manual_override
+      import_units << unit unless unit.manual_override
+      # unit.save(validate: false) unless unit.manual_override
     end
+
+    update_or_create_units_records(import_units) if import_units.present?
   end
 
   def save_psi_floorplans(floorplans,property_id)
+    import_floorplans = []
     floorplans.each do |f|
       floorplan = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"])#.first_or_initialize
       if floorplan.present?
@@ -387,17 +400,20 @@ class PsiService < BaseService
           end
         end
 
-        floorplan.save(validate: false)
+        # floorplan.save(validate: false)
 
       end
 
-      floorplan.save(validate: false)
-
+      # floorplan.save(validate: false)
+      import_floorplans << floorplan
     end
+
+    update_or_create_floorplans_records(import_floorplans) if import_floorplans.present?
   end
 
 
   def fill_psi_pricing_details(hit)
+    import_units = []
     floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
 
@@ -561,7 +577,8 @@ class PsiService < BaseService
                     end
 
                     unit.lease_pricing = rentStr
-                    unit.save(validate: false)
+                    import_units << unit
+                    # unit.save(validate: false)
                   rescue => ex
                   end
                 end
@@ -688,7 +705,8 @@ class PsiService < BaseService
                         end
 
                         unit.lease_pricing = rentStr
-                        unit.save(validate: false)
+                        import_units << unit
+                        # unit.save(validate: false)
                       rescue => ex
                       end
                     end
@@ -729,6 +747,8 @@ class PsiService < BaseService
           end
         end
       end
+
+      update_or_create_units_records(import_units) if import_units.present?
     end
   end
 
@@ -780,4 +800,43 @@ class PsiService < BaseService
     community = Community.find credentials.community_id
   end
 
+  def update_or_create_floorplans_records import_floorplans
+    new_floorplans = import_floorplans.map{|f| f unless f&.id.present?}.compact
+    existing_floorlans = import_floorplans.map{|f| f if f&.id.present?}.compact.uniq
+    create_new_floorplans_records(new_floorplans)
+    update_existing_floorplans_records(existing_floorlans)
+  end
+
+  def create_new_floorplans_records(new_floorplans)
+    return unless new_floorplans.present?
+    Floorplan.import new_floorplans, validate: false  if new_floorplans.present?
+  end
+
+  def update_existing_floorplans_records(existing_floorplans)
+    return unless existing_floorplans.present?
+    Floorplan.import existing_floorplans, on_duplicate_key_update: {
+      conflict_target: [:id],
+      columns: (Floorplan.column_names.map! &:to_sym)
+    }, batch_size: 100
+  end
+
+  def update_or_create_units_records import_units
+    new_units = import_units.map{|u| u unless u&.id.present?}.compact
+    existing_units = import_units.map{|u| u if u&.id.present?}.compact.uniq
+    create_new_units_records(new_units)
+    update_existing_units_records(existing_units)
+  end
+
+  def create_new_units_records(new_units)
+    return unless new_units.present?
+    Unit.import new_units, validate: false  if new_units.present?
+  end
+
+  def update_existing_units_records(existing_units)
+    return unless existing_units.present?
+    Unit.import existing_units, on_duplicate_key_update: {
+      conflict_target: [:id],
+      columns: (Unit.column_names.map! &:to_sym)
+    }, batch_size: 100
+  end
 end
