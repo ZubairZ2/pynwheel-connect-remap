@@ -6176,6 +6176,7 @@ ul.add-fav-options {
     cursor: pointer;
 }
 .c-modal-sidebar-description .des-heading {
+    padding: 10px 10px 0px 10px;
     margin-bottom: 0;
     font-weight: 500;
     margin-top: 0;
@@ -6635,7 +6636,7 @@ ul.add-fav-options {
 
 .unit-buttons {
     max-height: 200px;
-    overflow: scroll;
+    overflow-y: auto;
     padding: 10px;   
 }
 
