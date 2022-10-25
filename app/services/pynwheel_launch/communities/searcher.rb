@@ -151,7 +151,7 @@ attr_reader :user , :params
     
     statuses << property_map_status(community)
     
-    statuses << floorplan_status(community)
+    statuses << floorplan_status(community) if community.floorplans.count.positive?
     
     statuses << data_provider_status(community)
     if community.product_options.nil?
@@ -182,7 +182,6 @@ attr_reader :user , :params
     statuses << ebrochure_status(community)
 
     # detail_forms << hardware_spec_form # if hardware_spec_form_require
-
     if status.eql?(IN_PROGRESS)
       received_status = status_value_check(status)
       if statuses.any?{|x| x.eql?(received_status) || x.nil?} && !statuses.all?{|x| x.eql?(received_status) || x.nil?}
