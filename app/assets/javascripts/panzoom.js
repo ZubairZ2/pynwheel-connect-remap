@@ -594,10 +594,11 @@ function createPanZoom(domElement, options) {
 
       // since the zoom speed is always based on distance from 1, we need to apply
       // pinch speed only on that distance from 1:
+      
       var scaleMultiplier = 1 + (currentPinchLength / pinchZoomLength - 1) * pinchSpeed
 
       mouseX = (t1.clientX + t2.clientX)/2
-      mouseY = (t1.clientY + t2.clientY)/2
+      mouseY = (t1.clientY + t2.clientY)/2 - owner.getBoundingClientRect().y
 
       publicZoomTo(mouseX, mouseY, scaleMultiplier)
 

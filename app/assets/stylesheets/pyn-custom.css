@@ -5205,6 +5205,11 @@ input:checked+.slider:before {
 body {
     font-family: 'Raleway', sans-serif;
 }
+
+.webpage_logo {
+    max-height: 50px;
+}
+
 .custom-iframe-modeule {
     margin: 0;
 }
@@ -5322,6 +5327,9 @@ body {
 }
 .custom-iframe-modeule .c-wrapper {
     margin-right: 90px;
+}
+.floorplate_image {
+    overscroll-behavior: contain;
 }
 .header-buttons-groups .transparent-btn:hover {
     background: black;
@@ -5640,7 +5648,6 @@ html, .add-fav-body {
   .header-buttons-groups .transparent-btn {
       margin-right: 1px;
   }
-
 }
 
 @media screen and (min-width:350px) and (max-width:567px){
@@ -5654,6 +5661,9 @@ html, .add-fav-body {
     .header-buttons-groups .transparent-btn {
         margin-right: 1px;
     }
+    .left-side-30-units:last-child {
+        margin-bottom: 345px;
+      }
   
   }
 
@@ -5810,9 +5820,96 @@ ul.add-fav-options {
     justify-content: center;
 }
 
+@media only screen 
+  and (min-device-width: 320px) 
+  and (max-device-width: 480px)
+  and (-webkit-min-device-pixel-ratio: 2)
+  and (orientation: portrait) {
+    .c-modal-dialog {
+        overflow-x: hidden !important;
+        max-height: 100% !important;
+    }
+
+    .c-connect-map-wrapper .c-modal-wrapper {
+        max-height: 350px !important;
+    }
+
+    .c-modal-wrapper modal-image-fav {
+        max-height: 350px !important;
+    }
+
+    .move-in-date-text{
+        display: block;
+        padding: 5px 10px;
+    }
+
+    .c-modal-sidebar-description {
+        border-bottom: 1px solid black;
+    }
+
+    .c-modal-sidebar-description .des-heading {
+        padding: 5px 0px;
+        font-weight: 500;
+    }
+
+    .unit-buttons {
+        max-height: 100px !important;
+        overflow: scroll;
+    }
+
+    .c-modal-sidebar-description .c-m-description {
+        padding: 5px;
+        height: 100px;
+        overflow-wrap: break-word;
+        overflow-y: auto;
+        line-height: 0.5;
+        background-color: rgb(236, 236, 236);
+        border-radius: 5px;
+    }
+}
+
 @media screen and (max-width:567px){
     #webpages-overlay-text {
         width: 100%;
+    }
+
+    .c-popup .c-m-iframe-content img {
+        max-height: 350px;
+    }
+
+    .per-month-price-text {
+        left: 115px !important;
+    }
+    .c-modal-sidebar-filters .filter-action .apply-now {
+        padding: 10px !important;
+    }
+    .availabilty-container {
+        padding: 5px 13px 5px 13px !important;
+    }
+
+    .c-modal-sidebar-filters .m-filters {
+        padding: 3px 6px 3px 11px !important;
+    }
+
+    .c-modal-sidebar-filters .filter-action {
+        padding: 3px 20px 3px 20px !important;
+    }
+
+    .c-modal-sidebar-filters {
+        padding: 3px !important;
+    }
+    .c-modal-footer-fav {
+        padding: 5px 24px 5px 0px !important;
+    }
+
+    .c-modal-sidebar-description .c-m-description {
+        height: 60px;
+        overflow: scroll;
+    }
+
+    .c-modal-sidebar {
+        height: 85%;
+        overflow: scroll;
     }
 
     #webpages-overlay-button {
@@ -5836,6 +5933,10 @@ ul.add-fav-options {
       max-width: 119px;
       margin-right: 7px;
   }
+.c-body {
+    max-height: 80%;
+}
+
   .custom-iframe-modeule .header-buttons-groups {
       right: 0;
       left: 0;
@@ -6030,7 +6131,7 @@ ul.add-fav-options {
 }
 .c-modal-sidebar-inner .module-list li {
     display: inline-block;
-    padding: 0 0px 0 20px;
+    padding: 0 0px 0 10px;
 }
 .c-modal-sidebar-inner .module-list li img {
     width: 14px;
@@ -6043,10 +6144,9 @@ ul.add-fav-options {
     display: inline-block;
     width: -webkit-fill-available;
     border-bottom: 1px solid #cccccc94;
-    padding: 0px 13px 15px 13px;
+    padding: 5px 13px 5px 13px;
     background: white;
     display: inline-block;
-    padding-top: 14px;
     max-width: 100%;
     width: 100%;
 }
@@ -6079,7 +6179,6 @@ ul.add-fav-options {
     margin-bottom: 0;
     font-weight: 500;
     margin-top: 0;
-    padding-top: 15px;
 }
 .c-modal-sidebar-description  .c-m-description {
     font-weight: 500;
@@ -6232,8 +6331,8 @@ ul.add-fav-options {
 }
 
 .modal-middle-section {
-    overflow-y: scroll;
-    height: 241px;
+    /* overflow-y: scroll; */
+    /* height: 241px; */
 }
 
 .c-m-iframe-content {
@@ -6255,7 +6354,6 @@ ul.add-fav-options {
     position: fixed;
     left: 125px;
     font-weight: 600;
-    bottom: 85px;
 }
 .c-modal-footer-fav {
     bottom: 0;
@@ -6285,7 +6383,6 @@ ul.add-fav-options {
     padding-left: 13px;
     padding-right: 13px;
     background: white;
-    padding-bottom: 15px;
 }
 
 .c-connect-map-wrapper {
@@ -6293,7 +6390,8 @@ ul.add-fav-options {
     margin-left: 290px;
     padding: 22px 30px 0 20px;
     position: inherit;
-    right: 0
+    right: 0;
+    overflow-x: hidden !important;
 }
  .c-connect-map-wrapper .c-modal-body-content .slick-slide {
     height: 100%;
@@ -6302,7 +6400,7 @@ ul.add-fav-options {
     background: white;
 }
 .c-connect-map-wrapper .c-modal-sidebar-inner .module-list {
-    padding: 25px 0 25px 0;
+    padding: 5px;
 }
 .c-connect-map-wrapper .availabilty-container {
  }
@@ -6536,7 +6634,9 @@ ul.add-fav-options {
 }
 
 .unit-buttons {
- padding: 10px;   
+    max-height: 200px;
+    overflow: scroll;
+    padding: 10px;   
 }
 
 .c-m-iframe-content-bottom{

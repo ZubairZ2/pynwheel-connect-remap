@@ -96,11 +96,17 @@
         %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} cancel
         %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy to clipboard  
 
+#communityWebpagesFavoriteData{data: {currency: @community.get_currency_symbol()} }
+
 :javascript
   var data_provider = "#{@community.data_provider}"
   var units = "#{@fav_units_info}";
   units = units.replace(/&quot;/g,'"');
   units = JSON.parse(units);
+  var clipboardButton = document.getElementsByClassName('clipboard-btn')[0]
+  clipboardButton.addEventListener('click', function(){
+    document.getElementById('url').select();
+  })
   var apply_now_url = "#{apply_now_community_webpages_url(@community)}"
   var redirect_url = "#{community_webpages_url(@community)}"
   $('.show-more-option-fav').click(function(){

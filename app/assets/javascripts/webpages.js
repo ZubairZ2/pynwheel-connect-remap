@@ -230,11 +230,22 @@ $(window).bind('load', function () {
     // $('#zoomable a').on('touchstart', function (e) {
     //   e.stopImmediatePropagation();
     // });
+    function adjustBottomOfImageMap(x){
+      let rightSide = document.getElementsByClassName('right-side')[0]
+      rightSide.style.height = "50%";
+      if (x.matches && is_floorplate === "true"){
+        rightSide.style.bottom = "60px";
+      }
+    }
+
+    var x = window.matchMedia("(max-width: 567px)");
+    adjustBottomOfImageMap(x);
 
     var $area = document.getElementById('zoomable');
     webpagePanZoom = panzoom($area, 
       {
-        bounds: false, contain: 'automatic', smoothScroll: true,
+        bounds: true, contain: 'automatic', smoothScroll: true,
+        boundsPadding: 0.4,
         maxZoom: 5,
         minZoom: 1,
         minScale: 1,
@@ -265,7 +276,7 @@ $(window).bind('load', function () {
       e.stopImmediatePropagation();
     });
     var $marea = document.getElementById('zoomable-modal-image') 
-    modalPanZoom = panzoom($marea,{bounds: true, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
+    modalPanZoom = panzoom($marea,{bounds: true, boundsPadding: 0.4, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
       onTouch: function(e) {
         e.preventDefault();
         return false;
@@ -295,7 +306,7 @@ $(window).bind('load', function () {
       e.stopImmediatePropagation();
     });
     var imageArea = document.getElementById('zoomable-modal-image-responsive');
-    responsiveModalPanZoom = panzoom(imageArea,{bounds: true, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
+    responsiveModalPanZoom = panzoom(imageArea,{bounds: true, boundsPadding: 0.4, contain: 'automatic', smoothScroll: false,maxZoom: 5,minZoom: 1,zoomDoubleClickSpeed: 1,
       onTouch: function(e) {
         e.preventDefault();
         return false;
@@ -975,6 +986,13 @@ function set_prices_according_to_units_to_display(floorplate_units, is_market_re
 }
 
 function change_units_view(evt, type){
+  if (type === "list_view"){
+    document.getElementsByClassName('zoom-controls zooming-content-h')[0].style.visibility = 'hidden'
+    document.getElementsByClassName('zoom-controls zooming-content-h')[1].style.visibility = 'hidden'
+  } else {
+    document.getElementsByClassName('zoom-controls zooming-content-h')[0].style.visibility = 'visible'
+    document.getElementsByClassName('zoom-controls zooming-content-h')[1].style.visibility = 'visible'
+  }
   var i, tabcontent, tablinks;
   tabcontent = document.getElementsByClassName("tabcontent");
   for (i = 0; i < tabcontent.length; i++) {
@@ -1598,6 +1616,7 @@ function setModalAttributes(element) {
         }
         else
         {
+          $('#unitModal').find('.c-modal-sidebar-description').show();
           $('#unitModal').find('#unit-description').html($(element).data('unit-description'));
           $('#unit-description').addClass("description-text");
         }
