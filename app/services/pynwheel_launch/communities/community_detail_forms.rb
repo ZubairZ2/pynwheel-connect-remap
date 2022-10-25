@@ -75,7 +75,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     detail_forms << floorplan_form if @community&.floorplans&.count > 0
     detail_forms << design_direction_form if design_direction_form_require
     detail_forms << amenity_images_form if amenity_images_form_require
-    detail_forms << ebrochure_form
+    detail_forms << ebrochure_form if products.include?("pynwheel_touch")
     detail_forms << additional_pages_form if additional_pages_form_require
 
     detail_forms
