@@ -173,13 +173,13 @@ attr_reader :user , :params
 
     statuses << home_page_media_status(community) if pynwheel_touch
 
-    statuses << design_direction_status(community)  if design_direction_form_require(community)
+    # statuses << design_direction_status(community)  if design_direction_form_require(community)
 
-    statuses << amenity_images_status(community)  if amenity_images_form_require(community)
+    # statuses << amenity_images_status(community)  if amenity_images_form_require(community)
 
-    statuses << additional_pages_status(community)  if additional_pages_form_require(community)
+    # statuses << additional_pages_status(community)  if additional_pages_form_require(community)
 
-    statuses << ebrochure_status(community)
+    # statuses << ebrochure_status(community)
 
     # detail_forms << hardware_spec_form # if hardware_spec_form_require
     if status.eql?(IN_PROGRESS)
