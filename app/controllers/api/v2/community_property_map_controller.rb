@@ -23,18 +23,13 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     property_type = params["community"]["property_type"]
     @status = params["status"]
     if property_type.eql?(SITEMAP)
-      if @community.floorplates.present?
-        @community.floorplates.delete_all
-      end
+      @community.floorplates.delete_all if @community.floorplates.present?
       @community.is_sitemap = true
       @community.save
       property_map = add_sitemap_property(params)
       type = SITEMAP
     else
       if @community.is_sitemap
-        if @community.sitemap.present?
-          @commuinity.sitemap.destroy!
-        end
         @community.is_sitemap = false
         @community.save
       end
@@ -55,8 +50,9 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     @type = params["property_type"]
     if @type.eql?(SITEMAP)
       if @community.sitemap.present?
-        if @community.sitemap.delete
-          @community.set_property_map_status(current_pynwheel_user, "")
+        if @community.sitemap.remove_image!
+          @community.sitemap.save
+          @community.set_property_map_status(current_pynwheel_user, "in_progress")
           render :json => {:success => true, :error_code => 200, :message => "Garden style community deleted successfully", data: nil}
         end
       end
@@ -97,11 +93,9 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     if type.eql?(SITEMAP)
       sitemap = @community.sitemap
       if sitemap.present?
-        if sitemap.delete
-          @community.is_sitemap = false
-          @community.save
-          render :json => {:success => true, :error_code => 200, :message => "Garden style community details deleted successfully", data: nil}
-        end
+        @community.is_sitemap = false
+        @community.save
+        render :json => {:success => true, :error_code => 200, :message => "Garden style community details deleted successfully", data: nil}
       end
     else
       if @community.floorplates.present?
@@ -116,14 +110,9 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
   private
 
   def add_sitemap_property(params)
-    sitemap_id = params["sitemap"]["id"]
-    if sitemap_id.present?
-      @sitemap = Sitemap.find_by_id(sitemap_id)
+    @sitemap = @community.sitemap || @community.create_sitemap
+    if @sitemap.present?
       @sitemap.update(sitemap_params)
-      # PaperTrail::Version.create(item_type: "Sitemap",item_id: @sitemap.id,event: "update",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "id: '#{@sitemap.id}' community_id: '#{@community.id}'") if @status.empty?
-    else
-      @community.create_sitemap(sitemap_params)
-      # PaperTrail::Version.create(item_type: "Sitemap",item_id: @community.sitemap.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "id: '#{@community.sitemap.id}' community_id: '#{@community.id}'") if @status.empty?
     end
     @property_map = @community.sitemap
   end

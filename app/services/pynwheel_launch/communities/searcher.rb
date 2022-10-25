@@ -134,7 +134,7 @@ attr_reader :user , :params
     statuses.values.each do |status|
       communities_id = collection.pluck(:community_id).uniq
 
-      communities_collection = Community.includes(:status, :community_users, design: [:status, {home_page_images: :status}, {home_page_video: :status}], sitemap: :status, company: :status, floorplates: :status, floorplans: :status, credential: :status, crm_credential: :status, opening_hours: :status, guided_opening_hours: :status, galleries: :status, zerv: :status, latch: :status, dwelo: :status, edge_state: [remote_locks: :status]).where(id: communities_id)
+      communities_collection = Community.includes(:status, :community_users, design: [:status, {home_page_images: :status}, {home_page_video: :status}], sitemap: :status, company: :status, floorplates: :status, floorplans: :status, credential: :status, crm_credential: :status, opening_hours: :status, guided_opening_hours: :status, galleries: :status, zerv: :status, latch: :status, dwelo: :status, schlage: :status, yale: :status, launch_remote: :status).where(id: communities_id)
       communities_collection.each do |community|
         get_communities_statuses(community, status, selected_communities)
       end
@@ -370,31 +370,25 @@ attr_reader :user , :params
   end
 
   def lock_providers_status(community)
-    return nil if community.zerv.blank? && community.latch.blank? && community.dwelo.blank? && community.edge_state.blank? && community&.edge_state&.remote_locks.blank? && community&.edge_state&.yale.blank? && community&.edge_state&.schlage.blank? && community.other_locks.blank? && community.igloohome.blank?
+    return nil if community.zerv.blank? && community.latch.blank? && community.dwelo.blank? && community.edge_state.blank? && community&.launch_remote.blank? && community&.yale.blank? && community&.schlage.blank? && community.other_locks.blank? && community.igloohome.blank?
     locks_status = []
-    
     zerv = community.zerv
     latch = community.latch
     dwelo = community.dwelo
-    remote_locks = community.edge_state&.remote_locks
-    yale_locks = community.edge_state&.yale
-    schlage_locks = community.edge_state&.schlage
+    remote_locks = community.launch_remote
+    yale_locks = community&.yale
+    schlage_locks = community&.schlage
     igloohome_lock = community.igloohome
     other_locks = community.other_locks
 
-    locks_status << zerv&.status&.status rescue nil if zerv.present?
-    locks_status << latch&.status&.status rescue nil if latch.present?
-    locks_status << dwelo&.status&.status rescue nil if dwelo.present?
-    locks_status << igloohome_lock&.status&.status rescue nil if igloohome_lock.present?
-    schlage_locks.each {|lock| locks_status << lock&.status&.status rescue nil } if schlage_locks.present?
-    yale_locks.each {|lock| locks_status << lock&.status&.status rescue nil } if yale_locks.present?
-    other_locks.each {|lock| locks_status << lock&.status&.status rescue nil } if other_locks.present?
-
-    
-    unless remote_locks.nil?
-      remote_locks.each {|remote_lock| locks_status << remote_lock&.status&.status rescue nil}
-    end
-
+    locks_status << zerv&.status&.status if zerv.present?
+    locks_status << latch&.status&.status if latch.present?
+    locks_status << dwelo&.status&.status if dwelo.present?
+    locks_status << igloohome_lock&.status&.status if igloohome_lock.present?
+    locks_status << schlage_locks&.status&.status if schlage_locks.present?
+    locks_status << yale_locks&.status&.status if yale_locks.present?
+    other_locks.each { |lock| locks_status << lock&.status&.status } if other_locks.present?
+    locks_status << remote_locks&.status&.status unless remote_locks.nil?
     status = status_check(locks_status)
     status
   end

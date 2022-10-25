@@ -1,5 +1,5 @@
 class Schlage < ApplicationRecord
-  belongs_to :edge_state
+  belongs_to :community
   has_one :status, as: :statusable
 
   mount_uploader :image, SchlagelockUploader

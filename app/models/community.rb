@@ -59,6 +59,9 @@ class Community < ApplicationRecord
   has_one :portal_tour, dependent: :destroy
   has_one :hardware_spec
   has_one :status, as: :statusable
+  has_one :yale
+  has_one :schlage
+  has_one :launch_remote
   has_one :design_direction
 
   accepts_nested_attributes_for :credential
@@ -498,7 +501,7 @@ class Community < ApplicationRecord
   end
 
   def set_lock_providers_status(current_user, status)
-    if self.zerv.blank? && self.latch.blank? && self.dwelo.blank? && self.edge_state.blank? && self&.edge_state&.remote_locks.blank?  && self&.edge_state&.yale.blank? && self.other_locks.nil?
+    if self.zerv.blank? && self.latch.blank? && self.dwelo.blank? && self.edge_state.blank? && self&.launch_remote.blank?  && self&.yale.blank? && self.other_locks.nil?
       return
     else
       pynwheel_access_status(current_user, status)
@@ -524,29 +527,17 @@ class Community < ApplicationRecord
   end
 
   def yale_lock_status(current_user, status)
-    return if self.edge_state.blank?
-    yale_locks = self.edge_state&.yale
-    yale_locks.each do |lock|
-      if status.empty?
-        status_attr = status_string(lock.present?)
-      else
-        status_attr = status
-      end
-      set_status_for_all(lock,status_attr,current_user)
-    end
+    return if self.yale.blank?
+    yale_locks = self.yale
+    status_attr = status.empty? ? status_string(yale_locks.present?) : status
+    set_status_for_all(yale_locks,status_attr,current_user)
   end
 
   def schlage_lock_status(current_user, status)
-    return if self.edge_state.blank?
-    schlage_locks = self.edge_state&.schlage
-    schlage_locks.each do |lock|
-      if status.empty?
-        status_attr = status_string(lock.present?)
-      else
-        status_attr = status
-      end
-      set_status_for_all(lock,status_attr,current_user)
-    end
+    return if self.schlage.blank?
+    schlage_locks = self&.schlage
+    status_attr = status.empty? ? status_string(schlage_locks.present?) : status
+    set_status_for_all(schlage_locks,status_attr,current_user)
   end
 
   def set_other_lock_status(current_user, status)
@@ -596,16 +587,10 @@ class Community < ApplicationRecord
   end
 
   def remote_lock_status(current_user, status)
-    return if self.edge_state.blank?
-    remote_locks = self.edge_state&.remote_locks
-    remote_locks.each do |remote_lock|
-      if status.empty?
-        status_attr = status_string(remote_lock.present?)
-      else
-        status_attr = status
-      end
-      set_status_for_all(remote_lock,status_attr,current_user)
-    end
+    return if self.launch_remote.blank?
+    remote_locks = self.launch_remote
+    status_attr = status.empty? ? status_string(remote_locks.present?) : status
+    set_status_for_all(remote_locks,status_attr,current_user)
   end
 
   def status_string(present_required_fields)
@@ -792,8 +777,25 @@ class Community < ApplicationRecord
     when "xml"
       swap_xml_data
     end
+
   end
 
+  def community_crm_provider
+    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider.present?
+      self.crm_credential.crm_provider
+    else
+      ""
+    end
+  end
+
+  def use_crm_credentials?
+    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
+      (true)
+    else
+      (false)
+    end
+  end
+  
   def update_community_provider_data
     case data_provider
     when "psi"
@@ -810,22 +812,6 @@ class Community < ApplicationRecord
       ImportZarembaDataJob.perform_async self.credential.attributes.to_json
     when "xml"
       ImportXmlDataJob.perform_async self.credential.attributes.to_json
-    end
-  end
-
-  def community_crm_provider
-    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider.present?
-      self.crm_credential.crm_provider
-    else
-      ""
-    end
-  end
-
-  def use_crm_credentials?
-    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.credential_present?
-      (true)
-    else
-      (false)
     end
   end
 

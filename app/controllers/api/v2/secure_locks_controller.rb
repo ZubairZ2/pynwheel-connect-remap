@@ -113,7 +113,7 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   end
 
   def delete_remote_lock
-    lock = RemoteLock.find(params["id"])
+    lock = LaunchRemote.find(params["id"])
     if lock.present?
       return true if lock.destroy!
     end
@@ -156,39 +156,28 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
 
   def yale_lock(lock_id, lock)
     if !lock_id.present?
-      community_edge_state = @community.edge_state
-      edge_state_lock = community_edge_state.present? ? community_edge_state : @community.create_edge_state
-      if edge_state_lock.present?
-        edge_state_lock.yale.create
-        @locks_provider << REMOTELOCK
-      end
+      @community.create_yale
+      @locks_provider << YALELOCK
     end
   end
 
   def remote_lock(lock_id, lock)
     if !lock_id.present?
-      community_edge_state = @community.edge_state
-      edge_state_lock = community_edge_state.present? ? community_edge_state : @community.create_edge_state
-      if edge_state_lock.present?
-        edge_state_lock.remote_locks.create
-        @locks_provider << REMOTELOCK
-      end
+    @community.create_launch_remote
+    @locks_provider << REMOTELOCK
     end
   end
 
   def schlage_lock(lock_id, lock)
     if lock_id.present?
-      schlage_lock = @community.edge_state.schlage.find_by(id: lock_id)
+      schlage_lock = Schlage.find lock_id
       if schlage_lock.present?
-        @community.edge_state.schlage.update(email: lock['email'], password: lock['password'], image: lock["file"])
+        @community.schlage.update(email: lock['email'], password: lock['password'], image: lock["file"])
       end
     else
-      community_edge_state = @community.edge_state
-      edge_state_lock = community_edge_state.present? ? community_edge_state : @community.create_edge_state
-      if edge_state_lock.present?
-        edge_state_lock.schlage.create(email: lock['email'], password: lock['password'], image: lock["file"])
-        @locks_provider << SCHLAGELOCK
-      end
+      @community.create_schlage(email: lock['email'], password: lock['password'], image: lock["file"]) if lock["file"].present?
+      @community.create_schlage(email: lock['email'], password: lock['password']) unless lock["file"].present?
+      @locks_provider << SCHLAGELOCK
     end
   end
 
@@ -244,21 +233,18 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   end
 
   def get_all_locks
-    edge_state = @community.edge_state
     dwelo = @community.dwelo
     latch = @community.latch
     zerv = @community.zerv
     other_lock = @community.other_locks
     igloo_home = @community.igloohome
+    remote_lock = @community.launch_remote
+    yale_lock = @community.yale
+    schlage_lock = @community.schlage
     locks = []
-    if edge_state.present?
-      remote_lock = RemoteLock.where(edge_state_id: edge_state.id)
-      locks << { type: REMOTELOCKCLIENT, details: remote_lock} if remote_lock.present?
-      yale_lock = Yale.where(edge_state_id: edge_state.id)
-      locks << { type: YALELOCKCLIENT, details: yale_lock } if yale_lock.present?
-      schlage_lock = Schlage.where(edge_state_id: edge_state.id)
-      locks << { type: SCHLAGELOCKCLIENT, details: schlage_lock } if schlage_lock.present?
-    end
+    locks << { type: REMOTELOCKCLIENT, details: remote_lock} if remote_lock.present?
+    locks << { type: YALELOCKCLIENT, details: yale_lock } if yale_lock.present?
+    locks << { type: SCHLAGELOCKCLIENT, details: schlage_lock } if schlage_lock.present?
     locks << { type: DWELO, details: dwelo } if dwelo.present?
     locks << { type: LATCHCLIENT, details: latch } if latch.present?
     locks << { type: ZERVCLIENT, details: zerv } if zerv.present?

@@ -1,8 +1,6 @@
 class EdgeState < ApplicationRecord
   belongs_to :community
   has_many :remote_locks, dependent: :destroy
-  has_many :yale, dependent: :destroy
-  has_many :schlage, dependent: :destroy
   has_many :edgestate_locks, -> { where(dwelo_id: nil) },  class_name: 'RemoteLock'
   has_one :status, as: :statusable
 

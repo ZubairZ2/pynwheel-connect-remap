@@ -1,8 +1,8 @@
-class Yale < ApplicationRecord
+class LaunchRemote < ApplicationRecord
   belongs_to :community
   has_one :status, as: :statusable
-  
-  def as_json
+
+  def as_json options = {}
     super(
       :only => [:id]
     )
