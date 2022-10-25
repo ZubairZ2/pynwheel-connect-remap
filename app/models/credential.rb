@@ -107,7 +107,7 @@ class Credential < ApplicationRecord
   end
 
   def yardi_credentials
-    {url: self.url, username: self.username, password: self.password, property_id: self.property_id, server_name: self.server_name }
+    {url: self.url, username: self.username, password: self.password, property_id: self.property_id, server_name: self.server_name, database: self.database }
   end
   
   def resman_credentials

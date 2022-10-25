@@ -392,7 +392,7 @@ class Community < ApplicationRecord
       when "realpagesvc"
         credential.site_id.present? && credential.pmc_id.present?
       when "yardi"
-        credential.url.present? && credential.username.present? && credential.password.present? && credential.property_id.present? && credential.server_name.present? && credential.database.present? && credential.platform.present? && credential.interface_entity.present?
+        credential.url.present? && credential.username.present? && credential.password.present? && credential.property_id.present? && credential.server_name.present? && credential.database.present?
       when "resman"
         credential.resman_api_version.present? && credential.resman_account_id.present? && credential.resman_property_id.present?
       when "zaremba"
