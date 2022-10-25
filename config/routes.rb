@@ -47,7 +47,7 @@ Rails.application.routes.draw do
   end
   get 'scheduler/change_schedule_tour_time/:id', to: 'scheduler_widget/widgets#change_tour_time_widget', as: :change_tour_time
 
-  devise_for :users, :controllers => { :invitations => 'invitations', sessions: 'users/sessions' }
+  devise_for :users, :controllers => { :invitations => 'invitations', sessions: 'users/sessions', passwords: "users/passwords" }
   post 'users/:id/turn_on_chat', to: 'users#chat_service_available'
   post 'users/:id/turn_off_chat', to: 'users#chat_service_not_available'
   post 'webpages/:id/update_session', to: 'webpages#update_session'

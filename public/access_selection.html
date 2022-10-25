@@ -124,7 +124,7 @@
                 <p class="multiple-access-p">
                     Select Pynwheel Launch to set up new apps.
                 </p>
-                <a href="https://pynwheellaunch.com">
+                <a id="launch_address" href="https://pynwheellaunch.com">
                     <img src="./pyn-launch-logo-img.png" alt="" width="70%">
                 </a>
             </div>
@@ -132,11 +132,20 @@
                 <p class="multiple-access-p">
                     Select Pynwheel Connect to manage existing apps.
                 </p>
-                <a href="https://pynwheelconnect.com">
+                <a id="connect_address" href="https://pynwheelconnect.com">
                     <img src="./pynwheel_connect_logo_v2.png" alt="" width="70%">
                 </a>
             </div>
         </div>
     </div>
+    <script>
+        if (location.host.includes("qa")){
+            document.getElementById('launch_address').href="https://pynwheel-user-portal-staging.herokuapp.com/";
+            document.getElementById('connect_address').href="https://pynwheel-qa.herokuapp.com/users/sign_in";
+        } else if (location.host.includes("staging")){
+            document.getElementById('launch_address').href="https://pynwheel-user-portal-staging.herokuapp.com/";
+            document.getElementById('connect_address').href="https://pynwheel-staging.herokuapp.com/";
+        }
+    </script>
 </body>
 </html>
