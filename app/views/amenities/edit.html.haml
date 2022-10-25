@@ -119,11 +119,11 @@
                     Description
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
                       %span#propertyDetailNameText
-                        This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
+                        This description will appear above the image. Only the first #{ENV["DESCRIPTION_LIMIT"].to_i} characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
 
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
                     = f.text_area :description, :class=>"form-control amenity_edit_field amenity_edit_wysihtml5", :placeholder=>"Description"
-                    %span.amenity_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
+                    %span.amenity_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i}
 
               .row
                 .form-group
@@ -131,11 +131,11 @@
                     Directional Text
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
                       %span#propertyDetailNameText
-                        This description will appear above the image. Only the first 90 characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
-
+                        This description will appear above the image. Only the first #{ENV["DESCRIPTION_LIMIT"].to_i} characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
+                      %span#characterLimitCount{:style => "display: none"} #{ENV["DESCRIPTION_LIMIT"].to_i}
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
                     = f.text_area :directional_text, :class=>"form-control amenity_edit_field amenity_edit_directional_wysihtml5", :placeholder=>"Directional Text"
-                    %span.amenity_directional_text_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 90
+                    %span.amenity_directional_text_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i}
                     
             = submit_tag 'Save', class: "hidden"
 
