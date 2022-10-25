@@ -5787,16 +5787,68 @@ ul.add-fav-options {
     justify-content: center;
 }
 
+@media only screen 
+  and (min-device-width: 320px) 
+  and (max-device-width: 480px)
+  and (-webkit-min-device-pixel-ratio: 2)
+  and (orientation: portrait) {
+    .c-modal-dialog {
+        overflow-x: hidden !important;
+        max-height: 100% !important;
+    }
+
+    .c-connect-map-wrapper .c-modal-wrapper {
+        max-height: 350px !important;
+    }
+
+    .c-modal-wrapper modal-image-fav {
+        max-height: 350px !important;
+    }
+
+    .move-in-date-text{
+        display: block;
+        padding: 5px 10px;
+    }
+
+    .c-modal-sidebar-description {
+        border-bottom: 1px solid black;
+    }
+
+    .c-modal-sidebar-description .des-heading {
+        padding: 5px 0px;
+        font-weight: 500;
+    }
+
+    .unit-buttons {
+        max-height: 100px !important;
+        overflow: scroll;
+    }
+
+    .c-modal-sidebar-description .c-m-description {
+        padding: 5px;
+        height: 100px;
+        overflow-wrap: break-word;
+        overflow-y: auto;
+        line-height: 0.5;
+        background-color: rgb(236, 236, 236);
+        border-radius: 5px;
+    }
+}
+
 @media screen and (max-width:567px){
     #webpages-overlay-text {
         width: 100%;
+    }
+
+    .c-popup .c-m-iframe-content img {
+        max-height: 350px;
     }
 
     .per-month-price-text {
         left: 115px !important;
     }
     .c-modal-sidebar-filters .filter-action .apply-now {
-        padding: 6px !important;
+        padding: 10px !important;
     }
     .availabilty-container {
         padding: 5px 13px 5px 13px !important;
@@ -6269,7 +6321,6 @@ ul.add-fav-options {
     position: fixed;
     left: 125px;
     font-weight: 600;
-    bottom: 85px;
 }
 .c-modal-footer-fav {
     bottom: 0;
@@ -6306,7 +6357,8 @@ ul.add-fav-options {
     margin-left: 290px;
     padding: 22px 30px 0 20px;
     position: inherit;
-    right: 0
+    right: 0;
+    overflow-x: hidden !important;
 }
  .c-connect-map-wrapper .c-modal-body-content .slick-slide {
     height: 100%;
@@ -6549,7 +6601,9 @@ ul.add-fav-options {
 }
 
 .unit-buttons {
- padding: 10px;   
+    max-height: 200px;
+    overflow: scroll;
+    padding: 10px;   
 }
 
 .c-m-iframe-content-bottom{
