@@ -22,6 +22,7 @@ class TourUsersController < ApplicationController
     @tour_user = TourUser.find params[:id]
     @virtual_list = []
     @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
+    @tour = @community.community_tour unless @tour.present?
     @visited_stop = VisitedStop.where(tour_id: [@tour.id, @community.community_tour.id], tour_user_id: @tour_user.id).group_by(&:tour_stop_id)
     @alerts = TourHistory.where(tour_user_id: @tour_user.id, tour_id: [@tour.id, @community.community_tour.id])
     chatroom = Chatroom.find_by(tour_user_id: params[:id], tour_id: @community.community_tour.id)
@@ -254,6 +255,7 @@ class TourUsersController < ApplicationController
     @tour_user = TourUser.find params[:id]
     @tour =  @community.community_tour
     tour_ids =  CustomizeTourService.new(@community, @tour_user).get_community_tours_ids
+    record_ids = [tour_ids, @tour.id].flatten
     if params[:delete_all].present?
       delete_tour_user_all_attributes(@tour_user, @community)
       redirect_to community_tour_users_path(@community), :notice => "User data deleted successfully"
@@ -268,7 +270,7 @@ class TourUsersController < ApplicationController
       end
 
     else
-      tour_histories = TourHistory.where(tour_user_id: @tour_user.id, tour_id: tour_ids).includes(:lock_histories)
+      tour_histories = TourHistory.where(tour_user_id: @tour_user.id, tour_id: record_ids).includes(:lock_histories)
       lock_histories_ids = tour_histories.all.map { |x| x.lock_histories.ids }.flatten
       LockHistory.where(id: lock_histories_ids).delete_all
 
@@ -279,8 +281,8 @@ class TourUsersController < ApplicationController
 
       @tour_user.as_guests.find_by(community_id: @community.id).delete if @tour_user.as_guests.find_by(community_id: @community.id).present?
       @tour_user.igloo_guests.where(community_id: @community.id).delete_all if @tour_user.igloo_guests.find_by(community_id: @community.id).present?
-      @tour_user.tour_histories.where(tour_id: tour_ids).delete_all
-      @tour_user.visited_stops.where(tour_id: tour_ids).delete_all
+      @tour_user.tour_histories.where(tour_id: record_ids).delete_all
+      @tour_user.visited_stops.where(tour_id: record_ids).delete_all
       @tour_user.schedual_tours.where(community_id: @community.id).delete_all
       @tour_user.prospects.where(community_id: @community.id).delete_all
 
