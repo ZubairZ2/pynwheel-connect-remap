@@ -11,6 +11,7 @@ class RealPageSvcService < BaseService
     site_ids = credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
+        import_floorplans = []
         url = REALPAGE_URL
         soap_action = REALPAGE_FLOORPLAN_ACTION
         pmc_id = credentials.pmc_id
@@ -69,7 +70,8 @@ class RealPageSvcService < BaseService
                 end
 
                 # floorplan.square_feet = fp[:GrossSquareFootage]
-                floorplan.save(:validate => false)
+                # floorplan.save(:validate => false)
+                import_floorplans << floorplan
 
               else
                 floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
@@ -102,11 +104,14 @@ class RealPageSvcService < BaseService
                   floorplan.market_rent = fp[:RentMin]
                 end
 
-                floorplan.save(:validate => false)
+                # floorplan.save(:validate => false)
+                import_floorplans << floorplan
 
               end
             end
           end
+
+          ProvidersDataUpdation.new().update_or_create_floorplans_records(import_floorplans)
         end
       rescue => e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
@@ -129,6 +134,7 @@ class RealPageSvcService < BaseService
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
         community_id = credentials.community_id
+
         response = HTTParty.post(
             url,
             :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -155,8 +161,7 @@ class RealPageSvcService < BaseService
         result = Ox.load(response.body, mode: :hash)
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitsbypropertyResponse][1][:getunitsbypropertyResult][:GetUnitsByProperty]
-          credentials&.community&.community_data_updated_on()
-          
+          import_units = []
           units.each do |u|
 
             if u.key?(:UnitObject)
@@ -236,7 +241,8 @@ class RealPageSvcService < BaseService
                 #     unit.building = bldgResult
                 #   end
                 # end
-                unit.save
+                import_units << unit
+                # unit.save
 
 
               else
@@ -327,11 +333,15 @@ class RealPageSvcService < BaseService
                   #   end
                   # end
                   unit.manually_updated = false
-                  unit.save(validate: false)
+                  # unit.save(validate: false)
+                  import_units << unit
                 end
               end
             end
           end
+
+          ProvidersDataUpdation.new().update_or_create_units_records(import_units)
+
         else
           begin
             cred = Credential.find credentials.id
@@ -359,10 +369,10 @@ class RealPageSvcService < BaseService
     site_ids = credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
+        import_units = []
         @array_of_dates = []
         @array_of_units = []
         current_date = Date.today
-
         url = REALPAGE_URL
         soap_action = REALPAGE_PRICE_ACTION
         pmc_id = credentials.pmc_id
@@ -373,6 +383,7 @@ class RealPageSvcService < BaseService
         date_needed = Date.today + 540
         limit_result = credentials.limit_result ? "True" : "False"
         community_id = credentials.community_id
+        community = Community.find community_id
         response = HTTParty.post(
             url,
             :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -416,6 +427,8 @@ class RealPageSvcService < BaseService
         sleep 1
         result = Ox.load(response.body, mode: :hash)
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
+          community&.community_data_updated_on()
+          
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units.each do |u|
 
@@ -463,7 +476,7 @@ class RealPageSvcService < BaseService
               end
               unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
               @unit_record << unit.provider_unit_id
-              unit.save(validate: false)
+              # unit.save(validate: false)
               #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
             else
               unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:Address][:UnitID]).first_or_initialize
@@ -531,26 +544,39 @@ class RealPageSvcService < BaseService
                 unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
 
                 @unit_record << unit.provider_unit_id unless @unit_record.include?(unit.provider_unit_id)
-                unit.save(validate: false)
+                # unit.save(validate: false)
                 #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
               end
               unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
 
-              unit.save(validate: false)
+              # unit.save(validate: false)
               #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
             end
+
+            import_units << unit
           end
+
+          ProvidersDataUpdation.new().update_or_create_units_records(import_units)
+
           no_unit = unit_present - @unit_record
+          import_units = []
+          
           if @unit_record.nil?
             no_unit = nil
           end
+          
           no_unit.each do |un|
             unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
             unit.availability = "Occupied"
             unit.available = false
             unit.available_date = nil
-            unit.save(validate: false) unless unit.manual_override
+            import_units << unit unless unit.manual_override
+
+            # unit.save(validate: false) unless unit.manual_override
           end
+
+          ProvidersDataUpdation.new().update_or_create_units_records(import_units)
+
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
@@ -579,17 +605,18 @@ class RealPageSvcService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-    no_unit = unit_present - @unit_record
-    if @unit_record.nil?
-      no_unit = nil
-    end
-    no_unit.each do |un|
-      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
-      unit.availability = "Occupied"
-      unit.available = false
-      unit.available_date = nil
-      unit.save(validate: false) unless unit.manual_override
-    end
+
+    # no_unit = unit_present - @unit_record
+    # if @unit_record.nil?
+    #   no_unit = nil
+    # end
+    # no_unit.each do |un|
+    #   unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+    #   unit.availability = "Occupied"
+    #   unit.available = false
+    #   unit.available_date = nil
+    #   unit.save(validate: false) unless unit.manual_override
+    # end
   end
 
   def import_realpage_svc_price
@@ -600,6 +627,7 @@ class RealPageSvcService < BaseService
     end
     site_ids.each do |site_id|
       begin
+        import_units = []
         url = REALPAGE_URL
         soap_action = 'http://tempuri.org/IRPXService/getrentmatrix'
         pmc_id = credentials.pmc_id
@@ -692,12 +720,15 @@ class RealPageSvcService < BaseService
                 unit.min_effective_rent = unit_min_rent
                 unit.max_effective_rent = unit_max_rent
                 unit.lease_pricing = rentStr
-                unit.save(:validate => false)
+                import_units << unit
+                # unit.save(:validate => false)
                 # @doc = @doc + response.body
               end
 
             end
           end
+
+          ProvidersDataUpdation.new().update_or_create_units_records(import_units)
         end
       rescue => e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
