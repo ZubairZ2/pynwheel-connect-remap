@@ -306,7 +306,7 @@ class PsiService < BaseService
       end
     end
       
-    update_or_create_units_records(import_units) if import_units.present?
+    ProvidersDataUpdation.new().update_or_create_units_records(import_units)
 
     no_unit = unit_present - @unit_record
     import_units = []
@@ -324,7 +324,7 @@ class PsiService < BaseService
       # unit.save(validate: false) unless unit.manual_override
     end
 
-    update_or_create_units_records(import_units) if import_units.present?
+    ProvidersDataUpdation.new().update_or_create_units_records(import_units)
   end
 
   def save_psi_floorplans(floorplans,property_id)
@@ -408,7 +408,7 @@ class PsiService < BaseService
       import_floorplans << floorplan
     end
 
-    update_or_create_floorplans_records(import_floorplans) if import_floorplans.present?
+    ProvidersDataUpdation.new().update_or_create_floorplans_records(import_floorplans)
   end
 
 
@@ -748,7 +748,7 @@ class PsiService < BaseService
         end
       end
 
-      update_or_create_units_records(import_units) if import_units.present?
+      ProvidersDataUpdation.new().update_or_create_units_records(import_units)
     end
   end
 
@@ -798,45 +798,5 @@ class PsiService < BaseService
 
   def save_website_column_of_community(response)
     community = Community.find credentials.community_id
-  end
-
-  def update_or_create_floorplans_records import_floorplans
-    new_floorplans = import_floorplans.map{|f| f unless f&.id.present?}.compact
-    existing_floorlans = import_floorplans.map{|f| f if f&.id.present?}.compact.uniq
-    create_new_floorplans_records(new_floorplans)
-    update_existing_floorplans_records(existing_floorlans)
-  end
-
-  def create_new_floorplans_records(new_floorplans)
-    return unless new_floorplans.present?
-    Floorplan.import new_floorplans, validate: false  if new_floorplans.present?
-  end
-
-  def update_existing_floorplans_records(existing_floorplans)
-    return unless existing_floorplans.present?
-    Floorplan.import existing_floorplans, on_duplicate_key_update: {
-      conflict_target: [:id],
-      columns: (Floorplan.column_names.map! &:to_sym)
-    }, batch_size: 100
-  end
-
-  def update_or_create_units_records import_units
-    new_units = import_units.map{|u| u unless u&.id.present?}.compact
-    existing_units = import_units.map{|u| u if u&.id.present?}.compact.uniq
-    create_new_units_records(new_units)
-    update_existing_units_records(existing_units)
-  end
-
-  def create_new_units_records(new_units)
-    return unless new_units.present?
-    Unit.import new_units, validate: false  if new_units.present?
-  end
-
-  def update_existing_units_records(existing_units)
-    return unless existing_units.present?
-    Unit.import existing_units, on_duplicate_key_update: {
-      conflict_target: [:id],
-      columns: (Unit.column_names.map! &:to_sym)
-    }, batch_size: 100
   end
 end
