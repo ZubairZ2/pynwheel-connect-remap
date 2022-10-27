@@ -13,20 +13,22 @@ class YardiRentCafeService < BaseService
         request_type = "apartmentavailability"
         company_code = credentials.c_code
         api_token = credentials.api_token
+        community = Community.find credentials.community_id
         #property_code = credentials.p_code
         showallunit =  credentials.limit_result ? "0" : "-1"
+        import_units = []
         if api_token.present?
           @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=" + showallunit
         else
           @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=" + showallunit
         end
+
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
 
-
         unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardirentcafe"]).map{|x| x.provider_unit_id}
         if response[0]["Error"].nil?
-          credentials&.community&.community_data_updated_on()
+          community&.community_data_updated_on()
           
           response.each do |r|
             begin
@@ -97,10 +99,11 @@ class YardiRentCafeService < BaseService
 
                   end
                 end
+
                 unit.lease_pricing = leasing
                 
-
-                unit.save(validate: false)
+                import_units << unit
+                # unit.save(validate: false)
 
               else
                 unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first_or_initialize
@@ -176,14 +179,18 @@ class YardiRentCafeService < BaseService
                   end
 
                   unit.lease_pricing = leasing
-
-                  unit.save(validate: false)
+                  import_units << unit
+                  # unit.save(validate: false)
                 end
               end
             rescue => e
               ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
             end
           end
+
+          ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+
+
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
@@ -202,17 +209,26 @@ class YardiRentCafeService < BaseService
           rescue => err
           end
         end
+
         no_unit = unit_present - @unit_record
+        import_units = []
+
         if @unit_record.nil?
           no_unit = nil
         end
+
         no_unit.each do |un|
           unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
           unit.availability = "Occupied"
           unit.available = false
           unit.available_date = nil
-          unit.save(validate: false) unless unit.manual_override
+          import_units << unit unless unit.manual_override
+
+          # unit.save(validate: false) unless unit.manual_override
         end
+
+        ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+
       rescue => e
         begin
           cred = Credential.find credentials.id
@@ -231,6 +247,7 @@ class YardiRentCafeService < BaseService
     property_codes = credentials.p_code.split(',') rescue []
     property_codes.each do |property_code|
       begin
+        import_floorplans = []
         request_type = "floorplan"
         company_code = credentials.c_code
         api_token = credentials.api_token
@@ -263,7 +280,8 @@ class YardiRentCafeService < BaseService
               end
 
               # fp.deposit = r["MinimumDeposit"]
-              fp.save(validate: false)
+              import_floorplans << fp
+              # fp.save(validate: false)
 
             else
               fp = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"]).first_or_initialize
@@ -294,10 +312,14 @@ class YardiRentCafeService < BaseService
                 end
 
                 fp.deposit = r["MinimumDeposit"]
-                fp.save(validate: false)
+                import_floorplans << fp
+                # fp.save(validate: false)
               end
             end
           end
+
+          ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
+
         else 
         end
       rescue => e 

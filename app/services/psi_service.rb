@@ -306,7 +306,7 @@ class PsiService < BaseService
       end
     end
       
-    ProvidersDataUpdation.new().update_or_create_units_records(import_units)
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
 
     no_unit = unit_present - @unit_record
     import_units = []
@@ -324,7 +324,7 @@ class PsiService < BaseService
       # unit.save(validate: false) unless unit.manual_override
     end
 
-    ProvidersDataUpdation.new().update_or_create_units_records(import_units)
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
   end
 
   def save_psi_floorplans(floorplans,property_id)
@@ -408,7 +408,7 @@ class PsiService < BaseService
       import_floorplans << floorplan
     end
 
-    ProvidersDataUpdation.new().update_or_create_floorplans_records(import_floorplans)
+    ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
   end
 
 
@@ -748,7 +748,7 @@ class PsiService < BaseService
         end
       end
 
-      ProvidersDataUpdation.new().update_or_create_units_records(import_units)
+      ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
     end
   end
 

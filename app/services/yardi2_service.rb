@@ -21,6 +21,8 @@ class Yardi2Service < BaseService
         property_id = property_id
         interface_entity = credentials.interface_entity
         license_key = YARDI_LICENSE_KEY
+        community = Community.find credentials.community_id
+
         response = HTTParty.post(
           url,
           :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
@@ -44,7 +46,7 @@ class Yardi2Service < BaseService
           end
           save_yardi2_units(ils_units,external_property_id)
           save_yardi2_floorplans(floorplans)
-          credentials&.community&.community_data_updated_on()
+          community&.community_data_updated_on()
           
           begin
             cred = Credential.find credentials.id
@@ -93,7 +95,7 @@ class Yardi2Service < BaseService
   end
 
   def save_yardi2_units(ils_units, property_id)
-
+    import_units = []
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardi"]).map{|x| x.provider_unit_id}
     ils_units[0].lazy.each do |unit_entries|
       begin
@@ -152,7 +154,8 @@ class Yardi2Service < BaseService
             end
           end
           @unit_record << unit.provider_unit_id
-          unit.save!(validate: false)
+          import_units << unit
+          # unit.save!(validate: false)
         else
           provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
           unit = Unit.where(provider: "yardi", community_id: credentials.community_id, property_id: property_id, provider_unit_id: provider_unit_id).first_or_initialize
@@ -216,27 +219,40 @@ class Yardi2Service < BaseService
             end
 
             unit.manually_updated = false
-            unit.save(validate: false)
+            import_units << unit
+            # unit.save(validate: false)
           end
         end
+        
+        ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+      
       rescue => e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
     end
+
     no_unit = unit_present - @unit_record
+    import_units = []
+
     if @unit_record.nil?
       no_unit = nil
     end
+
     no_unit.each do |un|
       unit = Unit.find_by(community_id: credentials.community_id, property_id: property_id, provider_unit_id: un)
       unit.availability = "Occupied"
       unit.available = false
       unit.available_date = nil
-      unit.save(validate: false) unless unit.manual_override
+      import_units << unit unless unit.manual_override
+      # unit.save(validate: false) unless unit.manual_override
     end
+
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+
   end
 
   def save_yardi2_floorplans(floorplans)
+    import_floorplans = []
     floorplans[0].lazy.each do |floorplan|
       begin
         fp = Floorplan.find_by(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:Id])#.first_or_initialize
@@ -280,7 +296,8 @@ class Yardi2Service < BaseService
           #   end
           # end
 
-          fp.save(validate: false)
+          import_floorplans << fp
+          # fp.save(validate: false)
 
         else
           fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:Id]).first_or_initialize
@@ -336,9 +353,14 @@ class Yardi2Service < BaseService
               end
             end
 
-            fp.save(validate: false)
+            import_floorplans << fp
+
+            # fp.save(validate: false)
           end
         end
+
+        ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
+      
       rescue => e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end

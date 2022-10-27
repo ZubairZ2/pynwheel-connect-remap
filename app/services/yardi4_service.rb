@@ -20,6 +20,7 @@ class Yardi4Service < BaseService
         property_id = property_id
         interface_entity = credentials.interface_entity
         license_key = YARDI_LICENSE_KEY
+        community = Community.find credentials.community_id
 
         if arr[3] == "65320maa"
           require 'httparty'
@@ -70,7 +71,7 @@ class Yardi4Service < BaseService
           end
           save_yardi4_floorplans(floorplans)
           save_yardi4_units(ils_units,external_property_id)
-          credentials&.community&.community_data_updated_on()
+          community&.community_data_updated_on()
           #else
           #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
@@ -108,6 +109,7 @@ class Yardi4Service < BaseService
     
 
   def save_yardi4_units(ils_units, property_id)
+    import_units = []
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id, ["yardi"]).map{|x| x.provider_unit_id}
     ils_units.lazy.each do |api_unit|
       u = api_unit[1]
@@ -206,7 +208,10 @@ class Yardi4Service < BaseService
           end
         end
         @unit_record << unit.provider_unit_id
-        unit.save(validate: false)
+
+        import_units << unit
+        # unit.save(validate: false)
+
       else
         provider_unit_id = "#{u[:Units][:Unit][:Identification][0][:IDValue]}-#{property_id}" rescue "#{u[:Units][:Unit][:Identification][0][0][:IDValue]}-#{property_id}"
 
@@ -306,25 +311,38 @@ class Yardi4Service < BaseService
           end
 
           unit.manually_updated = false
-          unit.save(validate: false)
+          import_units << unit
+
+          # unit.save(validate: false)
         end
       end
     end
+    
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
 
     no_unit = unit_present - @unit_record
+    import_units = []
+
     if @unit_record.nil?
       no_unit = nil
     end
+
     no_unit.each do |un|
       unit = Unit.find_by(community_id: credentials.community_id, property_id: property_id, provider_unit_id: un)
       unit.availability = "Occupied"
       unit.available = false
       unit.available_date = nil
-      unit.save(validate: false) unless unit.manual_override
+      import_units << unit unless unit.manual_override
+      # unit.save(validate: false) unless unit.manual_override
     end
+
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+
   end
 
   def save_yardi4_floorplans(floorplans)
+    import_floorplans = []
+
     floorplans.lazy.each do |floorplan|
       fp = Floorplan.find_by(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:IDValue])#.first_or_initialize
       if fp.present?
@@ -367,7 +385,8 @@ class Yardi4Service < BaseService
         #   end
         # end
         #
-        fp.save(validate: false)
+        import_floorplans << fp
+        # fp.save(validate: false)
 
       else
         fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:IDValue]).first_or_initialize
@@ -420,10 +439,14 @@ class Yardi4Service < BaseService
             end
           end
 
-          fp.save(validate: false)
+          import_floorplans << fp
+
+          # fp.save(validate: false)
         end
       end
     end
+
+    ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
   end
 
 end

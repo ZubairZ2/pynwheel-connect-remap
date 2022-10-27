@@ -1,4 +1,4 @@
-class ProvidersDataUpdation
+class ProvidersDataUpdationService
   def initialize 
   end
 
@@ -43,7 +43,7 @@ class ProvidersDataUpdation
     Unit.import existing_units, on_duplicate_key_update: {
       conflict_target: [:id],
       columns: (Unit.column_names.map! &:to_sym)
-    }, batch_size: 100
+    }
   end
 
 end

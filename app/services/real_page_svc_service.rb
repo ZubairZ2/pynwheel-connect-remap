@@ -111,7 +111,7 @@ class RealPageSvcService < BaseService
             end
           end
 
-          ProvidersDataUpdation.new().update_or_create_floorplans_records(import_floorplans)
+          ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
         end
       rescue => e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
@@ -340,7 +340,7 @@ class RealPageSvcService < BaseService
             end
           end
 
-          ProvidersDataUpdation.new().update_or_create_units_records(import_units)
+          ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
 
         else
           begin
@@ -556,7 +556,7 @@ class RealPageSvcService < BaseService
             import_units << unit
           end
 
-          ProvidersDataUpdation.new().update_or_create_units_records(import_units)
+          ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
 
           no_unit = unit_present - @unit_record
           import_units = []
@@ -575,7 +575,7 @@ class RealPageSvcService < BaseService
             # unit.save(validate: false) unless unit.manual_override
           end
 
-          ProvidersDataUpdation.new().update_or_create_units_records(import_units)
+          ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
 
           begin
             cred = Credential.find credentials.id
@@ -728,7 +728,7 @@ class RealPageSvcService < BaseService
             end
           end
 
-          ProvidersDataUpdation.new().update_or_create_units_records(import_units)
+          ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
         end
       rescue => e
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})

@@ -31,7 +31,9 @@ class DataProvidersService
   def sync_yardirentcafe_data
     return unless @communities.present?
     @communities.each do |community|
+      puts "\n\n --------- Started updating for community: #{community.id} ------------- \n\n"
       ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
+      sleep 30
     end
   end
   
