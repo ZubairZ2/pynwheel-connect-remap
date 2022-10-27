@@ -886,7 +886,7 @@ json.tours @tours do |tour|
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: stop.stop_type.classify, guest_of_stop_id: stop.stop_id, status: "active")
             if zrv_guest.present?
               is_zerv_lock_present = true
-              list_of_zerv_lock_ids = @tour_user.get_list_of_zerv_lock_ids(tour, @community, stop, new_stops_arr, counter)
+              list_of_zerv_lock_ids = @tour_user.get_list_of_zerv_lock_ids(tour, @community, stop, new_stops_arr, counter, zrv.mac_id)
               
               json.guest_pin 'The door will unlock when your mobile device is within range'
               json.latch_link ''

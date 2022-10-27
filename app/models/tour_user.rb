@@ -105,8 +105,9 @@ class TourUser < ApplicationRecord
     ( (community.community_tour&.tour_setting&.enable_tour_customization) && (self.tours.where(community_id: community.id).last.present?) )
   end
 
-  def get_list_of_zerv_lock_ids tour, community, stop, new_stops_arr, counter, zev_mac_ids = []
+  def get_list_of_zerv_lock_ids tour, community, stop, new_stops_arr, counter, zev_mac_ids = [], current_stop_zerv_id
     return [] if community.is_sitemap
+    zev_mac_ids << current_stop_zerv_id
 
     if stop.stop_type.classify == "Elevator"
       next_stop = new_stops_arr[counter + 1]
@@ -130,6 +131,7 @@ class TourUser < ApplicationRecord
               end
             end
           else
+
             if (elevator.building == building) && ( elevator.floors.include?(floor) )
               zrv = ShortestPath.return_stop_lock(elevator) if community.zerv.present?
               if zrv.present?
@@ -142,6 +144,6 @@ class TourUser < ApplicationRecord
       end
     end
 
-    zev_mac_ids.compact.uniq
+    zev_mac_ids&.compact&.uniq&.count > 1 ? zev_mac_ids&.compact&.uniq : []
   end
 end
