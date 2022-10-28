@@ -10,7 +10,6 @@ class DataProvidersService
     @communities.each do |community|
       puts "\n\n --------- Started updating for community: #{community.id} ------------- \n\n"
       ImportPsiDataJob.perform_async(community.credential.attributes.to_json)
-      sleep 30
     end
   end
 
@@ -24,6 +23,7 @@ class DataProvidersService
   def sync_yardi_data
     return unless @communities.present?
     @communities.each do |community|
+      puts "\n\n --------- Started updating for community: #{community.id} ------------- \n\n"
       community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
     end
   end
@@ -33,7 +33,6 @@ class DataProvidersService
     @communities.each do |community|
       puts "\n\n --------- Started updating for community: #{community.id} ------------- \n\n"
       ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
-      sleep 30
     end
   end
   
@@ -42,7 +41,6 @@ class DataProvidersService
     @communities.each do |community|
       puts "\n\n --------- Started updating for community: #{community.id} ------------- \n\n"
       ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
-      sleep 30
     end
   end
 
