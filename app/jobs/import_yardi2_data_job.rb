@@ -1,6 +1,6 @@
 class ImportYardi2DataJob < ApplicationJob
   include SuckerPunch::Job
-  workers 4
+  #workers 4
 
   def perform(credentials)
     yardi2_service = Yardi2Service.new(JSON.parse(credentials))

@@ -1,6 +1,6 @@
 class ImportXmlDataJob < ApplicationJob
   include SuckerPunch::Job
-  workers 4
+  #workers 4
   
   def perform(credentials)
     xml_service = XmlService.new(JSON.parse(credentials))
