@@ -109,29 +109,32 @@ class TourUser < ApplicationRecord
     return [] if community.is_sitemap
     zev_mac_ids << current_stop_zerv_id
 
+    current_actual_elevator = stop.stop_type.classify.constantize.find_by_id stop.stop_id if (stop && stop&.stop_type && stop&.stop_id).present?
+
     if stop.stop_type.classify == "Elevator"
       next_stop = new_stops_arr[counter + 1]
 
-      next_actual_stop = next_stop.stop_type.classify.constantize.find_by_id next_stop.stop_id if (next_stop && next_stop&.stop_type && next_stop&.stop_id).present?
-      floor = next_actual_stop&.floor  if next_actual_stop.present?
-      building = next_actual_stop&.building if next_actual_stop.present?
+      if !(next_stop.is_a? Tour) && ["unit", "amenity"].include?(next_stop.stop_type)
+        next_actual_stop = next_stop.stop_type.classify.constantize.find_by_id next_stop.stop_id if (next_stop && next_stop&.stop_type && next_stop&.stop_id).present?
+        floor = next_actual_stop&.floor  if next_actual_stop.present?
+        building = next_actual_stop&.building if next_actual_stop.present?
+      else
+        if next_stop.is_a? Tour
+          next_actual_stop = next_stop
+        else
+          next_actual_stop = next_stop.stop_type.classify.constantize.find_by_id next_stop.stop_id if (next_stop && next_stop&.stop_type && next_stop&.stop_id).present?          
+        end
+        
+        building = current_actual_elevator.building
+        floor = current_actual_elevator.floors[0]
+      end
 
       if floor.present? && building.present?
         tour_stops = tour.tour_stops.where(display_stop: true, stop_type: "elevator")
-        
         tour_stops.each do |elevator_stop|
           elevator = elevator_stop.stop_type.classify.constantize.find_by_id elevator_stop.stop_id if (elevator_stop && elevator_stop&.stop_type && elevator_stop&.stop_id).present?
-          
-          if next_stop.stop_type == "starting_point" || next_stop.stop_type == "building_starting_point"
-            if ( elevator.floors.include?(floor) )
-              zrv = ShortestPath.return_stop_lock(elevator) if community.zerv.present?
-              if zrv.present?
-                zrv_guest = self.zerv_guests.find_by(community_id: community.id, guest_of_stop_type: elevator_stop.stop_type.classify, guest_of_stop_id: elevator_stop.stop_id, status: "active")
-                zev_mac_ids << zrv.mac_id if zrv_guest.present?
-              end
-            end
-          else
 
+          if !(next_stop.is_a? Tour) && ["unit", "amenity"].include?(next_stop.stop_type)
             if (elevator.building == building) && ( elevator.floors.include?(floor) )
               zrv = ShortestPath.return_stop_lock(elevator) if community.zerv.present?
               if zrv.present?
@@ -139,11 +142,21 @@ class TourUser < ApplicationRecord
                 zev_mac_ids << zrv.mac_id if zrv_guest.present?
               end
             end
+          else
+            if (elevator.floors.include?(floor) )
+              zrv = ShortestPath.return_stop_lock(elevator) if community.zerv.present?
+              if zrv.present?
+                zrv_guest = self.zerv_guests.find_by(community_id: community.id, guest_of_stop_type: elevator_stop.stop_type.classify, guest_of_stop_id: elevator_stop.stop_id, status: "active")
+                zev_mac_ids << zrv.mac_id if zrv_guest.present?
+              end
+            end
           end
+
         end
       end
     end
 
     zev_mac_ids&.compact&.uniq&.count > 1 ? zev_mac_ids&.compact&.uniq : []
   end
+
 end
