@@ -10,7 +10,7 @@ class DataProvidersService
     @communities.each do |community|
       puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
       ImportPsiDataJob.perform_async(community.credential.attributes.to_json)
-      sleep 10
+      sleep ENV["SLEEP_TIME"].to_i
     end
   end
 
@@ -19,7 +19,7 @@ class DataProvidersService
     @communities.each do |community|
       puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
       ((community.credential.resman_api_version === "GetMarketing4_0") ? ImportResman4DataJob.perform_async(community.credential.attributes.to_json) : ImportResmanDataJob.perform_async(community.credential.attributes.to_json))
-      sleep 5
+      sleep ENV["SLEEP_TIME"].to_i
     end
   end
 
@@ -28,7 +28,7 @@ class DataProvidersService
     @communities.each do |community|
       puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
       community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
-      sleep 10
+      sleep ENV["SLEEP_TIME"].to_i
     end
   end
 
@@ -37,7 +37,7 @@ class DataProvidersService
     @communities.each do |community|
       puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
       ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
-      sleep 10
+      sleep ENV["SLEEP_TIME"].to_i
 
     end
   end
@@ -47,8 +47,7 @@ class DataProvidersService
     @communities.each do |community|
       puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
       ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
-      sleep 10
-
+      sleep ENV["SLEEP_TIME"].to_i
     end
   end
 
