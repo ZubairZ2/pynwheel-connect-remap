@@ -70,7 +70,7 @@ class Floorplate < ApplicationRecord
 
   end
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id , :name , :range , :image , :label_image, :file]
     )

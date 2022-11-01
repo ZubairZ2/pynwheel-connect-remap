@@ -4,7 +4,7 @@ class OpeningHour < ApplicationRecord
   has_one :status, as: :statusable
   set_sortable :sort
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:day]
     ).merge!({

@@ -8,7 +8,7 @@ class Dwelo < ApplicationRecord
     MapLocksJob.perform_async community, "Dwelo"
   end
 
-  def as_json
+  def as_json options = {}
     super(:only => [:id, :community_id, :client_id, :client_secret, :default_community_id]
     )
   end

@@ -14,7 +14,7 @@ class Floorplan < ApplicationRecord
   after_update :crop_image
   after_update :crop_secondary_image
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :name, :image, :file], :include => {
         :amenities => {:only => [:id  , :image] } }

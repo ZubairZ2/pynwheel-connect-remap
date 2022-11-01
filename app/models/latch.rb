@@ -5,7 +5,7 @@ class Latch < ApplicationRecord
   has_one :status, as: :statusable
   mount_uploader :file, CsvfileUploader
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :client_id, :client_secret, :file ], :method => [:lock_type]
     )

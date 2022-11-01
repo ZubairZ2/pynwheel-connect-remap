@@ -4,7 +4,7 @@ class Schlage < ApplicationRecord
 
   mount_uploader :image, SchlagelockUploader
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :email, :password, :image]
     )

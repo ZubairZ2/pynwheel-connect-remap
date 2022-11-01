@@ -179,7 +179,7 @@ class Design < ApplicationRecord
 		})
 	end
 
-	def as_json
+	def as_json options = {}
 		super(:only => [:id, :pynwheel_touch_hardware_spec, :hardware_spec_installer_name, :hardware_spec_installer_phone])
 	end
 

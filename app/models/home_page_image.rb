@@ -46,7 +46,7 @@ class HomePageImage < ApplicationRecord
     end
   end
 
-  def as_json
+  def as_json options = {}
     super(:only => [:id, :name, :image])
   end
 end

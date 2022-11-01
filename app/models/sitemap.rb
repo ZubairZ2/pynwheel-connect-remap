@@ -25,7 +25,7 @@ class Sitemap < ApplicationRecord
 
   validates :image, :presence => {message: "cannot be blank. Please upload site map image first."}, if: -> { image.present? }
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id ,:image, :file, :label_image]
     )

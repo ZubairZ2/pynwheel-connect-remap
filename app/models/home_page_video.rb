@@ -22,7 +22,7 @@ class HomePageVideo < ApplicationRecord
   belongs_to :design
   has_one :status, as: :statusable
 
-  def as_json
+  def as_json options = {}
     super(:only => [:id, :name, :video])
   end
 end

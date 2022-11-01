@@ -3,7 +3,7 @@ class Zerv < ApplicationRecord
   has_many :zerv_locks, dependent: :destroy
   has_one :status, as: :statusable
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :badge_id, :facility_id, :card_format, :username, :password]
     )

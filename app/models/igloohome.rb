@@ -7,7 +7,7 @@ class Igloohome < ApplicationRecord
   has_one :status, as: :statusable
   # mount_uploader :file, SchlagelockUploader
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :email, :file]
     )
