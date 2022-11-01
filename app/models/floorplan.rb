@@ -3,6 +3,9 @@ class Floorplan < ApplicationRecord
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :secondary_image, AvatarUploader
   mount_base64_uploader :file, DesignUploader
+  process_in_background :file
+  process_in_background :image
+  process_in_background :secondary_image
   belongs_to :community
   has_many :amenities, as: :amenityable
   has_one :status, as: :statusable

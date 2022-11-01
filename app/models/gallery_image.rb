@@ -31,6 +31,7 @@ class GalleryImage < ApplicationRecord
 	mount_uploader :image, GalleryUploader
 	mount_uploader :video, VideoUploader
 	process_in_background :video
+	process_in_background :image
 	before_create :set_image_name
 	# before_save :populate_image_urls
 	after_update :crop_image

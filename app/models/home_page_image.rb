@@ -26,6 +26,7 @@ class HomePageImage < ApplicationRecord
   set_sortable :sort
   #mount_base64_uploader :image, ImageUploader
   mount_uploader :image, ImageUploader
+  process_in_background :image
   belongs_to :design
   has_one :status, as: :statusable
   before_create :set_image_name
