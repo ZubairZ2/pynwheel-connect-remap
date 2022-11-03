@@ -16,17 +16,19 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
     begin
       floorplans_params = params["floorplan"]
       @status = params["status"]
-      floorplans_params.values.each do |floorplan|
-        floorplan_id = floorplan["id"]
-        if floorplan_id.present?
-          @floorplan = @community.floorplans.find_by_id(floorplan_id)
-          if @floorplan.present?
-            update_floorplan(floorplan)
-            # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "update", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
+      if floorplans_params.present?
+        floorplans_params.values.each do |floorplan|
+          floorplan_id = floorplan["id"]
+          if floorplan_id.present?
+            @floorplan = @community.floorplans.find_by_id(floorplan_id)
+            if @floorplan.present?
+              update_floorplan(floorplan)
+              # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "update", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
+            end
+          else
+            create_floorplan(floorplan)
+            # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "create", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
           end
-        else
-          create_floorplan(floorplan)
-          # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "create", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
         end
       end
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(FLOORPLAN_IMAGES)
