@@ -51,18 +51,18 @@ preload_app!
 
 # Allow puma to be restarted by `rails restart` command.
 plugin :tmp_restart
-# unless Rails.env.development?
-#   before_fork do
-#     require 'puma_worker_killer'
+unless Rails.env.development?
+  before_fork do
+    require 'puma_worker_killer'
 
-#     PumaWorkerKiller.config do |config|
-#       config.ram           = Rails.env.production? ? 2500 : 500 # mb
-#       config.frequency     = 5    # seconds
-#       config.percent_usage = 0.98
-#       config.rolling_restart_frequency = 1800 # 30 min in seconds
-#     end
-#     #PumaWorkerKiller.enable_rolling_restart(1 * 3600) # 1 hour in seconds
-#     #PumaWorkerKiller.enable_rolling_restart(900) # Every Fifteen minutes
-#     PumaWorkerKiller.start
-#   end
-# end
+    PumaWorkerKiller.config do |config|
+      config.ram           = Rails.env.production? ? 2500 : 500 # mb
+      config.frequency     = 5    # seconds
+      config.percent_usage = 0.98
+      config.rolling_restart_frequency = 1800 # 30 min in seconds
+    end
+    #PumaWorkerKiller.enable_rolling_restart(1 * 3600) # 1 hour in seconds
+    #PumaWorkerKiller.enable_rolling_restart(900) # Every Fifteen minutes
+    PumaWorkerKiller.start
+  end
+end
