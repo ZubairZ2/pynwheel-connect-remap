@@ -123,12 +123,12 @@
                                 - if unit.virtual_tour_url.present?
                                   %td.textContent{:align => "left", :style => "padding-left: 140px;", :valign => "top"}
                                     %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0; float: left"}
-                                      %form{:action => "#{unit.virtual_tour_url}"}
+                                      %a{:href => "#{unit.virtual_tour_url}", :target => "_blank"}
                                         %input{:type => "submit", :value => "#{unit.virtual_tour_button_label.upcase}", :style=> "font-size: 17px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: fit-content; height: 46px; width: fit-content;"}/ 
                                 - if unit.availability_url.present?
                                   %td.textContent{:align => "left", :style => "width: 250px", :valign => "top"}
                                     %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0; float: right;"}
-                                      %form{:action => "#{unit.availability_url}"}
+                                      %a{:href => "#{unit.availability_url}", :target => "_blank"}
                                         %input{:type => "submit", :value => "FLOOR PLAN AVAILABILITY", :style=> "font-size: 17px; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium;  width: 250px; height: 46px;"}/
                                      
 
