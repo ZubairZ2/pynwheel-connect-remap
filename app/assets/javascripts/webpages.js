@@ -12,6 +12,7 @@ var enable3DMaps;
 var image_width_2d;
 var maxSelectedPrice;
 var currency = "$";
+var real_page_provider_unit_id = null
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -1543,7 +1544,7 @@ function set_resman_url(element)
 }
 
 function set_realpagesvc_url(element) {
-  var url = apply_now_url + "?MoveInDate=" + $('#leasing-start-date').val() + "&UnitId=" + $(element).data('unit-provider-id') + "&SearchUrl=" + redirect_url;
+  var url = apply_now_url + "?MoveInDate=" + $('#leasing-start-date').val() + "&UnitId=" + real_page_provider_unit_id + "&SearchUrl=" + redirect_url;
   
   if(selectMap === "3d-map" && enable3DMaps) {
     apply_now_url = `/communities/${webCommunity.id}/webpages/apply_now`;
@@ -1665,6 +1666,7 @@ function setModalAttributes(element) {
   $('#unitModal').find('#total-market-rent').html(currency + $(element).data('market-rent'));
   
   ///////////////////////////////////////////
+  real_page_provider_unit_id = $(element).data('unit-provider-id');
   var unit_id = $(element).data('unit-id');
   selectedUnit = units.filter(a => (a.id === $(element).data('unit-id')))[0]
   if ($(element).data('is-fav') || favoritesArr.includes($(element).data('unit-id'))) {
