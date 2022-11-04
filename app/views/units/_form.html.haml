@@ -151,7 +151,7 @@
       Details
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-      = f.text_area :description,:class=>"form-control mb-20 validate[required] wysihtml5",:placeholder=>"Enter Description"
+      = f.text_area :description,:class=>"form-control mb-20 validate[required] unit-description-wysihtml5",:placeholder=>"Enter Description"
       %span.unit_details_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i}
 
 - if @community.self_tour
@@ -338,54 +338,72 @@
                 change: function(){
                     var wysihtml5Editor = $('#unit_stop_description').data("wysihtml5").editor;
                     var t = wysihtml5Editor.getValue();
-                    t1 = t.substr(0, characterLimit)
-                    t2 = t.substr(characterLimit, t.length)
+                    t1 = t.substr(0, 90)
+                    t2 = t.substr(90, t.length)
                     t2 = t2.fontcolor("red");
                     wysihtml5Editor.setValue(t1 + t2);
-
-                    var detailshtml5Editor = $('#unit_description').data("wysihtml5").editor;
-                    var details_text = detailshtml5Editor.getValue();
-                    t3 = details_text.substr(0, characterLimit)
-                    t4 = details_text.substr(characterLimit, details_text.length)
-                    t4 = t4.fontcolor("red");
-                    detailshtml5Editor.setValue(t3 + t4);
                 },
                 load: function(){
                     $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
-                    if (wysihtml5Editor.getValue() != "" || detailshtml5Editor.getValue() != "")
+                    if (wysihtml5Editor.getValue() != "")
                     {
                         var text_split = $('.unit_directional_text').text().split(" ")
-                        var details_text_split = $('.unit_details_text').text().split(" ")
                         var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
-                        var details_total_length = detailshtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
-                        $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
-                        $('.unit_details_text').text( details_text_split[0] + " " + details_text_split[1] + " " + (characterLimit - details_total_length)).toString()
+                        $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
                         }
                     });
                     var wysihtml5Editor = $('#unit_stop_description').data("wysihtml5").editor;
                     var t = wysihtml5Editor.getValue();
-                    t1 = t.substr(0, characterLimit)
-                    t2 = t.substr(characterLimit, t.length)
+                    t1 = t.substr(0, 90)
+                    t2 = t.substr(90, t.length)
                     t2 = t2.fontcolor("red");
                     wysihtml5Editor.setValue(t1 + t2);
                     var text_split = $('.unit_directional_text').text().split(" ")
                     var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
-                    $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+                    $('.unit_directional_text').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
 
-                    var detailshtml5Editor = $('#unit_description').data("wysihtml5").editor;
-                    var details_text = detailshtml5Editor.getValue();
-                    t3 = details_text.substr(0, characterLimit)
-                    t4 = details_text.substr(characterLimit, details_text.length)
-                    t4 = t3.fontcolor("red");
-                    detailshtml5Editor.setValue(t1 + t2);
-                    var details_text_split = $('.unit_details_text').text().split(" ")
-                    var details_total_length = detailshtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
-                    $('.unit_details_text').text( details_text_split[0] + " " + details_text_split[1] + " " + (characterLimit - details_total_length)).toString()
+                }
+            }
+        });
+      });
+
+      $('.unit-description-wysihtml5').each(function(i, elem) {
+        $(elem).wysihtml5({'toolbar': {'image': false,'link' : true},
+        events: {
+                change: function(){
+                    var wysihtml5Editor = $('#unit_description').data("wysihtml5").editor;
+                    var t = wysihtml5Editor.getValue();
+                    t1 = t.substr(0, 90)
+                    t2 = t.substr(90, t.length)
+                    t2 = t2.fontcolor("red");
+                    wysihtml5Editor.setValue(t1 + t2);
+                },
+                load: function(){
+                    $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+                    if (wysihtml5Editor.getValue() != "")
+                    {
+                        var text_split = $('.unit_details_text').text().split(" ")
+                        var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                        $('.unit_details_text').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+                        }
+                    });
+                    var wysihtml5Editor = $('#unit_description').data("wysihtml5").editor;
+                    var t = wysihtml5Editor.getValue();
+                    t1 = t.substr(0, 90)
+                    t2 = t.substr(90, t.length)
+                    t2 = t2.fontcolor("red");
+                    wysihtml5Editor.setValue(t1 + t2);
+                    var text_split = $('.unit_details_text').text().split(" ")
+                    var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+                    $('.unit_details_text').text( text_split[0] + " " + text_split[1] + " " + (90 - total_length)).toString()
+
                 }
             }
         });
 
       });
+
+
   })
   if (localStorage.getItem("floorplanCropped") == "1")
   {
