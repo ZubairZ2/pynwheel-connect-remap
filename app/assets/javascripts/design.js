@@ -1,7 +1,10 @@
 var image_height = 200;
 var image_width = 200;
+var characterLimit = 140;
 $(document).ready(function () {
-  var characterLimit = parseInt(document.getElementById('characterLimitCount').textContent);
+  if(document.getElementById('characterLimitCount'))
+    characterLimit = parseInt(document.getElementById('characterLimitCount').textContent);
+
   $('.amenity_edit_wysihtml5').each(function(i, elem) {
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
         events: {
@@ -34,7 +37,9 @@ $(document).ready(function () {
         });
       });
     $('.amenity_edit_directional_wysihtml5').each(function(i, elem) {
-        var characterLimit = parseInt(document.getElementById('characterLimitCount').textContent);
+      if(document.getElementById('characterLimitCount'))
+        characterLimit = parseInt(document.getElementById('characterLimitCount').textContent);
+
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
             events: {
                 load:function(){
