@@ -122,8 +122,7 @@ class PsiService < BaseService
     rescue => ex
     end
 
-    fill_psi_pricing_details(1)
-    fill_psi_pricing_details(0)
+    fill_psi_pricing_details()
   end
 
   def save_psi_units(units,property_id)
@@ -131,18 +130,9 @@ class PsiService < BaseService
     unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["psi"]).map{|x| x.provider_unit_id}
     units.each do |u|
       vacateDate = ""
-
-      unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
-      
-      unless unit.present?
-        unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)#.first_or_initialize
-      end
-
-      unless unit.present?
-        unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
-      end
-
-      if unit.present?
+      unit = Unit.where(community_id: credentials.community_id, provider_unit_id: get_provider_unit_id(u) ).first_or_initialize
+    
+      if unit.id.present?
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         unit.provider = "psi"
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
@@ -199,24 +189,13 @@ class PsiService < BaseService
         unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
       
         @unit_record << unit.provider_unit_id
-        import_units << unit
-        # unit.save(validate: false)
-      
+        import_units << unit      
       else
-        unit = Unit.where(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s).first
-       
-        unless unit.present?
-          unit = Unit.where(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]).first
-        end
-
-        unless unit.present?
-          unit = Unit.where(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s).first_or_initialize
-        end
-
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.property_id = property_id
         unit.provider = "psi"
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
+
         unless unit.name_is_updated.present? && unit.name_is_updated
           unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         end
@@ -228,6 +207,7 @@ class PsiService < BaseService
             unit.square_feet = u["Units"]["Unit"]["MaxSquareFeet"].to_f
           end
         end
+
         unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
           unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
         end
@@ -301,38 +281,20 @@ class PsiService < BaseService
         unit.manually_updated = false
 
         import_units << unit
-        # unit.save(validate: false)
-
       end
     end
       
     ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
 
-    no_unit = unit_present - @unit_record
-    import_units = []
-
-    if @unit_record.nil?
-      no_unit = nil
-    end
-
-    no_unit.each do |un|
-      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
-      unit.availability = "Occupied"
-      unit.available = false
-      unit.available_date = nil
-      import_units << unit unless unit.manual_override
-      # unit.save(validate: false) unless unit.manual_override
-    end
-
-    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+    update_availability_of_units((unit_present - @unit_record))
   end
 
   def save_psi_floorplans(floorplans,property_id)
     import_floorplans = []
     floorplans.each do |f|
-      floorplan = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"])#.first_or_initialize
-      if floorplan.present?
+      floorplan = Floorplan.where(community_id: credentials.community_id, provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
 
+      if floorplan.present?
         floorplan.availability_url = f["FloorplanAvailabilityURL"] if f["FloorplanAvailabilityURL"].present?
         floorplan.provider = "psi"
 
@@ -349,8 +311,6 @@ class PsiService < BaseService
         end
 
       else
-        floorplan = Floorplan.where(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
-
         floorplan.property_id = property_id
         floorplan.provider = "psi"
 
@@ -400,11 +360,8 @@ class PsiService < BaseService
           end
         end
 
-        # floorplan.save(validate: false)
-
       end
 
-      # floorplan.save(validate: false)
       import_floorplans << floorplan
     end
 
@@ -412,308 +369,81 @@ class PsiService < BaseService
   end
 
 
-  def fill_psi_pricing_details(hit)
+  def fill_psi_pricing_details()
     import_units = []
     floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
 
     property_ids.each do |property_id|
       move_in_dates = getMoveInDate(property_id)
-      if hit == 1
-        move_in_dates = []
-        move_in_dates << "0"
-      end
-      unless move_in_dates.present?
-        move_in_dates = []
-        move_in_dates << "0"
-      end
-      
-      ########################################## Space configuration
+      move_in_dates << "0" unless move_in_dates.present?
 
       move_in_dates.each do |move_in_date|
-        begin
-          
-          if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
-            url = credentials.entrata_url
-          else
-            url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
-          end
-          
-          password = credentials.password
-          username = credentials.username
+        response = get_units_pricing(property_id, move_in_date)
 
-          if move_in_date == "0"
-            response = HTTParty.post(url,
-                                     :body => {
-                                         "auth": {
-                                             "type": "basic",
-                                             "password": password,
-                                             "username": username
-                                         },
-                                         "method": {
-                                             "name": "getUnitsAvailabilityAndPricing",
-                                             "params": {
-                                                 "propertyId": property_id,
-                                                 "availableUnitsOnly": credentials&.entrata_available_units_only,
-                                                 "showUnitSpaces": credentials&.entrata_show_unit_spaces,
-                                                 "useSpaceConfiguration": credentials&.entrata_use_space_configuration
-                                             }
-                                         }
-                                     }.to_json,
-                                     :headers => { 'Content-Type' => 'application/json' } )
-            response =  JSON.parse(response.body)
-          else
-            response = HTTParty.post(url,
-                                     :body => {
-                                         "auth": {
-                                             "type": "basic",
-                                             "password": password,
-                                             "username": username
-                                         },
-                                         "method": {
-                                             "name": "getUnitsAvailabilityAndPricing",
-                                             "params": {
-                                                 "propertyId": property_id,
-                                                 "availableUnitsOnly": credentials&.entrata_available_units_only,
-                                                 "showUnitSpaces": credentials&.entrata_show_unit_spaces,
-                                                 "useSpaceConfiguration": credentials&.entrata_use_space_configuration,
-                                                 "moveInStartDate": move_in_date
-                                             }
-                                         }
-                                     }.to_json,
-                                     :headers => { 'Content-Type' => 'application/json' } )
+        if response["response"]["code"] == 200
+          psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
+          psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
 
-            sleep 1
-            response =  JSON.parse(response.body)
-            sleep 2
-          end
-
-          if response["response"]["code"] == 200
-            unless response["response"]["result"].include?('No records found')
-              psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
-              psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
-              # psi_floorplan.each_with_index do |f,index|
-              #   floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
-              # end
-              psi_units.each do |u|
-                u['UnitSpace'].each do |us|
-
-                  begin
-                    if u['UnitSpace'].count == 1
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                      unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                        unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)],community_id: credentials.community_id)
-                      end
-                    else
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                      unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                        unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                      end
-                    end
-                    unless unit.present?
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"],community_id: credentials.community_id)
-                    end
-                    unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                    end
-
-                    unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                    end
-
-                    unless unit.present? # filter by unitId + unitSpaceId
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
-                    end
-
-                    unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-                      if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
-                        unit.availability = 'Unoccupied' if !unit.sold
-                        unit.available = true if !unit.sold
-                      else
-                        unit.availability = 'Occupied'
-                        unit.available = false
-                      end
-                    end
-
-                    if us[1]["@attributes"]["AvailableOn"].present?
-                      date = us[1]["@attributes"]["AvailableOn"]
-                      dateSplit = date.split('/')
-                      day = dateSplit[0]
-                      month = dateSplit[1]
-                      year = dateSplit[2]
-                      unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
-                        unit.available_date = Date.parse("#{month}-#{day}-#{year}")
-                      end
-                    end
-
-                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                      if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                        unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
-                        unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
-                      else
-                        unit.min_effective_rent = 0
-                      end
-
-                      if (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                        unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
-                      else
-                        unit.max_effective_rent = 0 
-                      end
-                    end
-
-                    rentStr = ""
-                    
-                    begin
-                      if us[1]["Rent"]["TermRent"].count > 1# && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
-                        us[1]["Rent"]["TermRent"].each do |tr|
-                          spaceOption = tr["@attributes"]["SpaceOption"].present? ? tr["@attributes"]["SpaceOption"] : "" rescue ""
-                          startDate = tr["@attributes"]["StartDate"].present? ? tr["@attributes"]["StartDate"] : "" rescue ""
-                          endDate = tr["@attributes"]["EndDate"].present? ? tr["@attributes"]["EndDate"] : "" rescue ""
-                          rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +":"+spaceOption+":"+startDate+":"+endDate+"\;"
-                        end
-                      end
-                    rescue => rt_ex
-
-                    end
-
-                    unit.lease_pricing = rentStr
-                    import_units << unit
-                    # unit.save(validate: false)
-                  rescue => ex
-                  end
-                end
-              end
-
-            else
+          psi_units.each do |u|
+            u['UnitSpace'].each do |us|
               begin
-
-                if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
-                  url = credentials.entrata_url
-                else
-                  url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
-                end
-
-                password = credentials.password
-                username = credentials.username
-                response = HTTParty.post(url,
-                                         :body => {
-                                             "auth": {
-                                                 "type": "basic",
-                                                 "password": password,
-                                                 "username": username
-                                             },
-                                             "method": {
-                                                 "name": "getUnitsAvailabilityAndPricing",
-                                                 "params": {
-                                                     "propertyId": property_id,
-                                                     "availableUnitsOnly": credentials&.entrata_available_units_only,
-                                                     "showUnitSpaces": credentials&.entrata_show_unit_spaces
-                                                 }
-                                             }
-                                         }.to_json,
-                                         :headers => { 'Content-Type' => 'application/json' } )
-                response =  JSON.parse(response.body)
+                unit = Unit.where(provider_unit_id: get_space_unit_identifier(u, us), community_id: credentials.community_id).first
                 
-                sleep 2
-
-                if response["response"]["code"] == 200
-                  psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
-                  psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
-                  # psi_floorplan.each_with_index do |f,index|
-                  #   floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
-                  # end
-                  psi_units.each do |u|
-                    u['UnitSpace'].each do |us|
-                      begin
-
-                        if u['UnitSpace'].count == 1
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                          
-                          unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                            unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)],community_id: credentials.community_id)
-                          end
-                        else
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                          
-                          unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                            unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                          end
-                        end
-
-                        unless unit.present?
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"],community_id: credentials.community_id)
-                        end
-
-                        unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                        end
-
-                        unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                        end
-
-                        unless unit.present? # filter by unitId + unitSpaceId
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
-                        end
-                        
-                        unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-                          if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
-                            unit.availability = 'Unoccupied' if !unit.sold
-                            unit.available = true if !unit.sold
-                          else
-                            unit.availability = 'Occupied'
-                            unit.available = false
-                          end
-                        end
-
-                        if us[1]["@attributes"]["AvailableOn"].present?
-                          date = us[1]["@attributes"]["AvailableOn"]
-                          dateSplit = date.split('/')
-                          day = dateSplit[0]
-                          month = dateSplit[1]
-                          year = dateSplit[2]
-                          unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
-                            unit.available_date = Date.parse("#{month}-#{day}-#{year}")
-                          end
-                        end
-
-                        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                          if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                            unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
-                            unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
-                          else
-                            unit.min_effective_rent = 0
-                          end
-
-                          if (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                            unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
-                          else
-                            unit.max_effective_rent = 0 
-                          end
-                        end
-
-                        rentStr = ""
-                        
-                        begin
-                          if us[1]["Rent"]["TermRent"].count > 1
-                            us[1]["Rent"]["TermRent"].each do |tr|
-                              rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::\;"
-                            end
-                          end
-                        rescue => rt_ex
-
-                        end
-
-                        unit.lease_pricing = rentStr
-                        import_units << unit
-                        # unit.save(validate: false)
-                      rescue => ex
-                      end
+                if unit.present?
+                  unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+                    if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
+                      unit.availability = 'Unoccupied' if !unit.sold
+                      unit.available = true if !unit.sold
+                    else
+                      unit.availability = 'Occupied'
+                      unit.available = false
                     end
                   end
+
+                  if us[1]["@attributes"]["AvailableOn"].present?
+                    date = us[1]["@attributes"]["AvailableOn"]
+                    dateSplit = date.split('/')
+                    day = dateSplit[0]
+                    month = dateSplit[1]
+                    year = dateSplit[2]
+                    unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+                      unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+                    end
+                  end
+
+                  unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                    if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                      unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
+                      unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                    else
+                      unit.min_effective_rent = 0
+                    end
+
+                    if (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                      unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
+                    else
+                      unit.max_effective_rent = 0 
+                    end
+                  end
+
+                  rentStr = ""
+                  
+                  begin
+                    if us[1]["Rent"]["TermRent"].count > 1
+                      us[1]["Rent"]["TermRent"].each do |tr|
+                        rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::\;"
+                      end
+                    end
+
+                  rescue => rt_ex
+                  end
+
+                  unit.lease_pricing = rentStr
+                  import_units << unit
                 end
 
-              rescue => e
+              rescue => ex
                 begin
                   com = Community.find credentials.community_id
                   unless com.entrata_exception_logs.present?
@@ -723,74 +453,32 @@ class PsiService < BaseService
                   PaperTrail.enabled = false
                   com.save
                   PaperTrail.enabled = true
-
                 rescue => r
                 end
               end
 
             end
-
           end
-
-        rescue => e
-          begin
-            com = Community.find credentials.community_id
-            unless com.entrata_exception_logs.present?
-              com.entrata_exception_logs = ""
-            end
-            com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ e.message
-            PaperTrail.enabled = false
-            com.save
-            PaperTrail.enabled = true
-          
-          rescue => r
-          end
-        end
+        end        
       end
-
-      ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
     end
+
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
   end
 
   def getMoveInDate(property_id)
-    url = "https://"+credentials.entrata_url+".entrata.com/api/v1/properties"
-    password = credentials.password
-    username = credentials.username
+    response = get_move_in_dates(property_id)
+    moveIn_dates = []
 
-    begin
-      response = HTTParty.post(url,
-                               :body => {
-                                   "auth": {
-                                       "type": "basic",
-                                       "password": password,
-                                       "username": username
-                                   },
-                                   "requestId": 15,
-                                   "method": {
-                                       "name": "getPropertyPickLists",
-                                       "version":"r1",
-                                       "params": {
-                                           "propertyIds": property_id
-                                       }
-                                   }
-                               }.to_json,
-                               :headers => { 'Content-Type' => 'application/json' } )
-
-      response =  JSON.parse(response.body)
-      moveIn_dates = []
-
-      response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
-        if dates['leaseStartDate'].present?
-          ss = dates['leaseStartDate'].split('/')
-          date1 = ss[2] + "-" +ss[0] + "-" + ss[1]
-          date1 = (date1.to_date + 31).to_s
-          ss = date1.split('-')
-          added_date = ss[1] + "/" + ss[2] + "/" + ss[0]
-          moveIn_dates << added_date
-        end
+    response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
+      if dates['leaseStartDate'].present?
+        ss = dates['leaseStartDate'].split('/')
+        date1 = ss[2] + "-" +ss[0] + "-" + ss[1]
+        date1 = (date1.to_date + 31).to_s
+        ss = date1.split('-')
+        added_date = ss[1] + "/" + ss[2] + "/" + ss[0]
+        moveIn_dates << added_date
       end
-
-    rescue
     end
 
     moveIn_dates
@@ -798,5 +486,96 @@ class PsiService < BaseService
 
   def save_website_column_of_community(response)
     community = Community.find credentials.community_id
+  end
+
+  def get_provider_unit_id u
+    [ 
+      (u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]),
+      u["Units"]["Unit"]["Identification"]["IDValue"].to_s,
+      (u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)
+    ]
+  end
+
+  def update_availability_of_units no_availbale_units_provider_ids
+    Unit.where(community_id: credentials.community_id, manual_override: false, provider_unit_id: no_availbale_units_provider_ids).update_all(availability: "Occupied", available: false, available_date: nil)
+  end
+
+  def get_space_unit_identifier u, us
+    [
+      (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s),
+      (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]),
+      (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
+      (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
+      (u["@attributes"]["Id"].to_s),
+      (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
+      (u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s))
+    ]
+  end
+
+  def get_move_in_dates property_id
+    response = HTTParty.post(get_move_in_dates_endpoint(),
+      :body => {
+        "auth": {
+          "type": "basic",
+          "password": credentials.password,
+          "username": credentials.username
+        },
+        "requestId": 15,
+        "method": {
+          "name": "getPropertyPickLists",
+          "version":"r1",
+          "params": {
+            "propertyIds": property_id
+          }
+        }
+      }.to_json,
+      :headers => { 'Content-Type' => 'application/json' } )
+
+    JSON.parse(response.body)
+  end
+
+  def get_units_pricing property_id, move_in_date
+    response = HTTParty.post(get_units_pricing_endpoint(),
+      :body => {
+        "auth": {
+          "type": "basic",
+          "password": credentials.password,
+          "username": credentials.username
+        },
+        "method": {
+          "name": "getUnitsAvailabilityAndPricing",
+          "params": get_pricing_params(property_id, move_in_date)
+        }
+      }.to_json,
+      :headers => { 'Content-Type' => 'application/json' } )
+
+    JSON.parse(response.body)
+  end
+
+  def get_pricing_params property_id, move_in_date
+    {
+      "propertyId": property_id,
+      "availableUnitsOnly": credentials&.entrata_available_units_only,
+      "showUnitSpaces": credentials&.entrata_show_unit_spaces,
+      "useSpaceConfiguration": credentials&.entrata_use_space_configuration,
+    }.merge(move_in_date_param(move_in_date))
+  end
+
+  def get_units_pricing_endpoint
+    if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+      url = credentials.entrata_url
+    else
+      url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+    end
+
+    url
+  end
+
+  def get_move_in_dates_endpoint
+    "https://#{credentials.entrata_url}.entrata.com/api/v1/properties"
+  end
+
+  def move_in_date_param move_in_date
+    h_move_in_date = (move_in_date.present? && move_in_date != "0") ? { "moveInStartDate": move_in_date } : {}
   end
 end

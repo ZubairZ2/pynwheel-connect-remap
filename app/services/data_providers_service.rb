@@ -11,7 +11,7 @@ class DataProvidersService
     @communities.each do |community|
       puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
       ImportPsiDataJob.perform_async(community.credential.attributes.to_json)
-      sleep ENV["SLEEP_TIME"].to_i
+      sleep 60
     end
   end
 
