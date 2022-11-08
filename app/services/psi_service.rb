@@ -132,7 +132,7 @@ class PsiService < BaseService
       vacateDate = ""
       unit = Unit.where(community_id: credentials.community_id, provider_unit_id: get_provider_unit_id(u) ).first_or_initialize
     
-      if unit.id.present?
+      if unit&.id.present?
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         unit.provider = "psi"
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
@@ -294,7 +294,7 @@ class PsiService < BaseService
     floorplans.each do |f|
       floorplan = Floorplan.where(community_id: credentials.community_id, provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
 
-      if floorplan.present?
+      if floorplan&.id.present?
         floorplan.availability_url = f["FloorplanAvailabilityURL"] if f["FloorplanAvailabilityURL"].present?
         floorplan.provider = "psi"
 

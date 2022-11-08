@@ -50,8 +50,8 @@ class RealPageSvcService < BaseService
           floorplans.each do |fp|
             if fp.key?(:FloorPlanObject)
               fp = fp[:FloorPlanObject]
-              floorplan = Floorplan.find_by(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID])#.first_or_initialize
-              if floorplan.present?
+              floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
+              if floorplan&.id.present?
                 # if fp[:FloorPlanNameMarketing].present?
                 #   floorplan.name = fp[:FloorPlanNameMarketing]
                 # elsif fp[:FloorPlanCode].present?
@@ -74,8 +74,6 @@ class RealPageSvcService < BaseService
                 import_floorplans << floorplan
 
               else
-                floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
-
                 unless floorplan.name_is_updated.present? && floorplan.name_is_updated
 
                   if fp[:FloorPlanName].present?
@@ -167,8 +165,9 @@ class RealPageSvcService < BaseService
             if u.key?(:UnitObject)
               u = u[:UnitObject]
               hit = false
-              unit = Unit.find_by(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID])#.first_or_initialize
-              if unit.present?
+              unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID]).first_or_initialize
+
+              if unit&.id.present?
 
                 # unit.property_id = u[:SiteID]
                 # unit.provider_unit_id = u[:UnitID]
@@ -179,9 +178,9 @@ class RealPageSvcService < BaseService
                 #   unit.marketing_name = u[:UnitNumber]
                 # end
                 # unit.floorplan_id = u[:FloorplanID]
-                unit.market_rent = u[:BaseRentAmount]
+                unit.market_rent = u[:BaseRentAmount].to_f
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                  unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
+                  unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount].to_f : 1
                 end
                 unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                   unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
@@ -246,7 +245,6 @@ class RealPageSvcService < BaseService
 
 
               else
-                unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID]).first_or_initialize
                 unless unit.manual_override
                   unit.property_id = u[:SiteID]
                   unit.provider_unit_id = u[:UnitID]
@@ -264,7 +262,7 @@ class RealPageSvcService < BaseService
 
                   # unit.market_rent = u[:BaseRentAmount]
                   unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
-                    unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
+                    unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount].to_f : 1
                   end
 
                   unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
@@ -431,17 +429,16 @@ class RealPageSvcService < BaseService
           
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units.each do |u|
-
-            unit = Unit.find_by(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:Address][:UnitID])#.first_or_initialize
+            unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:Address][:UnitID]).first_or_initialize
             @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
-            if unit.present?
+            if unit&.id.present?
 
 
               unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && (unit.manual_override)
                 if u[:RentMatrix].present?
-                  unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
+                  unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f : 1
                 else
-                  unit.effective_rent = u[:BaseRentAmount]
+                  unit.effective_rent = u[:BaseRentAmount].to_f
                 end
                 # unit.min_effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
                 # unit.max_effectent_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MaxRent] : 0
@@ -479,7 +476,6 @@ class RealPageSvcService < BaseService
               # unit.save(validate: false)
               #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
             else
-              unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:Address][:UnitID]).first_or_initialize
               @array_of_units << u[:Address][:UnitID]
               unless unit.manual_override
                 unit.property_id = u[:SiteID]
@@ -498,9 +494,9 @@ class RealPageSvcService < BaseService
                 # unit.market_rent = u[:BaseRentAmount]
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
                   if u[:RentMatrix].present?
-                    unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
+                    unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f : 1
                   else
-                    unit.effective_rent = u[:BaseRentAmount]
+                    unit.effective_rent = u[:BaseRentAmount].to_f
                   end
                   # unit.min_effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
                   # unit.max_effectent_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MaxRent] : 0
@@ -557,26 +553,7 @@ class RealPageSvcService < BaseService
           end
 
           ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-
-          no_unit = unit_present - @unit_record
-          import_units = []
-          
-          if @unit_record.nil?
-            no_unit = nil
-          end
-          
-          no_unit.each do |un|
-            unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
-            unit.availability = "Occupied"
-            unit.available = false
-            unit.available_date = nil
-            import_units << unit unless unit.manual_override
-
-            # unit.save(validate: false) unless unit.manual_override
-          end
-
-          ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-
+          update_availability_of_units(( unit_present - @unit_record ))
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
@@ -605,18 +582,6 @@ class RealPageSvcService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-
-    # no_unit = unit_present - @unit_record
-    # if @unit_record.nil?
-    #   no_unit = nil
-    # end
-    # no_unit.each do |un|
-    #   unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
-    #   unit.availability = "Occupied"
-    #   unit.available = false
-    #   unit.available_date = nil
-    #   unit.save(validate: false) unless unit.manual_override
-    # end
   end
 
   def import_realpage_svc_price
@@ -687,8 +652,8 @@ class RealPageSvcService < BaseService
             unit_min_rent = u[1][:Rows][:Row][0][:MinRent]
             unit_max_rent = u[1][:Rows][:Row][0][:MaxRent]
             best_price = nil
-            begin
 
+            begin
               u[1][:Rows][:Row][1][:Options].each_with_index do |opts,index|
                 next if index == 0
 
@@ -696,33 +661,27 @@ class RealPageSvcService < BaseService
                 next if index == 0
                 unless unitLeaseTerm.include?(opts[:Option][0][:LeaseTerm].to_s)
                   rentStr = rentStr + (opts[:Option][0][:LeaseTerm].to_s) + ":" + opts[:Option][0][:Rent] + "::" + startdate + ":" + opts[:Option][0][:LeaseEndDate].to_s + "\;"
-                  # unitLeaseTerm << opt[:Option][0][:LeaseTerm].to_s
                 end
-                # hashData = {(u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseTerm].to_s) => [u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:Rent], startdate, u[:RentMatrix][1][:Rows][:Row][index][:Options][ind][:Option][0][:LeaseEndDate] ]}
-                # unitHash.merge! hashData
               end
-
-                # unitHash = (unitHash.sort_by {|k, v| k.to_i}).to_h
             rescue => ex
-
               unitHash = nil
             end
 
             if unit_min_rent.present?
-              unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no,building: unit_add)
+              unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
+              
               unless unit.present?
                 unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
               end
+
               if unit.present?
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && (unit.manual_override)
-                  unit.effective_rent = unit_min_rent
+                  unit.effective_rent = unit_min_rent.to_f
                 end
-                unit.min_effective_rent = unit_min_rent
-                unit.max_effective_rent = unit_max_rent
+                unit.min_effective_rent = unit_min_rent.to_f
+                unit.max_effective_rent = unit_max_rent.to_f
                 unit.lease_pricing = rentStr
                 import_units << unit
-                # unit.save(:validate => false)
-                # @doc = @doc + response.body
               end
 
             end
@@ -731,10 +690,10 @@ class RealPageSvcService < BaseService
           ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
         end
       rescue => e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
   end
+
   def realpage_building
     begin
       url = REALPAGE_URL
@@ -772,12 +731,9 @@ class RealPageSvcService < BaseService
       unless result["Envelope"]["Body"]["Fault"].present?
         return result["Envelope"]["Body"]["getpicklistResponse"]["getpicklistResult"]["GetPickList"]["Contents"]["PicklistItem"]
       else
-        #Thread.current[:errors] << result["Envelope"]["Body"]["Fault"]["faultstring"]
         ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})
       end
     rescue => e
-      #Thread.current[:errors] << e.message
-      #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
     end
   end
 
@@ -797,4 +753,9 @@ class RealPageSvcService < BaseService
       end
     end
   end
+
+  def update_availability_of_units no_availbale_units_provider_ids
+    Unit.where(community_id: credentials.community_id, manual_override: false, provider_unit_id: no_availbale_units_provider_ids).update_all(availability: "Occupied", available: false, available_date: nil)
+  end
+
 end
