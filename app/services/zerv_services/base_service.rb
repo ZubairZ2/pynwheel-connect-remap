@@ -51,14 +51,14 @@ module ZervServices
     end
 
     def base_url
-      ENV["ZERV_BASE_URL"]
+      ENV["ZERV_BASE_URL"] || "https://accessapi.zervinc.net/v1/portal"
     end
 
     def check_response(is_resident, community, tour_user, stop_list, response, errors)
       if response.success?
         is_resident ? resident_create_zerv_guest__success(community, tour_user, stop_list) : create_zerv_guest__success(community, tour_user, stop_list)
       else
-        is_resident ? resident_zerv_guest__failure(community, tour_user, response.error.merge(errors)) : zerv_guest__failure(community, tour_user, response.error.merge(errors))
+        is_resident ? resident_zerv_guest__failure(community, tour_user, response.error.merge(errors)) : create_zerv_guest__failure(community, tour_user, response.error.merge(errors))
       end
     end
 
@@ -76,7 +76,7 @@ module ZervServices
       Rails.cache.delete(:id_token)
     end
 
-    def zerv_guest__failure(community, tour_user, errors)
+    def create_zerv_guest__failure(community, tour_user, errors)
       puts '--------------------------    Failure in creating Zerv User      ------------------------'
       puts errors
       puts '--------------------------    Failure in creating Zerv User      ------------------------'
