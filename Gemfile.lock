@@ -42,6 +42,8 @@ GEM
       activemodel (= 5.0.7.2)
       activesupport (= 5.0.7.2)
       arel (~> 7.0)
+    activerecord-import (0.15.0)
+      activerecord (>= 3.2)
     activesupport (5.0.7.2)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 0.7, < 2)
@@ -1319,7 +1321,6 @@ GEM
     multi_xml (0.6.0)
     multipart-post (2.1.1)
     netrc (0.11.0)
-    newrelic_rpm (6.11.0.365)
     nio4r (2.5.2)
     nokogiri (1.10.9)
       mini_portile2 (~> 2.4.0)
@@ -1507,6 +1508,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activerecord-import (~> 0.15.0)
   amoeba
   annotate
   aws-sdk (~> 3)
@@ -1553,7 +1555,6 @@ DEPENDENCIES
   listen (~> 3.0.5)
   mini_magick
   momentjs-rails (>= 2.9.0)
-  newrelic_rpm
   oauth2 (~> 1.4, >= 1.4.4)
   ox
   paper_trail

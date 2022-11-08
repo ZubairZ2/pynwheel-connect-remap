@@ -13,7 +13,6 @@ gem 'stripe'
 gem 'annotate'
 gem 'bootstrap-wysihtml5-rails'
 gem 'carrierwave_direct'
-gem 'newrelic_rpm'
 gem 'momentjs-rails', '>= 2.9.0'
 gem 'bootstrap3-datetimepicker-rails', '~> 4.17.47'
 # gem 'piet'
@@ -106,6 +105,7 @@ gem 'ox'
 gem 'puma_worker_killer'
 gem 'pry-nav'
 gem 'chartjs-ror'
+gem 'activerecord-import', '~> 0.15.0'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
