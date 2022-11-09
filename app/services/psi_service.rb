@@ -2,8 +2,8 @@ class PsiService < BaseService
   @@floorplanHash = Hash.new
   def perform
     @unit_record = []
-    @all_floorplans_hash = get_all_floorplans_hash()
-    @all_units_hash = get_all_units_hash()
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "psi")
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "psi")
     
     begin
       com_test = Community.find credentials.community_id
@@ -485,8 +485,7 @@ class PsiService < BaseService
   def getMoveInDate(property_id)
     response = get_move_in_dates(property_id)
     moveIn_dates = []
-
-    unless response['response']["error"]["code"].present?
+    if (response.present? && response["response"].present? && (response["response"]["code"] == 200) )
       response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
         if dates['leaseStartDate'].present?
           ss = dates['leaseStartDate'].split('/')
@@ -612,15 +611,4 @@ class PsiService < BaseService
     h_move_in_date = (move_in_date.present? && move_in_date != "0") ? { "moveInStartDate": move_in_date } : {}
   end
 
-  def get_all_units_hash
-    unit_present = Unit.where("community_id = ? AND provider IN (?)", credentials.community_id, ["psi"]).map{|x| x.provider_unit_id}
-    all_units = Unit.where(provider: "psi", community_id: credentials.community_id, provider_unit_id: unit_present)
-    all_units.index_by(&:provider_unit_id)
-  end
-
-  def get_all_floorplans_hash
-    floorplan_present = Floorplan.where("community_id = ? AND provider IN (?)", credentials.community_id, ["psi"]).map{|x| x.provider_floorplan_id}
-    all_floorplans = Floorplan.where(provider: "psi",community_id: credentials.community_id, provider_floorplan_id: floorplan_present)
-    all_floorplans.index_by(&:provider_floorplan_id)
-  end
 end

@@ -1,8 +1,8 @@
 class YardiRentCafeService < BaseService
 
   def perform
-    @all_units_hash = get_all_units_hash()
-    @all_floorplans_hash = get_all_floorplans_hash()
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "yardirentcafe")
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardirentcafe")
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
 
@@ -339,15 +339,4 @@ class YardiRentCafeService < BaseService
     Unit.where(community_id: credentials.community_id, manual_override: false, provider_unit_id: no_availbale_units_provider_ids).update_all(availability: "Occupied", available: false, available_date: nil)
   end
 
-  def get_all_units_hash
-    unit_present = Unit.where("community_id = ? AND provider IN (?)", credentials.community_id, ["yardirentcafe"]).map{|x| x.provider_unit_id}
-    all_units = Unit.where(provider: "yardirentcafe", community_id: credentials.community_id, provider_unit_id: unit_present)
-    all_units.index_by(&:provider_unit_id)
-  end
-
-  def get_all_floorplans_hash
-    floorplan_present = Floorplan.where("community_id = ? AND provider IN (?)", credentials.community_id, ["yardirentcafe"]).map{|x| x.provider_floorplan_id}
-    all_floorplans = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id, provider_floorplan_id: floorplan_present)
-    all_floorplans.index_by(&:provider_floorplan_id)
-  end
 end

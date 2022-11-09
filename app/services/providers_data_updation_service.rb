@@ -2,6 +2,18 @@ class ProvidersDataUpdationService
   def initialize 
   end
 
+  def get_all_units_hash community_id, provider
+    unit_present = Unit.where("community_id = ? AND provider IN (?)", community_id, [provider]).map{|x| x.provider_unit_id}
+    all_units = Unit.where(provider: provider, community_id: community_id, provider_unit_id: unit_present)
+    all_units.index_by(&:provider_unit_id)
+  end
+
+  def get_all_floorplans_hash community_id, provider
+    floorplan_present = Floorplan.where("community_id = ? AND provider IN (?)", community_id, [provider]).map{|x| x.provider_floorplan_id}
+    all_floorplans = Floorplan.where(provider: provider, community_id: community_id, provider_floorplan_id: floorplan_present)
+    all_floorplans.index_by(&:provider_floorplan_id)
+  end
+
   def update_or_create_floorplans_records import_floorplans
     return unless import_floorplans.present?
     new_floorplans = import_floorplans.map{|f| f unless f&.id.present?}.compact

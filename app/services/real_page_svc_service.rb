@@ -1,6 +1,8 @@
 class RealPageSvcService < BaseService
   def perform
     @unit_record = []
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "realpagesvc")
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "realpagesvc")
     import_realpage_svc_floorplans
     # import_initials_realpage_units
     import_realpage_svc_units
