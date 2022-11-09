@@ -2,6 +2,9 @@ class PsiService < BaseService
   @@floorplanHash = Hash.new
   def perform
     @unit_record = []
+    @all_floorplans_hash = get_all_floorplans_hash()
+    @all_units_hash = get_all_units_hash()
+    
     begin
       com_test = Community.find credentials.community_id
       com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
@@ -127,13 +130,11 @@ class PsiService < BaseService
 
   def save_psi_units(units,property_id)
     import_units = []
-    all_floorplans_hash = get_all_floorplans_hash()
-    all_units_hash = get_all_units_hash()
-    unit_present = all_units_hash.keys
+    unit_present = @all_units_hash.keys
 
     units.each do |u|
       vacateDate = ""
-      unit = get_psi_matched_unit(all_units_hash, u)
+      unit = get_psi_matched_unit(u)
 
       if unit.present?
         puts "----------------------------- #{unit.marketing_name} ------------------------\n"
@@ -187,7 +188,7 @@ class PsiService < BaseService
         end
 
         unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
-        unit_floorplan = all_floorplans_hash[unit.floorplan_id]
+        unit_floorplan = @all_floorplans_hash[unit.floorplan_id]
         unit.availability_url = unit_floorplan.availability_url unless unit.availability_url
         url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
       
@@ -280,7 +281,7 @@ class PsiService < BaseService
         end
 
         unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
-        unit_floorplan = all_floorplans_hash[unit.floorplan_id]
+        unit_floorplan = @all_floorplans_hash[unit.floorplan_id]
         unit.availability_url = unit_floorplan.availability_url unless unit.availability_url
         url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
       
@@ -299,10 +300,9 @@ class PsiService < BaseService
 
   def save_psi_floorplans(floorplans,property_id)
     import_floorplans = []
-    all_floorplans_hash = get_all_floorplans_hash()
 
     floorplans.each do |f|
-      floorplan = all_floorplans_hash[f["Identification"]["IDValue"].to_s]
+      floorplan = @all_floorplans_hash[f["Identification"]["IDValue"].to_s]
 
       if floorplan.present?
         puts "----------------- #{floorplan.name} -----------------------\n"
@@ -391,8 +391,6 @@ class PsiService < BaseService
       move_in_dates = getMoveInDate(property_id)
       move_in_dates << "0" unless move_in_dates.present?
 
-      all_units_hash = get_all_units_hash()
-
       move_in_dates.each do |move_in_date|
         response = get_units_pricing(property_id, move_in_date)
 
@@ -403,8 +401,9 @@ class PsiService < BaseService
           psi_units.each do |u|
             u['UnitSpace'].each do |us|
               begin
-                unit = get_psi_space_matched_unit(all_units_hash, u, us)
-                # unit = Unit.where(provider_unit_id: get_space_unit_identifier(u, us), community_id: credentials.community_id).first
+                
+                unit = get_psi_space_matched_unit(u, us)
+
                 if unit.present?
                   puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
 
@@ -503,22 +502,22 @@ class PsiService < BaseService
     moveIn_dates
   end
 
-  def get_psi_matched_unit all_units_hash, u
-    unit = all_units_hash[(u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])]
-    unit = all_units_hash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s] unless unit.present?
-    unit = all_units_hash[(u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)] unless unit.present?
+  def get_psi_matched_unit u
+    unit = @all_units_hash[(u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])]
+    unit = @all_units_hash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s] unless unit.present?
+    unit = @all_units_hash[(u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)] unless unit.present?
 
     unit
   end
 
-  def get_psi_space_matched_unit all_units_hash, u, us
-    unit = all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s)]
-    unit = all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)])] unless unit.present?
-    unit = all_units_hash [(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
-    unit = all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
-    unit = all_units_hash[(u["@attributes"]["Id"].to_s)] unless unit.present?
-    unit = all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
-    unit = all_units_hash[(u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s))] unless unit.present?
+  def get_psi_space_matched_unit u, us
+    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s)]
+    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)])] unless unit.present?
+    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
+    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
+    unit = @all_units_hash[(u["@attributes"]["Id"].to_s)] unless unit.present?
+    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
+    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s))] unless unit.present?
     unit 
   end
 

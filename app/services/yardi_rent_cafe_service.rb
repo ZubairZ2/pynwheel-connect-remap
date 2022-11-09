@@ -1,8 +1,11 @@
 class YardiRentCafeService < BaseService
 
   def perform
+    @all_units_hash = get_all_units_hash()
+    @all_floorplans_hash = get_all_floorplans_hash()
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
+
   end
 
   def import_yardirentcafe_units
@@ -27,8 +30,7 @@ class YardiRentCafeService < BaseService
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
 
-        all_units_hash = get_all_units_hash()
-        unit_present = all_units_hash.keys
+        unit_present = @all_units_hash.keys
 
         if response[0]["Error"].nil?
           community&.community_data_updated_on()
@@ -37,7 +39,7 @@ class YardiRentCafeService < BaseService
 
             begin
 
-              unit = all_units_hash[r["ApartmentId"].to_s]
+              unit = @all_units_hash[r["ApartmentId"].to_s]
               if unit.present?
                 puts "----------------------------- #{unit.marketing_name} ------------------------\n"
 
@@ -245,11 +247,9 @@ class YardiRentCafeService < BaseService
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
 
-        all_floorplans_hash = get_all_floorplans_hash()
-
         if response[0]["Error"].nil?
           response.each do |r|
-            fp = all_floorplans_hash[r["FloorplanId"].to_s]
+            fp = @all_floorplans_hash[r["FloorplanId"].to_s]
             
             if fp.present?
               puts "----------------- #{fp.name} -----------------------\n"
