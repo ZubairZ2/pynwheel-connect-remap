@@ -755,6 +755,7 @@ class RealPageSvcService < BaseService
   end
 
   def update_availability_of_units no_availbale_units_provider_ids
+    return unless no_availbale_units_provider_ids.present?
     Unit.where(community_id: credentials.community_id, manual_override: false, provider_unit_id: no_availbale_units_provider_ids).update_all(availability: "Occupied", available: false, available_date: nil)
   end
 

@@ -2,7 +2,7 @@ class YardiRentCafeService < BaseService
 
   def perform
     import_yardirentcafe_floorplans
-    import_yardirentcafe_units 
+    import_yardirentcafe_units
   end
 
   def import_yardirentcafe_units
@@ -17,6 +17,7 @@ class YardiRentCafeService < BaseService
         #property_code = credentials.p_code
         showallunit =  credentials.limit_result ? "0" : "-1"
         import_units = []
+
         if api_token.present?
           @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=" + showallunit
         else
@@ -26,19 +27,20 @@ class YardiRentCafeService < BaseService
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
 
-        unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardirentcafe"]).map{|x| x.provider_unit_id}
+        all_units_hash = get_all_units_hash()
+        unit_present = all_units_hash.keys
+
         if response[0]["Error"].nil?
           community&.community_data_updated_on()
-          
+
           response.each do |r|
+
             begin
-              unit = Unit.find_by(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])#.first_or_initialize
+
+              unit = all_units_hash[r["ApartmentId"]]
               if unit.present?
-                # unit.property_id = r["PropertyId"]
-                # unit.unit_type = r["ApartmentName"]
-                # unit.marketing_name = r["ApartmentName"]
-                # unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-                # unit.floorplan_id = r["FloorplanId"]
+                puts "----------------------------- #{unit.marketing_name} ------------------------\n"
+
                 unit.market_rent = r["MinimumRent"]
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = r["MinimumRent"]
@@ -48,8 +50,6 @@ class YardiRentCafeService < BaseService
                   unit.availability = "Unoccupied" if !unit.sold
                 end
                 
-                # unit.availability = "Unoccupied" if !unit.sold
-
                 if ( r["AvailableDate"] != "" && r["AvailableDate"] != nil )
                   unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                     unit.availability = "Unoccupied" if !unit.sold
@@ -101,12 +101,11 @@ class YardiRentCafeService < BaseService
                 end
 
                 unit.lease_pricing = leasing
-                
+
                 import_units << unit
-                # unit.save(validate: false)
 
               else
-                unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first_or_initialize
+                unit = Unit.where(provider: "yardirentcafe", community_id: credentials.community_id, provider_unit_id: r["ApartmentId"]).first_or_initialize
                 unless unit.manual_override
                   unit.property_id = r["PropertyId"]
                   unit.unit_type = r["ApartmentName"]
@@ -179,17 +178,18 @@ class YardiRentCafeService < BaseService
                   end
 
                   unit.lease_pricing = leasing
+
                   import_units << unit
-                  # unit.save(validate: false)
+
                 end
               end
+
             rescue => e
               ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
             end
           end
 
           ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-
 
           begin
             cred = Credential.find credentials.id
@@ -199,6 +199,7 @@ class YardiRentCafeService < BaseService
             PaperTrail.enabled = true
           rescue => err
           end
+
         else
           begin
             cred = Credential.find credentials.id
@@ -210,25 +211,8 @@ class YardiRentCafeService < BaseService
           end
         end
 
-        no_unit = unit_present - @unit_record
-        import_units = []
-
-        if @unit_record.nil?
-          no_unit = nil
-        end
-
-        no_unit.each do |un|
-          unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
-          unit.availability = "Occupied"
-          unit.available = false
-          unit.available_date = nil
-          import_units << unit unless unit.manual_override
-
-          # unit.save(validate: false) unless unit.manual_override
-        end
-
-        ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-
+        update_availability_of_units((unit_present - @unit_record))
+        
       rescue => e
         begin
           cred = Credential.find credentials.id
@@ -238,7 +222,6 @@ class YardiRentCafeService < BaseService
           PaperTrail.enabled = true
         rescue => err
         end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
     end
   end
@@ -247,59 +230,56 @@ class YardiRentCafeService < BaseService
     property_codes = credentials.p_code.split(',') rescue []
     property_codes.each do |property_code|
       begin
+
         import_floorplans = []
         request_type = "floorplan"
         company_code = credentials.c_code
         api_token = credentials.api_token
-        #property_code = credentials.p_code
+
         if api_token.present?
           @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
         else
           @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
         end
+        
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
+
+        all_floorplans_hash = get_all_floorplans_hash()
+
         if response[0]["Error"].nil?
           response.each do |r|
-            fp = Floorplan.find_by(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"])#.first_or_initialize
+            fp = all_floorplans_hash[r["FloorplanId"]]
+            
             if fp.present?
-              # fp.property_id = r["PropertyId"]
-              # fp.provider_floorplan_id = r["FloorplanId"]
-              # fp.name = r["FloorplanName"]
-              # fp.unit_count = r[""]
-              # fp.units_available = r[""]
-              # fp.bedrooms = r["Beds"]
-              # fp.bathrooms = r["Baths"]
-              # if r["MinimumSQFT"].present?
-              #   fp.square_feet = r["MinimumSQFT"]
-              # elsif r["SQFT"].present?
-              #   fp.square_feet = r["SQFT"]
-              # end
+              puts "----------------- #{fp.name} -----------------------\n"
               unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated && fp.manual_override
                 fp.market_rent = r["MinimumRent"]
               end
 
-              # fp.deposit = r["MinimumDeposit"]
               import_floorplans << fp
-              # fp.save(validate: false)
-
             else
-              fp = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"]).first_or_initialize
+              fp = Floorplan.where(provider: "yardirentcafe", community_id: credentials.community_id, provider_floorplan_id: r["FloorplanId"]).first_or_initialize
+
               unless fp.manual_override
                 fp.property_id = r["PropertyId"]
                 fp.provider_floorplan_id = r["FloorplanId"]
+
                 unless fp.name_is_updated.present? && fp.name_is_updated
                   fp.name = r["FloorplanName"]
                 end
 
                 fp.unit_count = r[""]
                 fp.units_available = r[""]
+
                 unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated
                   fp.bedrooms = r["Beds"]
                 end
+
                 unless fp.bathroom_is_updated.present? && fp.bathroom_is_updated
                   fp.bathrooms = r["Baths"]
                 end
+
                 unless fp.square_feet_is_updated.present? && fp.square_feet_is_updated
                   if r["MinimumSQFT"].present?
                     fp.square_feet = r["MinimumSQFT"]
@@ -307,23 +287,21 @@ class YardiRentCafeService < BaseService
                     fp.square_feet = r["SQFT"]
                   end
                 end
+
                 unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated
                   fp.market_rent = r["MinimumRent"]
                 end
 
                 fp.deposit = r["MinimumDeposit"]
+
                 import_floorplans << fp
-                # fp.save(validate: false)
               end
             end
           end
 
           ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
-
-        else 
         end
       rescue => e 
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
       end
     end
   end
@@ -353,5 +331,23 @@ class YardiRentCafeService < BaseService
     rescue => ex
       return nil
     end
+  end
+
+
+  def update_availability_of_units no_availbale_units_provider_ids
+    return unless no_availbale_units_provider_ids.present?
+    Unit.where(community_id: credentials.community_id, manual_override: false, provider_unit_id: no_availbale_units_provider_ids).update_all(availability: "Occupied", available: false, available_date: nil)
+  end
+
+  def get_all_units_hash
+    unit_present = Unit.where("community_id = ? AND provider IN (?)", credentials.community_id, ["yardirentcafe"]).map{|x| x.provider_unit_id}
+    all_units = Unit.where(provider: "yardirentcafe", community_id: credentials.community_id, provider_unit_id: unit_present)
+    all_units.index_by(&:provider_unit_id)
+  end
+
+  def get_all_floorplans_hash
+    floorplan_present = Floorplan.where("community_id = ? AND provider IN (?)", credentials.community_id, ["yardirentcafe"]).map{|x| x.provider_floorplan_id}
+    all_floorplans = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id, provider_floorplan_id: floorplan_present)
+    all_floorplans.index_by(&:provider_floorplan_id)
   end
 end
