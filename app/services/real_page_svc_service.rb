@@ -3,6 +3,7 @@ class RealPageSvcService < BaseService
     @unit_record = []
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "realpagesvc")
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "realpagesvc")
+    @all_units_marketing_name_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_hash(credentials.community_id, "realpagesvc")
     import_realpage_svc_floorplans
     # import_initials_realpage_units
     import_realpage_svc_units
@@ -52,32 +53,22 @@ class RealPageSvcService < BaseService
           floorplans.each do |fp|
             if fp.key?(:FloorPlanObject)
               fp = fp[:FloorPlanObject]
-              floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
-              if floorplan&.id.present?
-                # if fp[:FloorPlanNameMarketing].present?
-                #   floorplan.name = fp[:FloorPlanNameMarketing]
-                # elsif fp[:FloorPlanCode].present?
-                #   if fp[:FloorPlanCode] != fp[:FloorPlanName]
-                #     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
-                #   else
-                #     floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
-                #   end
-                # else
-                #   floorplan.name = fp[:FloorPlanName]
-                # end
-                # floorplan.bathrooms = fp[:Bathrooms]
-                # floorplan.bedrooms = fp[:Bedrooms]
+
+              floorplan = @all_floorplans_hash[fp[:FloorPlanID].to_s]
+
+              if floorplan.present?
+                puts "----------------- #{floorplan.name} -----------------------\n"
+
                 unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && floorplan.manual_override
                   floorplan.market_rent = fp[:RentMin]
                 end
 
-                # floorplan.square_feet = fp[:GrossSquareFootage]
-                # floorplan.save(:validate => false)
                 import_floorplans << floorplan
 
               else
-                unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+                floorplan = Floorplan.where(provider: "realpagesvc", community_id: community_id, provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
 
+                unless floorplan.name_is_updated.present? && floorplan.name_is_updated
                   if fp[:FloorPlanName].present?
                     floorplan.name = fp[:FloorPlanName]
                   elsif fp[:FloorPlanCode].present?
@@ -104,7 +95,6 @@ class RealPageSvcService < BaseService
                   floorplan.market_rent = fp[:RentMin]
                 end
 
-                # floorplan.save(:validate => false)
                 import_floorplans << floorplan
 
               end
@@ -114,10 +104,10 @@ class RealPageSvcService < BaseService
           ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
         end
       rescue => e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
   end
+
   def import_initials_realpage_units
     #building_result = realpage_building #Ignore it for now
     site_ids = credentials.site_id.split(',') rescue []
@@ -365,7 +355,8 @@ class RealPageSvcService < BaseService
 
   def import_realpage_svc_units
     #building_result = realpage_building #Ignore it for now
-    unit_present =  Unit.where("community_id = ? AND provider IN (?)",  credentials.community_id,  ["realpagesvc"]).map{|x| x.provider_unit_id}
+    unit_present = @all_units_hash.keys
+
     site_ids = credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
@@ -426,15 +417,18 @@ class RealPageSvcService < BaseService
                         </soapenv:Envelope>')
         sleep 1
         result = Ox.load(response.body, mode: :hash)
-        if result[:"s:Envelope"][1][:"s:Body"][1].present?
-          community&.community_data_updated_on()
-          
-          units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
-          units.each do |u|
-            unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:Address][:UnitID]).first_or_initialize
-            @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
-            if unit&.id.present?
 
+        if result[:"s:Envelope"][1][:"s:Body"][1].present?
+
+          community&.community_data_updated_on()          
+          units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
+          
+          units.each do |u|
+            @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
+            unit = @all_units_hash[u[:Address][:UnitID].to_s]
+
+            if unit.present?
+              puts "----------------------------- #{unit.marketing_name} ------------------------\n"
 
               unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && (unit.manual_override)
                 if u[:RentMatrix].present?
@@ -442,8 +436,6 @@ class RealPageSvcService < BaseService
                 else
                   unit.effective_rent = u[:BaseRentAmount].to_f
                 end
-                # unit.min_effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
-                # unit.max_effectent_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MaxRent] : 0
               end
 
               unless unit.availability_is_updated.present? && unit.availability_is_updated && (unit.manual_override)
@@ -462,9 +454,9 @@ class RealPageSvcService < BaseService
                 unless u[:Availability][:AvailableDate].present?
                   availableDate = u[:Availability][:VacantDate][3..4] + "/" + u[:Availability][:VacantDate][0..1] + "/" + u[:Availability][:VacantDate][5..9]
                   unit.available_date = availableDate
-
                 end
               end
+
               unless unit.available_is_updated.present? && unit.available_is_updated && (unit.manual_override)
                 if unit.availability == "Occupied"
                   unit.available = false
@@ -473,18 +465,23 @@ class RealPageSvcService < BaseService
                 end
 
               end
+
               unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
               @unit_record << unit.provider_unit_id
-              # unit.save(validate: false)
-              #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
+
             else
+              unit = Unit.where(provider: "realpagesvc", community_id: community_id, provider_unit_id: u[:Address][:UnitID]).first_or_initialize
+
               @array_of_units << u[:Address][:UnitID]
+
               unless unit.manual_override
                 unit.property_id = u[:SiteID]
                 unit.unit_type = u[:Address][:UnitNumber]
+
                 if u[:Address][:BuildingNumber].present?
                   unit.building = u[:Address][:BuildingNumber] unless u[:Address][:BuildingNumber] == "N/A"
                 end
+
                 unless unit.name_is_updated.present? && unit.name_is_updated
                   unit.marketing_name = u[:Address][:UnitNumber]
                 end
@@ -493,27 +490,26 @@ class RealPageSvcService < BaseService
                   unit.floorplan_id = u[:FloorPlan][:FloorPlanID]
                 end
 
-                # unit.market_rent = u[:BaseRentAmount]
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
                   if u[:RentMatrix].present?
                     unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f : 1
                   else
                     unit.effective_rent = u[:BaseRentAmount].to_f
                   end
-                  # unit.min_effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
-                  # unit.max_effectent_rent = u[:RentMatrix][1][:Rows][:Row][0][:MaxRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MaxRent] : 0
                 end
 
                 unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
                   unit.availability = u[:Availability][:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
                 end
+
                 if u[:UnitDetails][:RentSqFtCount].present?
                   unit.square_feet = u[:UnitDetails][:RentSqFtCount]
                 end
-                #unit.floor = evaluate_floor(unit.marketing_name) rescue nil
+
                 unless unit.floor_is_updated.present? && unit.floor_is_updated
                   unit.floor = u[:UnitDetails][:FloorNumber] rescue nil
                 end
+                
                 unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
                   if u[:Availability][:MadeReadyDate].present?
                     madeReadyDate = u[:Availability][:MadeReadyDate].split("/")[1] + "/" + u[:Availability][:MadeReadyDate].split("/")[0] + "/" + u[:Availability][:MadeReadyDate].split("/")[2]
@@ -528,13 +524,13 @@ class RealPageSvcService < BaseService
                     unit.available_date = availableDate
                   end
                 end
+
                 unless unit.available_is_updated.present? && unit.available_is_updated
                   if unit.availability == "Occupied"
                     unit.available = false
                   else
                     unit.available = true
                   end
-
                 end
 
                 unit.manually_updated = false
@@ -542,13 +538,10 @@ class RealPageSvcService < BaseService
                 unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
 
                 @unit_record << unit.provider_unit_id unless @unit_record.include?(unit.provider_unit_id)
-                # unit.save(validate: false)
-                #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
-              end
-              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
 
-              # unit.save(validate: false)
-              #puts "++++++++++++++++++++++///////// ", unit.errors.message.join(',')
+              end
+
+              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
             end
 
             import_units << unit
@@ -556,12 +549,14 @@ class RealPageSvcService < BaseService
 
           ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
           update_availability_of_units(( unit_present - @unit_record ))
+
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
             cred.save
           rescue => err
           end
+
         else
           begin
             cred = Credential.find credentials.id
@@ -581,7 +576,6 @@ class RealPageSvcService < BaseService
           PaperTrail.enabled = true
         rescue => err
         end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
   end
@@ -589,9 +583,11 @@ class RealPageSvcService < BaseService
   def import_realpage_svc_price
     site_ids = credentials.site_id.split(',') rescue []
     units_str = ""
+
     @array_of_units.each do |us|
       units_str = units_str + "<tem:int>"+us+"</tem:int>"
     end
+
     site_ids.each do |site_id|
       begin
         import_units = []
@@ -634,16 +630,13 @@ class RealPageSvcService < BaseService
                         </tem:getrentmatrix>
                     </soapenv:Body>
                 </soapenv:Envelope>')
+
         sleep 2
         #result = Hash.from_xml(response.body) This method consumes too much memory on heroku
         result = Ox.load(response.body, mode: :hash)
-
+        
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
-
-
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getrentmatrixResponse][1][:getrentmatrixResult][:GetRentMatrix][1][:RentMatrices][:RentMatrix]
-
-
           units.each do |u|
             rentStr = ""
             unitLeaseTerm = []
@@ -656,33 +649,40 @@ class RealPageSvcService < BaseService
             best_price = nil
 
             begin
-              u[1][:Rows][:Row][1][:Options].each_with_index do |opts,index|
+              u[1][:Rows][:Row][1][:Options].each_with_index do |opts, index|
                 next if index == 0
 
                 startdate = u[1][:Rows][:Row][1][:Options][0][:LeaseStartDate]
-                next if index == 0
+
                 unless unitLeaseTerm.include?(opts[:Option][0][:LeaseTerm].to_s)
                   rentStr = rentStr + (opts[:Option][0][:LeaseTerm].to_s) + ":" + opts[:Option][0][:Rent] + "::" + startdate + ":" + opts[:Option][0][:LeaseEndDate].to_s + "\;"
                 end
+                
               end
+
             rescue => ex
               unitHash = nil
             end
 
             if unit_min_rent.present?
-              unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
+              unit = @all_units_marketing_name_hash[unit_no.to_s]
+              # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
               
-              unless unit.present?
-                unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
-              end
+              # unless unit.present?
+              #   unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
+              # end
 
               if unit.present?
+                puts "--------------- Updating pricing for: #{unit.marketing_name} ---------------- \n"
+               
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && (unit.manual_override)
                   unit.effective_rent = unit_min_rent.to_f
                 end
+
                 unit.min_effective_rent = unit_min_rent.to_f
                 unit.max_effective_rent = unit_max_rent.to_f
                 unit.lease_pricing = rentStr
+
                 import_units << unit
               end
 
