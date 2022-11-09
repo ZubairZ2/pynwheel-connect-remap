@@ -127,12 +127,16 @@ class PsiService < BaseService
 
   def save_psi_units(units,property_id)
     import_units = []
-    unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["psi"]).map{|x| x.provider_unit_id}
+    all_floorplans_hash = get_all_floorplans_hash()
+    all_units_hash = get_all_units_hash()
+    unit_present = all_units_hash.keys
+
     units.each do |u|
       vacateDate = ""
-      unit = Unit.where(community_id: credentials.community_id, provider_unit_id: get_provider_unit_id(u) ).first_or_initialize
-    
-      if unit&.id.present?
+      unit = get_psi_matched_unit(all_units_hash, u)
+
+      if unit.present?
+        puts "----------------------------- #{unit.marketing_name} ------------------------\n"
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         unit.provider = "psi"
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
@@ -183,7 +187,8 @@ class PsiService < BaseService
         end
 
         unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
-        unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
+        unit_floorplan = all_floorplans_hash[unit.floorplan_id]
+        unit.availability_url = unit_floorplan.availability_url unless unit.availability_url
         url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
       
         unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
@@ -191,9 +196,11 @@ class PsiService < BaseService
         @unit_record << unit.provider_unit_id
         import_units << unit      
       else
+        unit = Unit.new
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.property_id = property_id
         unit.provider = "psi"
+        unit.community_id = credentials.community_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
 
         unless unit.name_is_updated.present? && unit.name_is_updated
@@ -273,7 +280,8 @@ class PsiService < BaseService
         end
 
         unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
-        unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
+        unit_floorplan = all_floorplans_hash[unit.floorplan_id]
+        unit.availability_url = unit_floorplan.availability_url unless unit.availability_url
         url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
       
         unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
@@ -291,10 +299,13 @@ class PsiService < BaseService
 
   def save_psi_floorplans(floorplans,property_id)
     import_floorplans = []
-    floorplans.each do |f|
-      floorplan = Floorplan.where(community_id: credentials.community_id, provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
+    all_floorplans_hash = get_all_floorplans_hash()
 
-      if floorplan&.id.present?
+    floorplans.each do |f|
+      floorplan = all_floorplans_hash[f["Identification"]["IDValue"].to_s]
+
+      if floorplan.present?
+        puts "----------------- #{floorplan.name} -----------------------\n"
         floorplan.availability_url = f["FloorplanAvailabilityURL"] if f["FloorplanAvailabilityURL"].present?
         floorplan.provider = "psi"
 
@@ -311,6 +322,8 @@ class PsiService < BaseService
         end
 
       else
+        floorplan = Floorplan.where(provider: "psi", community_id: credentials.community_id, provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
+
         floorplan.property_id = property_id
         floorplan.provider = "psi"
 
@@ -373,10 +386,12 @@ class PsiService < BaseService
     import_units = []
     floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []
-
+    
     property_ids.each do |property_id|
       move_in_dates = getMoveInDate(property_id)
       move_in_dates << "0" unless move_in_dates.present?
+
+      all_units_hash = get_all_units_hash()
 
       move_in_dates.each do |move_in_date|
         response = get_units_pricing(property_id, move_in_date)
@@ -388,9 +403,11 @@ class PsiService < BaseService
           psi_units.each do |u|
             u['UnitSpace'].each do |us|
               begin
-                unit = Unit.where(provider_unit_id: get_space_unit_identifier(u, us), community_id: credentials.community_id).first
-                
+                unit = get_psi_space_matched_unit(all_units_hash, u, us)
+                # unit = Unit.where(provider_unit_id: get_space_unit_identifier(u, us), community_id: credentials.community_id).first
                 if unit.present?
+                  puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
+
                   unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                     if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
                       unit.availability = 'Unoccupied' if !unit.sold
@@ -470,47 +487,63 @@ class PsiService < BaseService
     response = get_move_in_dates(property_id)
     moveIn_dates = []
 
-    response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
-      if dates['leaseStartDate'].present?
-        ss = dates['leaseStartDate'].split('/')
-        date1 = ss[2] + "-" +ss[0] + "-" + ss[1]
-        date1 = (date1.to_date + 31).to_s
-        ss = date1.split('-')
-        added_date = ss[1] + "/" + ss[2] + "/" + ss[0]
-        moveIn_dates << added_date
+    unless response['response']["error"]["code"].present?
+      response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
+        if dates['leaseStartDate'].present?
+          ss = dates['leaseStartDate'].split('/')
+          date1 = ss[2] + "-" +ss[0] + "-" + ss[1]
+          date1 = (date1.to_date + 31).to_s
+          ss = date1.split('-')
+          added_date = ss[1] + "/" + ss[2] + "/" + ss[0]
+          moveIn_dates << added_date
+        end
       end
     end
 
     moveIn_dates
   end
 
-  def save_website_column_of_community(response)
-    community = Community.find credentials.community_id
+  def get_psi_matched_unit all_units_hash, u
+    unit = all_units_hash[(u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])]
+    unit = all_units_hash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s] unless unit.present?
+    unit = all_units_hash[(u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)] unless unit.present?
+
+    unit
   end
 
-  def get_provider_unit_id u
-    [ 
-      (u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]),
-      u["Units"]["Unit"]["Identification"]["IDValue"].to_s,
-      (u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)
-    ]
+  def get_psi_space_matched_unit all_units_hash, u, us
+    unit = all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s)]
+    unit = all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)])] unless unit.present?
+    unit = all_units_hash [(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
+    unit = all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
+    unit = all_units_hash[(u["@attributes"]["Id"].to_s)] unless unit.present?
+    unit = all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
+    unit = all_units_hash[(u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s))] unless unit.present?
+    unit 
   end
+
+  # def get_provider_unit_id u
+  #   [ 
+  #     (u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]),
+  #     u["Units"]["Unit"]["Identification"]["IDValue"].to_s,
+  #     (u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)
+  #   ]
+  # end
+
+  # def get_space_unit_identifier u, us
+  #   [
+  #     (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s),
+  #     (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]),
+  #     (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
+  #     (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
+  #     (u["@attributes"]["Id"].to_s),
+  #     (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
+  #     (u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s))
+  #   ]
+  # end
 
   def update_availability_of_units no_availbale_units_provider_ids
-    return unless no_availbale_units_provider_ids.present?
     Unit.where(community_id: credentials.community_id, manual_override: false, provider_unit_id: no_availbale_units_provider_ids).update_all(availability: "Occupied", available: false, available_date: nil)
-  end
-
-  def get_space_unit_identifier u, us
-    [
-      (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s),
-      (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]),
-      (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
-      (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
-      (u["@attributes"]["Id"].to_s),
-      (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
-      (u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s))
-    ]
   end
 
   def get_move_in_dates property_id
@@ -578,5 +611,17 @@ class PsiService < BaseService
 
   def move_in_date_param move_in_date
     h_move_in_date = (move_in_date.present? && move_in_date != "0") ? { "moveInStartDate": move_in_date } : {}
+  end
+
+  def get_all_units_hash
+    unit_present = Unit.where("community_id = ? AND provider IN (?)", credentials.community_id, ["psi"]).map{|x| x.provider_unit_id}
+    all_units = Unit.where(provider: "psi", community_id: credentials.community_id, provider_unit_id: unit_present)
+    all_units.index_by(&:provider_unit_id)
+  end
+
+  def get_all_floorplans_hash
+    floorplan_present = Floorplan.where("community_id = ? AND provider IN (?)", credentials.community_id, ["psi"]).map{|x| x.provider_floorplan_id}
+    all_floorplans = Floorplan.where(provider: "psi",community_id: credentials.community_id, provider_floorplan_id: floorplan_present)
+    all_floorplans.index_by(&:provider_floorplan_id)
   end
 end

@@ -37,7 +37,7 @@ class YardiRentCafeService < BaseService
 
             begin
 
-              unit = all_units_hash[r["ApartmentId"]]
+              unit = all_units_hash[r["ApartmentId"].to_s]
               if unit.present?
                 puts "----------------------------- #{unit.marketing_name} ------------------------\n"
 
@@ -249,7 +249,7 @@ class YardiRentCafeService < BaseService
 
         if response[0]["Error"].nil?
           response.each do |r|
-            fp = all_floorplans_hash[r["FloorplanId"]]
+            fp = all_floorplans_hash[r["FloorplanId"].to_s]
             
             if fp.present?
               puts "----------------- #{fp.name} -----------------------\n"
