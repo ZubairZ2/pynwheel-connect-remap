@@ -294,8 +294,7 @@ class PsiService < BaseService
     end
       
     ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-
-    update_availability_of_units((unit_present - @unit_record))
+    ProvidersDataUpdationService.new().update_availability_of_units(credentials.community_id, (unit_present - @unit_record))
   end
 
   def save_psi_floorplans(floorplans,property_id)
@@ -518,30 +517,6 @@ class PsiService < BaseService
     unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
     unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s))] unless unit.present?
     unit 
-  end
-
-  # def get_provider_unit_id u
-  #   [ 
-  #     (u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"]),
-  #     u["Units"]["Unit"]["Identification"]["IDValue"].to_s,
-  #     (u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)
-  #   ]
-  # end
-
-  # def get_space_unit_identifier u, us
-  #   [
-  #     (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s),
-  #     (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]),
-  #     (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
-  #     (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
-  #     (u["@attributes"]["Id"].to_s),
-  #     (u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s),
-  #     (u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s))
-  #   ]
-  # end
-
-  def update_availability_of_units no_availbale_units_provider_ids
-    Unit.where(community_id: credentials.community_id, manual_override: false, provider_unit_id: no_availbale_units_provider_ids).update_all(availability: "Occupied", available: false, available_date: nil)
   end
 
   def get_move_in_dates property_id

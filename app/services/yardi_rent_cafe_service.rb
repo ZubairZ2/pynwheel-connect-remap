@@ -213,7 +213,7 @@ class YardiRentCafeService < BaseService
           end
         end
 
-        update_availability_of_units((unit_present - @unit_record))
+        ProvidersDataUpdationService.new().update_availability_of_units(credentials.community_id, (unit_present - @unit_record))
         
       rescue => e
         begin
@@ -331,12 +331,6 @@ class YardiRentCafeService < BaseService
     rescue => ex
       return nil
     end
-  end
-
-
-  def update_availability_of_units no_availbale_units_provider_ids
-    return unless no_availbale_units_provider_ids.present?
-    Unit.where(community_id: credentials.community_id, manual_override: false, provider_unit_id: no_availbale_units_provider_ids).update_all(availability: "Occupied", available: false, available_date: nil)
   end
 
 end

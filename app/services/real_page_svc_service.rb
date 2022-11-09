@@ -548,7 +548,7 @@ class RealPageSvcService < BaseService
           end
 
           ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-          update_availability_of_units(( unit_present - @unit_record ))
+          ProvidersDataUpdationService.new().update_availability_of_units(credentials.community_id, (unit_present - @unit_record))
 
           begin
             cred = Credential.find credentials.id
@@ -754,11 +754,6 @@ class RealPageSvcService < BaseService
         return ""
       end
     end
-  end
-
-  def update_availability_of_units no_availbale_units_provider_ids
-    return unless no_availbale_units_provider_ids.present?
-    Unit.where(community_id: credentials.community_id, manual_override: false, provider_unit_id: no_availbale_units_provider_ids).update_all(availability: "Occupied", available: false, available_date: nil)
   end
 
 end
