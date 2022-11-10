@@ -99,6 +99,24 @@ class YardiRentCafeService < BaseService
                         leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
                       end
                     end
+
+                    min_term_rent = fetch_min_rent(rentStrs)
+                    max_term_rent = fetch_max_rent(rentStrs)
+
+                    if min_term_rent.present? && r["MinimumRent"].present? && min_term_rent != r["MinimumRent"]
+                      unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                        unit.effective_rent = r["MinimumRent"]
+                        unit.market_rent = r["MinimumRent"]
+                        unit.min_effective_rent = r["MinimumRent"]
+                      end
+                    end
+
+                    if max_term_rent.present? && r["MaximumRent"].present? && max_term_rent != r["MaximumRent"]
+                      unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                        unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
+                      end
+                    end
+                    
                   end
                 end
 
@@ -179,6 +197,24 @@ class YardiRentCafeService < BaseService
                           leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
                         end
                       end
+
+                      min_term_rent = fetch_min_rent(rentStrs)
+                      max_term_rent = fetch_max_rent(rentStrs)
+
+                      if min_term_rent.present? && r["MinimumRent"].present? && min_term_rent != r["MinimumRent"]
+                        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                          unit.effective_rent = r["MinimumRent"]
+                          unit.market_rent = r["MinimumRent"]
+                          unit.min_effective_rent = r["MinimumRent"]
+                        end
+                      end
+
+                      if max_term_rent.present? && r["MaximumRent"].present? && max_term_rent != r["MaximumRent"]
+                        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                          unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
+                        end
+                      end
+
                     end
                   end
 
@@ -336,4 +372,11 @@ class YardiRentCafeService < BaseService
     end
   end
 
+  def fetch_min_rent lease_pricing
+    rentStrs.map{|p| p[0].to_i }&.min
+  end
+
+  def fetch_max_rent lease_pricing
+    rentStrs.map{|p| p[0].to_i }&.max
+  end
 end
