@@ -1,6 +1,9 @@
 class Yardi2Service < BaseService
   def perform
     @unit_record = []
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "yardi")
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardi")
+
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -29,11 +32,11 @@ class Yardi2Service < BaseService
           :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
         #result = Hash.from_xml(response.body) This method consumes a lot of memory on heroku
         result = Ox.load(response.body, mode: :hash)
-        sleep 3
+        # sleep 3
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
           property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
           property_response.each do |pr|
-            sleep 3
+            # sleep 3
             if pr[0].to_s == "PropertyID"
               external_property_id  = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]
             end
@@ -44,7 +47,8 @@ class Yardi2Service < BaseService
               ils_units << pr[1]
             end
           end
-          save_yardi2_units(ils_units,external_property_id)
+
+          save_yardi2_units(ils_units, external_property_id)
           save_yardi2_floorplans(floorplans)
           community&.community_data_updated_on()
           
@@ -100,11 +104,12 @@ class Yardi2Service < BaseService
     ils_units[0].lazy.each do |unit_entries|
       begin
         provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
-        unit = Unit.find_by(provider: "yardi", property_id: property_id, community_id: credentials.community_id, provider_unit_id: provider_unit_id)#.first_or_initialize
+        unit = @all_units_hash[provider_unit_id]
+
         if unit.present?
           is_available = false
           vacate_date = ""
-
+          puts "--------------------- #{unit.marketing_name} -------------------\n"
           unit_entries.each do |u|
             if u.key?(:EffectiveRent)
 
@@ -231,13 +236,12 @@ class Yardi2Service < BaseService
           end
 
         end
-        
-        ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-      
+
       rescue => e
       end
     end
-
+    
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
     ProvidersDataUpdationService.new().update_availability_of_units(credentials.community_id, (unit_present - @unit_record))
   end
 
@@ -245,8 +249,10 @@ class Yardi2Service < BaseService
     import_floorplans = []
     floorplans[0].lazy.each do |floorplan|
       begin
-        fp = Floorplan.find_by(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:Id])#.first_or_initialize
+        fp = @all_floorplans_hash[floorplan[0][:Id].to_s]
+        
         if fp.present?
+          puts "------------------- #{fp.name} --------------------\n"
           rooms = []
           floorplan.each do |f|
             unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated  && fp.manual_override
@@ -263,9 +269,9 @@ class Yardi2Service < BaseService
           import_floorplans << fp
 
         else
-          fp = Floorplan.where(provider: "yardi",community_id: credentials.community_id,provider_floorplan_id: floorplan[0][:Id]).first_or_initialize
+          fp = Floorplan.where(provider: "yardi", community_id: credentials.community_id, provider_floorplan_id: floorplan[0][:Id]).first_or_initialize
+          
           unless fp.manual_override
-
             rooms = []
             floorplan.each do |f|
 
@@ -319,12 +325,12 @@ class Yardi2Service < BaseService
 
           end
         end
-
-        ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
       
       rescue => e
       end
     end
+
+    ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
   end
 
 end
