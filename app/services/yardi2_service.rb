@@ -100,7 +100,8 @@ class Yardi2Service < BaseService
 
   def save_yardi2_units(ils_units, property_id)
     import_units = []
-    unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardi"]).map{|x| x.provider_unit_id}
+    unit_present =  @all_units_hash.keys
+    
     ils_units[0].lazy.each do |unit_entries|
       begin
         provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
