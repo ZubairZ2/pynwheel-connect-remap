@@ -17,7 +17,6 @@ class YardiRentCafeService < BaseService
         company_code = credentials.c_code
         api_token = credentials.api_token
         community = Community.find credentials.community_id
-        #property_code = credentials.p_code
         showallunit =  credentials.limit_result ? "0" : "-1"
         import_units = []
 
@@ -38,8 +37,8 @@ class YardiRentCafeService < BaseService
           response.each do |r|
 
             begin
-
               unit = @all_units_hash[r["ApartmentId"].to_s]
+
               if unit.present?
                 puts "----------------------------- #{unit.marketing_name} ------------------------\n"
 
@@ -89,25 +88,27 @@ class YardiRentCafeService < BaseService
                 unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
                 unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
-
-                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
+                
                 leasing = ""
-                if rentStrs.present?
-                  rentStrs.each do |rentStr|
-                    
-                    if rentStr[0].to_i > 0
-                      leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
-                    end
 
+                if unit.available
+                  rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
+                  if rentStrs.present?
+                    rentStrs.each do |rentStr|
+                      if rentStr[0].to_i > 0
+                        leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                      end
+                    end
                   end
                 end
 
                 unit.lease_pricing = leasing
-
+                
                 import_units << unit
 
               else
                 unit = Unit.where(provider: "yardirentcafe", community_id: credentials.community_id, provider_unit_id: r["ApartmentId"]).first_or_initialize
+                
                 unless unit.manual_override
                   unit.property_id = r["PropertyId"]
                   unit.unit_type = r["ApartmentName"]
@@ -167,14 +168,16 @@ class YardiRentCafeService < BaseService
 
                   unit.manually_updated = false
                   unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
-
-                  rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
                   leasing = ""
 
-                  if rentStrs.present?
-                    rentStrs.each do |rentStr|
-                      if rentStr[0].to_i > 0
-                        leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                  if  unit.available
+                    rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
+
+                    if rentStrs.present?
+                      rentStrs.each do |rentStr|
+                        if rentStr[0].to_i > 0
+                          leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                        end
                       end
                     end
                   end
