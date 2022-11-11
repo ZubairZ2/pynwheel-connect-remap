@@ -117,9 +117,11 @@ class Yardi4Service < BaseService
     unit_present = @all_units_hash.keys
 
     ils_units.lazy.each do |api_unit|
+
       u = api_unit[1]
       provider_unit_id = "#{u[:Units][:Unit][:Identification][0][:IDValue]}-#{property_id}" rescue "#{u[:Units][:Unit][:Identification][0][0][:IDValue]}-#{property_id}"
       unit = @all_units_hash[provider_unit_id]
+
       if unit.present?
         puts  "---------------- #{unit.marketing_name} --------------------\n"
         unit.property_id = property_id
@@ -155,37 +157,50 @@ class Yardi4Service < BaseService
               unit.effective_rent = unit_with_key[:EffectiveRent][0][:Min].to_f > 0 ? unit_with_key[:EffectiveRent][0][:Min] : 1
             end
           end
+        end
 
-          pr = api_unit[3]
-          rentStr = ""
-          unitLeaseTerm = []
+        pr = api_unit[3]
+        rentStr = ""
+        unitLeaseTerm = []
+        array_of_rents = []
 
-          begin
-            if pr[:Pricing].present?
-              pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing,index|
-                month = pricing[:DateRange][:StartDate][0][:Month]
-                day = pricing[:DateRange][:StartDate][0][:Day]
-                year = pricing[:DateRange][:StartDate][0][:Year]
-                startDate = "#{day}/#{month}/#{year}"
-                month = pricing[:DateRange][:EndDate][0][:Month]
-                day = pricing[:DateRange][:EndDate][0][:Day]
-                year = pricing[:DateRange][:EndDate][0][:Year]
-                endDate =  "#{day}/#{month}/#{year}"
-                unless unitLeaseTerm.include?(pricing[:Term])
-                  rentStr = rentStr + (pricing[:Term].to_s) +":"+ pricing[:EffectiveRent].gsub(/[\s,]/ ,"") +"::"+ startDate +":"+ endDate + ";"
-                  unitLeaseTerm << pricing[:Term]
-                end
+        begin
+          if pr.present? && pr[:Pricing].present?
+            pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing, index|
+              month = pricing[:DateRange][:StartDate][0][:Month]
+              day = pricing[:DateRange][:StartDate][0][:Day]
+              year = pricing[:DateRange][:StartDate][0][:Year]
+              startDate = "#{day}/#{month}/#{year}"
+              month = pricing[:DateRange][:EndDate][0][:Month]
+              day = pricing[:DateRange][:EndDate][0][:Day]
+              year = pricing[:DateRange][:EndDate][0][:Year]
+              endDate =  "#{day}/#{month}/#{year}"
+
+              unless unitLeaseTerm.include?(pricing[:Term])
+                rentStr = rentStr + (pricing[:Term].to_s) +":"+ pricing[:EffectiveRent].gsub(/[\s,]/ ,"") +"::"+ startDate +":"+ endDate + ";"
+                array_of_rents << pricing[:EffectiveRent].to_i
+                unitLeaseTerm << pricing[:Term]
               end
             end
-          
-            unit.lease_pricing = rentStr
-          rescue
-            
-            unit.lease_pricing = nil
-          end
 
+            min_term_rent = array_of_rents.min
+            max_term_rent = array_of_rents.max
+    
+            if min_term_rent.present?
+              unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                unit.effective_rent = min_term_rent
+                unit.market_rent = min_term_rent
+              end
+            end
+    
+            unit.min_effective_rent = min_term_rent if min_term_rent.present?
+            unit.max_effective_rent = max_term_rent if max_term_rent.present?
+
+          end
+        
           unit.lease_pricing = rentStr
         rescue
+          
           unit.lease_pricing = nil
         end
 
@@ -239,6 +254,7 @@ class Yardi4Service < BaseService
 
           is_available = false
           vacate_date = ""
+          array_of_rents = []
 
           api_unit.each do |unit_with_key|
             if unit_with_key.key?(:Availability)
@@ -271,7 +287,8 @@ class Yardi4Service < BaseService
 
           begin
             if pr[:Pricing].present?
-              pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing,index|
+
+              pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing, index|
                 month = pricing[:DateRange][:StartDate][0][:Month]
                 day = pricing[:DateRange][:StartDate][0][:Day]
                 year = pricing[:DateRange][:StartDate][0][:Year]
@@ -280,11 +297,27 @@ class Yardi4Service < BaseService
                 day = pricing[:DateRange][:EndDate][0][:Day]
                 year = pricing[:DateRange][:EndDate][0][:Year]
                 endDate =  "#{day}/#{month}/#{year}"
+
                 unless unitLeaseTerm.include?(pricing[:Term])
                   rentStr = rentStr + (pricing[:Term].to_s) +":"+ pricing[:EffectiveRent].gsub(/[\s,]/ ,"") +"::"+ startDate +":"+ endDate + ";"
+                  array_of_rents << pricing[:EffectiveRent].to_i
                   unitLeaseTerm << pricing[:Term]
                 end
               end
+
+              min_term_rent = array_of_rents.min
+              max_term_rent = array_of_rents.max
+    
+              if min_term_rent.present?
+                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                  unit.effective_rent = min_term_rent
+                  unit.market_rent = min_term_rent
+                end
+              end
+      
+              unit.min_effective_rent = min_term_rent if min_term_rent.present?
+              unit.max_effective_rent = max_term_rent if max_term_rent.present?
+
             end
 
             unit.lease_pricing = rentStr

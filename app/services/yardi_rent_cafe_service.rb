@@ -103,15 +103,15 @@ class YardiRentCafeService < BaseService
                     min_term_rent = fetch_min_rent(rentStrs)
                     max_term_rent = fetch_max_rent(rentStrs)
 
-                    if min_term_rent.present? && r["MinimumRent"].present? && min_term_rent != r["MinimumRent"]
+                    if min_term_rent.present?
                       unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                         unit.effective_rent = min_term_rent
                         unit.market_rent = min_term_rent
                       end
                     end
-
-                    unit.min_effective_rent = min_term_rent if (min_term_rent.present? && r["MinimumRent"].present? && min_term_rent != r["MinimumRent"])
-                    unit.max_effective_rent = max_term_rent if (max_term_rent.present? && r["MaximumRent"].present? && max_term_rent != r["MaximumRent"])
+            
+                    unit.min_effective_rent = min_term_rent if min_term_rent.present?
+                    unit.max_effective_rent = max_term_rent if max_term_rent.present?
                     
                   end
                 end
@@ -197,15 +197,15 @@ class YardiRentCafeService < BaseService
                       min_term_rent = fetch_min_rent(rentStrs)
                       max_term_rent = fetch_max_rent(rentStrs)
   
-                      if min_term_rent.present? && r["MinimumRent"].present? && min_term_rent != r["MinimumRent"]
+                      if min_term_rent.present?
                         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                           unit.effective_rent = min_term_rent
                           unit.market_rent = min_term_rent
                         end
                       end
-  
-                      unit.min_effective_rent = min_term_rent if (min_term_rent.present? && r["MinimumRent"].present? && min_term_rent != r["MinimumRent"])
-                      unit.max_effective_rent = max_term_rent if (max_term_rent.present? && r["MaximumRent"].present? && max_term_rent != r["MaximumRent"])
+              
+                      unit.min_effective_rent = min_term_rent if min_term_rent.present?
+                      unit.max_effective_rent = max_term_rent if max_term_rent.present?
 
                     end
                   end
