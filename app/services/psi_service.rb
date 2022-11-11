@@ -380,7 +380,6 @@ class PsiService < BaseService
     ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
   end
 
-
   def fill_psi_pricing_details()
     import_units = []
     floorplanHash = Hash.new
@@ -390,90 +389,92 @@ class PsiService < BaseService
       move_in_dates = getMoveInDate(property_id)
       move_in_dates << "0" unless move_in_dates.present?
 
-      move_in_dates.each do |move_in_date|
+      move_in_dates.compact.uniq.each do |move_in_date|
         response = get_units_pricing(property_id, move_in_date)
-
         if response["response"]["code"] == 200
-          psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
-          psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
+          if (response["response"] && response["response"]["result"] && response["response"]["result"]["PropertyUnits"] && response["response"]["result"]["PropertyUnits"]["PropertyUnit"]).present?
+            psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
 
-          psi_units.each do |u|
-            u['UnitSpace'].each do |us|
-              begin
-                
-                unit = get_psi_space_matched_unit(u, us)
-
-                if unit.present?
-                  puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
-
-                  unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-                    if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
-                      unit.availability = 'Unoccupied' if !unit.sold
-                      unit.available = true if !unit.sold
-                    else
-                      unit.availability = 'Occupied'
-                      unit.available = false
-                    end
-                  end
-
-                  if us[1]["@attributes"]["AvailableOn"].present?
-                    date = us[1]["@attributes"]["AvailableOn"]
-                    dateSplit = date.split('/')
-                    day = dateSplit[0]
-                    month = dateSplit[1]
-                    year = dateSplit[2]
-                    unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
-                      unit.available_date = Date.parse("#{month}-#{day}-#{year}")
-                    end
-                  end
-
-                  unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                    if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                      unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
-                      unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
-                    else
-                      unit.min_effective_rent = 0
-                    end
-
-                    if (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                      unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
-                    else
-                      unit.max_effective_rent = 0 
-                    end
-                  end
-
-                  rentStr = ""
+            psi_units.each do |u|
+              u['UnitSpace'].each do |us|
+                begin
                   
-                  begin
-                    if us[1]["Rent"]["TermRent"].count > 1
-                      us[1]["Rent"]["TermRent"].each do |tr|
-                        rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::\;"
+                  unit = get_psi_space_matched_unit(u, us)
+
+                  if unit.present?
+                    puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
+
+                    unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+                      if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
+                        unit.availability = 'Unoccupied' if !unit.sold
+                        unit.available = true if !unit.sold
+                      else
+                        unit.availability = 'Occupied'
+                        unit.available = false
                       end
                     end
 
-                  rescue => rt_ex
+                    if us[1]["@attributes"]["AvailableOn"].present?
+                      date = us[1]["@attributes"]["AvailableOn"]
+                      dateSplit = date.split('/')
+                      day = dateSplit[0]
+                      month = dateSplit[1]
+                      year = dateSplit[2]
+                      unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+                        unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+                      end
+                    end
+
+                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                      if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                        unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
+                        unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+                      else
+                        unit.min_effective_rent = 0
+                      end
+
+                      if (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).to_i > 0
+                        unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
+                      else
+                        unit.max_effective_rent = 0 
+                      end
+                    end
+
+                    rentStr = ""
+
+                    begin
+                      if us[1]["Rent"]["TermRent"].count > 1
+                        us[1]["Rent"]["TermRent"].each do |tr|
+                          array_of_rents << tr["@attributes"]["Rent"].to_i
+                          rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::\;"
+                        end
+                      end
+
+                    rescue => rt_ex
+                    end
+
+                    unit.lease_pricing = rentStr
+                    import_units << unit
                   end
 
-                  unit.lease_pricing = rentStr
-                  import_units << unit
+                rescue => ex
+                  begin
+                    com = Community.find credentials.community_id
+                    unless com.entrata_exception_logs.present?
+                      com.entrata_exception_logs = ""
+                    end
+                    com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ e.message
+                    PaperTrail.enabled = false
+                    com.save
+                    PaperTrail.enabled = true
+                  rescue => r
+                  end
                 end
 
-              rescue => ex
-                begin
-                  com = Community.find credentials.community_id
-                  unless com.entrata_exception_logs.present?
-                    com.entrata_exception_logs = ""
-                  end
-                  com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ e.message
-                  PaperTrail.enabled = false
-                  com.save
-                  PaperTrail.enabled = true
-                rescue => r
-                end
               end
-
             end
           end
+
         end        
       end
     end
