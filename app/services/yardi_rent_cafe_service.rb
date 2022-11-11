@@ -90,9 +90,6 @@ class YardiRentCafeService < BaseService
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
                 
                 leasing = ""
-                if unit.marketing_name == "706"
-                  binding.pry
-                end
 
                 if unit.available
                   rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
@@ -108,17 +105,13 @@ class YardiRentCafeService < BaseService
 
                     if min_term_rent.present? && r["MinimumRent"].present? && min_term_rent != r["MinimumRent"]
                       unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                        unit.effective_rent = r["MinimumRent"]
-                        unit.market_rent = r["MinimumRent"]
-                        unit.min_effective_rent = r["MinimumRent"]
+                        unit.effective_rent = min_term_rent
+                        unit.market_rent = min_term_rent
                       end
                     end
 
-                    if max_term_rent.present? && r["MaximumRent"].present? && max_term_rent != r["MaximumRent"]
-                      unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                        unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
-                      end
-                    end
+                    unit.min_effective_rent = min_term_rent if (min_term_rent.present? && r["MinimumRent"].present? && min_term_rent != r["MinimumRent"])
+                    unit.max_effective_rent = max_term_rent if (max_term_rent.present? && r["MaximumRent"].present? && max_term_rent != r["MaximumRent"])
                     
                   end
                 end
@@ -203,20 +196,16 @@ class YardiRentCafeService < BaseService
 
                       min_term_rent = fetch_min_rent(rentStrs)
                       max_term_rent = fetch_max_rent(rentStrs)
-
+  
                       if min_term_rent.present? && r["MinimumRent"].present? && min_term_rent != r["MinimumRent"]
                         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                          unit.effective_rent = r["MinimumRent"]
-                          unit.market_rent = r["MinimumRent"]
-                          unit.min_effective_rent = r["MinimumRent"]
+                          unit.effective_rent = min_term_rent
+                          unit.market_rent = min_term_rent
                         end
                       end
-
-                      if max_term_rent.present? && r["MaximumRent"].present? && max_term_rent != r["MaximumRent"]
-                        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                          unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
-                        end
-                      end
+  
+                      unit.min_effective_rent = min_term_rent if (min_term_rent.present? && r["MinimumRent"].present? && min_term_rent != r["MinimumRent"])
+                      unit.max_effective_rent = max_term_rent if (max_term_rent.present? && r["MaximumRent"].present? && max_term_rent != r["MaximumRent"])
 
                     end
                   end
