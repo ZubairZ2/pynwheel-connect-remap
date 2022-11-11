@@ -41,7 +41,7 @@ class YardiRentCafeService < BaseService
 
               if unit.present?
                 puts "----------------------------- #{unit.marketing_name} ------------------------\n"
-
+                
                 unit.market_rent = r["MinimumRent"]
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = r["MinimumRent"]
@@ -90,6 +90,9 @@ class YardiRentCafeService < BaseService
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
                 
                 leasing = ""
+                if unit.marketing_name == "706"
+                  binding.pry
+                end
 
                 if unit.available
                   rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
@@ -373,10 +376,10 @@ class YardiRentCafeService < BaseService
   end
 
   def fetch_min_rent lease_pricing
-    rentStrs.map{|p| p[0].to_i }&.min
+    lease_pricing.map{|p| p[0].to_i }&.min
   end
 
   def fetch_max_rent lease_pricing
-    rentStrs.map{|p| p[0].to_i }&.max
+    lease_pricing.map{|p| p[0].to_i }&.max
   end
 end
