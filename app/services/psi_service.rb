@@ -443,9 +443,9 @@ class PsiService < BaseService
                     rentStr = ""
 
                     begin
+
                       if us[1]["Rent"]["TermRent"].count > 1
                         us[1]["Rent"]["TermRent"].each do |tr|
-                          array_of_rents << tr["@attributes"]["Rent"].to_i
                           rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::\;"
                         end
                       end
