@@ -9,45 +9,65 @@ class DataProvidersService
   def sync_psi_data
     return unless @communities.present?
     @communities.each do |community|
-      puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
-      ImportPsiDataJob.perform_async(community.credential.attributes.to_json)
-      ENV["SLEEP_TIME"].to_i
+      begin
+        puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
+        ImportPsiDataJob.perform_async(community.credential.attributes.to_json)
+        ENV["SLEEP_TIME"].to_i
+      rescue => e
+        next
+      end
     end
   end
 
   def sync_resman_data
     return unless @communities.present?
     @communities.each do |community|
-      puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
-      ((community.credential.resman_api_version === "GetMarketing4_0") ? ImportResman4DataJob.perform_async(community.credential.attributes.to_json) : ImportResmanDataJob.perform_async(community.credential.attributes.to_json))
-      ENV["SLEEP_TIME"].to_i
+      begin
+        puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
+        ((community.credential.resman_api_version === "GetMarketing4_0") ? ImportResman4DataJob.perform_async(community.credential.attributes.to_json) : ImportResmanDataJob.perform_async(community.credential.attributes.to_json))
+        ENV["SLEEP_TIME"].to_i
+      rescue => e
+        next
+      end
     end
   end
 
   def sync_yardi_data
     return unless @communities.present?
     @communities.each do |community|
-      puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
-      community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
-      ENV["SLEEP_TIME"].to_i
+      begin
+        puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
+        community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
+        ENV["SLEEP_TIME"].to_i
+      rescue => e
+        next
+      end
     end
   end
 
   def sync_yardirentcafe_data
     return unless @communities.present?
     @communities.each do |community|
-      puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
-      ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
-      ENV["SLEEP_TIME"].to_i
+      begin
+        puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
+        ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
+        ENV["SLEEP_TIME"].to_i
+      rescue => e
+        next
+      end
     end
   end
   
   def sync_realpagesvc_data
     return unless @communities.present?
     @communities.each do |community|
-      puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
-      ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
-      ENV["SLEEP_TIME"].to_i
+      begin
+        puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
+        ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
+        ENV["SLEEP_TIME"].to_i
+      rescue => e
+        next
+      end
     end
   end
 
