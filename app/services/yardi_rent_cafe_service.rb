@@ -90,18 +90,20 @@ class YardiRentCafeService < BaseService
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
                 
                 leasing = ""
+                lease_prices_array = []
 
                 if unit.available
                   rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
                   if rentStrs.present?
                     rentStrs.each do |rentStr|
                       if rentStr[0].to_i > 0
+                        lease_prices_array << rentStr[0].to_i
                         leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
                       end
                     end
 
-                    min_term_rent = fetch_min_rent(rentStrs)
-                    max_term_rent = fetch_max_rent(rentStrs)
+                    min_term_rent = lease_prices_array&.min
+                    max_term_rent = lease_prices_array&.max
 
                     if min_term_rent.present?
                       unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
@@ -183,6 +185,7 @@ class YardiRentCafeService < BaseService
                   unit.manually_updated = false
                   unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
                   leasing = ""
+                  lease_prices_array = []
 
                   if  unit.available
                     rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
@@ -190,13 +193,14 @@ class YardiRentCafeService < BaseService
                     if rentStrs.present?
                       rentStrs.each do |rentStr|
                         if rentStr[0].to_i > 0
+                          lease_prices_array << rentStr[0].to_i
                           leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
                         end
                       end
 
-                      min_term_rent = fetch_min_rent(rentStrs)
-                      max_term_rent = fetch_max_rent(rentStrs)
-  
+                      min_term_rent = lease_prices_array&.min
+                      max_term_rent = lease_prices_array&.max
+
                       if min_term_rent.present?
                         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                           unit.effective_rent = min_term_rent
@@ -362,13 +366,5 @@ class YardiRentCafeService < BaseService
     rescue => ex
       return nil
     end
-  end
-
-  def fetch_min_rent lease_pricing
-    lease_pricing.map{|p| p[0].to_i }&.min
-  end
-
-  def fetch_max_rent lease_pricing
-    lease_pricing.map{|p| p[0].to_i }&.max
   end
 end
