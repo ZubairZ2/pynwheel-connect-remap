@@ -3,7 +3,9 @@ class Yardi4Service < BaseService
     @unit_record = []
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "yardi")
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardi")
-
+    community = Community.find credentials.community_id
+    community&.community_data_updated_on()
+    
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -75,7 +77,6 @@ class Yardi4Service < BaseService
 
           save_yardi4_floorplans(floorplans)
           save_yardi4_units(ils_units, external_property_id)
-          community&.community_data_updated_on()
           #else
           #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})

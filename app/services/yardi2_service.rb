@@ -3,7 +3,9 @@ class Yardi2Service < BaseService
     @unit_record = []
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "yardi")
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardi")
-
+    community = Community.find credentials.community_id
+    community&.community_data_updated_on()
+    
     property_ids = credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -50,7 +52,6 @@ class Yardi2Service < BaseService
 
           save_yardi2_units(ils_units, external_property_id)
           save_yardi2_floorplans(floorplans)
-          community&.community_data_updated_on()
           
           begin
             cred = Credential.find credentials.id

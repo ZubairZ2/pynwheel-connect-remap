@@ -5,7 +5,8 @@ class YardiRentCafeService < BaseService
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardirentcafe")
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
-
+    community = Community.find credentials.community_id
+    community&.community_data_updated_on()
   end
 
   def import_yardirentcafe_units
@@ -32,7 +33,6 @@ class YardiRentCafeService < BaseService
         unit_present = @all_units_hash.keys
 
         if response[0]["Error"].nil?
-          community&.community_data_updated_on()
 
           response.each do |r|
 

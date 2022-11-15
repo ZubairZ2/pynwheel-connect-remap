@@ -4,6 +4,8 @@ class PsiService < BaseService
     @unit_record = []
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "psi")
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "psi")
+    community = Community.find credentials.community_id
+    community&.community_data_updated_on()
     
     begin
       com_test = Community.find credentials.community_id
@@ -64,7 +66,6 @@ class PsiService < BaseService
 
           save_psi_floorplans(floorplans, property_id)
           save_psi_units(units, property_id)
-          com_test&.community_data_updated_on()
 
           begin
             cred = Credential.find credentials.id

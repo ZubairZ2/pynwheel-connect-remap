@@ -1,6 +1,8 @@
 class Resman4Service < BaseService
   def perform
     @unit_record = []
+    community = Community.find credentials.community_id
+    community&.community_data_updated_on()
     property_ids = credentials.resman_property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -32,7 +34,6 @@ class Resman4Service < BaseService
           $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
-          community&.community_data_updated_on()
           # save_website_column_of_community(response)
           begin
             cred = Credential.find credentials.id

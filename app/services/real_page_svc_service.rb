@@ -4,6 +4,8 @@ class RealPageSvcService < BaseService
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "realpagesvc")
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "realpagesvc")
     @all_units_marketing_name_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_hash(credentials.community_id, "realpagesvc")
+    community = Community.find credentials.community_id
+    community&.community_data_updated_on()
     import_realpage_svc_floorplans
     # import_initials_realpage_units
     import_realpage_svc_units
@@ -418,9 +420,7 @@ class RealPageSvcService < BaseService
         sleep 1
         result = Ox.load(response.body, mode: :hash)
 
-        if result[:"s:Envelope"][1][:"s:Body"][1].present?
-
-          community&.community_data_updated_on()          
+        if result[:"s:Envelope"][1][:"s:Body"][1].present?      
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           
           units.each do |u|
