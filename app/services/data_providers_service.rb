@@ -3,6 +3,7 @@ class DataProvidersService
     # remove pynwheel Inc and Prometheous company
     @communities = Community.where.not(data_provider: nil, company_id: [44, 423])
     @communities = @communities.where(data_provider: provider, locked: false)
+    @communities = @communities.where("data_provider_updated_on < ? ", Date.today)
     @communities = @communities.where.not(data_provider_updated_on: "Never").order(:data_provider_updated_on) + @communities.where(data_provider_updated_on: "Never")
   end
 
