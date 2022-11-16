@@ -3,7 +3,9 @@ class ImportYardi2DataJob < ApplicationJob
   #workers 4
 
   def perform(credentials)
-    yardi2_service = Yardi2Service.new(JSON.parse(credentials))
-    yardi2_service.perform
+    ActiveRecord::Base.connection_pool.with_connection do
+      yardi2_service = Yardi2Service.new(JSON.parse(credentials))
+      yardi2_service.perform
+    end
   end
 end

@@ -3,7 +3,9 @@ class ImportRealpageSvcDataJob < ApplicationJob
   #workers 4
   
   def perform(credentials)
-    real_page_svc_service = RealPageSvcService.new(JSON.parse(credentials))
-    real_page_svc_service.perform
+    ActiveRecord::Base.connection_pool.with_connection do
+      real_page_svc_service = RealPageSvcService.new(JSON.parse(credentials))
+      real_page_svc_service.perform
+    end
   end
 end
