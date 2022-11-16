@@ -100,6 +100,8 @@ class Yardi2Service < BaseService
   end
 
   def save_yardi2_units(ils_units, property_id)
+    return unless @all_units_hash.present?
+
     import_units = []
     unit_present =  @all_units_hash.keys
     
@@ -248,6 +250,7 @@ class Yardi2Service < BaseService
   end
 
   def save_yardi2_floorplans(floorplans)
+    return unless @all_floorplans_hash.present?
     import_floorplans = []
     floorplans[0].lazy.each do |floorplan|
       begin

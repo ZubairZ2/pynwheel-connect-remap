@@ -13,6 +13,8 @@ class RealPageSvcService < BaseService
   end
 
   def import_realpage_svc_floorplans
+    return unless @all_floorplans_hash.present?
+
     site_ids = credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
@@ -356,6 +358,7 @@ class RealPageSvcService < BaseService
   end
 
   def import_realpage_svc_units
+    return unless @all_units_hash.present?
     #building_result = realpage_building #Ignore it for now
     unit_present = @all_units_hash.keys
 
@@ -581,6 +584,8 @@ class RealPageSvcService < BaseService
   end
 
   def import_realpage_svc_price
+    return unless  @all_units_marketing_name_hash.present?
+
     site_ids = credentials.site_id.split(',') rescue []
     units_str = ""
 

@@ -114,6 +114,7 @@ class Yardi4Service < BaseService
     
 
   def save_yardi4_units(ils_units, property_id)
+    return unless @all_units_hash.present?
     import_units = []
     unit_present = @all_units_hash.keys
 
@@ -355,6 +356,8 @@ class Yardi4Service < BaseService
   end
 
   def save_yardi4_floorplans(floorplans)
+    return unless @all_floorplans_hash.present?
+    
     import_floorplans = []
     floorplans.lazy.each do |floorplan|
       fp = @all_floorplans_hash[floorplan[0][:IDValue].to_s]

@@ -130,6 +130,8 @@ class PsiService < BaseService
   end
 
   def save_psi_units(units,property_id)
+    return unless @all_units_hash.present?
+
     import_units = []
     unit_present = @all_units_hash.keys
 
@@ -299,6 +301,7 @@ class PsiService < BaseService
   end
 
   def save_psi_floorplans(floorplans,property_id)
+    return unless @all_floorplans_hash.present?
     import_floorplans = []
 
     floorplans.each do |f|
@@ -382,6 +385,8 @@ class PsiService < BaseService
   end
 
   def fill_psi_pricing_details()
+    return unless @all_units_hash.present?
+
     import_units = []
     floorplanHash = Hash.new
     property_ids = credentials.property_id.split(',') rescue []

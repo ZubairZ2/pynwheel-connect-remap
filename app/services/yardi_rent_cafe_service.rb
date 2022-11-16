@@ -10,6 +10,8 @@ class YardiRentCafeService < BaseService
   end
 
   def import_yardirentcafe_units
+    return unless @all_units_hash.present?
+
     @unit_record = []
     property_codes = credentials.p_code.split(',') rescue []
     property_codes.each do |property_code|
@@ -264,6 +266,8 @@ class YardiRentCafeService < BaseService
   end
 
   def import_yardirentcafe_floorplans
+    return unless @all_floorplans_hash.present?
+
     property_codes = credentials.p_code.split(',') rescue []
     property_codes.each do |property_code|
       begin
