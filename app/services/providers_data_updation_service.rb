@@ -45,8 +45,17 @@ class ProvidersDataUpdationService
 
   private
 
+  def avoid_null_exception new_records
+    new_records = new_records.each do |record|
+      record.created_at = Time.now
+      record.updated_at = Time.now
+    end
+    new_records
+  end
+
   def create_new_floorplans_records(new_floorplans)
     return unless new_floorplans.present?
+    new_floorplans = avoid_null_exception(new_floorplans)
     Floorplan.import new_floorplans, validate: false  if new_floorplans.present?
   end
 
@@ -60,6 +69,7 @@ class ProvidersDataUpdationService
 
   def create_new_units_records(new_units)
     return unless new_units.present?
+    new_units = avoid_null_exception(new_units)
     Unit.import new_units, validate: false  if new_units.present?
   end
 

@@ -46,15 +46,7 @@ class DataProvidersService
   def sync_yardirentcafe_data
     return unless @communities.present?
     @communities.each do |community|
-      if community&.credential&.data_error_message.nil?
-        begin
-          puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
-          ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
-          ENV["SLEEP_TIME"].to_i
-        rescue => e
-          next
-        end
-      end
+      YardirentcafeDataUpdateWorker.perform_async(community.id)
     end
   end
   

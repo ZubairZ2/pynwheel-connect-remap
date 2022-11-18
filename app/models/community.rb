@@ -797,11 +797,11 @@ class Community < ApplicationRecord
   def update_community_provider_data
     case data_provider
     when "psi"
-      EntrataDataUpdateWorker.perform_async(self.id)
+      EntrataDataUpdateWorker.perform_async self.id
     when "yardirentcafe"
-      ImportYardirentcafeDataJob.perform_async self.credential.attributes.to_json
+      YardirentcafeDataUpdateWorker.perform_async self.id
     when "realpagesvc"
-      RealPageDataUpdateWorker.perform_async(self.id)
+      RealPageDataUpdateWorker.perform_async self.id
     when "yardi"
       self.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(self.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(self.credential.attributes.to_json)
     when "resman"

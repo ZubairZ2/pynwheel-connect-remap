@@ -224,7 +224,7 @@ class YardiRentCafeService < BaseService
               end
 
             rescue => e
-              ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
+              raise e
             end
           end
 
@@ -237,6 +237,7 @@ class YardiRentCafeService < BaseService
             cred.save
             PaperTrail.enabled = true
           rescue => err
+            raise err
           end
 
         else
@@ -247,12 +248,14 @@ class YardiRentCafeService < BaseService
             cred.save
             PaperTrail.enabled = true
           rescue => err
+            raise err
           end
         end
 
         ProvidersDataUpdationService.new().update_availability_of_units(credentials.community_id, (unit_present - @unit_record))
         
       rescue => e
+        raise e
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
@@ -260,6 +263,7 @@ class YardiRentCafeService < BaseService
           cred.save
           PaperTrail.enabled = true
         rescue => err
+          raise err
         end
       end
     end
@@ -340,7 +344,8 @@ class YardiRentCafeService < BaseService
 
           ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
         end
-      rescue => e 
+      rescue => e
+        raise e
       end
     end
   end
@@ -358,6 +363,7 @@ class YardiRentCafeService < BaseService
       response = HTTParty.get(url)
       rent_matrix = JSON.parse(response.body)
       unless rent_matrix[0]["Error"].present?
+        puts "---------------------------- pricing Matrix Present --------------------------"
         uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
         distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
 
@@ -368,7 +374,7 @@ class YardiRentCafeService < BaseService
       end
 
     rescue => ex
-      return nil
+      raise ex
     end
   end
 end
