@@ -1,0 +1,4 @@
+:concurrency: 5
+:queues:
+  - base_worker
+  - entrata

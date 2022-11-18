@@ -797,7 +797,7 @@ class Community < ApplicationRecord
   def update_community_provider_data
     case data_provider
     when "psi"
-      ImportPsiDataJob.perform_async self.credential.attributes.to_json
+      EntrataDataUpdateWorker.perform_async(self.id)
     when "yardirentcafe"
       ImportYardirentcafeDataJob.perform_async self.credential.attributes.to_json
     when "realpagesvc"

@@ -653,7 +653,7 @@ class PsiSwapService < BaseService
     end
   end
   def getMoveInDate(property_id)
-    url = "https://"+credentials.entrata_url+".entrata.com/api/v1/properties"
+    url = get_move_in_dates_endpoint()
     password = credentials.password
     username = credentials.username
     #property_id = credentials.property_id
@@ -717,6 +717,16 @@ class PsiSwapService < BaseService
     #     d.save
     #   end
     # end
+  end
+
+  def get_move_in_dates_endpoint
+    if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+      url = credentials.entrata_url
+    else
+      url = "https://#{credentials.entrata_url}.entrata.com/api/v1/properties"
+    end
+
+    url
   end
 
 end

@@ -4,6 +4,7 @@ class PsiService < BaseService
     @unit_record = []
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "psi")
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "psi")
+
     community = Community.find credentials.community_id
     community&.community_data_updated_on()
     
@@ -15,6 +16,7 @@ class PsiService < BaseService
       com_test.save
       PaperTrail.enabled = true
     rescue => ex
+      raise ex
     end
 
     property_ids = credentials.property_id.split(',') rescue []
@@ -75,6 +77,7 @@ class PsiService < BaseService
             PaperTrail.enabled = true
 
           rescue => err
+            raise err
           end
 
         else
@@ -85,10 +88,13 @@ class PsiService < BaseService
             cred.save
             PaperTrail.enabled = true
           rescue => err
+            raise err
           end
         end
 
       rescue => e
+        raise e
+
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
@@ -97,9 +103,12 @@ class PsiService < BaseService
           PaperTrail.enabled = true
         
         rescue => err
+          raise err
         end
 
         begin
+          raise e
+
           com = Community.find credentials.community_id
           unless com.entrata_exception_logs.present?
             com.entrata_exception_logs = ""
@@ -110,6 +119,7 @@ class PsiService < BaseService
           PaperTrail.enabled = true
         
         rescue => p
+          raise p
         end
 
       end
@@ -124,6 +134,7 @@ class PsiService < BaseService
       PaperTrail.enabled = true
     
     rescue => ex
+      raise ex
     end
 
     fill_psi_pricing_details()
@@ -457,6 +468,7 @@ class PsiService < BaseService
                       end
 
                     rescue => rt_ex
+                      raise rt_ex
                     end
 
                     unit.lease_pricing = rentStr
@@ -469,11 +481,12 @@ class PsiService < BaseService
                     unless com.entrata_exception_logs.present?
                       com.entrata_exception_logs = ""
                     end
-                    com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ e.message
+                    com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ ex.message
                     PaperTrail.enabled = false
                     com.save
                     PaperTrail.enabled = true
                   rescue => r
+                    raise r
                   end
                 end
 
@@ -544,7 +557,7 @@ class PsiService < BaseService
         }
       }.to_json,
       :headers => { 'Content-Type' => 'application/json' } )
-
+    
     JSON.parse(response.body)
   end
 
@@ -586,7 +599,13 @@ class PsiService < BaseService
   end
 
   def get_move_in_dates_endpoint
-    "https://#{credentials.entrata_url}.entrata.com/api/v1/properties"
+    if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+      url = credentials.entrata_url
+    else
+      url = "https://#{credentials.entrata_url}.entrata.com/api/v1/properties"
+    end
+
+    url
   end
 
   def move_in_date_param move_in_date
