@@ -12,6 +12,11 @@ class ProvidersDataUpdationService
     all_units.index_by(&:marketing_name)
   end
 
+  def get_all_units_marketing_name_and_building_hash community_id, provider
+    all_units = Unit.where(provider: provider, community_id: community_id)
+    all_units.index_by{ |u| "#{u.building}-#{u.marketing_name}" }
+  end
+
   def get_all_floorplans_hash community_id, provider
     all_floorplans = Floorplan.where(provider: provider, community_id: community_id)
     all_floorplans.index_by(&:provider_floorplan_id)

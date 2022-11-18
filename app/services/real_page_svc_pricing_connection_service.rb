@@ -52,6 +52,7 @@ class RealPageSvcPricingConnectionService < BaseService
     result = Ox.load(response.body, mode: :hash)
     if result[:"s:Envelope"][1][:"s:Body"][1].present?
       units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
+      units = [units] if units.is_a?(Hash)
       units.each do |u|
         @array_of_units << u[:Address][:UnitID]
       end

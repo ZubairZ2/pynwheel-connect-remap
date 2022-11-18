@@ -4,8 +4,11 @@ class RealPageSvcService < BaseService
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "realpagesvc")
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "realpagesvc")
     @all_units_marketing_name_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_hash(credentials.community_id, "realpagesvc")
+    @all_units_marketing_name_and_building_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_and_building_hash(credentials.community_id, "realpagesvc")
+
     community = Community.find credentials.community_id
     community&.community_data_updated_on()
+    puts "\n\n ------------------------ #{community&.name} : #{community&.id} ----------------------- \n\n"
     import_realpage_svc_floorplans
     # import_initials_realpage_units
     import_realpage_svc_units
@@ -108,6 +111,7 @@ class RealPageSvcService < BaseService
           ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
         end
       rescue => e
+        raise e
       end
     end
   end
@@ -342,15 +346,18 @@ class RealPageSvcService < BaseService
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
             cred.save
           rescue => err
+            raise err
           end
         end
 
       rescue => e
+        raise e
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
           cred.save
         rescue => err
+          raise err
         end
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
@@ -420,19 +427,20 @@ class RealPageSvcService < BaseService
                             </tem:getunitlist>
                           </soapenv:Body>
                         </soapenv:Envelope>')
-        sleep 1
+
         result = Ox.load(response.body, mode: :hash)
 
         if result[:"s:Envelope"][1][:"s:Body"][1].present?      
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
-          
+          units = [units] if units.is_a?(Hash)
+
           units.each do |u|
             @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
             unit = @all_units_hash[u[:Address][:UnitID].to_s]
 
             if unit.present?
               puts "----------------------------- #{unit.marketing_name} ------------------------\n"
-
+              
               unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && (unit.manual_override)
                 if u[:RentMatrix].present?
                   unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f : 1
@@ -468,7 +476,7 @@ class RealPageSvcService < BaseService
                 end
 
               end
-
+              unit.lease_pricing = nil
               unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
               @unit_record << unit.provider_unit_id
 
@@ -537,10 +545,10 @@ class RealPageSvcService < BaseService
                 end
 
                 unit.manually_updated = false
-
+                unit.lease_pricing = nil
                 unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
 
-                @unit_record << unit.provider_unit_id unless @unit_record.include?(unit.provider_unit_id)
+                # @unit_record << unit.provider_unit_id unless @unit_record.include?(unit.provider_unit_id)
 
               end
 
@@ -558,6 +566,7 @@ class RealPageSvcService < BaseService
             cred.data_error_message = nil
             cred.save
           rescue => err
+            raise err
           end
 
         else
@@ -566,11 +575,13 @@ class RealPageSvcService < BaseService
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
             cred.save
           rescue => err
+            raise err
           end
         end
 
 
       rescue => e
+        raise e
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
@@ -578,6 +589,7 @@ class RealPageSvcService < BaseService
           cred.save
           PaperTrail.enabled = true
         rescue => err
+          raise err
         end
       end
     end
@@ -604,39 +616,43 @@ class RealPageSvcService < BaseService
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
         community_id = credentials.community_id
-
         date_check = Date.today
-        response = HTTParty.post(
-            url,
-            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-            :body => '<soapenv:Envelope
-                    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                    xmlns:tem="http://tempuri.org/">
-                    <soapenv:Header/>
-                    <soapenv:Body>
-                        <tem:getrentmatrix>
-                            <tem:auth>
-                                <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                                <tem:siteid>'+site_id+'</tem:siteid>
-                                <tem:username>'+username+'</tem:username>
-                                <tem:password>'+password+'</tem:password>
-                                <tem:licensekey>'+license_key+'</tem:licensekey>
-                                <tem:system>OneSite</tem:system>
-                            </tem:auth>
-                            <tem:getrentmatrix>
-                                <tem:NeededByDate>'+date_check.to_s+'</tem:NeededByDate>
-                                <tem:LeaseTerm>12</tem:LeaseTerm>
-                                <tem:unitids>
-                                    <!--Zero or more repetitions:-->
-                                    '+units_str.to_s+'
-                                </tem:unitids>
-                                <tem:viewingQuoteOnly>1</tem:viewingQuoteOnly>
-                            </tem:getrentmatrix>
-                        </tem:getrentmatrix>
-                    </soapenv:Body>
-                </soapenv:Envelope>')
+        begin
 
-        sleep 2
+          response = HTTParty.post(
+              url,
+              :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
+              :body => '<soapenv:Envelope
+                      xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                      xmlns:tem="http://tempuri.org/">
+                      <soapenv:Header/>
+                      <soapenv:Body>
+                          <tem:getrentmatrix>
+                              <tem:auth>
+                                  <tem:pmcid>'+pmc_id+'</tem:pmcid>
+                                  <tem:siteid>'+site_id+'</tem:siteid>
+                                  <tem:username>'+username+'</tem:username>
+                                  <tem:password>'+password+'</tem:password>
+                                  <tem:licensekey>'+license_key+'</tem:licensekey>
+                                  <tem:system>OneSite</tem:system>
+                              </tem:auth>
+                              <tem:getrentmatrix>
+                                  <tem:NeededByDate>'+date_check.to_s+'</tem:NeededByDate>
+                                  <tem:LeaseTerm>12</tem:LeaseTerm>
+                                  <tem:unitids>
+                                      <!--Zero or more repetitions:-->
+                                      '+units_str.to_s+'
+                                  </tem:unitids>
+                                  <tem:viewingQuoteOnly>1</tem:viewingQuoteOnly>
+                              </tem:getrentmatrix>
+                          </tem:getrentmatrix>
+                      </soapenv:Body>
+                  </soapenv:Envelope>')
+            
+          rescue => error
+            raise error
+          end
+
         #result = Hash.from_xml(response.body) This method consumes too much memory on heroku
         result = Ox.load(response.body, mode: :hash)
         
@@ -648,7 +664,7 @@ class RealPageSvcService < BaseService
 
             unit_no = u[1][:Rows][:Row][0][:Unit]
             unit_add = u[1][:Rows][:Row][0][:Building]
-
+            
             unit_min_rent = u[1][:Rows][:Row][0][:MinRent]
             unit_max_rent = u[1][:Rows][:Row][0][:MaxRent]
             best_price = nil
@@ -666,11 +682,13 @@ class RealPageSvcService < BaseService
               end
 
             rescue => ex
+              raise ex
               unitHash = nil
             end
 
             if unit_min_rent.present?
-              unit = @all_units_marketing_name_hash[unit_no.to_s]
+              unit = @all_units_marketing_name_and_building_hash["#{unit_add}-#{unit_no}"]
+              unit = @all_units_marketing_name_hash[unit_no.to_s] unless unit.present?
               # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
               
               # unless unit.present?
@@ -697,6 +715,7 @@ class RealPageSvcService < BaseService
           ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
         end
       rescue => e
+        raise e
       end
     end
   end
@@ -741,6 +760,7 @@ class RealPageSvcService < BaseService
         ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})
       end
     rescue => e
+      raise e
     end
   end
 

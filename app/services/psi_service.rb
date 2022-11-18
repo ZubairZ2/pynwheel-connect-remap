@@ -458,7 +458,6 @@ class PsiService < BaseService
                     end
 
                     rentStr = ""
-
                     begin
 
                       if us[1]["Rent"]["TermRent"].count > 1

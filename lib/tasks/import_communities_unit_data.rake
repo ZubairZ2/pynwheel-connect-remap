@@ -29,11 +29,7 @@ namespace :import do
         community_logs_str = community_logs_str + community.id.to_s + " , "
         case community.data_provider
           when "yardirentcafe"
-            #YardiRentCafeService.new(community.credential.attributes).perform
             ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
-          # when "realpagesvc"
-          #   #RealPageSvcService.new(community.credential.attributes).perform
-          #   ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
           when "yardi"
             #community.credential.url.include?("20") ? (Yardi2Service.new(community.credential.attributes).perform) : (Yardi4Service.new(community.credential.attributes).perform)
             community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
