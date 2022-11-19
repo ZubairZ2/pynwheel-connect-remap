@@ -6,7 +6,6 @@ class RealPageSvcService < BaseService
     @all_units_marketing_name_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_hash(credentials.community_id, "realpagesvc")
     @all_units_marketing_name_and_building_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_and_building_hash(credentials.community_id, "realpagesvc")
 
-    puts "\n\n ------------------------ #{community&.name} : #{community&.id} ----------------------- \n\n"
     import_realpage_svc_floorplans
     # import_initials_realpage_units
     import_realpage_svc_units
@@ -383,7 +382,8 @@ class RealPageSvcService < BaseService
         license_key = REALPAGESVC_LICENSE_KEY
         date_needed = Date.today + 540
         limit_result = credentials.limit_result ? "True" : "False"
-        community_id = credentials.community_id\
+        community_id = credentials.community_id
+        
         response = HTTParty.post(
             url,
             :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},

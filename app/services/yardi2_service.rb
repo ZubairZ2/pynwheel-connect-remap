@@ -4,7 +4,7 @@ class Yardi2Service < BaseService
 
     @unit_record = []
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "yardi")
-    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardi"
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardi")
     
     property_ids = credentials.property_id.split(',') rescue []
     property_ids&.each do |property_id|
