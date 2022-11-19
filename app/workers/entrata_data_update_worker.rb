@@ -4,6 +4,8 @@ class EntrataDataUpdateWorker
 
   def perform(community_id)
     community = Community.find_by_id community_id
+    return unless community&.credential.present?
+    
     credentials = community.credential.attributes.to_json
 
     psi_service = PsiService.new(JSON.parse(credentials))
