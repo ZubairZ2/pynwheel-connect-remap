@@ -6,8 +6,6 @@ class RealPageSvcService < BaseService
     @all_units_marketing_name_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_hash(credentials.community_id, "realpagesvc")
     @all_units_marketing_name_and_building_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_and_building_hash(credentials.community_id, "realpagesvc")
 
-    community = Community.find credentials.community_id
-    community&.community_data_updated_on()
     puts "\n\n ------------------------ #{community&.name} : #{community&.id} ----------------------- \n\n"
     import_realpage_svc_floorplans
     # import_initials_realpage_units
@@ -385,8 +383,7 @@ class RealPageSvcService < BaseService
         license_key = REALPAGESVC_LICENSE_KEY
         date_needed = Date.today + 540
         limit_result = credentials.limit_result ? "True" : "False"
-        community_id = credentials.community_id
-        community = Community.find community_id
+        community_id = credentials.community_id\
         response = HTTParty.post(
             url,
             :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -433,6 +430,9 @@ class RealPageSvcService < BaseService
         if result[:"s:Envelope"][1][:"s:Body"][1].present?      
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units = [units] if units.is_a?(Hash)
+
+          community = Community.find credentials.community_id
+          community&.community_data_updated_on()
 
           units.each do |u|
             @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])

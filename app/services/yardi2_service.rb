@@ -4,9 +4,7 @@ class Yardi2Service < BaseService
 
     @unit_record = []
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "yardi")
-    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardi")
-    community = Community.find credentials.community_id
-    community&.community_data_updated_on()
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardi"
     
     property_ids = credentials.property_id.split(',') rescue []
     property_ids&.each do |property_id|
@@ -28,7 +26,6 @@ class Yardi2Service < BaseService
         property_id = property_id
         interface_entity = credentials.interface_entity
         license_key = YARDI_LICENSE_KEY
-        community = Community.find credentials.community_id
 
         response = HTTParty.post(
           url,
@@ -40,6 +37,9 @@ class Yardi2Service < BaseService
           if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty].present?
             property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
             
+            community = Community.find credentials.community_id
+            community&.community_data_updated_on()
+
             property_response&.each do |pr|
               if pr[0].to_s == "PropertyID"
                 external_property_id  = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]

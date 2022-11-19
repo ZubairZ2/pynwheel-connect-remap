@@ -5,8 +5,6 @@ class YardiRentCafeService < BaseService
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardirentcafe")
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
-    community = Community.find credentials.community_id
-    community&.community_data_updated_on()
   end
 
   def import_yardirentcafe_units
@@ -19,7 +17,6 @@ class YardiRentCafeService < BaseService
         request_type = "apartmentavailability"
         company_code = credentials.c_code
         api_token = credentials.api_token
-        community = Community.find credentials.community_id
         showallunit =  credentials.limit_result ? "0" : "-1"
         import_units = []
 
@@ -31,10 +28,13 @@ class YardiRentCafeService < BaseService
 
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
-
+        
         unit_present = @all_units_hash.keys
 
         if response[0]["Error"].nil?
+
+          community = Community.find credentials.community_id
+          community&.community_data_updated_on()
 
           response.each do |r|
 
