@@ -1,6 +1,7 @@
 class PsiService < BaseService
   @@floorplanHash = Hash.new
   def perform
+    return unless credentials&.url.present?
     @unit_record = []
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "psi")
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "psi")

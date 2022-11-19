@@ -1,9 +1,7 @@
 class DataProvidersService
   def initialize provider
-    # remove pynwheel Inc and Prometheous company
     @communities = Community.where.not(data_provider: nil, company_id: [44, 423])
     @communities = @communities.where(data_provider: provider, locked: false)
-    # @communities = @communities.where.not(data_provider_updated_on: "Never").where("data_provider_updated_on < ? ", Date.today).order(:data_provider_updated_on) + @communities.where(data_provider_updated_on: "Never")
   end
 
   def sync_psi_data
@@ -31,15 +29,7 @@ class DataProvidersService
   def sync_yardi_data
     return unless @communities.present?
     @communities.each do |community|
-      if community&.credential&.data_error_message.nil?
-        begin
-          puts "\n\n --------- Started updating for community: #{community.id}, Last updated on:  #{community.data_provider_updated_on.to_s} ------------- \n\n"
-          community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
-          ENV["SLEEP_TIME"].to_i
-        rescue => e
-          next
-        end
-      end
+      YardiDataUpdateWorker.perform_async(community.id)
     end
   end
 

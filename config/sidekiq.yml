@@ -1,6 +1,7 @@
 :concurrency: 5
 :queues:
-  - base_worker
-  - entrata
+  # - base_worker
   - real_page
   - yardi_rent_cafe
+  - entrata
+  - yardi

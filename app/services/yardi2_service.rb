@@ -1,5 +1,7 @@
 class Yardi2Service < BaseService
   def perform
+    return unless credentials&.url.present?
+
     @unit_record = []
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "yardi")
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardi")
@@ -7,7 +9,7 @@ class Yardi2Service < BaseService
     community&.community_data_updated_on()
     
     property_ids = credentials.property_id.split(',') rescue []
-    property_ids.each do |property_id|
+    property_ids&.each do |property_id|
       begin
         property_id = property_id.strip
         external_property_id = ""
@@ -34,25 +36,26 @@ class Yardi2Service < BaseService
           :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
         #result = Hash.from_xml(response.body) This method consumes a lot of memory on heroku
         result = Ox.load(response.body, mode: :hash)
-        # sleep 3
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
-          property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
-          property_response.each do |pr|
-            # sleep 3
-            if pr[0].to_s == "PropertyID"
-              external_property_id  = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]
+          if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty].present?
+            property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
+            
+            property_response&.each do |pr|
+              if pr[0].to_s == "PropertyID"
+                external_property_id  = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]
+              end
+              if pr[0].to_s == "Floorplan"
+                floorplans << pr[1]
+              end
+              if pr[0].to_s == "ILS_Unit"
+                ils_units << pr[1]
+              end
             end
-            if pr[0].to_s == "Floorplan"
-              floorplans << pr[1]
-            end
-            if pr[0].to_s == "ILS_Unit"
-              ils_units << pr[1]
-            end
+
+            save_yardi2_units(ils_units, external_property_id)
+            save_yardi2_floorplans(floorplans)
           end
 
-          save_yardi2_units(ils_units, external_property_id)
-          save_yardi2_floorplans(floorplans)
-          
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
@@ -60,6 +63,7 @@ class Yardi2Service < BaseService
             cred.save
             PaperTrail.enabled = true
           rescue => err
+            raise err
           end
           #else
           #puts '------------------------------------' , result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"] 
@@ -77,9 +81,11 @@ class Yardi2Service < BaseService
             cred.save
             PaperTrail.enabled = true
           rescue => err
+            raise err
           end
         end
       rescue => e
+        raise e
         cred1 = Credential.find credentials.id
         cred1.data_error_exp = e
         PaperTrail.enabled = false
@@ -92,6 +98,7 @@ class Yardi2Service < BaseService
           cred.save
           PaperTrail.enabled = true
         rescue => err
+          raise err
         end
         #puts '----------------------------------', e.message
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
@@ -105,99 +112,27 @@ class Yardi2Service < BaseService
     import_units = []
     unit_present =  @all_units_hash.keys
     
-    ils_units[0].lazy.each do |unit_entries|
+    ils_units[0]&.each do |unit_entries|
       begin
-        provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
-        unit = @all_units_hash[provider_unit_id]
-
-        if unit.present?
-          is_available = false
-          vacate_date = ""
-          puts "--------------------- #{unit.marketing_name} -------------------\n"
-          unit_entries.each do |u|
-            if u.key?(:EffectiveRent)
-
-              unit.min_effective_rent = u[:EffectiveRent][0][:Min] if u[:EffectiveRent][0][:Min].present?
-              unit.max_effective_rent = u[:EffectiveRent][0][:Max] if u[:EffectiveRent][0][:Max].present?
-              unit.market_rent = u[:EffectiveRent][0][:Min]
-
-              unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                unit.effective_rent = u[:EffectiveRent][0][:Min]
-              end
-
-            end
-
-            if u.key?(:Availability)
-              if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
-                vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
-                is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
-              end
-              if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
-                vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
-                is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
-              end
-            end
-
-          end
-
-          unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
-            unit.available_date = vacate_date
-          end
-
-          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-            unit.availability = is_available ? "Unoccupied" : "Occupied" if !unit.sold
-            begin
-              if unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitLeasedStatus"] == "on notice"
-                unit.availability = "Unoccupied"
-              end
-            rescue =>ex
-            end
-          end
-
-          unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
-            if unit.availability == "Occupied"
-              unit.available = false
-            else
-              unit.available = true if !unit.sold
-            end
-          end
-
-          @unit_record << unit.provider_unit_id
-          import_units << unit
-        else
+        if unit_entries.present? && unit_entries[0].present? && unit_entries[0][:Id].present?
           provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
-          unit = Unit.where(provider: "yardi", community_id: credentials.community_id, property_id: property_id, provider_unit_id: provider_unit_id).first_or_initialize
-          
-          unless unit.manual_override
-            unit.property_id = property_id
-            unit.unit_type = unit_entries[0][:Id]
+          unit = @all_units_hash[provider_unit_id]
 
-            unless unit.name_is_updated.present? && unit.name_is_updated
-              unit.marketing_name = unit_entries[0][:Id]
-            end
-
-            unless unit.floor_is_updated.present? && unit.floor_is_updated
-              unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
-            end
-
+          if unit.present?
             is_available = false
             vacate_date = ""
-
-            unit_entries.each do |u|
-              if u.key?(:Unit)
-                unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
-                  unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
-                end
-              end
-
+            puts "--------------------- #{unit.marketing_name} -------------------\n"
+            unit_entries&.each do |u|
               if u.key?(:EffectiveRent)
-                unit.market_rent = u[:EffectiveRent][0][:Min]
+
                 unit.min_effective_rent = u[:EffectiveRent][0][:Min] if u[:EffectiveRent][0][:Min].present?
                 unit.max_effective_rent = u[:EffectiveRent][0][:Max] if u[:EffectiveRent][0][:Max].present?
+                unit.market_rent = u[:EffectiveRent][0][:Min]
 
-                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = u[:EffectiveRent][0][:Min]
                 end
+
               end
 
               if u.key?(:Availability)
@@ -213,35 +148,112 @@ class Yardi2Service < BaseService
 
             end
 
-            unless unit.availability_is_updated.present? && unit.availability_is_updated
-              unit.availability = is_available ? "Unoccupied" : "Occupied"
+            unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+              unit.available_date = vacate_date
+            end
+
+            unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+              unit.availability = is_available ? "Unoccupied" : "Occupied" if !unit.sold
               begin
                 if unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitLeasedStatus"] == "on notice"
                   unit.availability = "Unoccupied"
                 end
               rescue =>ex
+                raise ex
               end
             end
 
-            unless unit.available_date_is_updated.present? && unit.available_date_is_updated
-              unit.available_date = vacate_date
-            end
-
-            unless unit.available_is_updated.present? && unit.available_is_updated
+            unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
               if unit.availability == "Occupied"
                 unit.available = false
               else
-                unit.available = true
+                unit.available = true if !unit.sold
               end
             end
 
-            unit.manually_updated = false
+            @unit_record << unit.provider_unit_id
             import_units << unit
-          end
+          else
+            provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
+            unit = Unit.where(provider: "yardi", community_id: credentials.community_id, property_id: property_id, provider_unit_id: provider_unit_id).first_or_initialize
+            
+            unless unit.manual_override
+              unit.property_id = property_id
+              unit.unit_type = unit_entries[0][:Id]
 
+              unless unit.name_is_updated.present? && unit.name_is_updated
+                unit.marketing_name = unit_entries[0][:Id]
+              end
+
+              unless unit.floor_is_updated.present? && unit.floor_is_updated
+                unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
+              end
+
+              is_available = false
+              vacate_date = ""
+
+              unit_entries&.each do |u|
+                if u.key?(:Unit)
+                  unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+                    unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
+                  end
+                end
+
+                if u.key?(:EffectiveRent)
+                  unit.market_rent = u[:EffectiveRent][0][:Min]
+                  unit.min_effective_rent = u[:EffectiveRent][0][:Min] if u[:EffectiveRent][0][:Min].present?
+                  unit.max_effective_rent = u[:EffectiveRent][0][:Max] if u[:EffectiveRent][0][:Max].present?
+
+                  unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+                    unit.effective_rent = u[:EffectiveRent][0][:Min]
+                  end
+                end
+
+                if u.key?(:Availability)
+                  if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
+                    vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
+                    is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
+                  end
+                  if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
+                    vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
+                    is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
+                  end
+                end
+
+              end
+
+              unless unit.availability_is_updated.present? && unit.availability_is_updated
+                unit.availability = is_available ? "Unoccupied" : "Occupied"
+                begin
+                  if unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitLeasedStatus"] == "on notice"
+                    unit.availability = "Unoccupied"
+                  end
+                rescue =>ex
+                  raise ex
+                end
+              end
+
+              unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+                unit.available_date = vacate_date
+              end
+
+              unless unit.available_is_updated.present? && unit.available_is_updated
+                if unit.availability == "Occupied"
+                  unit.available = false
+                else
+                  unit.available = true
+                end
+              end
+
+              unit.manually_updated = false
+              import_units << unit
+            end
+
+          end
         end
 
       rescue => e
+        raise e
       end
     end
     
@@ -252,46 +264,16 @@ class Yardi2Service < BaseService
   def save_yardi2_floorplans(floorplans)
     return unless @all_floorplans_hash.present?
     import_floorplans = []
-    floorplans[0].lazy.each do |floorplan|
+    floorplans[0]&.each do |floorplan|
       begin
-        fp = @all_floorplans_hash[floorplan[0][:Id].to_s]
-        
-        if fp.present?
-          puts "------------------- #{fp.name} --------------------\n"
-          rooms = []
-          floorplan.each do |f|
-            unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated  && fp.manual_override
-              if f.key?(:MarketRent)
-                if f[:MarketRent][0][:Min].to_f > 0
-                  fp.market_rent = f[:MarketRent][0][:Min]
-                else
-                  fp.market_rent = f[:MarketRent][0][:Max]
-                end
-              end
-            end
-          end
-
-          import_floorplans << fp
-
-        else
-          fp = Floorplan.where(provider: "yardi", community_id: credentials.community_id, provider_floorplan_id: floorplan[0][:Id]).first_or_initialize
+        if floorplan.present? && floorplan[0].present? && floorplan[0][:Id].present?
+          fp = @all_floorplans_hash[floorplan[0][:Id]&.to_s]
           
-          unless fp.manual_override
+          if fp.present?
+            puts "------------------- #{fp.name} --------------------\n"
             rooms = []
-            floorplan.each do |f|
-
-              if f.key?(:Room)
-                rooms << f
-              end
-
-              if f.key?(:Name)
-                unless fp.name_is_updated.present? && fp.name_is_updated
-                  fp.name = f[:Name]
-                end
-
-              end
-
-              unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated
+            floorplan&.each do |f|
+              unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated  && fp.manual_override
                 if f.key?(:MarketRent)
                   if f[:MarketRent][0][:Min].to_f > 0
                     fp.market_rent = f[:MarketRent][0][:Min]
@@ -300,38 +282,71 @@ class Yardi2Service < BaseService
                   end
                 end
               end
-
-              unless fp.square_feet_is_updated.present? && fp.square_feet_is_updated
-                if f.key?(:SquareFeet)
-                  if f[:SquareFeet][0][:Min].to_f > 0
-                    fp.square_feet = f[:SquareFeet][0][:Min]
-                  else
-                    fp.square_feet = f[:SquareFeet][0][:Max]
-                  end
-                end
-              end
-
-            end
-
-            rooms.each do |room|
-              if room[:Room][0][:Type] == "Bedroom"
-                unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated
-                  fp.bedrooms = room[:Room][1][:Count]
-                end
-              else
-                unless fp.bathroom_is_updated.present? && fp.bathroom_is_updated
-                  fp.bathrooms = room[:Room][1][:Count]
-                end
-
-              end
             end
 
             import_floorplans << fp
 
+          else
+            fp = Floorplan.where(provider: "yardi", community_id: credentials.community_id, provider_floorplan_id: floorplan[0][:Id]).first_or_initialize
+            
+            unless fp.manual_override
+              rooms = []
+              floorplan&.each do |f|
+
+                if f.key?(:Room)
+                  rooms << f
+                end
+
+                if f.key?(:Name)
+                  unless fp.name_is_updated.present? && fp.name_is_updated
+                    fp.name = f[:Name]
+                  end
+
+                end
+
+                unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated
+                  if f.key?(:MarketRent)
+                    if f[:MarketRent][0][:Min].to_f > 0
+                      fp.market_rent = f[:MarketRent][0][:Min]
+                    else
+                      fp.market_rent = f[:MarketRent][0][:Max]
+                    end
+                  end
+                end
+
+                unless fp.square_feet_is_updated.present? && fp.square_feet_is_updated
+                  if f.key?(:SquareFeet)
+                    if f[:SquareFeet][0][:Min].to_f > 0
+                      fp.square_feet = f[:SquareFeet][0][:Min]
+                    else
+                      fp.square_feet = f[:SquareFeet][0][:Max]
+                    end
+                  end
+                end
+
+              end
+
+              rooms&.each do |room|
+                if room[:Room][0][:Type] == "Bedroom"
+                  unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated
+                    fp.bedrooms = room[:Room][1][:Count]
+                  end
+                else
+                  unless fp.bathroom_is_updated.present? && fp.bathroom_is_updated
+                    fp.bathrooms = room[:Room][1][:Count]
+                  end
+
+                end
+              end
+
+              import_floorplans << fp
+
+            end
           end
         end
       
       rescue => e
+        raise e
       end
     end
 

@@ -803,7 +803,7 @@ class Community < ApplicationRecord
     when "realpagesvc"
       RealPageDataUpdateWorker.perform_async self.id
     when "yardi"
-      self.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(self.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(self.credential.attributes.to_json)
+      YardiDataUpdateWorker.perform_async self.id
     when "resman"
       ((self.credential.resman_api_version === "GetMarketing4_0") ? ImportResman4DataJob.perform_async(self.credential.attributes.to_json) : ImportResmanDataJob.perform_async(self.credential.attributes.to_json))
     when "zaremba"

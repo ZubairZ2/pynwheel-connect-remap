@@ -1,5 +1,7 @@
 class Yardi4Service < BaseService
   def perform
+    return unless credentials&.url.present?
+
     @unit_record = []
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "yardi")
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardi")
@@ -7,7 +9,7 @@ class Yardi4Service < BaseService
     community&.community_data_updated_on()
     
     property_ids = credentials.property_id.split(',') rescue []
-    property_ids.each do |property_id|
+    property_ids&.each do |property_id|
       begin
         external_property_id = ""
         ils_units = []
@@ -62,21 +64,23 @@ class Yardi4Service < BaseService
         #result = Hash.from_xml(response.body) # This method consumes a lot of memory on heroku
         result = Ox.load(response.body, mode: :hash)
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
-          property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
-          property_response.each do |pr|
-            if pr.key?(:IDValue)
-              external_property_id = pr[:IDValue]
+          if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty].present?
+            property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
+            property_response&.each do |pr|
+              if pr.key?(:IDValue)
+                external_property_id = pr[:IDValue]
+              end
+              if pr.key?(:Floorplan)
+                floorplans << pr[:Floorplan]
+              end
+              if pr.key?(:ILS_Unit)
+                ils_units << pr[:ILS_Unit]
+              end
             end
-            if pr.key?(:Floorplan)
-              floorplans << pr[:Floorplan]
-            end
-            if pr.key?(:ILS_Unit)
-              ils_units << pr[:ILS_Unit]
-            end
-          end
 
-          save_yardi4_floorplans(floorplans)
-          save_yardi4_units(ils_units, external_property_id)
+            save_yardi4_floorplans(floorplans)
+            save_yardi4_units(ils_units, external_property_id)
+          end
           #else
           #Thread.current[:errors] << "Invalid credentials.Please enter correct one and try again."
           #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
@@ -87,6 +91,7 @@ class Yardi4Service < BaseService
             cred.save
             PaperTrail.enabled = true
           rescue => err
+            raise err
           end
         else
           begin
@@ -96,9 +101,12 @@ class Yardi4Service < BaseService
             cred.save
             PaperTrail.enabled = true
           rescue => err
+            raise err
           end
         end
       rescue => e
+        raise e
+
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
@@ -106,6 +114,7 @@ class Yardi4Service < BaseService
           cred.save
           PaperTrail.enabled = true
         rescue => err
+          raise err
         end
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
@@ -118,7 +127,7 @@ class Yardi4Service < BaseService
     import_units = []
     unit_present = @all_units_hash.keys
 
-    ils_units.lazy.each do |api_unit|
+    ils_units&.each do |api_unit|
 
       u = api_unit[1]
       provider_unit_id = "#{u[:Units][:Unit][:Identification][0][:IDValue]}-#{property_id}" rescue "#{u[:Units][:Unit][:Identification][0][0][:IDValue]}-#{property_id}"
@@ -136,7 +145,7 @@ class Yardi4Service < BaseService
         is_available = false
         vacate_date = ""
 
-        api_unit.each do |unit_with_key|
+        api_unit&.each do |unit_with_key|
           if unit_with_key.key?(:Availability)
 
             if unit_with_key[:Availability][:VacateDate][0][:Year].present? && unit_with_key[:Availability][:VacateDate][0][:Year].to_i > 0 && unit_with_key[:Availability][:VacateDate][0][:Month].to_i > 0 && unit_with_key[:Availability][:VacateDate][0][:Day].to_i > 0
@@ -167,8 +176,8 @@ class Yardi4Service < BaseService
         array_of_rents = []
 
         begin
-          if pr.present? && pr[:Pricing].present?
-            pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing, index|
+          if pr.present? && pr[:Pricing].present? && pr[:Pricing][:'MITS-OfferTerm'].present?
+            pr[:Pricing][:'MITS-OfferTerm']&.each_with_index do |pricing, index|
               month = pricing[:DateRange][:StartDate][0][:Month]
               day = pricing[:DateRange][:StartDate][0][:Day]
               year = pricing[:DateRange][:StartDate][0][:Year]
@@ -201,9 +210,9 @@ class Yardi4Service < BaseService
           end
         
           unit.lease_pricing = rentStr
-        rescue
-          
+        rescue =>  e
           unit.lease_pricing = nil
+          raise e
         end
 
         unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
@@ -258,7 +267,7 @@ class Yardi4Service < BaseService
           vacate_date = ""
           array_of_rents = []
 
-          api_unit.each do |unit_with_key|
+          api_unit&.each do |unit_with_key|
             if unit_with_key.key?(:Availability)
 
               if unit_with_key[:Availability][:VacateDate][0][:Year].present? && unit_with_key[:Availability][:VacateDate][0][:Year].to_i > 0 && unit_with_key[:Availability][:VacateDate][0][:Month].to_i > 0 && unit_with_key[:Availability][:VacateDate][0][:Day].to_i > 0
@@ -288,9 +297,9 @@ class Yardi4Service < BaseService
           unitLeaseTerm = []
 
           begin
-            if pr[:Pricing].present?
+            if pr[:Pricing].present? && pr[:Pricing][:'MITS-OfferTerm'].present?
 
-              pr[:Pricing][:'MITS-OfferTerm'].each_with_index do |pricing, index|
+              pr[:Pricing][:'MITS-OfferTerm']&.each_with_index do |pricing, index|
                 month = pricing[:DateRange][:StartDate][0][:Month]
                 day = pricing[:DateRange][:StartDate][0][:Day]
                 year = pricing[:DateRange][:StartDate][0][:Year]
@@ -323,7 +332,8 @@ class Yardi4Service < BaseService
             end
 
             unit.lease_pricing = rentStr
-          rescue
+          rescue => e
+            raise e
             unit.lease_pricing = nil
           end
 
@@ -359,13 +369,13 @@ class Yardi4Service < BaseService
     return unless @all_floorplans_hash.present?
     
     import_floorplans = []
-    floorplans.lazy.each do |floorplan|
+    floorplans&.each do |floorplan|
       fp = @all_floorplans_hash[floorplan[0][:IDValue].to_s]
 
       if fp.present?
         puts "------------------- #{fp.name} --------------------\n"
         
-        floorplan.each do |f|
+        floorplan&.each do |f|
           unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated  && fp.manual_override
             if f.key?(:MarketRent)
               if f[:MarketRent][0][:Min].to_f > 0
@@ -384,7 +394,7 @@ class Yardi4Service < BaseService
         
         unless fp.manual_override
           rooms = []
-          floorplan.each do |f|
+          floorplan&.each do |f|
 
             if f.key?(:Room)
               rooms << f
@@ -418,7 +428,7 @@ class Yardi4Service < BaseService
             end
           end
 
-          rooms.each do |room|
+          rooms&.each do |room|
             if room[:Room][0][:RoomType] == "Bedroom"
               unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated  && fp.manual_override
                 fp.bedrooms = room[:Room][1][:Count]
