@@ -1662,6 +1662,7 @@ function setModalAttributes(element) {
       $('#unitModal').find('#available-date').html($(element).data('available-date'));
     }
   }
+
   $('#unitModal').find('#market-rent').html(currency + $(element).data('market-rent'));
   $('#unitModal').find('#total-market-rent').html(currency + $(element).data('market-rent'));
   

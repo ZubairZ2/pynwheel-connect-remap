@@ -44,9 +44,9 @@ class PsiStaticService < BaseService
               floorplans << f
             end
           end
+          
           save_psi_floorplans(floorplans,property_id)
           save_psi_units(units,property_id)
-          com_test&.community_data_updated_on()
 
           begin
             cred = Credential.find credentials.id
@@ -558,7 +558,7 @@ class PsiStaticService < BaseService
     end
   end
   def getMoveInDate(property_id)
-    url = "https://"+credentials.entrata_url+".entrata.com/api/v1/properties"
+    url = get_move_in_dates_endpoint()
     password = credentials.password
     username = credentials.username
     #property_id = credentials.property_id
@@ -597,9 +597,16 @@ class PsiStaticService < BaseService
     end
     moveIn_dates
   end
-end
-  def save_website_column_of_community(response)
-    community = Community.find credentials.community_id
-    community.update_attribute(:website,response['response']['result']["PhysicalProperty"]["Property"][0]["PropertyID"]["WebSite"])
+
+  def get_move_in_dates_endpoint
+    if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
+      url = credentials.entrata_url
+    else
+      url = "https://#{credentials.entrata_url}.entrata.com/api/v1/properties"
+    end
+
+    url
   end
+
+end
 

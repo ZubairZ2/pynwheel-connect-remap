@@ -1,11 +1,14 @@
 class ResmanService < BaseService
   def perform
     @unit_record = []
+    community = Community.find credentials.community_id
+    community&.community_data_updated_on()
     property_ids = credentials.resman_property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
 
         account_id = credentials.resman_account_id
+        community = Community.find credentials.community_id
         #property_id = credentials.property_id
         url = "https://api.myresman.com/MITS/GetMarketing2_0"
         response = HTTParty.post(url,
@@ -30,6 +33,7 @@ class ResmanService < BaseService
           $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
+
           # save_website_column_of_community(response)
           begin
             cred = Credential.find credentials.id
@@ -64,7 +68,7 @@ class ResmanService < BaseService
     end
   end
   def save_resman_units(units,property_id)
-
+    import_units = []
     unit_present =  Unit.where("community_id = ? AND provider IN (?)",  credentials.community_id,  ["resman"]).map{|x| x.provider_unit_id.gsub('*','-')}
     units.each do |u|
       vacateDate = ""
@@ -113,7 +117,8 @@ class ResmanService < BaseService
         end
 
         @unit_record << unit.provider_unit_id.gsub('*','-')
-        unit.save(validate: false)
+        # unit.save(validate: false)
+        import_units << unit
 
       else
         vacateDate = ""
@@ -177,24 +182,37 @@ class ResmanService < BaseService
           end
 
           unit.manually_updated = false
-          unit.save(validate: false)
+          # unit.save(validate: false)
+          import_units << unit
         end
       end
     end
+
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+
     no_unit = unit_present - @unit_record
+    import_units = []
+
     if @unit_record.nil?
       no_unit = nil
     end
+
     no_unit.each do |un|
       unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un.gsub('*','-'))
       unit.availability = "Occupied"
       unit.available = false
       unit.available_date = nil
-      unit.save(validate: false) unless unit.manual_override
+      import_units << unit unless unit.manual_override
+      # unit.save(validate: false) unless unit.manual_override
     end
+
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+
   end
 
   def save_resman_floorplans(floorplans,property_id)
+    import_floorplans = []
+
     floorplans.each do |f|
       floorplan = Floorplan.find_by(provider: "resman",community_id: credentials.community_id,provider_floorplan_id: f["Id"])#.first_or_initialize
       if floorplan.present?
@@ -206,7 +224,8 @@ class ResmanService < BaseService
           end
         end
 
-        floorplan.save(validate: false)
+        # floorplan.save(validate: false)
+        import_floorplans << floorplan
 
       else
         floorplan = Floorplan.where(provider: "resman",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize
@@ -249,10 +268,14 @@ class ResmanService < BaseService
           end
         end
 
-        floorplan.save(validate: false)
+        # floorplan.save(validate: false)
+        import_floorplans << floorplan
 
       end
     end
+
+    ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
+
   end
 
 end

@@ -767,21 +767,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def update_unit_floorplan_data
     community = Community.find(params[:id])
-    if community.data_provider == "psi"
-      result = ImportPsiDataJob.perform_async community.credential.attributes.to_json
-    elsif community.data_provider == "yardirentcafe"
-      result = ImportYardirentcafeDataJob.perform_async community.credential.attributes.to_json
-    elsif community.data_provider == "yardi"
-      result = community.credential.url.include?("20") ? ImportYardi2DataJob.perform_async(community.credential.attributes.to_json) : ImportYardi4DataJob.perform_async(community.credential.attributes.to_json)
-    elsif community.data_provider == "resman"
-      result = ((community.credential.resman_api_version === "GetMarketing4_0") ? ImportResman4DataJob.perform_async(community.credential.attributes.to_json) : ImportResmanDataJob.perform_async(community.credential.attributes.to_json))
-    elsif community.data_provider == "zaremba"
-      result = ImportZarembaDataJob.perform_async community.credential.attributes.to_json
-    elsif community.data_provider == "xml"
-      result = ImportXmlDataJob.perform_async community.credential.attributes.to_json
-    elsif community.data_provider == "realpagesvc"
-      result = ImportRealpageSvcDataJob.perform_async community.credential.attributes.to_json
-    end
+    community.update_community_provider_data()
     render :json=> {:success=>true, :message => "success", :operation => "update data"}
   end
 
@@ -1360,7 +1346,12 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def getMoveInDate(property_id)
-    url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/properties"
+    if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
+      url = @credentials.entrata_url
+    else
+      url = "https://#{@credentials.entrata_url}.entrata.com/api/v1/properties"
+    end
+
     password = @credentials.password
     username = @credentials.username
     #property_id = credentials.property_id

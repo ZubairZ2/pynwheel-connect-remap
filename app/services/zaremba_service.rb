@@ -2,6 +2,9 @@ class ZarembaService < BaseService
   def perform
     @unit_record = []
     property_ids = credentials.zaremba_property_id.split(',') rescue []
+    community = Community.find credentials.community_id
+    community&.community_data_updated_on()
+
     property_ids.each do |property_id|
       begin
         username = credentials.zaremba_username
@@ -44,7 +47,9 @@ class ZarembaService < BaseService
           response['PhysicalProperty']['Property'].present? && result['Floorplan'].class == Array && result["Floorplan"].each do |pro|
             floorplans << pro
           end
+
           save_zaremba_units(units,property_id)
+          
           if result["Floorplan"].class == Hash
             floorplans = result["Floorplan"]
             save_zaremba_single_floorplans(floorplans,property_id)

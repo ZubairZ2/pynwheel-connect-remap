@@ -1,12 +1,12 @@
 class ImportYardirentcafeDataJob < ApplicationJob
   include SuckerPunch::Job
+  max_jobs 20
+  workers 4
 
   def perform(credentials)
-
-    # yardi_rent_cafe_static_service = YardiRentCafeStaticService.new(JSON.parse(credentials))
-    # yardi_rent_cafe_static_service.perform
-
-    yardi_rent_cafe_service = YardiRentCafeService.new(JSON.parse(credentials))
-    yardi_rent_cafe_service.perform
+    ActiveRecord::Base.connection_pool.with_connection do
+      yardi_rent_cafe_service = YardiRentCafeService.new(JSON.parse(credentials))
+      yardi_rent_cafe_service.perform
+    end
   end
 end

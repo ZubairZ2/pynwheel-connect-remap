@@ -4,6 +4,12 @@ Rails.application.routes.draw do
     skip_controllers :applications
   end
 
+  require 'sidekiq/web'
+
+  Rails.application.routes.draw do
+    mount Sidekiq::Web => '/sidekiq'
+  end
+
   get 'crm_providers/update'
 
   get 'tutorial/index'

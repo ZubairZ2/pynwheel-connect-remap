@@ -106,6 +106,16 @@ gem 'puma_worker_killer'
 gem 'pry-nav'
 gem 'chartjs-ror'
 gem 'activerecord-import', '~> 0.15.0'
+gem 'sidekiq', '~>4.0.0'
+gem 'sidekiq-limit_fetch', '3.4.0'
+gem 'resque', require: 'resque/server'
+gem 'resque-scheduler'
+gem 'resque-heroku-signals'
+
+group :production, :development do
+  gem 'rack-cache', require: 'rack/cache'
+  gem 'redis-rails'
+end
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

@@ -1,11 +1,15 @@
 class YardiRentCafeService < BaseService
 
   def perform
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "yardirentcafe")
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardirentcafe")
     import_yardirentcafe_floorplans
-    import_yardirentcafe_units 
+    import_yardirentcafe_units
   end
 
   def import_yardirentcafe_units
+    return unless @all_units_hash.present?
+
     @unit_record = []
     property_codes = credentials.p_code.split(',') rescue []
     property_codes.each do |property_code|
@@ -13,28 +17,33 @@ class YardiRentCafeService < BaseService
         request_type = "apartmentavailability"
         company_code = credentials.c_code
         api_token = credentials.api_token
-        #property_code = credentials.p_code
         showallunit =  credentials.limit_result ? "0" : "-1"
+        import_units = []
+
         if api_token.present?
           @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=" + showallunit
         else
           @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=" + showallunit
         end
+
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
+        
+        unit_present = @all_units_hash.keys
 
-
-        unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["yardirentcafe"]).map{|x| x.provider_unit_id}
         if response[0]["Error"].nil?
+
+          community = Community.find credentials.community_id
+          community&.community_data_updated_on()
+
           response.each do |r|
+
             begin
-              unit = Unit.find_by(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"])#.first_or_initialize
+              unit = @all_units_hash[r["ApartmentId"].to_s]
+
               if unit.present?
-                # unit.property_id = r["PropertyId"]
-                # unit.unit_type = r["ApartmentName"]
-                # unit.marketing_name = r["ApartmentName"]
-                # unit.floor = evaluate_floor(unit.marketing_name) rescue nil
-                # unit.floorplan_id = r["FloorplanId"]
+                puts "----------------------------- #{unit.marketing_name} ------------------------\n"
+                
                 unit.market_rent = r["MinimumRent"]
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = r["MinimumRent"]
@@ -44,8 +53,6 @@ class YardiRentCafeService < BaseService
                   unit.availability = "Unoccupied" if !unit.sold
                 end
                 
-                # unit.availability = "Unoccupied" if !unit.sold
-
                 if ( r["AvailableDate"] != "" && r["AvailableDate"] != nil )
                   unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
                     unit.availability = "Unoccupied" if !unit.sold
@@ -83,25 +90,43 @@ class YardiRentCafeService < BaseService
                 unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
                 unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
-
-                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
+                
                 leasing = ""
-                if rentStrs.present?
-                  rentStrs.each do |rentStr|
-                    
-                    if rentStr[0].to_i > 0
-                      leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                lease_prices_array = []
+
+                if unit.available
+                  rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
+                  if rentStrs.present?
+                    rentStrs.each do |rentStr|
+                      if rentStr[0].to_i > 0
+                        lease_prices_array << rentStr[0].to_i
+                        leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                      end
                     end
 
+                    min_term_rent = lease_prices_array&.min
+                    max_term_rent = lease_prices_array&.max
+
+                    if min_term_rent.present?
+                      unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                        unit.effective_rent = min_term_rent
+                        unit.market_rent = min_term_rent
+                      end
+                    end
+            
+                    unit.min_effective_rent = min_term_rent if min_term_rent.present?
+                    unit.max_effective_rent = max_term_rent if max_term_rent.present?
+                    
                   end
                 end
+
                 unit.lease_pricing = leasing
                 
-
-                unit.save(validate: false)
+                import_units << unit
 
               else
-                unit = Unit.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_unit_id: r["ApartmentId"]).first_or_initialize
+                unit = Unit.where(provider: "yardirentcafe", community_id: credentials.community_id, provider_unit_id: r["ApartmentId"]).first_or_initialize
+                
                 unless unit.manual_override
                   unit.property_id = r["PropertyId"]
                   unit.unit_type = r["ApartmentName"]
@@ -161,27 +186,50 @@ class YardiRentCafeService < BaseService
 
                   unit.manually_updated = false
                   unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
-
-                  rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
                   leasing = ""
+                  lease_prices_array = []
 
-                  if rentStrs.present?
-                    rentStrs.each do |rentStr|
-                      if rentStr[0].to_i > 0
-                        leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                  if  unit.available
+                    rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
+
+                    if rentStrs.present?
+                      rentStrs.each do |rentStr|
+                        if rentStr[0].to_i > 0
+                          lease_prices_array << rentStr[0].to_i
+                          leasing = leasing + rentStr[1] + ":" + rentStr[0].to_s + "::" +  rentStr[2].split(" ")[0] + ":" + rentStr[3].split(" ")[0] + ';' rescue ""
+                        end
                       end
+
+                      min_term_rent = lease_prices_array&.min
+                      max_term_rent = lease_prices_array&.max
+
+                      if min_term_rent.present?
+                        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+                          unit.effective_rent = min_term_rent
+                          unit.market_rent = min_term_rent
+                        end
+                      end
+              
+                      unit.min_effective_rent = min_term_rent if min_term_rent.present?
+                      unit.max_effective_rent = max_term_rent if max_term_rent.present?
+
                     end
                   end
 
                   unit.lease_pricing = leasing
 
-                  unit.save(validate: false)
+                  import_units << unit
+
                 end
               end
+
             rescue => e
-              ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
+              raise e
             end
           end
+
+          ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+
           begin
             cred = Credential.find credentials.id
             cred.data_error_message = nil
@@ -189,7 +237,9 @@ class YardiRentCafeService < BaseService
             cred.save
             PaperTrail.enabled = true
           rescue => err
+            raise err
           end
+
         else
           begin
             cred = Credential.find credentials.id
@@ -198,20 +248,14 @@ class YardiRentCafeService < BaseService
             cred.save
             PaperTrail.enabled = true
           rescue => err
+            raise err
           end
         end
-        no_unit = unit_present - @unit_record
-        if @unit_record.nil?
-          no_unit = nil
-        end
-        no_unit.each do |un|
-          unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
-          unit.availability = "Occupied"
-          unit.available = false
-          unit.available_date = nil
-          unit.save(validate: false) unless unit.manual_override
-        end
+
+        ProvidersDataUpdationService.new().update_availability_of_units(credentials.community_id, (unit_present - @unit_record))
+        
       rescue => e
+        raise e
         begin
           cred = Credential.find credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
@@ -219,67 +263,66 @@ class YardiRentCafeService < BaseService
           cred.save
           PaperTrail.enabled = true
         rescue => err
+          raise err
         end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
       end
     end
   end
 
   def import_yardirentcafe_floorplans
+    return unless @all_floorplans_hash.present?
+
     property_codes = credentials.p_code.split(',') rescue []
     property_codes.each do |property_code|
       begin
+
+        import_floorplans = []
         request_type = "floorplan"
         company_code = credentials.c_code
         api_token = credentials.api_token
-        #property_code = credentials.p_code
+
         if api_token.present?
           @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
         else
           @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
         end
+        
         response = HTTParty.get(@url)
         response = JSON.parse(response.body)
+
         if response[0]["Error"].nil?
           response.each do |r|
-            fp = Floorplan.find_by(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"])#.first_or_initialize
+            fp = @all_floorplans_hash[r["FloorplanId"].to_s]
+            
             if fp.present?
-              # fp.property_id = r["PropertyId"]
-              # fp.provider_floorplan_id = r["FloorplanId"]
-              # fp.name = r["FloorplanName"]
-              # fp.unit_count = r[""]
-              # fp.units_available = r[""]
-              # fp.bedrooms = r["Beds"]
-              # fp.bathrooms = r["Baths"]
-              # if r["MinimumSQFT"].present?
-              #   fp.square_feet = r["MinimumSQFT"]
-              # elsif r["SQFT"].present?
-              #   fp.square_feet = r["SQFT"]
-              # end
+              puts "----------------- #{fp.name} -----------------------\n"
               unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated && fp.manual_override
                 fp.market_rent = r["MinimumRent"]
               end
 
-              # fp.deposit = r["MinimumDeposit"]
-              fp.save(validate: false)
-
+              import_floorplans << fp
             else
-              fp = Floorplan.where(provider: "yardirentcafe",community_id: credentials.community_id,provider_floorplan_id: r["FloorplanId"]).first_or_initialize
+              fp = Floorplan.where(provider: "yardirentcafe", community_id: credentials.community_id, provider_floorplan_id: r["FloorplanId"]).first_or_initialize
+
               unless fp.manual_override
                 fp.property_id = r["PropertyId"]
                 fp.provider_floorplan_id = r["FloorplanId"]
+
                 unless fp.name_is_updated.present? && fp.name_is_updated
                   fp.name = r["FloorplanName"]
                 end
 
                 fp.unit_count = r[""]
                 fp.units_available = r[""]
+
                 unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated
                   fp.bedrooms = r["Beds"]
                 end
+
                 unless fp.bathroom_is_updated.present? && fp.bathroom_is_updated
                   fp.bathrooms = r["Baths"]
                 end
+
                 unless fp.square_feet_is_updated.present? && fp.square_feet_is_updated
                   if r["MinimumSQFT"].present?
                     fp.square_feet = r["MinimumSQFT"]
@@ -287,19 +330,22 @@ class YardiRentCafeService < BaseService
                     fp.square_feet = r["SQFT"]
                   end
                 end
+
                 unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated
                   fp.market_rent = r["MinimumRent"]
                 end
 
                 fp.deposit = r["MinimumDeposit"]
-                fp.save(validate: false)
+
+                import_floorplans << fp
               end
             end
           end
-        else 
+
+          ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
         end
-      rescue => e 
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id}) 
+      rescue => e
+        raise e
       end
     end
   end
@@ -317,6 +363,7 @@ class YardiRentCafeService < BaseService
       response = HTTParty.get(url)
       rent_matrix = JSON.parse(response.body)
       unless rent_matrix[0]["Error"].present?
+        puts "---------------------------- pricing Matrix Present --------------------------"
         uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
         distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
 
@@ -327,7 +374,7 @@ class YardiRentCafeService < BaseService
       end
 
     rescue => ex
-      return nil
+      raise ex
     end
   end
 end

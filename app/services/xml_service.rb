@@ -2,6 +2,9 @@ class XmlService < BaseService
   def perform
     @unit_record = []
     property_ids = credentials.xml_domain.split(',') rescue []
+    community = Community.find credentials.community_id
+    community&.community_data_updated_on()
+    
     property_ids.each do |property_id|
       begin
 
