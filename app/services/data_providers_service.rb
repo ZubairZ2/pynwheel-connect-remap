@@ -5,9 +5,9 @@ class DataProvidersService
 
   def update_providers_data
     @communities.each do |community|
-      next if (community.data_provider.present? && community.locked.present? && community.locked)
+      next if (community.locked.present? && community.locked)
 
-      case community.data_provider
+      case community&.data_provider
       when "realpagesvc"
         RealPageDataUpdateWorker.perform_async community.id
       when "yardirentcafe"
