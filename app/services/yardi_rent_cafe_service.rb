@@ -1,29 +1,33 @@
 class YardiRentCafeService < BaseService
+  attr_reader :credentials
+
+  def initialize(credentials)
+    @credentials = credentials
+    @unit_record = []
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "yardirentcafe")
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "yardirentcafe")
+  end
 
   def perform
-    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "yardirentcafe")
-    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardirentcafe")
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
   end
 
   def import_yardirentcafe_units
     return unless @all_units_hash.present?
-
-    @unit_record = []
-    property_codes = credentials.p_code.split(',') rescue []
+    property_codes = @credentials.p_code.split(',') rescue []
     property_codes.each do |property_code|
       begin
         request_type = "apartmentavailability"
-        company_code = credentials.c_code
-        api_token = credentials.api_token
-        showallunit =  credentials.limit_result ? "0" : "-1"
+        company_code = @credentials.c_code
+        api_token = @credentials.api_token
+        showallunit =  @credentials.limit_result ? "0" : "-1"
         import_units = []
 
         if api_token.present?
-          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=" + showallunit
+          @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=" + showallunit
         else
-          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=" + showallunit
+          @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=" + showallunit
         end
 
         response = HTTParty.get(@url)
@@ -33,7 +37,7 @@ class YardiRentCafeService < BaseService
 
         if response[0]["Error"].nil?
 
-          community = Community.find credentials.community_id
+          community = Community.find @credentials.community_id
           community&.community_data_updated_on()
 
           response.each do |r|
@@ -125,7 +129,7 @@ class YardiRentCafeService < BaseService
                 import_units << unit
 
               else
-                unit = Unit.where(provider: "yardirentcafe", community_id: credentials.community_id, provider_unit_id: r["ApartmentId"]).first_or_initialize
+                unit = Unit.where(provider: "yardirentcafe", community_id: @credentials.community_id, provider_unit_id: r["ApartmentId"]).first_or_initialize
                 
                 unless unit.manual_override
                   unit.property_id = r["PropertyId"]
@@ -231,7 +235,7 @@ class YardiRentCafeService < BaseService
           ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
 
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = nil
             PaperTrail.enabled = false
             cred.save
@@ -242,7 +246,7 @@ class YardiRentCafeService < BaseService
 
         else
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
             PaperTrail.enabled = false
             cred.save
@@ -252,12 +256,12 @@ class YardiRentCafeService < BaseService
           end
         end
 
-        ProvidersDataUpdationService.new().update_availability_of_units(credentials.community_id, (unit_present - @unit_record))
+        ProvidersDataUpdationService.new().update_availability_of_units(@credentials.community_id, (unit_present - @unit_record))
         
       rescue => e
         raise e
         begin
-          cred = Credential.find credentials.id
+          cred = Credential.find @credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
           PaperTrail.enabled = false
           cred.save
@@ -272,19 +276,19 @@ class YardiRentCafeService < BaseService
   def import_yardirentcafe_floorplans
     return unless @all_floorplans_hash.present?
 
-    property_codes = credentials.p_code.split(',') rescue []
+    property_codes = @credentials.p_code.split(',') rescue []
     property_codes.each do |property_code|
       begin
 
         import_floorplans = []
         request_type = "floorplan"
-        company_code = credentials.c_code
-        api_token = credentials.api_token
+        company_code = @credentials.c_code
+        api_token = @credentials.api_token
 
         if api_token.present?
-          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
+          @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
         else
-          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
+          @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
         end
         
         response = HTTParty.get(@url)
@@ -302,7 +306,7 @@ class YardiRentCafeService < BaseService
 
               import_floorplans << fp
             else
-              fp = Floorplan.where(provider: "yardirentcafe", community_id: credentials.community_id, provider_floorplan_id: r["FloorplanId"]).first_or_initialize
+              fp = Floorplan.where(provider: "yardirentcafe", community_id: @credentials.community_id, provider_floorplan_id: r["FloorplanId"]).first_or_initialize
 
               unless fp.manual_override
                 fp.property_id = r["PropertyId"]
@@ -357,7 +361,7 @@ class YardiRentCafeService < BaseService
 
   def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name, credentials)
     request_type = "pricingmatrix"
-    url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
+    url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
    
     begin
       response = HTTParty.get(url)

@@ -1,11 +1,16 @@
 class RealPageSvcService < BaseService
-  def perform
-    @unit_record = []
-    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "realpagesvc")
-    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "realpagesvc")
-    @all_units_marketing_name_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_hash(credentials.community_id, "realpagesvc")
-    @all_units_marketing_name_and_building_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_and_building_hash(credentials.community_id, "realpagesvc")
+  attr_reader :credentials
 
+  def initialize(credentials)
+    @credentials = credentials
+    @unit_record = []
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "realpagesvc")
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "realpagesvc")
+    @all_units_marketing_name_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_hash(@credentials.community_id, "realpagesvc")
+    @all_units_marketing_name_and_building_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_and_building_hash(@credentials.community_id, "realpagesvc")
+  end
+
+  def perform
     import_realpage_svc_floorplans
     # import_initials_realpage_units
     import_realpage_svc_units
@@ -15,18 +20,18 @@ class RealPageSvcService < BaseService
   def import_realpage_svc_floorplans
     return unless @all_floorplans_hash.present?
 
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = @credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
         import_floorplans = []
         url = REALPAGE_URL
         soap_action = REALPAGE_FLOORPLAN_ACTION
-        pmc_id = credentials.pmc_id
-        #site_id = credentials.site_id
+        pmc_id = @credentials.pmc_id
+        #site_id = @credentials.site_id
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
-        community_id = credentials.community_id
+        community_id = @credentials.community_id
         response = HTTParty.post(
             url,
             :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -115,7 +120,7 @@ class RealPageSvcService < BaseService
 
   def import_initials_realpage_units
     #building_result = realpage_building #Ignore it for now
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = @credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
         @array_of_dates = [{ready_date: Date.today,units: []}]
@@ -123,12 +128,12 @@ class RealPageSvcService < BaseService
 
         url = REALPAGE_URL
         soap_action = REALPAGE_UNIT_ACTION
-        pmc_id = credentials.pmc_id
-        #site_id = credentials.site_id
+        pmc_id = @credentials.pmc_id
+        #site_id = @credentials.site_id
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
-        community_id = credentials.community_id
+        community_id = @credentials.community_id
 
         response = HTTParty.post(
             url,
@@ -339,7 +344,7 @@ class RealPageSvcService < BaseService
 
         else
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
             cred.save
           rescue => err
@@ -350,13 +355,13 @@ class RealPageSvcService < BaseService
       rescue => e
         raise e
         begin
-          cred = Credential.find credentials.id
+          cred = Credential.find @credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
           cred.save
         rescue => err
           raise err
         end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+        #ExceptionNotifier.notify_exception(e,data: {community_id: @credentials.community_id})
       end
     end
   end
@@ -366,7 +371,7 @@ class RealPageSvcService < BaseService
     #building_result = realpage_building #Ignore it for now
     unit_present = @all_units_hash.keys
 
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = @credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
         import_units = []
@@ -375,14 +380,14 @@ class RealPageSvcService < BaseService
         current_date = Date.today
         url = REALPAGE_URL
         soap_action = REALPAGE_PRICE_ACTION
-        pmc_id = credentials.pmc_id
-        #site_id = credentials.site_id
+        pmc_id = @credentials.pmc_id
+        #site_id = @credentials.site_id
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
         date_needed = Date.today + 540
-        limit_result = credentials.limit_result ? "True" : "False"
-        community_id = credentials.community_id
+        limit_result = @credentials.limit_result ? "True" : "False"
+        community_id = @credentials.community_id
         
         response = HTTParty.post(
             url,
@@ -431,7 +436,7 @@ class RealPageSvcService < BaseService
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units = [units] if units.is_a?(Hash)
 
-          community = Community.find credentials.community_id
+          community = Community.find @credentials.community_id
           community&.community_data_updated_on()
 
           units.each do |u|
@@ -559,10 +564,10 @@ class RealPageSvcService < BaseService
           end
 
           ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-          ProvidersDataUpdationService.new().update_availability_of_units(credentials.community_id, (unit_present - @unit_record))
+          ProvidersDataUpdationService.new().update_availability_of_units(@credentials.community_id, (unit_present - @unit_record))
 
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = nil
             cred.save
           rescue => err
@@ -571,7 +576,7 @@ class RealPageSvcService < BaseService
 
         else
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
             cred.save
           rescue => err
@@ -583,7 +588,7 @@ class RealPageSvcService < BaseService
       rescue => e
         raise e
         begin
-          cred = Credential.find credentials.id
+          cred = Credential.find @credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
           PaperTrail.enabled = false
           cred.save
@@ -598,7 +603,7 @@ class RealPageSvcService < BaseService
   def import_realpage_svc_price
     return unless  @all_units_marketing_name_hash.present?
 
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = @credentials.site_id.split(',') rescue []
     units_str = ""
 
     @array_of_units.each do |us|
@@ -610,12 +615,12 @@ class RealPageSvcService < BaseService
         import_units = []
         url = REALPAGE_URL
         soap_action = 'http://tempuri.org/IRPXService/getrentmatrix'
-        pmc_id = credentials.pmc_id
-        #site_id = credentials.site_id
+        pmc_id = @credentials.pmc_id
+        #site_id = @credentials.site_id
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
-        community_id = credentials.community_id
+        community_id = @credentials.community_id
         date_check = Date.today
         begin
 
@@ -724,8 +729,8 @@ class RealPageSvcService < BaseService
     begin
       url = REALPAGE_URL
       soap_action = REALPAGE_BUILDING_ACTION
-      pmc_id = credentials.pmc_id
-      site_id = credentials.site_id
+      pmc_id = @credentials.pmc_id
+      site_id = @credentials.site_id
       username = REALPAGESVC_USERNAME
       password = REALPAGESVC_PASSWORD
       license_key = REALPAGESVC_LICENSE_KEY
@@ -757,7 +762,7 @@ class RealPageSvcService < BaseService
       unless result["Envelope"]["Body"]["Fault"].present?
         return result["Envelope"]["Body"]["getpicklistResponse"]["getpicklistResult"]["GetPickList"]["Contents"]["PicklistItem"]
       else
-        ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: credentials.community_id})
+        ExceptionNotifier.notify_exception(Exception.new,data: {message: result["Envelope"]["Body"]["Fault"]["faultstring"],community_id: @credentials.community_id})
       end
     rescue => e
       raise e

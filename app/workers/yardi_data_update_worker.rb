@@ -8,12 +8,14 @@ class YardiDataUpdateWorker
 
     credentials = community.credential.attributes.to_json
     
-    if community&.credential&.url.include?("20")
-      yardi2_service = Yardi2Service.new(JSON.parse(credentials))
-      yardi2_service.perform    
-    else 
-      yardi4_service = Yardi4Service.new(JSON.parse(credentials))
-      yardi4_service.perform
+    if  community&.credential&.url.present?
+      if community&.credential&.url.include?("20")
+        yardi2_service = Yardi2Service.new(community.credential)
+        yardi2_service.perform    
+      else 
+        yardi4_service = Yardi4Service.new(community.credential)
+        yardi4_service.perform
+      end
     end
   end
   

@@ -1,13 +1,17 @@
 class PsiService < BaseService
   @@floorplanHash = Hash.new
-  def perform
-    return unless credentials&.url.present?
+  attr_reader :credentials
+
+  def initialize(credentials)
+    @credentials = credentials
     @unit_record = []
-    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "psi")
-    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "psi")
-    
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "psi")
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "psi")
+  end
+
+  def perform
     begin
-      com_test = Community.find credentials.community_id
+      com_test = Community.find @credentials.community_id
       com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
       com_test.entrata_exception_logs = com_test.entrata_exception_logs + "Before call logs -"+Time.now.to_s + "-"
       PaperTrail.enabled = false
@@ -17,19 +21,19 @@ class PsiService < BaseService
       raise ex
     end
 
-    property_ids = credentials.property_id.split(',') rescue []
+    property_ids = @credentials.property_id.split(',') rescue []
 
     property_ids.each do |property_id|
       begin
 
-        if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
-          url = credentials.entrata_url
+        if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
+          url = @credentials.entrata_url
         else
-          url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+          url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
         end
 
-        password = credentials.password
-        username = credentials.username
+        password = @credentials.password
+        username = @credentials.username
 
         response = HTTParty.post(url,
                                  :body => {
@@ -42,15 +46,13 @@ class PsiService < BaseService
                                          "name": "getMitsPropertyUnits",
                                          "params": {
                                              "propertyIds": property_id,
-                                             "availableUnitsOnly": credentials&.entrata_available_units_only,
-                                             "showUnitSpaces": credentials&.entrata_show_unit_spaces
+                                             "availableUnitsOnly": @credentials&.entrata_available_units_only,
+                                             "showUnitSpaces": @credentials&.entrata_show_unit_spaces
                                          }
                                      }
                                  }.to_json,
                                  :headers => { 'Content-Type' => 'application/json' } )
         response =  JSON.parse(response.body)
-
-        sleep 2
         
         if response["response"]["code"] == 200
           units = []
@@ -67,11 +69,11 @@ class PsiService < BaseService
           save_psi_floorplans(floorplans, property_id)
           save_psi_units(units, property_id)
 
-          community = Community.find credentials.community_id
+          community = Community.find @credentials.community_id
           community&.community_data_updated_on()
 
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = nil
             PaperTrail.enabled = false
             cred.save
@@ -83,7 +85,7 @@ class PsiService < BaseService
 
         else
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
             PaperTrail.enabled = false
             cred.save
@@ -97,7 +99,7 @@ class PsiService < BaseService
         raise e
 
         begin
-          cred = Credential.find credentials.id
+          cred = Credential.find @credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
           PaperTrail.enabled = false
           cred.save
@@ -110,7 +112,7 @@ class PsiService < BaseService
         begin
           raise e
 
-          com = Community.find credentials.community_id
+          com = Community.find @credentials.community_id
           unless com.entrata_exception_logs.present?
             com.entrata_exception_logs = ""
           end
@@ -127,7 +129,7 @@ class PsiService < BaseService
     end
 
     begin
-      com_test = Community.find credentials.community_id
+      com_test = Community.find @credentials.community_id
       com_test.entrata_exception_logs = "" unless com_test.entrata_exception_logs.present?
       com_test.entrata_exception_logs = com_test.entrata_exception_logs + "After call logs -"+Time.now.to_s + "-  =========================="
       PaperTrail.enabled = false
@@ -216,7 +218,7 @@ class PsiService < BaseService
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.property_id = property_id
         unit.provider = "psi"
-        unit.community_id = credentials.community_id
+        unit.community_id = @credentials.community_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
 
         unless unit.name_is_updated.present? && unit.name_is_updated
@@ -309,7 +311,7 @@ class PsiService < BaseService
     end
       
     ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-    ProvidersDataUpdationService.new().update_availability_of_units(credentials.community_id, (unit_present - @unit_record))
+    ProvidersDataUpdationService.new().update_availability_of_units(@credentials.community_id, (unit_present - @unit_record))
   end
 
   def save_psi_floorplans(floorplans,property_id)
@@ -337,7 +339,7 @@ class PsiService < BaseService
         end
 
       else
-        floorplan = Floorplan.where(provider: "psi", community_id: credentials.community_id, provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
+        floorplan = Floorplan.where(provider: "psi", community_id: @credentials.community_id, provider_floorplan_id: f["Identification"]["IDValue"]).first_or_initialize
 
         floorplan.property_id = property_id
         floorplan.provider = "psi"
@@ -401,7 +403,7 @@ class PsiService < BaseService
 
     import_units = []
     floorplanHash = Hash.new
-    property_ids = credentials.property_id.split(',') rescue []
+    property_ids = @credentials.property_id.split(',') rescue []
     
     property_ids.each do |property_id|
       move_in_dates = getMoveInDate(property_id)
@@ -477,7 +479,7 @@ class PsiService < BaseService
 
                 rescue => ex
                   begin
-                    com = Community.find credentials.community_id
+                    com = Community.find @credentials.community_id
                     unless com.entrata_exception_logs.present?
                       com.entrata_exception_logs = ""
                     end
@@ -544,8 +546,8 @@ class PsiService < BaseService
       :body => {
         "auth": {
           "type": "basic",
-          "password": credentials.password,
-          "username": credentials.username
+          "password": @credentials.password,
+          "username": @credentials.username
         },
         "requestId": 15,
         "method": {
@@ -566,8 +568,8 @@ class PsiService < BaseService
       :body => {
         "auth": {
           "type": "basic",
-          "password": credentials.password,
-          "username": credentials.username
+          "password": @credentials.password,
+          "username": @credentials.username
         },
         "method": {
           "name": "getUnitsAvailabilityAndPricing",
@@ -582,27 +584,27 @@ class PsiService < BaseService
   def get_pricing_params property_id, move_in_date
     {
       "propertyId": property_id,
-      "availableUnitsOnly": credentials&.entrata_available_units_only,
-      "showUnitSpaces": credentials&.entrata_show_unit_spaces,
-      "useSpaceConfiguration": credentials&.entrata_use_space_configuration,
+      "availableUnitsOnly": @credentials&.entrata_available_units_only,
+      "showUnitSpaces": @credentials&.entrata_show_unit_spaces,
+      "useSpaceConfiguration": @credentials&.entrata_use_space_configuration,
     }.merge(move_in_date_param(move_in_date))
   end
 
   def get_units_pricing_endpoint
-    if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
-      url = credentials.entrata_url
+    if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
+      url = @credentials.entrata_url
     else
-      url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+      url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
     end
 
     url
   end
 
   def get_move_in_dates_endpoint
-    if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
-      url = credentials.entrata_url
+    if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
+      url = @credentials.entrata_url
     else
-      url = "https://#{credentials.entrata_url}.entrata.com/api/v1/properties"
+      url = "https://#{@credentials.entrata_url}.entrata.com/api/v1/properties"
     end
 
     url

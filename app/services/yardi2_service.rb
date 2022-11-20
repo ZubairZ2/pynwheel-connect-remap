@@ -1,30 +1,36 @@
 class Yardi2Service < BaseService
-  def perform
-    return unless credentials&.url.present?
+
+  attr_reader :credentials
+
+  def initialize(credentials)
+    @credentials = credentials
+    return unless @credentials&.url.present?
 
     @unit_record = []
-    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(credentials.community_id, "yardi")
-    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(credentials.community_id, "yardi")
-    
-    property_ids = credentials.property_id.split(',') rescue []
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "yardi")
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "yardi")
+  end
+
+  def perform    
+    property_ids = @credentials.property_id.split(',') rescue []
     property_ids&.each do |property_id|
       begin
         property_id = property_id.strip
         external_property_id = ""
         ils_units = []
         floorplans = []
-        url = credentials.url
+        url = @credentials.url
         arr = url.split('/')
         post = "#{arr[3]}/Webservices/itfilsguestcard20.asmx HTTP/1.1"
         host = arr[2]
         soap_action = 'http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard20/UnitAvailability_Login'
-        user_name = credentials.username
-        password = credentials.password
-        server_name = credentials.server_name
-        database = credentials.database
-        platform = credentials.platform
+        user_name = @credentials.username
+        password = @credentials.password
+        server_name = @credentials.server_name
+        database = @credentials.database
+        platform = @credentials.platform
         property_id = property_id
-        interface_entity = credentials.interface_entity
+        interface_entity = @credentials.interface_entity
         license_key = YARDI_LICENSE_KEY
 
         response = HTTParty.post(
@@ -37,7 +43,7 @@ class Yardi2Service < BaseService
           if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty].present?
             property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
             
-            community = Community.find credentials.community_id
+            community = Community.find @credentials.community_id
             community&.community_data_updated_on()
 
             property_response&.each do |pr|
@@ -57,7 +63,7 @@ class Yardi2Service < BaseService
           end
 
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = nil
             PaperTrail.enabled = false
             cred.save
@@ -67,15 +73,15 @@ class Yardi2Service < BaseService
           end
           #else
           #puts '------------------------------------' , result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"] 
-          #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid credentials.Please enter correct one and try again.",community_id: credentials.community_id})
+          #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid @credentials.Please enter correct one and try again.",community_id: @credentials.community_id})
         else
-          cred1 = Credential.find credentials.id
+          cred1 = Credential.find @credentials.id
           cred1.data_error_exp = "data_not present"
           PaperTrail.enabled = false
           cred1.save
           PaperTrail.enabled = true
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
             PaperTrail.enabled = false
             cred.save
@@ -86,13 +92,13 @@ class Yardi2Service < BaseService
         end
       rescue => e
         raise e
-        cred1 = Credential.find credentials.id
+        cred1 = Credential.find @credentials.id
         cred1.data_error_exp = e
         PaperTrail.enabled = false
         cred1.save
         PaperTrail.enabled = true
         begin
-          cred = Credential.find credentials.id
+          cred = Credential.find @credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
           PaperTrail.enabled = false
           cred.save
@@ -101,7 +107,7 @@ class Yardi2Service < BaseService
           raise err
         end
         #puts '----------------------------------', e.message
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})  
+        #ExceptionNotifier.notify_exception(e,data: {community_id: @credentials.community_id})  
       end
     end
   end
@@ -175,7 +181,7 @@ class Yardi2Service < BaseService
             import_units << unit
           else
             provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
-            unit = Unit.where(provider: "yardi", community_id: credentials.community_id, property_id: property_id, provider_unit_id: provider_unit_id).first_or_initialize
+            unit = Unit.where(provider: "yardi", community_id: @credentials.community_id, property_id: property_id, provider_unit_id: provider_unit_id).first_or_initialize
             
             unless unit.manual_override
               unit.property_id = property_id
@@ -258,7 +264,7 @@ class Yardi2Service < BaseService
     end
     
     ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-    ProvidersDataUpdationService.new().update_availability_of_units(credentials.community_id, (unit_present - @unit_record))
+    ProvidersDataUpdationService.new().update_availability_of_units(@credentials.community_id, (unit_present - @unit_record))
   end
 
   def save_yardi2_floorplans(floorplans)
@@ -287,7 +293,7 @@ class Yardi2Service < BaseService
             import_floorplans << fp
 
           else
-            fp = Floorplan.where(provider: "yardi", community_id: credentials.community_id, provider_floorplan_id: floorplan[0][:Id]).first_or_initialize
+            fp = Floorplan.where(provider: "yardi", community_id: @credentials.community_id, provider_floorplan_id: floorplan[0][:Id]).first_or_initialize
             
             unless fp.manual_override
               rooms = []
