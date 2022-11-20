@@ -267,7 +267,7 @@ class RealPageSvcService < BaseService
                     unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount].to_f : 1
                   end
 
-                  unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
+                  unless unit.availability_is_updated.present? && unit.availability_is_updated
                     unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
                   end
                   if u[:RentSqFtCount].present?
@@ -438,7 +438,6 @@ class RealPageSvcService < BaseService
 
           community = Community.find @credentials.community_id
           community&.community_data_updated_on()
-
           units.each do |u|
             @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
             unit = @all_units_hash[u[:Address][:UnitID].to_s]
@@ -514,7 +513,7 @@ class RealPageSvcService < BaseService
                   end
                 end
 
-                unless unit.availability_is_updated.present? && unit.availability_is_updated && !(unit.manual_override)
+                unless unit.availability_is_updated.present? && unit.availability_is_updated
                   unit.availability = u[:Availability][:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
                 end
 
@@ -526,7 +525,7 @@ class RealPageSvcService < BaseService
                   unit.floor = u[:UnitDetails][:FloorNumber] rescue nil
                 end
                 
-                unless unit.available_date_is_updated.present? && unit.available_date_is_updated && !(unit.manual_override)
+                unless unit.available_date_is_updated.present? && unit.available_date_is_updated
                   if u[:Availability][:MadeReadyDate].present?
                     madeReadyDate = u[:Availability][:MadeReadyDate].split("/")[1] + "/" + u[:Availability][:MadeReadyDate].split("/")[0] + "/" + u[:Availability][:MadeReadyDate].split("/")[2]
                     unit.available_date = madeReadyDate

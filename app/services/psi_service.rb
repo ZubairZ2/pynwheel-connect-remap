@@ -158,6 +158,7 @@ class PsiService < BaseService
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         unit.provider = "psi"
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
+        unit.available_date = vacateDate
 
         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
           if u["EffectiveRent"].present?
@@ -211,6 +212,7 @@ class PsiService < BaseService
       
         unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
       
+        unit.lease_pricing  = nil
         @unit_record << unit.provider_unit_id
         import_units << unit      
       else
@@ -220,6 +222,7 @@ class PsiService < BaseService
         unit.provider = "psi"
         unit.community_id = @credentials.community_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
+        unit.available_date = vacateDate
 
         unless unit.name_is_updated.present? && unit.name_is_updated
           unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
@@ -305,7 +308,7 @@ class PsiService < BaseService
         unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
       
         unit.manually_updated = false
-
+        unit.lease_pricing  = nil
         import_units << unit
       end
     end
