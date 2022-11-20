@@ -22,9 +22,9 @@ class Floorplan < ApplicationRecord
   end
 
   def populate_image_urls
-    # if image.present?
-    #   set_standard_url('Floorplan', id)
-    # end
+    if image.present?
+      set_standard_url('Floorplan', id)
+    end
   end
 
   def crop_secondary_image
