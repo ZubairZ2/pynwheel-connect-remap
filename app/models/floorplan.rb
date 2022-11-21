@@ -28,11 +28,11 @@ class Floorplan < ApplicationRecord
   end
 
   def crop_secondary_image
-    # secondary_image.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secondary)
+    secondary_image.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secondary)
   end
 
   def crop_image
-    # image.recreate_versions! if (crop_x.present? && image_bit && do_crop)
+    image.recreate_versions! if (crop_x.present? && image_bit && do_crop)
   end
 
 end
