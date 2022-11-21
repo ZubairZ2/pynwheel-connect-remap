@@ -3,7 +3,7 @@ class PortalTour < ApplicationRecord
   has_one :status, as: :statusable
   has_many :portal_tour_stops
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :start_tour, :max_tour, :start_tour_point] ,
       :include => {

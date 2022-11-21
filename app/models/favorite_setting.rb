@@ -22,7 +22,7 @@ class FavoriteSetting < ApplicationRecord
   has_many :ebrochure_menu_buttons, dependent: :destroy
   validate :page_name_length_validate
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id],
       :include => {

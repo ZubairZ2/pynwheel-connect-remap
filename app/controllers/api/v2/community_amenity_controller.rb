@@ -44,7 +44,7 @@ class Api::V2::CommunityAmenityController < Api::V2::ApiApplicationController
     if @amenity.present?
       if @amenity.destroy!
         amenities = @community.amenities
-        @community.set_community_amenity_status(current_pynwheel_user, "")
+        @community.set_community_amenity_status(current_pynwheel_user, "in_progress")
         render json: {success: true, message: "Amenity deleted successfully", data: amenities.as_json}
       end
     else

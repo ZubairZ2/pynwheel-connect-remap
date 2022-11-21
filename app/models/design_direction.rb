@@ -5,7 +5,7 @@ class DesignDirection < ApplicationRecord
 
   has_one :status, as: :statusable
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :image, :hex_colors, :direction, :additional_direction, :file]
     )

@@ -23,7 +23,7 @@ class Webpage < ApplicationRecord
   validates_with WebAndImageValidator
   scope :active, -> { where(hide_page: false) }
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :name, :url]
     )

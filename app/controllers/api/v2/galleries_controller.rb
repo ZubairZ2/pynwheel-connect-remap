@@ -97,7 +97,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
     if @gallery.present?
       PaperTrail::Version.create(item_type: "Gallery",item_id: @gallery.id,event: "destroy",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{@gallery.name}' community_id: '#{@community.id}'")
       if @gallery.destroy
-        @community.set_gallery_images_status(current_pynwheel_user, "")
+        @community.set_gallery_images_status(current_pynwheel_user, "in_progress")
         render :json => {:success => true, :error_code => 200, :message => "Gallery deleted successfully", data: nil}
       else
         render :json => {:success => false, :error_code => 500, :message => @gallery.errors.full_messages}
@@ -110,7 +110,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
       file_type = @gallery_image.is_video? ? 'Video' : 'Image'
       PaperTrail::Version.create(item_type: "GalleryImage",item_id: @gallery_image.id,event: "destroy",community_id: @community.id, company_id: @community.company.id,whodunnit: current_pynwheel_user.id,object: "name: '#{@gallery_image.name}' gallery_id: #{@gallery_image.gallery_id} community_id: '#{@community.id}'")
       if @gallery_image.destroy
-        @community.set_gallery_images_status(current_pynwheel_user, "")
+        @community.set_gallery_images_status(current_pynwheel_user, "in_progress")
         render :json => {:success => true, :error_code => 200, :message => "#{file_type} deleted successfully.", data: nil}
       else
         render :json => {:success => false, :error_code => 500, :message => @gallery.errors.full_messages}

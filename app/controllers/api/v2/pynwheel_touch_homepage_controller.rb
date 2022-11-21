@@ -20,13 +20,15 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
       homepage_id = homepage['id']
       if @type.eql?(HOMEPAGE_VIDEO)
         homevideo = HomePageVideo.where(design_id: @community.design.id).first
-        homevideo.destroy if homevideo.present?
-        @uploader = HomePageVideo.new
-        if @uploader.save
-          @uploader.video = homepage['file']
-          @uploader.name = homepage['name']
-          @uploader.design_id = @community.design.id
-          @uploader.save
+        homevideo.destroy if homevideo.present? && homepage['file'].present?
+        if homepage['file'].present?
+          @uploader = HomePageVideo.new
+          if @uploader.save
+            @uploader.video = homepage['file']
+            @uploader.name = homepage['name']
+            @uploader.design_id = @community.design.id
+            @uploader.save
+          end
         end
       elsif !homepage_id.present?
         @community.design.home_page_images.create(image: homepage['file'])
@@ -46,7 +48,7 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
       @homevideo = HomePageVideo.where(design_id: @community.design.id).first
       if @homevideo.present?
         if @homevideo.destroy!
-          @community.set_touch_vidoes_status(current_pynwheel_user, "")
+          @community.set_touch_vidoes_status(current_pynwheel_user, "in_progress")
           render json: { success: true, error_code: 200, message: 'Homepage video deleted successfully',
                          data: nil }
         else
@@ -63,9 +65,8 @@ class Api::V2::PynwheelTouchHomepageController < Api::V2::ApiApplicationControll
         @home_page_image = design.home_page_images.find_by(id: params[:homepage_image_id])
         if @home_page_image.present?
           if @home_page_image.destroy!
-            @community.set_touch_vidoes_status(current_pynwheel_user, "")
-            render json: { success: true, error_code: 200, message: 'Homepage image deleted successfully',
-                           data: nil }
+            @community.set_touch_vidoes_status(current_pynwheel_user, "in_progress")
+            render json: { success: true, error_code: 200, message: 'Homepage image deleted successfully', data: nil }
           else
             render json: { success: false, error_code: 500, message: @home_page_image.errors.full_messages }
           end

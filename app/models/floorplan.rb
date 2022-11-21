@@ -3,6 +3,9 @@ class Floorplan < ApplicationRecord
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :secondary_image, AvatarUploader
   mount_base64_uploader :file, DesignUploader
+  process_in_background :file
+  process_in_background :image
+  process_in_background :secondary_image
   belongs_to :community
   has_many :amenities, as: :amenityable
   has_one :status, as: :statusable
@@ -14,7 +17,7 @@ class Floorplan < ApplicationRecord
   after_update :crop_image
   after_update :crop_secondary_image
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :name, :image, :file], :include => {
         :amenities => {:only => [:id  , :image] } }

@@ -49,7 +49,7 @@ class Api::V2::DesignDirectionController < Api::V2::ApiApplicationController
         @design_direction_image.remove_image! if image_type.eql?("image")
         @design_direction_image.remove_file! if image_type.eql?("file")
         if @design_direction_image.save
-          @community.set_design_direction_status(current_pynwheel_user, "")
+          @community.set_design_direction_status(current_pynwheel_user, "in_progress")
           render json: { success: true, message: "Design Direction image deleted successfully!", data: @design_direction_image.as_json }
         else
           render json: { success: false, message: "Failed to delete design direction image!", data: nil }

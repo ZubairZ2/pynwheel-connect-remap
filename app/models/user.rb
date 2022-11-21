@@ -1,4 +1,5 @@
 # == Schema Information
+# == Schema Information
 #
 # Table name: users
 #
@@ -68,7 +69,7 @@ class User < ApplicationRecord
   # before_validation :gen_uuid, on: :create
   # validates :uuid, presence: true, uniqueness: true
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id , :first_name , :last_name , :email , :role] ,
       :methods => [:is_user_authorized, :name, :company_details]

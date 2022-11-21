@@ -22,7 +22,7 @@ class RemoteLock < ApplicationRecord
 
   before_destroy :clear_lock_provider
 
-  def as_json
+  def as_json options = {}
     super(
       :only => [:id, :edge_state_id]
     )

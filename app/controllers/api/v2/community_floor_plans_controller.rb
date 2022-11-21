@@ -16,17 +16,19 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
     begin
       floorplans_params = params["floorplan"]
       @status = params["status"]
-      floorplans_params.values.each do |floorplan|
-        floorplan_id = floorplan["id"]
-        if floorplan_id.present?
-          @floorplan = @community.floorplans.find_by_id(floorplan_id)
-          if @floorplan.present?
-            update_floorplan(floorplan)
-            # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "update", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
+      if floorplans_params.present?
+        floorplans_params.values.each do |floorplan|
+          floorplan_id = floorplan["id"]
+          if floorplan_id.present?
+            @floorplan = @community.floorplans.find_by_id(floorplan_id)
+            if @floorplan.present?
+              update_floorplan(floorplan)
+              # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "update", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
+            end
+          else
+            create_floorplan(floorplan)
+            # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "create", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
           end
-        else
-          create_floorplan(floorplan)
-          # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "create", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
         end
       end
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(FLOORPLAN_IMAGES)
@@ -48,7 +50,7 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
         @load_floorplan.remove_file!
       end
       if @load_floorplan.save
-        @community.set_floorplan_status(current_pynwheel_user, "")
+        @community.set_floorplan_status(current_pynwheel_user, "in_progress")
         render :json => {:success => true, :error_code => 200, :message => "Floorplan images deleted successfully", data: nil}
       else
         render :json => {:success => false, :error_code => 500, :message => @load_floorplan.errors.full_messages}
@@ -62,7 +64,7 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
     if @load_floorplan.present?
       @amenity = @load_floorplan.amenities.find_by(id: params[:amenity_id])
       if @amenity.destroy!
-        @community.set_floorplan_status(current_pynwheel_user, "")
+        @community.set_floorplan_status(current_pynwheel_user, "in_progress")
         render :json => {:success => true, :error_code => 200, :message => "Floorplan amenity deleted successfully", data: nil}
       else
         render :json => {:success => false, :error_code => 500, :message => @load_floorplan.errors.full_messages}
@@ -75,7 +77,7 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
   def destroy
     if @load_floorplan.present?
       if @load_floorplan.destroy!
-        @community.set_floorplan_status(current_pynwheel_user, "")
+        @community.set_floorplan_status(current_pynwheel_user, "in_progress")
         floorplans = @community.floorplans.order(created_at: :desc)
         render :json => {:success => true, :error_code => 200, data: floorplans.as_json, :message => "Floorplan deleted successfully"}
       else

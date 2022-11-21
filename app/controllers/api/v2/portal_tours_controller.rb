@@ -57,7 +57,7 @@ class Api::V2::PortalToursController < Api::V2::ApiApplicationController
       tour_stop = PortalTourStop.find params["tour_stop_id"]
       if tour_stop.present?
         if tour_stop.destroy!
-          @community.set_tour_stops_status(current_pynwheel_user, "")
+          @community.set_tour_stops_status(current_pynwheel_user, "in_progress")
           render json: {success: true, message: "Tour stop deleted successfully"}
         else
           render json: {success: false, message: tour_stop.errors.full_messages}
