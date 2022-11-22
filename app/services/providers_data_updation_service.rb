@@ -64,7 +64,7 @@ class ProvidersDataUpdationService
     Floorplan.import existing_floorplans, on_duplicate_key_update: {
       conflict_target: [:id],
       columns: (Floorplan.column_names.map! &:to_sym)
-    }, batch_size: 100
+    }, validate: false, batch_size: 100
   end
 
   def create_new_units_records(new_units)
@@ -78,7 +78,7 @@ class ProvidersDataUpdationService
     Unit.import existing_units, on_duplicate_key_update: {
       conflict_target: [:id],
       columns: (Unit.column_names.map! &:to_sym)
-    }, batch_size: 100
+    }, validate: false, batch_size: 100
   end
 
 end
