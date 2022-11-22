@@ -1258,6 +1258,12 @@ GEM
       temple (>= 0.8.0)
       tilt
     heapy (0.1.4)
+    heroics (0.1.2)
+      erubis (~> 2.0)
+      excon
+      moneta
+      multi_json (>= 1.9.2)
+      webrick
     http-accept (1.7.0)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
@@ -1321,6 +1327,7 @@ GEM
     minitest (5.14.1)
     momentjs-rails (2.20.1)
       railties (>= 3.1)
+    moneta (1.0.0)
     money (6.16.0)
       i18n (>= 0.6.4, <= 2)
     mono_logger (1.1.1)
@@ -1352,6 +1359,10 @@ GEM
     phony_rails (0.14.13)
       activesupport (>= 3.0)
       phony (> 2.15)
+    platform-api (3.5.0)
+      heroics (~> 0.1.1)
+      moneta (~> 1.0.0)
+      rate_throttle_client (~> 0.1.0)
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
@@ -1404,6 +1415,7 @@ GEM
       rake (>= 0.8.7)
       thor (>= 0.18.1, < 2.0)
     rake (13.0.1)
+    rate_throttle_client (0.1.2)
     rb-fsevent (0.10.4)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
@@ -1551,6 +1563,7 @@ GEM
       activemodel (>= 5.0)
       bindex (>= 0.4.0)
       railties (>= 5.0)
+    webrick (1.7.0)
     websocket-driver (0.6.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
@@ -1618,6 +1631,7 @@ DEPENDENCIES
   paper_trail
   pg (~> 0.21)
   phony_rails
+  platform-api
   pry
   pry-nav
   puma

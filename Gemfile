@@ -111,6 +111,7 @@ gem 'sidekiq-limit_fetch', '3.4.0'
 gem 'resque', require: 'resque/server'
 gem 'resque-scheduler'
 gem 'resque-heroku-signals'
+gem 'platform-api'
 
 group :production, :development do
   gem 'rack-cache', require: 'rack/cache'
