@@ -50,9 +50,23 @@ class Yardi2Service < BaseService
               if pr[0].to_s == "PropertyID"
                 external_property_id  = pr[1][:"MITS:Identification"][1][:"MITS:PrimaryID"]
               end
+
               if pr[0].to_s == "Floorplan"
-                floorplans << pr[1]
+                if pr[1][0][0].present? && pr[1][0][0][:Id].present?
+                  floorplans << pr[1]
+                else
+                  pr[1].each_with_index do |p, i|
+                    if p.key?(:ILS_Unit)
+                      ils_units << pr[1][i][:ILS_Unit]
+                    end
+                  end 
+
+                  if ils_units.present? && ils_units.count > 0
+                    ils_units = [ils_units]
+                  end
+                end
               end
+
               if pr[0].to_s == "ILS_Unit"
                 ils_units << pr[1]
               end
