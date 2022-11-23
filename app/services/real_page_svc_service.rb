@@ -386,7 +386,8 @@ class RealPageSvcService < BaseService
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
         date_needed = Date.today + 540
-        limit_result = @credentials.limit_result ? "True" : "False"
+        # limit_result = @credentials.limit_result ? "True" : "False"
+        limit_result = "False"
         community_id = @credentials.community_id
         
         response = HTTParty.post(
