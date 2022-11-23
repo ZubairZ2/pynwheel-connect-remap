@@ -25,9 +25,9 @@ class YardiRentCafeService < BaseService
         import_units = []
 
         if api_token.present?
-          @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=" + showallunit
+          @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
         else
-          @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=" + showallunit
+          @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
         end
 
         response = HTTParty.get(@url)
@@ -39,15 +39,13 @@ class YardiRentCafeService < BaseService
 
           community = Community.find @credentials.community_id
           community&.community_data_updated_on()
-
           response.each do |r|
-
+            puts "-------------------------------------------------------- #{r["ApartmentId"].to_s} --------------------------------\n"
             begin
               unit = @all_units_hash[r["ApartmentId"].to_s]
 
               if unit.present?
                 puts "----------------------------- #{unit.marketing_name} ------------------------\n"
-                
                 unit.market_rent = r["MinimumRent"]
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = r["MinimumRent"]
@@ -360,12 +358,15 @@ class YardiRentCafeService < BaseService
   end
 
   def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name, credentials)
-    request_type = "pricingmatrix"
-    url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
    
     begin
+      
+      request_type = "pricingmatrix"
+      url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
+    
       response = HTTParty.get(url)
       rent_matrix = JSON.parse(response.body)
+
       unless rent_matrix[0]["Error"].present?
         puts "---------------------------- pricing Matrix Present --------------------------"
         uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
