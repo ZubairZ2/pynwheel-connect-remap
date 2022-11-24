@@ -27,6 +27,9 @@ class Gallery < ApplicationRecord
 
   def media
     media_arr = []
+
+    puts "------------------------------- Current Gallery images in section: #{ self.gallery_images.count } ------------------------\n"
+
     self.gallery_images.each do |gallery_img|
       media_arr << {
         id: gallery_img.id,
