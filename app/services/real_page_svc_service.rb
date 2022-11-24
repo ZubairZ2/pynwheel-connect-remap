@@ -433,7 +433,7 @@ class RealPageSvcService < BaseService
 
         result = Ox.load(response.body, mode: :hash)
 
-        if result[:"s:Envelope"][1][:"s:Body"][1].present?      
+        if result[:"s:Envelope"][1][:"s:Body"][1].present? && result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units = [units] if units.is_a?(Hash)
 
@@ -583,7 +583,6 @@ class RealPageSvcService < BaseService
             raise err
           end
         end
-
 
       rescue => e
         raise e

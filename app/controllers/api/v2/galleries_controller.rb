@@ -58,7 +58,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
 
       puts "------------------------------- Current Community Galleries: #{ @galleries.count } ------------------------\n"
 
-      render :json => {:success => true, data: []}
+      render :json => {:success => true, data: @gallery.as_json}
     rescue => res
       binding.pry
       raise res
