@@ -691,13 +691,13 @@ class RealPageSvcService < BaseService
             end
 
             if unit_min_rent.present?
-              unit = @all_units_marketing_name_and_building_hash["#{unit_add}-#{unit_no}"]
-              unit = @all_units_marketing_name_hash[unit_no.to_s] unless unit.present?
-              # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
+              # unit = @all_units_marketing_name_and_building_hash["#{unit_add}-#{unit_no}"]
+              # unit = @all_units_marketing_name_hash[unit_no.to_s] unless unit.present?
+              unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
               
-              # unless unit.present?
-              #   unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
-              # end
+              unless unit.present?
+                unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
+              end
 
               if unit.present?
                 puts "--------------- Updating pricing for: #{unit.marketing_name} ---------------- \n"
