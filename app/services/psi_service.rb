@@ -148,167 +148,170 @@ class PsiService < BaseService
 
     import_units = []
     unit_present = @all_units_hash.keys
+    begin
+      units.each do |u|
+        vacateDate = ""
+        unit = get_psi_matched_unit(u)
 
-    units.each do |u|
-      vacateDate = ""
-      unit = get_psi_matched_unit(u)
-
-      if unit.present?
-        puts "----------------------------- #{unit.marketing_name} ------------------------\n"
-        unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
-        unit.provider = "psi"
-        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
-        unit.available_date = vacateDate
-
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-          if u["EffectiveRent"].present?
-            unit.market_rent = u["EffectiveRent"]
-            unit.effective_rent = u["EffectiveRent"]
-
-          elsif u["Units"]["Unit"]["MarketRent"].present?
-            unit.market_rent = u["Units"]["Unit"]["MarketRent"]
-            unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-
-          elsif u["Units"]["Unit"]["UnitRent"].present?
-            unit.market_rent = u["Units"]["Unit"]["UnitRent"]
-            unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
-
-          else
-            unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
-            unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
-          end
-        end
-
-        unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-          unit.availability = u["Availability"]["VacancyClass"] if !unit.sold
-          unit.available = false if !unit.sold
-        end
-
-        if u["Availability"]["VacancyClass"] == "Unoccupied"
-          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-            unit.available = true if !unit.sold
-          end
-
-          if u["Availability"].present? && u["Availability"]["VacateDate"].present? 
-            availability_attr = u["Availability"]["VacateDate"]["@attributes"]
-            vacateDate = Date.parse("#{availability_attr["Year"]}-#{availability_attr["Month"]}-#{availability_attr["Day"]}")
-          end
-
-          if u["Availability"].present? && u["Availability"]["MadeReadyDate"].present?
-            availability_attr = u["Availability"]["MadeReadyDate"]["@attributes"]
-            vacateDate = Date.parse("#{availability_attr["Year"]}-#{availability_attr["Month"]}-#{availability_attr["Day"]}")
-          end
-
-        end
-        
-        unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
-          unit.available_date = vacateDate
-        end
-
-        unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
-        unit_floorplan = @all_floorplans_hash[unit.floorplan_id]
-        unit.availability_url = unit_floorplan&.availability_url unless unit.availability_url
-        url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
-      
-        unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
-      
-        @unit_record << unit.provider_unit_id
-        import_units << unit      
-      else
-        unit = Unit.new
-        unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
-        unit.property_id = property_id
-        unit.provider = "psi"
-        unit.community_id = @credentials.community_id
-        unit.unit_type = u["Units"]["Unit"]["UnitType"]
-        unit.available_date = vacateDate
-
-        unless unit.name_is_updated.present? && unit.name_is_updated
+        if unit.present?
+          puts "----------------------------- #{unit.marketing_name} ------------------------\n"
           unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
-        end
+          unit.provider = "psi"
+          unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
+          unit.available_date = vacateDate
 
-        if u["Units"]["Unit"]["MinSquareFeet"].present?
-          if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
-            unit.square_feet = u["Units"]["Unit"]["MinSquareFeet"].to_f
-          else
-            unit.square_feet = u["Units"]["Unit"]["MaxSquareFeet"].to_f
-          end
-        end
+          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+            if u["EffectiveRent"].present?
+              unit.market_rent = u["EffectiveRent"]
+              unit.effective_rent = u["EffectiveRent"]
 
-        unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
-          unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
-        end
+            elsif u["Units"]["Unit"]["MarketRent"].present?
+              unit.market_rent = u["Units"]["Unit"]["MarketRent"]
+              unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
 
-        unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
-          if u["EffectiveRent"].present?
-            unit.market_rent = u["EffectiveRent"]
-            unit.effective_rent = u["EffectiveRent"]
+            elsif u["Units"]["Unit"]["UnitRent"].present?
+              unit.market_rent = u["Units"]["Unit"]["UnitRent"]
+              unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
 
-          elsif u["Units"]["Unit"]["MarketRent"].present?
-            unit.market_rent = u["Units"]["Unit"]["MarketRent"]
-            unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
-
-          elsif u["Units"]["Unit"]["UnitRent"].present?
-            unit.market_rent = u["Units"]["Unit"]["UnitRent"]
-            unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
-
-          else
-            unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
-            unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
-          end
-        end
-
-        unless unit.floor_is_updated.present? && unit.floor_is_updated
-          unit.floor = u["FloorLevel"]
-        end
-        
-        unit.availability_url = u["Availability"]["UnitAvailabilityURL"]
-
-        unless unit.availability_is_updated.present? && unit.availability_is_updated
-          unit.availability = u["Availability"]["VacancyClass"]
-        end
-
-        unless unit.available_is_updated.present? && unit.available_is_updated
-          unit.available = false
-        end
-
-        if u["Availability"]["VacancyClass"] == "Unoccupied"
-          unless unit.available_is_updated.present? && unit.available_is_updated
-            unit.available = true
+            else
+              unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+              unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+            end
           end
 
-          if u["Availability"].present? && u["Availability"]["VacateDate"].present? 
-            availability_attr = u["Availability"]["VacateDate"]["@attributes"]
-            vacateDate = Date.parse("#{availability_attr["Year"]}-#{availability_attr["Month"]}-#{availability_attr["Day"]}")
+          unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+            unit.availability = u["Availability"]["VacancyClass"] if !unit.sold
+            unit.available = false if !unit.sold
           end
 
-          if u["Availability"].present? && u["Availability"]["MadeReadyDate"].present?
-            availability_attr = u["Availability"]["MadeReadyDate"]["@attributes"]
-            vacateDate = Date.parse("#{availability_attr["Year"]}-#{availability_attr["Month"]}-#{availability_attr["Day"]}")
+          if u["Availability"]["VacancyClass"] == "Unoccupied"
+            unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+              unit.available = true if !unit.sold
+            end
+
+            if u["Availability"].present? && u["Availability"]["VacateDate"].present? 
+              availability_attr = u["Availability"]["VacateDate"]["@attributes"]
+              vacateDate = Date.parse("#{availability_attr["Year"]}-#{availability_attr["Month"]}-#{availability_attr["Day"]}")
+            end
+
+            if u["Availability"].present? && u["Availability"]["MadeReadyDate"].present?
+              availability_attr = u["Availability"]["MadeReadyDate"]["@attributes"]
+              vacateDate = Date.parse("#{availability_attr["Year"]}-#{availability_attr["Month"]}-#{availability_attr["Day"]}")
+            end
+
           end
           
-        end
+          unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+            unit.available_date = vacateDate
+          end
 
-        unless unit.available_date_is_updated.present? && unit.available_date_is_updated
-          unit.available_date = vacateDate
-        end
-
-        building = u["Units"]["Unit"]["BuildingName"]
+          unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
+          unit_floorplan = @all_floorplans_hash[unit.floorplan_id]
+          unit.availability_url = unit_floorplan&.availability_url unless unit.availability_url
+          url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
         
-        unless unit.building_is_updated.present? && unit.building_is_updated
-          unit.building = building.present? ? building.gsub("Building ", "") : ""
-        end
+          unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
+        
+          @unit_record << unit.provider_unit_id
+          import_units << unit      
+        else
+          unit = Unit.new
+          unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
+          unit.property_id = property_id
+          unit.provider = "psi"
+          unit.community_id = @credentials.community_id
+          unit.unit_type = u["Units"]["Unit"]["UnitType"]
+          unit.available_date = vacateDate
 
-        unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
-        unit_floorplan = @all_floorplans_hash[unit.floorplan_id]
-        unit.availability_url = unit_floorplan&.availability_url unless unit.availability_url
-        url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
-      
-        unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
-      
-        unit.manually_updated = false
-        import_units << unit
+          unless unit.name_is_updated.present? && unit.name_is_updated
+            unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
+          end
+
+          if u["Units"]["Unit"]["MinSquareFeet"].present?
+            if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
+              unit.square_feet = u["Units"]["Unit"]["MinSquareFeet"].to_f
+            else
+              unit.square_feet = u["Units"]["Unit"]["MaxSquareFeet"].to_f
+            end
+          end
+
+          unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
+            unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
+          end
+
+          unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
+            if u["EffectiveRent"].present?
+              unit.market_rent = u["EffectiveRent"]
+              unit.effective_rent = u["EffectiveRent"]
+
+            elsif u["Units"]["Unit"]["MarketRent"].present?
+              unit.market_rent = u["Units"]["Unit"]["MarketRent"]
+              unit.effective_rent = u["Units"]["Unit"]["MarketRent"]
+
+            elsif u["Units"]["Unit"]["UnitRent"].present?
+              unit.market_rent = u["Units"]["Unit"]["UnitRent"]
+              unit.effective_rent = u["Units"]["Unit"]["UnitRent"]
+
+            else
+              unit.market_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+              unit.effective_rent = @@floorplanHash[u["Units"]["Unit"]["FloorplanName"]].to_f
+            end
+          end
+
+          unless unit.floor_is_updated.present? && unit.floor_is_updated
+            unit.floor = u["FloorLevel"]
+          end
+          
+          unit.availability_url = u["Availability"]["UnitAvailabilityURL"]
+
+          unless unit.availability_is_updated.present? && unit.availability_is_updated
+            unit.availability = u["Availability"]["VacancyClass"]
+          end
+
+          unless unit.available_is_updated.present? && unit.available_is_updated
+            unit.available = false
+          end
+
+          if u["Availability"]["VacancyClass"] == "Unoccupied"
+            unless unit.available_is_updated.present? && unit.available_is_updated
+              unit.available = true
+            end
+
+            if u["Availability"].present? && u["Availability"]["VacateDate"].present? 
+              availability_attr = u["Availability"]["VacateDate"]["@attributes"]
+              vacateDate = Date.parse("#{availability_attr["Year"]}-#{availability_attr["Month"]}-#{availability_attr["Day"]}")
+            end
+
+            if u["Availability"].present? && u["Availability"]["MadeReadyDate"].present?
+              availability_attr = u["Availability"]["MadeReadyDate"]["@attributes"]
+              vacateDate = Date.parse("#{availability_attr["Year"]}-#{availability_attr["Month"]}-#{availability_attr["Day"]}")
+            end
+            
+          end
+
+          unless unit.available_date_is_updated.present? && unit.available_date_is_updated
+            unit.available_date = vacateDate
+          end
+
+          building = u["Units"]["Unit"]["BuildingName"]
+          
+          unless unit.building_is_updated.present? && unit.building_is_updated
+            unit.building = building.present? ? building.gsub("Building ", "") : ""
+          end
+
+          unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
+          unit_floorplan = @all_floorplans_hash[unit.floorplan_id]
+          unit.availability_url = unit_floorplan&.availability_url unless unit.availability_url
+          url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
+        
+          unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
+        
+          unit.manually_updated = false
+          import_units << unit
+        end
       end
+    rescue => e
+      raise e
     end
       
     ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
