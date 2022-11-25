@@ -46,7 +46,8 @@ class Gallery < ApplicationRecord
     if gallery_img.is_video?
       gallery_img.video
     else
-      {url: gallery_img.image.url, thumb: gallery_img.image.thumb}
+      # {url: gallery_img.standard_image_url, thumb: gallery_img.image.thumb}
+      {url: gallery_img.standard_image_url}
     end    
   end
 
