@@ -16,7 +16,8 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   def update_galleries
     begin
       GalleriesUploaderJob.perform_async(params, @community, current_pynwheel_user)
-      render :json => {:success => true, data: []}
+      sleep 3
+      render :json => {:success => true, data: @community.galleries.as_json}
     rescue => res
       render json: { success: false, error_code: 400, message: "#{res.message}" }, status: 400
     end
