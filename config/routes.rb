@@ -599,7 +599,7 @@ Rails.application.routes.draw do
     end
 
     namespace :v2 do
-      post '/communities/:community_id/creat_new_gallery', to: 'galleries#creat_new_gallery'
+      post '/communities/:community_id/create_new_gallery', to: 'galleries#create_new_gallery'
       post '/communities/:community_id/upload_gallery_image', to: 'galleries#upload_gallery_image'
       post '/communities/:community_id/update_gallery_status', to: 'galleries#update_gallery_status'
       post '/communities/:community_id/update_gallery_name', to: 'galleries#update_gallery_name'

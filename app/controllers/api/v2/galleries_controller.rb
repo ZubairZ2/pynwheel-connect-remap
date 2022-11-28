@@ -8,7 +8,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
     @galleries = @community.galleries.order(:sort)
   end
 
-  def creat_new_gallery
+  def create_new_gallery
     begin
       @gallery = @community.galleries.new(name: params[:name])
 
