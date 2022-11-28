@@ -31,13 +31,11 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
         begin
           
           if video_file?(file)
-            gallery_media = create_gallery_video(@gallery, file)
+            @gallery_media = create_gallery_video(@gallery, file)
           else
-            gallery_media = @gallery.gallery_images.create(image: file, community_id: @community.id)
+            @gallery_media = @gallery.gallery_images.create(image: file, community_id: @community.id)
           end
           
-          render :json => {:success => true, :error_code => 200, :message => "Gallery Image created successfully", data: gallery_media}
-        
         rescue => error
           render json: { success: false, error_code: 400, message: "#{error.message}" }, status: 400
         end
