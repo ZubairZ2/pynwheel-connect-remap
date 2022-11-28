@@ -1,7 +1,7 @@
 class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
   before_action :set_community
-  before_action :find_gallery, only: [:destroy, :upload_gallery_image]
+  before_action :find_gallery, only: [:destroy, :upload_gallery_image, :update_gallery_name]
   before_action :find_gallery_image, only: [:delete_gallery_image]
 
   def index
@@ -57,20 +57,29 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   end
 
   def update_gallery_status
-    @galleries = @community.galleries
-    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(TOUCH_GALLERY_MEDIA)
-    @community.set_gallery_images_status(current_pynwheel_user, params[:status])
-    FollowUpMailer.send_email_after_form_submission(@community, TOUCH_GALLERY_MEDIA, previous_status)
+    begin
+      @galleries = @community.galleries
+      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(TOUCH_GALLERY_MEDIA)
+      @community.set_gallery_images_status(current_pynwheel_user, params[:status])
+      FollowUpMailer.send_email_after_form_submission(@community, TOUCH_GALLERY_MEDIA, previous_status)
+      
+      render :json => {:success => true, :error_code => 200, :message => "Gallery status updated successfully"}
+    rescue => error
+      render json: { success: false, error_code: 400, message: "#{error.message}" }, status: 400
+    end
   end
 
   def update_gallery_name
-    if @gallery.present?
-      @gallery.update(name: params[:name])
-      render :json => {:success => true, :error_code => 200, :message => "Gallery name updated successfully"}
-    else
-      render json: { success: false, error_code: 404, message: "Can't find gallery" }, status: 404
+    begin
+      if @gallery.present?
+        @gallery.update(name: params[:name])
+        render :json => {:success => true, :error_code => 200, :message => "Gallery name updated successfully"}
+      else
+        render json: { success: false, error_code: 404, message: "Can't find gallery" }, status: 404
+      end
+    rescue => error
+      render json: { success: false, error_code: 400, message: "#{error.message}" }, status: 400
     end
-
   end
   
 
