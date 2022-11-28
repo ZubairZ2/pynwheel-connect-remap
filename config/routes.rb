@@ -604,7 +604,6 @@ Rails.application.routes.draw do
       post '/communities/:community_id/update_gallery_status', to: 'galleries#update_gallery_status'
       post '/communities/:community_id/update_gallery_name', to: 'galleries#update_gallery_name'
 
-      post '/communities/:community_id/update_galleries', to: 'galleries#update_galleries'
       get '/communities/:community_id/community_data_provider', to: 'data_providers#get_community_data_provider'
       post '/communities/:community_id/update_data_provider', to: 'data_providers#update_data_provider_and_credentials'
       post '/communities/:community_id/replace_imported_data', to: 'data_providers#replace_imported_data'
