@@ -62,5 +62,13 @@ class GalleryImage < ApplicationRecord
       self.save
   	end
   end
-  
+
+	def get_gallery_media
+    return {} if self.blank?
+    if self.is_video?
+      self.video
+    else
+			{url: self.standard_image_url, thumb: self.image.thumb}
+    end    
+  end
 end

@@ -1,7 +1,7 @@
 class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
   before_action :set_community
-  before_action :find_gallery, only: [:destroy]
+  before_action :find_gallery, only: [:destroy, :upload_gallery_image]
   before_action :find_gallery_image, only: [:delete_gallery_image]
 
   def index
@@ -12,6 +12,67 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
     #   render :json => {:success => false, :message => "No gallery exist for this community"}
     # end
   end
+
+  def creat_new_gallery
+    begin
+      @gallery = @community.galleries.new(name: params[:name])
+
+      if @gallery.save
+        render :json => {:success => true, :error_code => 200, :message => "Gallery created successfully", data: @gallery}
+      else
+        render json: { success: false, error_code: 400, message: "Can't create gallery" }, status: 400
+      end
+
+    rescue => error
+      render json: { success: false, error_code: 400, message: "#{error.message}" }, status: 400
+    end
+  end
+
+  def upload_gallery_image
+    begin
+      if @gallery.present?
+        file = params[:file]
+
+        begin
+          
+          if video_file?(file)
+            gallery_media = create_gallery_video(@gallery, file)
+          else
+            gallery_media = @gallery.gallery_images.create(image: file, community_id: @community.id)
+          end
+          
+          render :json => {:success => true, :error_code => 200, :message => "Gallery Image created successfully", data: gallery_media}
+        
+        rescue => error
+          render json: { success: false, error_code: 400, message: "#{error.message}" }, status: 400
+        end
+
+      else
+        render json: { success: false, error_code: 404, message: "Can't find gallery" }, status: 404
+      end
+      
+    rescue => error
+      render json: { success: false, error_code: 400, message: "#{error.message}" }, status: 400
+    end
+  end
+
+  def update_gallery_status
+    @galleries = @community.galleries
+    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(TOUCH_GALLERY_MEDIA)
+    @community.set_gallery_images_status(current_pynwheel_user, params[:status])
+    FollowUpMailer.send_email_after_form_submission(@community, TOUCH_GALLERY_MEDIA, previous_status)
+  end
+
+  def update_gallery_name
+    if @gallery.present?
+      @gallery.update(name: params[:name])
+      render :json => {:success => true, :error_code => 200, :message => "Gallery name updated successfully"}
+    else
+      render json: { success: false, error_code: 404, message: "Can't find gallery" }, status: 404
+    end
+
+  end
+  
 
   def update_galleries
     begin
@@ -75,22 +136,19 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   def create_gallery_images(gallery, community_gallery_img)
     file = community_gallery_img["file"]
     is_video_file = video_file?(file)
+
     if is_video_file
       create_gallery_video(gallery, file)
     else
       gallery.gallery_images.create(image: file, community_id: @community.id)
     end
+
     PaperTrail::Version.create(item_type: "GalleryImage",item_id: gallery.id,event: "create",whodunnit: current_pynwheel_user.id,community_id: @community.id, company_id: @community.company.id,object: "name: '#{gallery.name}' community_id: '#{@community.id}'")
   end
 
   def create_gallery_video(gallery, file)
-    @uploader = GalleryImage.new
-    if @uploader.save
-      @uploader.name = file.original_filename
-      @uploader.video = file
-      @uploader.gallery_id = gallery.id
-      @uploader.save
-    end
+    @uploader = GalleryImage.new(name: file.original_filename, video: file, gallery_id: gallery.id)
+    @uploader.save!
   end
 
   def destroy
@@ -135,13 +193,13 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
 	end
 
   def find_gallery
-    @gallery = @community.galleries.find(params[:id])
+    @gallery ||= @community.galleries.find(params[:id])
     rescue ActiveRecord::RecordNotFound
       render json: {success: false, error_code: 400, message: 'Gallery not found', data: nil}, status: :not_found
   end
 
   def find_gallery_image
-    @gallery_image = GalleryImage.find(params[:gallery_image_id])
+    @gallery_image ||= GalleryImage.find(params[:gallery_image_id])
     rescue ActiveRecord::RecordNotFound
       render json: {success: false, error_code: 400, message: 'Gallery Image not found', data: nil}, status: :not_found
   end

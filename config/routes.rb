@@ -599,17 +599,24 @@ Rails.application.routes.draw do
     end
 
     namespace :v2 do
+      post '/communities/:community_id/creat_new_gallery', to: 'galleries#creat_new_gallery'
+      post '/communities/:community_id/upload_gallery_image', to: 'galleries#upload_gallery_image'
+      post '/communities/:community_id/update_gallery_status', to: 'galleries#update_gallery_status'
+      post '/communities/:community_id/update_gallery_name', to: 'galleries#update_gallery_name'
+
       post '/communities/:community_id/update_galleries', to: 'galleries#update_galleries'
       get '/communities/:community_id/community_data_provider', to: 'data_providers#get_community_data_provider'
       post '/communities/:community_id/update_data_provider', to: 'data_providers#update_data_provider_and_credentials'
       post '/communities/:community_id/replace_imported_data', to: 'data_providers#replace_imported_data'
       post '/communities/:community_id/save_finsih_later_data_provider', to: 'data_providers#update_finish_later_data_provider_and_credentials'
       get '/communities/:community_id/test_connection', to: 'data_providers#test_connection'
+      
       resources :user_details do
         member do
           put :update_company
         end
       end
+
       resources :communities do
         resources :community_property_map
 
