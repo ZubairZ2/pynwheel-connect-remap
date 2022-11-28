@@ -103,8 +103,16 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   private
 
   def create_gallery_video(gallery, file)
-    @uploader = GalleryImage.new(name: file.original_filename, video: file, gallery_id: gallery.id)
-    @uploader.save!
+    @uploader = GalleryImage.new()
+    
+    if @uploader.save
+      @uploader.name = file.original_filename
+      @uploader.video = file
+      @uploader.gallery_id = gallery.id
+      @uploader.save
+    end
+    
+    @uploader
   end
   
   def video_file?(file)
