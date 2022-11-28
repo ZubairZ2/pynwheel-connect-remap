@@ -5,12 +5,12 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   before_action :find_gallery_image, only: [:delete_gallery_image]
 
   def index
-    @gallery = @community.galleries.order(:sort)
-    if @gallery.present?
-      render :json => {:success => true, :message => "Community galleries found succesfully.", data: @gallery.as_json}
-    else
-      render :json => {:success => false, :message => "No gallery exist for this community"}
-    end
+    @galleries = @community.galleries.order(:sort)
+    # if @gallery.present?
+    #   render :json => {:success => true, :message => "Community galleries found succesfully.", data: @gallery.as_json}
+    # else
+    #   render :json => {:success => false, :message => "No gallery exist for this community"}
+    # end
   end
 
   def update_galleries
