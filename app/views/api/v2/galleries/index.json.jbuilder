@@ -8,10 +8,12 @@ json.data @galleries do |gallery|
   json.is_default gallery.is_default
 
   json.media gallery.gallery_images do |gallery_image|
+    is_video = gallery_image.is_video?
+    
     json.id gallery_image&.id
     json.name gallery_image&.name
-    json.file_type gallery_image.is_video? ? "video" : "image"
-    json.file gallery_image.get_gallery_media()
+    json.file_type is_video ? "video" : "image"
+    json.file is_video ? {url: gallery_image.video.url} : {url: gallery_image.standard_image_url}
   end
 
 end
