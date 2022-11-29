@@ -6,8 +6,6 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
 
   def index
     @galleries = @community.galleries.order(:sort)
-    @galleries_images = GalleryImage.where(gallery_id: @galleries.pluck(:id) )
-
   end
 
   def create_new_gallery
