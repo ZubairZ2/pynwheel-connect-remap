@@ -81,12 +81,12 @@ class GalleryUploader < CarrierWave::Uploader::Base
     model.instance_variable_get(var) or model.instance_variable_set(var, SecureRandom.uuid)
   end
 
-  # def image?(new_file)
-  #   new_file.content_type.start_with? 'image'
-  # end
+  def image?(new_file)
+    new_file.content_type.start_with? 'image'
+  end
 
-  # def video?(new_file)
-  #   new_file.content_type.start_with? 'application'
-  # end
+  def video?(new_file)
+    new_file.content_type.start_with? 'application'
+  end
 
 end
