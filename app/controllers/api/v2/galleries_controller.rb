@@ -54,7 +54,10 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
       @galleries = @community.galleries
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(TOUCH_GALLERY_MEDIA)
       @community.set_gallery_images_status(current_pynwheel_user, params[:status])
-      FollowUpMailer.send_email_after_form_submission(@community, TOUCH_GALLERY_MEDIA, previous_status)
+
+      if params[:status] == SUBMITTED
+        FollowUpMailer.send_email_after_form_submission(@community, TOUCH_GALLERY_MEDIA, previous_status)
+      end
       
       render :json => {:success => true, :error_code => 200, :message => "Gallery status updated successfully"}
     rescue => error
