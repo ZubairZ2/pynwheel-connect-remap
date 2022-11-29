@@ -7,7 +7,7 @@ json.data @galleries do |gallery|
   json.community_id gallery&.community_id
   json.is_default gallery.is_default
 
-  json.media gallery.galleries_images do |gallery_image|
+  json.media gallery.gallery_images do |gallery_image|
     json.id gallery_image&.id
     json.name gallery_image&.name
     json.file_type gallery_image.is_video? ? "video" : "image"
