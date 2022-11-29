@@ -1,73 +1,94 @@
 class VideoUploader < CarrierWave::Uploader::Base
+  include CarrierWave::Video
+  # include CarrierWave::FFmpeg
+  # include ::CarrierWave::Backgrounder::Delay
 
-  # Include RMagick or MiniMagick support:
-  # include CarrierWave::RMagick
-  # include CarrierWave::MiniMagick
-  # include CarrierWave::Video  # for your video processing
-  # include CarrierWave::Video::Thumbnailer
-  include ::CarrierWave::Backgrounder::Delay
-  include CarrierWaveDirect::Uploader
-  # Choose what kind of storage to use for this uploader:
-  #storage :file
+  # RESOLUTIONS = [
+  #   { version: :p1080, resolution: '1920x1080'},
+  #   { version: :p720, resolution: '1280x720'},
+  #   { version: :p200, resolution: '200x200'},
+  # ]
+  #
 
-  storage Rails.env.development? ? :file : :fog 
-
-  # Override the directory where uploaded files will be stored.
-  # This is a sensible default for uploaders that are meant to be mounted:
-   def filename
-    @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
-  end
-
-  def timestamp
-    var = :"@#{mounted_as}_timestamp"
-    model.instance_variable_get(var) or model.instance_variable_set(var, Time.now.to_i)
-  end
-
-
+  # # Override the directory where uploaded files will be stored.
+  # # This is a sensible default for uploaders that are meant to be mounted:
   def store_dir
-    "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
+    "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}?v=#{model.updated_at.to_time.to_i}"
   end
-  version :thumb do
-    process thumbnail: [{format: 'png', quality: 10, size: 192, strip: true, logger: Rails.logger}]
-    def full_filename for_file
-      png_name for_file, version_name
-    end
-  end
-
-  def png_name for_file, version_name
-    %Q{#{version_name}_#{for_file.chomp(File.extname(for_file))}.png}
-  end
-
-  # Provide a default URL as a default if there hasn't been a file uploaded:
-  # def default_url(*args)
-  #   # For Rails 3.1+ asset pipeline compatibility:
-  #   # ActionController::Base.helpers.asset_path("fallback/" + [version_name, "default.png"].compact.join('_'))
   #
-  #   "/images/fallback/" + [version_name, "default.png"].compact.join('_')
-  # end
-
-  # Process files as they are uploaded:
-  # process scale: [200, 300]
+  # before :store, :remember_cache_id
+  # after :store, :delete_tmp_dir
   #
-  # def scale(width, height)
-  #   # do something
+  # # store! nil's the cache_id after it finishes so we need to remember it for deletion
+  # def remember_cache_id(new_file)
+  #   @cache_id_was = cache_id
   # end
-
-  # Create different versions of your uploaded files:
-  # version :thumb do
-  #   process resize_to_fit: [50, 50]
+  #
+  # def delete_tmp_dir(new_file)
+  #   # make sure we don't delete other things accidentally by checking the name pattern
+  #   if @cache_id_was.present? && @cache_id_was =~ /\A[\d]{8}\-[\d]{4}\-[\d]+\-[\d]{4}\z/
+  #     FileUtils.rm_rf(File.join(root, cache_dir, @cache_id_was))
+  #   end
   # end
-
-  # Add a white list of extensions which are allowed to be uploaded.
-  # For images you might use something like this:
-  # def extension_whitelist
-  #   %w(jpg jpeg gif png)
+  #
+  # version :mp4 do
+  #   process encode: [:mp4]
+  #
+  #   def full_filename(for_file)
+  #     super.chomp(File.extname(super)) + '.mp4'
+  #   end
+  #
+  #   RESOLUTIONS.each do |resolution|
+  #     version resolution[:version], if: "bigger_than_#{resolution[:resolution]}?".to_sym
+  #
+  #     version resolution[:version] do
+  #       process encode: [:mp4, resolution: resolution[:resolution]]
+  #     end
+  #   end
   # end
-
-  # Override the filename of the uploaded files:
-  # Avoid using model.id or version_name here, see uploader/store.rb for details.
-  # def filename
-  #   "something.jpg" if original_filename
+  #
+  # version :webm do
+  #   process encode: [:webm]
+  #
+  #   def full_filename(for_file)
+  #     super.chomp(File.extname(super)) + '.webm'
+  #   end
+  #
+  #   RESOLUTIONS.each do |resolution|
+  #     version resolution[:version], if: "bigger_than_#{resolution[:resolution]}?".to_sym
+  #
+  #     version resolution[:version] do
+  #       process encode: [:webm, resolution: resolution[:resolution]]
+  #     end
+  #   end
   # end
+  #
+  # version :ogv do
+  #   process encode: [:ogv]
+  #
+  #   def full_filename(for_file)
+  #     super.chomp(File.extname(super)) + '.ogv'
+  #   end
+  #
+  #   RESOLUTIONS.each do |resolution|
+  #     version resolution[:version], if: "bigger_than_#{resolution[:resolution]}?".to_sym
+  #
+  #     version resolution[:version] do
+  #       process encode: [:ogv, resolution: resolution[:resolution]]
+  #     end
+  #   end
+  # end
+  #
+  # RESOLUTIONS.each do |resolution|
+  #   define_method("bigger_than_#{resolution[:resolution]}?") do |argument|
+  #     movie(argument.path).resolution > resolution[:resolution] ? true : false
+  #   end
+  # end
+  #
+  # # Add a white list of extensions which are allowed to be uploaded.
+  # # For images you might use something like this:
+  def extension_white_list
+    %w(mp4)
+  end
 
 end
