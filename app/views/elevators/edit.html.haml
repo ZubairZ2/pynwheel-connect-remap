@@ -156,6 +156,10 @@
                 DONE
               %button.btn-default.done_btn.mb-20{:onclick => "goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 Cancel
+
+
+#edit-elevator-data{ data: {elevator_id: @elevator.id, community_id: @community.id} }
+
 #edit-gallery-image.modal.fade.edit-gallery-image
 :javascript
   var locks_input, locks_list, param_name;

@@ -1,11 +1,12 @@
 $(document).ready(function(){
-    $('[data-toggle="popover"]').popover();
+  setDataAttributes();
+
+  $('[data-toggle="popover"]').popover();
   $('.sortable').railsSortable(); 
   $('#animation').on('change',function(){
     saveAnimation($(this).val());
   });
 
- 
  Dropzone.prototype.defaultOptions['headers'] = {
     'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
   };
@@ -53,6 +54,7 @@ $(document).ready(function(){
   //     $(this).val(''); 
   //   });
   $("#elevator-images").change(function(){
+
     var files = $(this).prop("files")
     for (var i = 0; i < files.length; i++) {
       if(files[i].type == "image/png" || files[i].type == "image/jpeg" || files[i].type == "image/jpg"){ 
@@ -287,6 +289,15 @@ $(document).ready(function(){
 //     }
 //   }
 // }
+
+function setDataAttributes() {
+  if ( $('#edit-elevator-data').data() != undefined ) {
+    data = $('#edit-elevator-data').data();
+    if(data && data.elevatorId && data.communityId)
+    elevator_id = data.elevatorId;
+    community_id = data.communityId;
+  }
+}
 
 function saveLoopType(loop_type){
     console.log(loop_type);
@@ -531,6 +542,26 @@ function saveAnimation(value){
     });
   }
 
+  function getPayLoadData(src, name, type, amenityId, image_id = 0) {
+
+    if (type == "elevator") {
+      return {
+        name: name,
+        src: src,
+        elevator_id: amenityId,
+        image_id: image_id
+      }
+
+    } else {
+      return {
+        name: name,
+        src: src,
+        amenityId: amenityId,
+        image_id: image_id
+      }
+    }
+  }
+
   function AmenityImage(src,name,type,image_id=0){
     var amenityId = 0;
     if (type == "floorplate")
@@ -552,16 +583,12 @@ function saveAnimation(value){
         url: url,
         type: "POST",
         dataType: "script",
-        data: {
-            name: name,
-            src: src,
-            amenityId: amenityId,
-            image_id: image_id
-        }
+        data: getPayLoadData(src, name, type, amenityId,  image_id)
     }).done(function(){
         $(".divLoading").addClass("hidden");
         console.log("success");
-        if (type == "community"){location.reload();}
+        location.reload();
+        // if (type == "community"){location.reload();}
     });
   }
   function AmenityGalleryImage(src,name,type){
