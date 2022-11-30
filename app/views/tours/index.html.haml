@@ -442,10 +442,12 @@
   });
   $("#add_unit_to_stop").click(function(){
     data_to_add = $('select[name="unit_data_selected"]').val();
+    $("#add_unit_to_stop").addClass('hidden')
     add_stop(data_to_add);
   });
   $("#add_amenity_to_stop").click(function(){
     data_to_add = $('select[name="amenity_data_selected"]').val();
+    $("#add_amenity_to_stop").addClass('hidden')
     add_stop(data_to_add);
   });
   function add_stop(data_to_add)
