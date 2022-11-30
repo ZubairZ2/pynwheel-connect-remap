@@ -600,6 +600,7 @@ Rails.application.routes.draw do
 
     namespace :v2 do
       post '/communities/:community_id/create_new_gallery', to: 'galleries#create_new_gallery'
+      get '/communities/:community_id/get_gallery_media', to: 'galleries#get_gallery_media'
       post '/communities/:community_id/upload_gallery_image', to: 'galleries#upload_gallery_image'
       post '/communities/:community_id/update_gallery_status', to: 'galleries#update_gallery_status'
       post '/communities/:community_id/update_gallery_name', to: 'galleries#update_gallery_name'

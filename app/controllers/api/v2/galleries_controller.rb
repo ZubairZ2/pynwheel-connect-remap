@@ -1,11 +1,15 @@
 class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
   before_action :set_community
-  before_action :find_gallery, only: [:destroy, :upload_gallery_image, :update_gallery_name]
+  before_action :find_gallery, only: [:destroy, :upload_gallery_image, :update_gallery_name, :get_gallery_media]
   before_action :find_gallery_image, only: [:delete_gallery_image]
 
   def index
     @galleries = @community.galleries.order(:sort)
+  end
+
+
+  def get_gallery_media
   end
 
   def create_new_gallery
@@ -120,7 +124,7 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   def set_community
 		@community = Community.find params[:community_id]
     rescue ActiveRecord::RecordNotFound
-      render json: {success: false, error_code: 400, message: 'Community not found', data: nil}, status: :not_found
+      render json: {success: false, error_code: 404, message: 'Community not found', data: nil}, status: :not_found
 	end
 
 	def gallery_params
@@ -130,12 +134,12 @@ class Api::V2::GalleriesController < Api::V2::ApiApplicationController
   def find_gallery
     @gallery ||= @community.galleries.find(params[:id])
     rescue ActiveRecord::RecordNotFound
-      render json: {success: false, error_code: 400, message: 'Gallery not found', data: nil}, status: :not_found
+      render json: {success: false, error_code: 404, message: 'Gallery not found', data: nil}, status: :not_found
   end
 
   def find_gallery_image
     @gallery_image ||= GalleryImage.find(params[:gallery_image_id])
     rescue ActiveRecord::RecordNotFound
-      render json: {success: false, error_code: 400, message: 'Gallery Image not found', data: nil}, status: :not_found
+      render json: {success: false, error_code: 404, message: 'Gallery Image not found', data: nil}, status: :not_found
   end
 end
