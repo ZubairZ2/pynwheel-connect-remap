@@ -17,7 +17,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
 
       stop_id = @community.community_tour.tour_stops.where(stop_type: "unit").destroy_all
       VisitedStop.where(tour_stop_id: stop_id.pluck(:id)).destroy_all
-      CustomizeTourService.new(@community, nil).remove_community_tour_stops
+      # CustomizeTourService.new(@community, nil).remove_community_tour_stops
       update_data_provider
       data_provider = @community.data_provider
       @credential = update_data_provider_credentials
