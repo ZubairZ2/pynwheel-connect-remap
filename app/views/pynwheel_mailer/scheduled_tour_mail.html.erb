@@ -586,7 +586,7 @@
                                   align="center"
                                 >
                                   <a
-                                    href="http://url6533.pynwheel.com/ls/click?upn=LGXSBrm2j1p7c0TsE841IzuyAYw1wbd-2Bs3J-2BHizO9MjiqhxLIOnH7kRtZxKrqh-2FdHi-2FeDvEinTnhmKcvcpK9EQ-3D-3D7pGV_bT5GzsiIOaU-2FxVEqxzpCWa3F1bkM8jQ6KaZqQgnQh-2F5PuZuT5nyFWj0XDbhiBxHxjlCLDk8vEKy1FOoykNlY2SzO3dUz9z14iwUDQWuRiGd2ZOJ-2FIZ1hoyWQ-2BcyXY1TjoiReYTXBRN6D0rdeZ55siqmRbWVsUiLiGsEuT6tQL-2FFfuzaQKP2UDPidmMvVgiKRhvwiHEjwZ5KC2oEJSw73jA-3D-3D"
+                                    href="<%= @app_link %>"
                                     target="_blank"
                                     style="
                                       text-decoration: none;
@@ -618,7 +618,7 @@
                                         max-width: 150px;
                                       "
                                       alt="IOS App Link"
-                                      src="/assets/ios-store.png"
+                                      src="<%= image_path('ios-store.png') %>"
                                     />
                                   </a>
                                 </td>
@@ -640,7 +640,7 @@
                                   align="center"
                                 >
                                   <a
-                                    href="http://url6533.pynwheel.com/ls/click?upn=LGXSBrm2j1p7c0TsE841I9Qfm6fbeGXOGKK3GoqphTRIjzbvAWI4znBfaLzMxjGyJughKf1x22dUnnTjzCYljhyRoaOag8LflaHdVltdJyQ-3DUFk3_bT5GzsiIOaU-2FxVEqxzpCWa3F1bkM8jQ6KaZqQgnQh-2F5PuZuT5nyFWj0XDbhiBxHxjlCLDk8vEKy1FOoykNlY2eM7TqCssOTw1Kga-2B69EM4ksfALaD27daHlGB1ZmBTNNEjUM1aC0sspSCJwB2xp0OfXcq8uLZecVZ9d2UaeZWl91sfiI3Mf-2BQTGqxcVSW3nygHG8G4reuS9Xt5HqfI1NwQ-3D-3D"
+                                    href="<%= @android_link %>"
                                     target="_blank"
                                     style="
                                       text-decoration: none;
@@ -652,6 +652,7 @@
                                       mso-border-alt: none;
                                     "
                                   >
+                                    
                                     <img
                                       align="center"
                                       border="0"
@@ -672,7 +673,7 @@
                                         max-width: 150px;
                                       "
                                       alt="Android App Link"
-                                      src="/assets/android-store.png"
+                                      src="<%= image_path('android-store.png') %>"
                                     />
                                   </a>
                                 </td>
@@ -1458,7 +1459,7 @@
                                                             <img
                                                               align="center"
                                                               border="0"
-                                                              src="/assets/<%=card[:image]%>"
+                                                              src="<%= image_path(card[:image]) %>"
                                                               alt="Instruction Card"
                                                               title="Image"
                                                               width="130px"
