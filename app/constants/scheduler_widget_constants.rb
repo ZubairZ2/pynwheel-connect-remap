@@ -61,7 +61,7 @@ class SchedulerWidgetConstants
     }
   ]
 
-  UNSCHED_SELF_TOUR_DATA = {title: "Start Tour At Property",text: "At the property, open the app to start the tour and choose the apartments and amenities you want to see!"}
+  UNSCHED_SELF_TOUR_DATA = {title: "Start Tour At Property", text: "At the property, open the app to start the tour and choose the apartments and amenities you want to see!"}
   REMOTE_TOUR_TITLE = "Install our app to take a remote tour at any time from the comfort of your home"
   UNSCHED_SELF_TOUR_TITLE = "Be at the property any time during visiting hours at your own convenience"
   ACCESS_CODE_TEXT = "When you arrive at the property visit the leasing office to get your property access code to enable your tour."
