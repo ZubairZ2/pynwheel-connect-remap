@@ -829,11 +829,14 @@
                                                         width="100%"
                                                         border="0"
                                                         align="left"
-                                                        style="padding: 16px 26px;min-height: 340px;"
+                                                        style="padding: 16px 26px;min-height: 340px;  border-top-left-radius:16px;
+                                                        border-top-right-radius:16px;
+                                                        border-bottom-left-radius:16px;
+                                                        border-bottom-right-radius:16px;"
                                                       >
                                                         <tr border="0">
                                                           <td
-                                                            width="38px"
+                                                            width="38"
                                                             style="
                                                               padding-bottom: 8px;
                                                             "
@@ -845,9 +848,12 @@
                                                                 line-height: 136.8%;
                                                                 padding-top: 3px;
                                                                 margin-bottom: 8px;
-                                                              "
+                                                              color:#000;"
                                                             >
-                                                              <b><%= card[:key] %></b>
+                                                              <b style="color:#000;
+                                                                font-size: 16px;
+                                                                line-height: 136.8%;
+                                                              "><%= card[:key] %></b>
                                                             </p>
                                                           </td>
                                                         </tr>
@@ -898,8 +904,8 @@
                                                               style="
                                                                 font-size: 16px;
                                                                 line-height: 136.8%;
-                                                                padding-top: 3px;
-                                                                margin-bottom: 8px;
+                                                                padding-top: 3px;padding-left:15px;padding-right:15px;
+                                                                margin-bottom: 8px; color: #555555;
                                                               "
                                                             >
                                                             <b>
@@ -920,7 +926,7 @@
                                                               color: #555555;
                                                               font-family: arial,
                                                                 helvetica,
-                                                                sans-serif;
+                                                                sans-serif;padding-left:15px;padding-right:15px;
                                                             "
                                                           >
                                                             <p
@@ -928,7 +934,7 @@
                                                                 font-size: 14px;
                                                                 line-height: 134.8%;
                                                                 padding-top: 3px;
-                                                                margin-bottom: 8px;
+                                                                margin-bottom: 8px;padding-left:15px;padding-right:15px;
                                                               "
                                                             >
                                                               <% if (@property_tour_type == "unscheduled_self_tour" && !@id_verification && card[:key] == 2) || (@property_tour_type == "scheduled_tour" && @tour_type == "self_tour" && !@id_verification && card[:key] == 2) %>
