@@ -286,6 +286,7 @@
                     </table>
                   </td>
                 </tr>
+                
               </table>
               <!-- end HEADER -->
               <!--  first section -->
@@ -807,23 +808,31 @@
                                                 >
                                                   <tr align="middle">
                                                     <td
+                                                    background="#fff"
                                                       style="
                                                         background-color: #fff;
+                                                        padding-top:16px;padding-bottom:16px;padding-left:26px;padding-right:26px;
                                                         padding: 16px 26px;
-                                                        height: 328px;
+                                                        height: 340px;
                                                         color: #555555;
                                                         font-family: arial,
-                                                          helvetica, sans-serif;
+                                                        helvetica, sans-serif;
                                                         text-align: center;
                                                         border-radius: 16px;
+                                                        border-top-left-radius:16px;
+                                                        border-top-right-radius:16px;
+                                                        border-bottom-left-radius:16px;
+                                                        border-bottom-right-radius:16px;
                                                         box-shadow: 0 4px 8px 0
                                                           rgb(0 0 0 / 50%);
                                                       "
                                                     >
                                                       <table
+                                                      background="#fff"
                                                         width="100%"
                                                         border="0"
                                                         align="left"
+                                                        style="padding: 16px 26px;min-height: 340px;"
                                                       >
                                                         <tr border="0">
                                                           <td
@@ -835,7 +844,7 @@
                                                           >
                                                             <p
                                                               style="
-                                                                font-size: 14px;
+                                                                font-size: 16px;
                                                                 line-height: 136.8%;
                                                                 padding-top: 3px;
                                                                 margin-bottom: 8px;
@@ -890,17 +899,19 @@
                                                           >
                                                             <p
                                                               style="
-                                                                font-size: 14px;
+                                                                font-size: 16px;
                                                                 line-height: 136.8%;
                                                                 padding-top: 3px;
                                                                 margin-bottom: 8px;
                                                               "
                                                             >
+                                                            <b>
                                                               <% if (@property_tour_type == "unscheduled_self_tour" && !@id_verification && card[:key] == 2) || (@property_tour_type == "scheduled_tour" && @tour_type == "self_tour" && !@id_verification && card[:key] == 2) %>
                                                                 <%= @unschedSelfTour[:title] %>
                                                               <% else %>
                                                                 <%= card[:title] %>
                                                               <% end %>
+                                                            </b>
                                                             </p>
                                                           </td>
                                                         </tr>
@@ -917,7 +928,7 @@
                                                           >
                                                             <p
                                                               style="
-                                                                font-size: 12px;
+                                                                font-size: 14px;
                                                                 line-height: 134.8%;
                                                                 padding-top: 3px;
                                                                 margin-bottom: 8px;
