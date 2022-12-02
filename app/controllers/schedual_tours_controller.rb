@@ -517,11 +517,10 @@ Get information about your tour here: #{confirmation_page_link}"
       subject1 =  email_subject(is_rescheduled,property_tour_type,schedual_tour,false) 
       subject2 =  email_subject(is_rescheduled,property_tour_type,schedual_tour,true) 
 
-      ScheduledTourMailerJob.perform_async(subject1, email_content, tu.email, community, nil, nil, nil, emails[0], true, schedual_tour) if (community.alert_contact == "email" || community.alert_contact == "both")
+      ScheduledTourMailerJob.perform_async(subject1, email_content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both")
       emails.each do |email|
-        ScheduledTourMailerJob.perform_async(subject2, community_mail, email,community, nil, nil, nil, INFO_EMAIL, false, schedual_tour) if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
+        ScheduledTourMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,INFO_EMAIL,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
       end
-
 
       # DelayedSchedulerMailerJob.perform_async(subject1, email_content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both")
       # emails.each do |email|
@@ -533,6 +532,7 @@ Get information about your tour here: #{confirmation_page_link}"
       {email_content: email_content, web_notification: web_notification, sms_content: sms_content}
       
     end
+
 
     def email_subject(is_rescheduled,property_tour_type,schedual_tour,community_mail)
       if is_rescheduled && property_tour_type == "scheduled_tour" && schedual_tour.tour_type == "self_tour"
