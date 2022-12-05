@@ -1600,6 +1600,8 @@ function setModalAttributes(element) {
         }
         else
         {
+          $('#unit-lease-pricing-text-li').show();
+          $('#leas-price-option').removeClass('hidden');
           ss = $(element).data('unit-lease-pricing').split(';');
           leaseTermPricingOptions(ss);
         }
