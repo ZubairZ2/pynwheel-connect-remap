@@ -112,7 +112,6 @@ gem 'resque', require: 'resque/server'
 gem 'resque-scheduler'
 gem 'resque-heroku-signals'
 gem 'platform-api'
-gem 'sidekiq-unique-jobs'
 
 group :production, :development do
   gem 'rack-cache', require: 'rack/cache'
