@@ -64,7 +64,7 @@ class SiteMapUploader < CarrierWave::Uploader::Base
   protected
 
   def svg?(file)
-    file.content_type.include?('svg') || file.content_type.include?('svg+xml')
+    file&.content_type&.include?('svg') || file&.content_type&.include?('svg+xml')
   end
 
   def image?(file)
