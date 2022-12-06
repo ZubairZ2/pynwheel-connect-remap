@@ -766,8 +766,8 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def update_unit_floorplan_data
-    community = Community.find(params[:id])
-    community.update_community_provider_data()
+    # community = Community.find(params[:id])
+    # community.update_community_provider_data()
     render :json=> {:success=>true, :message => "success", :operation => "update data"}
   end
 
