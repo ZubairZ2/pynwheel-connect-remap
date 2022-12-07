@@ -300,7 +300,11 @@
                   <label data-toggle="tooltip" data-placement="top" title="(Default US)">Country Code <span class="asterisk_color" >*</span></label> 
                   <select name="country_code" class="form-control select_number" id="country_code">
                     <% SchedualTour::COUNTRY_CODES.each do  |code| %>
-                      <option value="<%= code %>"> <%= code %> </option>
+                      <% if code === @community.set_default_country_code %>
+                        <option value="<%= code %>" selected= "selected"> <%= code %> </option>
+                      <% else %>
+                        <option value="<%= code %>"> <%= code %> </option>
+                      <% end %>
                     <% end %>
                   </select>
                 </div>
@@ -820,10 +824,10 @@
                     showTourTypeDropDown();
                   }
                   else if(tour_types.length == 1){
-                    // options += `<option value="${tour_types[0][0]}">${tour_types[0][1]}</option>`
-                    // $('#tour_type').html(options)
-                    // $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
-                    // add_or_remove_question_mark(tour_types[0][0])
+                    options += `<option value="${tour_types[0][0]}">${tour_types[0][1]}</option>`
+                    $('#tour_type').html(options)
+                    $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
+                    add_or_remove_question_mark(tour_types[0][0])
                     hideTourTypeDropDown();
                   }
                   else{

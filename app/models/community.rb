@@ -602,6 +602,21 @@ class Community < ApplicationRecord
     status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user.id)
   end
 
+  def set_default_country_code
+    begin
+      addr = Geocoder.search([self.latitude, self.longitude])
+      addr = Geocoder.search(self.address) unless addr.present?
+
+      if (addr && addr.first && addr.first.data && addr.first.data["address"] && addr.first.data["address"]["country_code"]).present?
+        addr.first.data["address"]["country_code"].upcase 
+      else
+        "US"
+      end
+    rescue => error
+      "US"
+    end
+  end
+
   def set_community_time_zone
     if self.latitude.present? && self.longitude.present?
       time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
