@@ -261,18 +261,18 @@
                   <% end %>
                 </div>
                 <div class="row">
-                  <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-left-50 w-100 tour_date">
+                  <div class="form-group <%= (@tour_type_count > 1) ? "col-lg-4 col-md-4" : "col-lg-6 col-md-6"  %> col-sm-12 col-xs-12 w-left-50 w-100 tour_date">
                     <label>Tour Date <span class="asterisk_color" >*</span></label>
                     <% tour_date_class = @reschedule_tour == "true" ? "form-control reschedule_datepicker" : "form-control schedule_datepicker" %>
                     <%= text_field_tag :tour_date, "", :class=>tour_date_class, :placeholder=>"Tour Date",:maxlength=>"10",:autocomplete=>"off", :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
                   </div>
                   <%= hidden_field_tag 'time_slot_hash', @time_slots.to_json %>
 
-                  <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_time">
+                  <div class="form-group <%= (@tour_type_count > 1) ? "col-lg-4 col-md-4" : "col-lg-6 col-md-6"  %> col-sm-12 col-xs-12 w-100 tour_time">
                     <label>Tour Time <span class="asterisk_color" >*</span></label>
                     <%= select_tag :tour_time , options_for_select([]),:class => "form-control", :include_blank => 'Select time slot', :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
                   </div>
-                  <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_type">
+                  <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_type" style="display: <%= (@tour_type_count > 1) ? "" : "none" %>  ">
                     <label>Tour Type <span class="asterisk_color" >*</span>
                       <i class="fa fa-question-circle tour_type_tip hidden propertyDetailName" data-toggle="tooltip" data-placement="top" title="" >
                         <span id="propertyDetailNameText" class="tooltip-pynwheel"></span>
@@ -811,22 +811,27 @@
                   tour_id = data["schedual_tour_id"];
                   $('#sched_tour_id').val(tour_id)
                   $('#limit_tour_type_error_arr').val(data["limit_exceded_tour_types"])
+
                   if (tour_types.length > 1){
                     for (let i = 0; i < tour_types.length; ++i) {
                       options += `<option value="${tour_types[i][0]}" >${tour_types[i][1]}</option>`
                     }
                     $('#tour_type').html(options)
+                    showTourTypeDropDown();
                   }
                   else if(tour_types.length == 1){
-                    options += `<option value="${tour_types[0][0]}">${tour_types[0][1]}</option>`
-                    $('#tour_type').html(options)
-                    $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
-                    add_or_remove_question_mark(tour_types[0][0])
+                    // options += `<option value="${tour_types[0][0]}">${tour_types[0][1]}</option>`
+                    // $('#tour_type').html(options)
+                    // $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
+                    // add_or_remove_question_mark(tour_types[0][0])
+                    hideTourTypeDropDown();
                   }
                   else{
+                    hideTourTypeDropDown();
                     $('#tour_time').html(options)
                     $('#tour_type').html('<option value="">Select Tour Type</option>')     
                   }
+
                   $("#tour_type").change();
                 },
                 fail: function(error){
@@ -1088,6 +1093,22 @@
         }
 
       });
+
+      function hideTourTypeDropDown() {
+        $(".tour_type").css("display", "none");
+        $(".tour_date").removeClass("col-lg-4 col-md-4");
+        $(".tour_date").addClass("col-lg-6 col-md-6");
+        $(".tour_time").removeClass("col-lg-4 col-md-4");
+        $(".tour_time").addClass("col-lg-6 col-md-6");
+      }
+
+      function showTourTypeDropDown() {
+        $(".tour_type").css("display", "block");
+        $(".tour_date").addClass("col-lg-4 col-md-4");
+        $(".tour_date").removeClass("col-lg-6 col-md-6");
+        $(".tour_time").addClass("col-lg-4 col-md-4");
+        $(".tour_time").removeClass("col-lg-6 col-md-6");
+      }
 
       function displayNotification(isEmail) {
         if (isEmail) {
