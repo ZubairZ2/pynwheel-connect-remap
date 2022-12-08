@@ -116,6 +116,7 @@ class SchedualToursController < ApplicationController
       tour_type = params["tour_type"].present? ? params["tour_type"] : ""
       property_tour_type = params['tour_user']['property_tour_type'] if (params['tour_user'] && params['tour_user']['property_tour_type']).present? 
       knock_prospect_ip = Rails.env.development? ? "127.0.0.0" : (request.ip || request.remote_ip)
+      
       schedual_tour.update_attributes(knock_prospect_ip_address: knock_prospect_ip, tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code], realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
 
       if previous_tour[:is_rescheduled]
@@ -219,6 +220,7 @@ class SchedualToursController < ApplicationController
     
     if params.has_key?("schedual_tour_id") && params["schedual_tour_id"].present?
       @schedual_tour = SchedualTour.find(params["schedual_tour_id"])
+      @schedual_tour.update(tour_date: date, tour_time: tour_time, end_time: after_30_mints, day_diff: day_diff)
     else
       @schedual_tour = SchedualTour.new(tour_date: date, tour_time: tour_time, end_time: after_30_mints, community_id: params[:community_id], user_time_zone: params[:user_time_zone], day_diff: day_diff)
       @schedual_tour.save
@@ -297,7 +299,6 @@ class SchedualToursController < ApplicationController
     date_time = DateTime.new(date.year, date.month, date.day, time.hour, time.min).strftime('%m/%d/%Y %l:%M %p')
 
     date = DateTime.strptime(date_time, '%m/%d/%Y %l:%M %p')
-
     tour_time, day_diff = get_tour_datetime_and_diff date
 
     previous_tour = {
