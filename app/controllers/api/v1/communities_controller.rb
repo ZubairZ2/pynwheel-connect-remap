@@ -1398,7 +1398,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
 
     tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
-    return {grace_period: tour&.community&.tour&.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
+    return {grace_period: tour.community.tour.only_scheduled_tour ? tour&.community&.tour&.grace_period : nil, schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
   end
 
   def get_last_visited_community(scheduled_tours)
@@ -1418,7 +1418,11 @@ class Api::V1::CommunitiesController < ActionController::Base
   def date_compare(tour)
     if tour.present?
       if (tour.tour_date && tour.tour_time).present?
-        ( (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(tour&.community&.get_time_zone()) + (tour.community.tour.grace_period.minutes) + 1.minute) <= (Time.now.in_time_zone(tour&.community&.get_time_zone()))
+        if tour.community.tour.only_scheduled_tour
+          ( (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(tour&.community&.get_time_zone()) + (tour.community.tour.grace_period.minutes) + 1.minute) <= (Time.now.in_time_zone(tour&.community&.get_time_zone()))
+        else
+          ( (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(tour&.community&.get_time_zone()) + 1.minute) <= (Time.now.in_time_zone(tour&.community&.get_time_zone()))
+        end
       else
         return false
       end
