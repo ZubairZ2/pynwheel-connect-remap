@@ -300,7 +300,7 @@
                   <label data-toggle="tooltip" data-placement="top" title="(Default US)">Country Code <span class="asterisk_color" >*</span></label> 
                   <select name="country_code" class="form-control select_number" id="country_code">
                     <% SchedualTour::COUNTRY_CODES.each do  |code| %>
-                      <% if code === @community.set_default_country_code %>
+                      <% if code === @default_country_code %>
                         <option value="<%= code %>" selected= "selected"> <%= code %> </option>
                       <% else %>
                         <option value="<%= code %>"> <%= code %> </option>

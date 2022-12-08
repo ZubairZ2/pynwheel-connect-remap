@@ -603,24 +603,21 @@ class Community < ApplicationRecord
   end
 
   def set_default_country_code
-    # begin
-    #   puts "-------------------- Communiyt Code -------------------"
+    begin
 
-    #   addr = Geocoder.search([self.latitude, self.longitude])
-    #   addr = Geocoder.search(self.address) unless addr.present?
+      addr = Geocoder.search([self.latitude, self.longitude])
+      addr = Geocoder.search(self.address) unless addr.present?
 
-    #   if (addr && addr.first && addr.first.data && addr.first.data["address"] && addr.first.data["address"]["country_code"]).present?
-    #     addr.first.data["address"]["country_code"].upcase 
-    #   else
-    #     "US"
-    #   end
+      if (addr && addr.first && addr.first.data && addr.first.data["address"] && addr.first.data["address"]["country_code"]).present?
+        addr.first.data["address"]["country_code"].upcase 
+      else
+        "US"
+      end
 
-    # rescue => error
-    #   raise error
-    #   # "US"
-    # end
+    rescue => error
+      "US"
+    end
 
-    "US"
   end
 
   def set_community_time_zone
