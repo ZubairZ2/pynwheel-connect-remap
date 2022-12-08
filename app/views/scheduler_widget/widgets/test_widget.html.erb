@@ -821,17 +821,17 @@
                       options += `<option value="${tour_types[i][0]}" >${tour_types[i][1]}</option>`
                     }
                     $('#tour_type').html(options)
-                    showTourTypeDropDown();
+                    // showTourTypeDropDown();
                   }
                   else if(tour_types.length == 1){
                     options += `<option value="${tour_types[0][0]}">${tour_types[0][1]}</option>`
                     $('#tour_type').html(options)
                     $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
                     add_or_remove_question_mark(tour_types[0][0])
-                    hideTourTypeDropDown();
+                    // hideTourTypeDropDown();
                   }
                   else{
-                    hideTourTypeDropDown();
+                    // hideTourTypeDropDown();
                     $('#tour_time').html(options)
                     $('#tour_type').html('<option value="">Select Tour Type</option>')     
                   }

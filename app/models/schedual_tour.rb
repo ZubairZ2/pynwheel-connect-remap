@@ -9,7 +9,7 @@ class SchedualTour < ApplicationRecord
   scope :desc_tour_date, -> {order('coalesce(tour_date, created_at) desc')}
   scope :scheduled_tours, -> { where.not(tour_user_id: nil, tour_date: nil, tour_time: nil, community_id: nil) }
 
-  COUNTRY_CODES =  JSON.parse(File.read(Rails.root.join("app/assets/jsons/limited_country_codes.json")))
+  COUNTRY_CODES =  JSON.parse(File.read(Rails.root.join("app/assets/jsons/country_codes.json")))
   
   def add_user_in_zerv
     if self.tour_user_id.present? and community.enable_locks and community.multiple_locks_provider.include?("Zerv")
