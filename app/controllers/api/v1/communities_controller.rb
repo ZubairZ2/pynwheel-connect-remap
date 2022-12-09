@@ -532,7 +532,7 @@ class Api::V1::CommunitiesController < ActionController::Base
           data = {tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
           render :json=> {data: data.as_json, :status=> true, :message => "data returned succesfully", code: 200 }
         else
-          data = { tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours, completed: completed_tours, exipred: expired_tours }
+          data = {tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours, completed: completed_tours, exipred: expired_tours }
           render :json=> { data: data.as_json, :status=>true, code: 200 }
         end
 
@@ -1402,7 +1402,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
 
     tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
-    return {schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
+    return {grace_period: tour.community.community_tour.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
   end
 
   def get_last_visited_community(scheduled_tours)
@@ -1422,7 +1422,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   def date_compare(tour)
     if tour.present?
       if (tour.tour_date && tour.tour_time).present?
-        ( (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(tour&.community&.get_time_zone()) + (tour.community.tour.grace_period.minutes) + 1.minute) <= (Time.now.in_time_zone(tour&.community&.get_time_zone()))
+        ( (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(tour&.community&.get_time_zone()) + (tour.community.community_tour.grace_period.minutes) + 1.minute) <= (Time.now.in_time_zone(tour&.community&.get_time_zone()))
       else
         return false
       end
