@@ -49,6 +49,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     else
       @direct =  false
     end
+    
     @use_yardi_as_lead = @community.use_yardi_as_lead?
     @is_virtual_on = @community.is_virtual_permission_on
     @any_tour_type_selected = @community.is_any_tour_type_selected
@@ -56,6 +57,9 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @stepping = @community.community_tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.community_tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.community_tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.community_tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
     @tour_type = @schedule_tour.tour_type if @reschedule_tour.present?
     @existing_tour_users = scheduled_tour_users @community
+    @enabled_tour_types = community_allowed_tour_types(@community)
+    @tour_type_count = @enabled_tour_types.count
+    @default_country_code = @community.set_default_country_code()
 
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
     if @use_yardi_as_lead
@@ -109,6 +113,24 @@ class SchedulerWidget::WidgetsController < ApplicationController
   end
 
   private
+
+  def community_allowed_tour_types community
+    tour = community.community_tour
+
+    if tour.present?
+      if (tour&.tour_setting&.allow_self_tour) && (tour&.tour_setting&.allow_guided_tour)
+        [["self_tour", "Self Tour"], ["guided_tour", "Guided Tour"]]
+      elsif tour&.tour_setting&.allow_self_tour
+        [["self_tour", "Self Tour"]]
+      elsif tour&.tour_setting&.allow_guided_tour
+        [["guided_tour", "Guided Tour"]]
+      else
+        []
+      end
+    else
+      []
+    end
+  end
 
   def allow_iframe
     response.headers.except! 'X-Frame-Options'
