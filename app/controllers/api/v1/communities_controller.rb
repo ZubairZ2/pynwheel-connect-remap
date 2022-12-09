@@ -518,6 +518,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         completed_tours = []
         expired_tours = []
         last_visit = nil
+        
         if @scheduled_tours.present?
           @scheduled_tours.each do |tour|
             if tour.present?
@@ -526,6 +527,7 @@ class Api::V1::CommunitiesController < ActionController::Base
               upcoming_tours << get_community_tour(tour) if !tour.is_tour_completed && !date_compare(tour)
             end
           end
+
           last_visit = get_last_visited_community(@scheduled_tours)
           data = {tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
           render :json=> {data: data.as_json, :status=> true, :message => "data returned succesfully", code: 200 }
@@ -533,6 +535,8 @@ class Api::V1::CommunitiesController < ActionController::Base
           data = { tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours, completed: completed_tours, exipred: expired_tours }
           render :json=> { data: data.as_json, :status=>true, code: 200 }
         end
+
+        AccessLogsService.new().get_filtered_tours_access_logs(params, data)
       else
         render :json=> { data: data, :status=>false, :message => "Invalid or Missing tour_user_id", code: 400 }
       end

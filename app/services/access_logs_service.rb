@@ -11,4 +11,11 @@ class AccessLogsService
       is_resident: is_resident
     )
   end
+
+  def get_filtered_tours_access_logs params, response
+    AccessLog.create!( 
+      tour_user_id: params[:tour_user_id],
+      response: response, 
+    )
+  end
 end
