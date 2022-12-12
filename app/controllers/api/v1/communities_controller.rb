@@ -518,6 +518,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         completed_tours = []
         expired_tours = []
         last_visit = nil
+        
         if @scheduled_tours.present?
           @scheduled_tours.each do |tour|
             if tour.present?
@@ -526,13 +527,16 @@ class Api::V1::CommunitiesController < ActionController::Base
               upcoming_tours << get_community_tour(tour) if !tour.is_tour_completed && !date_compare(tour)
             end
           end
+
           last_visit = get_last_visited_community(@scheduled_tours)
-          data = { tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
-          render :json=> { data: data.as_json, :status=> true, :message => "data returned succesfully", code: 200 }
+          data = {tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours.uniq, completed: completed_tours.uniq, exipred: expired_tours.uniq }
+          render :json=> {data: data.as_json, :status=> true, :message => "data returned succesfully", code: 200 }
         else
-          data = { tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours, completed: completed_tours, exipred: expired_tours }
+          data = {tour_user: @tour_user, last_visit: last_visit, upcoming: upcoming_tours, completed: completed_tours, exipred: expired_tours }
           render :json=> { data: data.as_json, :status=>true, code: 200 }
         end
+
+        AccessLogsService.new().get_filtered_tours_access_logs(params, data)
       else
         render :json=> { data: data, :status=>false, :message => "Invalid or Missing tour_user_id", code: 400 }
       end
@@ -1388,6 +1392,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   private
 
   def get_community_tour(tour)
+
     if !tour.tour_date.nil?
       d = tour.tour_date
       t = tour.tour_time
@@ -1395,8 +1400,9 @@ class Api::V1::CommunitiesController < ActionController::Base
     else
       dt = DateTime.now
     end
+
     tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
-    return {schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
+    return {grace_period: tour.community.community_tour.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
   end
 
   def get_last_visited_community(scheduled_tours)
@@ -1416,7 +1422,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   def date_compare(tour)
     if tour.present?
       if (tour.tour_date && tour.tour_time).present?
-        (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(tour&.community&.get_time_zone()) < Time.now.in_time_zone(tour&.community&.get_time_zone())
+        ( (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(tour&.community&.get_time_zone()) + (tour.community.community_tour.grace_period.minutes) + 1.minute) <= (Time.now.in_time_zone(tour&.community&.get_time_zone()))
       else
         return false
       end
