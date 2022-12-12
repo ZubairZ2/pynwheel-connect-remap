@@ -1735,6 +1735,40 @@ function setModalAttributes(element) {
   }
 }
 
+function openAmenity3DTourModal(amenity_obj) {
+  url = amenity_obj.video_link
+  amenityRemoveFrame();
+  
+  if(url != null && url != "") {
+    amenityAddFrame(url) ;
+    $('#amenityVirtualTourModal').find('#amenityVirtualName').html(amenity_obj.name);
+    $('#amenityVirtualTourModal').modal('show');
+  } else {
+   alert("Please check video link from amenity edit page");
+  }
+
+
+}
+
+function amenityRemoveFrame() {
+  $("#amenity-virtual-tour-ifram-container").empty();
+}
+
+function amenityAddFrame(src) {
+  var ifrm = document.createElement("iframe");
+  ifrm.setAttribute("src", src);
+  ifrm.style.position = "absolute";
+  ifrm.style.top= 0;
+  ifrm.style.bottom= 0;
+  ifrm.style.left= 0;
+  ifrm.style.width= "100%";
+  ifrm.style.height= "100%";
+  ifrm.style.border= 0;
+
+  $("#amenity-virtual-tour-ifram-container").append(ifrm);
+}
+
+
 function addVirtualTour(element) {
   removeFrame();
   let label = $(element).data('unit-virtual-tour-label');

@@ -63,7 +63,7 @@ class Amenity < ApplicationRecord
 
   def as_json options = {}
     super(
-      :only => [:id, :name, :image]
+      :only => [:id, :name, :image, :video_link]
     )
   end
   def get_amenity_galleries galler_obj = []
