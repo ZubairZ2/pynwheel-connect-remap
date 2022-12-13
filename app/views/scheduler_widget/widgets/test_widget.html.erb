@@ -466,12 +466,12 @@
               <%= hidden_field_tag 'existing_tour_user_email_arr', @existing_tour_users.to_json %>
               <div>
                 <% if @reschedule_tour %>
-                  <button type="button" id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
-                  <button type="button" class="btn_popup" id="cancel-visit" style="border-left: 5px solid #fff;  width: 50%;">Cancel my visit</button>
+                  <button type="submit" id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
+                  <button type="submit" class="btn_popup" id="cancel-visit" style="border-left: 5px solid #fff;  width: 50%;">Cancel my visit</button>
                 <%else%>
                   
                   <% if @community.self_tour && (@community.scheduler_widget.nil? ? true : @community.scheduler_widget) && !@community.locked %>
-                    <button type="button" id ="confirm_reservation" class="btn_popup">Submit</button>
+                    <button type="submit" id ="confirm_reservation" class="btn_popup">Submit</button>
                   <% else %>
                     <span style = "color: red"><strong>Sorry</strong> for the inconvenience. It seems <strong> <%= @community.name %> </strong> does not offer self tours or it's under construction. For inquiries please call the property at <strong> <%= @community.phone %> </strong> or email <strong> <%= @community.email %></strong>.
                     </span>
