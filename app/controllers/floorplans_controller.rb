@@ -18,16 +18,22 @@ class FloorplansController < ApplicationController
   end
 
   def create
-    @floorplan = @community.floorplans.new(floorplan_params)
-    @floorplan.provider = "manually"
-    if @floorplan.save
-      flash[:notice] = "Floor plan created successfully."
-      PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
+    @floorplan =  @community.floorplans.where(provider_floorplan_id: floorplan_params[:provider_floorplan_id]).last
+    unless @floorplan.present?
+      @floorplan = @community.floorplans.new(floorplan_params)
+      @floorplan.provider = "manually"
+      if @floorplan.save
+        flash[:notice] = "Floor plan created successfully."
+        PaperTrail::Version.create(item_type: "Floorplan",item_id: @floorplan.id,event: "create",whodunnit: current_user.id,community_id: current_community.id, company_id: current_company.id,object: "name: #{@floorplan.name} community_id: '#{@floorplan.community_id}'")
 
-      redirect_to community_floorplans_path(:community_id=>@community.id)
+        redirect_to community_floorplans_path(:community_id=>@community.id)
+      else
+        flash[:error] = @floorplan.errors.full_messages.join(',')
+        render :new
+      end
     else
-      flash[:error] = @floorplan.errors.full_messages.join(',')
-      render :new
+      flash[:error] = "Provider Floorplan ID already associated with another floorplan please use uniq Provider Floorplan ID"
+      redirect_to community_floorplans_path(:community_id=>@community.id)
     end
   end
 
