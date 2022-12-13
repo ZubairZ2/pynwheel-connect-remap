@@ -272,7 +272,7 @@
                     <label>Tour Time <span class="asterisk_color" >*</span></label>
                     <%= select_tag :tour_time , options_for_select([]),:class => "form-control", :include_blank => 'Select time slot', :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
                   </div>
-                  <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_type" style="display: <%= (@tour_type_count > 1) ? "" : "none" %>  ">
+                  <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_type" style="visibility: <%= (@tour_type_count > 1) ? "visible" : "hidden" %>  ">
                     <label>Tour Type <span class="asterisk_color" >*</span>
                       <i class="fa fa-question-circle tour_type_tip hidden propertyDetailName" data-toggle="tooltip" data-placement="top" title="" >
                         <span id="propertyDetailNameText" class="tooltip-pynwheel"></span>
@@ -815,8 +815,10 @@
                   tour_id = data["schedual_tour_id"];
                   $('#sched_tour_id').val(tour_id)
                   $('#limit_tour_type_error_arr').val(data["limit_exceded_tour_types"])
-
+                  debugger
+                  alert(tour_types)
                   if (tour_types.length > 1){
+                    
                     for (let i = 0; i < tour_types.length; ++i) {
                       options += `<option value="${tour_types[i][0]}" >${tour_types[i][1]}</option>`
                     }
@@ -824,6 +826,7 @@
                     // showTourTypeDropDown();
                   }
                   else if(tour_types.length == 1){
+                    alert(tour_types)
                     options += `<option value="${tour_types[0][0]}">${tour_types[0][1]}</option>`
                     $('#tour_type').html(options)
                     $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
@@ -831,6 +834,8 @@
                     // hideTourTypeDropDown();
                   }
                   else{
+                    alert(tour_types)
+
                     // hideTourTypeDropDown();
                     $('#tour_time').html(options)
                     $('#tour_type').html('<option value="">Select Tour Type</option>')     
