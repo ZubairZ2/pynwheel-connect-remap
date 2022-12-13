@@ -614,7 +614,7 @@ json.tours @tours do |tour|
             zrv_guest = @tour_user.zerv_guests.find_by(community_id: @community.id, guest_of_stop_type: "Tour", guest_of_stop_id: stop.id, status: "active")
             if zrv_guest.present?
               is_zerv_lock_present = true
-              json.guest_pin 'Your tour has started. The door will unlock when your mobile device is within range. Enjoy your tour!'
+              json.guest_pin 'Your tour has started. Tap the unlock button below when you are near the fob reader. Enjoy your tour!'
               json.latch_link ''
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
@@ -887,7 +887,7 @@ json.tours @tours do |tour|
             if zrv_guest.present?
               is_zerv_lock_present = true
               list_of_zerv_lock_ids = @tour_user.get_list_of_zerv_lock_ids(tour, @community, stop, new_stops_arr, counter, zrv.mac_id)
-              json.guest_pin 'The door will unlock when your mobile device is within range'
+              json.guest_pin 'Tap the unlock button below when you are near the fob reader'
               json.latch_link ''
               json.unit_dwelo_lock_id ''
               json.igloohome_lock_id ''
