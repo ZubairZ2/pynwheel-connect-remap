@@ -606,7 +606,7 @@
         else if(!form_for_reschedule_tour){
           $("#unscheduled_self_tour").attr('checked', "checked")
         }
-        if($('#unscheduled_self_tour')[0].checked == true || $('#remote_tour')[0].checked == true) {
+        if( ( $('#unscheduled_self_tour')[0] && $('#unscheduled_self_tour')[0].checked == true) || ( $('#remote_tour')[0] && $('#remote_tour')[0].checked == true ) ) {
           $(".tour_date").addClass('hidden');
           $(".tour_time").addClass('hidden');
           $(".tour_type").addClass('hidden');
