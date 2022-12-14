@@ -634,7 +634,7 @@ class Community < ApplicationRecord
   def community_website
     return unless self.website.present?
 
-    if self.website.include?("https" || "http")
+    if self.website.include?("http" || "https")
       self.website
     else
       "https://#{self.website}"
