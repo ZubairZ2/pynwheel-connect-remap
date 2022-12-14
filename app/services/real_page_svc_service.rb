@@ -19,7 +19,6 @@ class RealPageSvcService < BaseService
 
   def import_realpage_svc_floorplans
     return unless @all_floorplans_hash.present?
-
     site_ids = @credentials.site_id.split(',') rescue []
     site_ids.each do |site_id|
       begin
@@ -54,58 +53,61 @@ class RealPageSvcService < BaseService
                       </tem:getfloorplanlist>
                     </soapenv:Body>
                   </soapenv:Envelope>')
-
+        
         #result = Hash.from_xml(response.body) #That method was taking too much memory on heroku
         result = Ox.load(response.body, mode: :hash)
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           floorplans = result[:"s:Envelope"][1][:"s:Body"][1][:getfloorplanlistResponse][1][:getfloorplanlistResult][:GetFloorPlanList]
-          floorplans.each do |fp|
-            if fp.key?(:FloorPlanObject)
-              fp = fp[:FloorPlanObject]
 
-              floorplan = @all_floorplans_hash[fp[:FloorPlanID].to_s]
+          if floorplans.present?
+            floorplans.each do |fp|
+              if fp.key?(:FloorPlanObject)
+                fp = fp[:FloorPlanObject]
 
-              if floorplan.present?
-                puts "----------------- #{floorplan.name} -----------------------\n"
+                floorplan = @all_floorplans_hash[fp[:FloorPlanID].to_s]
 
-                unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && floorplan.manual_override
-                  floorplan.market_rent = fp[:RentMin]
-                end
+                if floorplan.present?
+                  puts "----------------- #{floorplan.name} -----------------------\n"
 
-                import_floorplans << floorplan
-
-              else
-                floorplan = Floorplan.where(provider: "realpagesvc", community_id: community_id, provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
-
-                unless floorplan.name_is_updated.present? && floorplan.name_is_updated
-                  if fp[:FloorPlanName].present?
-                    floorplan.name = fp[:FloorPlanName]
-                  elsif fp[:FloorPlanCode].present?
-                    if fp[:FloorPlanCode] != fp[:FloorPlanName]
-                      floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
-                    else
-                      floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
-                    end
-                  else
-                    floorplan.name = fp[:FloorPlanNameMarketing]
+                  unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && floorplan.manual_override
+                    floorplan.market_rent = fp[:RentMin]
                   end
-                end
-                unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
-                  floorplan.bathrooms = fp[:Bathrooms]
-                end
 
-                unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
-                  floorplan.bedrooms = fp[:Bedrooms]
-                end
-                unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
-                  floorplan.square_feet = fp[:GrossSquareFootage]
-                end
-                unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
-                  floorplan.market_rent = fp[:RentMin]
-                end
+                  import_floorplans << floorplan
 
-                import_floorplans << floorplan
+                else
+                  floorplan = Floorplan.where(provider: "realpagesvc", community_id: community_id, provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
 
+                  unless floorplan.name_is_updated.present? && floorplan.name_is_updated
+                    if fp[:FloorPlanName].present?
+                      floorplan.name = fp[:FloorPlanName]
+                    elsif fp[:FloorPlanCode].present?
+                      if fp[:FloorPlanCode] != fp[:FloorPlanName]
+                        floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanName]
+                      else
+                        floorplan.name = fp[:FloorPlanCode] + " - " + fp[:FloorPlanNameMarketing]
+                      end
+                    else
+                      floorplan.name = fp[:FloorPlanNameMarketing]
+                    end
+                  end
+                  unless floorplan.bathroom_is_updated.present? && floorplan.bathroom_is_updated
+                    floorplan.bathrooms = fp[:Bathrooms]
+                  end
+
+                  unless floorplan.bedroom_is_updated.present? && floorplan.bedroom_is_updated
+                    floorplan.bedrooms = fp[:Bedrooms]
+                  end
+                  unless floorplan.square_feet_is_updated.present? && floorplan.square_feet_is_updated
+                    floorplan.square_feet = fp[:GrossSquareFootage]
+                  end
+                  unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated
+                    floorplan.market_rent = fp[:RentMin]
+                  end
+
+                  import_floorplans << floorplan
+
+                end
               end
             end
           end

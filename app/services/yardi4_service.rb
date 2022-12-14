@@ -159,7 +159,8 @@ class Yardi4Service < BaseService
               vacate_date = Date.parse("#{unit_with_key[:Availability][:VacateDate][0][:Year]}-#{unit_with_key[:Availability][:VacateDate][0][:Month]}-#{unit_with_key[:Availability][:VacateDate][0][:Day]}")
               is_available = unit_with_key[:Availability][:VacancyClass] == "Unoccupied" ? true : false
             end
-            if unit_with_key[:Availability][:MadeReadyDate][0][:Year].present?
+
+            if unit_with_key[:Availability][:MadeReadyDate][0][:Year].present? && unit_with_key[:Availability][:MadeReadyDate][0][:Year].to_i > 0 && unit_with_key[:Availability][:MadeReadyDate][0][:Month].to_i > 0 && unit_with_key[:Availability][:MadeReadyDate][0][:Day].to_i > 0
               vacate_date = Date.parse("#{unit_with_key[:Availability][:MadeReadyDate][0][:Year]}-#{unit_with_key[:Availability][:MadeReadyDate][0][:Month]}-#{unit_with_key[:Availability][:MadeReadyDate][0][:Day]}")
               is_available = unit_with_key[:Availability][:VacancyClass] == "Unoccupied" ? true : false
             end
@@ -281,7 +282,8 @@ class Yardi4Service < BaseService
                 vacate_date = Date.parse("#{unit_with_key[:Availability][:VacateDate][0][:Year]}-#{unit_with_key[:Availability][:VacateDate][0][:Month]}-#{unit_with_key[:Availability][:VacateDate][0][:Day]}")
                 is_available = unit_with_key[:Availability][:VacancyClass] == "Unoccupied" ? true : false
               end
-              if unit_with_key[:Availability][:MadeReadyDate][0][:Year].present?
+              
+              if unit_with_key[:Availability][:MadeReadyDate][0][:Year].present? && unit_with_key[:Availability][:MadeReadyDate][0][:Year].to_i > 0 && unit_with_key[:Availability][:MadeReadyDate][0][:Month].to_i > 0 && unit_with_key[:Availability][:MadeReadyDate][0][:Day].to_i > 0
                 vacate_date = Date.parse("#{unit_with_key[:Availability][:MadeReadyDate][0][:Year]}-#{unit_with_key[:Availability][:MadeReadyDate][0][:Month]}-#{unit_with_key[:Availability][:MadeReadyDate][0][:Day]}")
                 is_available = unit_with_key[:Availability][:VacancyClass] == "Unoccupied" ? true : false
               end
