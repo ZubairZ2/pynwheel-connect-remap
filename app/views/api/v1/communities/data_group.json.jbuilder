@@ -1357,6 +1357,7 @@ json.community_group @communities do |co|
     json.show_property_map_key_text @community.show_property_map_key_text
     json.show_amenity_key @community.show_amenity_key
     json.show_amenity_key_text @community.show_amenity_key_text
+
     if @community.sitemap.present? and !@community.has_floorplates?
       image_url = @community.sitemap.image.url(:svg_for_metro).present? ? @community.sitemap.image.url(:svg_for_metro) : @community.sitemap.image.url
       begin
@@ -1364,6 +1365,7 @@ json.community_group @communities do |co|
       rescue
 
       end
+
       json.sitemap_amenities @community.sitemap.amenities do |amenity|
         json.image amenity.image.present? ? (Rails.env.development? ? local_assets_base_url+amenity.image.url : amenity.image.url) : nil
         json.name amenity.name
@@ -1371,10 +1373,14 @@ json.community_group @communities do |co|
         json.y_plot amenity.y_plot
         json.sitemap_id @community.id
         json.id amenity.id
+        json.video_link_button_label amenity.video_link_button_label || "3D TOUR"
+        json.video_link amenity.video_link
       end
+
     else
       json.sitemap nil
     end
+
     units_floorplans = []
     floorplans = @community.floorplans
     available_units_and_sold_units = @community.units.available_units# + @community.units.are_sold
@@ -1578,6 +1584,7 @@ json.community_group @communities do |co|
         json.name floorplate.name
         json.floor_name floorplate.floor_name_added ? floorplate.floor_name : floor
         json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
+
         json.floorplate_amenities floorplate.amenities do |amenity|
           if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
             json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
@@ -1587,8 +1594,11 @@ json.community_group @communities do |co|
             json.floorplate_id floor
             json.floor amenity.floor
             json.id amenity.id
+            json.video_link_button_label amenity.video_link_button_label || "3D TOUR"
+            json.video_link amenity.video_link
           end
         end
+
       end
     else
       json.floorplates nil

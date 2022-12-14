@@ -1319,6 +1319,8 @@ json.apartments do
       json.y_plot amenity.y_plot
       json.sitemap_id @community.id
       json.id amenity.id
+      json.video_link_button_label amenity.video_link_button_label || "3D TOUR"
+      json.video_link amenity.video_link
 
       json.gallery amenity.amenity_galleries do |ag|
         json.id ag.id
@@ -1582,6 +1584,7 @@ json.apartments do
       json.image floorplate.image_url.present? ? (Rails.env.development? ? local_assets_base_url+image_url : image_url) : nil
       json.width floorplate.image&.width rescue 0
       json.height floorplate.image&.height rescue 0
+
       json.floorplate_amenities floorplate.amenities do |amenity|
         if (amenity.x_plot.present? && amenity.y_plot.present?) && (amenity.x_plot > 0 || amenity.y_plot > 0)
           json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
@@ -1591,6 +1594,9 @@ json.apartments do
           json.floor amenity.floor
           json.floorplate_id floor
           json.id amenity.id
+          json.video_link_button_label amenity.video_link_button_label || "3D TOUR"
+          json.video_link amenity.video_link
+
           json.gallery amenity.amenity_galleries do |ag|
             json.id ag.id
             json.name ag.name
@@ -1598,6 +1604,7 @@ json.apartments do
             json.image ag.image.url
             json.description = ag.description.present? ? ag.description : ""    
           end
+
         end
       end
     end
