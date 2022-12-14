@@ -70,6 +70,7 @@ class TourHistory < ApplicationRecord
 
         community.is_salesforce_community? ? save_salesforce_feedback_data(community, touruser) : save_prospect(self.left, community)
 
+        FunnelService.new(scheduled_tour).update_appointment_status("complete") if community.is_funnel_community?
         KnockService.new(scheduled_tour).create_knock_visit(stop_marketing_names_visited_by_user, self.left) if community.is_knock_community?
         YardiRentCafeServices::LeadsApiService.new(scheduled_tour).upload_leads_data(stop_marketing_names_visited_by_user, self, false) if community.use_yardi_as_lead?
 
@@ -77,6 +78,7 @@ class TourHistory < ApplicationRecord
       end
 
       if self.abandoned_tour_at_stop.present?
+        FunnelService.new(scheduled_tour).update_appointment_status("complete") if community.is_funnel_community?
         KnockService.new(scheduled_tour).create_knock_visit(stop_marketing_names_visited_by_user, get_current_time(community)) if community.is_knock_community?
         YardiRentCafeServices::LeadsApiService.new(scheduled_tour).upload_leads_data(stop_marketing_names_visited_by_user, self, true) if community.use_yardi_as_lead?
 
