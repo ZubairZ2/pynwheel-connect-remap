@@ -18,4 +18,13 @@ class AccessLogsService
       response: response, 
     )
   end
+
+  def funnel_logs community_id, msg, payload, response
+    AccessLog.create!( 
+      community_id: community_id,
+      lock_type: "funnel",
+      payload: "#{msg} ----------- #{payload}",
+      response: response
+    )
+  end
 end

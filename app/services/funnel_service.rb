@@ -56,8 +56,24 @@ class FunnelService < BaseService
       }
     )
 
-    display_logs("Create appointment", response)
+    display_logs("Create appointment", payload, response)
     is_appointment_created(response)
+  end
+
+  def update_appointment_status appointment_status
+    return unless @scheduled_tour.funnel_appointment_id.present?
+
+    url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/appointments/#{@scheduled_tour.funnel_appointment_id}/"
+
+    response = HTTParty.put(url,
+      body: { status: appointment_status }.to_json,
+      headers: { 
+      'Content-Type' => 'application/json',
+      'Authorization' => "Bearer #{get_api_key}"
+      }
+    )
+
+    display_logs("Appointment status updated", url, response)
   end
 
   def cancel_funnel_appointment
@@ -72,7 +88,7 @@ class FunnelService < BaseService
       }
     )
 
-    display_logs("Cancel appointment", response)
+    display_logs("Cancel appointment", url, response)
     is_appointment_cancelled()
   end
 
@@ -148,11 +164,8 @@ class FunnelService < BaseService
     }
   end
 
-  def display_logs msg, resp
-    puts "*************"*50
-    puts "----------------------------- #{msg} --------------------------"
-    puts resp
-    puts "*************"*50
+  def display_logs msg, payload, resp
+    AccessLogsService.new().funnel_logs(@community.id, msg, payload, resp)
   end
 
 end
