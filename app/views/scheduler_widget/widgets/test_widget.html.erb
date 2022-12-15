@@ -272,14 +272,26 @@
                     <label>Tour Time <span class="asterisk_color" >*</span></label>
                     <%= select_tag :tour_time , options_for_select([]),:class => "form-control", :include_blank => 'Select time slot', :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
                   </div>
-                  <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_type" style="display: <%= (@tour_type_count > 1) ? "" : "none" %>  ">
-                    <label>Tour Type <span class="asterisk_color" >*</span>
-                      <i class="fa fa-question-circle tour_type_tip hidden propertyDetailName" data-toggle="tooltip" data-placement="top" title="" >
-                        <span id="propertyDetailNameText" class="tooltip-pynwheel"></span>
-                      </i>
-                    </label>
-                    <%= select_tag :tour_type , options_for_select([]),:class => "form-control", :include_blank => 'Select tour type', :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
-                  </div>
+                  <% if @tour_type_count > 1 %>
+                    <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_type">
+                      <label>Tour Type <span class="asterisk_color" >*</span>
+                        <i class="fa fa-question-circle tour_type_tip hidden propertyDetailName" data-toggle="tooltip" data-placement="top" title="" >
+                          <span id="propertyDetailNameText" class="tooltip-pynwheel"></span>
+                        </i>
+                      </label>
+                        <%= select_tag :tour_type , options_for_select([]),:class => "form-control", :include_blank => 'Select tour type', :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
+                    </div>
+                  <% else %>
+                    <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_type" style="display: none">
+                      <label>Tour Type <span class="asterisk_color" >*</span>
+                        <i class="fa fa-question-circle tour_type_tip hidden propertyDetailName" data-toggle="tooltip" data-placement="top" title="" >
+                          <span id="propertyDetailNameText" class="tooltip-pynwheel"></span>
+                        </i>
+                      </label>
+                        <%= select_tag :tour_type , options_for_select([]),:class => "form-control", :include_blank => 'Select tour type' %>
+                    </div>
+                  <% end %>
+
                 </div>
                 
                 <div class="form-group w-left-50">
@@ -466,12 +478,12 @@
               <%= hidden_field_tag 'existing_tour_user_email_arr', @existing_tour_users.to_json %>
               <div>
                 <% if @reschedule_tour %>
-                  <button id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
-                  <button class="btn_popup" id="cancel-visit" style="border-left: 5px solid #fff;  width: 50%;">Cancel my visit</button>
+                  <button type="submit" id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
+                  <button type="submit" class="btn_popup" id="cancel-visit" style="border-left: 5px solid #fff;  width: 50%;">Cancel my visit</button>
                 <%else%>
                   
                   <% if @community.self_tour && (@community.scheduler_widget.nil? ? true : @community.scheduler_widget) && !@community.locked %>
-                    <button id ="confirm_reservation" class="btn_popup">Submit</button>
+                    <button type="submit" id ="confirm_reservation" class="btn_popup">Submit</button>
                   <% else %>
                     <span style = "color: red"><strong>Sorry</strong> for the inconvenience. It seems <strong> <%= @community.name %> </strong> does not offer self tours or it's under construction. For inquiries please call the property at <strong> <%= @community.phone %> </strong> or email <strong> <%= @community.email %></strong>.
                     </span>
@@ -606,7 +618,7 @@
         else if(!form_for_reschedule_tour){
           $("#unscheduled_self_tour").attr('checked', "checked")
         }
-        if($('#unscheduled_self_tour')[0].checked == true || $('#remote_tour')[0].checked == true) {
+        if( ( $('#unscheduled_self_tour')[0] && $('#unscheduled_self_tour')[0].checked == true) || ( $('#remote_tour')[0] && $('#remote_tour')[0].checked == true ) ) {
           $(".tour_date").addClass('hidden');
           $(".tour_time").addClass('hidden');
           $(".tour_type").addClass('hidden');
@@ -815,8 +827,8 @@
                   tour_id = data["schedual_tour_id"];
                   $('#sched_tour_id').val(tour_id)
                   $('#limit_tour_type_error_arr').val(data["limit_exceded_tour_types"])
-
                   if (tour_types.length > 1){
+                    
                     for (let i = 0; i < tour_types.length; ++i) {
                       options += `<option value="${tour_types[i][0]}" >${tour_types[i][1]}</option>`
                     }
@@ -828,9 +840,13 @@
                     $('#tour_type').html(options)
                     $(`#tour_type option[value="${tour_types[0][0]}"]`).attr("selected", true);
                     add_or_remove_question_mark(tour_types[0][0])
+                    $("#tour_type").prop('required',false);
+
                     // hideTourTypeDropDown();
                   }
                   else{
+                    $("#tour_type").prop('required',false);
+
                     // hideTourTypeDropDown();
                     $('#tour_time').html(options)
                     $('#tour_type').html('<option value="">Select Tour Type</option>')     
