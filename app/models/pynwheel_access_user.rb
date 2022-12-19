@@ -97,7 +97,7 @@ class PynwheelAccessUser < ApplicationRecord
       zrv_guest = self.zerv_guests.find_by(community_id: self.community.id, guest_of_stop_type: type.camelcase, guest_of_stop_id: access_stop.id, status: "active")
       
       if zrv_guest.present?
-        zerv_lock_access_pin('The door will unlock when your mobile device is within range')
+        zerv_lock_access_pin('Tap the unlock button below when you are near the fob reader')
       else
         zrv_guest = self.zerv_guests.find_by(community_id: self.community.id, status: "active")
         
