@@ -1394,15 +1394,17 @@ class Api::V1::CommunitiesController < ActionController::Base
   def get_community_tour(tour)
 
     if !tour.tour_date.nil?
-      d = tour.tour_date
-      t = tour.tour_time
-      dt = DateTime.new(d.year, d.month, d.day, t.hour, t.min)
+      t_date = tour.tour_date.to_datetime.strftime("%d %B %Y")
+      t_time = tour.tour_time.to_datetime.strftime("%I:%M %p")
+      # dt = DateTime.new(d.year, d.month, d.day, t.hour, t.min)
     else
-      dt = DateTime.now
+      d_date = Time.now.in_time_zone(tour&.community&.get_time_zone()).strftime("%d %B %Y")
+      t_time = Time.now.in_time_zone(tour&.community&.get_time_zone()).strftime("%I:%M %p")
+      # dt = DateTime.now
     end
 
     tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
-    return {grace_period: tour.community.community_tour.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
+    return {grace_period: tour.community.community_tour.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, tour_time: "#{t_date} - #{t_time}", community: tour.community}
   end
 
   def get_last_visited_community(scheduled_tours)
