@@ -57,7 +57,7 @@ class PsiSwapService < BaseService
       end
     end
     fill_psi_pricing_details
-    # rename_provider
+    rename_provider
   end
 
   def save_psi_units(units,property_id)
@@ -89,7 +89,7 @@ class PsiSwapService < BaseService
 
       if unit.present?
         # unit = unit.first
-        unit.provider = "psi"
+        unit.provider = "psi_new"
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
@@ -165,7 +165,7 @@ class PsiSwapService < BaseService
         # unit = Unit.where(community_id: credentials.community_id).first
         unit = Unit.new
         unit.community_id = credentials.community_id
-        unit.provider = "psi"
+        unit.provider = "psi_new"
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
@@ -244,7 +244,7 @@ class PsiSwapService < BaseService
       end
       if floorplan.present?
         floorplan = floorplan.first
-        floorplan.provider = "psi"
+        floorplan.provider = "psi_new"
         floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
         floorplan.property_id = property_id
         floorplan.name = f["Name"]
@@ -293,7 +293,7 @@ class PsiSwapService < BaseService
         floorplan = Floorplan.new
         floorplan.community_id = credentials.community_id
         floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
-        floorplan.provider = "psi"
+        floorplan.provider = "psi_new"
         floorplan.property_id = property_id
         floorplan.name = f["Name"]
         floorplan.unit_count = f["UnitsAvailable"]
