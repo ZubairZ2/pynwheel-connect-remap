@@ -32,7 +32,7 @@ class FloorplansController < ApplicationController
         render :new
       end
     else
-      flash[:error] = "Provider Floorplan ID already associated with another floorplan please use uniq Provider Floorplan ID"
+      flash[:error] = "Provider Floorplan ID already associated with another floorplan please use unique Provider Floorplan ID"
       redirect_to community_floorplans_path(:community_id=>@community.id)
     end
   end

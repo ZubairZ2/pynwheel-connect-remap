@@ -76,19 +76,20 @@ namespace :delayed_email_notifications do
 	end
 
 	def send_email_sms_or_both mail_content, community
-		
-	  	if community.alert_contact == "email"
+	  if community.alert_contact == "email"
 			if mail_content[0] == "#{community.name} has been visited"
 				send_email_without_humanize mail_content[0], mail_content[1], community
 			else
 				send_email mail_content[0], mail_content[1], community
 			end
+
 	  	elsif community.alert_contact == "phone"
 				if mail_content[0] == "#{community.name} has been visited"
 					send_email_without_humanize mail_content[0], mail_content[1], community
 				else
 					send_email mail_content[0], mail_content[1], community
 				end
+
 	  	else
 				if mail_content[0] == "#{community.name} has been visited"
 					send_email_without_humanize mail_content[0], mail_content[1], community
@@ -165,7 +166,8 @@ namespace :delayed_email_notifications do
 		  community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Self Tour" : "Pynwheel Self Tour"
 		  base_url =  Rails.env.development? ? "localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelconnect.com/") 
 		  reschedule_tour_link = "#{base_url}scheduler_widget/test_widget?scheduled_tour_id=#{schedual_tour.id}&community_id=#{community.id}&tour_user_id=#{tu.id}&reschedule_tour=true&direct=true&community_code=#{community_code}"
-		  change_appointment = (show_contact community) ? ((community.phone.present? || community.email.present?) ? ("If you want to re-schedule or cancel your visit contact property at #{community.phone.present? ? community.phone : ""} #{(community.phone.present? and community.email.present?)  ? "or" : ""} email #{community.email.present? ? community.email : ""}.") : "") : "<a href='#{reschedule_tour_link}'>Change appointment</a>"
+		  change_appointment_button = "<a href='#{reschedule_tour_link}' target='_blank' style='margin-top: 25px;margin-bottom: 10px;color: #FFFFFF; font-size: 16px; line-height:22.37px;font-weight: 700;-webkit-text-size-adjust: none;text-align: center; text-decoration: none;display: inline-block;overflow-wrap: break-word;word-break: break-word; word-wrap:break-word; mso-border-alt: none; box-sizing: border-box;font-family:arial,helvetica,sans-serif;background-color: #3f9d6d; '>	<span style='display:block;padding:10px 20px;line-height:140%;'><span style='font-family:arial,helvetica,sans-serif; font-size: 20px; line-height:30px;'><b><span style='line-height: 30px; font-size: 20px;'>Change Appointment</span></b></span></span></a>"
+			change_appointment = (show_contact community) ? ((community.phone.present? || community.email.present?) ? ("If you want to re-schedule or cancel your visit contact property at #{community.phone.present? ? community.phone : ""} #{(community.phone.present? and community.email.present?)  ? "or" : ""} email #{community.email.present? ? community.email : ""}.") : "") : change_appointment_button
 		  is_rescheduled = false
 			
 			change_appointment = (schedual_tour.created_by === "PERQ" ?  "" : change_appointment)
@@ -185,10 +187,12 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 		  diff = (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(schedual_tour.user_time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y")))
 		  schedual_tour.update_columns(daily_email_sent: true) if diff == 1
 		  emails = community_email.gsub(" ","").split(',')
-		  DelayedSchedulerMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
+
+			ScheduledTourMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
+			#DelayedSchedulerMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
 		  DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if (schedual_tour.property_tour_type == "scheduled_tour" && schedual_tour.tour_user.is_sms_enabled && (diff == 1 && !(community.alert_contact == "email")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
 
-  	end
+  end
 
 	def one_hour_before_emails schedual_tour
 		return if schedual_tour.blank?
@@ -212,16 +216,18 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 				is_rescheduled = false
 				confirmation_page_link = "#{base_url}scheduler_widget/confirmation_instructions?community_id=#{community.id}&schedual_tour=#{schedual_tour.id}&reschedule=#{is_rescheduled}"
 				if community.community_tour.tour_setting.enable_header_footer
-					content = "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal; font-size: 18px; font-family: Roboto,RobotoDraft,Helvetica,Arial,sans-serif;'> Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br> Please download Self Tour app before you arrive:<br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""} </p></div>"
+					content = "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal;line-height: 30px;font-size: 16px; font-family: arial,helvetica,sans-serif;'> Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br> <b> Please download Self Tour app before you arrive:</b> <br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""} </p></div>"
 				else
-					content = "<div style='vertical-align:middle; font-family: Roboto,RobotoDraft,Helvetica,Arial,sans-serif; text-align:center'><img style='height: 55px;' src='#{community.logo.url}' data-title='#{community.name}' /></div><br/>Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a> <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""}"
+					content = "<div style='vertical-align:middle; font-family: arial,helvetica,sans-serif; text-align:center'><img style='height: 55px;' src='#{community.logo.url}' data-title='#{community.name}' /></div><br/>Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a> <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 				end
 				sms_content = "Your tour starts soon!
 				Here are directions to #{community.name}  https://www.google.com/maps/search/?api=1&query=#{community.latitude},#{community.longitude} #{"\n"} When you arrive at the property, open the #{community_text} app to begin your tour. #{"\n"} #{"\n"} Open #{community_text} #{one_link} #{"\n"} #{"\n"} #{confirmation_page_link}
 				#{community.one_hour_email_text}"
 				schedual_tour.update_columns(hourly_email_sent: true)
 				emails = community_email.gsub(" ","").split(',')
-				DelayedSchedulerMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if !(community.alert_contact == "phone") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce")
+				
+				ScheduledTourMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if !(community.alert_contact == "phone") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce")
+				# DelayedSchedulerMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if !(community.alert_contact == "phone") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce")
 				DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if (schedual_tour.tour_user.is_sms_enabled && !(community.alert_contact == "email") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
 			end
 		end
