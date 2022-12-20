@@ -15,7 +15,7 @@ module ZervServices
     rescue HTTParty::Error => e
         OpenStruct.new({success?: false, error: e, payload: nil})
     else
-      if response["code"] == "200" and response["status"] == "success"
+      if response["code"] == "200" and ["success", "SUCCESS"].include?(response["status"])
         OpenStruct.new({success?: true, error: nil, payload: response})  
       else
         OpenStruct.new({success?: false, error: response, payload: nil})  
