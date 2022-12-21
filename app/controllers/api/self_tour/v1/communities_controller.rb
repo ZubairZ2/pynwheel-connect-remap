@@ -30,7 +30,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
         timezone = @community.get_time_zone()
         current_time = current_community_time(@community, params)
         @is_salesforce_crm = @community.is_salesforce_community?
-
+        
         if @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
           unless @limit_exceeded = (@community.community_tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.community_tour.tour_setting.limit_max_tour,@tour_user) : false)
             unless @is_salesforce_crm

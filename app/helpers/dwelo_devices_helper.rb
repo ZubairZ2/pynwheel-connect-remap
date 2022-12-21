@@ -141,14 +141,14 @@ module DweloDevicesHelper
   end
 
 
-  def get_scheduled_tours(community_id, tour_user_id, time_param)
-    current_tour = get_current_tour(time_param)
-    SchedualTour.where('community_id = ? and tour_user_id = ? and tour_date = ?', community_id, tour_user_id, current_tour.tour_date).order(:id)
+  def get_scheduled_tours(community, tour_user, time_param)
+    # current_tour = get_current_tour(time_param)
+    # SchedualTour.where('community_id = ? and tour_user_id = ? and tour_date = ?', community_id, tour_user_id, current_tour.tour_date).order(:id)    
+    UserScheduledTourService.new(tour_user, community).get_scheduled_tour_in_future if tour_user.present? &&  community.present?
   end
 
   def is_tour_on_time(time_param, scheduled_tours, grace_time)
     current_tour = get_current_tour(time_param)
-
     before_margin = current_tour.tour_time - grace_time.minutes
     after_margin = current_tour.tour_time + grace_time.minutes
 
@@ -165,7 +165,7 @@ module DweloDevicesHelper
   def check_community_type(in_visiting_hours, tours, community, tour_user)
     if in_visiting_hours == true
       if tours.first.only_scheduled_tour
-        scheduled_tours = get_scheduled_tours(community.id, tour_user.id, current_time)
+        scheduled_tours = get_scheduled_tours(community, tour_user, current_time)
         if scheduled_tours.present?
           is_tour_ontime = is_tour_on_time(current_time, scheduled_tours, tours.first.grace_period)
           is_tour_virtual = is_tour_ontime.nil? ? true : false
@@ -464,11 +464,11 @@ module DweloDevicesHelper
   def nearest_time_tour(community, tour_user, current_time)
     tours_exist = false; on_time_tour=nil; nearest_tour=nil; time_status=nil;
 
-    today_scheduled_tours = get_scheduled_tours(community.id, tour_user.id, current_time)
+    today_scheduled_tours = get_scheduled_tours(community, tour_user, current_time)
+
     if tours_exist = today_scheduled_tours.present?
       on_time_tour = is_tour_on_time(current_time, today_scheduled_tours, community.community_tour.grace_period)
       unless on_time_tour.present?
-
         time_status , nearest_tour = tour_time_status(today_scheduled_tours, current_time)
       end
     end
@@ -522,8 +522,16 @@ module DweloDevicesHelper
     # no need of grace, as grace time has already been used in confirming "is_tour_on_time" 
     # now it is confirmed that either the tour is before or after time
     current_tour = get_current_tour(current_time)
-    nearest_before_time = scheduled_tours.where("tour_time > ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest before time , remember min function will be applied at the first index of array, which is deliberately set to time
-    nearest_after_time  = scheduled_tours.where("tour_time < ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest after time  , remember min function will be applied at the first index of array, which is deliberately set to time
+
+    if scheduled_tours.present? 
+      if scheduled_tours.last.tour_date > current_tour.tour_date
+        nearest_before_time = [(scheduled_tours.last.tour_time - current_tour.tour_time).abs, scheduled_tours.last.id]       # nearest before time , remember min function will be applied at the first index of array, which is deliberately set to time
+        nearest_after_time = nil
+      else
+        nearest_before_time = scheduled_tours.where("tour_time > ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest before time , remember min function will be applied at the first index of array, which is deliberately set to time
+        nearest_after_time  = scheduled_tours.where("tour_time < ?" , current_tour.tour_time).map{|x| [(x.tour_time - current_tour.tour_time).abs, x.id]}.min        # nearest after time  , remember min function will be applied at the first index of array, which is deliberately set to time
+      end
+    end
 
     if nearest_before_time.present? and nearest_after_time.nil?
       return ["before time" , scheduled_tours.find{|s| s.id == nearest_before_time[1]}]
