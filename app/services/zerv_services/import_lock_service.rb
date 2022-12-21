@@ -15,7 +15,7 @@ module ZervServices
         rescue HTTParty::Error => e
             OpenStruct.new({success?: false, error: e, payload: nil})
         else
-            if response["code"] == "200" and ["success", "SUCCESS"].include?(response["status"])
+            if response["code"] == "200"  
                 current_community_zerv_locks(response)
                 InsertZervLocksJob.perform_async response, @zerv if !test_connection and !(response["listGetDevices"].instance_of? String)
                 OpenStruct.new({success?: true, error: nil, payload: response})  
