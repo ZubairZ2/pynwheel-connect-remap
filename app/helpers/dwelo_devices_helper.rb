@@ -151,8 +151,7 @@ module DweloDevicesHelper
     current_tour = get_current_tour(time_param)
     before_margin = current_tour.tour_time - grace_time.minutes
     after_margin = current_tour.tour_time + grace_time.minutes
-
-    scheduled_tours.where(tour_time: before_margin..after_margin).last
+    scheduled_tours.where(tour_date: current_tour.tour_date, tour_time: before_margin..after_margin).last
   end
 
   def get_current_tour(time_param)
@@ -468,6 +467,7 @@ module DweloDevicesHelper
 
     if tours_exist = today_scheduled_tours.present?
       on_time_tour = is_tour_on_time(current_time, today_scheduled_tours, community.community_tour.grace_period)
+
       unless on_time_tour.present?
         time_status , nearest_tour = tour_time_status(today_scheduled_tours, current_time)
       end
