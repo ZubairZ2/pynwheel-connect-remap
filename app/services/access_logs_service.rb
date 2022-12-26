@@ -27,4 +27,13 @@ class AccessLogsService
       response: response
     )
   end
+
+  def scheduler_widget_logs community_id, params, err_response
+    AccessLog.create!( 
+      community_id: community_id,
+      lock_type: "scheduler_widget_scheduled_tour",
+      payload: params,
+      response: err_response
+    )
+  end
 end

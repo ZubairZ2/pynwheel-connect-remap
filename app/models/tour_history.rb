@@ -39,21 +39,21 @@ class TourHistory < ApplicationRecord
         @mail_content = ["tour_has_ended", "#{self.tour_user.name.titleize} has completed a tour of #{community.name}"] #get_alert_message('tour_has_ended')
         url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers"
 
-        if touruser.tour_type == "self_tour" && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )         
-          if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
-            complete_scheduled_tour(scheduled_tour)
-          end
-        end 
+        # if touruser.tour_type == "self_tour" && (scheduled_tour&.property_tour_type.present? && scheduled_tour.property_tour_type == "scheduled_tour" )         
+        #   if scheduled_tour.present? && is_tour_on_time(scheduled_tour, community)
+        #     complete_scheduled_tour(scheduled_tour)
+        #   end
+        # end 
 
-        if touruser.tour_type == "virtual_tour" && (scheduled_tour&.property_tour_type.present? && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour"))
-          complete_scheduled_tour(scheduled_tour)
-        end
+        # if touruser.tour_type == "virtual_tour" && (scheduled_tour&.property_tour_type.present? && (scheduled_tour.property_tour_type == "remote_tour" || scheduled_tour.property_tour_type == "unscheduled_self_tour"))
+        #   complete_scheduled_tour(scheduled_tour)
+        # end
 
-        if (touruser.tour_type == "virtual_tour" && (scheduled_tour&.tour_type == "Virtual tour" || scheduled_tour&.tour_type == "Virtual Tour")) || (touruser.tour_type == "self_tour" && (scheduled_tour&.tour_type == "Self guided" || scheduled_tour&.tour_type == "Self Guided"))
-          complete_scheduled_tour(scheduled_tour)
-        end
+        # if (touruser.tour_type == "virtual_tour" && (scheduled_tour&.tour_type == "Virtual tour" || scheduled_tour&.tour_type == "Virtual Tour")) || (touruser.tour_type == "self_tour" && (scheduled_tour&.tour_type == "Self guided" || scheduled_tour&.tour_type == "Self Guided"))
+        #   complete_scheduled_tour(scheduled_tour)
+        # end
 
-       complete_scheduled_tour(scheduled_tour) if scheduled_tour&.tour_type.present? && scheduled_tour&.created_by === "PERQ"
+       complete_scheduled_tour(scheduled_tour) #if scheduled_tour&.tour_type.present? && scheduled_tour&.created_by === "PERQ"
 
         tour_user_url = Rails.env.production? ? "https://pynwheelapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}" : "https://pynwheel-staging.herokuapp.com/communities/#{community.id}/tour%5Fusers/#{touruser.id}"
         @complete_tour_content = ["#{community.name} has been visited", "#{touruser.name.titleize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.titleize} Visitor Details</a> "]

@@ -128,21 +128,20 @@ class SchedualToursController < ApplicationController
       KnockService.new(schedual_tour).knock_crm(is_rescheduled)
       FunnelService.new(schedual_tour).funnel_crm(is_rescheduled)
 
-      begin
-        sent_notifications = send_email_and_other_notifications(schedual_tour,previous_tour,is_rescheduled,property_tour_type)
-      rescue Exception => e
-        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<#{e.message} #{e.backtrace} ---"
-      end
-
       appointment_time = (schedual_tour.tour_date.to_s +  " " + schedual_tour.tour_time.to_s.split(' ')[1]).to_datetime if schedual_tour.tour_date.present? and schedual_tour.tour_time.present?
       marketing_source = params[:marketing_source].present? ? params[:marketing_source] : "" rescue  ""
       community.realpage_insert_prospect(tu, appointment_time, marketing_source, desired_move_in_date) if community.present? and community.data_provider == "realpagesvc" # sending 'desired_move_in_date' for the parameter 'tour_time'
-      # schedual_tour.add_user_in_zerv
+
+      begin
+        sent_notifications = send_email_and_other_notifications(schedual_tour, previous_tour, is_rescheduled, property_tour_type)
+        redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: community.id, property_tour_type: property_tour_type, tour_type: tour_type)
+      rescue Exception => e
+        AccessLog.new().scheduler_widget_logs(community.id, params, e)
+        redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: community.id, property_tour_type: property_tour_type, tour_type: tour_type)
+      end
     else
       render json: {message: "some errors occured"}, status: 'failed'
     end
-
-    redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification],community_id: community.id,property_tour_type: property_tour_type,tour_type: tour_type)
   end
 
   # POST /schedual_tours
