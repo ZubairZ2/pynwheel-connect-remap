@@ -84,6 +84,7 @@ class Amenity < ApplicationRecord
     image.recreate_versions! if (crop_x.present?  && do_crop)
     self.update_columns(do_crop: false)
   end
+
   def url_validity
     require 'uri'
     if video_link.present?
@@ -94,11 +95,13 @@ class Amenity < ApplicationRecord
     end
 
   end
+  
   def image_size
     if image.size > 1.megabytes
       errors[:base] << "File can not be greater than 5MB"
     end
   end
+
   def populate_image_urls
     if image.present?
       set_standard_url('Amenity',id)

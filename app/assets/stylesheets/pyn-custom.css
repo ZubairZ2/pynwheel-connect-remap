@@ -6810,3 +6810,9 @@ span.to-input {
     overflow-x: hidden ;
     overflow-y: auto;
 }
+
+.lock_img_background {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    background: #ececec;
+}

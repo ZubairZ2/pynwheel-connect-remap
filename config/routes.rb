@@ -181,10 +181,13 @@ Rails.application.routes.draw do
 
     resources :zerv_accounts do
       collection do
+        get :show_lock_image_in_modal
+        put :upload_lock_image
         get :test_zerv_connection
         post :import_zerv_locks
         post :map_zerv_locks
         delete :remove_zerv_locks
+
       end
     end
 

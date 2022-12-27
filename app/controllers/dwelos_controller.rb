@@ -5,6 +5,7 @@ class DwelosController < ApplicationController
   before_action :set_dwelo, only: [:map_dwelo_locks]
   before_action :set_locks_provider, only: [:create, :update]
   include DweloDevicesHelper
+  
   def index
     if @community.dwelo.present?
       community_remote_locks = @community.dwelo.remote_locks

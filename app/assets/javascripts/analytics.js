@@ -19,7 +19,7 @@ $(document).ready(function() {
     set_url()
   });
 
-  $('a[data-toggle="tab"]').on('click', function(){
+  $('#product_type_tabs a[data-toggle="tab"]').on('click', function(){
     if ($(this).html() == "Touch") {
       window.localStorage.setItem('tab', "Touch");
       default_method(minDateForTouch);
