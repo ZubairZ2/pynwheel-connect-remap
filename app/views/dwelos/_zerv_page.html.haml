@@ -50,9 +50,9 @@
             %span.btn.btn-primary.btn-file.ml-15
               %i.fa.fa-upload
               Upload File
-              = file_field_tag :lock_image
+              = file_field_tag :lock_image, :id => "zerv-lock-image"
 
-            .text-center.drag-box.mt-15.image-upload#lock-upload-holder
+            .text-center.drag-box.mt-15.image-upload#zerv-lock-upload-holder
               %span.icon-upload
                 = image_tag "upload-image.png"
                 %p Drag &amp; Drop file to Upload
@@ -64,7 +64,7 @@
                 - lock_image = @community.zerv.present? ? @community.zerv.lock_image : ""
 
                 %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                  = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"preview-image"
+                  = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"zerv-preview-image"
                   -# = image_tag "exclamation-mark.png", class: "waring_exal", style: "width: 25px", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
             -# - if lock_image.present?
@@ -110,5 +110,3 @@
           -# - if @community.zerv.present? and @community.zerv.zerv_locks.present?
           = link_to "Map Units" , map_zerv_locks_community_zerv_accounts_path(current_community) , :method => :post, :class=>"btn btn-success"
           = link_to "Delete all Existing Locks" , remove_zerv_locks_community_zerv_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
-
-#communityLock{data: {type: "zerv", id: current_community&.zerv&.id, community_id: current_community&.id}}

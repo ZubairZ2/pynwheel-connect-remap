@@ -9,9 +9,14 @@ $(document).ready(function () {
   zervLockIntructionText();
   latchLockIntructionText();
   dweloLockIntructionText();
+  igloohomeLockIntructionText();
 
   // Locks Image Uploader
-  uploadLockImage();
+  uploadZervLockImage();
+  uploadLatchLockImage();
+  uploadDweloLockImage();
+  uploadIgloohomeLockImage();
+
 
   $('.amenity_edit_wysihtml5').each(function(i, elem) {
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -787,8 +792,20 @@ $(document).ready(function () {
     set_secondary_font_changes();
   });
 
-  $("#lock_image").change(function () {
-    readLockImageSrcFromInput(this);
+  $("#zerv-lock-image").change(function () {
+    readLockImageSrcFromInput(this, "zerv", $('#zerv-preview-image') );
+  });
+
+  $("#latch-lock-image").change(function () {
+    readLockImageSrcFromInput(this, "latch", $('#latch-preview-image') );
+  });
+
+  $("#dwelo-lock-image").change(function () {
+    readLockImageSrcFromInput(this, "dwelo", $('#dwelo-preview-image') );
+  });
+
+  $("#igloohome-lock-image").change(function () {
+    readLockImageSrcFromInput(this, "igloohome", $('#igloohome-preview-image') );
   });
 
   $("#logo").change(function () {
@@ -1119,14 +1136,100 @@ function dweloLockIntructionText() {
   });
 }
 
-function uploadLockImage() {
-  var lockUploadHolder = document.getElementById('lock-upload-holder');
+function igloohomeLockIntructionText() {
+  let characterLimit = 200;
+
+  $('.igloohome_lock_instruction_wysihtml5').each(function(i, elem) {
+    $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+      events: {
+        load:function(){
+          $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+            if (wysihtml5Editor.getValue() != "")
+            {
+              var text_split = $('.igloohome_lock_instruction_count').text().split(" ")
+              var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+              $('.igloohome_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+            }
+          });
+
+          var wysihtml5Editor = $('#igloohome_lock_instruction_text').data("wysihtml5").editor;
+          var t = wysihtml5Editor.getValue();
+            
+          if(t!= '') {
+            t1 = t.substr(0, characterLimit)
+            t2 = t.substr(characterLimit, t.length)
+            t2 = t2.fontcolor("red");
+            wysihtml5Editor.setValue(t1 + t2);
+            var text_split = $('.igloohome_lock_instruction_count').text().split(" ")
+            var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+            $('.igloohome_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+          }
+        },
+
+        change: function() {
+          $('.igloohome_lock_instruction_field').change();
+        }
+      }
+    });
+  });
+}
+
+function uploadZervLockImage() {
+  var lockUploadHolder = document.getElementById('zerv-lock-upload-holder');
   if (lockUploadHolder) {
     lockUploadHolder.ondrop = function (e) {
       e.preventDefault();
       files = e.dataTransfer.files;
       if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
-          readLockImageSrc(files[0]);
+          readLockImageSrc(files[0], "zerv", $('#zerv-preview-image') );
+      } else {
+        console.log('file type is not allowed');
+        $('#image-upload-warning').modal('show');
+      }
+    }
+  }
+}
+
+function uploadLatchLockImage() {
+  var lockUploadHolder = document.getElementById('latch-lock-upload-holder');
+  if (lockUploadHolder) {
+    lockUploadHolder.ondrop = function (e) {
+      e.preventDefault();
+      files = e.dataTransfer.files;
+      if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
+          readLockImageSrc(files[0], "latch", $('#latch-preview-image') );
+      } else {
+        console.log('file type is not allowed');
+        $('#image-upload-warning').modal('show');
+      }
+    }
+  }
+}
+
+function uploadDweloLockImage() {
+  var lockUploadHolder = document.getElementById('dwelo-lock-upload-holder');
+  if (lockUploadHolder) {
+    lockUploadHolder.ondrop = function (e) {
+      e.preventDefault();
+      files = e.dataTransfer.files;
+      if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
+          readLockImageSrc(files[0], "dwelo", $('#dwelo-preview-image') );
+      } else {
+        console.log('file type is not allowed');
+        $('#image-upload-warning').modal('show');
+      }
+    }
+  }
+}
+
+function uploadIgloohomeLockImage() {
+  var lockUploadHolder = document.getElementById('igloohome-lock-upload-holder');
+  if (lockUploadHolder) {
+    lockUploadHolder.ondrop = function (e) {
+      e.preventDefault();
+      files = e.dataTransfer.files;
+      if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
+          readLockImageSrc(files[0], "igloohome", $('#igloohome-preview-image') );
       } else {
         console.log('file type is not allowed');
         $('#image-upload-warning').modal('show');
@@ -1136,7 +1239,6 @@ function uploadLockImage() {
 }
 
 function showSelectedMenuPosition() {
-   
   if ($('#menu_position_field').val() == "Horizontal") {
     $('#horizontal-menu-position').show();
     $('#vertical-menu-position').hide();
@@ -1145,8 +1247,6 @@ function showSelectedMenuPosition() {
     $('#vertical-menu-position').show();
   }
 }
-
-
 
 function readURLOnDesignPage(input, preview_element, button_name, screen_id, main_screen) {
 
@@ -1199,17 +1299,17 @@ function readDesignPageLogoSrc(file) {
     reader.readAsDataURL(file);
 }
 
-function readLockImageSrc(file) {
+function readLockImageSrc(file, type, element) {
   $(".divLoading").removeClass("hidden");
-    var reader = new FileReader();
-    reader.onload = function (e) {
-      $('#preview-image').attr('src', e.target.result);
-      $('#preview-image').parent().attr('href', e.target.result);
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    element.attr('src', e.target.result);
+    element.parent().attr('href', e.target.result);
 
-      LockImageUploader(e.target.result);
-    }
+    LockImageUploader(e.target.result, type);
+  }
 
-    reader.readAsDataURL(file);
+  reader.readAsDataURL(file);
 }
 
 function readDesignPageSelfTourLogoSrc(file) {
@@ -2041,10 +2141,9 @@ function designPageLogo(src) {
     });
 }
 
-function LockImageUploader(src) {
+function LockImageUploader(src, type) {
   let lockData = $("#communityLock").data();
-  let lock_type = lockData.type;
-  let lock_id = lockData.id;
+  let lock_type = type;
   let community_id = lockData.communityId;
 
   $(".divLoading").removeClass("hidden"); 
@@ -2054,11 +2153,17 @@ function LockImageUploader(src) {
     case 'zerv':
       url = "/communities/" + community_id + "/zerv_accounts/upload_lock_image"
       break;
+
     case 'latch':
       url = "/communities/" + community_id + "/latch_accounts/upload_lock_image"
       break;
+
     case 'dwelo':
       url = "/communities/" + community_id + "/dwelos/upload_lock_image"
+      break;
+
+    case 'igloohome':
+      url = "/communities/" + community_id + "/igloohome_accounts/upload_lock_image"
       break;
   }
 
@@ -2066,7 +2171,7 @@ function LockImageUploader(src) {
     url: url,
     type: "PUT",
     dataType: "script",
-    data: {lock_image: src, lock_id: lock_id}
+    data: {lock_image: src}
 
   }).done(function () {
     $(".divLoading").addClass("hidden");
@@ -2751,15 +2856,15 @@ function designPageHomeScreenbutton(src, button, screen_id) {
   });
 }
 
-function readLockImageSrcFromInput(input) {
+function readLockImageSrcFromInput(input, type, element) {
   if (input.files && input.files[0]) {
     if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
       var reader = new FileReader();
 
       reader.onload = function (e) {
-        $('#preview-image').attr('src', e.target.result);
-        $('#preview-image').parent().attr('href', e.target.result);
-        LockImageUploader(e.target.result);
+        element.attr('src', e.target.result);
+        element.parent().attr('href', e.target.result);
+        LockImageUploader(e.target.result, type);
       }
 
       reader.readAsDataURL(input.files[0]);

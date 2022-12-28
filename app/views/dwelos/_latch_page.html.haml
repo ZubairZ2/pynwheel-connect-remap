@@ -37,9 +37,9 @@
             %span.btn.btn-primary.btn-file.ml-15
               %i.fa.fa-upload
               Upload File
-              = file_field_tag :lock_image
+              = file_field_tag :lock_image, :id => "latch-lock-image"
 
-            .text-center.drag-box.mt-15.image-upload#lock-upload-holder
+            .text-center.drag-box.mt-15.image-upload#latch-lock-upload-holder
               %span.icon-upload
                 = image_tag "upload-image.png"
                 %p Drag &amp; Drop file to Upload
@@ -51,7 +51,7 @@
                 - lock_image = @community.zerv.present? ? @community.latch.lock_image : ""
 
                 %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
-                  = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"preview-image"
+                  = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"latch-preview-image"
                   -# = image_tag "exclamation-mark.png", class: "waring_exal", style: "width: 25px", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
             -# - if lock_image.present?
@@ -68,5 +68,3 @@
         = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
       - if @community.latch.present?
         = link_to "Delete all Existing Locks" , remove_latch_locks_community_latch_accounts_path(current_community) , :class=>"btn btn-danger", :method => :delete, :style=> "background-color: #dd4b39d4;"
-
-#communityLock{data: {type: "latch", id: current_community&.latch&.id, community_id: current_community&.id}}
