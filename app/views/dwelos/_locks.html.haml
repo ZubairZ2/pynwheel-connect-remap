@@ -33,8 +33,6 @@
   #s-igloohome.tab-pane.fade{:role => "tabpanel",:class => @community.igloohome.nil? ? "hidden" : "show"}
     = render :partial => 'igloohome_page'
 
-#communityLock{data: {community_id: @community&.id}}
-
 :javascript
   $(document).ready(function() {
     if ($(".add-new-lock li.show").length > 0){
