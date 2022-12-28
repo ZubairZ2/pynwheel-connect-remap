@@ -72,3 +72,5 @@
           .box-footer
             = link_to "CANCEL", new_community_dwelo_path, :class=>"btn btn-default pull-right"
             = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right"
+
+#communityLock{data: {community_id: @community&.id}}
