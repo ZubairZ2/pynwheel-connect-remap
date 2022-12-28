@@ -156,6 +156,8 @@ Rails.application.routes.draw do
         delete :remove_edgestate_locks
         get :edgestate_code_grant_authorization
         delete :remove_edgestate_auth_account
+        post :add_lock_instructions
+        put :upload_lock_image
       end
     end
 

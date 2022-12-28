@@ -37,7 +37,7 @@ class IgloohomeAccountsController < ApplicationController
 
   def add_lock_instructions
     @igloohome.update(lock_instruction_text: params[:igloohome][:lock_instruction_text])
-    flash[:notice] = "Instructions update for igloohome lock"
+    flash[:notice] = "Updated successfully!"
     redirect_to new_community_dwelo_path(@community)
   end
 

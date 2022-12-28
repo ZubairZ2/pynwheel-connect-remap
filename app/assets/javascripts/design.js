@@ -10,13 +10,15 @@ $(document).ready(function () {
   latchLockIntructionText();
   dweloLockIntructionText();
   igloohomeLockIntructionText();
+  edgestateLockIntructionText();
+
 
   // Locks Image Uploader
   uploadZervLockImage();
   uploadLatchLockImage();
   uploadDweloLockImage();
   uploadIgloohomeLockImage();
-
+  uploadEdgestateLockImage();
 
   $('.amenity_edit_wysihtml5').each(function(i, elem) {
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -808,6 +810,10 @@ $(document).ready(function () {
     readLockImageSrcFromInput(this, "igloohome", $('#igloohome-preview-image') );
   });
 
+  $("#edgestate-lock-image").change(function () {
+    readLockImageSrcFromInput(this, "edgestate", $('#edgestate-preview-image') );
+  });
+
   $("#logo").change(function () {
     readDesignPageLogoSrcFromInput(this);
   });
@@ -1174,6 +1180,44 @@ function igloohomeLockIntructionText() {
   });
 }
 
+function edgestateLockIntructionText() {
+  let characterLimit = 200;
+
+  $('.edgestate_lock_instruction_wysihtml5').each(function(i, elem) {
+    $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+      events: {
+        load:function(){
+          $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+            if (wysihtml5Editor.getValue() != "")
+            {
+              var text_split = $('.edgestate_lock_instruction_count').text().split(" ")
+              var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+              $('.edgestate_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+            }
+          });
+
+          var wysihtml5Editor = $('#edgestate_lock_instruction_text').data("wysihtml5").editor;
+          var t = wysihtml5Editor.getValue();
+            
+          if(t!= '') {
+            t1 = t.substr(0, characterLimit)
+            t2 = t.substr(characterLimit, t.length)
+            t2 = t2.fontcolor("red");
+            wysihtml5Editor.setValue(t1 + t2);
+            var text_split = $('.edgestate_lock_instruction_count').text().split(" ")
+            var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+            $('.edgestate_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+          }
+        },
+
+        change: function() {
+          $('.edgestate_lock_instruction_field').change();
+        }
+      }
+    });
+  });
+}
+
 function uploadZervLockImage() {
   var lockUploadHolder = document.getElementById('zerv-lock-upload-holder');
   if (lockUploadHolder) {
@@ -1230,6 +1274,22 @@ function uploadIgloohomeLockImage() {
       files = e.dataTransfer.files;
       if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
           readLockImageSrc(files[0], "igloohome", $('#igloohome-preview-image') );
+      } else {
+        console.log('file type is not allowed');
+        $('#image-upload-warning').modal('show');
+      }
+    }
+  }
+}
+
+function uploadEdgestateLockImage() {
+  var lockUploadHolder = document.getElementById('edgestate-lock-upload-holder');
+  if (lockUploadHolder) {
+    lockUploadHolder.ondrop = function (e) {
+      e.preventDefault();
+      files = e.dataTransfer.files;
+      if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
+          readLockImageSrc(files[0], "edgestate", $('#edgestate-preview-image') );
       } else {
         console.log('file type is not allowed');
         $('#image-upload-warning').modal('show');
@@ -2153,17 +2213,17 @@ function LockImageUploader(src, type) {
     case 'zerv':
       url = "/communities/" + community_id + "/zerv_accounts/upload_lock_image"
       break;
-
     case 'latch':
       url = "/communities/" + community_id + "/latch_accounts/upload_lock_image"
       break;
-
     case 'dwelo':
       url = "/communities/" + community_id + "/dwelos/upload_lock_image"
       break;
-
     case 'igloohome':
       url = "/communities/" + community_id + "/igloohome_accounts/upload_lock_image"
+      break;
+    case 'edgestate':
+      url = "/communities/" + community_id + "/edgestate_accounts/upload_lock_image"
       break;
   }
 
@@ -2172,7 +2232,6 @@ function LockImageUploader(src, type) {
     type: "PUT",
     dataType: "script",
     data: {lock_image: src}
-
   }).done(function () {
     $(".divLoading").addClass("hidden");
     console.log("success");
