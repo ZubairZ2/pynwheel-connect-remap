@@ -34,6 +34,20 @@ class LatchAccountsController < ApplicationController
     end
   end
 
+  def upload_lock_image
+    return unless params[:lock_image].present?
+    
+    @latch = current_community.latch
+    
+    unless @latch.present?
+      @latch = Latch.new
+      @latch.community_id = current_community.id
+    end
+
+    @latch.lock_image =  params[:lock_image]
+    @latch.save
+  end
+
   def remove_latch_locks
     if current_community.latch.present?
       if current_community.latch.latch_locks.present?
@@ -62,7 +76,7 @@ class LatchAccountsController < ApplicationController
   private
 
   def latch_params
-    params.require(:latch).permit(:client_id, :client_secret, :community_id)
+    params.require(:latch).permit(:client_id, :client_secret, :community_id, :lock_instruction_text)
   end
 
   def set_user

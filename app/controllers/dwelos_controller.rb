@@ -46,6 +46,20 @@ class DwelosController < ApplicationController
     end
   end
 
+  def upload_lock_image
+    return unless params[:lock_image].present?
+    
+    @dwelo = @community.dwelo
+    
+    unless @dwelo.present?
+      @dwelo = Dwelo.new
+      @dwelo.community_id = @community.id
+    end
+
+    @dwelo.lock_image =  params[:lock_image]
+    @dwelo.save
+  end
+
   def test_dwelo_connection
     @community = Community.find params[:community_id]
     if @community.enable_locks and @community.multiple_locks_provider.include?("Dwelo") and @community.dwelo.present?
@@ -107,7 +121,7 @@ class DwelosController < ApplicationController
   end
 
   def dwelo_params
-    params.require(:dwelo).permit(:client_id, :client_secret, :default_community_id,:api_url)
+    params.require(:dwelo).permit(:client_id, :client_secret, :default_community_id,:api_url, :lock_instruction_text)
   end
   def set_dwelo
     @dwelo = current_community.dwelo

@@ -5,7 +5,12 @@ $(document).ready(function () {
   if(document.getElementById('characterLimitCount'))
     characterLimit = parseInt(document.getElementById('characterLimitCount').textContent);
 
+  // Locks Instruction Text Initializer
   zervLockIntructionText();
+  latchLockIntructionText();
+  dweloLockIntructionText();
+
+  // Locks Image Uploader
   uploadLockImage();
 
   $('.amenity_edit_wysihtml5').each(function(i, elem) {
@@ -1038,6 +1043,82 @@ function zervLockIntructionText() {
   });
 }
 
+function latchLockIntructionText() {
+  let characterLimit = 200;
+
+  $('.latch_lock_instruction_wysihtml5').each(function(i, elem) {
+    $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+      events: {
+        load:function(){
+          $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+            if (wysihtml5Editor.getValue() != "")
+            {
+              var text_split = $('.latch_lock_instruction_count').text().split(" ")
+              var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+              $('.latch_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+            }
+          });
+
+          var wysihtml5Editor = $('#latch_lock_instruction_text').data("wysihtml5").editor;
+          var t = wysihtml5Editor.getValue();
+            
+          if(t!= '') {
+            t1 = t.substr(0, characterLimit)
+            t2 = t.substr(characterLimit, t.length)
+            t2 = t2.fontcolor("red");
+            wysihtml5Editor.setValue(t1 + t2);
+            var text_split = $('.latch_lock_instruction_count').text().split(" ")
+            var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+            $('.latch_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+          }
+        },
+
+        change: function() {
+          $('.latch_lock_instruction_field').change();
+        }
+      }
+    });
+  });
+}
+
+function dweloLockIntructionText() {
+  let characterLimit = 200;
+
+  $('.dwelo_lock_instruction_wysihtml5').each(function(i, elem) {
+    $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+      events: {
+        load:function(){
+          $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+            if (wysihtml5Editor.getValue() != "")
+            {
+              var text_split = $('.dwelo_lock_instruction_count').text().split(" ")
+              var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+              $('.dwelo_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+            }
+          });
+
+          var wysihtml5Editor = $('#dwelo_lock_instruction_text').data("wysihtml5").editor;
+          var t = wysihtml5Editor.getValue();
+            
+          if(t!= '') {
+            t1 = t.substr(0, characterLimit)
+            t2 = t.substr(characterLimit, t.length)
+            t2 = t2.fontcolor("red");
+            wysihtml5Editor.setValue(t1 + t2);
+            var text_split = $('.dwelo_lock_instruction_count').text().split(" ")
+            var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+            $('.dwelo_lock_instruction_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+          }
+        },
+
+        change: function() {
+          $('.dwelo_lock_instruction_field').change();
+        }
+      }
+    });
+  });
+}
+
 function uploadLockImage() {
   var lockUploadHolder = document.getElementById('lock-upload-holder');
   if (lockUploadHolder) {
@@ -1972,6 +2053,12 @@ function LockImageUploader(src) {
   switch(lock_type) {
     case 'zerv':
       url = "/communities/" + community_id + "/zerv_accounts/upload_lock_image"
+      break;
+    case 'latch':
+      url = "/communities/" + community_id + "/latch_accounts/upload_lock_image"
+      break;
+    case 'dwelo':
+      url = "/communities/" + community_id + "/dwelos/upload_lock_image"
       break;
   }
 

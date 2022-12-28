@@ -4,6 +4,7 @@ class Latch < ApplicationRecord
   has_many :latch_locks, dependent: :destroy
   has_one :status, as: :statusable
   mount_uploader :file, CsvfileUploader
+  mount_base64_uploader :image, AvatarUploader
 
   def as_json options = {}
     super(

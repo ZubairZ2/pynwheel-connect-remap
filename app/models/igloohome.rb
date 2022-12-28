@@ -5,6 +5,7 @@ class Igloohome < ApplicationRecord
   has_many :igloohome_locks, dependent: :destroy
   mount_uploader :file, CsvfileUploader
   has_one :status, as: :statusable
+  mount_base64_uploader :image, AvatarUploader
   # mount_uploader :file, SchlagelockUploader
 
   def as_json options = {}
