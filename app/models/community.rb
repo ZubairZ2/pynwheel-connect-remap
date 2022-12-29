@@ -1720,7 +1720,26 @@ s  end
     building_list.compact
   end
 
+  def get_lock_info locks = []
+    locks << get_lock_info_object(self.zerv)
+    locks << get_lock_info_object(self.latch)
+    locks << get_lock_info_object(self.dwelo)
+    locks << get_lock_info_object(self.igloohome)
+    locks << get_lock_info_object(self.edge_state)
+  end
+
   private
+
+  def get_lock_info_object lock_object
+    return unless lock_object.present?
+    {
+      lock_id: lock_object&.id,
+      lock_type: lock_object.class.name.downcase,
+      lock_description: ActionView::Base.full_sanitizer.sanitize(lock_object.lock_instruction_text),
+      lock_long_description: lock_object&.lock_instruction_text,
+      lock_image: lock_object.lock_image
+    }
+  end
 
     #return_time_slots("0:00", "01:00", 15)
   def return_time_slots(opening_time, closing_time, steps)
