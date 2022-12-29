@@ -1747,8 +1747,10 @@ s  end
     {
       lock_id: "",
       lock_type: "Manual",
-      lock_description: "When you are at the door, For access enter manual door code.",
-      lock_long_description: styling_start + "When you are at the door, For access enter manual door code." + styling_end,
+      lock_description: "",
+      lock_long_description: ""
+      # lock_description: "When you are at the door, For access enter manual door code.",
+      # lock_long_description: styling_start + "When you are at the door, For access enter manual door code." + styling_end,
       lock_image: ""
     }
   end
