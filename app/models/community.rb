@@ -1726,18 +1726,30 @@ s  end
     locks << get_lock_info_object(self.dwelo)
     locks << get_lock_info_object(self.igloohome)
     locks << get_lock_info_object(self.edge_state)
+    locks << get_manual_lock_info_object()
   end
 
   private
 
   def get_lock_info_object lock_object
     return unless lock_object.present?
+    
     {
       lock_id: lock_object&.id,
       lock_type: lock_object.class.name.camelcase,
       lock_description: ActionView::Base.full_sanitizer.sanitize(lock_object.lock_instruction_text),
       lock_long_description: lock_object&.lock_instruction_text,
       lock_image: lock_object.lock_image
+    }
+  end
+
+  def get_manual_lock_info_object
+    {
+      lock_id: "",
+      lock_type: "Manual",
+      lock_description: "When you are at the door, For access enter manual door code.",
+      lock_long_description: "When you are at the door, For access enter manual door code.",
+      lock_image: ""
     }
   end
 
