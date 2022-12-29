@@ -1734,7 +1734,7 @@ s  end
     return unless lock_object.present?
     {
       lock_id: lock_object&.id,
-      lock_type: lock_object.class.name.downcase,
+      lock_type: lock_object.class.name.camelcase,
       lock_description: ActionView::Base.full_sanitizer.sanitize(lock_object.lock_instruction_text),
       lock_long_description: lock_object&.lock_instruction_text,
       lock_image: lock_object.lock_image
