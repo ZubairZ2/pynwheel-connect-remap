@@ -30,7 +30,7 @@
               Lock Instructions
 
             .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
-              = f.text_area :lock_instruction_text, :class=>"form-control latch_lock_instruction_field latch_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.latch.present? ? @community.latch.lock_instruction_text : ""
+              = f.text_area :lock_instruction_text, :class=>"form-control latch_lock_instruction_field latch_lock_instruction_wysihtml5", :placeholder=>"Lock Instructions",  :value=> @community.latch.present? ? @community.latch.lock_instruction_text : LATCH_LOCK_INSTRUCTION_TEXT
               %span.latch_lock_instruction_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 200
 
           .form-group.lock_img_background

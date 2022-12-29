@@ -68,3 +68,6 @@ ADDITIONAL_PAGES = "Additional Pages"
 WEBPAGE = "webpage"
 IMAGEPAGE = "imagepage"
 MAJOR_CURRENCIES = ["840", "826", "124"]
+ZERV_LOCK_INSTRUCTION_TEXT = "When you are near the fob reader press unlock below to gain access."
+LATCH_LOCK_INSTRUCTION_TEXT = "Tap the center of the black Latch Lens on the device and enter your Doorcode."
+IGLOOHOME_LOCK_INSTRUCTION_TEXT = "Tap the black circle to wake lock up. Enter code then press the unlock button in the middle of the lock face."
