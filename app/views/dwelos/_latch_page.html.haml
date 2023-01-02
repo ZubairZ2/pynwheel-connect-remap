@@ -48,7 +48,7 @@
               .select-logo-logo.logo-container.logo-upload-container
 
                 - rn =  rand(9999999999999999999999999)
-                - lock_image = @community.zerv.present? ? @community.latch.lock_image : ""
+                - lock_image = @community.latch.present? ? @community.latch.lock_image : ""
 
                 %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
                   = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"latch-preview-image"
