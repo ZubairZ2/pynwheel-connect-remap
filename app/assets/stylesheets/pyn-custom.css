@@ -2585,6 +2585,10 @@ ul.home-tabs li:hover a {
     margin-bottom: 50px;
 }
 
+.left-side-30-units:first-child{
+    margin-top: 70px;
+}
+
 .left-side-30-units {
     padding: 15px;
 }
@@ -2628,12 +2632,12 @@ ul.home-tabs li:hover a {
 
 .webpage-left-list-view-title {
     position: fixed;
-    height: 50px;
-    padding: 0 10px;
+    height: 70px;
+    padding: 10px 15px;
     background-color: #E8E9E9;
-    display: flex;
+    /* display: flex; */
     align-items: center;
-    justify-content: space-between;
+    /* justify-content: space-between; */
 }
 
 #unit-title-count{
