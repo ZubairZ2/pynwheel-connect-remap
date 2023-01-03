@@ -866,9 +866,6 @@ function renderChangedUnits(units, is_floorplate, community){
         <p id='unit-detail-market-title'>
           Unit # ${unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}
         </p>
-        <p>
-          ${community}
-        </p>
       </div>
       <div class='unit-details-section'>
         <p>
