@@ -1260,7 +1260,9 @@ json.tours @tours do |tour|
       json.directional_text elevator.directional_text
       json.video_link_button_label ""
       json.video_link ""
-
+      json.elevator_description ActionView::Base.full_sanitizer.sanitize(elevator.description)
+      json.elevator_long_description styling_start + elevator.description.gsub('red','') + styling_end
+      
       if @community.auto_wayfinding
         from_type = (new_stops_arr[i-1].is_a? Tour) ? "Tour" : "TourStop"
         to_type = (new_stops_arr[i].is_a? Tour) ? "Tour" : "TourStop"

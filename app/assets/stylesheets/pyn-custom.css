@@ -1085,6 +1085,11 @@ table.upload-image tr td {
     margin-bottom: 50px;
 }
 
+.add-plan .elevator-form-alignment {
+    margin-bottom: 0px;
+    display: -webkit-box;
+}
+
 .add-plan small {
     color: #787878;
     font-size: 12px;

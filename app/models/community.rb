@@ -1727,6 +1727,7 @@ s  end
     locks << get_lock_info_object(self.igloohome, styling_start, styling_end)
     locks << get_lock_info_object(self.edge_state, styling_start, styling_end)
     locks << get_manual_lock_info_object(styling_start, styling_end)
+    locks.compact.uniq
   end
 
   private

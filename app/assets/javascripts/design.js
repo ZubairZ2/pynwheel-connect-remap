@@ -12,6 +12,9 @@ $(document).ready(function () {
   igloohomeLockIntructionText();
   edgestateLockIntructionText();
 
+  // Elevator description
+  editElevatorDescriptionField();
+  editElevatorDirectionalTextField();
 
   // Locks Image Uploader
   uploadZervLockImage();
@@ -1029,7 +1032,7 @@ $(document).ready(function () {
 });
 
 function zervLockIntructionText() {
-  let characterLimit = 200;
+  //let characterLimit = 200;
 
   $('.zerv_lock_instruction_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -1067,7 +1070,7 @@ function zervLockIntructionText() {
 }
 
 function latchLockIntructionText() {
-  let characterLimit = 200;
+  //let characterLimit = 200;
 
   $('.latch_lock_instruction_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -1105,7 +1108,7 @@ function latchLockIntructionText() {
 }
 
 function dweloLockIntructionText() {
-  let characterLimit = 200;
+  //let characterLimit = 200;
 
   $('.dwelo_lock_instruction_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -1142,8 +1145,84 @@ function dweloLockIntructionText() {
   });
 }
 
+function editElevatorDirectionalTextField () {
+  ////let characterLimit = 200;
+
+  $('.elevator_directional_text_edit_field_wysihtml5').each(function(i, elem) {
+    $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+      events: {
+        load:function(){
+          $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+            if (wysihtml5Editor.getValue() != "")
+            {
+              var text_split = $('.elevator_directional_text_edit_field_count').text().split(" ")
+              var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+              $('.elevator_directional_text_edit_field_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+            }
+          });
+
+          var wysihtml5Editor = $('#elevator_directional_text').data("wysihtml5").editor;
+          var t = wysihtml5Editor.getValue();
+            
+          if(t!= '') {
+            t1 = t.substr(0, characterLimit)
+            t2 = t.substr(characterLimit, t.length)
+            t2 = t2.fontcolor("red");
+            wysihtml5Editor.setValue(t1 + t2);
+            var text_split = $('.elevator_directional_text_edit_field_count').text().split(" ")
+            var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+            $('.elevator_directional_text_edit_field_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+          }
+        },
+
+        change: function() {
+          $('.elevator_directional_text_edit_field').change();
+        }
+      }
+    });
+  });
+}
+
+function editElevatorDescriptionField () {
+  ////let characterLimit = 200;
+
+  $('.elevator_description_edit_field_wysihtml5').each(function(i, elem) {
+    $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
+      events: {
+        load:function(){
+          $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+            if (wysihtml5Editor.getValue() != "")
+            {
+              var text_split = $('.elevator_description_edit_field_count').text().split(" ")
+              var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+              $('.elevator_description_edit_field_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+            }
+          });
+
+          var wysihtml5Editor = $('#elevator_description').data("wysihtml5").editor;
+          var t = wysihtml5Editor.getValue();
+            
+          if(t!= '') {
+            t1 = t.substr(0, characterLimit)
+            t2 = t.substr(characterLimit, t.length)
+            t2 = t2.fontcolor("red");
+            wysihtml5Editor.setValue(t1 + t2);
+            var text_split = $('.elevator_description_edit_field_count').text().split(" ")
+            var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
+            $('.elevator_description_edit_field_count').text( text_split[0] + " " + text_split[1] + " " + (characterLimit - total_length)).toString()
+          }
+        },
+
+        change: function() {
+          $('.elevator_description_edit_field').change();
+        }
+      }
+    });
+  });
+}
+
 function igloohomeLockIntructionText() {
-  let characterLimit = 200;
+  //let characterLimit = 200;
 
   $('.igloohome_lock_instruction_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -1181,7 +1260,7 @@ function igloohomeLockIntructionText() {
 }
 
 function edgestateLockIntructionText() {
-  let characterLimit = 200;
+  //let characterLimit = 200;
 
   $('.edgestate_lock_instruction_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
