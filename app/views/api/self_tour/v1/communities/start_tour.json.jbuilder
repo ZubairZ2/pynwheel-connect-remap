@@ -1257,7 +1257,7 @@ json.tours @tours do |tour|
       json.image elevator.image.present? ? elevator.image.url : asset_path("elev2.png")
       json.name "Elevator"
       json.name elevator.name      
-      json.directional_text elevator.directional_text
+      json.directional_text ActionView::Base.full_sanitizer.sanitize(elevator.directional_text)
       json.video_link_button_label ""
       json.video_link ""
       json.elevator_description ActionView::Base.full_sanitizer.sanitize(elevator.description)
@@ -1334,7 +1334,7 @@ json.tours @tours do |tour|
       json.stop_description elevator_stop_description
       
       if elevator.elevator_galleries.count == 0
-        json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator_stop_description, "directional_text" => elevator.directional_text]
+        json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator_stop_description, "directional_text" => ActionView::Base.full_sanitizer.sanitize(elevator.directional_text)]
       else
         elevatorGalleryArr = []
         elevatorGalleryArr << elevator
