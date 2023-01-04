@@ -1258,6 +1258,7 @@ json.tours @tours do |tour|
       json.name "Elevator"
       json.name elevator.name      
       json.directional_text ActionView::Base.full_sanitizer.sanitize(elevator.directional_text)
+      json.long_directional_text styling_start + elevator.directional_text.gsub('red','') + styling_end
       json.video_link_button_label ""
       json.video_link ""
       json.elevator_description ActionView::Base.full_sanitizer.sanitize(elevator.description)
