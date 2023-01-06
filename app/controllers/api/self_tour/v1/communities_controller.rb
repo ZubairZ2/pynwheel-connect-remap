@@ -1,4 +1,6 @@
 class Api::SelfTour::V1::CommunitiesController < ActionController::Base
+  include Error::ErrorHandler
+
   before_action :load_community  
   before_action :load_tour_user
   before_action :random_string_generator, only: [:initialize_tour]

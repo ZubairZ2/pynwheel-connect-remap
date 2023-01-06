@@ -1,4 +1,5 @@
 class Api::SelfTour::V1::TourUsersController < ActionController::Base
+  include Error::ErrorHandler
   include ApplicationHelper
 
   before_action :load_tour_user, only: :delete_account
