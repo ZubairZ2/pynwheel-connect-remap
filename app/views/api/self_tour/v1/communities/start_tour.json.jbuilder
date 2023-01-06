@@ -1259,6 +1259,7 @@ json.tours @tours do |tour|
       json.name elevator.name
       
       elevator_directional_text = ActionView::Base.full_sanitizer.sanitize(elevator.directional_text.present? ? elevator.directional_text : "")
+      
       if elevator_directional_text.size <= description_limit
         json.show_long_directional_text false
         json.directional_text elevator_directional_text
@@ -1267,7 +1268,7 @@ json.tours @tours do |tour|
         json.directional_text elevator_directional_text[0..description_limit - 1]
       end
 
-      json.long_directional_text styling_start + elevator.directional_text.gsub('red','') + styling_end
+      json.long_directional_text styling_start + (elevator.directional_text.present? ? elevator&.directional_text&.gsub('red','') : "" ) + styling_end
       json.video_link_button_label ""
       json.video_link ""
       json.elevator_description ActionView::Base.full_sanitizer.sanitize(elevator.description)
