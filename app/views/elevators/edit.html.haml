@@ -21,33 +21,36 @@
           = form_for @elevator,url: community_elevator_path(current_community, @elevator),method: :put do |f|
             = hidden_field_tag "community_id", @community.id
 
-            .form-group
+            .form-group.elevator-form-alignment
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Name
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :name, :class=>"form-control elevator_edit_field", :placeholder=>"Name",:maxlength=>"30"
 
-            .form-group
+            .form-group.elevator-form-alignment
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Description
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :description, :class=>"form-control elevator_edit_field", :placeholder=>"Description",:maxlength=>"70"
-
-            .form-group
+                = f.text_area :description, :class=>"form-control elevator_edit_field elevator_description_edit_field elevator_description_edit_field_wysihtml5", :placeholder=>"Elevator Description",  :value=> @elevator.description
+                %span.elevator_description_edit_field_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 200
+ 
+            .form-group.elevator-form-alignment
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Directional Text
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :directional_text, :class=>"form-control elevator_edit_field", :placeholder=>"Directional Text",:maxlength=>"70"
-            .form-group
+                = f.text_area :directional_text, :class=>"form-control elevator_edit_field elevator_directional_text_edit_field elevator_directional_text_edit_field_wysihtml5", :placeholder=>"Elevator Directional Text",  :value=> @elevator.directional_text
+                %span.elevator_directional_text_edit_field_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 200
+
+            .form-group.elevator-form-alignment
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Floorplate Covering Range
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :floorplate_covering_range, :class=>"form-control elevator_edit_field", :placeholder=>"Floorplate Covering Range",:maxlength=>"70"
-            .form-group
+            .form-group.elevator-form-alignment
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Building
               .col-sm-12.col-lg-9.col-md-9.col-xs-12

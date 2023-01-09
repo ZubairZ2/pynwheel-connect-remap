@@ -13,8 +13,9 @@
           = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> @community.edge_state.present? ? @community.edge_state.client_secret : ""
         = f.hidden_field :community_id, :value=> current_community.id
     / /.box-body
-.box-footer
-  - if current_community.edge_state.present? && current_community.edge_state.client_id.present? && current_community.edge_state.client_secret.present?
-    = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
-  - else
-    = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
+  .row
+    .col-lg-9.col-lg-offset-1
+      - if current_community.edge_state.present? && current_community.edge_state.client_id.present? && current_community.edge_state.client_secret.present?
+        = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
+      - else
+        = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"

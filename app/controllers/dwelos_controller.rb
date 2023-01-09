@@ -5,6 +5,7 @@ class DwelosController < ApplicationController
   before_action :set_dwelo, only: [:map_dwelo_locks]
   before_action :set_locks_provider, only: [:create, :update]
   include DweloDevicesHelper
+  
   def index
     if @community.dwelo.present?
       community_remote_locks = @community.dwelo.remote_locks
@@ -43,6 +44,20 @@ class DwelosController < ApplicationController
         format.html { redirect_to new_community_dwelo_path, notice: 'Dwelo account successfully updated.' }
       end
     end
+  end
+
+  def upload_lock_image
+    return unless params[:lock_image].present?
+    
+    @dwelo = @community.dwelo
+    
+    unless @dwelo.present?
+      @dwelo = Dwelo.new
+      @dwelo.community_id = @community.id
+    end
+
+    @dwelo.lock_image =  params[:lock_image]
+    @dwelo.save
   end
 
   def test_dwelo_connection
@@ -106,7 +121,7 @@ class DwelosController < ApplicationController
   end
 
   def dwelo_params
-    params.require(:dwelo).permit(:client_id, :client_secret, :default_community_id,:api_url)
+    params.require(:dwelo).permit(:client_id, :client_secret, :default_community_id,:api_url, :lock_instruction_text)
   end
   def set_dwelo
     @dwelo = current_community.dwelo

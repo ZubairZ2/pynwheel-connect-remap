@@ -3,6 +3,7 @@ class Dwelo < ApplicationRecord
   has_many :remote_locks, dependent: :destroy
   has_many :dwelo_locks, -> { where(edge_state_id: nil) },  class_name: 'RemoteLock'
   has_one :status, as: :statusable
+  mount_base64_uploader :lock_image, AvatarUploader
 
   def map_locks_with_stops
     MapLocksJob.perform_async community, "Dwelo"

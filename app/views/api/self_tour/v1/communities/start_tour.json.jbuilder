@@ -21,6 +21,7 @@ json.tours @tours do |tour|
   json.x_plot @community&.community_tour&.x_plot
   json.y_plot @community&.community_tour&.y_plot
   json.is_sitemap @community.is_sitemap
+  json.community_locks_info @community.get_lock_info(styling_start, styling_end)
 
   plates_name = {}
   current_floor = nil
@@ -1255,11 +1256,24 @@ json.tours @tours do |tour|
       elevator = Elevator.find_by_id stop.stop_id
       json.image elevator.image.present? ? elevator.image.url : asset_path("elev2.png")
       json.name "Elevator"
-      json.name elevator.name      
-      json.directional_text elevator.directional_text
+      json.name elevator.name
+      
+      elevator_directional_text = ActionView::Base.full_sanitizer.sanitize(elevator.directional_text.present? ? elevator.directional_text : "")
+      
+      if elevator_directional_text.size <= description_limit
+        json.show_long_directional_text false
+        json.directional_text elevator_directional_text
+      else
+        json.show_long_directional_text true
+        json.directional_text elevator_directional_text[0..description_limit - 1]
+      end
+
+      json.long_directional_text styling_start + (elevator.directional_text.present? ? elevator&.directional_text&.gsub('red','') : "" ) + styling_end
       json.video_link_button_label ""
       json.video_link ""
-
+      json.elevator_description ActionView::Base.full_sanitizer.sanitize(elevator.description)
+      json.elevator_long_description styling_start + elevator.description.gsub('red','') + styling_end
+      
       if @community.auto_wayfinding
         from_type = (new_stops_arr[i-1].is_a? Tour) ? "Tour" : "TourStop"
         to_type = (new_stops_arr[i].is_a? Tour) ? "Tour" : "TourStop"
@@ -1331,7 +1345,7 @@ json.tours @tours do |tour|
       json.stop_description elevator_stop_description
       
       if elevator.elevator_galleries.count == 0
-        json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator_stop_description, "directional_text" => elevator.directional_text]
+        json.gallery ["name" => elevator.name,"type" => "unit_stop", "image" => elevator.image.present? ? elevator.image.url : "no image", "description" => elevator_stop_description, "directional_text" => ActionView::Base.full_sanitizer.sanitize(elevator.directional_text)]
       else
         elevatorGalleryArr = []
         elevatorGalleryArr << elevator

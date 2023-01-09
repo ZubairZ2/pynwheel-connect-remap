@@ -1,6 +1,6 @@
 class ZervAccountsController < ApplicationController
     # include Error::ErrorHandler
-    before_action :set_zerv, except: [:new, :create]
+    before_action :set_zerv, except: [:new, :create, :upload_lock_image]
 
     def new
         @zerv = Zerv.new
@@ -17,7 +17,25 @@ class ZervAccountsController < ApplicationController
         current_community.update_attributes(:multiple_locks_provider => locks_provider)
         flash[:notice] = ZervConstants::SAVED
       end
+
       redirect_to new_community_dwelo_path(current_community)
+    end
+
+    def upload_lock_image
+      return unless params[:lock_image].present?
+      @zerv = current_community.zerv
+      
+      unless @zerv.present?
+        @zerv = Zerv.new
+        @zerv.community_id = current_community.id
+      end
+
+      @zerv.lock_image =  params[:lock_image]
+      @zerv.save
+    end
+
+    def show_lock_image_in_modal
+      @community = current_community
     end
 
     def test_zerv_connection
@@ -51,7 +69,7 @@ class ZervAccountsController < ApplicationController
 
     private
       def zerv_params
-          params.require(:zerv).permit(:username, :password, :facility_id, :badge_id, :card_format)
+        params.require(:zerv).permit(:username, :password, :facility_id, :badge_id, :card_format, :lock_instruction_text)
       end
 
       def set_zerv

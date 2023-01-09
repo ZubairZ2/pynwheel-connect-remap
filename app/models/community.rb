@@ -1720,7 +1720,41 @@ s  end
     building_list.compact
   end
 
+  def get_lock_info styling_start, styling_end, locks = []
+    locks << get_lock_info_object(self.zerv, styling_start, styling_end)
+    locks << get_lock_info_object(self.latch, styling_start, styling_end)
+    locks << get_lock_info_object(self.dwelo, styling_start, styling_end)
+    locks << get_lock_info_object(self.igloohome, styling_start, styling_end)
+    locks << get_lock_info_object(self.edge_state, styling_start, styling_end)
+    locks << get_manual_lock_info_object(styling_start, styling_end)
+    locks.compact.uniq
+  end
+
   private
+
+  def get_lock_info_object lock_object, styling_start, styling_end
+    return unless lock_object.present?
+    
+    {
+      lock_id: lock_object&.id,
+      lock_type: lock_object.class.name.camelcase,
+      lock_description: ActionView::Base.full_sanitizer.sanitize(lock_object.lock_instruction_text),
+      lock_long_description: styling_start + lock_object&.lock_instruction_text.gsub('red','') + styling_end,
+      lock_image: lock_object.lock_image
+    }
+  end
+
+  def get_manual_lock_info_object styling_start, styling_end
+    {
+      lock_id: "",
+      lock_type: "Manual",
+      lock_description: "",
+      lock_long_description: "",
+      # lock_description: "When you are at the door, For access enter manual door code.",
+      # lock_long_description: styling_start + "When you are at the door, For access enter manual door code." + styling_end,
+      lock_image: ""
+    }
+  end
 
     #return_time_slots("0:00", "01:00", 15)
   def return_time_slots(opening_time, closing_time, steps)

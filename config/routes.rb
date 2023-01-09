@@ -156,11 +156,14 @@ Rails.application.routes.draw do
         delete :remove_edgestate_locks
         get :edgestate_code_grant_authorization
         delete :remove_edgestate_auth_account
+        post :add_lock_instructions
+        put :upload_lock_image
       end
     end
 
     resources :latch_accounts do
       collection do
+        put :upload_lock_image
         delete :remove_latch_locks
       end
     end
@@ -169,11 +172,14 @@ Rails.application.routes.draw do
       collection do
         delete :remove_igloohome_locks
         post :import_single_lock
+        post :add_lock_instructions
+        put :upload_lock_image
       end
     end
 
     resources :dwelos do
       collection do
+        put :upload_lock_image
         get :test_dwelo_connection
         delete :remove_dwelo_locks
       end
@@ -181,10 +187,13 @@ Rails.application.routes.draw do
 
     resources :zerv_accounts do
       collection do
+        get :show_lock_image_in_modal
+        put :upload_lock_image
         get :test_zerv_connection
         post :import_zerv_locks
         post :map_zerv_locks
         delete :remove_zerv_locks
+
       end
     end
 

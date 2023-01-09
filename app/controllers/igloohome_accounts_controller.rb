@@ -1,6 +1,6 @@
 class IgloohomeAccountsController < ApplicationController
-  before_action :set_community, :only => [:create, :remove_igloohome_locks, :import_single_lock]
-  before_action :create_igloohome_account, :only => [:create, :import_single_lock] 
+  before_action :set_community, :only => [:create, :remove_igloohome_locks, :import_single_lock, :add_lock_instructions]
+  before_action :create_igloohome_account, :only => [:create, :import_single_lock, :add_lock_instructions] 
   # after_action :import_igloohome_locks, :update_community_lock_provider, :only => [:create]
 
   def create
@@ -33,6 +33,25 @@ class IgloohomeAccountsController < ApplicationController
     end
 
     redirect_to new_community_dwelo_path(@community)
+  end
+
+  def add_lock_instructions
+    @igloohome.update(lock_instruction_text: params[:igloohome][:lock_instruction_text])
+    flash[:notice] = "Updated successfully!"
+    redirect_to new_community_dwelo_path(@community)
+  end
+
+  def upload_lock_image
+    return unless params[:lock_image].present?
+    @igloohome = current_community.igloohome
+    
+    unless @igloohome.present?
+      @igloohome = Igloohome.new
+      @igloohome.community_id = current_community.id
+    end
+
+    @igloohome.lock_image =  params[:lock_image]
+    @igloohome.save
   end
 
   def remove_igloohome_locks 

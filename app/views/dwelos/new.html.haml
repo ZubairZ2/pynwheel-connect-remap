@@ -12,6 +12,8 @@
       .box-header
         = render :partial=>'locks'
 
+#communityLock{data: {community_id: @community&.id}}
+
 :javascript
 
     function import_dwelo_locks(community_dwelo_id){
