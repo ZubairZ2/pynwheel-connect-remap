@@ -1183,10 +1183,21 @@ s  end
     address = (address.present? ? ( address + " , " + self.city ) : ( self.city )) if self.city.present?
     address = (address.present? ? ( address + " , " + self.state ) : ( self.state )) if self.state.present?
     address = (address.present? ? ( address + " , " + self.zip ) : ( self.zip )) if self.zip.present?
+    
     if address.present?
       return address
     else
       return nil
+    end
+  end
+
+  def get_propery_address
+    if self.make_address
+      self.make_address
+    elsif self.latitude.present? && self.longitude.present?
+      "#{self.latitude},#{self.longitude}"
+    else 
+      ""
     end
   end
 
