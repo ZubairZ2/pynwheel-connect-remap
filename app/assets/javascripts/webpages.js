@@ -866,9 +866,6 @@ function renderChangedUnits(units, is_floorplate, community){
         <p id='unit-detail-market-title'>
           Unit # ${unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']}
         </p>
-        <p>
-          ${community}
-        </p>
       </div>
       <div class='unit-details-section'>
         <p>
@@ -965,7 +962,7 @@ function set_prices_according_to_units_to_display(floorplate_units, is_market_re
       end_value = 0
 
       $('#market_rent').children().remove();
-      $('#market_rent').append(`<option value=""> Select Max Price </option>`)
+      $('#market_rent').append(`<option value=""> All </option>`)
 
       for(var i=0 ; i<3 && floorplate_units.length > i; i++){
         end_value = end_value + partition
@@ -981,7 +978,7 @@ function set_prices_according_to_units_to_display(floorplate_units, is_market_re
     }
     else{
       $('#market_rent').children().remove();
-      $('#market_rent').append(`<option value=""> Select Max Price </option>`)
+      $('#market_rent').append(`<option value=""> All </option>`)
     }
   }
 }
@@ -2245,8 +2242,8 @@ function applyFilters(){
   selected_square_feet = $("#responsive_square_feet option:selected").text();
   selected_available_unit = $("#responsive_available_unit option:selected").text();
   selected_unit_bedrooms = $("#responsive_unit_bedroom option:selected").text();
-  $("#max_price_responsive").html(selected_market_rent == "Select Max Price" ? "Max Price" : currency+selected_market_rent);
-  $("#sq_feet_responsive").html(selected_square_feet == "Select Min Sq Ft" ? "Min Sq Feet" : selected_square_feet);
+  $("#max_price_responsive").html(selected_market_rent == "All" ? "All" : currency+selected_market_rent);
+  $("#sq_feet_responsive").html(selected_square_feet == "All" ? "All" : selected_square_feet);
   $("#unit_availability").html(selected_available_unit);
   $("#bedroom_responsive").html(selected_unit_bedrooms);
   $('.mobile-filter-mega-menu').slideToggle()
