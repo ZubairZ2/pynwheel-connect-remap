@@ -49,7 +49,7 @@ class TourStop < ApplicationRecord
 
   def get_unit_navigation_title navigation_title
     navigation_title = navigation_title.split(":")
-    "#{navigation_title[0]}: Apt ##{navigation_title[1]}"
+    "#{navigation_title[0]}: ##{navigation_title[1]}"
   end
 
   def path_data
