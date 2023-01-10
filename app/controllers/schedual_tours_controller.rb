@@ -265,12 +265,15 @@ class SchedualToursController < ApplicationController
     if (!community.community_tour.tour_setting.allow_virtual_tour)
       arr = arr - [["Virtual Tour","virtual_tour"]]
     end
+
     if (!community.community_tour.tour_setting.allow_guided_tour || (limit_type.include? "guided_tour"))
       arr = arr - [["Guided Tour","guided_tour"]]
     end
+
     if (!community.community_tour.tour_setting.allow_self_tour || (limit_type.include? "self_tour"))
       arr = arr - [["Self Tour","self_tour"]]
     end
+    
     return arr
   end
 
