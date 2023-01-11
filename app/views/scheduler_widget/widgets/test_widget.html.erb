@@ -389,9 +389,9 @@
 
               <% if @community.is_funnel_community? %>
                 <div class="w-left-50">
-                  <label>Discovery Source</label>
+                  <label>How did you hear about us ?</label>
                   <span class="hidden" id="discovery-source"></span>
-                  <%= select_tag :funnel_prospect_discover_source, options_for_select( @funnel_discovery_sources ), :class=>"form-control", include_blank: @schedule_tour&.funnel_prospect_discover_source.present? ? @schedule_tour&.funnel_prospect_discover_source : "Select discovery source" %>
+                  <%= select_tag :funnel_prospect_discover_source, options_for_select( @funnel_discovery_sources ), :class=>"form-control", include_blank: @schedule_tour&.funnel_prospect_discover_source.present? ? @schedule_tour&.funnel_prospect_discover_source : "Select an option" %>
                 </div>
               <% end %>
         
