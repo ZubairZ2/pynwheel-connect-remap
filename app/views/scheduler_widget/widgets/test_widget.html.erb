@@ -387,6 +387,13 @@
               </div>
               <% end %> 
 
+              <% if @community.is_funnel_community? %>
+                <div class="w-left-50">
+                  <label>Discovery Source</label>
+                  <span class="hidden" id="discovery-source"></span>
+                  <%= select_tag :funnel_prospect_discover_source, options_for_select( @funnel_discovery_sources ), :class=>"form-control", include_blank: @schedule_tour&.funnel_prospect_discover_source.present? ? @schedule_tour&.funnel_prospect_discover_source : "Select discovery source" %>
+                </div>
+              <% end %>
         
               <% if false %>
                 <div class="form-group expiry">
@@ -450,7 +457,7 @@
                 </div>
               <% end %>
               
-              <div class="<%= @community.data_provider == "realpagesvc" && @marketing_source_required ? "form-group w-100 w-right-checkbox" : "form-group w-100" %>">
+              <div class="<%= @community.data_provider == "realpagesvc" && @marketing_source_required ? "form-group w-100 w-right-checkbox" : "form-group w-100" %>" style="margin-top: 20px;">
                 <% privacy_policy_link = 'https://pynwheeltouchscreens.com/privacy-policy' %>
                 <%= f.check_box :is_sms_enabled, id: "text_instructions", class: "hidden" %>
 

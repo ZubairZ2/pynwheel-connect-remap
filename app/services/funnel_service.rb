@@ -11,6 +11,23 @@ class FunnelService < BaseService
     end
   end
 
+  def get_discovery_sources
+    url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/discovery-sources/"
+
+    response = HTTParty.get(url,
+      headers: { 
+      'Content-Type' => 'application/json',
+      'Authorization' => "Bearer #{get_api_key}"
+      }
+    )
+
+    if response["data"].present? && response["data"]["discovery_sources"].present?
+      response["data"]["discovery_sources"].map{|source| source["name"]}
+    else
+      []
+    end
+  end
+
   def get_available_days
     url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/appointments/available-days/"
     
@@ -120,7 +137,8 @@ class FunnelService < BaseService
     {
       "prospect": {
         "people": [ tour_user_data ],
-        "move_in_date": move_in_date
+        "move_in_date": move_in_date,
+        "discovery_source": @scheduled_tour.funnel_prospect_discover_source
       },
       "appointment": {
         "start": tour_start_time,
