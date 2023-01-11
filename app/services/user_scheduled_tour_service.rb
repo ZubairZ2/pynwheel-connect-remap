@@ -7,7 +7,7 @@ class UserScheduledTourService < BaseService
 
   def get_scheduled_tour_in_future
     scheduled_tours = @community.schedual_tours.where(tour_user_id: @tour_user.id, is_tour_completed: false)
-
+    
     if scheduled_tours.present?
       filter_tour_with_max_date_time(scheduled_tours)
     else
@@ -34,7 +34,9 @@ class UserScheduledTourService < BaseService
       end if (max_date && tour_date).present?
     end
 
-    if max_date.present? && scheduled_tour.present? && max_date > Time.now.in_time_zone(timezone)
+    check_within_grace_period = max_date + (@community.community_tour.grace_period).minutes
+    
+    if max_date.present? && scheduled_tour.present? && check_within_grace_period > Time.now.in_time_zone(timezone)
       SchedualTour.where(id: scheduled_tour.id)
     else
       []
