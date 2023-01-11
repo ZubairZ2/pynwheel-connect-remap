@@ -37,6 +37,7 @@ class Api::SelfTour::V1::CommunitiesController < ActionController::Base
           unless @limit_exceeded = (@community.community_tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.community_tour.tour_setting.limit_max_tour,@tour_user) : false)
             unless @is_salesforce_crm
               @scheduled_data = nearest_time_tour(@community, @tour_user, current_time)
+
               if @community.community_tour.only_scheduled_tour
                 if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
                   if @location_received and @within_one_km
