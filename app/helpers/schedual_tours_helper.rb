@@ -99,6 +99,20 @@ module SchedualToursHelper
   #   "#{root_url}scheduler/change_schedule_tour_time/#{tour.id}?datetime=#{scheduled_tour_date_time(tour)}?reschedule_tour=true"
   # end
 
+  def get_schedule_tour_url community, tour, tour_user
+    if tour.created_by != "salesforce" && tour.created_by != "PERQ"
+      if (tour.is_tour_completed || !is_tour_in_future(community, tour))
+        schedule_tour_of_user(tour, community, community.community_code(), tour_user.id)
+      elsif is_tour_in_future(community, tour)
+        reschedule_tour(tour, community, community.community_code(), tour_user.id)
+      else
+        ""
+      end
+    else
+      ""
+    end
+  end
+
   def reschedule_tour tour, community, community_code, tour_user_id
     "#{root_url}scheduler_widget/test_widget?scheduled_tour_id=#{tour.id}&community_id=#{community.id}&tour_user_id=#{tour_user_id}&reschedule_tour=true&direct=true&community_code=#{community_code}"
   end
@@ -106,6 +120,7 @@ module SchedualToursHelper
   def schedule_tour_of_user tour, community, community_code, tour_user_id
     "#{root_url}scheduler_widget/test_widget?community_id=#{community.id}&community_code=#{community_code}&tour_user_id=#{tour_user_id}&schedule_tour_id=#{tour.id}&schedule_tours_page=true&schedule_another_tour=true&direct=true"
   end
+  
 
   def is_tour_in_future(community, tour, timezone = nil)
     timezone = community.get_time_zone()

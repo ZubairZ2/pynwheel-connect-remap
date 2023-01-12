@@ -4,6 +4,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   include ApplicationHelper
   include ToursHelper
   include TourStopsHelper
+  include SchedualToursHelper
   include StripeServices
   include ShortestPath
   
@@ -1402,7 +1403,7 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
 
     tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
-    return {grace_period: tour.community.community_tour.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
+    return {schedule_tour_url: get_schedule_tour_url(tour.community, tour, tour.tour_user),grace_period: tour.community.community_tour.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, tour_time: dt, community: tour.community}
   end
 
   def get_last_visited_community(scheduled_tours)
