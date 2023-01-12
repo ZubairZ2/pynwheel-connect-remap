@@ -42,7 +42,7 @@ json.units @units do |u|
 
   begin
     json.available_date u.available_date < Date.today + 1 ? "Now" : u.available_date.strftime("%m-%d-%y")
-    json.available_date_for_filter u.available_date.strftime("%m-%d-%y")
+    json.available_date_for_filter u.available_date.to_datetime
   rescue => ex
     json.available_date "N/A"
     json.available_date_for_filter "N/A"
