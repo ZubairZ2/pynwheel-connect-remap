@@ -119,6 +119,9 @@ class SchedualToursController < ApplicationController
       
       schedual_tour.update_attributes(knock_prospect_ip_address: knock_prospect_ip, tour_date: new_tour.tour_date, tour_time: new_tour.tour_time,property_tour_type: property_tour_type,tour_type: tour_type,tour_user_id: tu.id,charge_id: res.present? ? res[:id] : nil, pay_back_id: pay_back.present? ? pay_back.refund_id : nil, desired_move_in_date: desired_move_in_date, desired_bedroom: params[:desired_bedroom],user_time_zone: params[:user_time_zone],country_code: params[:country_code], realpage_marketing_source: realpage_marketing_source.present? ? realpage_marketing_source : "")
 
+      # Update funnel discovery source
+      schedual_tour.update_attributes(funnel_prospect_discover_source: params[:funnel_prospect_discover_source]) if community.is_funnel_community? && params[:funnel_prospect_discover_source].present?
+      
       if previous_tour[:is_rescheduled]
         is_rescheduled = true
         new_tour.delete
@@ -308,6 +311,11 @@ class SchedualToursController < ApplicationController
       tour_time: @schedual_tour.tour_time,
     }
 
+
+
+    # Update funnel discovery source
+    @schedual_tour.update_attributes(funnel_prospect_discover_source: params[:funnel_prospect_discover_source]) if @schedual_tour.community.is_funnel_community? && params[:funnel_prospect_discover_source].present?
+    
     YardiRentCafeServices::MarketingApisService.new(@schedual_tour).schedule_tour(previous_tour)
     KnockService.new(@schedual_tour).knock_crm(true)
     FunnelService.new(@schedual_tour).funnel_crm(true)
