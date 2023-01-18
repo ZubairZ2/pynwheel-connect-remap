@@ -80,40 +80,18 @@ class CommunityTour
         end
 
         new_stop = stop.stop_type.classify.constantize.find_by_id(stop.stop_id)
-        if @community.is_sitemap
-          available_stops << {
-            "name": modal_unit ? "#{name} (Model)" : name,
-            "is_favorite": is_favorite,
-            "id": new_stop.id,
-            "stop_id": stop.id,
-            "modal_unit": modal_unit,
-            "stop_type": stop.stop_type,
-            "unit_id": unit_id,
-            "floorplan_id": floorplan_id,
-            "available": available,
-            "availability": availability,
-            "available_date": available_date,
-            "availability_url": availability_url,
-            "bedrooms": bedrooms,
-            "bathrooms": bathrooms,
-            "pricing": pricing,
-            "lease_pricing": lease_pricing,
-            "floorplan_image": floorplan_image,
-            "primary_floorplan": primary_floorplan,
-            "secondary_floorplan": secondary_floorplan,
-            "floor": new_stop&.floor,
-            "building": new_stop&.building
-          }
-        else
-          if new_stop&.floor.present? && new_stop&.building.present?
+        
+        if stop.stop_type == "unit" || (stop.stop_type == "amenity" && a.breezway_lock_visible)
+          if @community.is_sitemap
             available_stops << {
               "name": modal_unit ? "#{name} (Model)" : name,
               "is_favorite": is_favorite,
               "id": new_stop.id,
               "stop_id": stop.id,
-              "floorplan_id": floorplan_id,
-              "unit_id": unit_id,
               "modal_unit": modal_unit,
+              "stop_type": stop.stop_type,
+              "unit_id": unit_id,
+              "floorplan_id": floorplan_id,
               "available": available,
               "availability": availability,
               "available_date": available_date,
@@ -125,13 +103,37 @@ class CommunityTour
               "floorplan_image": floorplan_image,
               "primary_floorplan": primary_floorplan,
               "secondary_floorplan": secondary_floorplan,
-              "stop_type": stop.stop_type,
               "floor": new_stop&.floor,
               "building": new_stop&.building
             }
+          else
+            if new_stop&.floor.present? && new_stop&.building.present?
+              available_stops << {
+                "name": modal_unit ? "#{name} (Model)" : name,
+                "is_favorite": is_favorite,
+                "id": new_stop.id,
+                "stop_id": stop.id,
+                "floorplan_id": floorplan_id,
+                "unit_id": unit_id,
+                "modal_unit": modal_unit,
+                "available": available,
+                "availability": availability,
+                "available_date": available_date,
+                "availability_url": availability_url,
+                "bedrooms": bedrooms,
+                "bathrooms": bathrooms,
+                "pricing": pricing,
+                "lease_pricing": lease_pricing,
+                "floorplan_image": floorplan_image,
+                "primary_floorplan": primary_floorplan,
+                "secondary_floorplan": secondary_floorplan,
+                "stop_type": stop.stop_type,
+                "floor": new_stop&.floor,
+                "building": new_stop&.building
+              }
+            end
           end
         end
-
       end
     end
 
