@@ -11,15 +11,87 @@
     .box.box-info.add-plan
       .box-header
         %h3.box-title
-          Edit
-          %span Image
+          Edit Floorplan Amenity
 
-      = form_for @amenity,:url=>community_floorplan_amenity_path(@community,@floorplan),:html=>{:class=>"form-horizontal"} do |f|
+      = form_for @amenity, :url=> community_floorplan_amenity_path(@community, @floorplan),:html=>{:class=>"form-horizontal"} do |f|
         .box-body
-          .row
-            .col-lg-9.col-lg-offset-1
-              = render :partial=>'shared/amenity_form',:locals=>{:f=>f}
+          .form-group.floorplan-amenity-form-alignment
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              Name
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = f.text_field :name, :class=>"form-control validate[required]", :placeholder=>"Name",:maxlength=>"30"
+          
+          .form-group.floorplan-amenity-form-alignment
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              Description
+              %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                %span#propertyDetailNameText
+                  This description will appear above the image. Only the first #{ENV["DESCRIPTION_LIMIT"].to_i} characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
+            
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = f.text_area :description, :class=>"form-control amenity_edit_field amenity_edit_wysihtml5", :placeholder=>"Description"
+              %span.amenity_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i}
+              %span#characterLimitCount{:style => "display: none"} #{ENV["DESCRIPTION_LIMIT"].to_i}
+
+          .form-group.floorplan-amenity-form-alignment
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
+              Directional Text
+              %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                %span#propertyDetailNameText
+                  This description will appear above the image. Only the first #{ENV["DESCRIPTION_LIMIT"].to_i} characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
+                %span#characterLimitCount{:style => "display: none"} #{ENV["DESCRIPTION_LIMIT"].to_i}
+            
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12{:style => "margin-bottom: inherit;"}
+              = f.text_area :directional_text, :class=>"form-control amenity_edit_field amenity_edit_directional_wysihtml5", :placeholder=>"Directional Text"
+              %span.amenity_directional_text_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i}
+                    
+
+          -# .form-group
+          -#   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+          -#     Upload Image
+          -#   .col-sm-12.col-lg-9.col-md-9.col-xs-12
+          -#     .select-img.mb-20
+          -#       .select-img-img
+          -#         %a.preview-image{:href=>f.object.image? ? f.object.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Image"}
+          -#           = image_tag f.object.image? ? f.object.image.url : "default.jpeg",:height=>"170",:width=>"170",:id=>"preview-image"
+          -#     %span.btn.btn-default.black-button.btn-sm.btn-file
+          -#       Select Image
+          -#       = f.file_field :image     
+
+
         / /.box-body
         .box-footer
           = link_to "CANCEL" , community_floorplan_amenities_path(@community,@floorplan), :class=>"btn btn-default pull-right"
           = f.submit "SAVE CHANGES", :class=>"btn btn-success pull-right mr-10"
+      
+    %span.btn.btn-primary.btn-file
+      %i.fa.fa-upload
+      Upload File
+      %input#amenity-images{:type => "file"}/
+
+    .text-center.image-upload.home-page-drag-box#amenity-image-upload-holder
+      = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+      %p Drag &amp; Drop images to Upload
+
+    .row
+      .col-lg-12
+        .form-group.logo-upload-bg.pt-15
+          .select-logo.center-img.mb-20.mt-30.logo-upload-bg
+            .select-logo-logo.logo-container.logo-upload-container{:style => "height: 250px !important;"}
+              - rn =  rand(9999999999999999999999999)
+              %a.preview-image{:href=>@amenity.image.present? ? (@amenity.image.url + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+                = image_tag @amenity.image.present? ? (@amenity.image.url  + "?timestamp=#{rn}") : "default.jpeg",:width=>"100%",:id=>"preview-image"
+            
+            - if  @amenity.image.present?
+              .col-lg-1
+                .icon{style: "margin-left: -15px;"}
+                  = link_to show_amenity_image_in_modal_community_amenity_path(), remote: true do
+                    %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
+                      Crop
+
+#crop-amenity-image.modal.fade.edit-image
+
+:javascript
+  var amenity_id = #{@amenity.id}
+  var amenity_name = '#{@amenity.name}'
+  var community_id = #{ @community.id}

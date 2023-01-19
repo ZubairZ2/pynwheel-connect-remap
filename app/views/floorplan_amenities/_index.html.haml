@@ -11,10 +11,15 @@
               - rn =  rand(9999999999999999999999999)
               = image_tag (amenity.crop_x.present? ? amenity.image.url + "?timestamp=#{rn}": amenity.image.url + "?timestamp=#{rn}")
         .icons
-          = link_to edit_community_floorplan_amenity_path(@community,@floorplan,amenity), remote: true do 
-            %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+          -# = link_to edit_community_floorplan_amenity_path(@community,@floorplan,amenity), remote: true do 
+          -#   %i.fa.fa-pencil{"data-target" => "#edit-name", "data-toggle" => "modal"}
+          
+          = link_to edit_community_floorplan_amenity_path(@community, @floorplan, amenity) do
+            %i.fa.fa-pencil
+
           %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{@community.id}/floorplans/#{@floorplan.id}/amenities/#{amenity.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip::;"} 
             %i.fa.fa-close
+
         %h4= amenity.name        
 
 .modal.fade.bs-example-modal-lg.edit-image{"aria-hidden" => "true", "aria-labelledby" => "myLargeModalLabel", :role => "dialog", :tabindex => "-1"}

@@ -8,7 +8,7 @@ class FloorplanAmenitiesService
       @floorplan_unit_amenities = floorplan_unit.amenities.where(floorplan_amenity_id: amenity.id)
 
       if @floorplan_unit_amenities.present?
-        @floorplan_unit_amenities.update_all(description: amenity.description, name: amenity.name)
+        @floorplan_unit_amenities.update_all(directional_text: amenity.directional_text, description: amenity.description, name: amenity.name)
       end
     end
 
