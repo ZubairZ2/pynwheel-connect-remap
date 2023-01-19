@@ -24,11 +24,13 @@
           %span Your customized tour is removed and set to community standard tour
 
       .modal-footer
-        - if tour.is_tour_completed && !is_tour_customized(tour) && tour.created_by != "salesforce" && tour.created_by != "PERQ"
+        - if (!is_tour_in_future(community, tour) || tour.is_tour_completed) && !is_tour_customized(tour) && tour.created_by != "salesforce" && tour.created_by != "PERQ"
           %a.btn.btn-success.pull-right{:href => schedule_tour_of_user(tour, community, community_code, tour_user.id)} Schedule Another Tour
-        - elsif tour.is_tour_completed && is_tour_customized(tour) && tour.created_by != "salesforce" && tour.created_by != "PERQ"
+        
+        - elsif (!is_tour_in_future(community, tour) || tour.is_tour_completed) && is_tour_customized(tour) && tour.created_by != "salesforce" && tour.created_by != "PERQ"
           %a.btn.btn-success.pull-right{:href => schedule_tour_of_user(tour, community, community_code, tour_user.id)} Schedule Another Tour
           %button.btn.btn-warning{:type => "button", :onclick => "resetToStandardTour(#{community.id}, #{tour_user.id})"} Reset to Standard Tour
+        
         - else
           - if is_tour_in_future(community, tour)
             - if scheduled_tour_date_time(tour) && tour.created_by != "salesforce" && tour.created_by != "PERQ"
