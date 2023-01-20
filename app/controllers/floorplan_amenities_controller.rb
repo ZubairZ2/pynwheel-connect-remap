@@ -37,10 +37,9 @@ class FloorplanAmenitiesController < ApplicationController
 
   def update
     @amenity = @floorplan.amenities.find(params[:id])
-
     if @amenity.update_attributes(amenity_params)
-      FloorplanAmenitiesService.new().update_description_and_name(@floorplan, @amenity, current_community&.id)
-      redirect_to community_floorplan_amenities_path(@community,@floorplan), notice: "Amenity updated successfully"
+      FloorplanAmenitiesService.new(@floorplan, @amenity, current_community).update_description_and_name()
+      redirect_to community_floorplan_amenities_path(@community, @floorplan), notice: "Amenity updated successfully"
     else
       add_breadcrumb "Floor plans", community_floorplans_path(current_community)
       add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
@@ -48,6 +47,13 @@ class FloorplanAmenitiesController < ApplicationController
       flash[:error] = @amenity.errors.full_messages.join(',')
       render :edit
     end
+  end
+
+  def upload_floorplan_amenity_image
+    @amenity = @floorplan.amenities.find_by(id: params[:id])
+    @amenity&.update(image: params[:src])
+    FloorplanAmenitiesService.new(@floorplan, @amenity, current_community).update_image(params[:src])
+    redirect_to community_floorplan_amenities_path(@community, @floorplan), notice: "Amenity image updated successfully"
   end
 
   def destroy

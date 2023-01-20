@@ -104,13 +104,13 @@ class UnitsController < ApplicationController
   end
 
   def edit
-  #   add_breadcrumb "Units", community_units_path(@community)
-  #   add_breadcrumb "Edit Unit", edit_community_unit_path(@community, @unit)
-  #   @amenities = @unit.amenities.order(:sort)
-  #   @community_info = Community.includes(:floorplans, :units).find(params[:community_id])
-  #   @units = @community_info.units.map { |i| i.marketing_name.gsub(/\d+/) { |s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map { |x, y| y }
-  #   @all_locks = all_locks(@community)
-  #   @door = @unit.door
+    add_breadcrumb "Units", community_units_path(@community)
+    add_breadcrumb "Edit Unit", edit_community_unit_path(@community, @unit)
+    @amenities = @unit.amenities.order(:sort)
+    @community_info = Community.includes(:floorplans, :units).find(params[:community_id])
+    @units = @community_info.units.map { |i| i.marketing_name.gsub(/\d+/) { |s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map { |x, y| y }
+    @all_locks = all_locks(@community)
+    @door = @unit.door
   end
 
   def update

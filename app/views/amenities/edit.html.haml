@@ -25,96 +25,101 @@
                 Name
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_field :name, :class=>"form-control amenity_edit_field", :placeholder=>"Name",:maxlength=>"30"
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Video Link Button Label
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :video_link_button_label, :class=>"form-control amenity_edit_field", :placeholder=>"Video Link button label", :maxlength=>"15"
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Video Link
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :video_link, :class=>"form-control amenity_edit_field", :placeholder=>"Video Link"
-
-            - bool_check = @community.show_map ? f.object.amenityable.present? && f.object.amenityable_type == "Floorplate" : true
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Building
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.text_field :building ,  class: "form-control amenity_edit_field", placeholder: "building"
-            - if !@community.is_sitemap && bool_check
-
+            
+            - if params[:from].nil?
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Floor
+                  Video Link Button Label
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = f.select :floor , (f.object.amenityable.floors.flatten.uniq.sort),{:include_blank => true}, class: "form-control amenity_edit_field", placeholder: "Floor"
+                  = f.text_field :video_link_button_label, :class=>"form-control amenity_edit_field", :placeholder=>"Video Link button label", :maxlength=>"15"
+            
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Video Link
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :video_link, :class=>"form-control amenity_edit_field", :placeholder=>"Video Link"
 
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Amenity Type
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = f.select :amenity_type , options_for_select(Amenity::AMENITY_TYPE, f.object.amenity_type),{},{:class=>"form-control amenity_edit_field"}
+              - bool_check = @community.show_map ? f.object.amenityable.present? && f.object.amenityable_type == "Floorplate" : true
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                  Building
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  = f.text_field :building ,  class: "form-control amenity_edit_field", placeholder: "building"
+              - if !@community.is_sitemap && bool_check
 
-            - if @community.enable_locks
-              = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
-              - if @doors.present?
                 .form-group
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Select the door
+                    Floor
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    = select_tag :door_id, options_for_select(@doors.collect{|d| [d.name, d.id]}, selected: @doors.first.id), class: "form-control"
+                    = f.select :floor , (f.object.amenityable.floors.flatten.uniq.sort),{:include_blank => true}, class: "form-control amenity_edit_field", placeholder: "Floor"
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Select Lock Provider
+                  Amenity Type
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  - if @doors.present?
-                    = select_tag :lock_provider , options_for_select(@community.lock_options(@current_locks_provider), @doors.first.lock_provider),{:class=>"form-control"}
-                  - else
-                    = f.select :lock_provider , options_for_select(@community.lock_options(@current_locks_provider), f.object.lock_provider),{},{:id=> "lock_provider", :class=>"form-control"}
+                  = f.select :amenity_type , options_for_select(Amenity::AMENITY_TYPE, f.object.amenity_type),{},{:class=>"form-control amenity_edit_field"}
 
-              .form-group.hidden.mt-30#access_code_field
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Access Code
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = text_field_tag :access_code, (@doors.present?) ? @doors.first.access_code : @amenity.access_code, :name => "access_code" , :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code",:maxLength => "6"
+              - if @community.enable_locks
 
-              .form-group.hidden.mt-30#digital_lock_field
-                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Select the lock
-                .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  
-                  - if @doors.present?
-                    = hidden_field_tag "dwelo_lock_name"     , @doors.first.dwelo_lock.present?     ?  @doors.first.dwelo_lock.name + " (" + @doors.first.dwelo_lock.remote_lock_type + ")" : ''
-                    = hidden_field_tag "edgestate_lock_name" , @doors.first.edgestate_lock.present? ?  @doors.first.edgestate_lock.name + " (" + @doors.first.edgestate_lock.remote_lock_type + ")" : ''
-                    = hidden_field_tag "latch_lock_name"     , @doors.first.latch_lock.present?     ?  @doors.first.latch_lock.lock_name : ''
-                    = hidden_field_tag "zerv_lock_name"      , @doors.first.zerv_lock.present?      ?  @doors.first.zerv_lock.sub_location_name + " (" + @doors.first.zerv_lock.sub_location_friendly_name + ")" : ''
-                    = hidden_field_tag "igloohome_lock_name" , @doors.first.igloohome_lock.present? ?  @doors.first.igloohome_lock.device_name : ''
-                  - else
-                    = hidden_field_tag "dwelo_lock_name"     , @amenity.dwelo_locks.present?     ?  @amenity.dwelo_locks.first.name + " (" + @amenity.dwelo_locks.first.remote_lock_type + ")" : ''
-                    = hidden_field_tag "edgestate_lock_name" , @amenity.edgestate_locks.present? ?  @amenity.edgestate_locks.first.name + " (" + @amenity.edgestate_locks.first.remote_lock_type + ")" : ''
-                    = hidden_field_tag "latch_lock_name"     , @amenity.latch_locks.present?     ?  @amenity.latch_locks.first.lock_name : ''
-                    = hidden_field_tag "zerv_lock_name"      , @amenity.zerv_locks.present?      ?  @amenity.zerv_locks.first.sub_location_name + " (" + @amenity.zerv_locks.first.sub_location_friendly_name + ")" : ''
-                    = hidden_field_tag "igloohome_lock_name" , @amenity.igloohome_locks.present? ? @amenity.igloohome_locks.first.device_name : ''
+                = render :partial=>'shared/hidden_locks_data.html',locals: {community: @community, all_locks: @all_locks, locks_present_hash: @current_locks_provider}
+                - if @doors.present?
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                      Select the door
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      = select_tag :door_id, options_for_select(@doors.collect{|d| [d.name, d.id]}, selected: @doors.first.id), class: "form-control"
 
-                  = text_field_tag :lock_name, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control amenity_edit_field"
-                  %datalist#locks_list
-                  = hidden_field_tag "lock_id", ""
+                .form-group
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Select Lock Provider
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    - if @doors.present?
+                      = select_tag :lock_provider , options_for_select(@community.lock_options(@current_locks_provider), @doors.first.lock_provider),{:class=>"form-control"}
+                    - else
+                      = f.select :lock_provider , options_for_select(@community.lock_options(@current_locks_provider), f.object.lock_provider),{},{:id=> "lock_provider", :class=>"form-control"}
+
+                .form-group.hidden.mt-30#access_code_field
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Access Code
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    = text_field_tag :access_code, (@doors.present?) ? @doors.first.access_code : @amenity.access_code, :name => "access_code" , :oninput => "this.value = this.value.replace(/[^0-9#*]/g, '')", :class=>"form-control amenity_edit_field", :placeholder=>"Access Code",:maxLength => "6"
+
+                .form-group.hidden.mt-30#digital_lock_field
+                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                    Select the lock
+                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                    
+                    - if @doors.present?
+                      = hidden_field_tag "dwelo_lock_name"     , @doors.first.dwelo_lock.present?     ?  @doors.first.dwelo_lock.name + " (" + @doors.first.dwelo_lock.remote_lock_type + ")" : ''
+                      = hidden_field_tag "edgestate_lock_name" , @doors.first.edgestate_lock.present? ?  @doors.first.edgestate_lock.name + " (" + @doors.first.edgestate_lock.remote_lock_type + ")" : ''
+                      = hidden_field_tag "latch_lock_name"     , @doors.first.latch_lock.present?     ?  @doors.first.latch_lock.lock_name : ''
+                      = hidden_field_tag "zerv_lock_name"      , @doors.first.zerv_lock.present?      ?  @doors.first.zerv_lock.sub_location_name + " (" + @doors.first.zerv_lock.sub_location_friendly_name + ")" : ''
+                      = hidden_field_tag "igloohome_lock_name" , @doors.first.igloohome_lock.present? ?  @doors.first.igloohome_lock.device_name : ''
+                    - else
+                      = hidden_field_tag "dwelo_lock_name"     , @amenity.dwelo_locks.present?     ?  @amenity.dwelo_locks.first.name + " (" + @amenity.dwelo_locks.first.remote_lock_type + ")" : ''
+                      = hidden_field_tag "edgestate_lock_name" , @amenity.edgestate_locks.present? ?  @amenity.edgestate_locks.first.name + " (" + @amenity.edgestate_locks.first.remote_lock_type + ")" : ''
+                      = hidden_field_tag "latch_lock_name"     , @amenity.latch_locks.present?     ?  @amenity.latch_locks.first.lock_name : ''
+                      = hidden_field_tag "zerv_lock_name"      , @amenity.zerv_locks.present?      ?  @amenity.zerv_locks.first.sub_location_name + " (" + @amenity.zerv_locks.first.sub_location_friendly_name + ")" : ''
+                      = hidden_field_tag "igloohome_lock_name" , @amenity.igloohome_locks.present? ? @amenity.igloohome_locks.first.device_name : ''
+
+                    = text_field_tag :lock_name, '', :placeholder => "Search by lock name", :list => "locks_list", :autocomplete=> "off", :type => "text", :class => "form-control amenity_edit_field"
+                    %datalist#locks_list
+                    = hidden_field_tag "lock_id", ""
 
             - if @community.self_tour
+              - if params[:from].nil?
+                .row
+                  .form-group
+                    %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
+                      Show in Stops List
+                    .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                      .TriSea-technologies-Switch
+                        %span.pr-15 No
+                        = f.check_box :breezway_lock_visible, :id => "amenity-breezway-lock-visible",:class => "form-control amenity_edit_field"
+                        %label.label-primary{:for => "amenity-breezway-lock-visible"}
+                        %span.pl-15 Yes
               .row
-                .form-group
-                  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
-                    Show in Stops List
-                  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                    .TriSea-technologies-Switch
-                      %span.pr-15 No
-                      = f.check_box :breezway_lock_visible, :id => "amenity-breezway-lock-visible",:class => "form-control amenity_edit_field"
-                      %label.label-primary{:for => "amenity-breezway-lock-visible"}
-                      %span.pl-15 Yes
-              .row
-                .form-group
+                .form-group{:style => "margin-right: 15px;"}
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
                     Description
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
@@ -126,7 +131,7 @@
                     %span.amenity_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i}
 
               .row
-                .form-group
+                .form-group{:style => "margin-right: 15px;"}
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label{:style => "padding-left: 29px;"}
                     Directional Text
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}

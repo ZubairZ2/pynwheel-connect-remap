@@ -11,7 +11,7 @@
     .box.box-info.add-plan
       .box-header
         %h3.box-title
-          Edit Floorplan Amenity
+          Edit Image
 
       = form_for @amenity, :url=> community_floorplan_amenity_path(@community, @floorplan),:html=>{:class=>"form-horizontal"} do |f|
         .box-body
@@ -66,17 +66,59 @@
               - rn =  rand(9999999999999999999999999)
               %a.preview-image{:href=>@amenity.image.present? ? (@amenity.image.url + "?timestamp=#{rn}") : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
                 = image_tag @amenity.image.present? ? (@amenity.image.url  + "?timestamp=#{rn}") : "default.jpeg",:width=>"100%",:id=>"floorplan-additional-preview-image"
-            
-            - if  @amenity.image.present?
-              .col-lg-1
-                .icon{style: "margin-left: -15px;"}
-                  = link_to show_amenity_image_in_modal_community_amenity_path(), remote: true do
-                    %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
-                      Crop
 
+
+    .box.box-info.add-plan
+
+      .col-lg-12
+        %h4{:style => "color: grey;"}
+          Upload Amenity Gallery
+      .col-lg-12.mt-35
+        /%span.btn.btn-primary.btn-file.pull-right.mb-20
+        %span.btn.btn-success.btn-file.some{ :style => "margin-right: 5px; width: 135px" }
+          %i.fa.fa-plus-circle
+          ADD FILES
+          %input#amenity-gallery-images{:multiple => "multiple", :type => "file"}/
+        .mt-10
+          - if @community.is_sitemap && (current_user.is_admin? )
+            = link_to "PLOT AMENITIES", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn"
+        .divLoading.hidden
+        #images-index1
+          .text-center.image-upload.home-page-drag-box#amenity-gallery-image-upload-holder
+            = image_tag "upload-image.png",:class=>"drag-image-padding-top"
+            %p Drag &amp; Drop Images to Upload
+
+          .row.slide-imgage-boxs.sortable_amenity{:style => "padding-top: 55px; overflow-y: hidden;"}
+            - sortable_fetch(@amenity.amenity_galleries.order(:sort)) do |amenity_gallery_image, id_tag|
+              .col-lg-3{:id=> id_tag}
+                .slide-image
+                  .image-box.video-box
+                    .images.height-200
+                      %a.preview-image{:href=>amenity_gallery_image.image? ? amenity_gallery_image.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Gallery Image"}
+                        = image_tag amenity_gallery_image.image.url
+                  .icons
+                    = link_to edit_community_amenity_amenity_gallery_path(@community,@amenity,amenity_gallery_image), remote: true do
+                      %i.fa.fa-pencil{"data-target" => "#edit-gallery-image", "data-toggle" => "modal"}
+                    %a.text-danger{"data-name"=>"Image","data-href" => "/communities/#{current_community.id}/amenities/#{@amenity.id}/amenity_galleries/#{amenity_gallery_image.id}", "data-target" => "#confirm-delete", "data-toggle" => "modal", :href => "javascrip:;"}
+                      %i.fa.fa-close
+                  %h4= amenity_gallery_image.name
+.row
+  .col-md-12
+    .box-footer.mt-30.pt-15
+      .row
+        .col-lg-10
+          .form-group{:style => "margin-left: -16px;  margin-bottom: 0px;"}
+            .col-lg-12.col-md-12
+              - if @unit.present?
+                %a.btn-primary.mb-20.done_btn.direct_btn{href: edit_community_unit_path(@community.id,@unit.id)} DONE
+              - else
+                %button.btn-primary.mb-20.done_btn#on_done{:style => " margin-top: 0px;  margin-bottom: 0px;" }
+                  DONE
+#edit-gallery-image.modal.fade.edit-gallery-image
 #crop-amenity-image.modal.fade.edit-image
 
 :javascript
   var amenity_id = #{@amenity.id}
   var amenity_name = '#{@amenity.name}'
   var community_id = #{ @community.id}
+  var floorplan_id = #{ @floorplan.id}

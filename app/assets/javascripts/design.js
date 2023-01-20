@@ -2313,58 +2313,50 @@ function designPageLogo(src) {
     });
 }
 
+function getLockImageURL(type, community_id) {
+  switch(type) {
+    case 'zerv':
+      return `/communities/${community_id}/zerv_accounts/upload_lock_image`;
+    case 'latch':
+      return `/communities/${community_id}/latch_accounts/upload_lock_image`;
+    case 'dwelo':
+      return `/communities/${community_id}/dwelos/upload_lock_image`;
+    case 'igloohome':
+      return `/communities/${community_id}/igloohome_accounts/upload_lock_image`;
+    case 'edgestate':
+      return `/communities/${community_id}/edgestate_accounts/upload_lock_image`;
+  }
+}
+
+
 function LockImageUploader(src, type) {
   let lockData = $("#communityLock").data();
-  let lock_type = type;
   let community_id = lockData.communityId;
-
   $(".divLoading").removeClass("hidden"); 
-  var url;
-
-  switch(lock_type) {
-    case 'zerv':
-      url = "/communities/" + community_id + "/zerv_accounts/upload_lock_image"
-      break;
-    case 'latch':
-      url = "/communities/" + community_id + "/latch_accounts/upload_lock_image"
-      break;
-    case 'dwelo':
-      url = "/communities/" + community_id + "/dwelos/upload_lock_image"
-      break;
-    case 'igloohome':
-      url = "/communities/" + community_id + "/igloohome_accounts/upload_lock_image"
-      break;
-    case 'edgestate':
-      url = "/communities/" + community_id + "/edgestate_accounts/upload_lock_image"
-      break;
-  }
 
   $.ajax({
-    url: url,
+    url: getLockImageURL(type, community_id),
     type: "PUT",
     dataType: "script",
     data: {lock_image: src}
   }).done(function () {
     $(".divLoading").addClass("hidden");
-    console.log("success");
   });
 }
 
 function floorplanAdditionalImageUploader(src) {
-  debugger;
-  // $(".divLoading").removeClass("hidden");
-  // var url = "/communities/" + community_id;
-  // $.ajax({
-  //     url: url,
-  //     type: "PUT",
-  //     dataType: "script",
-  //     data: {
-  //         community: {self_tour_logo: src}
-  //     }
-  // }).done(function () {
-  //     $(".divLoading").addClass("hidden");
-  //     console.log("success");
-  // });
+  var url = `/communities/${community_id}/floorplans/${floorplan_id}/amenities/${amenity_id}/upload_floorplan_amenity_image`;
+
+  if( community_id && floorplan_id && amenity_id) {
+    $.ajax({
+      url: url,
+      type: "PUT",
+      dataType: "script",
+      data: {src: src}
+    }).done(function () {
+      location.reload();
+    });
+  }
 }
 
 function designPageSelfTourLogo(src) {

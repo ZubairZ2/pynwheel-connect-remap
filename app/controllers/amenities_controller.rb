@@ -17,9 +17,9 @@ class AmenitiesController < ApplicationController
       @amenity = Amenity.find params[:amenityId]
       @amenity.image = params[:src]
       @amenity.save
-      redirect_to edit_community_amenity_path(current_community,@amenity)
+      redirect_to edit_community_amenity_path(current_community, @amenity)
     else
-      current_community.amenities.create(image: params[:src],name: params[:name])
+      current_community.amenities.create(image: params[:src], name: params[:name])
       @amenities = current_community.amenities.order(id: :desc)
     end
   end
@@ -69,20 +69,12 @@ class AmenitiesController < ApplicationController
     @amenity = Amenity.find(params[:id]) 
     if @amenity.update_attributes(amenity_params)
       update_locks()
-      # begin
-      #   ts = TourStop.find_by(stop_id: @amenity.id)
-      #   if ts.present? && params[:amenity][:name].present?
-      #     ts.name = params[:amenity][:name]
-      #     ts.save
-      #   end
-      # rescue => ex
-      # end
       TourStop.where(stop_id: @amenity.id).update_all(name: params[:amenity][:name]) if params[:amenity][:name].present?
       if params[:unit].present? && params[:unit_render].present? && params[:unit_render] != "false"
-          @unit = Unit.find(params[:unit]) rescue nil
-          if @unit.present?
-            redirect_to "/communities/#{@community.id}/amenities/#{@amenity.id}/edit?from=unit&unit=#{params[:unit]}", notice: "Amenity updated successfully"
-          end
+        @unit = Unit.find(params[:unit]) rescue nil
+        if @unit.present?
+          redirect_to "/communities/#{@community.id}/amenities/#{@amenity.id}/edit?from=unit&unit=#{params[:unit]}", notice: "Amenity updated successfully"
+        end
       else
       if params[:done_action].present?
         redirect_to session[:go_back] , notice: "Amenity updated successfully"
