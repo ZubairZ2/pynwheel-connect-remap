@@ -46,6 +46,7 @@ class UsersController < ApplicationController
     data = data - com_to_dlt
 
     user = User.find(params[:id])
+
     if params[:user][:role] == 'Company admin'
       if user.company_id.blank? || user.company.name != (Company.find_by_name params[:user][:company_name]).name
         CommunityUser.where(user_id: params[:id].to_i, community_id: user.communities.pluck(:id)).destroy_all
@@ -71,6 +72,7 @@ class UsersController < ApplicationController
 
     user_previous_communities_ids = user.communities.pluck(:id)
     new_user_communities_ids = params[:user][:community_ids].present? ? ((params[:user][:community_ids].reject {|e| e.blank?}).map(&:to_i)) : []
+
     if @user.update(user_params)
       user_previous_communities_ids.each do |id|
         if new_user_communities_ids.present? && !(new_user_communities_ids.include? id)
@@ -78,6 +80,9 @@ class UsersController < ApplicationController
         end
       end
     end
+
+    CommunityUser.where(user_id: params[:id], community_id: (user_previous_communities_ids - new_user_communities_ids) ).destroy_all
+
     current_user_communities_ids = user.communities.pluck(:id) # communities_ids of selected user
     user_previous_chat_enabled_communities_ids = CommunityUser.where(user_id: params[:id], community_id: current_user_communities_ids, chat_enable: true).ids
     chat_enable_communities = params[:enable_community_id].present? ? ((params[:enable_community_id].reject {|e| e.blank?}).map(&:to_i)) : [] 
