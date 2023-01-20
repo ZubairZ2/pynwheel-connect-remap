@@ -157,15 +157,8 @@ class EdgestateAccountsController < ApplicationController
 
   def upload_lock_image
     return unless params[:lock_image].present?
-    @edge_state = current_community.edge_state
-    
-    unless @edge_state.present?
-      @edge_state = EdgeState.new
-      @edge_state.community_id = current_community.id
-    end
-
-    @edge_state.lock_image =  params[:lock_image]
-    @edge_state.save
+    @edge_state = current_community.edge_state || EdgeState.new(community_id: current_community.id)
+    @edge_state.update(lock_image: params[:lock_image])
   end
 
   private

@@ -23,15 +23,8 @@ class ZervAccountsController < ApplicationController
 
     def upload_lock_image
       return unless params[:lock_image].present?
-      @zerv = current_community.zerv
-      
-      unless @zerv.present?
-        @zerv = Zerv.new
-        @zerv.community_id = current_community.id
-      end
-
-      @zerv.lock_image =  params[:lock_image]
-      @zerv.save
+      @zerv = current_community.zerv || Zerv.new(community_id: current_community.id)
+      @zerv.update(lock_image: params[:lock_image])
     end
 
     def show_lock_image_in_modal

@@ -48,16 +48,8 @@ class DwelosController < ApplicationController
 
   def upload_lock_image
     return unless params[:lock_image].present?
-    
-    @dwelo = @community.dwelo
-    
-    unless @dwelo.present?
-      @dwelo = Dwelo.new
-      @dwelo.community_id = @community.id
-    end
-
-    @dwelo.lock_image =  params[:lock_image]
-    @dwelo.save
+    @dwelo = current_community.dwelo || Dwelo.new(community_id: current_community.id)
+    @dwelo.update(lock_image: params[:lock_image])
   end
 
   def test_dwelo_connection

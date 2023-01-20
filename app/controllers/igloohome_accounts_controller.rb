@@ -43,15 +43,8 @@ class IgloohomeAccountsController < ApplicationController
 
   def upload_lock_image
     return unless params[:lock_image].present?
-    @igloohome = current_community.igloohome
-    
-    unless @igloohome.present?
-      @igloohome = Igloohome.new
-      @igloohome.community_id = current_community.id
-    end
-
-    @igloohome.lock_image =  params[:lock_image]
-    @igloohome.save
+     @igloohome = current_community.igloohome || Igloohome.new(community_id: current_community.id)
+     @igloohome.update(lock_image: params[:lock_image])
   end
 
   def remove_igloohome_locks 

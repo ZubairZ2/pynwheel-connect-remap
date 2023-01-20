@@ -36,16 +36,8 @@ class LatchAccountsController < ApplicationController
 
   def upload_lock_image
     return unless params[:lock_image].present?
-    
-    @latch = current_community.latch
-    
-    unless @latch.present?
-      @latch = Latch.new
-      @latch.community_id = current_community.id
-    end
-
-    @latch.lock_image =  params[:lock_image]
-    @latch.save
+    @latch = current_community.latch || Latch.new(community_id: current_community.id)
+    @latch.update(lock_image: params[:lock_image])
   end
 
   def remove_latch_locks
