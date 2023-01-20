@@ -23,6 +23,9 @@ $(document).ready(function () {
   uploadIgloohomeLockImage();
   uploadEdgestateLockImage();
 
+  //Floorplan Additional Image
+  updloadFloorplanAdditionalImage()
+
   $('.amenity_edit_wysihtml5').each(function(i, elem) {
         $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
         events: {
@@ -817,6 +820,10 @@ $(document).ready(function () {
     readLockImageSrcFromInput(this, "edgestate", $('#edgestate-preview-image') );
   });
 
+  $("#floorplan-additional-image").change(function () {
+    readFloorplanAdditionalImageFromInput(this);
+  });
+
   $("#logo").change(function () {
     readDesignPageLogoSrcFromInput(this);
   });
@@ -825,13 +832,13 @@ $(document).ready(function () {
     readDesignPageSecondaryLogoSrcFromInput(this);
   });
 
-    $("#self_tour_logo").change(function () {
-        readDesignPageSelfTourLogoSrcFromInput(this);
-    });
+  $("#self_tour_logo").change(function () {
+    readDesignPageSelfTourLogoSrcFromInput(this);
+  });
+
   $("#secondary_page_background_image ").change(function () {
     readSecondaryBackgroundImageFromInput(this);
   });
-
 
   $("#global_nav_button_on").change(function () {
     readGlobalNavButtonOnFromInput(this);
@@ -1377,6 +1384,22 @@ function uploadEdgestateLockImage() {
   }
 }
 
+function updloadFloorplanAdditionalImage() {
+  var lockUploadHolder = document.getElementById('floorplan-additional-image-upload-holder');
+  if (lockUploadHolder) {
+    lockUploadHolder.ondrop = function (e) {
+      e.preventDefault();
+      files = e.dataTransfer.files;
+      if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
+          readFloorplanAdditionalImageSrc(files[0]);
+      } else {
+        console.log('file type is not allowed');
+        $('#image-upload-warning').modal('show');
+      }
+    }
+  }
+}
+
 function showSelectedMenuPosition() {
   if ($('#menu_position_field').val() == "Horizontal") {
     $('#horizontal-menu-position').show();
@@ -1416,9 +1439,6 @@ function readURLOnDesignPage(input, preview_element, button_name, screen_id, mai
   }
 }
 
-
-
-
 function set_primary_font_changes() {
   $("#primary-font-text").css({"font-family": $(".primary_font_family option:selected").text(), "color": $('.primary_font_color').val(), "font-size": $('.primary_font_size').val(), "font-weight": $('.primary_font_weight').val(), "text-align": $('.primary_text_align').val()});
 }
@@ -1436,6 +1456,19 @@ function readDesignPageLogoSrc(file) {
         designPageLogo(e.target.result);
     }
     reader.readAsDataURL(file);
+}
+
+function readFloorplanAdditionalImageSrc(file) {
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#floorplan-additional-preview-image').attr('src', e.target.result);
+    $('#floorplan-additional-preview-image').parent().attr('href', e.target.result);
+
+    floorplanAdditionalImageUploader(e.target.result);
+  }
+
+  reader.readAsDataURL(file);
 }
 
 function readLockImageSrc(file, type, element) {
@@ -2317,6 +2350,23 @@ function LockImageUploader(src, type) {
   });
 }
 
+function floorplanAdditionalImageUploader(src) {
+  debugger;
+  // $(".divLoading").removeClass("hidden");
+  // var url = "/communities/" + community_id;
+  // $.ajax({
+  //     url: url,
+  //     type: "PUT",
+  //     dataType: "script",
+  //     data: {
+  //         community: {self_tour_logo: src}
+  //     }
+  // }).done(function () {
+  //     $(".divLoading").addClass("hidden");
+  //     console.log("success");
+  // });
+}
+
 function designPageSelfTourLogo(src) {
     $(".divLoading").removeClass("hidden");
     var url = "/communities/" + community_id;
@@ -3055,6 +3105,35 @@ function readDesignPageLogoSrcFromInput(input) {
         }
     }
 }
+
+function readFloorplanAdditionalImageFromInput(input) {
+  if (input.files && input.files[0]) {
+    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+          $('#floorplan-additional-preview-image').attr('src', e.target.result);
+          $('#floorplan-additional-preview-image').parent().attr('href', e.target.result);
+          floorplanAdditionalImageUploader(e.target.result);
+        }
+
+        reader.readAsDataURL(input.files[0]);
+        var img = getHeightWidthLimit(input);
+
+        img.onload = function () {
+          if (this.width < image_height && this.height < image_width)
+            $(".waring_exal").removeClass("hidden");
+          else
+            $(".waring_exal").addClass("hidden");
+        };
+
+    } else {
+      $(input).val('');
+      $('#image-upload-warning').modal('show');
+    }
+  }
+}
+
 function readDesignPageSelfTourLogoSrcFromInput(input) {
     if (input.files && input.files[0]) {
         if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
