@@ -58,11 +58,16 @@ class PsiService < BaseService
           units = []
           floorplans = []
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
-            pro["ILS_Unit"].each do |ils|
-              units << ils
+            if pro["ILS_Unit"].present? 
+              pro["ILS_Unit"].each do |ils|
+                units << ils
+              end
             end
-            pro["Floorplan"].each do |f|
-              floorplans << f
+           
+            if  pro["Floorplan"].present?
+              pro["Floorplan"].each do |f|
+                floorplans << f
+              end
             end
           end
 
