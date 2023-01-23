@@ -4,8 +4,8 @@ class FloorplanAmenityImagesJob < ApplicationJob
   def perform floorplan, source, name, amenity, community_id
     if source == "True"
       amenities = floorplan
-      amenities.each do |amenity|
-        amenity.update!(x_plot: name, y_plot: amenity)
+      amenities.each do |am|
+        am.update!(x_plot: name, y_plot: amenity)
       end
     else
       floorplan_units = Unit.where(floorplan_id: floorplan.provider_floorplan_id, community_id: community_id)

@@ -7,22 +7,17 @@ class AmenityGalleriesController < ApplicationController
   end
 
   def update
-      @amenity = Amenity.find params[:amenity_id]
-      @amenity_gallery_image = AmenityGallery.find(params[:id])
-      @amenity_gallery_image.update_attributes(amenity_gallery_params)
+    @amenity = Amenity.find params[:amenity_id]
+    @amenity_gallery_image = AmenityGallery.find(params[:id])
+    @amenity_gallery_image.update_attributes(amenity_gallery_params)
 
-      if @amenity&.amenityable_type&.downcase == "floorplan"
-        redirect_to "/communities/#{current_community.id}/floorplans/#{@amenity.amenityable_id}/amenities/#{@amenity.id}/edit", notice: "Amenity updated successfully"
-      elsif @amenity&.amenityable_type&.downcase == "unit"
-        redirect_to "/communities/#{current_community.id}/amenities/#{@amenity.id}/edit?from=#{@amenity.amenityable_type.downcase}&#{@amenity.amenityable_type.downcase}=#{@amenity.amenityable_id}", notice: "Amenity updated successfully"
-      else
-        redirect_to edit_community_amenity_path(current_community, @amenity), notice: "Amenity updated successfully"
-      end
-
-        # redirect_to "/communities/#{current_community.id}/amenities/#{@amenity}/edit"
-      # else
-      #   redirect_to edit_community_amenity_path(current_community,@amenity), error: @amenity.errors.full_messages.join(',')
-      # end
+    if @amenity&.amenityable_type&.downcase == "floorplan"
+      redirect_to "/communities/#{current_community.id}/floorplans/#{@amenity.amenityable_id}/amenities/#{@amenity.id}/edit", notice: "Amenity updated successfully"
+    elsif @amenity&.amenityable_type&.downcase == "unit"
+      redirect_to "/communities/#{current_community.id}/amenities/#{@amenity.id}/edit?from=#{@amenity.amenityable_type.downcase}&#{@amenity.amenityable_type.downcase}=#{@amenity.amenityable_id}", notice: "Amenity updated successfully"
+    else
+      redirect_to edit_community_amenity_path(current_community, @amenity), notice: "Amenity updated successfully"
+    end
   end
 
   def destroy

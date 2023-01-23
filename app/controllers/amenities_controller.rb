@@ -101,11 +101,13 @@ class AmenitiesController < ApplicationController
       end
     end
   end
+  
   def saveAmenityGallery
     @community = Community.find params[:community_id]
     @amenity = Amenity.find params[:amenityId]
-    AmenityGallery.create(name: params[:name],image: params[:src], amenity_id: @amenity.id)
+    AmenityGallery.create(name: params[:name], image: params[:src], amenity_id: @amenity.id)
   end
+
   def edit_amenity_gallery_image
     @community = current_community
     @amenity = Amenity.find params[:community_id]

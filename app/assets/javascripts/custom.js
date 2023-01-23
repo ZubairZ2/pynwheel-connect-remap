@@ -11,7 +11,6 @@ $(document).ready(function(e){
   })
 
   $('body').on("click", ".imageselect", function(e){
-    debugger
     if($("#selected-units").children().length == 0 )
         $("#imageselect").toggle();
     else
