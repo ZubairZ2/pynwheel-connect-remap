@@ -78,7 +78,7 @@ class FunnelService < BaseService
   end
 
   def update_appointment_status appointment_status
-    return unless @scheduled_tour.funnel_appointment_id.present?
+    return unless @scheduled_tour&.funnel_appointment_id.present?
 
     url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/appointments/#{@scheduled_tour.funnel_appointment_id}/"
 
@@ -94,7 +94,7 @@ class FunnelService < BaseService
   end
 
   def cancel_funnel_appointment
-    return unless @scheduled_tour.funnel_appointment_id.present?
+    return unless @scheduled_tour&.funnel_appointment_id.present?
 
     url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/appointments/#{@scheduled_tour.funnel_appointment_id}/"
 
