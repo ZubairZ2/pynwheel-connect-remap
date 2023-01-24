@@ -221,7 +221,9 @@ $('#confirm-delete_amenity').on('show.bs.modal', function(e) {
 
     var community = $(e.relatedTarget).data('href').split("/")[2];
     var amenity = $(e.relatedTarget).data('href').split("/")[6];
-    $(this).find('.edit_unit_amenity').attr('href', '/communities/'+community+'/amenities/'+amenity+'/edit');
+    var unit =  $(e.relatedTarget).data('href').split("/")[4]
+
+    $(this).find('.edit_unit_amenity').attr('href', '/communities/'+community+'/amenities/'+amenity+'/edit?from=unit&unit='+unit);
     $(this).find('.add_description_amenity').attr('href', $(e.relatedTarget).data('href')+'/save_description');
     $(this).find('#delete_button_amenity').attr('href', $(e.relatedTarget).data('href')+'/delete_unit_plot');
     $(this).find('#description_amenity').val($(e.relatedTarget).data('name'));

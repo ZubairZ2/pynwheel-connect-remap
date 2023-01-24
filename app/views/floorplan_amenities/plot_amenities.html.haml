@@ -85,6 +85,26 @@
               %label#newmsg Place marker for selected images on Map
         #map-marker{"data-toggle" => "tooltip", :onclick => "selMarker()", :title => "new marker"}
           %i.icon-screenshot
+
+    ////////////// Amenity Grid
+  .box.box-widget.panel-box{:style => "margin-bottom: 80px;"}
+    .row
+      .col-md-12
+        %table.table.table-bordered.table-striped.table-hover.table-responsive
+          %thead
+            %tr
+              %th{:width => "79"} Sr #
+              %th Tour Stop
+          %tbody.amenity_sortable_list
+            - orderVar = 0
+            - if @sitemap.amenities.present?
+              - sortable_fetch(@sitemap.amenities.order(:sort)) do |amenity,index|
+                - unless amenity.x_plot.to_i + amenity.y_plot.to_i == 0
+                  %tr{:id=> index}
+                    - orderVar = orderVar + 1
+                    %td= orderVar
+                    %td
+                      = amenity.name
 .row
   .col-md-12{:style => "position: absolute; bottom: 51px;"}
     .box-footer.mt-30.pt-15
@@ -147,6 +167,7 @@
   var addmode = false;
   var floorplan_id = #{@sitemap.id}
   var amenity_type = "floorplan"
+  $('.amenity_sortable_list').railsSortable();
   function floorplan_plotting_goBack()
   {
     if (window.history.length)

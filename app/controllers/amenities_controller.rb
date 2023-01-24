@@ -105,8 +105,8 @@ class AmenitiesController < ApplicationController
   def saveAmenityGallery
     @community = Community.find params[:community_id]
     @amenity = Amenity.find params[:amenityId]
-    AmenityGallery.create(name: params[:name],image: params[:src], amenity_id: @amenity.id)
-    save_floorplan_galleries(@amenity, @community) if params[:type] == "floorplan"
+    amenity_gallery_image = AmenityGallery.create(name: params[:name],image: params[:src], amenity_id: @amenity.id)
+    save_floorplan_galleries(@amenity, @community, amenity_gallery_image) if params[:type] == "floorplan"
   end
 
   def edit_amenity_gallery_image
@@ -170,10 +170,10 @@ class AmenitiesController < ApplicationController
 
   private
 
-  def save_floorplan_galleries amenity, community 
+  def save_floorplan_galleries amenity, community, amenity_gallery_image
     return unless amenity.amenityable_id.present?
     floorplan = Floorplan.find_by(id: amenity.amenityable_id) if amenity.amenityable_type = "Floorplan"
-    FloorplanAmenitiesService.new(floorplan, amenity, community).create_floorplan_amenity_galleries(params)
+    FloorplanAmenitiesService.new(floorplan, amenity, community).create_floorplan_amenity_galleries(amenity_gallery_image&.id, params)
   end
 
   def amenity_params
