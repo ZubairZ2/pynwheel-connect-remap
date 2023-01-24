@@ -20,12 +20,18 @@ class FloorplanAmenitiesService
   end
 
   def create_floorplan_amenity_galleries params
-    # AmenityGallery.create(name: params[:name], image: params[:src], amenity_id: @amenity.id)
-
     @floorplan_units&.each do |floorplan_unit|
       amenity = floorplan_unit&.amenities&.where(floorplan_amenity_id: @amenity.id).first
       AmenityGallery.create(name: params[:name], image: params[:src], amenity_id: amenity.id)
     end
+  end
+
+  def update_floorplan_amenity_gallery_info gallery_id, params
+    binding.pry
+    # @floorplan_units&.each do |floorplan_unit|
+    #   amenity = floorplan_unit&.amenities&.where(floorplan_amenity_id: @amenity.id).first
+    #   amenity&.amenity_galleries&.where(galler_id: gallery_id)&.first.&update_attributes(params)
+    # end
   end
 
   def delete_floorplan_amenity_gallery
