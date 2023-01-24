@@ -78,7 +78,7 @@
         %span.btn.btn-success.btn-file.some{ :style => "margin-right: 5px; width: 135px" }
           %i.fa.fa-plus-circle
           ADD FILES
-          %input#amenity-gallery-images{:multiple => "multiple", :type => "file"}/
+          %input#floorplan-amenity-gallery-images{:multiple => "multiple", :type => "file"}/
         .mt-10
           - if @community.is_sitemap && (current_user.is_admin? )
             = link_to "PLOT AMENITIES", plot_amenities_community_sitemaps_path(@community), class: "btn btn-primary hidden btn-file plot_amenities_btn"
