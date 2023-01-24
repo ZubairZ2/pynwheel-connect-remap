@@ -9,7 +9,7 @@ class AmenityGalleriesController < ApplicationController
   def update
     if @amenity_gallery_image.update_attributes(amenity_gallery_params)
       if @amenity&.amenityable_type&.downcase == "floorplan"
-        FloorplanAmenitiesService.new(get_floorplan(), @amenity, @community).update_floorplan_amenity_gallery_info(@amenity_gallery_image.id, amenity_gallery_params )
+        FloorplanAmenitiesService.new(get_floorplan(), @amenity, @community).update_floorplan_amenity_gallery_info(@amenity_gallery_image&.id, amenity_gallery_params )
         redirect_to "/communities/#{@community.id}/floorplans/#{@amenity.amenityable_id}/amenities/#{@amenity.id}/edit", notice: "Amenity updated successfully"
       elsif @amenity&.amenityable_type&.downcase == "unit"
         redirect_to "/communities/#{@community.id}/amenities/#{@amenity.id}/edit?from=#{@amenity.amenityable_type.downcase}&#{@amenity.amenityable_type.downcase}=#{@amenity.amenityable_id}", notice: "Amenity updated successfully"
@@ -17,7 +17,7 @@ class AmenityGalleriesController < ApplicationController
         redirect_to edit_community_amenity_path(@community, @amenity), notice: "Amenity updated successfully"
       end
     else
-      redirect_to edit_community_amenity_path(@community,@amenity), error: @amenity.errors.full_messages.join(',')
+      redirect_to edit_community_amenity_path(@community, @amenity), error: @amenity.errors.full_messages.join(',')
     end
   end
 
