@@ -1282,7 +1282,7 @@ json.tours @tours do |tour|
         from_id = (from_type == "TourStop" && need_original_id_arr.include?( TourStop.find(from_id).stop_type ) ) ? TourStop.find(from_id).stop_id : from_id
         to_id = (to_type == "TourStop" && need_original_id_arr.include?( TourStop.find(to_id).stop_type ) ) ? TourStop.find(to_id).stop_id : to_id
         next_floor = ShortestPath.return_next_floor_to_mobile(mobile_path, from_type, to_type, from_id, to_id)
-        elevator_stop_description = "Go to floor " + next_floor.to_s
+        elevator_stop_description = ELEVATOR_STOP_TEXT + next_floor.to_s
       else
         if new_stops_arr.compact[counter + 1].present?
           next_stop = new_stops_arr.compact[counter + 1]
@@ -1293,27 +1293,27 @@ json.tours @tours do |tour|
 
             if hit
               current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
-              elevator_stop_description = current_stop.floors.present? ? "Go to floor " + (plates_name[current_stop.floors.max.to_s].present? ? plates_name[current_stop.floors.max.to_s] : current_stop.floors.max.to_s rescue current_stop.floors.max.to_s) : "" rescue ""
+              elevator_stop_description = current_stop.floors.present? ? ELEVATOR_STOP_TEXT + (plates_name[current_stop.floors.max.to_s].present? ? plates_name[current_stop.floors.max.to_s] : current_stop.floors.max.to_s rescue current_stop.floors.max.to_s) : "" rescue ""
             else
               current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
-              elevator_stop_description =  current_stop.floors.present? ? "Go to floor " + (plates_name[current_stop.floors.min.to_s].present? ? plates_name[current_stop.floors.min.to_s] : current_stop.floors.min.to_s rescue current_stop.floors.min.to_s) : "" rescue ""
+              elevator_stop_description =  current_stop.floors.present? ? ELEVATOR_STOP_TEXT + (plates_name[current_stop.floors.min.to_s].present? ? plates_name[current_stop.floors.min.to_s] : current_stop.floors.min.to_s rescue current_stop.floors.min.to_s) : "" rescue ""
             end
             if current_stop.present? and next_stop.present? and current_stop.building.present? and next_stop.building.present? and current_stop.building != next_stop.building
-              elevator_stop_description =  "Go to floor " + (plates_name[next_stop.floors.min.to_s].present? ? plates_name[next_stop.floors.min.to_s] : next_stop.floors.min.to_s rescue next_stop.floors.min.to_s) rescue elevator_stop_description           
+              elevator_stop_description =  ELEVATOR_STOP_TEXT + (plates_name[next_stop.floors.min.to_s].present? ? plates_name[next_stop.floors.min.to_s] : next_stop.floors.min.to_s rescue next_stop.floors.min.to_s) rescue elevator_stop_description           
             end
           else
-            elevator_stop_description =  next_stop.floor.present? ? "Go to floor " + (plates_name[next_stop.floor.to_s].present? ? plates_name[next_stop.floor.to_s] : next_stop.floor.to_s rescue next_stop.floor.to_s) : "" rescue ""
+            elevator_stop_description =  next_stop.floor.present? ? ELEVATOR_STOP_TEXT + (plates_name[next_stop.floor.to_s].present? ? plates_name[next_stop.floor.to_s] : next_stop.floor.to_s rescue next_stop.floor.to_s) : "" rescue ""
             next_floor  = next_stop.floor.to_i rescue current_floor
           end
           if new_stops_arr.compact[counter + 1].is_a? Tour
             fl_text = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : min_floor).to_s
-            elevator_stop_description = "Go to floor " + (plates_name[fl_text].present? ? plates_name[fl_text] : fl_text rescue fl_text)
+            elevator_stop_description = ELEVATOR_STOP_TEXT + (plates_name[fl_text].present? ? plates_name[fl_text] : fl_text rescue fl_text)
             next_floor  = (new_stops_arr.compact[counter + 1].starting_floor.present? ? new_stops_arr.compact[counter + 1].starting_floor : current_floor).to_i
           end
 
         else
           
-          elevator_stop_description = "Go to floor " + (plates_name[min_floor.to_s].present? ? plates_name[min_floor.to_s] : min_floor.to_s rescue min_floor.to_s)
+          elevator_stop_description = ELEVATOR_STOP_TEXT + (plates_name[min_floor.to_s].present? ? plates_name[min_floor.to_s] : min_floor.to_s rescue min_floor.to_s)
         end
       end
 
