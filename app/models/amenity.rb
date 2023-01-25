@@ -55,6 +55,8 @@ class Amenity < ApplicationRecord
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_amenity_image
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
+  after_update :sort_associated_unit_amenities, if: Proc.new { amenityable_id.present? && amenityable_type == "Floorplan" }
+
   # validate :url_validity
   # validate :image_size
   AMENITY_TYPE = [["Select an amenity type",""],["Leasing Center", "Leasing Center"],["Fitness Center", "Fitness Center"],["Pool", "Pool"], ["Yoga Studio / Fitness Studio","Yoga Studio / Fitness Studio"],["Dog Park","Dog Park"],
@@ -118,5 +120,13 @@ class Amenity < ApplicationRecord
 
   def digital_lock_provider?
     self.lock_provider.present? and self.lock_provider != "" and self.lock_provider != "Manual"
+  end
+
+  private
+
+  def sort_associated_unit_amenities
+    floorplan =  Floorplan.find self.amenityable_id
+    community = floorplan.community
+    FloorplanAmenitiesService.new(floorplan, self, community).handle_amenity_sorting()
   end
 end

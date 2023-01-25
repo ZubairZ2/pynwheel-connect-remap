@@ -42,4 +42,10 @@ class FloorplanAmenitiesService
       floorplan_unit&.amenities&.where(floorplan_amenity_id: @amenity.id)&.update_all(x_plot: 0, y_plot: 0)
     end
   end
+
+  def handle_amenity_sorting
+    @floorplan_units&.each do |floorplan_unit|
+      floorplan_unit&.amenities&.where(floorplan_amenity_id: @amenity.id).update_all(sort: @amenity.sort)
+    end
+  end
 end
