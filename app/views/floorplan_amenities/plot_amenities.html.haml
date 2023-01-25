@@ -41,9 +41,9 @@
           - camera_font_size = marker_font_size / 2
           - camera_margin = (@community.design.amenity_map_marker_size_integer <= 27 ? 3 : (@community.design.amenity_map_marker_size_integer <= 30 ? 4 : (@community.design.amenity_map_marker_size_integer <= 33 ? 5 : (@community.design.amenity_map_marker_size_integer <= 35 ? 6 : 6))))
           - camera_margin = 5
-          %span.hidden#marker-font-size #{marker_font_size}
-          %span.hidden#marker-color #{marker_color}
-          %span.hidden#camera-margin #{camera_margin}
+          %span.hidden#marker_font_size #{marker_font_size}
+          %span.hidden#marker_color #{marker_color}
+          %span.hidden#camera_margin #{camera_margin}
 
         .pull-right.btn-btn-danger
           = link_to "Back", community_floorplan_amenities_path(@community,@sitemap), class: "btn btn-primary"
