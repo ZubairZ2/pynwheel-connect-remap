@@ -125,8 +125,10 @@ class Amenity < ApplicationRecord
   private
 
   def sort_associated_unit_amenities
-    floorplan =  Floorplan.find self.amenityable_id
-    community = floorplan.community
-    FloorplanAmenitiesService.new(floorplan, self, community).handle_amenity_sorting()
+    if sort_changed?
+      floorplan =  Floorplan.find self.amenityable_id
+      community = floorplan.community
+      FloorplanAmenitiesService.new(floorplan, self, community).handle_amenity_sorting()
+    end
   end
 end

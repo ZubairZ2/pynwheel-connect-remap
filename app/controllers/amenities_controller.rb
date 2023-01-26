@@ -173,7 +173,8 @@ class AmenitiesController < ApplicationController
   def save_floorplan_galleries amenity, community, amenity_gallery_image
     return unless amenity.amenityable_id.present?
     floorplan = Floorplan.find_by(id: amenity.amenityable_id) if amenity.amenityable_type = "Floorplan"
-    FloorplanAmenitiesService.new(floorplan, amenity, community).create_floorplan_amenity_galleries(amenity_gallery_image&.id, params)
+    FloorplanAmenityGalleryJob.perform_async(floorplan&.id, amenity&.id, community&.id, amenity_gallery_image&.id, params)
+    # FloorplanAmenitiesService.new(floorplan, amenity, community).create_floorplan_amenity_galleries(amenity_gallery_image&.id, params)
   end
 
   def amenity_params
