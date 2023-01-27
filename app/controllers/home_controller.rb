@@ -7,8 +7,8 @@ class HomeController < ApplicationController
       assigned_communities_ids = current_user.communities.ids
       dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).pluck(:id)
       dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).pluck(:id)
-      ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).distinct
-      @communities = Community.where(id: ids, locked: [false, nil])
+      ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
+      @communities = ids.present? ? Community.where(id: ids, locked: [false, nil]) : []
     when current_user.is_company_admin?
       @communities = current_user.company.communities.where(locked: [false, nil])
     when current_user.is_regional_admin?
