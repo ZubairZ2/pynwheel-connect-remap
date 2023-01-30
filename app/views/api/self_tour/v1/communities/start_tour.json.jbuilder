@@ -1317,6 +1317,8 @@ json.tours @tours do |tour|
         end
       end
 
+      elevator_stop_description = elevator_stop_description.present? ? "#{elevator_stop_description}." : elevator_stop_description
+
       if current_floor.present?
         floor_image = @community.floorplates.map{|x| x if x.floors.include?(current_floor)}.compact.last rescue nil
         floor_image = (floor_image || elevator.floorplate) rescue nil
