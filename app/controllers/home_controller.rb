@@ -1,34 +1,30 @@
 class HomeController < ApplicationController
-  # include Error::ErrorHandler
-  before_action :check_community
-  
   def index
-  	if current_user.is_super_admin?
-    	@communities = alphabetical_sort(Community.select(:id,:name,:updated_at,:company_id,:data_provider, :time_zone, :move_to_production, :data_provider_updated_on).includes(:company))
-    elsif current_user.is_dwelo_admin?
-      assigned_communities_ids = current_user.communities.ids # all assinged communities
-      dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).ids # all communities created by any dwelo admin
-      dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).ids # all communities under dwelo_companies (either created by dwelo_admin or super_admin)
+    case
+    when current_user.is_super_admin?
+      @communities = alphabetical_sort(Community.select(:id, :name, :updated_at, :company_id, :data_provider, :time_zone, :move_to_production, :data_provider_updated_on).includes(:company))
+    when current_user.is_dwelo_admin?
+      assigned_communities_ids = current_user.communities.ids
+      dwelo_communities_ids = Community.where(creator_id: User.where(role: "Dwelo admin").ids).pluck(:id)
+      dwelo_companies_communities = Community.joins(:company).where(companies: {creator_id: User.where(role: "Dwelo admin").ids}).pluck(:id)
       ids = (assigned_communities_ids + dwelo_communities_ids + dwelo_companies_communities).uniq
-      @communities = Community.where(id: ids)
-    elsif current_user.is_company_admin?
-      @communities = current_user.company.communities
-    elsif current_user.is_regional_admin?
-      @communities = current_user.region.communities
+      @communities = ids.present? ? Community.where(id: ids, locked: [false, nil]) : []
+    when current_user.is_company_admin?
+      @communities = current_user.company.communities.where(locked: [false, nil])
+    when current_user.is_regional_admin?
+      @communities = current_user.region.communities.where(locked: [false, nil])
     else
-    	@communities = current_user.communities
+      @communities = current_user.communities.where(locked: [false, nil])
     end
 
-    community_id = session[:community_id]
-    session[:authorization_code] = params['code'] if (params and params['code']).present?
-    redirect_to "/communities/#{community_id}/edgestate_accounts/edgestate_code_grant_authorization" if (params and params['code']).present?
+    handle_code_grant_authorization if params["code"].present?
   end
 
   private
 
-  def move_to_production_communities communities
-    communities = communities.map{|c| c if c.move_to_production }
-    communities.compact
+  def handle_code_grant_authorization
+    community_id = session[:community_id]
+    session[:authorization_code] = params['code']
+    redirect_to "/communities/#{community_id}/edgestate_accounts/edgestate_code_grant_authorization"
   end
-
 end
