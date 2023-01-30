@@ -235,7 +235,8 @@
                           %td
                             = f.range 
                           %td
-                            - if f.image.present?
+                            
+                            - if f.image.present? rescue false
                               .drop-img
                                 = image_tag f.image.url
                             - else  
