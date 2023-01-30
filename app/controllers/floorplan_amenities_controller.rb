@@ -38,8 +38,8 @@ class FloorplanAmenitiesController < ApplicationController
   def update
     @amenity = @floorplan.amenities.find(params[:id])
     if @amenity.update_attributes(amenity_params)
-      FloorplanAmenitiesService.new().update_description_and_name(@floorplan, @amenity, current_community&.id)
-      redirect_to community_floorplan_amenities_path(@community,@floorplan), notice: "Amenity updated successfully"
+      FloorplanAmenitiesService.new(@floorplan, @amenity, current_community).update_description_and_name()
+      redirect_to community_floorplan_amenities_path(@community, @floorplan), notice: "Amenity updated successfully"
     else
       add_breadcrumb "Floor plans", community_floorplans_path(current_community)
       add_breadcrumb "Amenities", community_floorplan_amenities_path(current_community,@floorplan)
@@ -47,6 +47,13 @@ class FloorplanAmenitiesController < ApplicationController
       flash[:error] = @amenity.errors.full_messages.join(',')
       render :edit
     end
+  end
+
+  def upload_floorplan_amenity_image
+    @amenity = @floorplan.amenities.find_by(id: params[:id])
+    @amenity&.update(image: params[:src])
+    FloorplanAmenitiesService.new(@floorplan, @amenity, current_community).update_image(params[:src])
+    redirect_to community_floorplan_amenities_path(@community, @floorplan), notice: "Amenity image updated successfully"
   end
 
   def destroy
@@ -88,22 +95,23 @@ class FloorplanAmenitiesController < ApplicationController
   end
 
   def remove_amenities_plot
-    @floorplan.amenities.each do |amenity|
-      amenity.x_plot = 0
-      amenity.y_plot = 0
-      amenity.save(validate: false)
+    @floorplan.amenities.each do |amenity| 
+      FloorplanAmenitiesService.new(@floorplan, amenity, @community).reset_plotting()
     end
-    redirect_to plot_amenities_community_floorplan_amenities_path(@community,@floorplan), notice: "All plots have been deleted successfully."
+    @floorplan.amenities.update_all(x_plot: 0, y_plot: 0)
+    
+    redirect_to plot_amenities_community_floorplan_amenities_path(@community, @floorplan), notice: "All plots have been deleted successfully."
   end
 
   def remove_amenity
     @amenity = Amenity.find params[:id]
+    
     amenities = @floorplan.amenities.where(x_plot: @amenity.x_plot, y_plot: @amenity.y_plot)
     amenities.each do |amenity|
-      amenity.x_plot = 0
-      amenity.y_plot = 0
-      amenity.save(validate: false)
+      FloorplanAmenitiesService.new(@floorplan, amenity, @community).reset_plotting()
     end
+    amenities.update_all(x_plot: 0, y_plot: 0)
+
     redirect_to plot_amenities_community_floorplan_amenities_path(@community,@floorplan), notice: "Image plot have been deleted successfully."
   end
 

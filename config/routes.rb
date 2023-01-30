@@ -231,17 +231,23 @@ Rails.application.routes.draw do
       # member do
       # end
     end
+
     resources :floorplans do
       resources :amenities, controller: "floorplan_amenities" do
         post :plot_amenity
+
         collection do
           get :plot_amenities
           delete :remove_amenities_plot
         end
+
         member do
           delete :remove_amenity
+          put :upload_floorplan_amenity_image
         end
+
       end
+
       member do
         get :show_floorplan_image_in_modal
         put :crop_image
@@ -249,6 +255,7 @@ Rails.application.routes.draw do
         delete :remove_pri_scnd_image
         put :crop_secondary_image
       end
+
       collection do
         post :add_description
         post :save_floorplan_name_order

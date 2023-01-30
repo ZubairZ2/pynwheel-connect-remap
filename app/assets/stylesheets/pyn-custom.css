@@ -1090,6 +1090,10 @@ table.upload-image tr td {
     display: -webkit-box;
 }
 
+.add-plan .floorplan-amenity-form-alignment {
+    margin-bottom: 0px;
+}
+
 .add-plan small {
     color: #787878;
     font-size: 12px;

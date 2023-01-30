@@ -171,6 +171,8 @@
                   %span.btn.btn-default.black-button.btn-sm.btn-file{"data-target" => "#edit-name", "data-toggle" => "modal"}
                     Crop
 
+= link_to "Manage Images", "/communities/#{@community.id}/floorplans/#{@floorplan.id}/amenities", class: "btn btn-default black-button loader_class"
+
 :javascript
   $(document).ready(function(){
       $('.wysihtml5').each(function(i, elem) {
