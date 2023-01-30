@@ -540,17 +540,17 @@ json.tours @tours do |tour|
 
           if hit
             current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
-            elevator_stop_description = current_stop.floors.present? ? "Go to floor " + current_stop.floors.max.to_s : "" rescue ""
+            elevator_stop_description = current_stop.floors.present? ? ELEVATOR_STOP_TEXT + current_stop.floors.max.to_s : "" rescue ""
           else
             current_stop = stop.stop_type.classify.constantize.find stop.stop_id rescue nil
-            elevator_stop_description =  current_stop.floors.present? ? "Go to floor " + current_stop.floors.min.to_s : "" rescue ""
+            elevator_stop_description =  current_stop.floors.present? ? ELEVATOR_STOP_TEXT + current_stop.floors.min.to_s : "" rescue ""
           end
         else
-          elevator_stop_description =  next_stop.floor.present? ? "Go to floor " + next_stop.floor.to_s : "" rescue ""
+          elevator_stop_description =  next_stop.floor.present? ? ELEVATOR_STOP_TEXT + next_stop.floor.to_s : "" rescue ""
         end
 
       else
-        elevator_stop_description = "Go to floor " + min_floor.to_s
+        elevator_stop_description = ELEVATOR_STOP_TEXT + min_floor.to_s
       end
       json.stop_description elevator_stop_description
       if elevator.elevator_galleries.count == 0
