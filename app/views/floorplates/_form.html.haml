@@ -67,7 +67,7 @@
     -#  .select-img-img
     .image-box.video-box
       .images.height-200
-        %a.preview-image{:href=>f.object.image.present? ? f.object.image.url : asset_path("default.jpeg") rescue asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floorplate Image"}
+        %a.preview-image{:href=>f.object.image.present? ? f.object.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Floorplate Image"}
           = image_tag f.object.image? ? f.object.image.url : "default.jpeg",:height=>"",:width=>"170",:id=>"preview-image", :style => "max-height: 190px; max-width: 270px;"
     %span.btn.btn-default.black-button.btn-sm.btn-file
       Select Image
