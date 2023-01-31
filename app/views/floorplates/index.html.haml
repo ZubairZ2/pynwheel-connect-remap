@@ -223,6 +223,8 @@
                               Click the edit icon to view or change the details associated with each floorplate such as name, image, building number, and floors.
                     %tbody
                       - @floorplates.each_with_index  do |f,index|
+                        - f_image = f.image.present? ? f.image.url : f.standard_image_url rescue asset_path("default.jpeg")
+
                         %tr{:style => "color: #{f.manual_override ? "#dd4a39": ""}"}
                           %td
                             = index+1
@@ -235,9 +237,9 @@
                           %td
                             = f.range 
                           %td
-                            - if f.image.present?
+                            - if f_image.present?
                               .drop-img
-                                = image_tag f.image.url
+                                = image_tag f_image
                             - else  
                               .drop-img.drop-img-left
 
