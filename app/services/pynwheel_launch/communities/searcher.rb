@@ -43,13 +43,7 @@ attr_reader :user , :params
 
   def pynwheel_launch_access(communities)
     return unless communities.present?
-
     community_users_ids = communities.joins(:community).where('communities.pynwheel_launch_access = ? ', 'true')
-  
-    unless user.is_super_admin?
-      community_users_ids = communities.joins(:community).where('communities.pynwheel_launch_access = ? AND communities.locked in (?)', 'true', [false, nil])
-    end
-    
     CommunityUser.where(id: community_users_ids)
   end
 
