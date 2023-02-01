@@ -790,7 +790,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       @community_master = Community.where(community_group_id: @community_group.id).first
     end
   end
-
+  
   def get_neighbourhood_data
 
     if params[:token] == "pynwheeltoken12345"

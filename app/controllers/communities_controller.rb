@@ -417,6 +417,13 @@ class CommunitiesController < ApplicationController
     send_data(zip_data, :type => 'application/zip', :filename => "STFeedbackReport.zip")
   end
 
+  def reset_neighborhood_request_counter
+    Community.where(id: params[:community_id]).update_all(neighborhood_request_counter: 0, neighborhood_request_counter_limit: 600)
+    AppVersion.update_all(neighborhood_counter: 0, counter_limit: 600)
+    flash[:notice] = "Neighborhood request count reset successfully!"
+    redirect_to community_neighborhoods_path(@community)
+  end
+
   def realpage_load_pricing_data
     @community = Community.find params[:community_id]
     @community.connect_to_pricing(@community)
