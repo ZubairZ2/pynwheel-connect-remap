@@ -418,7 +418,8 @@ class CommunitiesController < ApplicationController
   end
 
   def reset_neighborhood_request_counter
-    Community.where(id: params[:community_id]).update_all(neighborhood_request_counter: 0)
+    Community.where(id: params[:community_id]).update_all(neighborhood_request_counter: 0, neighborhood_request_counter_limit: 600)
+    AppVersion.update_all(neighborhood_counter: 0, counter_limit: 600)
     flash[:notice] = "Neighborhood request count reset successfully!"
     redirect_to community_neighborhoods_path(@community)
   end
