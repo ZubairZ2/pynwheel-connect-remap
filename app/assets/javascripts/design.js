@@ -1039,7 +1039,7 @@ $(document).ready(function () {
 });
 
 function zervLockIntructionText() {
-  //let characterLimit = 200;
+  let characterLimit = 275;
 
   $('.zerv_lock_instruction_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -1077,7 +1077,7 @@ function zervLockIntructionText() {
 }
 
 function latchLockIntructionText() {
-  //let characterLimit = 200;
+  let characterLimit = 275;
 
   $('.latch_lock_instruction_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -1115,7 +1115,7 @@ function latchLockIntructionText() {
 }
 
 function dweloLockIntructionText() {
-  //let characterLimit = 200;
+  let characterLimit = 275;
 
   $('.dwelo_lock_instruction_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -1153,7 +1153,6 @@ function dweloLockIntructionText() {
 }
 
 function editElevatorDirectionalTextField () {
-  ////let characterLimit = 200;
 
   $('.elevator_directional_text_edit_field_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -1191,7 +1190,6 @@ function editElevatorDirectionalTextField () {
 }
 
 function editElevatorDescriptionField () {
-  ////let characterLimit = 200;
 
   $('.elevator_description_edit_field_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -1229,7 +1227,7 @@ function editElevatorDescriptionField () {
 }
 
 function igloohomeLockIntructionText() {
-  //let characterLimit = 200;
+  let characterLimit = 275;
 
   $('.igloohome_lock_instruction_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
@@ -1267,7 +1265,7 @@ function igloohomeLockIntructionText() {
 }
 
 function edgestateLockIntructionText() {
-  //let characterLimit = 200;
+  let characterLimit = 275;
 
   $('.edgestate_lock_instruction_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},

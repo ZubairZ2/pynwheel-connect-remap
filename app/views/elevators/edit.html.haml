@@ -34,7 +34,7 @@
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_area :description, :class=>"form-control elevator_edit_field elevator_description_edit_field elevator_description_edit_field_wysihtml5", :placeholder=>"Elevator Description",  :value=> @elevator.description
-                %span.elevator_description_edit_field_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 200
+                %span.elevator_description_edit_field_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275
  
             .form-group.elevator-form-alignment
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -42,7 +42,7 @@
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = f.text_area :directional_text, :class=>"form-control elevator_edit_field elevator_directional_text_edit_field elevator_directional_text_edit_field_wysihtml5", :placeholder=>"Elevator Directional Text",  :value=> @elevator.directional_text
-                %span.elevator_directional_text_edit_field_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 200
+                %span.elevator_directional_text_edit_field_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: 275
 
             .form-group.elevator-form-alignment
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
