@@ -1153,8 +1153,8 @@ function dweloLockIntructionText() {
 }
 
 function editElevatorDirectionalTextField () {
-  let characterLimit = 275;
-  
+  // let characterLimit = 275;
+
   $('.elevator_directional_text_edit_field_wysihtml5').each(function(i, elem) {
     $(elem).wysihtml5({'toolbar': {'image': false,'link' : false, 'emphasis' : false},
       events: {
