@@ -16,7 +16,7 @@
             = link_to "<Back to All Floor Plans", community_floorplans_path(@community), class: "btn btn-primary mt-20", style: "background: #8f4a9c; color: white;"
           .col-md-12
             %h4.title 
-              = @floorplan.name + " Floor Plan Images"
+              = (@floorplan&.name ||  "") + " Floor Plan Images"
             %h4{:style => "color: grey;"}
               %p
                 Use the “Add Image” button or drag & drop area below to import images associated with the floor plan.
