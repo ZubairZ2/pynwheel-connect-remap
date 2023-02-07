@@ -21,11 +21,7 @@ class FunnelService < BaseService
       }
     )
 
-    if response["data"].present? && response["data"]["discovery_sources"].present?
-      response["data"]["discovery_sources"].map{|source| source["name"]}
-    else
-      []
-    end
+    get_filtered_discovery_sources(response)
   end
 
   def get_available_days
@@ -109,6 +105,8 @@ class FunnelService < BaseService
     is_appointment_cancelled()
   end
 
+  private
+
   def is_appointment_created response
     if ( response && response["prospect"] && response["appointment"] && response["prospect"]["id"] && response["appointment"]["id"] ).present?
       @scheduled_tour.update_attributes(funnel_prospect_id: response["prospect"]["id"], funnel_appointment_id: response["appointment"]["id"])
@@ -119,7 +117,26 @@ class FunnelService < BaseService
     @scheduled_tour.update_attributes(funnel_prospect_id: nil, funnel_appointment_id: nil)
   end
 
-  private
+  def get_filtered_discovery_sources response
+    sources = parse_discovery_sources_response(response)
+    ignored_sources = ignored_discovery_sources()
+    sources.map{|source| source unless ignored_sources.include?(source.downcase)}.compact.uniq
+  end
+
+  def ignored_discovery_sources
+    [
+      "Ads on Bing", "Ads on Google", "Bing Searce", "Daily Hive", "Facebook", "Instagram", 
+      "Manual", "Online Banner Ad", "RentCafe.com ILS", "Website Chat", "Website Direct"
+    ].map{|source| source.downcase}
+  end
+
+  def parse_discovery_sources_response response
+    if response["data"].present? && response["data"]["discovery_sources"].present?
+      response["data"]["discovery_sources"].map{|source| source["name"]}
+    else
+      []
+    end
+  end
 
   def is_funnel_crm
     @community.is_funnel_community?
