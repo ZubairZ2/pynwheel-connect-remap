@@ -1192,13 +1192,15 @@ s  end
   end
 
   def get_propery_address
-    if self.make_address
+    com_address = if self.make_address
       self.make_address
     elsif self.latitude.present? && self.longitude.present?
       "#{self.latitude},#{self.longitude}"
     else 
       ""
     end
+    
+    URI.escape(com_address, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))
   end
 
   def email_favorites(params)
