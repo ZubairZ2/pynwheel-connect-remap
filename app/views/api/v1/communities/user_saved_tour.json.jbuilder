@@ -94,7 +94,7 @@ json.tours tours do |tour|
         @unit_gallery_arr = []
         @unit_amenities = unit.amenities
 
-        json.unit_amenities @unit_amenities do |unit_amenity|
+        json.unit_amenities @unit_amenities.order(:sort) do |unit_amenity|
           if unit_amenity.x_plot.present? && (unit_amenity.x_plot + unit_amenity.y_plot > 0)
           json.x_plot unit_amenity.x_plot
           json.y_plot unit_amenity.y_plot
