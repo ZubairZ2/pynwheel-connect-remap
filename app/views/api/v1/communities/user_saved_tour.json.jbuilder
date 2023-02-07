@@ -118,7 +118,7 @@ json.tours tours do |tour|
 
             @unit_gallery_arr << unit_amenity
 
-            unit_amenity.amenity_galleries.each do |ag|
+            unit_amenity&.amenity_galleries&.order(:sort)&.each do |ag|
               @unit_gallery_arr << ag
             end
           end
@@ -171,7 +171,7 @@ json.tours tours do |tour|
 
         amenityGalleryArr = []
         amenityGalleryArr << amenity
-        amenity.amenity_galleries.each do |amen|
+        amenity&.amenity_galleries&.order(:sort)&.each do |amen|
           amenityGalleryArr << amen
         end
 
