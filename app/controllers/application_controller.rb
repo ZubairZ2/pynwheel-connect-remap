@@ -13,6 +13,8 @@ class ApplicationController < ActionController::Base
   # Heroku version upgrade
 
   
+  
+
   def current_community
   	if params[:community_id].present?
       session[:community_id] = params[:community_id]

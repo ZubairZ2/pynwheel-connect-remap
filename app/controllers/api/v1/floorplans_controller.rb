@@ -1,4 +1,4 @@
-class Api::V1::FloorplansController < ActionController::Base
+class Api::V1::FloorplansController < Api::V1::BaseController
   include ApplicationHelper
   before_action :authorize_access
   before_action :laod_community
@@ -7,7 +7,7 @@ class Api::V1::FloorplansController < ActionController::Base
 
   def index
     floorplans = floorplan_units_service(@community).get_floorplans
-    bedrooms = params[:bedrooms].present? ? params[:bedrooms].split(',') : "any"
+    bedrooms = params[:bedrooms].present? ? params[:bedrooms].split(',') : ["any"]
     requested_bedrooms = bedrooms.map {|x| x.downcase.eql?("studio") ? "0" : x}
     any_option = bedrooms.map {|b| b.downcase.eql?("any")}
     filtered_floorplans = floorplans.present? ? floorplans.select {|b| requested_bedrooms.include?(b.bedrooms.to_i.to_s) } : [] unless any_option.include?(true) or bedrooms.blank?
@@ -136,6 +136,7 @@ class Api::V1::FloorplansController < ActionController::Base
   end
 
   def laod_community
+    binding.pry
     @community ||= Community.find params[:community_id]
   end
 

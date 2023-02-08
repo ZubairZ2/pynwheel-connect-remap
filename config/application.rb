@@ -1,6 +1,8 @@
 require_relative 'boot'
 
 require 'rails/all'
+require './lib/lograge/formatters/json_custom.rb'
+# require './lib/*.rb'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -16,6 +18,7 @@ module PynwheelCms
     # config.active_jobs.running_on[:resque] = [RealPageDataUpdateWorker, YardirentcafeDataUpdateWorker, EntrataDataUpdateWorker, YardiDataUpdateWorker ]
 
     # config.active_job.queue_adapter = :sucker_punch
+    config.autoload_paths += %W{#{config.root}/lib}
     config.active_job.queue_adapter = :sidekiq
 
     config.action_dispatch.rack_cache = true
@@ -27,6 +30,23 @@ module PynwheelCms
         resource '*', headers: :any, methods: [:get, :post, :options , :patch, :put , :delete]
       end
     end
+    # ========TAIM LOGGING WITH LOGRAGGE========
+    config.log_level = :info
+    config.lograge.enabled = true
+    config.log_tags = [:request_id]
+    config.log_formatter  = ::Logger::Formatter.new
+    config.lograge.formattter = Lograge::Formatters::JsonCustom.new
+
+    # Need and ENV Variable here to assure the logging is stdout or not
+    # shift_age = after shift_size of file the logs will be splitted and divided into shift_age file size
+    # After 20 mb
+    logger = ActiveSupport::Logger.new(STDOUT, shift_age = 3, shift_size = 20.megabytes, shift_period_suffix:  '%Y%m%d-%H:%M:%S')
+    # logger = ActiveSupport::Logger.new(STDOUT)
+    logger.formatter = proc do |severity, datetime, progname, msg|
+      "[#{severity}] [RAILS] #{msg} \n"
+    end
+    config.logger = ActiveSupport::TaggedLogging.new(logger)
+
   end
 
 end
