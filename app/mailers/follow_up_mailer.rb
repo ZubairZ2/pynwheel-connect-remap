@@ -1,5 +1,5 @@
 class FollowUpMailer < ApplicationMailer
-  default from: 'info@pynwheel.com'
+  default from: ENV["FOLLOW_UP_EMAIL_FROM"]
   layout 'mailer'
 
   def preview_application_not_started(forms)
@@ -128,19 +128,19 @@ class FollowUpMailer < ApplicationMailer
     @app_text = get_apps_text(community)
     @community = community
     @user = user
-    mail(to: @user, subject: "Your Pynwheel Applications have been completed!")
+    mail(to: @user, subject: "Your Pynwheel Application has been completed for #{@community.company.name} - #{@community.name}")
   end
 
   def released_app_self_tour_touch(user, community)
     @community = community
     @user = user
-    mail(to: @user, subject: "Your Pynwheel Applications have been completed!")
+    mail(to: @user, subject: "Your Pynwheel Application has been completed for #{@community.company.name} - #{@community.name}")
   end
 
   def released_app_touch(user, community)
     @community = community
     @user = user
-    mail(to: @user, subject: "Your Pynwheel Applications have been completed for #{@community.company.name} - #{@community.name}")
+    mail(to: @user, subject: "Your Pynwheel Application has been completed for #{@community.company.name} - #{@community.name}")
   end
 
   def self.send_email_request(users, subject, body)

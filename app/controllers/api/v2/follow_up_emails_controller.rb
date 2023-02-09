@@ -13,7 +13,7 @@ class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
   end
 
   def preview_submit_for_review_email
-    email = "support@pynwheel.com"
+    email = ENV["FOLLOW_UP_EMAIL"]
     subject = "App Production Complete For #{@community.company.name} #{@community.name}"
     email_body = FollowUpMailer.preview_appliation_submit_for_review(@community, current_user)
     render :json => {:success => true, :email => {email: email, subject: subject, body: email_body}}
@@ -37,11 +37,11 @@ class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
     case email[:type]
     when APPLICATION_IN_PROGRESS
       email = FollowUpMailer.preview_application_in_progess(email[:data])
-      subject = 'Some content was received to pynwheel, but not all'
+      subject = "#{@community.name}: Some content was received to Pynwheel, but not all"
       return {email: email, subject: subject}
     when APPLICATION_NOT_STARTED
       email = FollowUpMailer.preview_application_not_started(email[:data])
-      subject = "No content received yet! is there anything pynwheel can help with?"
+      subject = "#{@community.name}: No content received yet! is there anything Pynwheel can help with?"
       return {email: email, subject: subject}
     end
   end
