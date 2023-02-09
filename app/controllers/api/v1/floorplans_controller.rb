@@ -120,7 +120,6 @@ module Api
         if params[:stop_type] == "amenity"
           st = Amenity.find params[:stop_id]
           stName = st.name
-
         elsif params[:stop_type] == "elevator"
           st = Elevator.find params[:stop_id]
           stName = st.name
@@ -128,7 +127,6 @@ module Api
           st = Unit.find params[:stop_id]
           stName = st.marketing_name
         end
-
         ts = TourStop.create(stop_type: params[:stop_type], stop_id: params[:stop_id], latitude: st.x_plot, longitude: st.y_plot, tour_id: @tour.id, name: stName)
         
         add_remove_stop_into_sort_hash(params[:building], params[:floor], ts, "add")
@@ -138,7 +136,6 @@ module Api
       end
 
       def laod_community
-        binding.pry
         @community ||= Community.find params[:community_id]
       end
 

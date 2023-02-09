@@ -10,10 +10,6 @@ class ApplicationController < ActionController::Base
   helper_method :alphabetical_sort
   helper_method :show_chat_support
   before_action :load_tour_users_chats
-  # Heroku version upgrade
-
-  
-  
 
   def current_community
   	if params[:community_id].present?
