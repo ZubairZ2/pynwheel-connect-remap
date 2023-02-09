@@ -1,234 +1,240 @@
-class Api::SelfTour::V1::CommunitiesController < ActionController::Base
-  include Error::ErrorHandler
+module Api
+  module SelfTour
+    module V1
+      class CommunitiesController < BaseController
+        include Error::ErrorHandler
 
-  before_action :load_community  
-  before_action :load_tour_user
-  before_action :random_string_generator, only: [:initialize_tour]
-  before_action :check_authorization
+        before_action :load_community  
+        before_action :load_tour_user
+        before_action :random_string_generator, only: [:initialize_tour]
+        before_action :check_authorization
 
-  include DweloDevicesHelper
-  include ApplicationHelper
-  include ToursHelper
-  include TourStopsHelper
-  include StripeServices
-  include ShortestPath
+        include DweloDevicesHelper
+        include ApplicationHelper
+        include ToursHelper
+        include TourStopsHelper
+        include StripeServices
+        include ShortestPath
 
-  def user_tour_status
-    if @is_authorized
-      if @community.present? and @tour_user.present?
-        @tour_session_type = "unscheduled"
-        should_range_be_checked = true
-        @tour_user.tour_type = "virtual_tour"                                           # initilize by virtual tour
-        @location_received = false
+        def user_tour_status
+          if @is_authorized
+            if @community.present? and @tour_user.present?
+              @tour_session_type = "unscheduled"
+              should_range_be_checked = true
+              @tour_user.tour_type = "virtual_tour"                                           # initilize by virtual tour
+              @location_received = false
 
-        if params[:latitude].present? and params[:latitude].present?
-          @tour_user.latitude = params[:latitude]
-          @tour_user.longitude = params[:longitude]
-          @location_received = true
-        end
+              if params[:latitude].present? and params[:latitude].present?
+                @tour_user.latitude = params[:latitude]
+                @tour_user.longitude = params[:longitude]
+                @location_received = true
+              end
 
-        @within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1)
+              @within_one_km = geo_distance(@tour_user.latitude, @tour_user.longitude, @community.latitude, @community.longitude, 1)
 
-        timezone = @community.get_time_zone()
-        current_time = current_community_time(@community, params)
-        @is_salesforce_crm = @community.is_salesforce_community?
-        
-        if @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
-          unless @limit_exceeded = (@community.community_tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.community_tour.tour_setting.limit_max_tour,@tour_user) : false)
-            unless @is_salesforce_crm
-              @scheduled_data = nearest_time_tour(@community, @tour_user, current_time)
+              timezone = @community.get_time_zone()
+              current_time = current_community_time(@community, params)
+              @is_salesforce_crm = @community.is_salesforce_community?
+              
+              if @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
+                unless @limit_exceeded = (@community.community_tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.community_tour.tour_setting.limit_max_tour,@tour_user) : false)
+                  unless @is_salesforce_crm
+                    @scheduled_data = nearest_time_tour(@community, @tour_user, current_time)
 
-              if @community.community_tour.only_scheduled_tour
-                if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
-                  if @location_received and @within_one_km
-                    @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type          # either scheduled tour is self_tour/guided_tour
+                    if @community.community_tour.only_scheduled_tour
+                      if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
+                        if @location_received and @within_one_km
+                          @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type          # either scheduled tour is self_tour/guided_tour
+                        else
+                          @tour_user.tour_type = "self_tour"
+                        end
+                      elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
+                        @tour_date = @scheduled_data.nearest_tour.tour_date.strftime('%_m/%d/%Y')
+                        @tour_time = @scheduled_data.nearest_tour.tour_time.strftime('%l:%M %P')
+                      end
+                      should_range_be_checked = false
+                    end
+                    @tour_session_type = "scheduled" if (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?)
                   else
+                    @scheduled_data = sf_nearest_time_tour(@community, @tour_user, current_time, timezone)
+                    if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
+                      if @location_received and @within_one_km
+                        # @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type   ----   # whatever responded in API resonpse
+                      else
+                        @tour_user.tour_type = "self_tour"
+                      end
+                    elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
+                      @tour_date = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%_m/%d/%Y')
+                      @tour_time = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%l:%M %P')
+                    end
+                    should_range_be_checked = false
+                  end
+
+                  if should_range_be_checked and @location_received and @within_one_km
+                      @tour_user.tour_type = (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?) ? @scheduled_data.on_time_tour.tour_type : "self_tour" # if he is not on_time, he should not take guided tour
+                  elsif should_range_be_checked
                     @tour_user.tour_type = "self_tour"
                   end
-                elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
-                  @tour_date = @scheduled_data.nearest_tour.tour_date.strftime('%_m/%d/%Y')
-                  @tour_time = @scheduled_data.nearest_tour.tour_time.strftime('%l:%M %P')
                 end
-                should_range_be_checked = false
               end
-              @tour_session_type = "scheduled" if (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?)
-            else
-              @scheduled_data = sf_nearest_time_tour(@community, @tour_user, current_time, timezone)
-              if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
-                if @location_received and @within_one_km
-                  # @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type   ----   # whatever responded in API resonpse
-                else
-                  @tour_user.tour_type = "self_tour"
-                end
-              elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
-                @tour_date = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%_m/%d/%Y')
-                @tour_time = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%l:%M %P')
-              end
-              should_range_be_checked = false
-            end
 
-            if should_range_be_checked and @location_received and @within_one_km
-                @tour_user.tour_type = (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?) ? @scheduled_data.on_time_tour.tour_type : "self_tour" # if he is not on_time, he should not take guided tour
-            elsif should_range_be_checked
-              @tour_user.tour_type = "self_tour"
+              if (@within_one_km && ( @tour_user.tour_type == "self_tour"))
+                tour_user_arrival_email(@tour_user, @community)
+                @tour_user.arrival_email_sent = true
+              else
+                @tour_user.arrival_email_sent = false
+              end
+
+              @tour_user.save
+              @verfication_type = params[:id_verification].present? ? @community.community_tour.verification_type : "email"
             end
           end
         end
 
-        if (@within_one_km && ( @tour_user.tour_type == "self_tour"))
-          tour_user_arrival_email(@tour_user, @community)
-          @tour_user.arrival_email_sent = true
-        else
-          @tour_user.arrival_email_sent = false
+        def initialize_tour
+          if @is_authorized
+            @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
+            @floorplans = get_floorplans_with_required_filter()
+            @tour_type = params[:tour_status] rescue @tour_user.tour_type
+            @tour_user.update(tour_type: params[:tour_status], tour_key: @random_string, verified_by: params[:verfied_by_provider])
+            
+            charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
+            update_verification_attributes()
+            PropertyAccessCode.new(@community ,@tour_user, @tour_type).restrict_property_access_with_code
+            @community.update(deleted_ids: [])
+
+          else
+            render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+          end
+
         end
 
-        @tour_user.save
-        @verfication_type = params[:id_verification].present? ? @community.community_tour.verification_type : "email"
-      end
-    end
-  end
-
-  def initialize_tour
-    if @is_authorized
-      @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
-      @floorplans = get_floorplans_with_required_filter()
-      @tour_type = params[:tour_status] rescue @tour_user.tour_type
-      @tour_user.update(tour_type: params[:tour_status], tour_key: @random_string, verified_by: params[:verfied_by_provider])
-      
-      charge_for_id_verfication(@tour_user, 200) if (do_verfication params[:verfied_by_provider], @community)
-      update_verification_attributes()
-      PropertyAccessCode.new(@community ,@tour_user, @tour_type).restrict_property_access_with_code
-      @community.update(deleted_ids: [])
-
-    else
-      render :json=> {:status=>false, :message => "Invalid Token", code: 401}
-    end
-
-  end
-
-  def customize_tour
-    if @is_authorized
-      @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
-      @building_list = Buildings.new(@community).get_community_buildings
-      @floor_list = Floors.new(@community).get_community_floors
-      @floor_list_temp = Floors.new(@community).get_community_temp_floors(@floor_list)
-    else
-      render :json=> {:status=>false, :message => "Invalid Token", code: 401}
-    end
-  end
-
-  def generate_locks_accesses
-    if @is_authorized
-      create_zerv_user(@community, @tour_user)
-      current_time = current_community_time(@community, params)
-      lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
-      @tour_user.update(lock_access_time: current_time)
-      
-      render :json=> {status: true, :message => "Locks access generation is started", code: 200}
-    else
-      render :json=> {:status=>false, :message => "Invalid Token", code: 401}
-    end
-
-  end
-
-  def check_lock_access
-    if @is_authorized
-      counter = check_lock_access_counter(@tour_user)
-
-      if (params[:tour_type] == "self_tour" && @tour_user.tour_type != "guided_tour" && @community.enable_locks)
-        if ((@community.multiple_locks_provider.include?("Igloohome") && (@tour_user.igloohome_status == "in progress")) || (@community.multiple_locks_provider.include?("Dwelo") && (@tour_user.dwelo_status == "in progress")) || (@community.multiple_locks_provider.include?("EdgeState")  && (@tour_user.edge_state_status == "in progress")) || (@community.multiple_locks_provider.include?("Latch")  && (@tour_user.latch_status == "in progress")) || (@community.multiple_locks_provider.include?("Zerv")  && (@tour_user.zerv_status == "in progress")) && !(counter >= 20))
-          render :json=> {success: "false", completed: false}
-        else
-          render :json=> {success: "true", completed: true}
+        def customize_tour
+          if @is_authorized
+            @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
+            @building_list = Buildings.new(@community).get_community_buildings
+            @floor_list = Floors.new(@community).get_community_floors
+            @floor_list_temp = Floors.new(@community).get_community_temp_floors(@floor_list)
+          else
+            render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+          end
         end
-      else
-        render :json=> {success: "false", completed: false}
+
+        def generate_locks_accesses
+          if @is_authorized
+            create_zerv_user(@community, @tour_user)
+            current_time = current_community_time(@community, params)
+            lock_access_by_type(params, @community, @tour_user, current_time) if @community.enable_locks and @tour_user.tour_type != "virtual_tour"
+            @tour_user.update(lock_access_time: current_time)
+            
+            render :json=> {status: true, :message => "Locks access generation is started", code: 200}
+          else
+            render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+          end
+
+        end
+
+        def check_lock_access
+          if @is_authorized
+            counter = check_lock_access_counter(@tour_user)
+
+            if (params[:tour_type] == "self_tour" && @tour_user.tour_type != "guided_tour" && @community.enable_locks)
+              if ((@community.multiple_locks_provider.include?("Igloohome") && (@tour_user.igloohome_status == "in progress")) || (@community.multiple_locks_provider.include?("Dwelo") && (@tour_user.dwelo_status == "in progress")) || (@community.multiple_locks_provider.include?("EdgeState")  && (@tour_user.edge_state_status == "in progress")) || (@community.multiple_locks_provider.include?("Latch")  && (@tour_user.latch_status == "in progress")) || (@community.multiple_locks_provider.include?("Zerv")  && (@tour_user.zerv_status == "in progress")) && !(counter >= 20))
+                render :json=> {success: "false", completed: false}
+              else
+                render :json=> {success: "true", completed: true}
+              end
+            else
+              render :json=> {success: "false", completed: false}
+            end
+          else
+            render :json=> {:status=>false, :message => "Invalid Token", code: 401}
+          end
+        end
+
+        def start_tour
+          if @is_authorized
+            if @community.present? && @tour_user.present?
+              tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
+              @tours = [tour]
+
+              delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
+              te = tour_stops_ids(tour, @tour_user, @community)
+              te = []
+              @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
+              @community.save!
+
+              session["check_lock_access#{@tour_user.id.to_s}"] = 0
+              current_time = current_community_time(@community, params)
+
+              @tour_sort_hash = CustomizeTourService.new(@community, @tour_user).get_tour_sort_hash
+              @building_list = Buildings.new(@community).get_community_buildings
+              @floor_list = Floors.new(@community).get_community_floors
+              @floor_list_temp = Floors.new(@community).get_community_temp_floors(@floor_list)
+              @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}       
+              @chat_count = chat_room_count(@tour_user, @community)
+            else
+              render :json=> {:success=>false, :message => "Community or tour user not found"}
+            end
+          else
+            render :json=> {:success=>false, :message => "Invalid Token"}
+          end
+        end
+        
+        private
+
+        def chat_room_count tour_user, community
+          chatroom = Chatroom.find_by(tour_user_id: tour_user.id, tour_id: community.community_tour.id)
+          Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
+        end
+
+        def check_lock_access_counter(tu)
+          session["check_lock_access"+tu.id.to_s] = 0 if (session["check_lock_access"+tu.id.to_s].nil? || (session["check_lock_access"+tu.id.to_s] == 20))
+          session["check_lock_access"+tu.id.to_s] += 1
+          puts "&$"*30, session["check_lock_access"+tu.id.to_s]
+          session["check_lock_access"+tu.id.to_s]
+        end
+
+        def update_verification_attributes
+          if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.community_tour.visual_id_verification
+            @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime, is_authentiq_verified: true) if @community.community_tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
+            @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime, is_checkpoint_verified: true) if @community.community_tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
+          end
+        end
+
+        def load_community
+          @community ||= Community.find(params[:community_id])
+        end
+
+        def load_tour_user
+          @tour_user ||= TourUser.find_by_id(params[:tour_user_id])
+        end
+
+        def random_string_generator
+          @random_string = SecureRandom.hex
+        end
+
+        def get_floorplans_with_required_filter
+          all_floorplans = FloorplanUnitsService.new(@community).get_floorplans
+          all_floorplans = all_floorplans.sort_by {|f| f.bedrooms}.uniq { |b| b.bedrooms }
+          all_floorplans
+        end
+
+        def charge_for_id_verfication(tour_user, amount)
+          return unless tour_user.strip_customer_id.present?
+          charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
+        end
+
+        def do_verfication verfied_by_provider, community
+          (verfied_by_provider == "authenteq") && community.community_tour.tour_setting.present? && community.community_tour.tour_setting.charge_user_for_id_verfication
+        end
+
+        def check_authorization
+          @is_authorized = grant_access (decoded(params[:token])) rescue false
+          @is_authorized = ( api_access ||  (@is_authorized == true) )
+        end
+
       end
-    else
-      render :json=> {:status=>false, :message => "Invalid Token", code: 401}
     end
   end
-
-  def start_tour
-    if @is_authorized
-      if @community.present? && @tour_user.present?
-        tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
-        @tours = [tour]
-
-        delete_array = params[:stop_id].gsub(/[\[\]']/, '').split(",").map(&:to_i) if params[:stop_id].present?
-        te = tour_stops_ids(tour, @tour_user, @community)
-        te = []
-        @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
-        @community.save!
-
-        session["check_lock_access#{@tour_user.id.to_s}"] = 0
-        current_time = current_community_time(@community, params)
-
-        @tour_sort_hash = CustomizeTourService.new(@community, @tour_user).get_tour_sort_hash
-        @building_list = Buildings.new(@community).get_community_buildings
-        @floor_list = Floors.new(@community).get_community_floors
-        @floor_list_temp = Floors.new(@community).get_community_temp_floors(@floor_list)
-        @all_elevators = @community.elevators.map{|x| [x,x.floors, x.building]}       
-        @chat_count = chat_room_count(@tour_user, @community)
-      else
-        render :json=> {:success=>false, :message => "Community or tour user not found"}
-      end
-    else
-      render :json=> {:success=>false, :message => "Invalid Token"}
-    end
-  end
-  
-  private
-
-  def chat_room_count tour_user, community
-    chatroom = Chatroom.find_by(tour_user_id: tour_user.id, tour_id: community.community_tour.id)
-    Chat.where("name = ? AND chatroom_id = ?", "Support Team", chatroom.id).last.id rescue 0
-  end
-
-  def check_lock_access_counter(tu)
-    session["check_lock_access"+tu.id.to_s] = 0 if (session["check_lock_access"+tu.id.to_s].nil? || (session["check_lock_access"+tu.id.to_s] == 20))
-    session["check_lock_access"+tu.id.to_s] += 1
-    puts "&$"*30, session["check_lock_access"+tu.id.to_s]
-    session["check_lock_access"+tu.id.to_s]
-  end
-
-  def update_verification_attributes
-    if (params[:verfied_by_provider] && params[:verified_at]).present? && @community.community_tour.visual_id_verification
-      @tour_user.update_attributes(authentiq_verified_at: params[:verified_at].to_datetime, is_authentiq_verified: true) if @community.community_tour.verification_type == "authenteq" && params[:verfied_by_provider] == "authenteq"
-      @tour_user.update_attributes(checkpoint_verified_at: params[:verified_at].to_datetime, is_checkpoint_verified: true) if @community.community_tour.verification_type == "check_point_id" && params[:verfied_by_provider] == "check_point_id"
-    end
-  end
-
-  def load_community
-    @community ||= Community.find(params[:community_id])
-  end
-
-  def load_tour_user
-    @tour_user ||= TourUser.find_by_id(params[:tour_user_id])
-  end
-
-  def random_string_generator
-    @random_string = SecureRandom.hex
-  end
-
-  def get_floorplans_with_required_filter
-    all_floorplans = FloorplanUnitsService.new(@community).get_floorplans
-    all_floorplans = all_floorplans.sort_by {|f| f.bedrooms}.uniq { |b| b.bedrooms }
-    all_floorplans
-  end
-
-  def charge_for_id_verfication(tour_user, amount)
-    return unless tour_user.strip_customer_id.present?
-    charge_customer(tour_user, amount, "Charging for Id verfication", 'usd')
-  end
-
-  def do_verfication verfied_by_provider, community
-    (verfied_by_provider == "authenteq") && community.community_tour.tour_setting.present? && community.community_tour.tour_setting.charge_user_for_id_verfication
-  end
-
-  def check_authorization
-    @is_authorized = grant_access (decoded(params[:token])) rescue false
-    @is_authorized = ( api_access ||  (@is_authorized == true) )
-  end
-
 end
