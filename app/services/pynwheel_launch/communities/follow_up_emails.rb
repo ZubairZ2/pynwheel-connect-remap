@@ -202,7 +202,7 @@ class PynwheelLaunch::Communities::FollowUpEmails
     return nil if @community.galleries.blank?
     galleries = @community.galleries
     gallery_media_status = galleries.map {|gallery| gallery&.status&.status rescue nil} if galleries.present?
-    status = status_check(gallery_media_status)
+    status = status_check(gallery_media_status.compact)
     status
   end
 
