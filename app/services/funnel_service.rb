@@ -125,7 +125,7 @@ class FunnelService < BaseService
 
   def ignored_discovery_sources
     [
-      "Ads on Bing", "Ads on Google", "Bing Searce", "Daily Hive", "Facebook", "Instagram", 
+      "Ads on Bing", "Ads on Google", "Bing Search", "Google Search", "Daily Hive", "Facebook", "Instagram", 
       "Manual", "Online Banner Ad", "RentCafe.com ILS", "Website Chat", "Website Direct"
     ].map{|source| source.downcase}
   end
