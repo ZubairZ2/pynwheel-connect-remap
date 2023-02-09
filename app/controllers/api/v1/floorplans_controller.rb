@@ -136,7 +136,6 @@ class Api::V1::FloorplansController < Api::V1::BaseController
   end
 
   def laod_community
-    binding.pry
     @community ||= Community.find params[:community_id]
   end
 
