@@ -101,7 +101,7 @@ class FollowUpMailer < ApplicationMailer
   def send_application_approved_email(community, user)
     @user = user
     @community = community
-    mail(to: @user, cc: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} Your Application is Going into Production")
+    mail(to: @user, cc: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} - Your Application is Going into Production")
   end
 
   def self.released_application_email(community)
