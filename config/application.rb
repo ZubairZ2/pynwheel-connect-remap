@@ -18,7 +18,7 @@ module PynwheelCms
     # config.active_jobs.running_on[:resque] = [RealPageDataUpdateWorker, YardirentcafeDataUpdateWorker, EntrataDataUpdateWorker, YardiDataUpdateWorker ]
 
     # config.active_job.queue_adapter = :sucker_punch
-    config.autoload_paths += %W{#{config.root}/lib}
+    config.eager_load_paths += %W{#{config.root}/lib}
     config.active_job.queue_adapter = :sidekiq
 
     config.action_dispatch.rack_cache = true
