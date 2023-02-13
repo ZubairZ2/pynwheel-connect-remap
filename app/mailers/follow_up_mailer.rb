@@ -2,12 +2,14 @@ class FollowUpMailer < ApplicationMailer
   default from: ENV["FOLLOW_UP_EMAIL_FROM"]
   layout 'mailer'
 
-  def preview_application_not_started(forms)
+  def preview_application_not_started(forms, community)
+    @community = community
     @forms = forms
     mail()
   end
 
-  def preview_application_in_progess(forms)
+  def preview_application_in_progess(forms, community)
+    @community = community
     @forms = forms
     mail()
   end
@@ -76,6 +78,7 @@ class FollowUpMailer < ApplicationMailer
   end
 
   def self.non_production_communities_email(community, forms)
+    @community = community
     @users = community.users.pluck(:email)
     @users.each do |user|
       send_non_production_emails(community, user, forms).deliver if is_user_not_dwelo(user)

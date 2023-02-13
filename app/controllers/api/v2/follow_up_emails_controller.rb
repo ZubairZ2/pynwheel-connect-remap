@@ -36,11 +36,11 @@ class Api::V2::FollowUpEmailsController < Api::V2::ApiApplicationController
   def preview_email(email)
     case email[:type]
     when APPLICATION_IN_PROGRESS
-      email = FollowUpMailer.preview_application_in_progess(email[:data])
+      email = FollowUpMailer.preview_application_in_progess(email[:data], @community)
       subject = "#{@community.name}: Some content was received to Pynwheel, but not all"
       return {email: email, subject: subject}
     when APPLICATION_NOT_STARTED
-      email = FollowUpMailer.preview_application_not_started(email[:data])
+      email = FollowUpMailer.preview_application_not_started(email[:data], @community)
       subject = "#{@community.name}: No content received yet! is there anything Pynwheel can help with?"
       return {email: email, subject: subject}
     end
