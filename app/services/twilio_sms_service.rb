@@ -10,13 +10,13 @@ class TwilioSmsService < BaseService
   private
 
   def create_client
-    sid = "AC100385e8559f1ad63a5dbfaa3272a8d5" 
-    auth = "1f768aeab1be375bfe8da7a5e7310e74"
+    sid = ENV["TWILIO_ACCOUNT_SID"]
+    auth = ENV["TWILIO_AUTH_TOKEN"]
     Twilio::REST::Client.new(sid, auth)
   end
 
   def send_sms_to_client client, message_body, twilio_to_phone_number
-    from = "+12017012957"
+    from = ENV["TWILIO_FROM_PHONE_NUMBER"]
 
     client.messages
       .create( 

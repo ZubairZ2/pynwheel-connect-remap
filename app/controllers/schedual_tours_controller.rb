@@ -597,9 +597,9 @@ Get information about your tour here: #{confirmation_page_link}"
     def sms_notifire msg, to
       
       to = to.delete(' ')
-      prod_from = '+12017012957'
-      account_sid = 'AC100385e8559f1ad63a5dbfaa3272a8d5'
-      auth_token = '1f768aeab1be375bfe8da7a5e7310e74'
+      prod_from = ENV["TWILIO_FROM_PHONE_NUMBER"]
+      account_sid = ENV["TWILIO_ACCOUNT_SID"]
+      auth_token = ENV["TWILIO_AUTH_TOKEN"]
       @client = Twilio::REST::Client.new(account_sid, auth_token)
       
       message = @client.messages
