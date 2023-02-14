@@ -2,7 +2,7 @@ require_relative 'boot'
 
 require 'rails/all'
 require './lib/lograge/formatters/json_custom.rb'
-require './lib/log/*.rb'
+require './lib/log/impression.rb'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
