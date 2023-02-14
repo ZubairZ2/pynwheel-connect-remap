@@ -1,10 +1,11 @@
 class Api::SelfTour::V1::TourUsersController < ActionController::Base
-  include Error::ErrorHandler
   include ApplicationHelper
 
+  before_action :check_authentication, only: [:verify_otp, :generate_otp, :delete_account]
   before_action :load_tour_user, only: :delete_account
-  before_action :set_tour_user, only: [:verify_otp, :generate_otp]
+  before_action :set_tour_user, only: [:verify_otp, :generate_otp, :get_tour_user]
   before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
+  before_action :fetch_token, only: [:get_tour_user]
 
   def delete_account
     if @tour_user.present?
@@ -19,15 +20,19 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   end
 
   def generate_otp
-    if @tour_user.present?
-      if @tour_user.phone_number === @apple_test_number
-        render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true }
+    begin
+      if @tour_user.present?
+        if @tour_user.phone_number === @apple_test_number
+          render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true }
+        else
+          send_otp_phone    
+          render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true}
+        end
       else
-        send_otp_phone    
-        render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true}
+        render json: {message: "User not found", success_code: 404, status: false, is_zerv_lock: false, zerv_credentials: {}}
       end
-    else
-      render json: {message: "User not found", success_code: 404, status: false, is_zerv_lock: false, zerv_credentials: {}}
+    rescue => error
+      render json: {message: error.message, success_code: 401, status: false}
     end
   end
 
@@ -38,6 +43,14 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
       else
         render json: {message: "OTP is wrong or expired", success_code: 404, status: false}
       end
+    else
+      render json: {message: "User not found", success_code: 404, status: false}
+    end
+  end
+
+  def get_tour_user
+    if @tour_user.present?
+      render json: {message: "User is verified successfully", success_code: 200, status: true, data: @tour_user, access_token: @token}
     else
       render json: {message: "User not found", success_code: 404, status: false}
     end
@@ -148,6 +161,19 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
 
   def random_otp
     rand(0000..9999).to_s.rjust(4, "0")
+  end
+
+  def fetch_token
+    secure_random = SecureRandom.hex
+    payload = {tour_user_id: @tour_user.id, license_key: params[:license_key], secure_random: secure_random}
+    @tour_user.update_attributes(secure_random: secure_random)
+    @token = encoded(payload)
+  end
+
+  def check_authentication
+    access = grant_access (decoded(params[:token])) rescue false
+    @is_authorized = api_access || access
+    render json: {message: "Not Authorized!", success_code: 401, status: false} unless @is_authorized
   end
   
 end
