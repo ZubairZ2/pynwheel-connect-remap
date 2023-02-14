@@ -610,7 +610,7 @@ Rails.application.routes.draw do
           collection do
             post :generate_otp
             post :verify_otp
-            get :get_tour_user
+            post :get_tour_user
           end
         end
       end

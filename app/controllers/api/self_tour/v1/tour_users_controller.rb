@@ -1,11 +1,10 @@
 class Api::SelfTour::V1::TourUsersController < ActionController::Base
   include ApplicationHelper
 
-  before_action :check_authentication, only: [:verify_otp, :generate_otp, :delete_account]
   before_action :load_tour_user, only: :delete_account
   before_action :set_tour_user, only: [:verify_otp, :generate_otp, :get_tour_user]
   before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
-  before_action :fetch_token, only: [:get_tour_user]
+  before_action :check_authentication, only: [:verify_otp, :generate_otp, :delete_account]
 
   def delete_account
     if @tour_user.present?
@@ -39,7 +38,7 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   def verify_otp
     if @tour_user.present?
       if @tour_user.pin_code === params[:pin_code].to_s
-        render json: {message: "User is verified successfully", success_code: 200, status: true, data: user_tours_data(@tour_user), access_token: encoded(@tour_user.id)}
+        render json: {message: "User is verified successfully", success_code: 200, status: true, data: user_tours_data(@tour_user)}
       else
         render json: {message: "OTP is wrong or expired", success_code: 404, status: false}
       end
@@ -50,7 +49,7 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
 
   def get_tour_user
     if @tour_user.present?
-      render json: {message: "User is verified successfully", success_code: 200, status: true, data: @tour_user, access_token: @token}
+      render json: {message: "User is verified successfully", success_code: 200, status: true, data: @tour_user, token: fetch_token()}
     else
       render json: {message: "User not found", success_code: 404, status: false}
     end
@@ -167,7 +166,7 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
     secure_random = SecureRandom.hex
     payload = {tour_user_id: @tour_user.id, license_key: params[:license_key], secure_random: secure_random}
     @tour_user.update_attributes(secure_random: secure_random)
-    @token = encoded(payload)
+    encoded(payload)
   end
 
   def check_authentication

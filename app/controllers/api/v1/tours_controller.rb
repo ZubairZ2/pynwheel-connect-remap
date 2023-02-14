@@ -450,7 +450,7 @@ iPhone Users:
     end
   end
 
-  def generate_encoded_token tu
+  def generate_encoded_token tour_user
     begin
       secure_random = SecureRandom.hex
       payload = { tour_user_id: tour_user.id, license_key: params[:license_key], secure_random: secure_random }
