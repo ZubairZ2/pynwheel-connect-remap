@@ -5,12 +5,11 @@ class ResmanSwapService < BaseService
       begin
 
         account_id = credentials.resman_account_id
-        #property_id = credentials.property_id
-        url = "https://api.myresman.com/MITS/GetMarketing2_0"
+        url = "#{ENV["RESMAN_BASE_URL"]}/GetMarketing2_0"
         response = HTTParty.post(url,
                                  :body => {
-                                     "ApiKey": '9412bd2716b648c1b00b62643e63850b',
-                                     "IntegrationPartnerID": '1214',
+                                     "ApiKey": ENV["RESMAN_API_KEY"],
+                                     "IntegrationPartnerID": ENV["RESMAN_PARTNER_ID"],
                                      "AccountID": account_id,
                                      "PropertyID": property_id,
                                  },

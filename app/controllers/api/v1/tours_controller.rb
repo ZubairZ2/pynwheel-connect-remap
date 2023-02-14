@@ -184,7 +184,7 @@ class Api::V1::ToursController < ActionController::Base
       app_link = params[:company_name].downcase == "lincoln" ? "http://onelink.to/6fsxvq" : "http://onelink.to/m5vuhn" rescue "https://apps.apple.com/us/app/self-tour/id1488907392"
       android_link = params[:company_name].downcase == "lincoln" ? "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.selftour" rescue "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
 
-      if params[:access_token] == "AC1097385e8559f1ad63"
+      if params[:access_token] == ENV["FEEDBACK_TOKEN"]
         to = params[:phone_number]
         start_tour_auto_msg = "Thank you for choosing to tour our property!
 click here to start your tour.

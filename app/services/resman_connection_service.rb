@@ -8,13 +8,11 @@ class ResmanConnectionService < BaseService
 
       account_id = credentials.resman_account_id
       version = credentials.resman_api_version
-      #property_id = credentials.property_id
-
-      url = "https://api.myresman.com/MITS/#{version}"
+      url = "#{ENV["RESMAN_BASE_URL"]}/#{version}"
       response = HTTParty.post(url,
                                :body => {
-                                   "ApiKey": '9412bd2716b648c1b00b62643e63850b',
-                                   "IntegrationPartnerID": '1214',
+                                   "ApiKey": ENV["RESMAN_API_KEY"],
+                                   "IntegrationPartnerID": ENV["RESMAN_PARTNER_ID"],
                                    "AccountID": account_id,
                                    "PropertyID": property_id,
                                },
@@ -22,6 +20,7 @@ class ResmanConnectionService < BaseService
       response =  response.body.gsub('@','')
       hash = JSON.parse(response)
       hash.to_xml
+
     rescue => e
       response
     end

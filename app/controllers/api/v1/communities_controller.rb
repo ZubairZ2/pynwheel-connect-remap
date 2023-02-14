@@ -109,7 +109,7 @@ class Api::V1::CommunitiesController < ActionController::Base
       begin
         secure_random = SecureRandom.hex
 
-        payload = {tour_user_id: params[:tour_user_id], license_key: params[:license_key],secure_random: secure_random}
+        payload = {tour_user_id: params[:tour_user_id], license_key: params[:license_key], secure_random: secure_random}
         # session[params[:tour_user_id].to_i] = secure_random
         (TourUser.find params[:tour_user_id]).update_attributes(secure_random: secure_random)
         @token = encoded(payload)
@@ -123,7 +123,7 @@ class Api::V1::CommunitiesController < ActionController::Base
         @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
       end
     else
-      if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+      if params[:access_token] == ENV["ST_APP_TOKEN"]
         if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
           touruser = TourUser.find_by_id params[:tour_user_id]
           @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
@@ -143,7 +143,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def lincoln_list_communities
     @allow_usage, @redirect_url = get_version_access params 
-    if params[:access_token] == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    if params[:access_token] == ENV["ST_APP_TOKEN"]
       company = Company.where('lower(name) = ?', 'lincoln')
       @communities = Community.where(company_id: company.first.id).select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
     else

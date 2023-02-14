@@ -36,8 +36,8 @@ class PynwheelAccessService < BaseService
   end
 
 #Delete pynwhel access user
-  def pynwheel_access_delete_user(phone_number, token)
-    url = "https://h9xrj68d51.execute-api.us-east-1.amazonaws.com/StageAccessPortal/v1/portal/user/deleteuser/#{phone_number}"
+  def pynwheel_access_delete_user(phone_number, token) 
+    url = "#{ENV['PYNWHEEL_ACCESS_DELETE_USER_BASE_URL']}#{phone_number}"
 
     response = HTTParty.delete(url, 
       headers: { 
