@@ -1,4 +1,3 @@
-json.token @token.present? ? @token : ""
 json.allow_usage @allow_usage
 json.redirect_url @redirect_url
 json.communities @communities do |community|
