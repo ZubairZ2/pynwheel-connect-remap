@@ -1,9 +1,8 @@
 class Api::SelfTour::V1::TourUsersController < ActionController::Base
 
   include ApplicationHelper
-  before_action :check_authentication, only: [:generate_otp, :verify_otp]
-  before_action :load_tour_user, only: :delete_account
-  before_action :set_tour_user, only: [:verify_otp, :generate_otp, :get_tour_user]
+  before_action :check_authentication, except: :get_tour_user
+  before_action :set_tour_user
   before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
 
   def delete_account
@@ -109,10 +108,6 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
       
       return tour_date_time <= new_date_time
     end
-  end
-
-  def load_tour_user
-    @tour_user ||= TourUser.find_by_id params[:id]
   end
 
   def destroy_user
