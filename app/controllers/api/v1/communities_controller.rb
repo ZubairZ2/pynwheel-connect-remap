@@ -128,7 +128,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def community_tours
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       require 'securerandom'
       @random_string = SecureRandom.hex
@@ -252,7 +252,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def delete_tour_stop_v1
     puts params
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       @community = Community.find params[:id] if params[:id].present?
       @tour_user = TourUser.find_by(id: params[:tour_user_id]) if params[:tour_user_id].present?
@@ -311,7 +311,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def user_saved_tour
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       @community = Community.find params[:community_id] if params[:community_id].present?
       @tour_user = TourUser.find params[:tour_user_id]
@@ -368,7 +368,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def get_count_screen
     data = Hash.new
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       if @tour_user.present?
@@ -422,7 +422,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def get_tour_user_by_tour
     data = Hash.new
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       if @tour_user.present?
@@ -445,7 +445,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def tour_user_data
     data = Hash.new
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       @community = Community.find_by_id params[:id]
       @tour_user = TourUser.find_by_id params[:tour_user_id]
@@ -467,7 +467,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def get_filtered_tours
     data = Hash.new
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       if @tour_user.present?
@@ -506,7 +506,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   def tour_configrations
     #################### Remember this call is being called twice for one of the usecase in mobile app #######################
     puts params
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       if params[:id].present? and params[:tour_user_id].present?
         @community = Community.find_by_id params[:id]
@@ -579,7 +579,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def tour_configrations_v1
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     @tour_session_type = "unscheduled"
     if has_access
       if params[:id].present? and params[:tour_user_id].present?
@@ -667,7 +667,7 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def check_lock_access
     puts params
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       community = Community.find params[:id]
       tu = TourUser.find params[:tour_user_id]
@@ -1410,7 +1410,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def check_authentication
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     render json: {message: "Not Authorized!", success_code: 401, status: false} unless has_access
   end
 end

@@ -5,7 +5,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
   before_action :set_community, only: [:verify_property_access_code]
 
   def save_tour_history
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       if params[:community_id].present? && params[:tour_user_id].present?
         params[:id].present? ? tour_history = TourHistory.find_or_create_by(id: params[:id]) : tour_history = TourHistory.new
@@ -86,7 +86,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
   end
 
   def verify_property_access_code
-    has_access = grant_access (decoded(params[:token]),  params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]),  params[:tour_user_id]) rescue false
     if has_access
       access_code = params[:access_code] rescue ""
       is_property_access_enabled = @community&.community_tour&.tour_setting&.enable_restricted_property_access
@@ -131,7 +131,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
   end
 
   def alerts_during_tour
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       if params[:community_id].present? && params[:tour_id].present? && params[:tour_user_id].present?
         id_mismatch = false
@@ -225,7 +225,7 @@ class Api::V1::TourHistoriesController < ActionController::Base
   end
 
   def change_id_selfie_status
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     if has_access
       if params[:tour_user_id].present? && params[:id_selfie_mismatch_status].present?
         

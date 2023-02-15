@@ -8,7 +8,7 @@ class Api::V1::ToursController < ActionController::Base
   require 'securerandom'
 
   def save_user_data
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
 
     if has_access
       tempFile = params[:image]
@@ -32,7 +32,7 @@ class Api::V1::ToursController < ActionController::Base
   end
 
   def save_user_selfie
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
 
     if has_access
       tempFile = params[:image]
@@ -74,7 +74,7 @@ class Api::V1::ToursController < ActionController::Base
   end
 
   def save_user_id_card
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     
     if has_access
       tempFile = params[:image]
@@ -106,7 +106,7 @@ class Api::V1::ToursController < ActionController::Base
   end
 
   def save_user_tour
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     
     if has_access
       unless params[:tour_user_id].present? && params[:tour_stop_id].present? && params[:tour_id].present?
@@ -216,7 +216,7 @@ iPhone Users:
   end
 
   def save_shared_tour
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
 
     if has_access
       shared_tour = SharedTour.new shared_tour_params
@@ -274,7 +274,7 @@ iPhone Users:
   end
 
   def floorplan_units
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
 
     if has_access
       if params[:unit_id].present?
@@ -309,7 +309,7 @@ iPhone Users:
   end
 
   def floorplan_list
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     
     if has_access
       @community = Community.find params[:community_id]
@@ -325,7 +325,7 @@ iPhone Users:
   end
 
   def floorplan_units_v1
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
 
     if has_access
       if params[:floorplan_id].present?
@@ -359,7 +359,7 @@ iPhone Users:
     end
   end
   def mis_match_verification
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
    
     begin
       if has_access
@@ -397,7 +397,7 @@ iPhone Users:
   end
 
   def save_tour_user_card_info
-    has_access = grant_access (decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     
     if has_access
       if params[:tour_user_id].present? && TourUser.find_by(id: params[:tour_user_id]).present?
