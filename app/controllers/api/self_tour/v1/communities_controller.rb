@@ -1,5 +1,5 @@
 class Api::SelfTour::V1::CommunitiesController < ActionController::Base
-  include Error::ErrorHandler
+  # include Error::ErrorHandler
 
   before_action :check_authorization
   before_action :load_community  
