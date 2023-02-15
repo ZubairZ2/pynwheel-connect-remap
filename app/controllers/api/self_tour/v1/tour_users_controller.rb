@@ -4,7 +4,7 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   before_action :load_tour_user, only: :delete_account
   before_action :set_tour_user, only: [:verify_otp, :generate_otp, :get_tour_user]
   before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
-  before_action :check_authentication, except: [:get_tour_user]
+  before_action :check_authentication, only: [:generate_otp, :verify_otp]
 
   def delete_account
     if @tour_user.present?
