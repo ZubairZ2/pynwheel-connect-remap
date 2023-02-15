@@ -1,10 +1,10 @@
 class Api::SelfTour::V1::TourUsersController < ActionController::Base
-  include ApplicationHelper
 
+  include ApplicationHelper
+  before_action :check_authentication, only: [:generate_otp, :verify_otp]
   before_action :load_tour_user, only: :delete_account
   before_action :set_tour_user, only: [:verify_otp, :generate_otp, :get_tour_user]
   before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
-  before_action :check_authentication, only: [:generate_otp, :verify_otp]
 
   def delete_account
     if @tour_user.present?
@@ -170,7 +170,7 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   end
 
   def check_authentication
-    has_access = grant_access(decoded(params[:token], params[:tour_user_id])) rescue false
+    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
     render json: {message: "Invalid Token, Not Authorized!", success_code: 401, status: false} unless has_access
   end
   
