@@ -76,7 +76,7 @@ class SchedulerWidgetConstants
       key: 4,
       image: "instruction-4.png",
       title: "Apply for a Lease or Start Chat",
-      text: "Find the home you want? Apply for a lease, or talk to property staff directly via live chat."
+      text: "Find the home you want? Apply for a lease, or talk to property staff directly via live chat.",
       background: "#fcf0ff"
     }
   ]
