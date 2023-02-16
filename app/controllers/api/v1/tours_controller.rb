@@ -212,7 +212,7 @@ iPhone Users:
       @tour_user = create_new_tour_user
     end
 
-    render :json => { :success => true, :message => "New User has been created successfuly!", tour_user: @tour_user, token: generate_encoded_token(@tour_user), allowed_email: is_community_allows_user(@community, @tour_user) }
+    render :json => { :success => true, :message => "New User has been created successfuly!", tour_user: @tour_user, token: encoded(@tour_user), allowed_email: is_community_allows_user(@community, @tour_user) }
   end
 
   def save_shared_tour
@@ -443,19 +443,6 @@ iPhone Users:
     else
       "Something went wrong!"
     end
-  end
-
-  def generate_encoded_token tour_user
-    begin
-      secure_random = SecureRandom.hex
-      payload = { tour_user_id: tour_user.id, license_key: params[:license_key], secure_random: secure_random }
-      tour_user.update_attributes(secure_random: secure_random)
-      token = encoded(payload)
-    rescue => ex
-      token = nil
-    end
-
-    token
   end
 
   def create_new_tour_user

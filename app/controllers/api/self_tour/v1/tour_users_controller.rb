@@ -158,10 +158,7 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   end
 
   def fetch_token
-    secure_random = SecureRandom.hex
-    payload = {tour_user_id: @tour_user.id, license_key: params[:license_key], secure_random: secure_random}
-    @tour_user.update_attributes(secure_random: secure_random)
-    encoded(payload)
+    encoded(@tour_user)
   end
 
   def check_authentication

@@ -20,7 +20,8 @@ module ApplicationHelper
     end
   end
 
-  def encoded(payload)
+  def encoded(tour_user)
+    payload = {tour_user_id: tour_user&.id, tour_user_email: tour_user&.email}
     JWT.encode payload, ENV['SECRET_KEY_BASE'], 'HS256'
   end
 
@@ -32,7 +33,7 @@ module ApplicationHelper
     begin
       tour_user = TourUser.find tour_user_id
       if tour_user.present?
-        ((tour_user&.id == token[0]['tour_user_id'].to_i) && tour_user.secure_random == token[0]['secure_random'])
+        ((tour_user&.id == token[0]['tour_user_id'].to_i) && tour_user.email == token[0]['tour_user_email'])
       else
         false
       end
