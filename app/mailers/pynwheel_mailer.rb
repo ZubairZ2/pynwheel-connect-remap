@@ -14,8 +14,8 @@ class PynwheelMailer < ApplicationMailer
 		@unschedSelfTour = SchedulerWidgetConstants::UNSCHED_SELF_TOUR_DATA
 		remoteTourData = remote_tour_data(@community)
 
-		@data = @property_tour_type == "remote_tour" ? remoteTourData : (@property_tour_type == "scheduled_tour" && @tour_type == "guided_tour") ? schedGuidedTourData : schedSelfTourData if (@property_tour_type or @tour_type).present? 
-		@data = check_community_chat(@data, @community)
+		data = @property_tour_type == "remote_tour" ? remoteTourData : (@property_tour_type == "scheduled_tour" && @tour_type == "guided_tour") ? schedGuidedTourData : schedSelfTourData if (@property_tour_type or @tour_type).present? 
+		@data = check_community_chat(data, @community)
 
     str = msg
 		start_index = str.index('{')
@@ -47,7 +47,7 @@ class PynwheelMailer < ApplicationMailer
   private
 
 	def check_community_chat data, community
-		return unless (data.present? or community&.chat_control.present?
+		return unless (data.present? or community&.chat_control.present?)
 		replace_able_text = community.chat_control ? SchedulerWidgetConstants::CHAT_ENABLED_INSTRUCTIONS : SchedulerWidgetConstants::CHAT_DISABLED_INSTRUCTIONS
 		data[3]&.replace(replace_able_text[0])
 		data
