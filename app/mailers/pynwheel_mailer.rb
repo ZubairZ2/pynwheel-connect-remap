@@ -47,6 +47,7 @@ class PynwheelMailer < ApplicationMailer
   private
 
 	def check_community_chat data, community
+		return unless (data.present? or community&.chat_control.present?
 		replace_able_text = community.chat_control ? SchedulerWidgetConstants::CHAT_ENABLED_INSTRUCTIONS : SchedulerWidgetConstants::CHAT_DISABLED_INSTRUCTIONS
 		data[3]&.replace(replace_able_text[0])
 		data
