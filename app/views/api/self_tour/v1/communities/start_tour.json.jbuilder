@@ -444,10 +444,10 @@ json.tours @tours do |tour|
 
     if new_stops_arr[counter + 1].is_a? Tour
       ((new_stops_arr.compact.size - 2) == counter) ? navigation_title = "Next Stop: Starting point" : navigation_title = "Next Stop: Starting point"
-      bypass_stop_lock = true
+      bypass_stop_lock = true if !@community.is_sitemap && @community.community_tour.tour_setting.bypass_stop_lock_access && new_stops_arr[counter]&.stop_type == "elevator"
     elsif skip_1 and new_stops_arr[counter + 2].is_a? Tour
       ((new_stops_arr.compact.size - 2) == counter) ? navigation_title = "Next Stop: Starting point" : navigation_title = "Next Stop: Starting point"
-      bypass_stop_lock = true
+      bypass_stop_lock = true if !@community.is_sitemap && @community.community_tour.tour_setting.bypass_stop_lock_access && new_stops_arr[counter]&.stop_type == "elevator"
     elsif  new_stops_arr.compact[counter + 1].present? and new_stops_arr.compact[counter + 1].id == last_stop_id
       navigation_title = @community.show_map ? ("Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Next Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
       navigation_title = (new_stops_arr[counter + 1].present? && new_stops_arr[counter + 1].stop_type == "unit") ? new_stops_arr[counter + 1].get_unit_navigation_title(navigation_title) : navigation_title
