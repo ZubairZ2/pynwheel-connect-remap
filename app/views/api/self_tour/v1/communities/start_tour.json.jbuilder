@@ -486,6 +486,7 @@ json.tours @tours do |tour|
       json.lock_provider_mac_id ''
       json.list_of_zerv_lock_ids list_of_zerv_lock_ids
       json.navigation_title navigation_title
+      json.bypass_stop_lock bypass_stop_lock
       json.id stop.id
       json.x_plot stop.x_plot
       json.y_plot stop.y_plot
