@@ -73,6 +73,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
       sitemap = @community.sitemap
       if sitemap.present?
         if sitemap.remove_label_image!
+          sitemap.save
           @community.set_property_map_status(current_pynwheel_user, "in_progress")
           render :json => {:success => true, :error_code => 200, :message => "Garden style community label image deleted successfully", data: nil}
         end
@@ -81,6 +82,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
       floorplate = @community.floorplates.find_by(id: params["property_id"])
       if floorplate.present?
         if floorplate.remove_label_image!
+          floorplate.save
           @community.set_property_map_status(current_pynwheel_user, "in_progress")
           render :json => {:success => true, :error_code => 200, :message => "Mid high rise community label image deleted successfully", data: nil}
         end
