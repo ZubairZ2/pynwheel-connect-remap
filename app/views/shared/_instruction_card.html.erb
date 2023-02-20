@@ -100,6 +100,10 @@
 </div>
 <div class="container col-md-12 mt-10 card-main">
   <% data = obj[:property_tour_type] == "remote_tour" ? remoteTourData : (obj[:property_tour_type] == "scheduled_tour" && obj[:tour_type] == "guided_tour") ? schedGuidedTourData : schedSelfTourData %>
+  
+  <% replace_able_text = obj[:chat_control] ? SchedulerWidgetConstants::CHAT_ENABLED_INSTRUCTIONS : SchedulerWidgetConstants::CHAT_DISABLED_INSTRUCTIONS %>
+  <% data[3]&.replace(replace_able_text[0]) %>
+
   <% data.each do |i| %>
     <div class="col-md-3 card-col">
       <div class="card align_items mt-10 h-100">

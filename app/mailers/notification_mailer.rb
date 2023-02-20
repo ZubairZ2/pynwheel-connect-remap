@@ -12,37 +12,10 @@ class NotificationMailer < ApplicationMailer
 		schedSelfTourData = SchedulerWidgetConstants::SCHED_SELF_TOUR_DATA
 		schedGuidedTourData = SchedulerWidgetConstants::SCHED_GUIDED_TOUR_DATA
 		@unschedSelfTour = SchedulerWidgetConstants::UNSCHED_SELF_TOUR_DATA
-		remoteTourData = [
-			{
-				key: 1,
-				image: "instruction-1.png",
-				title: "Install App and Choose Property",
-				text: "Install the app and choose #{@community.name} from the list of properties to start your remote tour.",
-				background: "#e2f5ff"
-			},
-			{
-				key: 2,
-				image: "instruction-2.png",
-				title: "Start Tour Virtually",
-				text: "After selecting a property choose to start a virtual tour and select apartments and amenities you want to visit.",
-				background: "#efffe7"
-			},
-			{
-				key: 3,
-				image: "instruction-3.png",
-				title: "See Property Images and Navigate",
-				text: "The app will show you images of available floor plans and different amenities while navigating from one stop to the next.",
-				background: "#ffebe6"
-			},
-			{
-				key: 4,
-				image: "instruction-4.png",
-				title: "Apply for a Lease or Start Chat",
-				text: "Find the home you want? Apply for a lease or talk to property staff directly via live chat.",
-				background: "#fcf0ff"
-			}
-		]
-		@data = @property_tour_type == "remote_tour" ? remoteTourData : (@property_tour_type == "scheduled_tour" && @tour_type == "guided_tour") ? schedGuidedTourData : schedSelfTourData if (@property_tour_type or @tour_type).present? 
+		remoteTourData = remote_tour_data(@community)
+		data = @property_tour_type == "remote_tour" ? remoteTourData : (@property_tour_type == "scheduled_tour" && @tour_type == "guided_tour") ? schedGuidedTourData : schedSelfTourData if (@property_tour_type or @tour_type).present? 
+		@data = (@community.present? && data.present?) ? check_community_chat(data, @community) : []
+
 		str = msg
 		start_index = str.index('{')
 		end_index = str.index('}')
@@ -69,5 +42,48 @@ class NotificationMailer < ApplicationMailer
 		mail(to: to, from: email_from, subject: subject)
 
 	end
+
+
+  private
+
+	def check_community_chat data, community
+		return unless data[3].present?
+		replace_able_text = community.chat_control ? SchedulerWidgetConstants::CHAT_ENABLED_INSTRUCTIONS : SchedulerWidgetConstants::CHAT_DISABLED_INSTRUCTIONS
+		data[3]&.replace(replace_able_text[0]) if replace_able_text.present? && replace_able_text[0].present?
+		data
+	end
+
+  def remote_tour_data community
+    [
+			{
+				key: 1,
+				image: "instruction-1.png",
+				title: "Install App and Choose Property",
+				text: "Install the app and choose #{community.name} from the list of properties to start your remote tour.",
+				background: "#e2f5ff"
+			},
+			{
+				key: 2,
+				image: "instruction-2.png",
+				title: "Start Tour Virtually",
+				text: "After selecting a property choose to start a virtual tour and select apartments and amenities you want to visit.",
+				background: "#efffe7"
+			},
+			{
+				key: 3,
+				image: "instruction-3.png",
+				title: "See Property Images and Navigate",
+				text: "The app will show you images of available floor plans and different amenities while navigating from one stop to the next.",
+				background: "#ffebe6"
+			},
+			{
+				key: 4,
+				image: "instruction-4.png",
+				title: "Apply for a Lease or Start Chat",
+				text: "Find the home you want? Apply for a lease or talk to property staff directly via live chat.",
+				background: "#fcf0ff"
+			}
+		]
+  end
 
 end

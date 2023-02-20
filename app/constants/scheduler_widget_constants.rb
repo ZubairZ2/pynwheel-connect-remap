@@ -61,6 +61,27 @@ class SchedulerWidgetConstants
     }
   ]
 
+  CHAT_DISABLED_INSTRUCTIONS = [
+    {
+      key: 4,
+      image: "instruction-4.png",
+      title: "Apply for a Lease",
+      text: "Find the home you want? Apply for a lease, or contact the property for more information.",
+      background: "#fcf0ff"
+    }
+  ]
+
+  CHAT_ENABLED_INSTRUCTIONS = [
+    {
+      key: 4,
+      image: "instruction-4.png",
+      title: "Apply for a Lease or Start Chat",
+      text: "Find the home you want? Apply for a lease, or talk to property staff directly via live chat.",
+      background: "#fcf0ff"
+    }
+  ]
+
+
   UNSCHED_SELF_TOUR_DATA = {title: "Start Tour At Property", text: "At the property, open the app to start the tour and choose the apartments and amenities you want to see!"}
   REMOTE_TOUR_TITLE = "Install our app to take a remote tour at any time from the comfort of your home"
   UNSCHED_SELF_TOUR_TITLE = "Be at the property any time during visiting hours at your own convenience"

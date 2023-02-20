@@ -164,7 +164,7 @@
         </section>
           <section class="mt-15">
             <div class="container how_it_works">
-                <%= render 'shared/instruction_card', :obj => {property_tour_type: property_tour_type,community_name: community_name,tour_type: tour_type,
+                <%= render 'shared/instruction_card', :obj => {chat_control: @community.chat_control, property_tour_type: property_tour_type, community_name: community_name,tour_type: tour_type,
                 property_access: @community.community_tour.tour_setting.enable_restricted_property_access} %>
             </div>
           </section>
