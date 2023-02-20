@@ -330,10 +330,10 @@
                             %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
                               %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                                 %tr
-                                  %td{:style => "padding: 0px 20px; text-align: center;"}
-                                    = image_tag "pynwheel-default-logo.png", :style => "width: 200px; margin: auto;"
-                                    %p.companyText Pynwheel Inc.
-
+                                  %td.textContent{:align => "center", :style => "padding: 0px 20px; text-align: center;", :valign => "top"}
+                                    = image_tag "pynwheel-default-logo.png", :class => "email-logo",  :width => "200"
+                                    %p.companyText{:style => "margin-top: 0;text-align: center;color: #000000;"} Pynwheel Inc.
+                                    
                   %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                     %tr
                       %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
@@ -389,14 +389,14 @@
                   %table#templateBody{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                     %tr
                       %td{:align => "center", :valign => "top"}
-                        %table.templateContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "background-color:#CCCCCC ; ", :width => ""}
+                        %table.templateContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "background-color:#CCCCCC ; ", :width => "100%"}
                           %tr
                             %td.bodyContainer{:style => "padding-top:10px;", :valign => "top"}
                               %table.mcnTextBlock{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                                 %tbody.mcnTextBlockOuter
                                   %tr
                                     %td.mcnTextBlockInner{:valign => "top"}
-                                      %table.mcnTextContentContainer{:align => "center", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => ""}
+                                      %table.mcnTextContentContainer{:align => "center", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                                         %tbody
                                           %tr
                                             %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 15px; padding-left: 18px; color:#000000; text-align:center;", :valign => "top"}

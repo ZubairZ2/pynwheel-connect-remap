@@ -1,13 +1,15 @@
 class FollowUpMailer < ApplicationMailer
-  default from: 'info@pynwheel.com'
+  default from: ENV["FOLLOW_UP_EMAIL_FROM"]
   layout 'mailer'
 
-  def preview_application_not_started(forms)
+  def preview_application_not_started(forms, community)
+    @community = community
     @forms = forms
     mail()
   end
 
-  def preview_application_in_progess(forms)
+  def preview_application_in_progess(forms, community)
+    @community = community
     @forms = forms
     mail()
   end
@@ -76,6 +78,7 @@ class FollowUpMailer < ApplicationMailer
   end
 
   def self.non_production_communities_email(community, forms)
+    @community = community
     @users = community.users.pluck(:email)
     @users.each do |user|
       send_non_production_emails(community, user, forms).deliver if is_user_not_dwelo(user)
@@ -101,7 +104,7 @@ class FollowUpMailer < ApplicationMailer
   def send_application_approved_email(community, user)
     @user = user
     @community = community
-    mail(to: @user, cc: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} Your Application is Going into Production")
+    mail(to: @user, cc: ENV["FOLLOW_UP_EMAIL"], subject: "#{@community.name} - Your Application is Going into Production")
   end
 
   def self.released_application_email(community)
@@ -128,19 +131,19 @@ class FollowUpMailer < ApplicationMailer
     @app_text = get_apps_text(community)
     @community = community
     @user = user
-    mail(to: @user, subject: "Your Pynwheel Applications have been completed!")
+    mail(to: @user, subject: "Your Pynwheel Application has been completed for #{@community.company.name} - #{@community.name}")
   end
 
   def released_app_self_tour_touch(user, community)
     @community = community
     @user = user
-    mail(to: @user, subject: "Your Pynwheel Applications have been completed!")
+    mail(to: @user, subject: "Your Pynwheel Application has been completed for #{@community.company.name} - #{@community.name}")
   end
 
   def released_app_touch(user, community)
     @community = community
     @user = user
-    mail(to: @user, subject: "Your Pynwheel Applications have been completed for #{@community.company.name} - #{@community.name}")
+    mail(to: @user, subject: "Your Pynwheel Application has been completed for #{@community.company.name} - #{@community.name}")
   end
 
   def self.send_email_request(users, subject, body)

@@ -297,11 +297,11 @@
            padding:15px !important;
          }
       }
-  %body{:bgcolor => "#E1E1E1", :leftmargin => "0", :marginheight => "0", :marginwidth => "0", :offset => "0", :topmargin => "0"}
-    %center{:style => "background-color:#E1E1E1;"}
-      %table#bodyTable{:border => "0", :cellpadding => "0", :cellspacing => "0", :height => "100%", :style => "table-layout: fixed;max-width:100% !important;width: 100% !important;min-width: 100% !important;", :width => "100%"}
-        %tr
-          %td#bodyCell{:align => "center", :valign => "top"}
+  %body{:bgcolor => "#E1E1E1", :leftmargin => "0", :marginheight => "0", :marginwidth => "0", :offset => "0", :topmargin => "0", :style => "background-color:#E1E1E1;"}
+    %center{:style => "background-color:#E1E1E1;", :style => "background-color:#E1E1E1;"}
+      %table#bodyTable{:bgcolor => "#E1E1E1", :border => "0", :cellpadding => "0", :cellspacing => "0", :height => "100%", :style => "background-color:#E1E1E1;table-layout: fixed;max-width:100% !important;width: 100% !important;min-width: 100% !important;", :width => "100%"}
+        %tr{:bgcolor => "#E1E1E1",  :style => "background-color:#E1E1E1;"}
+          %td#bodyCell{:align => "center", :valign => "top", :bgcolor => "#E1E1E1",  :style => "background-color:#E1E1E1;"}
             %table#emailHeader{:bgcolor => "#E1E1E1", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "620"}
               %tr
                 %td{:align => "center", :valign => "top"}
@@ -329,9 +329,9 @@
                             %td.flexibleContainerCell{:align => "center", :valign => "top", :width => "620"}
                               %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
                                 %tr
-                                  %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
-                                    = image_tag "pynwheel-default-logo.png", :class => "email-logo"
-                                    %p.companyText Pynwheel Inc.
+                                  %td.textContent{:align => "center", :style => "padding: 0px 20px; text-align: center;", :valign => "top"}
+                                    = image_tag "pynwheel-default-logo.png", :class => "email-logo",  :width => "200"
+                                    %p.companyText{:style => "margin-top: 0;text-align: center;color: #000000;"} Pynwheel Inc.
 
                   %table{:border => "0", :cellpadding => "15", :cellspacing => "0", :width => "620"}
                     %tr
@@ -344,14 +344,14 @@
                   %table#templateBody{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                     %tr
                       %td{:align => "center", :valign => "top"}
-                        %table.templateContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "background-color:#CCCCCC ; ", :width => ""}
+                        %table.templateContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :style => "background-color:#CCCCCC ; ", :width => "100%"}
                           %tr
                             %td.bodyContainer{:style => "padding-top:10px;", :valign => "top"}
                               %table.mcnTextBlock{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                                 %tbody.mcnTextBlockOuter
                                   %tr
                                     %td.mcnTextBlockInner{:valign => "top"}
-                                      %table.mcnTextContentContainer{:align => "center", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => ""}
+                                      %table.mcnTextContentContainer{:align => "center", :border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
                                         %tbody
                                           %tr
                                             %td.mcnTextContent{:style => "padding-top:15px; padding-right: 18px; padding-bottom: 15px; padding-left: 18px; color:#000000; text-align:center;", :valign => "top"}
