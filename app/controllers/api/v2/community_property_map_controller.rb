@@ -23,7 +23,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     property_type = params["community"]["property_type"]
     @status = params["status"]
     if property_type.eql?(SITEMAP)
-      @community.floorplates.delete_all if @community.floorplates.present?
+      # @community.floorplates.delete_all if @community.floorplates.present?
       @community.is_sitemap = true
       @community.save
       property_map = add_sitemap_property(params)
