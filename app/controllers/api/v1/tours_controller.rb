@@ -8,14 +8,10 @@ class Api::V1::ToursController < ActionController::Base
   require 'securerandom'
 
   def save_user_data
-    puts params
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
 
+    if has_access
       tempFile = params[:image]
-      # tempFile = tempFile.path
-      # image_base = Base64.encode64(File.read(tempFile.path))
-
       unless params[:tour_user_id].present? && params[:tour_stop_id].present? && params[:tour_id].present?
         render :json => { :success => false, :message => "Please enter tour user id, tour stop id or tour id" }
       else
@@ -36,9 +32,9 @@ class Api::V1::ToursController < ActionController::Base
   end
 
   def save_user_selfie
-    puts params
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+
+    if has_access
       tempFile = params[:image]
       unless params[:tour_user_id].present? && params[:image].present?
         render :json => { :success => false, :message => "Please enter tour user id, image" }
@@ -78,9 +74,9 @@ class Api::V1::ToursController < ActionController::Base
   end
 
   def save_user_id_card
-    puts params
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    
+    if has_access
       tempFile = params[:image]
       unless params[:tour_user_id].present? && params[:image].present?
         success = false;
@@ -110,9 +106,9 @@ class Api::V1::ToursController < ActionController::Base
   end
 
   def save_user_tour
-    puts params
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    
+    if has_access
       unless params[:tour_user_id].present? && params[:tour_stop_id].present? && params[:tour_id].present?
         render :json => { :success => false, :message => "Please enter tour user id, tour stop id or tour id" }
       else
@@ -216,13 +212,13 @@ iPhone Users:
       @tour_user = create_new_tour_user
     end
 
-    render :json => { :success => true, :message => "New User has been created successfuly!", tour_user: @tour_user, token: generate_encoded_token(@tour_user), allowed_email: is_community_allows_user(@community, @tour_user) }
+    render :json => { :success => true, :message => "New User has been created successfuly!", tour_user: @tour_user, token: encoded(@tour_user), allowed_email: is_community_allows_user(@community, @tour_user) }
   end
 
   def save_shared_tour
-    puts params
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+
+    if has_access
       shared_tour = SharedTour.new shared_tour_params
       if shared_tour.save
         tu = TourUser.find_by(id: params[:tour_user_id])
@@ -278,10 +274,9 @@ iPhone Users:
   end
 
   def floorplan_units
-    puts params
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
 
+    if has_access
       if params[:unit_id].present?
         unit = Unit.find_by_id(params[:unit_id])
         @community = Community.find unit.community_id
@@ -314,9 +309,9 @@ iPhone Users:
   end
 
   def floorplan_list
-    access = grant_access (decoded(params[:token])) rescue false
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
     
-    if api_access or access == true
+    if has_access
       @community = Community.find params[:community_id]
       units = @community.units.where(available: true)
       floorplans = []
@@ -330,10 +325,9 @@ iPhone Users:
   end
 
   def floorplan_units_v1
-    puts params
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
 
+    if has_access
       if params[:floorplan_id].present?
         floorplan = Floorplan.find_by_id(params[:floorplan_id])
         @community = Community.find params[:community_id]
@@ -365,10 +359,10 @@ iPhone Users:
     end
   end
   def mis_match_verification
-    puts params
-    access = grant_access (decoded(params[:token])) rescue false
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+   
     begin
-      if api_access or access == true
+      if has_access
         @tour_user = TourUser.find params[:tour_user_id]
         name = @tour_user.name
         @community = Community.find params[:community_id]
@@ -403,8 +397,9 @@ iPhone Users:
   end
 
   def save_tour_user_card_info
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    
+    if has_access
       if params[:tour_user_id].present? && TourUser.find_by(id: params[:tour_user_id]).present?
         begin
           response = Stripe::Token.create({
@@ -448,19 +443,6 @@ iPhone Users:
     else
       "Something went wrong!"
     end
-  end
-
-  def generate_encoded_token tu
-    begin
-      secure_random = SecureRandom.hex
-      payload = { tour_user_id: tour_user.id, license_key: params[:license_key], secure_random: secure_random }
-      tour_user.update_attributes(secure_random: secure_random)
-      token = encoded(payload)
-    rescue => ex
-      token = nil
-    end
-
-    token
   end
 
   def create_new_tour_user

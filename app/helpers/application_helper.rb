@@ -20,7 +20,8 @@ module ApplicationHelper
     end
   end
 
-  def encoded(payload)
+  def encoded(tour_user)
+    payload = {tour_user_id: tour_user&.id, tour_user_email: tour_user&.email}
     JWT.encode payload, ENV['SECRET_KEY_BASE'], 'HS256'
   end
 
@@ -28,9 +29,15 @@ module ApplicationHelper
     JWT.decode token, ENV['SECRET_KEY_BASE'], true, { algorithm: 'HS256' } rescue nil
   end
 
-  def grant_access(payload)
+  def grant_access(token, tour_user_id)
     begin
-      ((TourUser.find payload[0]['tour_user_id'].to_i).secure_random == payload[0]['secure_random']) && (payload[0]['license_key'] == ENV['TEMP_ACESS_TOKEN'])
+      tour_user = TourUser.find tour_user_id
+      if tour_user.present?
+        ((tour_user&.id == token[0]['tour_user_id'].to_i) && tour_user.email == token[0]['tour_user_email'])
+      else
+        false
+      end
+      # ((TourUser.find payload[0]['tour_user_id'].to_i).secure_random == payload[0]['secure_random']) && (payload[0]['license_key'] == ENV['TEMP_ACESS_TOKEN'])
     rescue => ex
       false
     end

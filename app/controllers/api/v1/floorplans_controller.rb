@@ -140,8 +140,8 @@ class Api::V1::FloorplansController < ActionController::Base
   end
 
   def authorize_access
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    if has_access
       true
     else
       render :json => { :success => false, status: 401, :message => "Unauthorized, token is invalid" }

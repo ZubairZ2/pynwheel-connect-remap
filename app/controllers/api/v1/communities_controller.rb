@@ -8,7 +8,9 @@ class Api::V1::CommunitiesController < ActionController::Base
   include StripeServices
   include ShortestPath
   
+  before_action :check_authentication, only: [:lincoln_list_communities, :portico_list_communities]
   before_action :set_community, only: :email_favorites
+  before_action :load_tour_user, only: [:portico_list_communities, :lincoln_list_communities]
 
   require 'securerandom'
 
@@ -102,64 +104,18 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def portico_list_communities
-    puts params
     @allow_usage, @redirect_url = get_version_access params
-    
-    unless params[:access_token].present?
-      begin
-        secure_random = SecureRandom.hex
-
-        payload = {tour_user_id: params[:tour_user_id], license_key: params[:license_key], secure_random: secure_random}
-        # session[params[:tour_user_id].to_i] = secure_random
-        (TourUser.find params[:tour_user_id]).update_attributes(secure_random: secure_random)
-        @token = encoded(payload)
-      rescue => ex
-        @token = nil
-      end
-      if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
-        touruser = TourUser.find_by_id params[:tour_user_id]
-        @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
-      else
-        @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
-      end
+    if @tour_user.present?
+      @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil, @tour_user.email]})
     else
-      if params[:access_token] == ENV["ST_APP_TOKEN"]
-        if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
-          touruser = TourUser.find_by_id params[:tour_user_id]
-          @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
-        else
-          @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
-        end
-      else
-        if params[:tour_user_id].present? and (TourUser.find_by_id params[:tour_user_id]).present?
-          touruser = TourUser.find_by_id params[:tour_user_id]
-          @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company, :allowed_emails).self_tour_enabled_only.where(allowed_emails: {email: [nil,touruser.email]})
-        else
-          @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
-        end
-      end
+      @communities = Community.select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only
     end
   end
 
   def lincoln_list_communities
     @allow_usage, @redirect_url = get_version_access params 
-    if params[:access_token] == ENV["ST_APP_TOKEN"]
-      company = Company.where('lower(name) = ?', 'lincoln')
-      @communities = Community.where(company_id: company.first.id).select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
-    else
-      begin
-        secure_random = SecureRandom.hex
-
-        payload = {tour_user_id: params[:tour_user_id], license_key: params[:license_key],secure_random: secure_random}
-
-        (TourUser.find params[:tour_user_id]).update_attributes(secure_random: secure_random)
-        @token = encoded(payload)
-      rescue => ex
-        @token = nil
-      end
-      company = Company.where('lower(name) = ?', 'lincoln')
-      @communities = Community.where(company_id: company.first.id).select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
-    end
+    company = Company.where('lower(name) = ?', 'lincoln')
+    @communities = Community.where(company_id: company.first.id).select(:id,:name,:email,:phone,:company_id,:locked,:latitude,:longitude,:address,:logo,:state,:city).includes(:company).self_tour_enabled_only rescue nil
   end
 
   def do_verfication verfied_by_provider, community
@@ -171,8 +127,8 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def community_tours
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    if has_access
       require 'securerandom'
       @random_string = SecureRandom.hex
       @tour_user = TourUser.find_by_id params[:tour_user_id]
@@ -295,8 +251,8 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def delete_tour_stop_v1
     puts params
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    if has_access
       @community = Community.find params[:id] if params[:id].present?
       @tour_user = TourUser.find_by(id: params[:tour_user_id]) if params[:tour_user_id].present?
 
@@ -354,8 +310,8 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def user_saved_tour
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    if has_access
       @community = Community.find params[:community_id] if params[:community_id].present?
       @tour_user = TourUser.find params[:tour_user_id]
       @tour = CustomizeTourService.new(@community, @tour_user).get_user_tour
@@ -411,8 +367,8 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def get_count_screen
     data = Hash.new
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    if has_access
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       if @tour_user.present?
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
@@ -465,8 +421,8 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def get_tour_user_by_tour
     data = Hash.new
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    if has_access
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       if @tour_user.present?
         @visited_history = VisitedStop.exists?(tour_user_id:  @tour_user.id)
@@ -488,8 +444,8 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def tour_user_data
     data = Hash.new
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    if has_access
       @community = Community.find_by_id params[:id]
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       if @community.present? and @tour_user.present?
@@ -510,8 +466,8 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def get_filtered_tours
     data = Hash.new
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    if has_access
       @tour_user = TourUser.find_by_id params[:tour_user_id]
       if @tour_user.present?
         @scheduled_tours = @tour_user.schedual_tours
@@ -549,8 +505,8 @@ class Api::V1::CommunitiesController < ActionController::Base
   def tour_configrations
     #################### Remember this call is being called twice for one of the usecase in mobile app #######################
     puts params
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    if has_access
       if params[:id].present? and params[:tour_user_id].present?
         @community = Community.find_by_id params[:id]
         if @community.present?
@@ -622,9 +578,9 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def tour_configrations_v1
-    access = grant_access (decoded(params[:token])) rescue false
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
     @tour_session_type = "unscheduled"
-    if api_access or access == true
+    if has_access
       if params[:id].present? and params[:tour_user_id].present?
         @community = Community.find_by_id params[:id]
         @tour_user = TourUser.find_by_id params[:tour_user_id]
@@ -710,8 +666,8 @@ class Api::V1::CommunitiesController < ActionController::Base
 
   def check_lock_access
     puts params
-    access = grant_access (decoded(params[:token])) rescue false
-    if api_access or access == true
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    if has_access
       community = Community.find params[:id]
       tu = TourUser.find params[:tour_user_id]
       counter = check_lock_access_counter(tu)
@@ -1440,7 +1396,20 @@ class Api::V1::CommunitiesController < ActionController::Base
     end
   end
 
+  def load_tour_user
+    @tour_user = TourUser.find params[:tour_user_id]
+    rescue ActiveRecord::RecordNotFound
+      render json: {success: false, error_code: 404, message: 'Tour User not found', data: nil}, status: :not_found
+  end
+
   def set_community
     @community = Community.find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      render json: {success: false, error_code: 404, message: 'Community not found', data: nil}, status: :not_found
+  end
+
+  def check_authentication
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+    render json: {message: "Not Authorized!", success_code: 401, status: false} unless has_access
   end
 end

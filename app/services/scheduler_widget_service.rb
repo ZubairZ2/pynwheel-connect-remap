@@ -180,7 +180,6 @@ class SchedulerWidgetService < BaseService
   end
 
   def save_tour_user_card_info(tour_user_id,credit_card_number,exp_month,exp_year,card_verification)
-    # access = grant_access (decoded(params[:token])) rescue false
     if @community.community_tour.credit_card_required
       if tour_user_id.present? && TourUser.find_by(id: tour_user_id).present?
         begin
