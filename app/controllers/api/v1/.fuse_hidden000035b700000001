@@ -321,7 +321,7 @@ class Api::V1::CommunitiesController < ActionController::Base
   end
 
   def delete_tour_stop_v1
-    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
     if has_access
       @community = Community.find params[:id]
       delete_array = params[:stop_id].split(",") if params[:stop_id].present?

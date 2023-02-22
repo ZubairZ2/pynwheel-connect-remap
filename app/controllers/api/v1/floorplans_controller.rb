@@ -140,7 +140,7 @@ class Api::V1::FloorplansController < ActionController::Base
   end
 
   def authorize_access
-    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
     if has_access
       true
     else

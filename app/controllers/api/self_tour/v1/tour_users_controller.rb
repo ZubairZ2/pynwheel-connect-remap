@@ -162,7 +162,7 @@ class Api::SelfTour::V1::TourUsersController < ActionController::Base
   end
 
   def check_authentication
-    has_access = grant_access(decoded(params[:token]), params[:tour_user_id]) rescue false
+    has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
     render json: {message: "Invalid Token, Not Authorized!", success_code: 401, status: false} unless has_access
   end
   
