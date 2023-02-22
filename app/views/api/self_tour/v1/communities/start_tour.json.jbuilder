@@ -440,11 +440,14 @@ json.tours @tours do |tour|
     json.stop_lock_provider ''
 
     navigation_title = ""
+    bypass_stop_lock = false
 
     if new_stops_arr[counter + 1].is_a? Tour
       ((new_stops_arr.compact.size - 2) == counter) ? navigation_title = "Next Stop: Starting point" : navigation_title = "Next Stop: Starting point"
+      bypass_stop_lock = true if !@community.is_sitemap && @community.community_tour.tour_setting.bypass_stop_lock_access && new_stops_arr[counter]&.stop_type == "elevator"
     elsif skip_1 and new_stops_arr[counter + 2].is_a? Tour
       ((new_stops_arr.compact.size - 2) == counter) ? navigation_title = "Next Stop: Starting point" : navigation_title = "Next Stop: Starting point"
+      bypass_stop_lock = true if !@community.is_sitemap && @community.community_tour.tour_setting.bypass_stop_lock_access && new_stops_arr[counter]&.stop_type == "elevator"
     elsif  new_stops_arr.compact[counter + 1].present? and new_stops_arr.compact[counter + 1].id == last_stop_id
       navigation_title = @community.show_map ? ("Last Stop: " + new_stops_arr[counter + 1].name if new_stops_arr[counter + 1].present?) : ("Next Stop: " + new_stops_arr[counter].name if new_stops_arr[counter].present?) rescue ""
       navigation_title = (new_stops_arr[counter + 1].present? && new_stops_arr[counter + 1].stop_type == "unit") ? new_stops_arr[counter + 1].get_unit_navigation_title(navigation_title) : navigation_title
@@ -483,6 +486,7 @@ json.tours @tours do |tour|
       json.lock_provider_mac_id ''
       json.list_of_zerv_lock_ids list_of_zerv_lock_ids
       json.navigation_title navigation_title
+      json.bypass_stop_lock bypass_stop_lock
       json.id stop.id
       json.x_plot stop.x_plot
       json.y_plot stop.y_plot
@@ -1012,6 +1016,7 @@ json.tours @tours do |tour|
     end
     
     json.navigation_title navigation_title
+    json.bypass_stop_lock bypass_stop_lock
     json.id stop.id rescue next
     json.x_plot stop&.get_latitude&.to_i rescue next
     json.y_plot stop&.get_longitude&.to_i

@@ -302,6 +302,20 @@
               .col-sm-12.col-lg-2.col-md-2.col-xs-12.add_minutes_span{:style => "margin-top: 13px;"}
                 %span
                   Minutes
+            - unless @community.is_sitemap
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15{:style => "padding-right: 0px;"}
+                  Bypass Access Control en route to starting point
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
+                    %span#propertyDetailNameText
+                      Enabling this toggle will allow prospects to bypass access control en route to starting point
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :bypass_stop_lock_access, true, @community.community_tour.tour_setting.bypass_stop_lock_access, class: "bypass_stop_lock_access" 
+                    %label.label-primary{:for => "bypass_stop_lock_access"}
+                    %span.pl-15 Yes
+
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                 Allow Customize Tours in Self Tour
@@ -314,6 +328,7 @@
                   = check_box_tag :enable_tour_customization, true, @community.community_tour.tour_setting.enable_tour_customization, class: "enable_tour_customization" 
                   %label.label-primary{:for => "enable_tour_customization"}
                   %span.pl-15 Yes
+            
             - if current_user.is_super_admin?
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
