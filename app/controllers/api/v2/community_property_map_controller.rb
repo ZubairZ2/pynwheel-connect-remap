@@ -125,11 +125,8 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
     floorplates.values.each do |floorplate|
       if floorplate["id"].present?
         @floorplate = @community.floorplates.find_by_id(floorplate["id"])
-        if @floorplate.update_attributes(name: floorplate["name"]  , label_image: floorplate["label_image"] , range: floorplate["range"])
-          # PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "update", whodunnit: current_user.id, community_id: @community.id, company_id: @community.company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}") if @status.empty?
-        else
-          errors.push(@floorplate.errors.full_messages)
-        end
+        @floorplate.update_attributes(name: floorplate["name"], range: floorplate["range"])
+        @floorplate.update_attributes(label_image: floorplate["label_image"]) if floorplate["label_image"].present?
       else
         if floorplate["image"].present?
           image = MiniMagick::Image.open(floorplate["image"].path)
@@ -137,11 +134,6 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
         else
           @floorplate = @community.floorplates.create(name: floorplate["name"] , file: floorplate["file"] , label_image: floorplate["label_image"] , range: floorplate["range"] )
 
-        end
-        if @floorplate.persisted?
-          # PaperTrail::Version.create(item_type: "Floorplate", item_id: @floorplate.id, event: "create", whodunnit: current_user.id, community_id: @community.id, company_id: @community.company.id, object: "name:#{@floorplate.name} community_id:#{@floorplate.community_id}") if @status.empty?
-        else
-          errors.push(@floorplate.errors.full_messages)
         end
       end
     end
