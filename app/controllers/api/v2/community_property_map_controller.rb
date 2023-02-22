@@ -101,7 +101,7 @@ class Api::V2::CommunityPropertyMapController < Api::V2::ApiApplicationControlle
       end
     else
       if @community.floorplates.present?
-        @community.floorplates.delete_all
+        # @community.floorplates.delete_all
         @community.is_sitemap = true
         @community.save
         render :json => {:success => true, :error_code => 200, :message => "Mid high rise community details deleted successfully", data: nil}
