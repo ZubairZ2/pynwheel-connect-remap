@@ -26,7 +26,7 @@ class RealPageSvcService < BaseService
         url = REALPAGE_URL
         soap_action = REALPAGE_FLOORPLAN_ACTION
         pmc_id = @credentials.pmc_id
-        #site_id = @credentials.site_id
+        site_id = site_id&.strip
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
@@ -63,8 +63,8 @@ class RealPageSvcService < BaseService
             floorplans.each do |fp|
               if fp.key?(:FloorPlanObject)
                 fp = fp[:FloorPlanObject]
-
-                floorplan = @all_floorplans_hash[fp[:FloorPlanID].to_s]
+                provider_floorplan_id = "#{fp[:FloorPlanID].to_s}-#{site_id.to_s}"
+                floorplan = @all_floorplans_hash[provider_floorplan_id]
 
                 if floorplan.present?
                   puts "----------------- #{floorplan.name} -----------------------\n"
@@ -131,7 +131,7 @@ class RealPageSvcService < BaseService
         url = REALPAGE_URL
         soap_action = REALPAGE_UNIT_ACTION
         pmc_id = @credentials.pmc_id
-        #site_id = @credentials.site_id
+        site_id = site_id&.strip
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
@@ -169,7 +169,8 @@ class RealPageSvcService < BaseService
             if u.key?(:UnitObject)
               u = u[:UnitObject]
               hit = false
-              unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID]).first_or_initialize
+              provider_unit_id = "#{u[:UnitID]}-#{site_id}"
+              unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: provider_unit_id).first_or_initialize
 
               if unit&.id.present?
 
@@ -251,7 +252,7 @@ class RealPageSvcService < BaseService
               else
                 unless unit.manual_override
                   unit.property_id = u[:SiteID]
-                  unit.provider_unit_id = u[:UnitID]
+                  unit.provider_unit_id = provider_unit_id
                   unit.unit_type = u[:UnitNumber]
                   if u[:BuildingNumber].present?
                     unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
@@ -261,7 +262,7 @@ class RealPageSvcService < BaseService
                   end
 
                   unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
-                    unit.floorplan_id = u[:FloorplanID]
+                    unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
                   end
 
                   # unit.market_rent = u[:BaseRentAmount]
@@ -383,7 +384,7 @@ class RealPageSvcService < BaseService
         url = REALPAGE_URL
         soap_action = REALPAGE_PRICE_ACTION
         pmc_id = @credentials.pmc_id
-        #site_id = @credentials.site_id
+        site_id = site_id&.strip
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
@@ -442,8 +443,9 @@ class RealPageSvcService < BaseService
           community = Community.find @credentials.community_id
           community&.community_data_updated_on()
           units.each do |u|
-            @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
-            unit = @all_units_hash[u[:Address][:UnitID].to_s]
+            provider_unit_id = "#{u[:Address][:UnitID]}-#{site_id}"
+            @array_of_units << provider_unit_id unless @array_of_units.include?(provider_unit_id)
+            unit = @all_units_hash[provider_unit_id]
 
             if unit.present?
               puts "----------------------------- #{unit.marketing_name} ------------------------\n"
@@ -484,13 +486,13 @@ class RealPageSvcService < BaseService
 
               end
               unit.lease_pricing = nil
-              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
               @unit_record << unit.provider_unit_id
 
             else
-              unit = Unit.where(provider: "realpagesvc", community_id: community_id, provider_unit_id: u[:Address][:UnitID]).first_or_initialize
+              unit = Unit.where(provider: "realpagesvc", community_id: community_id, provider_unit_id: provider_unit_id).first_or_initialize
 
-              @array_of_units << u[:Address][:UnitID]
+              @array_of_units << provider_unit_id
 
               unless unit.manual_override
                 unit.property_id = u[:SiteID]
@@ -505,7 +507,7 @@ class RealPageSvcService < BaseService
                 end
 
                 unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
-                  unit.floorplan_id = u[:FloorPlan][:FloorPlanID]
+                  unit.floorplan_id = "#{u[:FloorPlan][:FloorPlanID]}-#{site_id}"
                 end
 
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated
@@ -553,13 +555,13 @@ class RealPageSvcService < BaseService
 
                 unit.manually_updated = false
                 unit.lease_pricing = nil
-                unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+                unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
 
                 # @unit_record << unit.provider_unit_id unless @unit_record.include?(unit.provider_unit_id)
 
               end
 
-              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
             end
 
             import_units << unit
@@ -617,7 +619,7 @@ class RealPageSvcService < BaseService
         url = REALPAGE_URL
         soap_action = 'http://tempuri.org/IRPXService/getrentmatrix'
         pmc_id = @credentials.pmc_id
-        #site_id = @credentials.site_id
+        site_id = site_id&.strip
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY

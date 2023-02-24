@@ -1545,14 +1545,15 @@ function set_resman_url(element)
 
 function set_realpagesvc_url(element) {
   setApplyNowURLDate(currentUnitSelected);
+  real_page_provider_unit_id = parseInt(real_page_provider_unit_id.split('-')[0])
   var url = apply_now_url + "?MoveInDate=" + $('#leasing-start-date').val() + "&UnitId=" + real_page_provider_unit_id + "&SearchUrl=" + redirect_url;
   
   if(selectMap === "3d-map" && enable3DMaps) {
     apply_now_url = `/communities/${webCommunity.id}/webpages/apply_now`;
     redirect_url = `/communities/${webCommunity.id}/webpages`
     date = new Date()
-
-    url = url = apply_now_url + "?MoveInDate=" + date.toISOString().split('T')[0] + "&UnitId=" + _3dSelectedUnit.provider_unit_id + "&SearchUrl=" + redirect_url;
+    real_page_provider_unit_id =  parseInt(_3dSelectedUnit.provider_unit_id.split('-')[0])
+    url = url = apply_now_url + "?MoveInDate=" + date.toISOString().split('T')[0] + "&UnitId=" + real_page_provider_unit_id + "&SearchUrl=" + redirect_url;
   }
 
   window.open(url, '_blank');
