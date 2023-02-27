@@ -19,7 +19,7 @@ class RealPageSvcService < BaseService
 
   def import_realpage_svc_floorplans
     return unless @all_floorplans_hash.present?
-    site_ids = @credentials.site_id.split(',') rescue []
+    site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         import_floorplans = []
@@ -122,7 +122,7 @@ class RealPageSvcService < BaseService
 
   def import_initials_realpage_units
     #building_result = realpage_building #Ignore it for now
-    site_ids = @credentials.site_id.split(',') rescue []
+    site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         @array_of_dates = [{ready_date: Date.today,units: []}]
@@ -374,7 +374,7 @@ class RealPageSvcService < BaseService
     #building_result = realpage_building #Ignore it for now
     unit_present = @all_units_hash.keys
 
-    site_ids = @credentials.site_id.split(',') rescue []
+    site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         import_units = []
@@ -606,7 +606,7 @@ class RealPageSvcService < BaseService
   def import_realpage_svc_price
     return unless  @all_units_marketing_name_hash.present?
 
-    site_ids = @credentials.site_id.split(',') rescue []
+    site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
     units_str = ""
 
     @array_of_units.each do |us|

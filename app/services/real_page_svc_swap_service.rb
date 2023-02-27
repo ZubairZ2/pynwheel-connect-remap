@@ -8,7 +8,7 @@ class RealPageSvcSwapService < BaseService
   end
 
   def import_realpage_svc_floorplans
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         url = REALPAGE_URL
@@ -130,7 +130,7 @@ class RealPageSvcSwapService < BaseService
 
   def import_initial_realpage_units
     #building_result = realpage_building #Ignore it for now
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         @array_of_dates = [{ready_date: Date.today,units: []}]
@@ -344,7 +344,7 @@ class RealPageSvcSwapService < BaseService
 
   def import_realpage_svc_units
     #building_result = realpage_building #Ignore it for now
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         @array_of_dates = []
@@ -550,7 +550,7 @@ class RealPageSvcSwapService < BaseService
   end
 
   def import_realpage_svc_price
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     units_str = ""
     @array_of_units.each do |us|
       units_str = units_str + "<tem:int>"+us+"</tem:int>"
