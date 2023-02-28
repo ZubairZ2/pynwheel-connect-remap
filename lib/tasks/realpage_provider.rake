@@ -13,10 +13,17 @@ namespace :realpage_provider do
             site_ids&.each do |site_id|
               units = community.units
               units&.each do  |unit|
-                provider_unit_id = "#{unit.provider_unit_id}-" + (unit.property_id.present? ? unit.property_id : site_id)
-                floorplan_id = "#{unit.floorplan_id }-" + (unit.property_id.present? ? unit.property_id : site_id)
-                community&.floorplans.where(provider_floorplan_id: unit.floorplan_id).update_all(provider_floorplan_id: floorplan_id)
-                unit.update_attributes(provider_unit_id: provider_unit_id, floorplan_id: floorplan_id)
+                site_id_for_unit = unit.property_id.present? ? unit.property_id : site_id
+
+                if unit&.provider_unit_id.present?
+                  unless unit&.provider_unit_id&.include?(site_id_for_unit)
+                    provider_unit_id = "#{unit.provider_unit_id}-" + (unit.property_id.present? ? unit.property_id : site_id)
+                    floorplan_id = "#{unit.floorplan_id }-" + (unit.property_id.present? ? unit.property_id : site_id)
+                    community&.floorplans.where(provider_floorplan_id: unit.floorplan_id).update_all(provider_floorplan_id: floorplan_id)
+                    unit.update_attributes(provider_unit_id: provider_unit_id, floorplan_id: floorplan_id)
+                  end
+                end
+                
               end
             end
           end
