@@ -6,6 +6,7 @@ class RealPageSvcStaticService < BaseService
     import_initial_realpage_units
     import_realpage_svc_units
     import_realpage_svc_price
+
     # com = Community.find(credentials.community_id)
     # com.realpage_pricing_data = @doc
     # com.realpage_pricing_data_uploaded = true
@@ -13,17 +14,18 @@ class RealPageSvcStaticService < BaseService
   end
 
   def import_realpage_svc_floorplans
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         url = REALPAGE_URL
         soap_action = REALPAGE_FLOORPLAN_ACTION
         pmc_id = credentials.pmc_id
-        #site_id = credentials.site_id
+        site_id = site_id&.strip
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
         community_id = credentials.community_id
+
         response = HTTParty.post(
             url,
             :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
@@ -49,12 +51,14 @@ class RealPageSvcStaticService < BaseService
 
         #result = Hash.from_xml(response.body) #That method was taking too much memory on heroku
         result = Ox.load(response.body, mode: :hash)
+
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           floorplans = result[:"s:Envelope"][1][:"s:Body"][1][:getfloorplanlistResponse][1][:getfloorplanlistResult][:GetFloorPlanList]
           floorplans.each do |fp|
             if fp.key?(:FloorPlanObject)
               fp = fp[:FloorPlanObject]
-              floorplan = Floorplan.where(provider: "realpagesvc",community_id: community_id,provider_floorplan_id: fp[:FloorPlanID]).first_or_initialize
+              provider_floorplan_id = "#{fp[:FloorPlanID]}-#{site_id.to_s}"
+              floorplan = Floorplan.where(provider: "realpagesvc", community_id: community_id, provider_floorplan_id: provider_floorplan_id).first_or_initialize
 
               unless floorplan.name_is_updated.present? && floorplan.name_is_updated
 
@@ -96,7 +100,7 @@ class RealPageSvcStaticService < BaseService
   end
   def import_initial_realpage_units
     #building_result = realpage_building #Ignore it for now
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         @array_of_dates = [{ready_date: Date.today,units: []}]
@@ -105,7 +109,7 @@ class RealPageSvcStaticService < BaseService
         url = REALPAGE_URL
         soap_action = REALPAGE_UNIT_ACTION
         pmc_id = credentials.pmc_id
-        #site_id = credentials.site_id
+        site_id = site_id&.strip
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
@@ -141,10 +145,11 @@ class RealPageSvcStaticService < BaseService
             if u.key?(:UnitObject)
               u = u[:UnitObject]
               hit = false
-              unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:UnitID]).first_or_initialize
+              provider_unit_id = "#{u[:UnitID]}-#{site_id.to_s}"
+              unit = Unit.where(provider: "realpagesvc",community_id: community_id, provider_unit_id: provider_unit_id).first_or_initialize
               unless unit.manual_override
                 unit.property_id = u[:SiteID]
-                unit.provider_unit_id = u[:UnitID]
+                unit.provider_unit_id = provider_unit_id
                 unit.unit_type = u[:UnitNumber]
                 if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
@@ -154,7 +159,7 @@ class RealPageSvcStaticService < BaseService
                 end
 
                 unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
-                  unit.floorplan_id = u[:FloorplanID]
+                  unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
                 end
 
                 # unit.market_rent = u[:BaseRentAmount]
@@ -262,7 +267,7 @@ class RealPageSvcStaticService < BaseService
 
   def import_realpage_svc_units
     #building_result = realpage_building #Ignore it for now
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
 
@@ -271,7 +276,7 @@ class RealPageSvcStaticService < BaseService
         url = REALPAGE_URL
         soap_action = REALPAGE_PRICE_ACTION
         pmc_id = credentials.pmc_id
-        #site_id = credentials.site_id
+        site_id = site_id&.strip
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
@@ -323,8 +328,8 @@ class RealPageSvcStaticService < BaseService
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getunitlistResponse][1][:getunitlistResult][:GetUnitList][1][:UnitObjects][:UnitObject]
           units = [units] if units.is_a?(Hash)
           units.each do |u|
-
-            unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: u[:Address][:UnitID]).first_or_initialize
+            provider_unit_id = "#{u[:Address][:UnitID]}-#{site_id.to_s}"
+            unit = Unit.where(provider: "realpagesvc",community_id: community_id,provider_unit_id: provider_unit_id).first_or_initialize
             @array_of_units  << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
             unless unit.manual_override
               unit.property_id = u[:SiteID]
@@ -337,7 +342,7 @@ class RealPageSvcStaticService < BaseService
               end
 
               unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
-                unit.floorplan_id = u[:FloorPlan][:FloorPlanID]
+                unit.floorplan_id = "#{u[:FloorPlan][:FloorPlanID]}-#{site_id}"
               end
 
               # unit.market_rent = u[:BaseRentAmount]
@@ -386,7 +391,7 @@ class RealPageSvcStaticService < BaseService
 
               unit.manually_updated = false
 
-              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
 
 
               unit.save(validate: false)
@@ -421,7 +426,7 @@ class RealPageSvcStaticService < BaseService
   end
 
   def import_realpage_svc_price
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     units_str = ""
     @array_of_units.each do |us|
       units_str = units_str + "<tem:int>"+us+"</tem:int>"
@@ -431,7 +436,7 @@ class RealPageSvcStaticService < BaseService
         url = REALPAGE_URL
         soap_action = 'http://tempuri.org/IRPXService/getrentmatrix'
         pmc_id = credentials.pmc_id
-        #site_id = credentials.site_id
+        site_id = site_id&.strip
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
@@ -509,10 +514,9 @@ class RealPageSvcStaticService < BaseService
             end
 
             if unit_min_rent.present?
-
-              unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no,building: unit_add)
+              unit = Unit.find_by(provider: "realpagesvc", community_id: community_id, marketing_name: unit_no, building: unit_add)
               unless unit.present?
-                unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
+                unit = Unit.find_by(provider: "realpagesvc", community_id: community_id, marketing_name: unit_no)
               end
               if unit.present?
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && !(unit.manual_override)

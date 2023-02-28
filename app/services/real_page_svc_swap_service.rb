@@ -8,13 +8,13 @@ class RealPageSvcSwapService < BaseService
   end
 
   def import_realpage_svc_floorplans
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         url = REALPAGE_URL
         soap_action = REALPAGE_FLOORPLAN_ACTION
         pmc_id = credentials.pmc_id
-        #site_id = credentials.site_id
+        site_id = site_id&.strip
         username = REALPAGESVC_USERNAME
         password = REALPAGESVC_PASSWORD
         license_key = REALPAGESVC_LICENSE_KEY
@@ -69,7 +69,7 @@ class RealPageSvcSwapService < BaseService
               if floorplan.present?
                 floorplan = floorplan.first
                 floorplan.provider = "realpagesvc_new"
-                floorplan.provider_floorplan_id = fp[:FloorPlanID]
+                floorplan.provider_floorplan_id = "#{fp[:FloorPlanID]}-#{site_id}"
                 floorplan.name = fp[:FloorPlanNameMarketing]
                 if fp[:FloorPlanName].present?
                   floorplan.name = fp[:FloorPlanName]
@@ -88,14 +88,14 @@ class RealPageSvcSwapService < BaseService
                 floorplan.square_feet = fp[:GrossSquareFootage]
                 floorplan.save(:validate => false)
               else
-                dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: fp[:FloorPlanID])
+                dup = Floorplan.find_by(community_id: credentials.community_id, provider_floorplan_id: "#{fp[:FloorPlanID]}-#{site_id}")
                 if dup.present?
                   dup.destroy
                 end
                 # floorplan = Floorplan.where(community_id: community_id).first
                 floorplan = Floorplan.new
                 floorplan.community_id = community_id
-                floorplan.provider_floorplan_id = fp[:FloorPlanID]
+                floorplan.provider_floorplan_id = "#{fp[:FloorPlanID]}-#{site_id}"
                 floorplan.provider = "realpagesvc_new"
                 if fp[:FloorPlanNameMarketing].present?
                   floorplan.name = fp[:FloorPlanNameMarketing]
@@ -130,7 +130,7 @@ class RealPageSvcSwapService < BaseService
 
   def import_initial_realpage_units
     #building_result = realpage_building #Ignore it for now
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         @array_of_dates = [{ready_date: Date.today,units: []}]
@@ -186,10 +186,10 @@ class RealPageSvcSwapService < BaseService
               if unit.present?
                 unit = unit.first
                 unit.provider = "realpagesvc_new"
-                unit.provider_unit_id = u[:UnitID]
+                unit.provider_unit_id = "#{u[:UnitID]}-#{site_id}"
                 unit.property_id = u[:SiteID]
                 unit.unit_type = u[:UnitNumber]
-                unit.floorplan_id = u[:FloorplanID]
+                unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
                 if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                 end
@@ -248,7 +248,7 @@ class RealPageSvcSwapService < BaseService
                 # end
                 unit.save
               else
-                dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u[:UnitID])
+                dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: "#{u[:UnitID]}-#{site_id}")
                 if dup.present?
                   dup.destroy
                 end
@@ -258,7 +258,7 @@ class RealPageSvcSwapService < BaseService
                 unit.community_id = community_id
                 unit.provider = "realpagesvc_new"
                 unit.property_id = u[:SiteID]
-                unit.provider_unit_id = u[:UnitID]
+                unit.provider_unit_id = "#{u[:UnitID]}-#{site_id}"
                 unit.unit_type = u[:UnitNumber]
                 if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
@@ -266,7 +266,7 @@ class RealPageSvcSwapService < BaseService
                 unit.marketing_name = u[:UnitNumber]
 
                 # unit.building = u[:BuildingID]
-                unit.floorplan_id = u[:FloorplanID]
+                unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
                 unit.market_rent = u[:BaseRentAmount]
                 unit.effective_rent = u[:BaseRentAmount].to_f > 0 ? u[:BaseRentAmount] : 1
                 unit.availability = u[:AvailableBit] == "true" ? "Unoccupied" : "Occupied"
@@ -344,7 +344,7 @@ class RealPageSvcSwapService < BaseService
 
   def import_realpage_svc_units
     #building_result = realpage_building #Ignore it for now
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     site_ids.each do |site_id|
       begin
         @array_of_dates = []
@@ -407,7 +407,7 @@ class RealPageSvcSwapService < BaseService
           units = [units] if units.is_a?(Hash)
           units.each do |u|
             
-            @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
+            @array_of_units << "#{u[:Address][:UnitID]}-#{site_id}" unless @array_of_units.include?("#{u[:Address][:UnitID]}-#{site_id}")
             unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber])
             unless unit.count == 1
               unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber], building: u[:Address][:BuildingNumber])
@@ -420,9 +420,9 @@ class RealPageSvcSwapService < BaseService
               if u[:Address][:BuildingNumber].present?
                 unit.building = u[:Address][:BuildingNumber] unless u[:Address][:BuildingNumber] == "N/A"
               end
-              unit.provider_unit_id = u[:Address][:UnitID]
+              unit.provider_unit_id = "#{u[:Address][:UnitID]}-#{site_id}"
 
-              unit.floorplan_id = u[:FloorPlan][:FloorPlanID]
+              unit.floorplan_id = "#{u[:FloorPlan][:FloorPlanID]}-#{site_id}"
 
               if u[:RentMatrix].present?
                 unit.effective_rent = u[:RentMatrix][1][:Rows][:Row][0][:MinRent].to_f > 0 ? u[:RentMatrix][1][:Rows][:Row][0][:MinRent] : 1
@@ -458,11 +458,11 @@ class RealPageSvcSwapService < BaseService
 
               unit.manually_updated = false
 
-              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
 
               unit.save(validate: false)
             else
-              dup = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u[:Address][:UnitID])
+              dup = Unit.find_by(community_id: credentials.community_id, provider_unit_id: "#{u[:Address][:UnitID]}-#{site_id}")
               if dup.present?
                 dup.destroy
               end
@@ -471,7 +471,7 @@ class RealPageSvcSwapService < BaseService
               unit = Unit.new
               unit.community_id = community_id
               unit.provider = "realpagesvc_new"
-              unit.provider_unit_id u[:Address][:UnitID]
+              unit.provider_unit_id = "#{u[:Address][:UnitID]}-#{site_id}"
               unit.property_id = u[:SiteID]
               unit.unit_type = u[:Address][:UnitNumber]
               if u[:Address][:BuildingNumber].present?
@@ -482,7 +482,7 @@ class RealPageSvcSwapService < BaseService
               end
 
               unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
-                unit.floorplan_id = u[:FloorPlan][:FloorPlanID]
+                unit.floorplan_id = "#{u[:FloorPlan][:FloorPlanID]}-#{site_id}"
               end
 
               # unit.market_rent = u[:BaseRentAmount]
@@ -531,7 +531,7 @@ class RealPageSvcSwapService < BaseService
 
               unit.manually_updated = false
 
-              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{unit.provider_unit_id}&SearchUrl="
+              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
 
 
               unit.save(validate: false)
@@ -550,7 +550,7 @@ class RealPageSvcSwapService < BaseService
   end
 
   def import_realpage_svc_price
-    site_ids = credentials.site_id.split(',') rescue []
+    site_ids = credentials.site_id.split(',').map(&:strip) rescue []
     units_str = ""
     @array_of_units.each do |us|
       units_str = units_str + "<tem:int>"+us+"</tem:int>"
