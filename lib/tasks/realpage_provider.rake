@@ -11,8 +11,8 @@ namespace :realpage_provider do
           site_ids = community&.credential&.site_id&.split(",").compact.uniq.map(&:strip)
           if site_ids.count === 1
             site_ids&.each do |site_id|
-              units = community.units
-              floorplans = community.floorplans
+              units = community.units.where("provider_unit_id NOT LIKE ?", "%-%")
+              floorplans = community.floorplans.where("provider_floorplan_id NOT LIKE ?", "%-%")
 
               units&.each do  |unit|
                 site_id_for_unit = unit.property_id.present? ? unit.property_id : site_id
@@ -21,8 +21,8 @@ namespace :realpage_provider do
                   unless unit&.provider_unit_id&.include?(site_id_for_unit)
                     provider_unit_id = "#{unit.provider_unit_id}-" + (unit.property_id.present? ? unit.property_id : site_id)
                     floorplan_id = "#{unit.floorplan_id }-" + (unit.property_id.present? ? unit.property_id : site_id)
-                    # community&.floorplans.where(provider_floorplan_id: unit.floorplan_id).update_all(provider_floorplan_id: floorplan_id)
-                    unit.update_attributes(provider_unit_id: provider_unit_id, floorplan_id: floorplan_id)
+                    community&.floorplans.where(provider_floorplan_id: unit.floorplan_id).update_all(provider_floorplan_id: floorplan_id)
+                    unit.update_columns(provider_unit_id: provider_unit_id, floorplan_id: floorplan_id)
                   end
                 end
               end
@@ -30,7 +30,7 @@ namespace :realpage_provider do
               floorplans&.each do |floorplan|
                 if floorplan.provider_floorplan_id.present?
                   unless floorplan&.provider_floorplan_id&.include?(site_id)
-                    floorplan.update_attributes(provider_floorplan_id: "#{floorplan.provider_floorplan_id}-#{site_id}")
+                    floorplan.update_column(provider_floorplan_id: "#{floorplan.provider_floorplan_id}-#{site_id}")
                   end
                 end
               end
