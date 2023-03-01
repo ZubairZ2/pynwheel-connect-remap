@@ -7,8 +7,8 @@ module LeadsUploader
         @favorites = favorites
         @email = email
         @community = Community.find community_id
+
         return unless (@community && @community&.crm_credential).present?
-      
       rescue => error
         return
       end
@@ -16,14 +16,15 @@ module LeadsUploader
 
     protected
 
-    def favorit_items msg = ""
-      floorplans = @favorites.map{|fav| fav&.name if fav.class.name == "Floorplan" }.compact.uniq.join(', ')
-      units = @favorites.map{|fav| fav&.marketing_name if fav.class.name == "Unit" }.compact.uniq.join(', ')
-      amenities = @favorites.map{|fav| fav&.name if fav.class.name == "Amenity" }.compact.uniq.join(', ')
+    def favorit_items
+      floorplans = @favorites.map{|fav| fav&.name if fav.class.name == "Floorplan" }.compact.join(', ')
+      units = @favorites.map{|fav| fav&.marketing_name if fav.class.name == "Unit" }.compact.join(', ')
+      amenities = @favorites.map{|fav| fav&.name if fav.class.name == "Amenity" }.compact.join(', ')
+      "Unit: #{units}\nFloorplan: #{floorplans}\nAmenity: #{amenities}"
     end
 
-    def extra_text
-      " + 2 more"
+    def message
+      "#{@email},\nThank you for visiting #{@community.name}, Here are your favorites:\n#{favorit_items}"
     end
 
     def request_type

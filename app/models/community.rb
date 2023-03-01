@@ -1203,12 +1203,11 @@ s  end
     URI.escape(com_address, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))
   end
 
-  def submit_crm_leads favorites
+  def submit_crm_leads email_to, favorites
     return unless favorites.present?
-    
     case data_provider
       when "yardirentcafe"
-        LeadsUploader::YardiRentCafe.new(self.id, favorites).leads_uploader()
+        LeadsUploader::YardiRentCafe.new(self.id, email_to, favorites).leads_uploader()
     end
   end
 
@@ -1217,7 +1216,8 @@ s  end
     result = populate_favorites(params[:favorites][:items],email_to)
     favorites = result[0]
     units = result[1]
-    submit_crm_leads(favorites)
+    
+    submit_crm_leads(email_to, favorites)
 
     email_bcc = self.favorite_setting.present? ? self.favorite_setting.email_bcc : nil
     email_from = self.favorite_setting.present? ? self.favorite_setting.email_from : nil

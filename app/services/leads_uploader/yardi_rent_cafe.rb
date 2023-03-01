@@ -3,20 +3,13 @@ module LeadsUploader
 
     def leads_uploader
       return unless verify_credentials
-      response = HTTParty.get( api_url )
-      puts "\n\nResponse: #{response}\n\n"
+      HTTParty.get( api_url )
     end
 
     private
 
     def api_url
-      binding.pry
       "#{@community.credential.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&firstName=#{first_name}&lastName=#{last_name}&phone=#{phone}&message=#{message}&email=#{email}&username=#{user_name}&password=#{password}&source=#{source}&secondarySource=#{secondary_source}&addr1=#{address_1}&addr2=#{address_2}&city=#{city}&state=#{state}&ZIPCode=#{zip_code}&propertyCode=#{property_code}&propertyId=#{property_id}&apiToken=#{api_token}"
-    end
-
-
-    def message
-      "#{email},\nThank you for #{@community.name}, Here are your favorites:\n#{favorit_items}"
     end
 
     def user_name
