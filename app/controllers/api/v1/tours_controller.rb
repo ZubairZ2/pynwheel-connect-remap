@@ -283,8 +283,9 @@ iPhone Users:
         @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id, unit.community_id, true) if unit.present?
         @units.each do |u|
           if u.community.is_sitemap?
-            u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
-              image.url(:svg_for_metro) : u.community.sitemap.image.url rescue ""
+            u.sitemap_image_url = u&.community&.sitemap&.image&.url rescue ""
+            # u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
+            #   image.url(:svg_for_metro) : u.community.sitemap.image.url rescue ""
             @sitemap_image_url = u.sitemap_image_url
 
           else
@@ -334,8 +335,9 @@ iPhone Users:
         @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', floorplan.provider_floorplan_id,@community.id,true) if floorplan.present?
         @units.each do |u|
           if u.community.is_sitemap?
-            u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
-              image.url(:svg_for_metro) : u.community.sitemap.image.url rescue ""
+            u.sitemap_image_url = u&.community&.sitemap&.image&.url rescue ""
+            # u.sitemap_image_url = u.community.sitemap.image.url(:svg_for_metro).present? ? u.community.sitemap.
+            #   image.url(:svg_for_metro) : u.community.sitemap.image.url rescue ""
             @sitemap_image_url = u.sitemap_image_url
 
           else

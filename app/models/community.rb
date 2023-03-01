@@ -1247,7 +1247,8 @@ s  end
 
   def image_src
     if sitemap.image.present?
-      sitemap.image.url(:svg_for_metro).present? ? sitemap.image.url(:svg_for_metro) : sitemap.image.url
+      sitemap.image.url
+      # sitemap.image.url(:svg_for_metro).present? ? sitemap.image.url(:svg_for_metro) : sitemap.image.url
     else
       "/assets/default.jpeg"
     end
