@@ -5,7 +5,7 @@ module StandardUrl
     model = klass.constantize.find(id)
     model.update_attribute(:standard_image_url, model.image.url) 
     if klass == "Floorplate"
-      # model.update_attribute(:svg_image_url, model.image.url(:svg_for_metro)) if model.image.url(:svg_for_metro).present?
+      model.update_attribute(:svg_image_url, model.image.url(:svg_for_metro)) if model.image.url(:svg_for_metro).present?
     end
 
     if klass == "HomePageImage"
