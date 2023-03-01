@@ -16,8 +16,10 @@ module LeadsUploader
 
     protected
 
-    def favorit_items
-      "Unit 101, Agave, Pool"
+    def favorit_items msg = ""
+      floorplans = @favorites.map{|fav| fav&.name if fav.class.name == "Floorplan" }.compact.uniq.join(', ')
+      units = @favorites.map{|fav| fav&.marketing_name if fav.class.name == "Unit" }.compact.uniq.join(', ')
+      amenities = @favorites.map{|fav| fav&.name if fav.class.name == "Amenity" }.compact.uniq.join(', ')
     end
 
     def extra_text

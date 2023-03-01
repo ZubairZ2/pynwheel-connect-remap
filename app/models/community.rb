@@ -1217,8 +1217,7 @@ s  end
     result = populate_favorites(params[:favorites][:items],email_to)
     favorites = result[0]
     units = result[1]
-    
-    submit_crm_leads()
+    submit_crm_leads(favorites)
 
     email_bcc = self.favorite_setting.present? ? self.favorite_setting.email_bcc : nil
     email_from = self.favorite_setting.present? ? self.favorite_setting.email_from : nil
