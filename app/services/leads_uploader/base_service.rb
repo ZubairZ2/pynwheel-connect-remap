@@ -16,11 +16,18 @@ module LeadsUploader
 
     protected
 
+    def format_favorites_message units, floorplans, amenities, message_text = "" 
+      message_text += "Unit: #{units}\n" if units.present?
+      message_text += "Floorplan: #{floorplans}\n" if floorplans.present?
+      message_text += "Amenity: #{amenities}" if amenities.present?
+      message_text 
+    end
+
     def favorit_items
-      floorplans = @favorites.map{|fav| fav&.name if fav.class.name == "Floorplan" }.compact.join(', ')
-      units = @favorites.map{|fav| fav&.marketing_name if fav.class.name == "Unit" }.compact.join(', ')
-      amenities = @favorites.map{|fav| fav&.name if fav.class.name == "Amenity" }.compact.join(', ')
-      "Unit: #{units}\nFloorplan: #{floorplans}\nAmenity: #{amenities}"
+      floorplans = @favorites.map{|fav| fav&.name if fav.class.name == "Floorplan" }&.compact&.join(', ')
+      units = @favorites.map{|fav| fav&.marketing_name if fav.class.name == "Unit" }&.compact&.join(', ')
+      amenities = @favorites.map{|fav| fav&.name if fav.class.name == "Amenity" }&.compact&.join(', ')
+      format_favorites_message(units, floorplans, amenities) 
     end
 
     def message
