@@ -81,7 +81,6 @@ class Unit < ApplicationRecord
   has_one :door, as: :attached_with, dependent: :destroy
   has_one :tour_stop, as: :stop, dependent: :destroy
   
-  scope :ignore_units, -> { where("marketing_name NOT LIKE ?", ("%WAIT%" or "%Wait%" or "%wait%")) }
   scope :are_sold, -> { where("sold = ? and (x_plot > ? or y_plot > ?)", true, 0, 0) }
   #scope :are_available, -> { where("available = ? and sold = ?", true,false) }
   scope :past_available_units, -> { where("availability = ? and available_date <= ? and x_plot > ?", "Unoccupied", Date.today, 0) }
@@ -90,7 +89,7 @@ class Unit < ApplicationRecord
   scope :ploted_units, -> { has_x_plot.or(has_y_plot) }
   scope :are_ploted_units, -> { where("(x_plot > ? or y_plot > ?)", 0, 0) }
   #scope :available_units, -> { ploted_units.or(past_available_units).where.not(available: true) }
-  scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true).ignore_units } #Don't fetch units where are sold
+  scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true) } #Don't fetch units where are sold
   after_commit :populate_image_urls, on: [:create,:update]
   after_update :crop_unit_image
   after_update :crop_unit_secondary_image
