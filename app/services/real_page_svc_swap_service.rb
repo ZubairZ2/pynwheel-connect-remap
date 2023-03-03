@@ -407,7 +407,7 @@ class RealPageSvcSwapService < BaseService
           units = [units] if units.is_a?(Hash)
           units.each do |u|
             
-            @array_of_units << "#{u[:Address][:UnitID]}-#{site_id}" unless @array_of_units.include?("#{u[:Address][:UnitID]}-#{site_id}")
+            @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
             unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber])
             unless unit.count == 1
               unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber], building: u[:Address][:BuildingNumber])
@@ -638,10 +638,13 @@ class RealPageSvcSwapService < BaseService
             end
 
             if unit_min_rent.present?
-              unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no,building: unit_add)
+              unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND building = ? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, unit_add, "%-#{site_id}").last
+              # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
               unless unit.present?
-                unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
+                unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, "%-#{site_id}").last
+                # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
               end
+
               if unit.present?
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && !(unit.manual_override)
                   unit.effective_rent = unit_min_rent

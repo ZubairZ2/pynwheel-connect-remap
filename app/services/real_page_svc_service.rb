@@ -444,7 +444,7 @@ class RealPageSvcService < BaseService
           community&.community_data_updated_on()
           units.each do |u|
             provider_unit_id = "#{u[:Address][:UnitID]}-#{site_id}"
-            @array_of_units << provider_unit_id unless @array_of_units.include?(provider_unit_id)
+            @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
             unit = @all_units_hash[provider_unit_id]
 
             if unit.present?
@@ -492,7 +492,7 @@ class RealPageSvcService < BaseService
             else
               unit = Unit.where(provider: "realpagesvc", community_id: community_id, provider_unit_id: provider_unit_id).first_or_initialize
 
-              @array_of_units << provider_unit_id
+              @array_of_units << u[:Address][:UnitID]
 
               unless unit.manual_override
                 unit.property_id = u[:SiteID]
@@ -663,7 +663,6 @@ class RealPageSvcService < BaseService
 
         #result = Hash.from_xml(response.body) This method consumes too much memory on heroku
         result = Ox.load(response.body, mode: :hash)
-        
         if result[:"s:Envelope"][1][:"s:Body"][1].present?
           units = result[:"s:Envelope"][1][:"s:Body"][1][:getrentmatrixResponse][1][:getrentmatrixResult][:GetRentMatrix][1][:RentMatrices][:RentMatrix]
           units.each do |u|
@@ -697,15 +696,17 @@ class RealPageSvcService < BaseService
             if unit_min_rent.present?
               # unit = @all_units_marketing_name_and_building_hash["#{unit_add}-#{unit_no}"]
               # unit = @all_units_marketing_name_hash[unit_no.to_s] unless unit.present?
-              unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
-              
+
+              unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND building = ? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, unit_add, "%-#{site_id}").last
+              # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
               unless unit.present?
-                unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
+                unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, "%-#{site_id}").last
+                # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
               end
 
               if unit.present?
                 puts "--------------- Updating pricing for: #{unit.marketing_name} ---------------- \n"
-               
+
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && (unit.manual_override)
                   unit.effective_rent = unit_min_rent.to_f
                 end
