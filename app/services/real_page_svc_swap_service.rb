@@ -407,7 +407,7 @@ class RealPageSvcSwapService < BaseService
           units = [units] if units.is_a?(Hash)
           units.each do |u|
             
-            @array_of_units << "#{u[:Address][:UnitID]}-#{site_id}" unless @array_of_units.include?("#{u[:Address][:UnitID]}-#{site_id}")
+            @array_of_units << u[:Address][:UnitID] unless @array_of_units.include?(u[:Address][:UnitID])
             unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber])
             unless unit.count == 1
               unit = Unit.where(community_id: community_id,marketing_name: u[:Address][:UnitNumber], building: u[:Address][:BuildingNumber])
