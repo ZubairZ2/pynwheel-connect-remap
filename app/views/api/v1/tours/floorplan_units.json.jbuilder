@@ -28,6 +28,7 @@ json.data @units do |u|
         json.unit_type u.unit_type
         json.marketing_name u.api_unit_marketing_name
         json.floorplan_id u.floorplan_id
+        json.floorplan_name u&.floorplan&.name
         json.market_rent u.market_rent
         json.effective_rent u.effective_rent
         json.rent u.effective_rent
