@@ -1203,30 +1203,27 @@ s  end
     URI.escape(com_address, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))
   end
 
+  def submit_crm_leads email_to, favorites
+    return unless favorites.present?
+    case data_provider
+      when "yardirentcafe"
+        LeadsUploader::YardiRentCafe.new(self.id, email_to, favorites).leads_uploader()
+    end
+  end
+
   def email_favorites(params)
     email_to = params[:favorites][:email_to]
     result = populate_favorites(params[:favorites][:items],email_to)
     favorites = result[0]
     units = result[1]
+    
+    submit_crm_leads(email_to, favorites)
 
-    params[:favorites][:items].each do |item|
-      # if item['unit_id'].present?
-      #   u = Unit.find item['unit_id']
-      #   if u.present?
-      #     units << u
-      #   else
-      #     u = Unit.new
-      #     units << u
-      #   end
-      #   u = Unit.new
-      #   units << u
-      # end
-
-    end
     email_bcc = self.favorite_setting.present? ? self.favorite_setting.email_bcc : nil
     email_from = self.favorite_setting.present? ? self.favorite_setting.email_from : nil
     email_body = self.favorite_setting.present? ? self.favorite_setting.email_body : nil
     ios = params[:favorites][:device_type].present? && params[:favorites][:device_type] == "iOS" ? true : false
+
     if favorites.present?
       begin
         FavoriteMailer.email_favorites(email_from,email_to,email_bcc,email_body,favorites,units,ios,self).deliver
