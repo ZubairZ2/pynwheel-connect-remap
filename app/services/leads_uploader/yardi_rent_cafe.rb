@@ -3,22 +3,13 @@ module LeadsUploader
 
     def leads_uploader
       return unless verify_credentials
-      res = HTTParty.get( api_url )
-      binding.pry
+      HTTParty.get( api_url )
     end
 
     private
 
     def api_url
       "#{@community.credential.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&firstName=#{first_name}&lastName=#{last_name}&phone=#{phone}&message=#{message}&email=#{email}&source=#{source}&secondarySource=#{secondary_source}&addr1=#{address_1}&addr2=#{address_2}&city=#{city}&state=#{state}&ZIPCode=#{zip_code}&#{get_credentials_query_params}"
-    end
-
-    def user_name
-      @community&.crm_credential&.yardirentcafe_leads_api_user_name
-    end
-
-    def password
-      @community&.crm_credential&.yardirentcafe_leads_api_password
     end
 
     def property_id

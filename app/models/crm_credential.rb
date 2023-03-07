@@ -26,9 +26,9 @@ class CrmCredential < ApplicationRecord
 
   def yardirentcafe_crm_credentials
 	  { 
-      yardirentcafe_leads_api_user_name: self.yardirentcafe_leads_api_user_name, yardirentcafe_leads_api_password: self.yardirentcafe_leads_api_password,
-      yardirentcafe_marketing_api_key: self.yardirentcafe_marketing_api_key, yardirentcafe_company_code: self.yardirentcafe_company_code,
-      yardirentcafe_property_id: self.yardirentcafe_property_id, yardirentcafe_property_code: self.yardirentcafe_property_code
+      yardirentcafe_marketing_api_key: self.yardirentcafe_marketing_api_key,
+      yardirentcafe_property_id: self.yardirentcafe_property_id, 
+      yardirentcafe_property_code: self.yardirentcafe_property_code
     }
   end
   
@@ -52,7 +52,7 @@ class CrmCredential < ApplicationRecord
   end
 
   def credential_present?
-  	if self.entrata_domain.present? || realpage_site_id.present? || salesforce_username.present? || funnel_api_key.present? || knock_community_id.present? || yardirentcafe_leads_api_user_name.present?
+  	if self.entrata_domain.present? || realpage_site_id.present? || salesforce_username.present? || funnel_api_key.present? || knock_community_id.present? || yardirentcafe_marketing_api_key.present?
   		(true)
   	else
   		(false)

@@ -7,7 +7,7 @@ module YardiRentCafeServices
       @c_time_zone = @community.get_time_zone()
       @crm_credential = @community&.crm_credential
       @api_key = @community&.crm_credential&.yardirentcafe_marketing_api_key
-      @company_code =@community&.crm_credential&.yardirentcafe_company_code
+      @property_id =@community&.crm_credential&.yardirentcafe_property_id
       @property_code = @community&.crm_credential&.yardirentcafe_property_code
     end
   end

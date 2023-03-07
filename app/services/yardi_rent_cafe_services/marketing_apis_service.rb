@@ -32,7 +32,14 @@ module YardiRentCafeServices
     end
 
     def shared_query_params
-      "MarketingAPIKey=#{@api_key}&CompanyCode=#{@company_code}&PropertyCode=#{@property_code}"
+      if @api_key.present?
+        if @property_id.present?
+          "propertyId=#{@property_id}&MarketingAPIKey=#{@api_key}"
+        elsif @property_code.present?
+          "propertyCode=#{@property_code}&MarketingAPIKey=#{@api_key}"
+        end
+      end
+      # "MarketingAPIKey=#{@api_key}&CompanyCode=#{@company_code}&PropertyCode=#{@property_code}"
     end
 
     def yardi_scheduled_tour_response yardi_scheduled_tour
