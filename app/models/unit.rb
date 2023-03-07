@@ -148,6 +148,39 @@ class Unit < ApplicationRecord
     lease_pricing
   end
 
+  def get_lease_term_pricing_matrix
+    lease_pricing = []
+    begin
+      if self.lease_pricing.present? && self.community.display_pricing_options
+        str_split = self.lease_pricing.split(';')
+        str_split.each do |ss|
+          str = ss.split(':')
+          pricing_str = []
+
+          if str[1].to_i > 0
+                  pricing_str[0] = str[0]+" Month"
+                  pricing_str[1] = self.community.get_currency_symbol+str[1].to_i.to_s
+                  # h = {"pricing_option" => pricing_str}
+                  lease_pricing << pricing_str
+          end
+
+        end
+        
+        lease_pricing = lease_pricing.sort_by {|x| x[0][0..1].to_i}
+        lease_pricing2 = []
+
+        lease_pricing.each do |lp|
+          lease_pricing2 << {"pricing_month" => lp[0],"pricing_rent" => lp[1]}
+        end
+
+        lease_pricing = lease_pricing2
+      end
+    rescue => ex
+    end
+
+    lease_pricing
+  end
+
   def crop_unit_secondary_image
     secondary_image.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secpndary)
     self.update_columns(do_crop_secpndary: false)
