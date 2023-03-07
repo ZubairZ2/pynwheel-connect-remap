@@ -486,7 +486,7 @@ class RealPageSvcService < BaseService
 
               end
               unit.lease_pricing = nil
-              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
+              unit.availability_url = "#{get_availability_base_url(community_id)}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
               @unit_record << unit.provider_unit_id
 
             else
@@ -555,13 +555,13 @@ class RealPageSvcService < BaseService
 
                 unit.manually_updated = false
                 unit.lease_pricing = nil
-                unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
+                unit.availability_url = "#{get_availability_base_url(community_id)}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
 
                 # @unit_record << unit.provider_unit_id unless @unit_record.include?(unit.provider_unit_id)
 
               end
 
-              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
+              unit.availability_url = "#{get_availability_base_url(community_id)}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
             end
 
             import_units << unit
@@ -787,6 +787,11 @@ class RealPageSvcService < BaseService
         return ""
       end
     end
+  end
+
+  def get_availability_base_url community_id
+    app_base_url = Rails.env.development? ? "localhost:3000" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com" : "https://pynwheelapp.com")
+    "#{app_base_url}/communities/#{community_id}/webpages"
   end
 
 end

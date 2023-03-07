@@ -391,7 +391,7 @@ class RealPageSvcStaticService < BaseService
 
               unit.manually_updated = false
 
-              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
+              unit.availability_url = "#{get_availability_base_url(community_id)}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
 
 
               unit.save(validate: false)
@@ -604,5 +604,10 @@ class RealPageSvcStaticService < BaseService
         return ""
       end
     end
+  end
+
+  def get_availability_base_url community_id
+    app_base_url = Rails.env.development? ? "localhost:3000" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com" : "https://pynwheelapp.com")
+    "#{app_base_url}/communities/#{community_id}/webpages"
   end
 end
