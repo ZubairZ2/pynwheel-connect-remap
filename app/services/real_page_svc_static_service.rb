@@ -1,16 +1,11 @@
 class RealPageSvcStaticService < BaseService
   def perform
-    # @doc = ""
     @array_of_units = []
+    @apply_now_base_url = get_availability_base_url(credentials.community_id)
     import_realpage_svc_floorplans
     import_initial_realpage_units
     import_realpage_svc_units
     import_realpage_svc_price
-
-    # com = Community.find(credentials.community_id)
-    # com.realpage_pricing_data = @doc
-    # com.realpage_pricing_data_uploaded = true
-    # com.save
   end
 
   def import_realpage_svc_floorplans
@@ -391,7 +386,7 @@ class RealPageSvcStaticService < BaseService
 
               unit.manually_updated = false
 
-              unit.availability_url = "#{get_availability_base_url(community_id)}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
+              unit.availability_url = "#{@apply_now_base_url}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
 
 
               unit.save(validate: false)

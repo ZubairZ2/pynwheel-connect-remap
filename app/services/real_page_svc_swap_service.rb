@@ -1,5 +1,6 @@
 class RealPageSvcSwapService < BaseService
   def perform
+    @apply_now_base_url = get_availability_base_url(credentials.community_id)
     import_realpage_svc_floorplans
     import_initial_realpage_units
     import_realpage_svc_units
@@ -458,7 +459,7 @@ class RealPageSvcSwapService < BaseService
 
               unit.manually_updated = false
 
-              unit.availability_url = "#{get_availability_base_url(community_id)}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
+              unit.availability_url = "#{@apply_now_base_url}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
 
               unit.save(validate: false)
             else
@@ -531,7 +532,7 @@ class RealPageSvcSwapService < BaseService
 
               unit.manually_updated = false
 
-              unit.availability_url = "#{get_availability_base_url(community_id)}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
+              unit.availability_url = "#{@apply_now_base_url}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
 
 
               unit.save(validate: false)
