@@ -28,7 +28,7 @@ json.data @units do |u|
   json.provider_unit_id u.provider_unit_id
   json.unit_type u.unit_type
   json.marketing_name u.api_unit_marketing_name
-  json.floorplan_id u.floorplan_id
+  json.floorplan_id u&.floorplan&.id
   json.market_rent "#{@community.get_currency_symbol}#{u.market_rent}"
   json.effective_rent "#{@community.get_currency_symbol}#{u.effective_rent}"
   json.rent "#{@community.get_currency_symbol}#{u.effective_rent}"
@@ -56,9 +56,9 @@ json.data @units do |u|
   json.manual_override u.manual_override
   json.square_feet u.square_feet
   json.description u.description
-  json.bedrooms u.floorplan.bedrooms rescue 0
-  json.bathrooms u.floorplan.bathrooms rescue 0
-  json.image (u.image.present? ? u.image.url : u.floorplan.image.url) rescue ""
+  json.bedrooms u&.floorplan&.bedrooms rescue 0
+  json.bathrooms u&.floorplan&.bathrooms rescue 0
+  json.image (u.image.present? ? u.image.url : u&.floorplan&.image&.url) rescue ""
   json.update_apply ((u.provider == "resman" || u.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
   json.display_rent @community.display_rent
   json.display_pricing_options @community.display_pricing_options
