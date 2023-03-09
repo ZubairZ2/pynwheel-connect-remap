@@ -181,6 +181,36 @@ class Unit < ApplicationRecord
     lease_pricing
   end
 
+  def get_unit_virtual_tour_url
+    if self.virtual_tour_url.present?
+      if self.virtual_tour_url.include? '</iframe>'
+        iframe_url = self.virtual_tour_url.split('height')
+        if iframe_url[1][3] == '"'
+          iframe_url[1][2] = '1' + '0' + '0' + '%'
+        elsif iframe_url[1][4] == '"'
+          iframe_url[1][2] = '1'
+          iframe_url[1][3] = '0' + '0' + '%'
+        elsif iframe_url[1][5] == '"'
+          iframe_url[1][2] = '1'
+          iframe_url[1][3] = '0'
+          iframe_url[1][4] = '0' + '%'
+        else
+          iframe_url[1][2] = '1'
+          iframe_url[1][3] = '0'
+          iframe_url[1][4] = '0'
+          iframe_url[1][5] = '%'
+        end
+        
+        iframe_url[0] + 'height' + iframe_url[1]
+      else
+        self.virtual_tour_url
+      end
+    else
+      ""
+    end
+  end
+
+
   def crop_unit_secondary_image
     secondary_image.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secpndary)
     self.update_columns(do_crop_secpndary: false)

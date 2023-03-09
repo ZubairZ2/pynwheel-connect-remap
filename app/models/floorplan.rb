@@ -38,4 +38,33 @@ class Floorplan < ApplicationRecord
     image.recreate_versions! if (crop_x.present? && image_bit && do_crop)
   end
 
+  def get_floorplan_virtual_tour_url
+    if self.virtual_tour_url.present?
+      if self.virtual_tour_url.include? '</iframe>'
+        iframe_url = self.virtual_tour_url.split('height')
+        if iframe_url[1][3] == '"'
+          iframe_url[1][2] = '1' + '0' + '0' + '%'
+        elsif iframe_url[1][4] == '"'
+          iframe_url[1][2] = '1'
+          iframe_url[1][3] = '0' + '0' + '%'
+        elsif iframe_url[1][5] == '"'
+          iframe_url[1][2] = '1'
+          iframe_url[1][3] = '0'
+          iframe_url[1][4] = '0' + '%'
+        else
+          iframe_url[1][2] = '1'
+          iframe_url[1][3] = '0'
+          iframe_url[1][4] = '0'
+          iframe_url[1][5] = '%'
+        end
+        
+        iframe_url[0] + 'height' + iframe_url[1]
+      else
+        self.virtual_tour_url
+      end
+    else
+      ""
+    end
+  end
+
 end

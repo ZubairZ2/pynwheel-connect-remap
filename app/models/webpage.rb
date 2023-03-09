@@ -28,4 +28,33 @@ class Webpage < ApplicationRecord
       :only => [:id, :name, :url]
     )
   end
+
+  def get_webpage_virtual_tour_url
+    if self&.url.present?
+      if self&.url&.include? '</iframe>'
+        iframe_url = self.url.split('height')
+        if iframe_url[1][3] == '"'
+          iframe_url[1][2] = '1' + '0' + '0' + '%'
+        elsif iframe_url[1][4] == '"'
+          iframe_url[1][2] = '1'
+          iframe_url[1][3] = '0' + '0' + '%'
+        elsif iframe_url[1][5] == '"'
+          iframe_url[1][2] = '1'
+          iframe_url[1][3] = '0'
+          iframe_url[1][4] = '0' + '%'
+        else
+          iframe_url[1][2] = '1'
+          iframe_url[1][3] = '0'
+          iframe_url[1][4] = '0'
+          iframe_url[1][5] = '%'
+        end
+        
+        iframe_url[0] + 'height' + iframe_url[1]
+      else
+        self.url
+      end
+    else
+      ""
+    end
+  end
 end

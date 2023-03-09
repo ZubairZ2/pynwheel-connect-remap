@@ -62,6 +62,9 @@ json.data @units do |u|
   json.update_apply ((u.provider == "resman" || u.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
   json.display_rent @community.display_rent
   json.display_pricing_options @community.display_pricing_options
+  json.display_virtual_tour_button_label true #unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
+  json.virtual_tour_button_label u.virtual_tour_button_label.present? ? u.virtual_tour_button_label : "3D Tour"
+  json.virtual_tour u.get_unit_virtual_tour_url()
 
   if @community.display_rent && u.lease_pricing.present? && @community.display_pricing_options
     json.lease_pricing u.lease_pricing.gsub('=>', ':')

@@ -52,58 +52,22 @@ json.apartments do
     else
       conditionAvailable = 1
     end
-      # floorplan = floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
-      # units_floorplans << floorplan
       json.marketing_name unit.api_unit_marketing_name
       json.rent @community.get_currency_symbol + (unit.effective_rent.present? ? unit.effective_rent : 0)
       json.availability unit.availability
       json.available_date unit.available_date.present? ? ((unit.available_date < Time.now) ? Time.now.strftime('%m/%d/%Y') : unit.available_date.strftime('%m/%d/%Y')) : Date.today - 1.day
       json.available unit.available
       json.sold unit.sold
-      # json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
       json.x_plot unit.x_plot
       json.y_plot unit.y_plot
       json.building unit.building
-      # json.floorplan_id floorplan.id
       json.unit_type unit.unit_type
       json.provider_unit_id unit.provider_unit_id
       json.id (Unit.find_by provider_unit_id: unit.provider_unit_id).id rescue ""
-      json.yuyuyuyuyuyuyuyuyuyyyyyyyyyyyyyy unit.availability
-      # json.floorplan_name floorplan.present? ? floorplan.name : nil
-      # json.bedrooms floorplan.present? ? floorplan.bedrooms : 0
       json.display_virtual_tour_button_label true #unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
-      # json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
+      json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
+      json.virtual_tour unit.get_unit_virtual_tour_url()
 
-      if unit.virtual_tour_url.present?
-        if unit.virtual_tour_url.include? '</iframe>'
-          @iframe_url = unit.virtual_tour_url.split('height')
-          if @iframe_url[1][3] == '"'
-            @iframe_url[1][2] = '1' + '0' + '0' + '%'
-          elsif @iframe_url[1][4] == '"'
-            @iframe_url[1][2] = '1'
-            @iframe_url[1][3] = '0' + '0' + '%'
-          elsif @iframe_url[1][5] == '"'
-            @iframe_url[1][2] = '1'
-            @iframe_url[1][3] = '0'
-            @iframe_url[1][4] = '0' + '%'
-          else
-            @iframe_url[1][2] = '1'
-            @iframe_url[1][3] = '0'
-            @iframe_url[1][4] = '0'
-            @iframe_url[1][5] = '%'
-          end
-          unit.virtual_tour_url = @iframe_url[0] + 'height' + @iframe_url[1]
-          json.virtual_tour unit.virtual_tour_url
-        else
-          json.virtual_tour unit.virtual_tour_url
-        end
-      else
-        json.virtual_tour ""
-      end
-
-      # json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
-      # json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
-      # json.square_feet unit.square_feet.present? && unit.square_feet > 1 ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
       if @community.display_rent
         if unit.lease_pricing.present? && @community.display_pricing_options
           json.lease_pricing unit.lease_pricing.gsub('=>', ':')
@@ -114,18 +78,6 @@ json.apartments do
         json.lease_pricing nil
       end
 
-      if unit.standard_image_url.present? || unit.secondary_image.present?
-        # json.image unit.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+unit.standard_image_url : unit.standard_image_url) : nil
-        # json.secondary_image unit.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+unit.secondary_image.url : unit.secondary_image.url) : nil
-      else
-        # json.image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
-        # json.secondary_image floorplan.present? ? (floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url : floorplan.secondary_image.url) : nil) : nil
-
-        # json.image floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url + (floorplan.crop_x.present? ? "?temp/"+floorplan.crop_x.to_s +  floorplan.standard_image_url.split('/')[ floorplan.standard_image_url.split('/').count - 1] : ""): floorplan.standard_image_url + (floorplan.crop_x.present? ? "?temp/"+floorplan.crop_x.to_s+  floorplan.standard_image_url.split('/')[ floorplan.standard_image_url.split('/').count - 1] : "")) : nil
-        # json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp/"+floorplan.crop_x_secondary.to_s +  floorplan.secondary_image.url.split('/')[ floorplan.secondary_image.url.split('/').count - 1] : ""): floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp/"+floorplan.crop_x_secondary.to_s + floorplan.secondary_image.url.split('/')[ floorplan.secondary_image.url.split('/').count - 1] : "")) : nil
-      end
-      # json.floorplan_image floorplan.present? ? (floorplan.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.standard_image_url : floorplan.standard_image_url) : nil) : nil
-      # json.floorplate_number unit.floorplate.present? ? unit.floorplate.number : 0
       json.floorplate_number unit.floor.present? ? unit.floor : 0
       if unit.amenities.plotted_amenities.size > 0
         json.unit_amenities unit.amenities.plotted_amenities do |amenity|
@@ -183,34 +135,7 @@ json.apartments do
     json.secondary_image floorplan.secondary_image.present? ? (Rails.env.development? ? local_assets_base_url+floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp/"+floorplan.crop_x_secondary.to_s +  floorplan.secondary_image.url.split('/')[ floorplan.secondary_image.url.split('/').count - 1] : ""): floorplan.secondary_image.url + (floorplan.crop_x_secondary.present? ? "?temp/"+floorplan.crop_x_secondary.to_s + floorplan.secondary_image.url.split('/')[ floorplan.secondary_image.url.split('/').count - 1] : "")) : nil
     json.display_virtual_tour_button_label true #floorplan.display_virtual_tour_button_label.present? ? floorplan.display_virtual_tour_button_label : false
     json.virtual_tour_button_label floorplan.virtual_tour_button_label.present? ? floorplan.virtual_tour_button_label : "3D Tour"
-
-    #json.virtual_tour floorplan.virtual_tour_url unless params[:action] == "ios_data"
-    if floorplan.virtual_tour_url.present?
-      if floorplan.virtual_tour_url.include? '</iframe>'
-        @iframe_url = floorplan.virtual_tour_url.split('height')
-        if @iframe_url[1][3] == '"'
-          @iframe_url[1][2] = '1' + '0' + '0' + '%'
-        elsif @iframe_url[1][4] == '"'
-          @iframe_url[1][2] = '1'
-          @iframe_url[1][3] = '0' + '0' + '%'
-        elsif @iframe_url[1][5] == '"'
-          @iframe_url[1][2] = '1'
-          @iframe_url[1][3] = '0'
-          @iframe_url[1][4] = '0' + '%'
-        else
-          @iframe_url[1][2] = '1'
-          @iframe_url[1][3] = '0'
-          @iframe_url[1][4] = '0'
-          @iframe_url[1][5] = '%'
-        end
-        floorplan.virtual_tour_url = @iframe_url[0] + 'height' + @iframe_url[1]
-        json.virtual_tour floorplan.virtual_tour_url
-      else
-        json.virtual_tour floorplan.virtual_tour_url
-      end
-    else
-      json.virtual_tour ""
-    end
+    json.virtual_tour floorplan.get_floorplan_virtual_tour_url()
 
     json.floorplan_amenities floorplan.amenities.plotted_amenities do |amenity|
       json.image amenity.standard_image_url.present? ? (Rails.env.development? ? local_assets_base_url+amenity.standard_image_url : amenity.standard_image_url) : nil
