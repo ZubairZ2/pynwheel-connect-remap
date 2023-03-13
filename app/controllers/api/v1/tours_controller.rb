@@ -304,9 +304,9 @@ iPhone Users:
         success = false
         message = 'Please provide unit_id'
       end
-      unless params[:stringFormat].present? && params[:stringFormat] == "true"
-        render :json => { :success => success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
-      end
+      # unless params[:stringFormat].present? && params[:stringFormat] == "true"
+      #   render :json => { :success => success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
+      # end
     end
   end
 
@@ -356,9 +356,9 @@ iPhone Users:
         success = false
         message = 'Please provide unit_id'
       end
-      unless params[:stringFormat].present? && params[:stringFormat] == "true"
-        render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
-      end
+      # unless params[:stringFormat].present? && params[:stringFormat] == "true"
+      #   render :json=> {:success=>success, :message => message, :data => @units ||= {}, :floorplate_image => floorplate_image }
+      # end
     end
   end
   def mis_match_verification
