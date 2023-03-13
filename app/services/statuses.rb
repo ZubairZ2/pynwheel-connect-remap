@@ -57,8 +57,8 @@ class Statuses
   end
 
   def set_ebrochure_status
-    weblinks = @community.favorite_setting.ebrochure_menu_buttons
-    favorite_images = @community.favorite_setting.favorite_images
+    weblinks = @community&.favorite_setting&.ebrochure_menu_buttons
+    favorite_images = @community&.favorite_setting&.favorite_images
     weblinks.each {|weblink| @community.set_status_for_all(weblink, @status, @current_user)} if weblinks.present?
     favorite_images.each {|image| @community.set_status_for_all(image, @status, @current_user)} if favorite_images.present?
   end
