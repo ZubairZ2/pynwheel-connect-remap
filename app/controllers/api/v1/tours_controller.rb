@@ -280,7 +280,8 @@ iPhone Users:
       if params[:unit_id].present?
         unit = Unit.find_by_id(params[:unit_id])
         @community = Community.find unit.community_id
-        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id, unit.community_id, true) if unit.present?
+        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND marketing_name NOT LIKE ?', unit.floorplan_id, unit.community_id, true, ("%WAIT%" or "%Wait%" or "%wait%")) if unit.present?
+
         @units.each do |u|
           if u.community.is_sitemap?
             u.sitemap_image_url = u&.community&.sitemap&.image&.url rescue ""
@@ -332,7 +333,7 @@ iPhone Users:
       if params[:floorplan_id].present?
         floorplan = Floorplan.find_by_id(params[:floorplan_id])
         @community = Community.find params[:community_id]
-        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', floorplan.provider_floorplan_id,@community.id,true) if floorplan.present?
+        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND marketing_name NOT LIKE ?', floorplan.provider_floorplan_id,@community.id,true, ("%WAIT%" or "%Wait%" or "%wait%") ) if floorplan.present?
         @units.each do |u|
           if u.community.is_sitemap?
             u.sitemap_image_url = u&.community&.sitemap&.image&.url rescue ""

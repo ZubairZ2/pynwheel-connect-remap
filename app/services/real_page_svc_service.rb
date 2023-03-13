@@ -4,6 +4,7 @@ class RealPageSvcService < BaseService
   def initialize(credentials)
     @credentials = credentials
     @unit_record = []
+    @apply_now_base_url = get_availability_base_url(@credentials.community_id)
     @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "realpagesvc")
     @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "realpagesvc")
     @all_units_marketing_name_hash =  ProvidersDataUpdationService.new().get_all_units_marketing_name_hash(@credentials.community_id, "realpagesvc")
@@ -486,7 +487,7 @@ class RealPageSvcService < BaseService
 
               end
               unit.lease_pricing = nil
-              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
+              unit.availability_url = "#{@apply_now_base_url}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
               @unit_record << unit.provider_unit_id
 
             else
@@ -555,13 +556,13 @@ class RealPageSvcService < BaseService
 
                 unit.manually_updated = false
                 unit.lease_pricing = nil
-                unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
+                unit.availability_url = "#{@apply_now_base_url}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
 
                 # @unit_record << unit.provider_unit_id unless @unit_record.include?(unit.provider_unit_id)
 
               end
 
-              unit.availability_url = "https://pynwheelapp.com/communities/#{community_id}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
+              unit.availability_url = "#{@apply_now_base_url}/webpages/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
             end
 
             import_units << unit
@@ -788,6 +789,11 @@ class RealPageSvcService < BaseService
         return ""
       end
     end
+  end
+
+  def get_availability_base_url community_id
+    app_base_url = Rails.env.development? ? "localhost:3000" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com" : "https://pynwheelapp.com")
+    "#{app_base_url}/communities/#{community_id}/webpages"
   end
 
 end
