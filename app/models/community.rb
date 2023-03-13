@@ -420,7 +420,7 @@ class Community < ApplicationRecord
       when "psi"
         crm_credential.entrata_domain.present? && crm_credential.entrata_username.present? && crm_credential.entrata_password.present? && crm_credential.entrata_property_id.present?
       when "yardirentcafe"
-        crm_credential.yardirentcafe_leads_api_user_name.present? && crm_credential.yardirentcafe_leads_api_password.present? && crm_credential.yardirentcafe_marketing_api_key.present? && crm_credential.yardirentcafe_company_code.present? && crm_credential.yardirentcafe_property_id.present? && crm_credential.yardirentcafe_property_code.present?
+        crm_credential.yardirentcafe_marketing_api_key.present? && (crm_credential.yardirentcafe_property_id.present? || crm_credential.yardirentcafe_property_code.present?)
       when "realpagesvc"
         crm_credential.realpage_site_id.present? && crm_credential.realpage_pmc_id.present?
       when "salesforce"
@@ -1638,50 +1638,53 @@ s  end
   def fetch_tour_type_according_to_time_for_yardi(scheduled_tour, date_str, tour_time)
     tour_type = []
     yardi_time_slots = self.available_slots(scheduled_tour)
-    yardi_self_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
-    yardi_guided_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
-    if self&.community_tour&.tour_setting.present?
-      tour_setting = self&.community_tour.tour_setting
-      stepping = tour_setting.time_intervel == '15 min' ? 15 : (tour_setting.time_intervel == '30 min' ? 30 : (tour_setting.time_intervel == '1 hr') ? 60 : (tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
-      allow_self_tour = tour_setting.allow_self_tour
-      allow_guided_tour = tour_setting.allow_guided_tour
-      allow_virtual_tour = tour_setting.allow_virtual_tour
-      self_tour_data = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day, :opening_time, :closing_time) : []
-      guided_tour_data = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
-      if allow_virtual_tour
-        tour_type << ["virtual_tour","Virtual Tour"]
-      end
+    if yardi_time_slots["Response"].present?
+      yardi_self_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
+      yardi_guided_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
+      if self&.community_tour&.tour_setting.present?
+        tour_setting = self&.community_tour.tour_setting
+        stepping = tour_setting.time_intervel == '15 min' ? 15 : (tour_setting.time_intervel == '30 min' ? 30 : (tour_setting.time_intervel == '1 hr') ? 60 : (tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
+        allow_self_tour = tour_setting.allow_self_tour
+        allow_guided_tour = tour_setting.allow_guided_tour
+        allow_virtual_tour = tour_setting.allow_virtual_tour
+        self_tour_data = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day, :opening_time, :closing_time) : []
+        guided_tour_data = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
+        if allow_virtual_tour
+          tour_type << ["virtual_tour","Virtual Tour"]
+        end
 
-      if allow_self_tour && yardi_self_time_slots.any? && self_tour_data.any?
-        yardi_self_time_slots = maintain_datetime_according_to_yardi(yardi_self_time_slots)
-        yardi_self_time_slots_hash = fetch_hash_from_slots(yardi_self_time_slots)
-        yardi_self_time_slots_hash = remove_slots_according_to_pynwheel(yardi_self_time_slots_hash, self_tour_data)
-        selected_day_slot = yardi_self_time_slots_hash[date_str]
-        unless selected_day_slot.nil?
-          selected_day_slot.each do |arr|
-            if Time.parse(tour_time) >= Time.parse(arr[0]) && Time.parse(tour_time) <= Time.parse(arr[1])
-              tour_type << ["self_tour","Self Tour"]
-              break
+        if allow_self_tour && yardi_self_time_slots.any? && self_tour_data.any?
+          yardi_self_time_slots = maintain_datetime_according_to_yardi(yardi_self_time_slots)
+          yardi_self_time_slots_hash = fetch_hash_from_slots(yardi_self_time_slots)
+          yardi_self_time_slots_hash = remove_slots_according_to_pynwheel(yardi_self_time_slots_hash, self_tour_data)
+          selected_day_slot = yardi_self_time_slots_hash[date_str]
+          unless selected_day_slot.nil?
+            selected_day_slot.each do |arr|
+              if Time.parse(tour_time) >= Time.parse(arr[0]) && Time.parse(tour_time) <= Time.parse(arr[1])
+                tour_type << ["self_tour","Self Tour"]
+                break
+              end
             end
           end
         end
-      end
 
-      if allow_guided_tour && yardi_guided_time_slots.any? && guided_tour_data.any?
-        yardi_guided_time_slots = maintain_datetime_according_to_yardi(yardi_guided_time_slots)
-        yardi_guided_time_slots_hash = fetch_hash_from_slots(yardi_guided_time_slots)
-        yardi_guided_time_slots_hash = remove_slots_according_to_pynwheel(yardi_guided_time_slots_hash, guided_tour_data)
-        selected_day_slot = yardi_guided_time_slots_hash[date_str]
-        unless selected_day_slot.nil?
-          selected_day_slot.each do |arr|
-            if Time.parse(tour_time) >= Time.parse(arr[0]) && Time.parse(tour_time) <= Time.parse(arr[1])
-              tour_type << ["guided_tour","Guided Tour"]
-              break
+        if allow_guided_tour && yardi_guided_time_slots.any? && guided_tour_data.any?
+          yardi_guided_time_slots = maintain_datetime_according_to_yardi(yardi_guided_time_slots)
+          yardi_guided_time_slots_hash = fetch_hash_from_slots(yardi_guided_time_slots)
+          yardi_guided_time_slots_hash = remove_slots_according_to_pynwheel(yardi_guided_time_slots_hash, guided_tour_data)
+          selected_day_slot = yardi_guided_time_slots_hash[date_str]
+          unless selected_day_slot.nil?
+            selected_day_slot.each do |arr|
+              if Time.parse(tour_time) >= Time.parse(arr[0]) && Time.parse(tour_time) <= Time.parse(arr[1])
+                tour_type << ["guided_tour","Guided Tour"]
+                break
+              end
             end
           end
         end
       end
     end
+
     tour_type
   end
 

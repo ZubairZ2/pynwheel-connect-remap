@@ -64,13 +64,20 @@ class SchedulerWidget::WidgetsController < ApplicationController
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
     if @use_yardi_as_lead
       @yardi_time_slots = @community.available_slots(@schedule_tour)
-      @yardi_self_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
-      @yardi_guided_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
-      @time_slots = @community.collect_time_slots_for_yardi(@stepping, @yardi_self_time_slots, @yardi_guided_time_slots)
-      @yardi_enable_days = @time_slots.keys
+      if @yardi_time_slots["Response"].present?
+        @yardi_self_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
+        @yardi_guided_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
+        @time_slots = @community.collect_time_slots_for_yardi(@stepping, @yardi_self_time_slots, @yardi_guided_time_slots)
+        @yardi_enable_days = @time_slots.keys
+      else
+        @time_slots = @reschedule_tour ? @community.collect_time_slots_for_rechedule_tours(@stepping,@tour_type) : @community.collect_time_slots(@stepping)
+        @yardi_enable_days = []
+        @use_yardi_as_lead = false
+      end
     else
       @time_slots = @reschedule_tour ? @community.collect_time_slots_for_rechedule_tours(@stepping,@tour_type) : @community.collect_time_slots(@stepping)
       @yardi_enable_days = []
+      @use_yardi_as_lead = false
     end
 
     @is_knock_community = @schedule_tour.community.is_knock_community?

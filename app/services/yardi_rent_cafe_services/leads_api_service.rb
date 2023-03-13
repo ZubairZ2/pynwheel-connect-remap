@@ -4,17 +4,17 @@ module YardiRentCafeServices
     def upload_leads_data visited_stops, tour_history, is_tour_abandoned
       return unless check_credentials
       message = get_message(visited_stops, tour_history, is_tour_abandoned)
-      response = HTTParty.get( url(message) )
+      HTTParty.get( url(message) )
     end
 
     private
 
     def check_credentials
-      (@community.present? && @tour_user.present? && @crm_credential.present? && @crm_credential&.yardirentcafe_property_id.present? && @crm_credential&.yardirentcafe_property_code.present? && @crm_credential&.yardirentcafe_marketing_api_key.present? && @crm_credential&.yardirentcafe_leads_api_user_name.present? && @crm_credential&.yardirentcafe_leads_api_password.present? )
+      (@community.present? && @tour_user.present? && @crm_credential.present? && (@crm_credential&.yardirentcafe_property_id.present? || @crm_credential&.yardirentcafe_property_code.present?) && @crm_credential&.yardirentcafe_marketing_api_key.present?)
     end
 
     def url message
-      "#{@community.credential.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&firstName=#{first_name}&lastName=#{last_name}&phone=#{phone}&message=#{message}&email=#{email}&username=#{user_name}&password=#{password}&source=#{source}&secondarySource=#{secondary_source}&addr1=#{address_1}&addr2=#{address_2}&city=#{city}&state=#{state}&ZIPCode=#{zip_code}&propertyCode=#{property_code}&propertyId=#{property_id}&apiToken=#{api_token}"
+      "#{@community.credential.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&firstName=#{first_name}&lastName=#{last_name}&phone=#{phone}&message=#{message}&email=#{email}&source=#{source}&secondarySource=#{secondary_source}&addr1=#{address_1}&addr2=#{address_2}&city=#{city}&state=#{state}&ZIPCode=#{zip_code}&#{get_credentials_query_params}"
     end
 
     def request_type
@@ -61,20 +61,22 @@ module YardiRentCafeServices
       end
     end
 
+    def get_credentials_query_params
+      if api_token.present?
+        if property_id.present?
+          "propertyId=#{property_id}&apiToken=#{api_token}"
+        elsif property_code.present?
+          "propertyCode=#{property_code}&apiToken=#{api_token}"
+        end
+      end
+    end
+
     def length_of_tour start_time, end_time
       ( (end_time - start_time)/60.0 ).round
     end
 
     def email
       @tour_user&.email
-    end
-
-    def user_name
-      @crm_credential&.yardirentcafe_leads_api_user_name
-    end
-
-    def password
-      @crm_credential&.yardirentcafe_leads_api_password
     end
 
     def property_id

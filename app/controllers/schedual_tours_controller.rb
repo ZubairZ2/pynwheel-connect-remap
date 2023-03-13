@@ -229,7 +229,18 @@ class SchedualToursController < ApplicationController
     end
 
     unless community.is_funnel_community?
-      tour_types = @is_knock_community ? KnockService.new(@schedual_tour).knock_available_tour_types( params[:date], params[:day], params[:time]) : @use_yardi_as_lead ? (community.fetch_tour_type_according_to_time_for_yardi(@schedual_tour, date.strftime("%-m/%-e/%Y"), params[:time])) : (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
+      tour_types = []
+
+      if @is_knock_community 
+        tour_types = KnockService.new(@schedual_tour).knock_available_tour_types( params[:date], params[:day], params[:time])
+      elsif @use_yardi_as_lead
+        tour_types = (community.fetch_tour_type_according_to_time_for_yardi(@schedual_tour, date.strftime("%-m/%-e/%Y"), params[:time]))
+      else
+        tour_types = (community.fetch_tour_type_according_to_time(params[:day], params[:time]))
+      end
+
+      tour_types = (community.fetch_tour_type_according_to_time(params[:day], params[:time])) if tour_types.empty?
+
       render json: {tour_types: tour_types.uniq,limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
     else
 

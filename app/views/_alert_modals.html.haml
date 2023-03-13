@@ -69,13 +69,13 @@
           Copy and paste the Pynwheel Map iframe embed code or page url below and share it with your web developer to add the interactive map to your website.
         .modal-body
           %strong Pynwheel map page url:
-          %input.form-control#url{:value =>community_webpages_url(current_community)}
+          %input.form-control#web-url{:value =>community_webpages_url(current_community)}
           %br
           %strong Pynwheel map iframe embed code:
           %input.form-control#embed-url{:value =>'<embed onload="window.parent.$("body").animate({scrollTop:0}, "slow");" style="margin-top: 0px; overflow:scroll;" src="'+community_webpages_url(current_community)+'" width="100%" height="750px" /><script type="text/javascript">$(window).on( "orientationchange", function( event ) {window.location.reload();});</script>'}/
         .modal-footer
           %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel
-          %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#url"} Copy Page URL
+          %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#web-url"} Copy Page URL
           %button.btn.btn-primary.clipboard-btn{"data-clipboard-target" => "#embed-url"} Copy Iframe Embed Code
 
 
