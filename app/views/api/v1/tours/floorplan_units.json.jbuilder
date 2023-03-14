@@ -30,9 +30,9 @@ json.data @units do |u|
   json.marketing_name u.api_unit_marketing_name
   json.floorplan_id u&.floorplan&.id
   json.floorplan_name u&.floorplan&.name
-  json.market_rent u.market_rent
-  json.effective_rent u.effective_rent
-  json.rent u.effective_rent
+  json.market_rent u.market_rent&.to_i
+  json.effective_rent u.effective_rent&.to_i
+  json.rent u.effective_rent&.to_i
   json.availability u.availability
 
   begin

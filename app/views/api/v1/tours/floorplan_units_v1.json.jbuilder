@@ -29,9 +29,9 @@ json.data @units do |u|
   json.unit_type u.unit_type
   json.marketing_name u.api_unit_marketing_name
   json.floorplan_id u&.floorplan&.id
-  json.market_rent "#{@community.get_currency_symbol}#{u.market_rent}"
-  json.effective_rent "#{@community.get_currency_symbol}#{u.effective_rent}"
-  json.rent "#{@community.get_currency_symbol}#{u.effective_rent}"
+  json.market_rent "#{@community.get_currency_symbol}#{u.market_rent&.to_i}"
+  json.effective_rent "#{@community.get_currency_symbol}#{u.effective_rent&.to_i}"
+  json.rent "#{@community.get_currency_symbol}#{u.effective_rent&.to_i}"
   json.availability u.availability
   
   begin
