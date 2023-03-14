@@ -230,19 +230,7 @@
         %li.loader_class{:class=>"#{controller_name =='schedual_tours' ? 'active' : ''}"}
           %a{:href => "#{community_schedual_tours_path(current_community)}"}
             %i.fa.fa-sticky-note-o
-            %span Scheduled Tours      
-
-      -# - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_community.self_tour && (current_community.scheduler_widget.nil? ? true : @community.scheduler_widget) || (current_community&.credential&.use_different_crm_provider && current_community&.crm_credential&.crm_provider == "salesforce")
-      -#   %li.loader_class{:class=>"#{controller_name =='schedual_tours' ? 'active' : ''}"}
-      -#     %a{:href => "#{community_schedual_tours_path(current_community)}"}
-      -#       %i.fa.fa-sticky-note-o
-      -#       %span Scheduled Tours
-      
-      -# - if current_community.pynwheel_access && current_user.is_super_admin?
-      -#   %li.loader_class{:class=>"#{controller_name =='pynwheel_accesses' ? 'active' : ''}"}
-      -#     %a{:href => "#{community_pynwheel_accesses_path(current_community)}"}
-      -#       %i.fa.fa-lock
-      -#       %span Pynwheel Access      
+            %span Scheduled Tours 
 
       - if current_community.pynwheel_access && current_user.is_super_admin?
         %li.loader_class{:class=>"#{controller_name =='pynwheel_access_users' ? 'active' : ''}"}
@@ -260,5 +248,3 @@
           %a{:href => "#{community_tutorials_path(current_community)}"}
             %i.fa.fa-video-camera
             %span Tutorials
-  / /.sidebar
-/ End menu nav left Section 
