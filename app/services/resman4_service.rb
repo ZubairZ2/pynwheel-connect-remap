@@ -9,7 +9,6 @@ class Resman4Service < BaseService
 
   def perform
     community = Community.find @credentials.community_id
-    community&.community_data_updated_on()
     property_ids = @credentials.resman_property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -75,10 +74,12 @@ class Resman4Service < BaseService
     end
   end
 
-  def save_resman_units(units,property_id)
+  def save_resman_units(units, property_id)
     import_units = []
     unit_record = []
     unit_present =  Unit.where("community_id = ? AND provider IN (?)",  @credentials.community_id,  ["resman"]).map{|x| x.provider_unit_id.gsub('*','-')}
+    community = Community.find @credentials.community_id
+    community&.community_data_updated_on()
     
     units.each do |u|
       vacateDate = ""
