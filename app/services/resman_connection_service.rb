@@ -1,7 +1,5 @@
 class ResmanConnectionService < BaseService
   def perform
-
-
     begin
       property_ids = credentials.resman_property_id.split(',') rescue []
       property_id = property_ids[0]
@@ -17,6 +15,7 @@ class ResmanConnectionService < BaseService
                                    "PropertyID": property_id,
                                },
                                :headers => { 'Content-Type' => 'application/x-www-form-urlencoded' } )
+
       response =  response.body.gsub('@','')
       hash = JSON.parse(response)
       hash.to_xml

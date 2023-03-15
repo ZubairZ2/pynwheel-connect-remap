@@ -16,6 +16,8 @@ class DataProvidersService
         EntrataDataUpdateWorker.perform_async community.id
       when "yardi"
         YardiDataUpdateWorker.perform_async community.id
+      when "resman"
+        ResmanDataUpdateWorker.perform_async community.id
       else
         next
       end

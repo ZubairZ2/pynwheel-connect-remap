@@ -825,7 +825,7 @@ class Community < ApplicationRecord
     when "yardi"
       YardiDataUpdateWorker.perform_async self.id
     when "resman"
-      ((self.credential.resman_api_version === "GetMarketing4_0") ? ImportResman4DataJob.perform_async(self.credential.attributes.to_json) : ImportResmanDataJob.perform_async(self.credential.attributes.to_json))
+      ResmanDataUpdateWorker.perform_async self.id
     when "zaremba"
       ImportZarembaDataJob.perform_async self.credential.attributes.to_json
     when "xml"

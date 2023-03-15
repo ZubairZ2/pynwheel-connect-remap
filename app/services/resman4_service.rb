@@ -1,14 +1,21 @@
 class Resman4Service < BaseService
+  attr_reader :credentials
+
+  def initialize(credentials)
+    @credentials = credentials
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "resman")
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "resman")
+  end
+
   def perform
-    @unit_record = []
-    community = Community.find credentials.community_id
+    community = Community.find @credentials.community_id
     community&.community_data_updated_on()
-    property_ids = credentials.resman_property_id.split(',') rescue []
+    property_ids = @credentials.resman_property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
 
-        account_id = credentials.resman_account_id
-        community = Community.find credentials.community_id
+        account_id = @credentials.resman_account_id
+        community = Community.find @credentials.community_id
 
         url = "#{ENV["RESMAN_BASE_URL"]}/GetMarketing4_0"
         response = HTTParty.post(url,
@@ -33,49 +40,52 @@ class Resman4Service < BaseService
           $units_availability_url = response["ResMan"]["Response"]["PhysicalProperty"]["Property"]["Information"]["UnitApplicationBaseURL"]
           save_resman_units(units,property_id)
           save_resman_floorplans(floorplans,property_id)
-          # save_website_column_of_community(response)
+
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = nil
             PaperTrail.enabled = false
             cred.save
             PaperTrail.enabled = true
           rescue => err
           end
+
         else
           begin
-            cred = Credential.find credentials.id
+            cred = Credential.find @credentials.id
             cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
             PaperTrail.enabled = false
             cred.save
             PaperTrail.enabled = true
           rescue => err
           end
-          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
+          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: @credentials.community_id})
         end
+
       rescue => e
         begin
-          cred = Credential.find credentials.id
+          cred = Credential.find @credentials.id
           cred.data_error_message = "Unit availability and pricing data from #{cred.community.data_provider} is not available. Please contact #{cred.community.data_provider} for more information or email support@pynwheel.com."
           PaperTrail.enabled = false
           cred.save
           PaperTrail.enabled = true
         rescue => err
         end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
   end
 
   def save_resman_units(units,property_id)
     import_units = []
-
-    unit_present =  Unit.where("community_id = ? AND provider IN (?)",  credentials.community_id,  ["resman"]).map{|x| x.provider_unit_id.gsub('*','-')}
+    unit_record = []
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)",  @credentials.community_id,  ["resman"]).map{|x| x.provider_unit_id.gsub('*','-')}
+    
     units.each do |u|
       vacateDate = ""
-      unit = Unit.find_by(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["IDValue"].gsub('*','-'))#.first_or_initialize
+      unit = @all_units_hash[u["IDValue"].gsub('*','-')]
 
       if unit.present?
+        puts "----------------------------- #{unit.marketing_name} ------------------------\n"
 
         if u["EffectiveRent"].present? 
           unit.min_effective_rent = u["EffectiveRent"]["Min"] if u["EffectiveRent"]["Min"].present?
@@ -123,13 +133,13 @@ class Resman4Service < BaseService
           unit.availability_url = $units_availability_url + "&unitNumber=#{u["IDValue"]}"
         end
         
-        @unit_record << unit.provider_unit_id.gsub('*','-')
+        unit_record << unit.provider_unit_id.gsub('*','-')
         # unit.save(validate: false)
         import_units << unit
 
       else
         vacateDate = ""
-        unit = Unit.where(provider: "resman",community_id: credentials.community_id,provider_unit_id: u["IDValue"].gsub('*','-')).first_or_initialize
+        unit = Unit.where(provider: "resman",community_id: @credentials.community_id,provider_unit_id: u["IDValue"].gsub('*','-')).first_or_initialize
 
         unless unit.manual_override
           unit.property_id = property_id
@@ -202,24 +212,7 @@ class Resman4Service < BaseService
     end
     
     ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
-
-    no_unit = unit_present - @unit_record
-    import_units = []
-
-    if @unit_record.nil?
-      no_unit = nil
-    end
-
-    no_unit.each do |un|
-      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un.gsub('*','-'))
-      unit.availability = "Occupied"
-      unit.available = false
-      unit.available_date = nil
-      import_units << unit unless unit.manual_override
-      # unit.save(validate: false) unless unit.manual_override
-    end
-
-    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+    ProvidersDataUpdationService.new().update_availability_of_units(@credentials.community_id, (unit_present - unit_record))
 
   end
 
@@ -227,8 +220,11 @@ class Resman4Service < BaseService
     import_floorplans = []
 
     floorplans.each do |f|
-      floorplan = Floorplan.find_by(provider: "resman",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"])#.first_or_initialize
+      floorplan = @all_floorplans_hash[f["IDValue"]]
+
       if floorplan.present?
+        puts "----------------------------- #{floorplan.name} ------------------------\n"
+
         unless floorplan.market_rent_is_updated.present? && floorplan.market_rent_is_updated && floorplan.manual_override
           if f["MarketRent"]["Min"].to_f > 0
             floorplan.market_rent = f["MarketRent"]["Min"]
@@ -241,7 +237,7 @@ class Resman4Service < BaseService
         import_floorplans << floorplan
 
       else
-        floorplan = Floorplan.where(provider: "resman",community_id: credentials.community_id,provider_floorplan_id: f["IDValue"]).first_or_initialize
+        floorplan = Floorplan.where(provider: "resman",community_id: @credentials.community_id,provider_floorplan_id: f["IDValue"]).first_or_initialize
         floorplan.property_id = property_id
         unless floorplan.name_is_updated.present? && floorplan.name_is_updated
           floorplan.name = f["Name"]
