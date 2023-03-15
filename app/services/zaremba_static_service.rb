@@ -170,7 +170,7 @@ class ZarembaStaticService < BaseService
       floorplan.unit_count = f["UnitCount"]
       floorplan.units_available = f["UnitsAvailable"]
       if f["Deposit"].present? # No field for this present
-        floorplan.deposit = f["Deposit"]["Amount"]["Value"]
+        floorplan.deposit = f["Deposit"]["Amount"]["Value"] rescue 0.0
       end
       if f["FloorplanAvailabilityURL"].present?
         floorplan.availability_url = f["FloorplanAvailabilityURL"]

@@ -237,7 +237,7 @@ class ResmanService < BaseService
 
         floorplan.unit_count = f["UnitCount"]
         floorplan.units_available = f["UnitsAvailable"]
-        floorplan.deposit = f["Deposit"]["Amount"]["Value"]
+        floorplan.deposit = f["Deposit"]["Amount"]["Value"] rescue 0.0
         if f["FloorplanAvailabilityURL"].present?
           floorplan.availability_url = f["FloorplanAvailabilityURL"]
         end

@@ -89,7 +89,7 @@ namespace :dataprovider do
       fp.units_available = -1
       #puts '------------------------', f["Deposit"]
       #puts '-************************' , f["File"]
-      #fp.deposit =  f["Deposit"]["Amount"]["Value"]
+      #fp.deposit =  f["Deposit"]["Amount"]["Value"] rescue 0.0
       #fp.file_url = f["File"]["Src"]
       fp.save
     end
