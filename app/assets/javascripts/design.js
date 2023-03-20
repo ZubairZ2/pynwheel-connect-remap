@@ -23,6 +23,9 @@ $(document).ready(function () {
   uploadIgloohomeLockImage();
   uploadEdgestateLockImage();
 
+  // Logo
+  uploadEmailLogo();
+
   //Floorplan Additional Image
   updloadFloorplanAdditionalImage()
 
@@ -836,6 +839,10 @@ $(document).ready(function () {
     readDesignPageSelfTourLogoSrcFromInput(this);
   });
 
+  $("#email_logo").change(function () {
+    readEmailLogoSrcFromInput(this);
+  });
+
   $("#secondary_page_background_image ").change(function () {
     readSecondaryBackgroundImageFromInput(this);
   });
@@ -1400,6 +1407,22 @@ function updloadFloorplanAdditionalImage() {
   }
 }
 
+function uploadEmailLogo() {
+  var lockUploadHolder = document.getElementById('email-logo-upload-holder');
+  if (lockUploadHolder) {
+    lockUploadHolder.ondrop = function (e) {
+      e.preventDefault();
+      files = e.dataTransfer.files;
+      if ((files[0].type == "image/png" || files[0].type == "image/jpeg" || files[0].type == "image/jpg") ){
+          readEmailLogoSrc(files[0]);
+      } else {
+        console.log('file type is not allowed');
+        $('#image-upload-warning').modal('show');
+      }
+    }
+  }
+}
+
 function showSelectedMenuPosition() {
   if ($('#menu_position_field').val() == "Horizontal") {
     $('#horizontal-menu-position').show();
@@ -1466,6 +1489,19 @@ function readFloorplanAdditionalImageSrc(file) {
     $('#floorplan-additional-preview-image').parent().attr('href', e.target.result);
 
     floorplanAdditionalImageUploader(e.target.result);
+  }
+
+  reader.readAsDataURL(file);
+}
+
+function readEmailLogoSrc(file) {
+  $(".divLoading").removeClass("hidden");
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    $('#email-logo-preview-image').attr('src', e.target.result);
+    $('#email-logo-preview-image').parent().attr('href', e.target.result);
+
+    emailLogoUploader(e.target.result);
   }
 
   reader.readAsDataURL(file);
@@ -2359,6 +2395,22 @@ function floorplanAdditionalImageUploader(src) {
   }
 }
 
+function emailLogoUploader(src) {
+  $(".divLoading").removeClass("hidden");
+  var url = "/communities/" + community_id;
+  $.ajax({
+      url: url,
+      type: "PUT",
+      dataType: "script",
+      data: {
+          community: {email_logo: src}
+      }
+  }).done(function () {
+    $(".divLoading").addClass("hidden");
+    console.log("success");
+  });
+}
+
 function designPageSelfTourLogo(src) {
     $(".divLoading").removeClass("hidden");
     var url = "/communities/" + community_id;
@@ -3118,6 +3170,37 @@ function readFloorplanAdditionalImageFromInput(input) {
           else
             $(".waring_exal").addClass("hidden");
         };
+
+    } else {
+      $(input).val('');
+      $('#image-upload-warning').modal('show');
+    }
+  }
+}
+
+function readEmailLogoSrcFromInput(input) {
+  if (input.files && input.files[0]) {
+    if (input.files[0].type == "image/png" || input.files[0].type == "image/jpeg" || input.files[0].type == "image/jpg") {
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+          var img = getHeightWidthLimit(input);
+          img.onload = function () {
+              if (this.width < image_width && this.height < image_height)
+              {
+                $(".exal_email_logo").removeClass("hidden");
+              }
+              else
+              {
+                $(".exal_email_logo").addClass("hidden");
+              }
+          };
+          $('#email-logo-preview-image').attr('src', e.target.result);
+          $('#email-logo-preview-image').parent().attr('href', e.target.result);
+          emailLogoUploader(e.target.result);
+      }
+
+      reader.readAsDataURL(input.files[0]);
 
     } else {
       $(input).val('');

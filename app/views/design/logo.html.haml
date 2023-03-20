@@ -23,16 +23,10 @@
               / Start L>ogo Upload section
               #home.tab-pane.fade.active.in{:role => "tabpanel"}
                 = render 'logo'
+
 - if @community.touchscreen_app
   %section.is-home-page
     .content
-      -#.title-heading
-      -#  %h4
-      -#    %i.fa.fa-image
-      -#    = @community.name.capitalize
-      -#    %br
-      -#      %small.text-primary
-      -#        = @community.code
       .row
         / Start Panel left Side
         .col-lg-12.col-md-12
@@ -41,24 +35,26 @@
               / Start L>ogo Upload section
               #home.tab-pane.fade.active.in{:role => "tabpanel"}
                 = render 'secondary_logo'
+
 - if current_community.self_tour
   %section.is-home-page
     .content
-      -#.title-heading
-      -#  %h4
-      -#    %i.fa.fa-image
-      -#    = @community.name.capitalize
-      -#    %br
-      -#      %small.text-primary
-      -#        = @community.code
       .row
-        / Start Panel left Side
         .col-lg-12.col-md-12
           .bs-example.bs-example-tabs.theme-setting{"data-example-id" => "togglable-tabs"}
             #myTabContent.tab-content.add-plan
-              / Start L>ogo Upload section
               #home.tab-pane.fade.active.in{:role => "tabpanel"}
-                = render 'self_tour_logo'              
+                = render 'self_tour_logo'
+
+  %section.is-home-page
+  .content
+    .row
+      .col-lg-12.col-md-12
+        .bs-example.bs-example-tabs.theme-setting{"data-example-id" => "togglable-tabs"}
+          #myTabContent.tab-content.add-plan
+            #home.tab-pane.fade.active.in{:role => "tabpanel"}
+              = render 'email_logo'     
+
 .row
   .col-md-12
     .box-footer.mt-30.pt-15
@@ -68,6 +64,7 @@
             .col-lg-12.col-md-12
               %button.btn-primary.done_btn{:onclick => "logo_page_goBack()",:style => "margin-left: -15px;"}
                 DONE
+
 #crop-image.modal.fade.edit-image
 #crop-secondary-logo.modal.fade.edit-image
 :javascript
