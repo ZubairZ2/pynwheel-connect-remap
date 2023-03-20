@@ -629,7 +629,7 @@ class Community < ApplicationRecord
     elsif self&.logo.present? && self&.logo&.url.present?
       self&.logo&.url
     else
-      asset_url("pynwheel-default-logo.png")
+      Rails.application.assets.find_asset('pynwheel-default-logo.png').try(:digest_path)
     end
   end
 
