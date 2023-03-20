@@ -629,7 +629,7 @@ class Community < ApplicationRecord
     elsif self&.logo.present? && self&.logo&.url.present?
       self&.logo&.url
     else
-      "/assets/logo-small.png"
+      asset_url("pynwheel-default-logo.png")
     end
   end
 
