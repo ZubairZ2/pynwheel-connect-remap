@@ -112,6 +112,7 @@ gem 'resque', require: 'resque/server'
 gem 'resque-scheduler'
 gem 'resque-heroku-signals'
 gem 'platform-api'
+gem 'lograge', '~> 0.4.1'
 
 group :production, :development do
   gem 'rack-cache', require: 'rack/cache'
