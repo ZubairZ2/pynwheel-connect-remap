@@ -6,7 +6,7 @@ class UserScheduledTourService < BaseService
   end
 
   def get_scheduled_tour_in_future
-    scheduled_tours = @community.schedual_tours.where(tour_user_id: @tour_user.id, is_tour_completed: false)
+    scheduled_tours = @community.schedual_tours.where(tour_user_id: @tour_user.id, is_tour_completed: false, property_tour_type: "scheduled_tour")
     
     if scheduled_tours.present?
       filter_tour_with_max_date_time(scheduled_tours)
