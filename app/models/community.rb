@@ -629,7 +629,8 @@ class Community < ApplicationRecord
     elsif self&.logo.present? && self&.logo&.url.present?
       self&.logo&.url
     else
-      Rails.application.assets.find_asset('pynwheel-default-logo.png').try(:digest_path)
+      base_url = Rails.env.development? ? "http://localhost:3000" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com" : "https://pynwheelapp.com")
+      "#{base_url}/assets/#{Rails.application.assets.find_asset('pynwheel-default-logo.png').try(:digest_path)}"
     end
   end
 
