@@ -2,6 +2,7 @@ class Community < ApplicationRecord
   include LockedTourStopHelper
 
   mount_base64_uploader :logo, AvatarUploader
+  mount_base64_uploader :email_logo, AvatarUploader
   mount_base64_uploader :secondary_logo, AvatarUploader
   mount_base64_uploader :self_tour_logo, AvatarUploader
   mount_base64_uploader :brand_details_pdf , PdfUploader
@@ -620,6 +621,18 @@ class Community < ApplicationRecord
 
   end
 
+  def logo_for_email
+    if self&.email_logo.present? && self&.email_logo&.url.present?
+      self&.email_logo&.url
+    elsif self&.self_tour_logo.present? && self&.self_tour_logo&.url.present?
+      self&.self_tour_tour&.url
+    elsif self&.logo.present? && self&.logo&.url.present?
+      self&.logo&.url
+    else
+      "/assets/logo-small.png"
+    end
+  end
+
   def set_community_time_zone
     if self.latitude.present? && self.longitude.present?
       time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
@@ -663,6 +676,7 @@ class Community < ApplicationRecord
   def crop_image
     logo.recreate_versions! if (crop_x.present? && image_bit && do_crop)
   end
+
   def crop_secondary_image
     secondary_logo.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secondary)
   end
