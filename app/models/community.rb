@@ -625,7 +625,7 @@ class Community < ApplicationRecord
     if self&.email_logo.present? && self&.email_logo&.url.present?
       self&.email_logo&.url
     elsif self&.self_tour_logo.present? && self&.self_tour_logo&.url.present?
-      self&.self_tour_tour&.url
+      self&.self_tour_logo&.url
     elsif self&.logo.present? && self&.logo&.url.present?
       self&.logo&.url
     else
