@@ -1,7 +1,7 @@
 module Api
   module V1
     class BaseController < ActionController::Base
-      around_action :logging_trail 
+      # around_action :logging_trail 
 
       def logging_trail
         begin
