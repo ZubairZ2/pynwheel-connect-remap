@@ -11,7 +11,10 @@ module Api
     
       def save_user_data
         has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
-    
+        puts "-----"*30
+        puts params.inspect
+        puts "-----"*30
+
         if has_access
           tempFile = params[:image]
           unless params[:tour_user_id].present? && params[:tour_stop_id].present? && params[:tour_id].present?
