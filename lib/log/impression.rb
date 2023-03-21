@@ -32,39 +32,16 @@ module Log
 
     def exception_filler
       return if exception.blank?
-      puts "----------------------------------- exception_filler ------------------------------------\n\n"
-      puts exception.inspect
-      puts "\n\n\n\n"
-
-      puts "----------------------------------- build_response_hash ------------------------------------\n\n"
-      puts build_response_hash  
-      puts "\n\n\n\n"
-
-      puts "----------------------------------- exception.backtrace ------------------------------------\n\n"
-      puts exception.backtrace[0..10].join(',')  
-      puts "\n\n\n\n"
-
-
       response_hash = build_response_hash.merge!({request_trace: exception.backtrace[0..10].join(',')}) if response.present?
-      
-      puts "----------------------------------- response_hash 1 ------------------------------------\n\n"
-      puts response_hash.inspect
-      puts "\n\n\n\n"     
-
       impression.out_response = response_hash
-
-      puts "----------------------------------- response_hash 2 ------------------------------------\n\n"
-      puts response_hash.inspect
-      puts "\n\n\n\n"
-
-      # impression.save!
+      impression.save!
     end
 
     def build_request_hash
       {
         request_id: request.uuid || request.request_id,
         request_method: request.method,
-        request_params: request.params,
+        request_params: request.params.inspect,
         requester_ip:  request.remote_ip,
         request_url:  request.original_url,
         originated_from: request.user_agent, 
@@ -77,7 +54,7 @@ module Log
       {
         request_id: request.uuid || request.request_id,
         request_method: request.method,
-        request_params: request.params,
+        request_params: request.params.inspect,
         requester_ip:  request.remote_ip,
         request_url:  request.original_url,
         originated_from: request.user_agent,
