@@ -32,17 +32,26 @@ module Log
 
     def exception_filler
       return if exception.blank?
-      puts "-----"*30
+      puts "----------------------------------- exception_filler ------------------------------------\n\n"
       puts exception.inspect
-      puts "-----"*30
+      puts "\n\n\n\n"
+
+      puts "----------------------------------- exception.backtrace ------------------------------------\n\n"
+      puts build_response_hash
+      puts "\n\n\n\n"
 
       response_hash = build_response_hash.merge!({request_trace: exception.backtrace[0..10].join(',')}) if response.present?
       
-      puts "-----"*30
-      puts response_hash.inspect
-      puts "-----"*30      
+      puts "----------------------------------- response_hash 1 ------------------------------------\n\n"
+      puts exception.inspect
+      puts "\n\n\n\n"     
 
       impression.out_response = response_hash
+
+      puts "----------------------------------- response_hash 2 ------------------------------------\n\n"
+      puts exception.inspect
+      puts "\n\n\n\n"
+
       impression.save!
     end
 

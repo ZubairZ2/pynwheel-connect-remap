@@ -10,10 +10,15 @@ module Api
       require 'securerandom'
     
       def save_user_data
-        has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
-        puts "-----"*30
+        puts "------------------------------- Entered in API Method ------------------------------------------------------\n"
+        puts "------------------------------- params 1------------------------------------------------------\n"
         puts params.inspect
-        puts "-----"*30
+        
+        has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
+
+        puts "------------------------------- params 2------------------------------------------------------\n"
+        puts params.inspect
+        puts "\n\n\n\n"
 
         if has_access
           tempFile = params[:image]
