@@ -30,6 +30,11 @@ module Api
                 vs = VisitedStop.create!(tour_user_id: params[:tour_user_id].to_i, tour_stop_id: params[:tour_stop_id].to_i, tour_id: params[:tour_id].to_i, image: tempFile, description: params[:description].present? ? params[:description] : nil, device_id: params[:device_id], tour_key: params[:tour_key], is_rotated: false, event_time: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil, event_date: params[:event_dateTime].present? ? DateTime.parse(params[:event_dateTime]).strftime('%a, %d %b %Y %H:%M:%S') : nil)
               end
             rescue => ex
+              puts "------------------------------- Exception-----------------------------------------------------\n"
+              puts ex.inspect
+              puts "\n\n\n\n"
+
+
               render :json => { :success => false, :message => "failed" }
             end
             if vs.present?
