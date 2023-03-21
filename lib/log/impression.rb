@@ -36,23 +36,28 @@ module Log
       puts exception.inspect
       puts "\n\n\n\n"
 
-      puts "----------------------------------- exception.backtrace ------------------------------------\n\n"
-      puts build_response_hash
+      puts "----------------------------------- build_response_hash ------------------------------------\n\n"
+      puts build_response_hash  
       puts "\n\n\n\n"
+
+      puts "----------------------------------- exception.backtrace ------------------------------------\n\n"
+      puts exception.backtrace[0..10].join(',')  
+      puts "\n\n\n\n"
+
 
       response_hash = build_response_hash.merge!({request_trace: exception.backtrace[0..10].join(',')}) if response.present?
       
       puts "----------------------------------- response_hash 1 ------------------------------------\n\n"
-      puts exception.inspect
+      puts response_hash.inspect
       puts "\n\n\n\n"     
 
       impression.out_response = response_hash
 
       puts "----------------------------------- response_hash 2 ------------------------------------\n\n"
-      puts exception.inspect
+      puts response_hash.inspect
       puts "\n\n\n\n"
 
-      impression.save!
+      # impression.save!
     end
 
     def build_request_hash
