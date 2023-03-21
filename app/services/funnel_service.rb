@@ -166,7 +166,7 @@ class FunnelService < BaseService
   end
 
   def message
-    "Looking forward to my appointment"
+    ""
   end
 
   def tour_start_time
