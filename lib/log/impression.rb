@@ -34,7 +34,7 @@ module Log
       return if exception.blank?
 
       response_hash = build_response_hash.merge!({request_trace: exception.backtrace[0..10].join(',')}) if response.present?
-      impression.out_response = response_hash
+      impression.out_response = response_hash.present? ? JSON.parse(response_hash) : response_hash
       impression.save!
     end
 
