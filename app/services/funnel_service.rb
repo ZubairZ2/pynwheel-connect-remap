@@ -120,7 +120,7 @@ class FunnelService < BaseService
   def get_filtered_discovery_sources response
     sources = parse_discovery_sources_response(response)
     ignored_sources = ignored_discovery_sources()
-    sources.map{|source| source unless ignored_sources.include?(source.downcase)}.compact.uniq
+    sources&.map{|source| source unless ignored_sources.include?(source[0].downcase)}.compact.uniq
   end
 
   def ignored_discovery_sources
@@ -132,7 +132,7 @@ class FunnelService < BaseService
 
   def parse_discovery_sources_response response
     if response["data"].present? && response["data"]["discovery_sources"].present?
-      response["data"]["discovery_sources"].map{|source| source["name"]}
+      response["data"]["discovery_sources"].map{|source| [ source["name"], source["id"] ] }
     else
       []
     end
