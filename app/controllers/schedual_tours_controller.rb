@@ -79,12 +79,15 @@ class SchedualToursController < ApplicationController
 
       end
 
-      new_tour = SchedualTour.find_by_id (params[:sched_tour_id])
+      new_tour = SchedualTour.find(params[:sched_tour_id])
+
       unless new_tour.present?
-        new_tour = SchedualTour.create!(community_id: params[:community_id], user_time_zone: params[:user_time_zone])
+        new_tour = SchedualTour.create!(community_id: params[:community_id], user_time_zone: params[:user_time_zone], tu.id)
         new_tour.save
       end
+
       schedual_tour = MaxDateScheduledTourService.new(tu, community, true).get_scheduled_tour
+      
       if schedual_tour.present?
         new_tour.update(stops_list: schedual_tour.stops_list)
       else
