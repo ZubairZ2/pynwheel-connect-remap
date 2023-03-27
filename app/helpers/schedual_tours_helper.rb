@@ -126,7 +126,8 @@ module SchedualToursHelper
     timezone = community.get_time_zone()
 
     if (tour.tour_date && tour.tour_time).present?
-      (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) > Time.now.in_time_zone(timezone)
+      grace_period = tour&.community&.community_tour&.grace_period rescue 0
+      ( (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) + grace_period.minutes ) > Time.now.in_time_zone(timezone)
     else
       return true
     end

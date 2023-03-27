@@ -63,12 +63,12 @@ private
           </i>'
         else
           if scheduled_tour.is_tour_completed
-            '<i class="fa fa-exclamation-triangle icon_size expiredTourToolTip">
-              <span id="expiredTourToolTipText">
-                Tour has expired
-              </span>
-            </i>
-            <i class="fa fa-check-square icon_size customizeTourToolTip">
+            # '<i class="fa fa-exclamation-triangle icon_size expiredTourToolTip">
+            #   <span id="expiredTourToolTipText">
+            #     Tour has expired
+            #   </span>
+            # </i>
+            '<i class="fa fa-check-square icon_size customizeTourToolTip">
               <span id="customizeTourToolTipText">
                 Tour has completed
               </span>
