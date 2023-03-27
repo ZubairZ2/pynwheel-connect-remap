@@ -1,5 +1,4 @@
 class VideoUploader < CarrierWave::Uploader::Base
-
   # Include RMagick or MiniMagick support:
   # include CarrierWave::RMagick
   # include CarrierWave::MiniMagick
@@ -14,8 +13,10 @@ class VideoUploader < CarrierWave::Uploader::Base
 
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
-   def filename
-    @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
+  def filename
+    # @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
+    @name ||= "#{secure_token}.#{file.extension}" if original_filename.present?
+
   end
 
   def timestamp
@@ -36,6 +37,13 @@ class VideoUploader < CarrierWave::Uploader::Base
 
   def png_name for_file, version_name
     %Q{#{version_name}_#{for_file.chomp(File.extname(for_file))}.png}
+  end
+
+  protected
+  
+  def secure_token
+    var = :"@#{mounted_as}_secure_token"
+    model.instance_variable_get(var) or model.instance_variable_set(var, SecureRandom.uuid)
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:
