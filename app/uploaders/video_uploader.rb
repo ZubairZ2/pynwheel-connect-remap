@@ -1,5 +1,4 @@
 class VideoUploader < CarrierWave::Uploader::Base
-
   # Include RMagick or MiniMagick support:
   # include CarrierWave::RMagick
   # include CarrierWave::MiniMagick
@@ -14,8 +13,10 @@ class VideoUploader < CarrierWave::Uploader::Base
 
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
-   def filename
-    @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
+  def filename
+    # @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
+    @name ||= "#{timestamp}.#{file.extension}" if original_filename.present?
+
   end
 
   def timestamp
