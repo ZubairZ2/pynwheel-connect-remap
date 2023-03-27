@@ -222,7 +222,7 @@ class SchedualToursController < ApplicationController
     self_tour_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "self_tour").where.not(tour_user_id: nil).count
     guided_count = community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "guided_tour").where.not(tour_user_id: nil).count
     limit_exceded_tour_types = check_limit(params[:tour_type], total_count,total_count_per_day,self_tour_count,guided_count,  @community)
-    
+
     if params.has_key?("schedual_tour_id") && params["schedual_tour_id"].present?
       @schedual_tour = SchedualTour.find(params["schedual_tour_id"])
       @schedual_tour.update(tour_date: date, tour_time: tour_time, end_time: after_30_mints, day_diff: day_diff)
@@ -244,10 +244,10 @@ class SchedualToursController < ApplicationController
 
       tour_types = (community.fetch_tour_type_according_to_time(params[:day], params[:time])) if tour_types.empty?
 
-      render json: {tour_types: tour_types.uniq,limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
+      render json: {tour_types: tour_types.uniq, limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
     else
 
-      render json: {tour_types:  community_allowed_tour_types(community),limit_exceded_tour_types: [], schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
+      render json: {tour_types:  community_allowed_tour_types(community), limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id, stats: :OK, code: 200}, layout: false
     end
 
   end
@@ -258,21 +258,21 @@ class SchedualToursController < ApplicationController
       return false , remove_array( [["Virtual Tour","virtual_tour"]] ,community,limit_type), error
     elsif (show_self_tour_option == "true" && show_guided_tour_option == "false")
       unless (limit_type.include? "total") || (limit_type.include? "self_tour")
-        return true , remove_array([["Self Tour","self_tour"], ["Virtual Tour","virtual_tour"]], community,limit_type), "max tour users limit reached for the selected time"
+        return true , remove_array([["Self Tour","self_tour"], ["Virtual Tour","virtual_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       else
-        return false , remove_array([["Virtual Tour","virtual_tour"]], community,limit_type), "max tour users limit reached for the selected time"
+        return false , remove_array([["Virtual Tour","virtual_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       end
     elsif (show_self_tour_option == "false" && show_guided_tour_option == "true")
       unless (limit_type.include? "total") || (limit_type.include? "guided_tour")
-        return true , remove_array([["Virtual Tour","virtual_tour"],["Guided Tour","guided_tour"]], community,limit_type), "max tour users limit reached for the selected time"
+        return true , remove_array([["Virtual Tour","virtual_tour"],["Guided Tour","guided_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       else
-        return false , remove_array([["Virtual Tour","virtual_tour"]], community,limit_type), "max tour users limit reached for the selected time"
+        return false , remove_array([["Virtual Tour","virtual_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       end
     else
       if (limit_type.include?  "total")
-        return true , remove_array([["Virtual Tour","virtual_tour"]], community,limit_type), "max tour users limit reached for the selected time"
+        return true , remove_array([["Virtual Tour","virtual_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       else
-        return true , remove_array([["Self Tour","self_tour"],["Virtual Tour","virtual_tour"],["Guided Tour","guided_tour"]], community,limit_type), "max tour users limit reached for the selected time"
+        return true , remove_array([["Self Tour","self_tour"],["Virtual Tour","virtual_tour"],["Guided Tour","guided_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       end
         
     end

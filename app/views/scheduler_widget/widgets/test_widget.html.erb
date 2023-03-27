@@ -135,6 +135,10 @@
   }
   .color-red{
     color: red;
+    font-size: 18px;
+    text-align: center;
+    display: block;
+    margin: inherit;
   }
   .property-tour-type {
     font-family: Poppins !important;
@@ -490,6 +494,7 @@
               </div>
 
               <span class="hidden" id="show-limit-error"></span>
+
               <% if false %>
                 <% unless @any_tour_type_selected %>
                   <span style=" display: block; color: red; margin-bottom: 5px;">*Please select atleast one tour type from setting for schedule</span>
@@ -898,7 +903,7 @@
           tour_type = $(this).val()
           if (tour_type != "" && arr.includes(tour_type)){
             $("#show-limit-error").removeClass('hidden')
-            $("#show-limit-error").addClass('color-red').text("max tour users limit reached for the selected time")
+            $("#show-limit-error").addClass('color-red').text("Max tour users limit reached for the selected time")
             $("#confirm_reservation").attr('disabled', true)
             $("#confirm_reservation").css('opacity', 0.5)
           }
