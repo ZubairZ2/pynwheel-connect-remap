@@ -158,8 +158,12 @@ class SchedualToursController < ApplicationController
     tour_time, day_diff = get_tour_datetime_and_diff date
     
     community = Community.find params[:community_id]
-    before_30_mints = tour_time.to_time - 30.minutes
-    after_30_mints = tour_time.to_time + 30.minutes
+    @stepping = community.community_tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.community_tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.community_tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.community_tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
+    @stepping = @stepping - 1
+    
+    before_30_mints = tour_time.to_time - @stepping.minutes
+    after_30_mints = tour_time.to_time + @stepping.minutes
+
     before_30_mints, c = get_tour_datetime_and_diff before_30_mints
     after_30_mints, d = get_tour_datetime_and_diff after_30_mints
 
@@ -203,6 +207,8 @@ class SchedualToursController < ApplicationController
 
   def get_tour_type
     community = Community.find params[:community_id]
+    @stepping = community.community_tour.tour_setting.time_intervel == '15 min' ? 15 : (@community.community_tour.tour_setting.time_intervel == '30 min' ? 30 : (@community.community_tour.tour_setting.time_intervel == '1 hr') ? 60 : (@community.community_tour.tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
+    @stepping = @stepping - 1
 
     @use_yardi_as_lead = @community.use_yardi_as_lead?
     @is_knock_community = @community.is_knock_community?
@@ -211,8 +217,9 @@ class SchedualToursController < ApplicationController
     date = DateTime.strptime(date_time, '%m/%d/%Y %l:%M %p')
     
     tour_time, day_diff = get_tour_datetime_and_diff date
-    before_30_mints = tour_time.to_time - 30.minutes
-    after_30_mints = tour_time.to_time + 30.minutes
+    before_30_mints = tour_time.to_time - @stepping.minutes
+    after_30_mints = tour_time.to_time + @stepping.minutes
+
     before_30_mints, c = get_tour_datetime_and_diff before_30_mints
     after_30_mints, d = get_tour_datetime_and_diff after_30_mints
 
@@ -231,9 +238,9 @@ class SchedualToursController < ApplicationController
       @schedual_tour.save
     end
 
-    unless community.is_funnel_community?
-      tour_types = []
+    tour_types = []
 
+    unless community.is_funnel_community?
       if @is_knock_community 
         tour_types = KnockService.new(@schedual_tour).knock_available_tour_types( params[:date], params[:day], params[:time])
       elsif @use_yardi_as_lead
@@ -243,13 +250,27 @@ class SchedualToursController < ApplicationController
       end
 
       tour_types = (community.fetch_tour_type_according_to_time(params[:day], params[:time])) if tour_types.empty?
-
-      render json: {tour_types: tour_types.uniq, limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id,stats: :OK, code: 200}, layout: false
     else
-
-      render json: {tour_types:  community_allowed_tour_types(community), limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id, stats: :OK, code: 200}, layout: false
+      tour_types =  community_allowed_tour_types(community)
     end
 
+     render json: {tour_types: remove_occupied_tour_types(tour_types, limit_exceded_tour_types), limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id, stats: :OK, code: 200}, layout: false
+  end
+
+  def remove_occupied_tour_types available_types, occupied_types
+
+    available_types = available_types.map{|type| type[0]} - occupied_types
+    types = []
+
+    available_types.each do |type|
+      if type == "self_tour"
+        types << ["self_tour", "Self Tour"]
+      elsif type == "guided_tour"
+        types << ["guided_tour", "Guided Tour"]
+      end
+    end
+
+    types
   end
 
   def show_tour_type_modal(show_self_tour_option, show_guided_tour_option, in_limit, community, limit_type, error)
@@ -297,12 +318,15 @@ class SchedualToursController < ApplicationController
   def check_limit(tour_type, total_count,total_count_per_day,self_tour_count,guided_count, community )
     
     limit_type = []
+
     if (community.community_tour.tour_setting.do_limit_max_tour && community.community_tour.tour_setting.limit_max_tour.present? && total_count >= community.community_tour.tour_setting.limit_max_tour.to_i)
       limit_type << "virtual_tour"
     end
+
     if community.community_tour.tour_setting.do_limit_max_tour && community.community_tour.max_self_tour_users.present? && community.community_tour.max_self_tour_users.present? && !(self_tour_count < community.community_tour.max_self_tour_users.to_i)
       limit_type << "self_tour"
     end
+
     if community.community_tour.tour_setting.do_limit_max_tour && community.community_tour.max_guided_tour_users.present? && community.community_tour.max_guided_tour_users.present? && !(guided_count < community.community_tour.max_guided_tour_users.to_i)
       limit_type << "guided_tour"
     end
