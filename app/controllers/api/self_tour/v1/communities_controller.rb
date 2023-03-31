@@ -36,44 +36,42 @@ module Api
             @is_salesforce_crm = @community.is_salesforce_community?
             
             if @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
-              unless @limit_exceeded = (@community.community_tour.tour_setting.do_limit_max_tour ? check_guest_limit(@community, current_time, @community.community_tour.tour_setting.limit_max_tour,@tour_user) : false)
-                unless @is_salesforce_crm
-                  @scheduled_data = nearest_time_tour(@community, @tour_user, current_time)
+              unless @is_salesforce_crm
+                @scheduled_data = nearest_time_tour(@community, @tour_user, current_time)
 
-                  if @community.community_tour.only_scheduled_tour
-                    if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
-                      if @location_received and @within_one_km
-                        @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type          # either scheduled tour is self_tour/guided_tour
-                      else
-                        @tour_user.tour_type = "self_tour"
-                      end
-                    elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
-                      @tour_date = @scheduled_data.nearest_tour.tour_date.strftime('%_m/%d/%Y')
-                      @tour_time = @scheduled_data.nearest_tour.tour_time.strftime('%l:%M %P')
-                    end
-                    should_range_be_checked = false
-                  end
-                  @tour_session_type = "scheduled" if (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?)
-                else
-                  @scheduled_data = sf_nearest_time_tour(@community, @tour_user, current_time, timezone)
+                if @community.community_tour.only_scheduled_tour
                   if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
                     if @location_received and @within_one_km
-                      # @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type   ----   # whatever responded in API resonpse
+                      @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type          # either scheduled tour is self_tour/guided_tour
                     else
                       @tour_user.tour_type = "self_tour"
                     end
                   elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
-                    @tour_date = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%_m/%d/%Y')
-                    @tour_time = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%l:%M %P')
+                    @tour_date = @scheduled_data.nearest_tour.tour_date.strftime('%_m/%d/%Y')
+                    @tour_time = @scheduled_data.nearest_tour.tour_time.strftime('%l:%M %P')
                   end
                   should_range_be_checked = false
                 end
-
-                if should_range_be_checked and @location_received and @within_one_km
-                    @tour_user.tour_type = (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?) ? @scheduled_data.on_time_tour.tour_type : "self_tour" # if he is not on_time, he should not take guided tour
-                elsif should_range_be_checked
-                  @tour_user.tour_type = "self_tour"
+                @tour_session_type = "scheduled" if (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?)
+              else
+                @scheduled_data = sf_nearest_time_tour(@community, @tour_user, current_time, timezone)
+                if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
+                  if @location_received and @within_one_km
+                    # @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type   ----   # whatever responded in API resonpse
+                  else
+                    @tour_user.tour_type = "self_tour"
+                  end
+                elsif @scheduled_data.tours_exist and !@scheduled_data.on_time_tour.present?
+                  @tour_date = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%_m/%d/%Y')
+                  @tour_time = @scheduled_data.nearest_tour["Tour_Start_Time__c"].to_datetime.in_time_zone(timezone).strftime('%l:%M %P')
                 end
+                should_range_be_checked = false
+              end
+
+              if should_range_be_checked and @location_received and @within_one_km
+                  @tour_user.tour_type = (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?) ? @scheduled_data.on_time_tour.tour_type : "self_tour" # if he is not on_time, he should not take guided tour
+              elsif should_range_be_checked
+                @tour_user.tour_type = "self_tour"
               end
             end
 

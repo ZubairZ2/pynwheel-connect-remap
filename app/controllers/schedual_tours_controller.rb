@@ -254,7 +254,7 @@ class SchedualToursController < ApplicationController
       tour_types =  community_allowed_tour_types(community)
     end
 
-     render json: {tour_types: remove_occupied_tour_types(tour_types, limit_exceded_tour_types), limit_exceded_tour_types: limit_exceded_tour_types, schedual_tour_id: @schedual_tour.id, stats: :OK, code: 200}, layout: false
+     render json: {tour_types: remove_occupied_tour_types(tour_types, limit_exceded_tour_types), schedual_tour_id: @schedual_tour.id, stats: :OK, code: 200}, layout: false
   end
 
   def remove_occupied_tour_types available_types, occupied_types

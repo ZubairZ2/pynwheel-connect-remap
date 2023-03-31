@@ -493,8 +493,6 @@
                 <% end %>
               </div>
 
-              <span class="hidden" id="show-limit-error"></span>
-
               <% if false %>
                 <% unless @any_tour_type_selected %>
                   <span style=" display: block; color: red; margin-bottom: 5px;">*Please select atleast one tour type from setting for schedule</span>
@@ -503,7 +501,6 @@
               <%# <% unless @time_slots.any? %>
                 <span class="no-tour-time-error" style="display: none; color: red; margin-bottom: 5px;">*There is no slot available. please check your available slots in tour setting page</span>
               <%# <% end %>
-              <%= hidden_field_tag 'limit_tour_type_error_arr', [].to_json %>
               <%= hidden_field_tag 'existing_tour_user_email_arr', @existing_tour_users.to_json %>
               <div>
                 <% if @reschedule_tour %>
@@ -569,7 +566,6 @@
       var hidden_tour_type_value;
       var knock_available_time_slots;
       var is_knock_community = false;
-      var is_limit_exceeded = false;
 
       var funnel_available_days;
       var is_funnel_community = false;
@@ -797,10 +793,8 @@
         });
 
         $("#expiry-year").on("change", function() {
-          if(!is_limit_exceeded) {
-            $("#confirm_reservation").attr('disabled', false)
-            $("#confirm_reservation").css('opacity', 1)
-          }
+          $("#confirm_reservation").attr('disabled', false)
+          $("#confirm_reservation").css('opacity', 1)
         })
 
         $("#tour_date").on("dp.change", function() {
@@ -866,8 +860,6 @@
                   tour_id = data["schedual_tour_id"];
                   $('#sched_tour_id').val(tour_id)
 
-                  $('#limit_tour_type_error_arr').val(data["limit_exceded_tour_types"])
-                  
                   if (tour_types.length > 1){
                     
                     for (let i = 0; i < tour_types.length; ++i) {
@@ -911,18 +903,13 @@
         }
 
         $("#tour_type").on("change", function() {
-          arr_str = $('#limit_tour_type_error_arr').val()
-          arr = arr_str.split(",")
           tour_type = $(this).val()
-          if (tour_type != "" && arr.includes(tour_type)){
-            $("#show-limit-error").removeClass('hidden');
-            $("#show-limit-error").addClass('color-red').text("Max tour users limit reached for the selected time");
+          
+          if (tour_type != "") {
             $("#confirm_reservation").attr('disabled', true);
             $("#confirm_reservation").css('opacity', 0.5);
-            is_limit_exceeded = true;
           }
           else{
-            $("#show-limit-error").addClass('hidden');
             $("#confirm_reservation").attr('disabled', false);
             $("#confirm_reservation").css('opacity', 1);
           }
