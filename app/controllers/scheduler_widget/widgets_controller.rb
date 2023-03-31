@@ -89,7 +89,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @selected_discovery_source = @is_funnel_community ? (@schedule_tour&.funnel_prospect_discover_source.present? ? @funnel_discovery_sources.map{|s| s[0] if s[1] == @schedule_tour&.funnel_prospect_discover_source.to_i }&.compact&.uniq[0] : "Select an option" ) : ""
     
     @occupied_slots = OccupiedTourTimeSlotsService.new(@community).occupied_slots()
-    @occupied_dates = @occupied_slots.keys
+    @occupied_dates = @occupied_slots&.keys rescue []
 
     community = Community.find params[:community_id]
     app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
