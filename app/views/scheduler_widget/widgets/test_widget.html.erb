@@ -904,16 +904,6 @@
 
         $("#tour_type").on("change", function() {
           tour_type = $(this).val()
-          
-          if (tour_type != "") {
-            $("#confirm_reservation").attr('disabled', true);
-            $("#confirm_reservation").css('opacity', 0.5);
-          }
-          else{
-            $("#confirm_reservation").attr('disabled', false);
-            $("#confirm_reservation").css('opacity', 1);
-          }
-
           verification_type_authenteq = ($("#verification_type_authenteq").val() == "true") ? true : false
 
           if($('.select_property_tour').val() == "remote_tour"){
