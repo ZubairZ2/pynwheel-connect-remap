@@ -61,8 +61,6 @@ class OccupiedTourTimeSlotsService
 
   def limit_exceeded tour
     date = tour_date_time(tour)
-    # date = DateTime.strptime(date_time, '%m/%d/%Y %l:%M %p')
-
     tour_time, day_diff = get_tour_datetime_and_diff date
 
     before_30_mints = tour_time.to_time - @stepping.minutes
@@ -74,11 +72,21 @@ class OccupiedTourTimeSlotsService
     self_tour_count = @community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "self_tour").where.not(tour_user_id: nil).count
     guided_tour_count = @community.schedual_tours.where(tour_date: date, tour_time: before_30_mints..after_30_mints,tour_type: "guided_tour").where.not(tour_user_id: nil).count
 
+
+    enabled_tour_type(self_tour_count, guided_tour_count)   
+  end
+
+  def enabled_tour_type self_tour_count, guided_tour_limit
     self_tour_limit = ( max_limit_enabled() && @community_tour.max_self_tour_users.present? && @community_tour.max_self_tour_users.present? && !(self_tour_count < @community_tour.max_self_tour_users.to_i) )
     guided_tour_limit = ( max_limit_enabled() && @community_tour.max_guided_tour_users.present? && @community_tour.max_guided_tour_users.present? && !(guided_tour_count < @community_tour.max_guided_tour_users.to_i) )
 
-    # binding.pry
-    (self_tour_limit && guided_tour_limit)
+    if @community_tour.tour_setting.allow_self_tour && @community_tour.tour_setting.allow_guided_tour
+      (self_tour_limit && guided_tour_limit)
+    elsif @community_tour.tour_setting.allow_self_tour
+      self_tour_limit
+    elsif @community_tour.tour_setting.allow_guided_tour
+      guided_tour_limit
+    end
   end
 
   def max_limit_enabled
@@ -86,7 +94,6 @@ class OccupiedTourTimeSlotsService
   end
 
   def get_tour_datetime_and_diff date
-
     tour_date = Date.strptime(date.in_time_zone(@timezone).strftime("%m/%d/%Y"), "%m/%d/%Y")
     server_current_date = Date.strptime(DateTime.current.in_time_zone(@timezone).strftime("%m/%d/%Y"), "%m/%d/%Y")
     tour_time = date.strftime("%l:%M %p")
