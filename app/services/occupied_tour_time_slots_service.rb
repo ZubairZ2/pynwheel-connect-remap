@@ -76,7 +76,7 @@ class OccupiedTourTimeSlotsService
     enabled_tour_type(self_tour_count, guided_tour_count)   
   end
 
-  def enabled_tour_type self_tour_count, guided_tour_limit
+  def enabled_tour_type self_tour_count, guided_tour_count
     self_tour_limit = ( max_limit_enabled() && @community_tour.max_self_tour_users.present? && @community_tour.max_self_tour_users.present? && !(self_tour_count < @community_tour.max_self_tour_users.to_i) )
     guided_tour_limit = ( max_limit_enabled() && @community_tour.max_guided_tour_users.present? && @community_tour.max_guided_tour_users.present? && !(guided_tour_count < @community_tour.max_guided_tour_users.to_i) )
 
