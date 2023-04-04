@@ -87,6 +87,9 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @funnel_available_days =  @is_funnel_community ? FunnelService.new(@schedule_tour).get_available_days : {}
     @funnel_discovery_sources = @is_funnel_community ? FunnelService.new(@schedule_tour).get_discovery_sources : []
     @selected_discovery_source = @is_funnel_community ? (@schedule_tour&.funnel_prospect_discover_source.present? ? @funnel_discovery_sources.map{|s| s[0] if s[1] == @schedule_tour&.funnel_prospect_discover_source.to_i }&.compact&.uniq[0] : "Select an option" ) : ""
+    
+    @occupied_slots = OccupiedTourTimeSlotsService.new(@community).occupied_slots()
+    @occupied_dates = @occupied_slots&.keys rescue []
 
     community = Community.find params[:community_id]
     app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
@@ -156,12 +159,15 @@ class SchedulerWidget::WidgetsController < ApplicationController
 
   def scheduled_tours_in_future(scheduled_tours, community, tour_user_ids = [], community_time_zone = nil)
       community_time_zone = community.get_time_zone()
+      
       scheduled_tours.find_each do |tour|
         unless tour.is_tour_completed
-          is_in_timezone = (tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(community_time_zone) > Time.now.in_time_zone(community_time_zone) if (tour.tour_date && tour.tour_time).present?
+          grace_period = community&.community_tour&.grace_period
+          is_in_timezone = ( ((tour.tour_date.to_s + " " + tour.tour_time.strftime("%I:%M%p")).in_time_zone(community_time_zone)) + grace_period.minutes ) > Time.now.in_time_zone(community_time_zone) if (tour.tour_date && tour.tour_time).present?
           tour_user_ids << tour.tour_user_id if is_in_timezone
         end
       end  
+
       tour_user_ids
   end
 end

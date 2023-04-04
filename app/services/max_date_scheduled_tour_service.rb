@@ -18,6 +18,7 @@ class MaxDateScheduledTourService < BaseService
     scheduled_tour = scheduled_tours.first
     
     timezone = @community.get_time_zone()
+    grace_period = @community.community_tour.grace_period
     max_date = scheduled_tour_date_time(scheduled_tour, timezone)
 
     scheduled_tours.each do |tour|
@@ -31,7 +32,7 @@ class MaxDateScheduledTourService < BaseService
     end
 
     if @flag && max_date.present?
-      max_date > Time.now.in_time_zone(timezone) ? scheduled_tour : nil
+      (max_date + grace_period.minutes) > Time.now.in_time_zone(timezone) ? scheduled_tour : nil
     else
       scheduled_tour
     end
