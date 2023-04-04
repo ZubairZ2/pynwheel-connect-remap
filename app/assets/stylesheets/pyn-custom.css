@@ -6928,7 +6928,7 @@ span.to-input {
     overflow: hidden;
 }
 
-.slick-track {
+.slider-amenity-modal-height .slick-track {
     display: flex !important;
     justify-content: center;
     align-items: center;
