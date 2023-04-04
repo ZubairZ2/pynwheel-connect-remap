@@ -6923,4 +6923,18 @@ span.to-input {
     margin: 5px 5px;
     font-size: 16px;
     color: black;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.slick-track {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+}
+  
+.amenity-modal-image{
+    display: block;
+    margin: auto;
 }
