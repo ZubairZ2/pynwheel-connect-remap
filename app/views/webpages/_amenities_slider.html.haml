@@ -1,0 +1,60 @@
+.modal{:role => "dialog", :id => "amenitySliderModal-#{amenity.id}", :tabindex => "-1", "aria-hidden" => "true", :style => "overflow-y: scroll;"}
+  .modal-dialog.modal-xl
+    .modal-content
+      .modal-header
+        .amenity-3d-modal-button
+          .am-modal-title-div
+            %h4 #{amenity.name}
+          .am-modal-button-div{style: "visibility: #{amenity.video_link.present? ? "flex" : "hidden" }"}
+            %button.am-modal-button{onclick: "openAmenity3DTourModal(#{amenity.to_json})"} #{amenity.video_link_button_label.present? ? amenity.video_link_button_label : '3D Tour' }
+          
+          %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button", :onclick => "closeAmenityViewerModal(#{amenity.id})"} 
+            %span{"aria-hidden" => "true"}
+              %i.fa.fa-close
+    
+      .modal-body
+        - if galleries.count > 0
+          .amenity-carousel.carousel
+            = image_tag amenity&.standard_image_url
+            - galleries.each do |gallery_image|
+              = image_tag gallery_image&.image&.url
+        - else 
+          = image_tag amenity&.standard_image_url
+
+
+:javascript
+  
+  $(document).ready(function(){
+    $('.amenity-carousel').slick({
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      autoplay: false,
+      autoplaySpeed: 500,
+      arrows: true,
+      dots: true,
+      responsive: [
+        {
+          breakpoint: 768,
+          settings: {
+            slidesToShow: 1
+          }
+        },
+        {
+          breakpoint: 480,
+          settings: {
+            slidesToShow: 1
+          }
+        }
+      ]
+    });
+  });
+
+  function openAmenityViewerModal(amenityID) {
+    let modal = document.getElementById(`amenitySliderModal-${amenityID}`);
+    modal.style.display = "block";
+  }
+
+  function closeAmenityViewerModal(amenityID) {
+    let modal = document.getElementById(`amenitySliderModal-${amenityID}`);
+    modal.style.display = "none";
+  }

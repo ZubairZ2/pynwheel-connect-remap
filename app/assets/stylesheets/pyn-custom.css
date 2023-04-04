@@ -5286,6 +5286,11 @@ body {
     width: 92% !important;
 }
 
+.slider-amenity-modal-height {
+    width: 70% !important;
+    margin-top: 0px;
+}
+
 .virtual-tour-unit-modal-header {
     display: flex;
     justify-content: space-between;
@@ -6800,6 +6805,7 @@ span.to-input {
     color: black;
     font-weight: 900;
     background: white;
+    margin-right: 15px;
 }
 
 .am-modal-button:hover {
@@ -6828,4 +6834,57 @@ span.to-input {
     padding-top: 15px;
     padding-bottom: 15px;
     background: #ececec;
+}
+
+.carousel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.carousel-button {
+  font-size: 24px;
+  padding: 8px 16px;
+}
+
+.carousel-items {
+  display: flex;
+  overflow-x: scroll;
+  scroll-behavior: smooth;
+  width: 100%;
+}
+
+.carousel-item {
+  flex: 0 0 auto;
+  width: 200px;
+  height: 200px;
+  margin-right: 16px;
+  background-color: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.slick-arrow.slick-prev {
+    z-index: 5 !important;
+    left: 0px !important;
+}
+
+.slick-prev:before, 
+.slick-next:before {
+    font-size: 60px !important;
+    color: #f4f4f4c2 !important;
+}
+
+.slick-arrow.slick-next {
+    right: 40px !important;
+}
+
+.slick-dots {
+    bottom: 0px;
+}
+
+.slick-list {
+    height: fit-content !important;
 }
