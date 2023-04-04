@@ -5287,8 +5287,10 @@ body {
 }
 
 .slider-amenity-modal-height {
-    width: 70% !important;
-    margin-top: 0px;
+    position: absolute;
+    left: 50%;
+    top: 47%;
+    transform: translate(-50%, -50%);
 }
 
 .virtual-tour-unit-modal-header {
@@ -6873,12 +6875,12 @@ span.to-input {
 
 .slick-prev:before, 
 .slick-next:before {
-    font-size: 60px !important;
-    color: #f4f4f4c2 !important;
+    font-size: 45px !important;
+    color: #151a1b !important;
 }
 
 .slick-arrow.slick-next {
-    right: 40px !important;
+    right: 25px !important;
 }
 
 .slick-dots {

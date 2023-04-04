@@ -1742,7 +1742,6 @@ function setApplyNowURLDate(element) {
 }
 
 function openAmenity3DTourModal(amenity_obj) {
-  debugger;
   url = amenity_obj.video_link
   amenityRemoveFrame();
   
