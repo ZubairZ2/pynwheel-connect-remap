@@ -6890,3 +6890,37 @@ span.to-input {
 .slick-list {
     height: fit-content !important;
 }
+
+.amenityTooltip {
+    position: relative;
+}
+
+.amenityTooltip .amenityTooltiptext {
+    visibility: hidden;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 200px;
+    height: 150px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px
+}
+
+.amenityTooltip:hover .amenityTooltiptext {
+    visibility: visible;
+}
+
+.amenityTooltip .amenityTooltiptext img {
+    display: block;
+    margin: 5px auto;
+    width: 200px;
+    height: 150px;
+}
+
+.amenityTooltip .amenityTooltiptext h2 {
+    text-align: center;
+    margin: 5px 5px;
+    font-size: 16px;
+    color: black;
+}
