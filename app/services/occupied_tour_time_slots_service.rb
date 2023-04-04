@@ -56,7 +56,7 @@ class OccupiedTourTimeSlotsService
   end
 
   def community_scheduled_tours
-    @community&.schedual_tours.where("is_tour_completed = ? AND property_tour_type = ? AND tour_date >= ?", false, "scheduled_tour", present_date_time() ).where.not(tour_user_id: nil)
+    @community&.schedual_tours.where("property_tour_type = ? AND tour_date >= ?", "scheduled_tour", present_date_time() ).where.not(tour_user_id: nil)
   end
 
   def limit_exceeded tour
