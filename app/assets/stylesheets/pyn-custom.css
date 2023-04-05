@@ -6838,36 +6838,6 @@ span.to-input {
     background: #ececec;
 }
 
-.carousel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.carousel-button {
-  font-size: 24px;
-  padding: 8px 16px;
-}
-
-.carousel-items {
-  display: flex;
-  overflow-x: scroll;
-  scroll-behavior: smooth;
-  width: 100%;
-}
-
-.carousel-item {
-  flex: 0 0 auto;
-  width: 200px;
-  height: 200px;
-  margin-right: 16px;
-  background-color: #eee;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-}
-
 .slick-arrow.slick-prev {
     z-index: 5 !important;
     left: 0px !important;
@@ -6893,6 +6863,7 @@ span.to-input {
 
 .amenityTooltip {
     position: relative;
+    z-index: 2;
 }
 
 .amenityTooltip .amenityTooltiptext {
@@ -6900,8 +6871,8 @@ span.to-input {
     position: absolute;
     top: 100%;
     left: 0;
-    width: 200px;
-    height: 150px;
+    width: 150px;
+    height: 120px;
     background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 4px
@@ -6914,8 +6885,8 @@ span.to-input {
 .amenityTooltip .amenityTooltiptext img {
     display: block;
     margin: 5px auto;
-    width: 200px;
-    height: 150px;
+    width: 150px;
+    height: 120px;
 }
 
 .amenityTooltip .amenityTooltiptext h2 {
