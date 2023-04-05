@@ -6940,7 +6940,11 @@ span.to-input {
 }
 
 .slick-slider {
-display: table;
-table-layout: fixed;
-width: 100%;
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.slick-dots {
+    pointer-events: none;
 }
