@@ -6938,3 +6938,9 @@ span.to-input {
     display: block;
     margin: auto;
 }
+
+.slick-slider {
+display: table;
+table-layout: fixed;
+width: 100%;
+}

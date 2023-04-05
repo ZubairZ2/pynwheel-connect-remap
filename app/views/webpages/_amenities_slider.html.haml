@@ -52,20 +52,30 @@
 
     $(".slick-next").click(function(){ updateHeaderAmenityName(); });
     $(".slick-prev").click(function(){ updateHeaderAmenityName(); });
+    prevArrowVisibilityControl(0);
   });
 
   function updateHeaderAmenityName() {
     const activeIndex = $(`#amenitySliderModal-${selectedAmenity.id} .slick-active`).data('slick-index');
-    const gallery = (activeIndex > 0) ? selectedGalleries[activeIndex -1] : selectedAmenity;      
+    const gallery = (activeIndex > 0) ? selectedGalleries[activeIndex -1] : selectedAmenity; 
+
     $(`#amenitySliderModal-${selectedAmenity.id} .am-modal-title-div h4`).html(gallery.name);
+
     videoLinkButtonVisibility(activeIndex)
+    prevArrowVisibilityControl(activeIndex);
+    nextArrowVisibilityControl(activeIndex);
+  }
+
+  function prevArrowVisibilityControl(activeIndex) {
+    $(".slick-prev").css("display", ((activeIndex > 0) ? "block" : "none" ) );
+  }
+  
+  function nextArrowVisibilityControl(activeIndex) {
+    $(".slick-next").css("display", ((activeIndex == selectedGalleries.length) ? "none" : "block" ) );
   }
 
   function videoLinkButtonVisibility(activeIndex) {
-    if(activeIndex > 0)
-      $(`#amenitySliderModal-${selectedAmenity.id} .am-modal-button-div`).css("visibility", "hidden");
-    else
-      $(`#amenitySliderModal-${selectedAmenity.id} .am-modal-button-div`).css("visibility", "");
+    $(`#amenitySliderModal-${selectedAmenity.id} .am-modal-button-div`).css("visibility", ((activeIndex > 0) ? "hidden" : "" ) );
   }
 
   function openAmenityViewerModal(amenity, galleries) {
