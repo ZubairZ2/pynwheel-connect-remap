@@ -5295,7 +5295,7 @@ body {
 }
 
 .slider-amenity-modal-height {
-    width: 60%;
+    width: 50%;
     margin: 20px auto;
 }
 
@@ -6914,7 +6914,7 @@ span.to-input {
 .amenity-modal-image{
     display: block !important;
     margin: auto !important;
-    width: 73% !important;
+    width: 750px !important;
 }
 
 .slick-slider {

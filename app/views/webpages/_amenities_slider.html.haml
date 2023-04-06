@@ -66,11 +66,13 @@
       adaptiveHeight: true,
     });
     
+    $(`#amenity-carousel-${amenityID}`).slick('refresh');
     carouselArrowsControl();
   }
 
   function unbindCarousel(amenityID) {
     $(`#amenity-carousel-${amenityID}`).slick('unslick');
+
   }
 
   function carouselArrowsControl() {
