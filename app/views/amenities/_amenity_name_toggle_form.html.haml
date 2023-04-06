@@ -1,0 +1,15 @@
+= form_for @community, :url => update_amenity_toggle_community_path(@community),:html=>{:id => "update_amenity_toggle_form", :class=>"form-horizontal form_class"} do |f|
+  .mb-35
+    .row
+      .col-lg-3.col-md-4.col-sm-6
+        %label Show Amenity Name on Webpages
+      .col-lg-3.col-lg-8.col-sm-6
+        .TriSea-technologies-Switch
+          %span.pr-15 No
+          = f.check_box :show_amenity_name
+          %label.label-primary{:for => "community_show_amenity_name"}
+          %span.pl-15 Yes
+
+
+:javascript
+  $("#update_amenity_toggle_form").change(() => {  $("#update_amenity_toggle_form").submit(); });

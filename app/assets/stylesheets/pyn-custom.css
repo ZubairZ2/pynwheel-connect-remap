@@ -3710,6 +3710,14 @@ a#favoriteclickme {
 }
 
 @media (max-width:850px) {
+    .slider-amenity-modal-height {
+        width: 100% !important;
+    }
+
+    .amenity-modal-image {
+        width: 73% !important;
+    }
+    
     .content-header>.breadcrumb {
         left: 0;
         padding-top: 0px;
@@ -5287,8 +5295,7 @@ body {
 }
 
 .slider-amenity-modal-height {
-    width: 92%;
-    height: 92%;
+    width: 60%;
     margin: 20px auto;
 }
 
@@ -6907,7 +6914,7 @@ span.to-input {
 .amenity-modal-image{
     display: block !important;
     margin: auto !important;
-    width: fit-content !important;
+    width: 73% !important;
 }
 
 .slick-slider {

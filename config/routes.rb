@@ -127,7 +127,7 @@ Rails.application.routes.draw do
       get :suggest_floorplate_units
       get :sitemap_auto_plot_units
       get :floorplate_auto_plot_units
-
+      patch :update_amenity_toggle
     end
     
     collection do
