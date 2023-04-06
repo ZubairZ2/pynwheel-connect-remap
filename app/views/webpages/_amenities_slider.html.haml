@@ -3,7 +3,7 @@
     .modal-content
       .modal-header
         .amenity-3d-modal-button
-          .am-modal-title-div{:style => "visibility: #{show_community_name ? "" : "hidden"}"}
+          .am-modal-title-div{:style => "visibility: #{show_amenity_name ? "" : "hidden"}"}
             %h4 #{amenity.name}
           .am-modal-button-div{style: "visibility: #{amenity.video_link.present? ? "flex" : "hidden" }"}
             %button.am-modal-button{onclick: "openAmenity3DTourModal(#{amenity.to_json})"} #{amenity.video_link_button_label.present? ? amenity.video_link_button_label : '3D Tour' }
