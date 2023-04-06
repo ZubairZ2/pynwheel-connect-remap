@@ -14,7 +14,7 @@
     
       .modal-body
         - if galleries.count > 0
-          .amenity-carousel.carousel
+          .amenity-carousel{id: "amenity-carousel-#{amenity.id}"}
             = image_tag amenity&.standard_image_url, class: "amenity-modal-image"
             - galleries.each do |gallery_image|
               = image_tag gallery_image&.image&.url, class: "amenity-modal-image"
@@ -26,52 +26,18 @@
   var selectedAmenity = null
   var selectedGalleries = [];
 
-  $(document).ready(function(){
-    $('.amenity-carousel').slick({
-      slidesToShow: 1,
-      slidesToScroll: 1,
-      autoplay: false,
-      autoplaySpeed: 500,
-      arrows: true,
-      dots: true,
-      responsive: [
-        {
-          breakpoint: 768,
-          settings: {
-            slidesToShow: 1
-          }
-        },
-        {
-          breakpoint: 480,
-          settings: {
-            slidesToShow: 1
-          }
-        }
-      ]
-    });
+  $(document).ready(function(){ });
 
-    $(".slick-next").click(function(){ updateHeaderAmenityName(); });
-    $(".slick-prev").click(function(){ updateHeaderAmenityName(); });
-    prevArrowVisibilityControl(0);
-  });
-
-  function updateHeaderAmenityName() {
+  function calculateActiveSlide() {
     const activeIndex = $(`#amenitySliderModal-${selectedAmenity.id} .slick-active`).data('slick-index');
     const gallery = (activeIndex > 0) ? selectedGalleries[activeIndex -1] : selectedAmenity; 
 
-    $(`#amenitySliderModal-${selectedAmenity.id} .am-modal-title-div h4`).html(gallery.name);
-
+    updateHeaderAmenityName(gallery)
     videoLinkButtonVisibility(activeIndex)
-    prevArrowVisibilityControl(activeIndex);
-    nextArrowVisibilityControl(activeIndex);
   }
 
-  function prevArrowVisibilityControl(activeIndex) {
-    $(".slick-prev").css("display", ((activeIndex > 0) ? "block" : "none" ) );
-  }
-  
-  function nextArrowVisibilityControl(activeIndex) {
-    $(".slick-next").css("display", ((activeIndex == selectedGalleries.length) ? "none" : "block" ) );
+  function updateHeaderAmenityName(gallery) {
+    $(`#amenitySliderModal-${selectedAmenity.id} .am-modal-title-div h4`).html(gallery.name);
   }
 
   function videoLinkButtonVisibility(activeIndex) {
@@ -79,15 +45,35 @@
   }
 
   function openAmenityViewerModal(amenity, galleries) {
-    selectedAmenity = amenity;
-    selectedGalleries = galleries;
-    let modal = document.getElementById(`amenitySliderModal-${amenity.id}`);
-    modal.style.display = "block";
+    selectedAmenity = amenity; selectedGalleries = galleries;
+    $(`#amenitySliderModal-${amenity.id}`).modal("show");
+    bindCarousel(amenity.id);
   }
 
   function closeAmenityViewerModal(amenityID) {
-    selectedAmenity = null;
-    selectedGalleries = [];
-    let modal = document.getElementById(`amenitySliderModal-${amenityID}`);
-    modal.style.display = "none";
+    selectedAmenity = null; selectedGalleries = [];
+    $(`#amenitySliderModal-${amenityID}`).modal("close");
+    unbindCarousel(amenityID)
+  }
+
+  function bindCarousel(amenityID) {
+    $(`#amenity-carousel-${amenityID}`).slick({
+      dots: true,
+      infinite: false,
+      speed: 300,
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      adaptiveHeight: true,
+    });
+    
+    carouselArrowsControl();
+  }
+
+  function unbindCarousel(amenityID) {
+    $(`#amenity-carousel-${amenityID}`).slick('unslick');
+  }
+
+  function carouselArrowsControl() {
+    $(".slick-next").click(function(){ calculateActiveSlide(); });
+    $(".slick-prev").click(function(){ calculateActiveSlide(); });
   }

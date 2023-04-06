@@ -5287,10 +5287,9 @@ body {
 }
 
 .slider-amenity-modal-height {
-    position: absolute;
-    left: 50%;
-    top: 47%;
-    transform: translate(-50%, -50%);
+    width: 92%;
+    height: 92%;
+    margin: 20px auto;
 }
 
 .virtual-tour-unit-modal-header {
@@ -6906,8 +6905,9 @@ span.to-input {
 }
   
 .amenity-modal-image{
-    display: block;
-    margin: auto;
+    display: block !important;
+    margin: auto !important;
+    width: fit-content !important;
 }
 
 .slick-slider {
