@@ -1407,7 +1407,7 @@ json.community_group @communities do |co|
         if @community.theme_name == "modernist"
           json.unit_description unit.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:#{(@community.design.primary_font_color.present? ? @community.design.primary_font_color : "#FFFFFF")}'>"+unit.floorplan.description+"</div>"  : nil)
         else
-          json.unit_description unit.description.present? ? "<div style='color:white'>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div style='color:white'>"+unit.floorplan.description+"</div>"  : nil)
+          json.unit_description unit.description.present? ? "<div>"+unit.description+"</div>" : (unit.floorplan.description.present? ? "<div'>"+unit.floorplan.description+"</div>"  : nil)
         end
         json.x_plot unit.x_plot
         json.y_plot unit.y_plot
@@ -1422,7 +1422,7 @@ json.community_group @communities do |co|
         json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
         json.virtual_tour unit.get_unit_virtual_tour_url()
         json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
-        json.floorplan_description floorplan.description.present? ? "<div style='color:white'>"+floorplan.description+"</div>"  : nil
+        json.floorplan_description floorplan.description.present? ? "<div>"+floorplan.description+"</div>"  : nil
         json.square_feet unit.square_feet.present? && unit.square_feet > 1 ? unit.square_feet : (floorplan.present? ? floorplan.square_feet : 0)
         
         if @community.display_rent
