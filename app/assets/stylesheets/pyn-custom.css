@@ -3710,14 +3710,6 @@ a#favoriteclickme {
 }
 
 @media (max-width:850px) {
-    .slider-amenity-modal-height {
-        width: 100% !important;
-    }
-
-    .amenity-modal-image {
-        width: 73% !important;
-    }
-    
     .content-header>.breadcrumb {
         left: 0;
         padding-top: 0px;
@@ -3825,6 +3817,24 @@ a#favoriteclickme {
 }
 
 @media (max-width:767px) {
+    
+    .slider-amenity-modal-height {
+        width: 100% !important;
+    }
+
+    .amenity-modal-image {
+        width: 73% !important;
+    }
+
+    .amenityTooltip .amenityTooltiptext img {
+        width: 50px !important;
+        height: 50px !important;
+    }
+
+    .amenityTooltip .amenityTooltiptext {
+        width: 50px !important;
+        height: 50px !important;
+    }
 
     .custom-iframe-modeule .app-logo {
         width: 20% !important;
@@ -6851,12 +6861,14 @@ span.to-input {
 
 .slick-prev:before, 
 .slick-next:before {
-    font-size: 45px !important;
+    font-size: 40px !important;
     color: #151a1b !important;
 }
 
-.slick-arrow.slick-next {
-    right: 25px !important;
+.slick-prev, 
+.slick-next {
+    width: 40px !important;
+    height: 40px !important;
 }
 
 .slick-dots {
@@ -6867,9 +6879,12 @@ span.to-input {
     height: fit-content !important;
 }
 
+.amenityTooltip:hover {
+    z-index: 999;
+}
+
 .amenityTooltip {
     position: relative;
-    z-index: 2;
 }
 
 .amenityTooltip .amenityTooltiptext {
