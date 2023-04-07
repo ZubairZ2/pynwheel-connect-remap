@@ -5,6 +5,7 @@ json.data_provider @community.data_provider
 json.company_name @community.company.name
 json.community_name @community.name
 json.currency_symbol @community.get_currency_symbol()
+
 json.ui_settigs do
   json.selected_theme @community.temporary_theme_name
   if @community.temporary_theme_name.include?('gables') || @community.temporary_theme_name == 'modernist'
@@ -1280,29 +1281,32 @@ json.homescreen do
     json.loop_type "images"
   end
 end
+
 json.apartments do
   if @community.has_floorplates?
     json.map_type "floorplates"
   else
     json.map_type "sitemap"
   end
+
   if (@community.display_sitemap || @community.display_floorplan_gallery)
     json.show_apartment_page  true
   else
     json.show_apartment_page false
   end
+
   json.apartment_page_name @community.apartment_page_name
   json.display_rent @community.display_rent
   json.display_pricing_options @community.display_pricing_options
   json.display_sitemap @community.display_sitemap
   json.display_floorplan_gallery @community.display_floorplan_gallery
   json.display_available_date @community.display_available_date
-
-
   json.show_property_map_key @community.show_property_map_key
   json.show_property_map_key_text @community.show_property_map_key_text
   json.show_amenity_key @community.show_amenity_key
   json.show_amenity_key_text @community.show_amenity_key_text
+  json.sitemap_auto_zoom @community.sitemap_auto_zoom
+
   if @community.sitemap.present? and !@community.has_floorplates?
     image_url = @community.sitemap.image.url.present? ? @community.sitemap.image.url : @community.sitemap.image.url
     begin

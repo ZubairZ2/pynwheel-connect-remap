@@ -5,6 +5,7 @@ json.page_type @community_group.page_type ? "map" : "menu"
 json.page_name @community_group.page_name
 json.logo @community_group.logo.present? ? @community_group.logo.url : "No image"
 json.inactivate !@community_group.inactivate
+
 json.homepage_design do
   json.logo_position @community_group.group_design.present? ? (@community_group.group_design.logo_position.present? ? @community_group.group_design.logo_position : "Centre") : "Centre" rescue "Centre"
   json.logo_size @community_group.group_design.present? ? (@community_group.group_design.logo_size.present? ? @community_group.group_design.logo_size : "487x160") : "487x160" rescue "Centre"

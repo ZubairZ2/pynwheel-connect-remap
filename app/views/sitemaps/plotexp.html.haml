@@ -31,16 +31,6 @@
                 .col-sm-12.col-lg-6.col-md-6.col-xs-12
                   = text_field_tag :apartment_page_name, @community.apartment_page_name, :class=>"form-control apartment-setting-field"
 
-              -#.form-group
-              -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-              -#    Show property map/floor plans page
-              -#  .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              -#    .TriSea-technologies-Switch
-              -#      %span.pr-15 No
-              -#      = check_box_tag :show_apartment, true, @community.show_apartment, class: "apartment-setting"
-              -#      %label.label-primary{:for => "show_apartment"}
-              -#      %span.pl-15 Yes
-
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   
@@ -54,6 +44,7 @@
                     = check_box_tag :display_sitemap, true, @community.display_sitemap, class: "apartment-setting-field"
                     %label.label-primary{:for => "display_sitemap"}
                     %span.pl-15 Yes
+
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Display floor plan gallery
@@ -66,6 +57,7 @@
                     = check_box_tag :display_floorplan_gallery, true, @community.display_floorplan_gallery, class: "apartment-setting-field"
                     %label.label-primary{:for => "display_floorplan_gallery"}
                     %span.pl-15 Yes
+
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Display on home page
@@ -80,6 +72,20 @@
                     %label.label-primary{:for => "display_unit_on_homepage"}
                     %span.pl-15 Yes
               
+              .form-group
+                %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
+                  Auto Zoom on Site Map Image
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapAutoZoom","data-content" => ""}
+                    %span#propertyDetailNameText
+                      Switching this will automatically zoom to the center of the site map image on the Apartments page.
+                
+                .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                  .TriSea-technologies-Switch
+                    %span.pr-15 No
+                    = check_box_tag :sitemap_auto_zoom, true, @community.sitemap_auto_zoom, class: "apartment-setting-field"
+                    %label.label-primary{:for => "sitemap_auto_zoom"}
+                    %span.pl-15 Yes
+
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
                   Display Price
@@ -167,10 +173,7 @@
               
               
               = submit_tag 'Save', class: "hidden"
-    -#.box.box-info.add-plan
-    -#  .box-header
-    -#    %h3.box-title
-    -#      PROPERTY MAP PAGE (Garden Style Property)
+              
     %h4{:style => "color: grey;"}
       %p
         To change the image of the property map, upload a new image here. Please note that images that are too small may appear pixelated.
