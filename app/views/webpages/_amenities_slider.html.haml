@@ -41,7 +41,10 @@
   }
 
   function videoLinkButtonVisibility(activeIndex) {
-    $(`#amenitySliderModal-${selectedAmenity.id} .am-modal-button-div`).css("visibility", ((activeIndex > 0) ? "hidden" : "" ) );
+    if(selectedAmenity.video_link)
+      $(`#amenitySliderModal-${selectedAmenity.id} .am-modal-button-div`).css("visibility", ((activeIndex > 0) ? "hidden" : "" ) );
+    else
+      $(`#amenitySliderModal-${selectedAmenity.id} .am-modal-button-div`).css("visibility", "hidden");
   }
 
   function openAmenityViewerModal(amenity, galleries) {
