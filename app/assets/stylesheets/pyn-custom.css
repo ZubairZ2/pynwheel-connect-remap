@@ -3826,18 +3826,12 @@ a#favoriteclickme {
         width: 73% !important;
     }
 
-    .amenityTooltip .amenityTooltiptext img {
-        width: 100px !important;
-        height: 68px !important;
-    }
-
     .amenityTooltip .amenityTooltiptext h2 {
         font-size: 10px !important;
     }
 
     .amenityTooltip .amenityTooltiptext {
-        width: 100px !important;
-        height: 90px !important;
+        width: 120px !important;
         font-size: 10px;
     }
 
@@ -6807,6 +6801,13 @@ span.to-input {
     justify-content: flex-start;
 }
 
+.am-modal-title-div h4{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
 .am-modal-button-div {
     width: 50%;
     display: flex;
@@ -6897,8 +6898,7 @@ span.to-input {
     position: absolute;
     top: 100%;
     left: 0;
-    width: 100px;
-    height: 120px;
+    width: 150px;
     background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 4px
@@ -6911,8 +6911,6 @@ span.to-input {
 .amenityTooltip .amenityTooltiptext img {
     display: block;
     margin: 0px auto;
-    width: 100px;
-    height: 91px;
     border-radius: 3px;
 }
 
@@ -6932,7 +6930,7 @@ span.to-input {
     align-items: center;
 }
   
-.amenity-modal-image{
+.amenity-modal-image {
     display: block !important;
     margin: auto !important;
     width: 750px !important;
