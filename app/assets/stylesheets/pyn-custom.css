@@ -6897,7 +6897,7 @@ span.to-input {
     position: absolute;
     top: 100%;
     left: 0;
-    width: 150px;
+    width: 100px;
     height: 120px;
     background-color: #fff;
     border: 1px solid #ccc;
@@ -6911,9 +6911,9 @@ span.to-input {
 .amenityTooltip .amenityTooltiptext img {
     display: block;
     margin: 0px auto;
-    width: 150px;
-    height: 120px;
-    border-radius: 4px;
+    width: 100px;
+    height: 91px;
+    border-radius: 3px;
 }
 
 .amenityTooltip .amenityTooltiptext h2 {
