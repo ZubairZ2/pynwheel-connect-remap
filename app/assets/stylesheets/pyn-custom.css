@@ -3827,13 +3827,18 @@ a#favoriteclickme {
     }
 
     .amenityTooltip .amenityTooltiptext img {
-        width: 50px !important;
-        height: 50px !important;
+        width: 100px !important;
+        height: 68px !important;
+    }
+
+    .amenityTooltip .amenityTooltiptext h2 {
+        font-size: 10px !important;
     }
 
     .amenityTooltip .amenityTooltiptext {
-        width: 50px !important;
-        height: 50px !important;
+        width: 100px !important;
+        height: 90px !important;
+        font-size: 10px;
     }
 
     .custom-iframe-modeule .app-logo {
@@ -6908,6 +6913,7 @@ span.to-input {
     margin: 0px auto;
     width: 150px;
     height: 120px;
+    border-radius: 4px;
 }
 
 .amenityTooltip .amenityTooltiptext h2 {
