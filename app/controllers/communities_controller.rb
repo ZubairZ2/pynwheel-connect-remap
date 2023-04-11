@@ -813,10 +813,9 @@ class CommunitiesController < ApplicationController
     @community.display_floorplan_gallery = params[:display_floorplan_gallery].present? ? params[:display_floorplan_gallery] : false
     @community.display_unit_on_homepage = params[:display_unit_on_homepage].present? ? params[:display_unit_on_homepage] : false
     @community.apartment_page_name = params[:apartment_page_name] if params[:apartment_page_name].present?
-
     @community.show_property_map_key = params[:show_property_map_key].present? ? params[:show_property_map_key] : false
     @community.show_amenity_key = params[:show_amenity_key].present? ? params[:show_amenity_key] : false
-
+    @community.sitemap_auto_zoom = params[:sitemap_auto_zoom] if params[:sitemap_auto_zoom].present?
     @community.show_property_map_key_text = params[:show_property_map_key_text] if params[:show_property_map_key_text].present?
     @community.show_amenity_key_text = params[:show_amenity_key_text] if params[:show_amenity_key_text].present?
 
