@@ -39,6 +39,7 @@ json.tours tours do |tour|
         json.unit_id unit.id
         json.x_plot unit.x_plot
         json.y_plot unit.y_plot
+        json.modal_unit unit.modal_unit
 
         json.floorplan_image @community.unit_floorplan_images(unit)
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
@@ -88,7 +89,7 @@ json.tours tours do |tour|
         json.update_apply ((unit.provider == "resman" || unit.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
         json.provider unit.provider
 
-        stop_dat = {"floorplan" => unit.floorplan_id, "floorplan_id" => unit.floorplan.id, "floorplan_full_name" => unit.floorplan.name,"effective_rent" => "#{@community.get_currency_symbol}#{unit.effective_rent}","available_date" => unit.available_date,"display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
+        stop_dat = {"floorplan" => unit.floorplan_id, "floorplan_id" => unit.floorplan.id, "floorplan_full_name" => unit.floorplan.name,"effective_rent" => "#{@community.get_currency_symbol}#{unit.effective_rent.to_i.to_s}","available_date" => unit.available_date,"display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
         
         json.stop_data stop_dat
         @unit_gallery_arr = []
