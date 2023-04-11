@@ -22,6 +22,8 @@
 
             .mt-35
               /%span.btn.btn-primary.btn-file.pull-right.mb-20
+              = render :partial=>'amenity_name_toggle_form'
+
               %span.btn.btn-success.btn-file.some{ :style => "margin-right: 5px; width: 135px" }
                 %i.fa.fa-plus-circle
                 ADD FILES
@@ -33,6 +35,7 @@
               - if @community.is_sitemap && @community.show_map &&  (current_user.is_admin? )
                 = link_to "PLOT AMENITIES", plot_amenities_community_sitemaps_path(@community), class: "loader_class btn btn-primary hidden btn-file plot_amenities_btn"
             .divLoading.hidden
+
         #images-index
           = render :partial=>'index'
 .row
@@ -44,6 +47,7 @@
             .col-md-12.col-lg-12
               %button.btn-primary.done_btn.mb-20{:onclick => "amenity_goBack()",:style => " margin-top: 0px;  margin-bottom: 0px;"}
                 DONE
+
 #edit-image.modal.fade.edit-image
 :javascript
   var community_id = #{params[:community_id]}

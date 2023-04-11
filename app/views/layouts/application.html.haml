@@ -8,11 +8,13 @@
     = csrf_meta_tags
     = stylesheet_link_tag    'application', media: 'all'
     = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
+    
     - if Rails.env.development?
       %script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['HAMZA_API_KEY']}", :type => "text/javascript"}
     - else
       %script{:async => "", :defer => "defer", :src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}", :type => "text/javascript"}
     = javascript_include_tag 'moment'
+
     %script{src: "https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.27.0/slimselect.min.js"}
     %script{:async => "", :defer => "defer", :src => "https://cdn.rawgit.com/mahnunchik/markerclustererplus/master/dist/markerclusterer.min.js", :type => "text/javascript"}
     %script{:async => "", :defer => "defer", :src => "https://cdn.rawgit.com/printercu/google-maps-utility-library-v3-read-only/master/infobox/src/infobox_packed.js", :type => "text/javascript"}
@@ -20,10 +22,12 @@
     %meta{:content => "no-cache, no-store, must-revalidate", "http-equiv" => "Cache-Control"}/
     %meta{:content => "no-cache", "http-equiv" => "Pragma"}/
     %meta{:content => "0", "http-equiv" => "Expires"}/
+
     %link{href: "https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.27.0/slimselect.min.css", rel: "stylesheet", type: "text/css"}
     %link{:href => "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800", :rel => "stylesheet"}/
     = favicon_link_tag 'logo-small.png'
     = javascript_include_tag "http://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.4.0/fabric.min.js"
+
   %body.hold-transition.skin-blue.sidebar-mini{:id => "#{controller_name == "home"  || controller_name == "error_logs" || controller_name == "companies" || controller_name == "analytics" || (controller_name == "community_groups" &&  params[:action] == "index") || (controller_name == "regions" &&  params[:action] == "index") || (controller_name == "tours" &&  action_name == "id_selfie_matching") ? "no-sidemenu" : ""}", 'data-user-role': "#{current_user.present? ? current_user.role : "undefined"}", 'data-user-id': "#{current_user.present? ? current_user.id : "undefined"}"}
     .wrapper
       - unless params[:controller] == "tour_users" && params[:action]== "show" && !current_user.present?

@@ -2300,6 +2300,7 @@ $(document).on('click','.unit_marker',function(){
     success: function(response) {}
   });
 });
+
 $(document).on('click','.apply_now',function(){
   community_id = $("#maps_community_id").val()
     $.ajax({

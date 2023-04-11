@@ -237,12 +237,12 @@
                         - floorplate = @floorplates.select{|f| f.floors.include?(floor)}.first
                         - floorplate.amenities.where(floor: [floor, nil]).each do |amenity|
                           - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                            = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};' ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'   ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{floor} amenity-marker hidden preview-image", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, "data-toggle"=>"lightbox","data-title"=>"<div class='amenity-3d-modal-button'> <div class='am-modal-title-div'><h4>#{amenity.name}</h4></div> <div class='am-modal-button-div' style='display: #{amenity.video_link.present? ? "flex" : "none" }'><button class='am-modal-button' onClick='openAmenity3DTourModal(#{amenity.to_json})' >#{amenity.video_link_button_label.present? ? amenity.video_link_button_label : '3D Tour' }</button></div> </div>".html_safe
+                            = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>  <span class='amenitytooltiptext'> <h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"a_#{floor} amenity-marker hidden slider-amenity amenityTooltip", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, :onclick => "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
                     - else
                       - @amenities.each do |amenity|
                         - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
-                          = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>".html_safe, amenity.standard_image_url, :title => amenity.name, :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker preview-image", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot,"data-toggle"=>"lightbox","data-title"=>"<div class='amenity-3d-modal-button'> <div class='am-modal-title-div'><h4>#{amenity.name}</h4></div> <div class='am-modal-button-div' style='display: #{amenity.video_link.present? ? "flex" : "none" }'><button class='am-modal-button' onClick='openAmenity3DTourModal(#{amenity.to_json})' >#{amenity.video_link_button_label.present? ? amenity.video_link_button_label : '3D Tour' }</button></div> </div>".html_safe
-                
+                          = link_to "<span class='custom-icon custom-icon-responsive' style=' height:#{marker_font_size}px; width: #{marker_font_size}px; border: 2px solid  #{amenity_marker_color};'  ><i class='fas fa-camera-retro' style=' font-size:#{camera_font_size}px; color: #{amenity_marker_color}; margin-top:#{camera_margin}px;'  ></i></span>  <span class='amenitytooltiptext'>  <h2 style='display:#{@community.show_amenity_name ? "block": "none"}' >#{amenity.name}</h2> <img src=#{amenity.standard_image_url} alt='Image Title'></span>".html_safe, "#", :style => "left:#{amenity.x_plot}px; top:#{amenity.y_plot}px; position:absolute;",:class=>"sitemap-amenity-marker slider-amenity amenityTooltip", :id => "a_#{amenity.id}", "data-amenity-id"=>amenity.id, "data-amenity-x-plot"=>amenity.x_plot,"data-amenity-y-plot"=>amenity.y_plot, :onclick => "openAmenityViewerModal(#{amenity.to_json}, #{amenity.amenity_galleries.to_json})"
+
                 .alert.alert-danger.fade.in{:style => "display:none;position:absolute;top:0%;width:100%;"}
                   %strong Oops!
                   There is nothing available on this floor that matches the parameters that you have selected.
@@ -298,15 +298,17 @@
       = render partial: "unit_modal"
                 
     - else
-      .alert.alert-danger Community is Inactivated. 
+      .alert.alert-danger Community is Inactivated.
+
+- @amenities&.each do |amenity|
+  - if amenity.x_plot.to_i + amenity.y_plot.to_i > 0
+    = render partial: "amenities_slider", locals: { amenity: amenity, galleries: amenity.amenity_galleries, show_amenity_name: @community.show_amenity_name }
 
 = render partial: "unit_information_popup"
 = render partial: "unit_num_popup"
 = render partial: "3d_amenity_modal"
 = render partial: "virtual_tour_modal"
 = render partial: "amenity_virtual_tour_modal"
-
-
 
 #communityWebpagesData{data: {currency: @community.get_currency_symbol(), community: @community.to_json, is_floorplate: @community_info.has_floorplates?, amenities: @amenities.to_json, map_configurations: @community&.three_d_maps_configuration.to_json} }
 
