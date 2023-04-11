@@ -102,11 +102,11 @@ namespace :delayed_email_notifications do
   def send_email_sms_or_both_to_touruser thank_you_msg, community, th
 
 		if community.alert_contact == "email"
-			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", "<div style='vertical-align:middle; text-align:center'><img align='center' border='0' alt='Image' title='Image' style='outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; clear: both; display: inline-block !important; border: none; height: auto; float: none; width: 138px; max-width: 138px;' width='138' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
+			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
 		elsif community.alert_contact == "phone"
 			send_sms_tour_user thank_you_msg, th
 		else
-			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}","<div style='vertical-align:middle; text-align:center'><img align='center' border='0' alt='Image' title='Image' style='outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; clear: both; display: inline-block !important; border: none; height: auto; float: none; width: 138px; max-width: 138px;' width='138' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
+			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}","<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
 			send_sms_tour_user thank_you_msg ,th
 		end
 	end
@@ -177,7 +177,7 @@ namespace :delayed_email_notifications do
 		  if community.community_tour.tour_setting.enable_header_footer
 			  content = "Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive.<br>#{change_appointment}<br>#{community.one_day_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 		  else
-			  content = "<div style='vertical-align:middle; text-align:center'><img align='center' border='0' alt='Image' title='Image' style='outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; clear: both; display: inline-block !important; border: none; height: auto; float: none; width: 138px; max-width: 138px;' width='138' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/>Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive. <br> iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_day_email_text.gsub("\n", "<br>").html_safe rescue ""}"
+			  content = "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/>Don't forget! You have an appointment for a Self Tour tomorrow at <b>#{community.name if community.present?}</b> at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive. <br> iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_day_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 		  end
 		  sms_content = "Don't forget! You have an appointment for a Self Tour tomorrow at #{community.name if community.present?} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. Make sure you have downloaded the #{community_text} app before you arrive.
 Download The #{community_text} #{one_link}#{"\n"}
@@ -218,7 +218,7 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 				if community.community_tour.tour_setting.enable_header_footer
 					content = "<div style='vertical-align:middle; text-align:center'><p style='font-weight: normal;line-height: 30px;font-size: 16px; font-family: arial,helvetica,sans-serif;'> Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br> <b> Please download Self Tour app before you arrive:</b> <br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""} </p></div>"
 				else
-					content = "<div style='vertical-align:middle; font-family: arial,helvetica,sans-serif; text-align:center'><img align='center' border='0' alt='Image' title='Image' style='outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; clear: both; display: inline-block !important; border: none; height: auto; float: none; width: 138px; max-width: 138px;' width='138' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/>Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a> <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""}"
+					content = "<div style='vertical-align:middle; font-family: arial,helvetica,sans-serif; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/>Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a> <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 				end
 				sms_content = "Your tour starts soon!
 				Here are directions to #{community.name} https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()} #{"\n"} When you arrive at the property, open the #{community_text} app to begin your tour. #{"\n"} #{"\n"} Open #{community_text} #{one_link} #{"\n"} #{"\n"} #{confirmation_page_link}
@@ -325,5 +325,9 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 
 		return visited_stops
 	end
+
+	def logo_style
+    "outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; clear: both; display: inline-block !important; border: none; height: auto; float: none; width: 200px; max-width: 200px;"
+  end
 
 end
