@@ -249,6 +249,7 @@ module Api
                 images.each do |ud|
                   gallery_arr << ud.image.url
                 end
+
                 description_arr = []
                 descriptions.each do |un|
                   description_arr << un.description
@@ -256,8 +257,10 @@ module Api
     
                 stop = x.stop_type.classify.constantize.where(id: x.stop_id).order(:id) if x.present?
                 shared_tour_stops[x.stop_id] = { stops: stop, description: description_arr, images: gallery_arr }
+                
               end
             end
+
             begin
               shared_tour_stops.delete(params[:tour_id])
               FavoriteMailer.email_shared_tour([shared_tour.email], shared_tour_stops, community).deliver_now
