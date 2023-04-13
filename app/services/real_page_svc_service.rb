@@ -15,7 +15,6 @@ class RealPageSvcService < BaseService
     import_realpage_svc_floorplans
     # import_initials_realpage_units
     import_realpage_svc_units
-    import_realpage_svc_price
   end
 
   def import_realpage_svc_floorplans
@@ -570,6 +569,7 @@ class RealPageSvcService < BaseService
 
           ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
           ProvidersDataUpdationService.new().update_availability_of_units(@credentials.community_id, (unit_present - @unit_record))
+          import_realpage_svc_price(site_id, @array_of_units)
 
           begin
             cred = Credential.find @credentials.id
@@ -604,129 +604,127 @@ class RealPageSvcService < BaseService
     end
   end
 
-  def import_realpage_svc_price
+  def import_realpage_svc_price site_id, array_of_units
     return unless  @all_units_marketing_name_hash.present?
 
     site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
     units_str = ""
 
-    @array_of_units.each do |us|
+    array_of_units.each do |us|
       units_str = units_str + "<tem:int>"+us+"</tem:int>"
     end
 
-    site_ids.each do |site_id|
+    begin
+      import_units = []
+      url = REALPAGE_URL
+      soap_action = 'http://tempuri.org/IRPXService/getrentmatrix'
+      pmc_id = @credentials.pmc_id
+      site_id = site_id&.strip
+      username = REALPAGESVC_USERNAME
+      password = REALPAGESVC_PASSWORD
+      license_key = REALPAGESVC_LICENSE_KEY
+      community_id = @credentials.community_id
+      date_check = Date.today
       begin
-        import_units = []
-        url = REALPAGE_URL
-        soap_action = 'http://tempuri.org/IRPXService/getrentmatrix'
-        pmc_id = @credentials.pmc_id
-        site_id = site_id&.strip
-        username = REALPAGESVC_USERNAME
-        password = REALPAGESVC_PASSWORD
-        license_key = REALPAGESVC_LICENSE_KEY
-        community_id = @credentials.community_id
-        date_check = Date.today
-        begin
 
-          response = HTTParty.post(
-              url,
-              :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
-              :body => '<soapenv:Envelope
-                      xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:tem="http://tempuri.org/">
-                      <soapenv:Header/>
-                      <soapenv:Body>
-                          <tem:getrentmatrix>
-                              <tem:auth>
-                                  <tem:pmcid>'+pmc_id+'</tem:pmcid>
-                                  <tem:siteid>'+site_id+'</tem:siteid>
-                                  <tem:username>'+username+'</tem:username>
-                                  <tem:password>'+password+'</tem:password>
-                                  <tem:licensekey>'+license_key+'</tem:licensekey>
-                                  <tem:system>OneSite</tem:system>
-                              </tem:auth>
-                              <tem:getrentmatrix>
-                                  <tem:NeededByDate>'+date_check.to_s+'</tem:NeededByDate>
-                                  <tem:LeaseTerm>12</tem:LeaseTerm>
-                                  <tem:unitids>
-                                      <!--Zero or more repetitions:-->
-                                      '+units_str.to_s+'
-                                  </tem:unitids>
-                                  <tem:viewingQuoteOnly>1</tem:viewingQuoteOnly>
-                              </tem:getrentmatrix>
-                          </tem:getrentmatrix>
-                      </soapenv:Body>
-                  </soapenv:Envelope>')
-            
-          rescue => error
-            raise error
-          end
-
-        #result = Hash.from_xml(response.body) This method consumes too much memory on heroku
-        result = Ox.load(response.body, mode: :hash)
-        if result[:"s:Envelope"][1][:"s:Body"][1].present?
-          units = result[:"s:Envelope"][1][:"s:Body"][1][:getrentmatrixResponse][1][:getrentmatrixResult][:GetRentMatrix][1][:RentMatrices][:RentMatrix]
-          units.each do |u|
-            rentStr = ""
-            unitLeaseTerm = []
-
-            unit_no = u[1][:Rows][:Row][0][:Unit]
-            unit_add = u[1][:Rows][:Row][0][:Building]
-            
-            unit_min_rent = u[1][:Rows][:Row][0][:MinRent]
-            unit_max_rent = u[1][:Rows][:Row][0][:MaxRent]
-            best_price = nil
-
-            begin
-              u[1][:Rows][:Row][1][:Options].each_with_index do |opts, index|
-                next if index == 0
-
-                startdate = u[1][:Rows][:Row][1][:Options][0][:LeaseStartDate]
-
-                unless unitLeaseTerm.include?(opts[:Option][0][:LeaseTerm].to_s)
-                  rentStr = rentStr + (opts[:Option][0][:LeaseTerm].to_s) + ":" + opts[:Option][0][:Rent] + "::" + startdate + ":" + opts[:Option][0][:LeaseEndDate].to_s + "\;"
-                end
-                
-              end
-
-            rescue => ex
-              raise ex
-              unitHash = nil
-            end
-
-            if unit_min_rent.present?
-              # unit = @all_units_marketing_name_and_building_hash["#{unit_add}-#{unit_no}"]
-              # unit = @all_units_marketing_name_hash[unit_no.to_s] unless unit.present?
-
-              unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND building = ? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, unit_add, "%-#{site_id}").last
-              # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
-              unless unit.present?
-                unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, "%-#{site_id}").last
-                # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
-              end
-
-              if unit.present?
-                puts "--------------- Updating pricing for: #{unit.marketing_name} ---------------- \n"
-
-                unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && (unit.manual_override)
-                  unit.effective_rent = unit_min_rent.to_f
-                end
-
-                unit.min_effective_rent = unit_min_rent.to_f
-                unit.max_effective_rent = unit_max_rent.to_f
-                unit.lease_pricing = rentStr
-
-                import_units << unit
-              end
-
-            end
-          end
-
-          ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+        response = HTTParty.post(
+            url,
+            :headers => {"Content-Type" => "text/xml","Content-Length"=>'1993',"Accept"=>"text/xml","Cache-Control"=>"no-cache","Pragma"=>"no-cache","SOAPAction"=>soap_action},
+            :body => '<soapenv:Envelope
+                    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                    xmlns:tem="http://tempuri.org/">
+                    <soapenv:Header/>
+                    <soapenv:Body>
+                        <tem:getrentmatrix>
+                            <tem:auth>
+                                <tem:pmcid>'+pmc_id+'</tem:pmcid>
+                                <tem:siteid>'+site_id+'</tem:siteid>
+                                <tem:username>'+username+'</tem:username>
+                                <tem:password>'+password+'</tem:password>
+                                <tem:licensekey>'+license_key+'</tem:licensekey>
+                                <tem:system>OneSite</tem:system>
+                            </tem:auth>
+                            <tem:getrentmatrix>
+                                <tem:NeededByDate>'+date_check.to_s+'</tem:NeededByDate>
+                                <tem:LeaseTerm>12</tem:LeaseTerm>
+                                <tem:unitids>
+                                    <!--Zero or more repetitions:-->
+                                    '+units_str.to_s+'
+                                </tem:unitids>
+                                <tem:viewingQuoteOnly>1</tem:viewingQuoteOnly>
+                            </tem:getrentmatrix>
+                        </tem:getrentmatrix>
+                    </soapenv:Body>
+                </soapenv:Envelope>')
+          
+        rescue => error
+          raise error
         end
-      rescue => e
-        raise e
+
+      #result = Hash.from_xml(response.body) This method consumes too much memory on heroku
+      result = Ox.load(response.body, mode: :hash)
+      if result[:"s:Envelope"][1][:"s:Body"][1].present?
+        units = result[:"s:Envelope"][1][:"s:Body"][1][:getrentmatrixResponse][1][:getrentmatrixResult][:GetRentMatrix][1][:RentMatrices][:RentMatrix]
+        units.each do |u|
+          rentStr = ""
+          unitLeaseTerm = []
+
+          unit_no = u[1][:Rows][:Row][0][:Unit]
+          unit_add = u[1][:Rows][:Row][0][:Building]
+          
+          unit_min_rent = u[1][:Rows][:Row][0][:MinRent]
+          unit_max_rent = u[1][:Rows][:Row][0][:MaxRent]
+          best_price = nil
+
+          begin
+            u[1][:Rows][:Row][1][:Options].each_with_index do |opts, index|
+              next if index == 0
+
+              startdate = u[1][:Rows][:Row][1][:Options][0][:LeaseStartDate]
+
+              unless unitLeaseTerm.include?(opts[:Option][0][:LeaseTerm].to_s)
+                rentStr = rentStr + (opts[:Option][0][:LeaseTerm].to_s) + ":" + opts[:Option][0][:Rent] + "::" + startdate + ":" + opts[:Option][0][:LeaseEndDate].to_s + "\;"
+              end
+              
+            end
+
+          rescue => ex
+            raise ex
+            unitHash = nil
+          end
+
+          if unit_min_rent.present?
+            # unit = @all_units_marketing_name_and_building_hash["#{unit_add}-#{unit_no}"]
+            # unit = @all_units_marketing_name_hash[unit_no.to_s] unless unit.present?
+
+            unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND building = ? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, unit_add, "%-#{site_id}").last
+            # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
+            unless unit.present?
+              unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, "%-#{site_id}").last
+              # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
+            end
+
+            if unit.present?
+              puts "--------------- Updating pricing for: #{unit.marketing_name} ---------------- \n"
+
+              unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && (unit.manual_override)
+                unit.effective_rent = unit_min_rent.to_f
+              end
+
+              unit.min_effective_rent = unit_min_rent.to_f
+              unit.max_effective_rent = unit_max_rent.to_f
+              unit.lease_pricing = rentStr
+
+              import_units << unit
+            end
+
+          end
+        end
+
+        ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
       end
+    rescue => e
+      raise e
     end
   end
 
