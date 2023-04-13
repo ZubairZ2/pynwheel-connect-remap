@@ -1,0 +1,45 @@
+- content_for :title, "Impression Logs - Pynwheel"
+.divLoading.hidden
+%section.is-home-page
+  .content
+    .title-heading
+      %h4
+        %i.fa.fa-tv
+        = @community.name.capitalize
+        %br
+          %small.text-primary
+            = @community.code
+        %h3
+          Impressions Logs List
+
+    .box.box-widget.panel-box
+      .box-header
+
+        .row
+          .col-md-12
+            %table#miyazaki.table.table-bordered.table-striped.table-hover.table-responsive.impressions_logs_data_table
+              %thead
+                %tr
+                  %th Sr #
+                  %th Namespace
+                  %th Path
+                  %th Created At
+                  %th Actions
+              %tbody
+                -@impressions.each_with_index do |f,index|
+                  %tr
+                    %td
+                      = index+1
+                    %td
+                      = f.name_space
+                    %td
+                      = URI.parse(URI.encode(f.in_request["request_url"])).path if f.in_request["request_url"].present?
+                    %td
+                      = f.created_at
+                    %td
+                      %div{style: "display: flex;"}
+                        %a#edit-custom-tour.btn.btn-success.custom-tour-btn{:href => edit_community_impression_path(id: f.id)}
+                          %i.fa.fa-edit.icon_size
+                        %a.btn.btn-danger{"data-href" => destroy_impression_community_impression_path(id: f.id), "data-name" => "Impression", "data-target" => "#confirm-delete", "data-toggle" => "modal", href: "javascript:void(0)"}>
+                          %i.fa.fa-trash.icon_size
+      = will_paginate @impressions

@@ -753,6 +753,18 @@ function showDataTables(){
             searchPlaceholder: "Search by community group name"
         }
     });
+    $('#miyazaki.impressions_logs_data_table').DataTable({
+        initComplete : function() {
+            $("#impressions_logs_filter").detach().appendTo('#new-search-area');
+        },
+        "ordering": false,
+        "stateSave": false,
+        "paging": false, //Dont want paging
+        language: {
+            search: "",
+            searchPlaceholder: "Search by community id"
+        }
+    });
 }
 
 function removeValidationsClass(){
