@@ -1,21 +1,26 @@
 class ImpressionsController < ApplicationController
-  before_action :set_impression , only: [:edit,:destroy_impression]
+  before_action :load_impression , only: [:show,:destroy]
 
   def index
-    @community = Community.find params[:community_id]
     @impressions = Impression.all.paginate(page: params[:page], per_page: 20)
   end
 
-  def edit
+  def show
   end
 
-  def destroy_impression
-    @impression.destroy!
-    redirect_to community_impressions_path, notice: 'Impression deleted.'
+  def destroy
+    if @impression.destroy!
+      redirect_to community_impressions_path, notice: 'Impression deleted successfully'
+    else
+      redirect_to community_impressions_path, error: 'Something went wrong.'
+    end
   end
 
   private
-  def set_impression
-    @impression = Impression.find(params[:id])
+
+  def load_impression
+    @impression = Impression.find params[:id]
+    rescue ActiveRecord::RecordNotFound
+      redirect_to community_impressions_path, error: "Impression not found with id #{params[:id]}"
   end
 end

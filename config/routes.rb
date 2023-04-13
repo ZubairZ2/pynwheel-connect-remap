@@ -1,9 +1,5 @@
 Rails.application.routes.draw do
 
-  get 'impressions/index'
-
-  get 'impressions/edit'
-
   use_doorkeeper scope: 'api/v2/auth' do
     skip_controllers :applications
   end
@@ -11,9 +7,6 @@ Rails.application.routes.draw do
   require 'sidekiq/web'
 
   Rails.application.routes.draw do
-  get 'impressions/index'
-
-  get 'impressions/edit'
 
     mount Sidekiq::Web => '/sidekiq'
   end
@@ -234,11 +227,7 @@ Rails.application.routes.draw do
     post :save_temporary_image
     delete :delete_temporary_image
     patch :update_web_maps_configurations
-    resources :impressions do
-      member do
-        delete 'destroy-impression' => 'impressions#destroy_impression', as: 'destroy_impression'
-      end
-    end
+    resources :impressions , :only => [:index, :show, :destroy]
     resources :schedual_tours, path: 'scheduled_tours' do
       post :update_tour_type
       # post :create_tour_user_from
