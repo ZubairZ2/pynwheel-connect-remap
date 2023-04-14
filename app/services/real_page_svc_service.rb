@@ -606,7 +606,7 @@ class RealPageSvcService < BaseService
 
   def import_realpage_svc_price site_id, array_of_units
     return unless  @all_units_marketing_name_hash.present?
-
+    
     site_ids = @credentials.site_id.split(',').map(&:strip) rescue []
     units_str = ""
 
@@ -697,10 +697,10 @@ class RealPageSvcService < BaseService
             # unit = @all_units_marketing_name_and_building_hash["#{unit_add}-#{unit_no}"]
             # unit = @all_units_marketing_name_hash[unit_no.to_s] unless unit.present?
 
-            unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND building = ? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, unit_add, "%-#{site_id}").last
+            unit = Unit.where("community_id = ? AND marketing_name =? AND building = ? AND provider_unit_id LIKE ?", community_id, unit_no, unit_add, "%-#{site_id}").last
             # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no, building: unit_add)
             unless unit.present?
-              unit = Unit.where("provider = ? AND community_id = ? AND marketing_name =? AND provider_unit_id LIKE ?", "realpagesvc", community_id, unit_no, "%-#{site_id}").last
+              unit = Unit.where("community_id = ? AND marketing_name =? AND provider_unit_id LIKE ?", community_id, unit_no, "%-#{site_id}").last
               # unit = Unit.find_by(provider: "realpagesvc",community_id: community_id, marketing_name: unit_no)
             end
 
