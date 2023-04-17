@@ -19,9 +19,18 @@ class Floorplan < ApplicationRecord
 
   def as_json options = {}
     super(
-      :only => [:id, :name, :image, :file], :include => {
-        :amenities => {:only => [:id  , :image] } }
+      :only => [:id, :name, :virtual_tour_url, :description, :image, :file],
+      :include => {
+        :amenities => {
+          :only => [:id  , :image] 
+        } 
+      }, 
+      :methods => [:description_text_limit]
     )
+  end
+
+  def description_text_limit
+    ENV["DESCRIPTION_LIMIT"].to_i
   end
 
   def populate_image_urls
