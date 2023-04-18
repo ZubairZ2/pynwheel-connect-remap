@@ -255,7 +255,11 @@ class Unit < ApplicationRecord
   end
 
   def unit_market
-    return self.building.present? ?  (self.building.to_s + "-" + self.marketing_name) :  self.marketing_name
+    if self&.community.is_sitemap && !self&.community&.display_sitemap_building
+      self.marketing_name
+    else
+      self.building.present? ?  (self.building.to_s + "-" + self.marketing_name) :  self.marketing_name
+    end
   end
 
   def api_unit_marketing_name

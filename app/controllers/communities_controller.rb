@@ -816,6 +816,7 @@ class CommunitiesController < ApplicationController
     @community.show_property_map_key = params[:show_property_map_key].present? ? params[:show_property_map_key] : false
     @community.show_amenity_key = params[:show_amenity_key].present? ? params[:show_amenity_key] : false
     @community.sitemap_auto_zoom = params[:sitemap_auto_zoom].present? ? params[:sitemap_auto_zoom] : false
+    @community.display_sitemap_building = params[:display_sitemap_building].present? ? params[:display_sitemap_building] : false
     @community.show_property_map_key_text = params[:show_property_map_key_text] if params[:show_property_map_key_text].present?
     @community.show_amenity_key_text = params[:show_amenity_key_text] if params[:show_amenity_key_text].present?
 
