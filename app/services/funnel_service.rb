@@ -60,7 +60,7 @@ class FunnelService < BaseService
   def create_funnel_appointment
     url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/appointments/"
     payload = funnel_appointment_payload()
-
+    binding.pry
     response = HTTParty.post(url,
       body: payload.to_json,
       headers: { 
@@ -155,7 +155,8 @@ class FunnelService < BaseService
       "prospect": {
         "people": [ tour_user_data ],
         "move_in_date": move_in_date,
-        "discovery_source": @scheduled_tour.funnel_prospect_discover_source
+        "discovery_source": @scheduled_tour.funnel_prospect_discover_source,
+        "lead_source": @scheduled_tour.funnel_prospect_discover_source
       },
       "appointment": {
         "start": tour_start_time,
