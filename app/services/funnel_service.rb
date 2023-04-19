@@ -60,7 +60,7 @@ class FunnelService < BaseService
   def create_funnel_appointment
     url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/appointments/"
     payload = funnel_appointment_payload()
-    binding.pry
+
     response = HTTParty.post(url,
       body: payload.to_json,
       headers: { 

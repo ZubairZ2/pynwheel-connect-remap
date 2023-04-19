@@ -255,23 +255,11 @@ class Unit < ApplicationRecord
   end
 
   def unit_market
-    if self&.community.is_sitemap && !self&.community&.display_sitemap_building
-      self.marketing_name
-    else
-      self.building.present? ?  (self.building.to_s + "-" + self.marketing_name) :  self.marketing_name
-    end
+    (self.building.present?) ?  (self.building.to_s + "-" + self.marketing_name) :  self.marketing_name
   end
 
   def api_unit_marketing_name
-    if self&.community.is_sitemap 
-      if self&.community&.display_sitemap_building
-        self.building.present? ?  (self.building.to_s + "-" + self.marketing_name) :  self.marketing_name
-      else
-        self.marketing_name
-      end
-    else
-      (self.building.present? && self.community.display_building) ?  (self.building.to_s + "-" + self.marketing_name) :  self.marketing_name
-    end
+    (self.building.present? && self.community.display_building) ?  (self.building.to_s + "-" + self.marketing_name) :  self.marketing_name
   end
 
   def unit_check_like_marketname(unitObj)

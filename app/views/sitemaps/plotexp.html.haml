@@ -88,16 +88,16 @@
 
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15.margin-bottom-30
-                  Display Building Number on Sitemap
-                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "displaySitemapBuiling","data-content" => ""}
+                  Display Building Number
+                  %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "sitemapDisplayBuildingPopover","data-content" => " "}
                     %span#propertyDetailNameText
-                      When toggled to “Yes” the building number will be displayed before the unit number in the Touch application, iPad application and webpages.                
+                      Switching this will change whether or not building number is displayed on all products (Pynwheel Touch Map, Self Tour pricing, and Pynwheel Map).
                 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
-                    = check_box_tag :display_sitemap_building, true, @community.display_sitemap_building, class: "apartment-setting-field"
-                    %label.label-primary{:for => "display_sitemap_building"}
+                    = check_box_tag :display_building, true, @community.display_building, class: "apartment-setting-field"
+                    %label.label-primary{:for => "display_building"}
                     %span.pl-15 Yes
 
               .form-group

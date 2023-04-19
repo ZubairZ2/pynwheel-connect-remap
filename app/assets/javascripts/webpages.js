@@ -866,7 +866,7 @@ function renderChangedUnits(units, is_floorplate, community){
       </div>
       <div class='unit-details-section'>
         <p id='unit-detail-market-title'>
-          Unit # ${(webCommunity && webCommunity['is_sitemap'] && !webCommunity['display_sitemap_building']) ? unit['marketing_name'] : (unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']) }
+          Unit # ${(webCommunity && webCommunity['is_sitemap'] && !webCommunity['display_building']) ? unit['marketing_name'] : (unit['building'] ?  (unit['building'] + "-" + unit['marketing_name']) :  unit['marketing_name']) }
         </p>
       </div>
       <div class='unit-details-section'>
