@@ -51,16 +51,52 @@ class FunnelService < BaseService
   end
 
   def funnel_crm reschedule
-    if is_funnel_crm && @scheduled_tour.property_tour_type.present?
-      cancel_funnel_appointment if reschedule && @scheduled_tour.property_tour_type === "scheduled_tour"
-      create_funnel_appointment if @scheduled_tour.property_tour_type === "scheduled_tour"
+    return unless (@scheduled_tour&.property_tour_type === "scheduled_tour" && is_funnel_crm)
+    
+    if reschedule
+      # update_funnel_prospect
+      cancel_funnel_appointment
+    else
+      create_funnel_prospect
     end
+
+    create_funnel_appointment
+  end
+
+  def create_funnel_prospect
+    url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/prospects/"
+    payload = funnel_prospect_payload()
+ 
+    response = HTTParty.post(url,
+      body: payload.to_json,
+      headers: { 
+      'Content-Type' => 'application/json',
+      'Authorization' => "Bearer #{get_api_key}"
+      }
+    )
+    display_logs("Create Prospect", payload, response)
+  end
+
+  def update_funnel_prospect
+    return unless @scheduled_tour&.funnel_prospect_id.present?
+
+    url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/prospects/#{@scheduled_tour.funnel_prospect_id.to_i}"
+    payload = funnel_prospect_payload()
+ 
+    response = HTTParty.put(url,
+      body: payload.to_json,
+      headers: { 
+      'Content-Type' => 'application/json',
+      'Authorization' => "Bearer #{get_api_key}"
+      }
+    )
+
+    display_logs("Update Prospect", payload, response)
   end
 
   def create_funnel_appointment
     url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/appointments/"
     payload = funnel_appointment_payload()
-
     response = HTTParty.post(url,
       body: payload.to_json,
       headers: { 
@@ -163,6 +199,45 @@ class FunnelService < BaseService
         "message": message,
         "tour_type": tour_type
       }
+    }
+  end
+
+  def funnel_prospect_payload
+    {
+      "price_floor": "",
+      "people": [ tour_user_data ],
+      "price_ceiling": "",
+      "agents": [],
+      "parking": "",
+      "doorman": "",
+      "website_app_id": "",
+      "group": "",
+      "elevator": false,
+      "broker_phone": "",
+      "pets": [],
+      "broker_last_name": "",
+      "current_postal_code": "",
+      "broker_first_name": "",
+      "client_referral": "",
+      "medium": "",
+      "laundry": [],
+      "discovery_source": @scheduled_tour.funnel_prospect_discover_source,
+      "marketing_email_opt_in": false,
+      "outdoor_space": [],
+      "source_type": "",
+      "broker_email": "",
+      "device": "",
+      "layout": [],
+      "campaign_id": "",
+      "campaign_info": "",
+      "broker_company": "",
+      "neighborhoods": [],
+      "notes": "",
+      "website_session_id": "",
+      "lead_source": @scheduled_tour.funnel_prospect_discover_source,
+      "website_user_id": "",
+      "move_in_date": move_in_date.to_s,
+      "third_party_vla_handling": false
     }
   end
 
