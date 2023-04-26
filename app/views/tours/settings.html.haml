@@ -514,7 +514,7 @@
                     = submit_tag 'Save', class: "btn btn-success pull-right mr-10", style: "  "              
 
     //////////////////////////////////////////////// Visiting hours ////////////////////////////////////              
-    -unless crm_data_provider_exists(@community)
+    -unless @community.use_crm_credentials?
       - if @tour_setting.allow_self_tour
         .box.box-info.add-plan.mt-20#logo_header
           .box-header
