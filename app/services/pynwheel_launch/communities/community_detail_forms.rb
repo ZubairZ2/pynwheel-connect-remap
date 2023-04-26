@@ -213,6 +213,12 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     ]
   end
 
+  def update_pynwheel_connect_fields params
+    return unless @community.community_tour.present?
+    @community.community_tour.update(max_self_tour_users: params["tour"]["max_tours"].to_i)
+    @community.update(one_hour_email_text: params["tour"]["start_tour"])  
+  end
+
   private
 
   def company_status

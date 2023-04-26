@@ -17,23 +17,30 @@ class Api::V2::PortalToursController < Api::V2::ApiApplicationController
         @status = params["status"]
         tour = params['tour']
         @portal_tour = @community.portal_tour
+        
         if @portal_tour.present?
           @portal_tour.update_attributes(start_tour: tour["start_tour"], max_tour: tour["max_tours"], start_tour_point: tour["start_tour_point"])
           @tour = @portal_tour
         else
           @tour = @community.create_portal_tour(start_tour: tour["start_tour"], max_tour: tour["max_tours"], start_tour_point: tour["start_tour_point"])
         end
+        
         tour_stop = params["tour_stop"]
+
         if tour_stop.present?
           tour_stop.values.each do |stop|
             add_tour_stop(stop)
           end
         end
+
+        PynwheelLaunch::Communities::CommunityDetailForms.new(@community).update_pynwheel_connect_fields(params)
       end
+      
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(TOUR_STOPS)
       @community.set_tour_stops_status(current_pynwheel_user, @status)
       FollowUpMailer.send_email_after_form_submission(@community, TOUR_STOPS, previous_status)
       render json: {success: true, data: @tour.as_json}
+
     rescue => exception
       render json: {success: false, message: exception}
     end
