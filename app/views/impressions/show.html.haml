@@ -1,0 +1,31 @@
+%pre
+    = "Impression Id: "
+    = @impression.id
+
+    %br
+    = "Request Id: "
+    = @impression.request_id
+
+    %br
+    = "In Request:"
+    = JSON.pretty_generate(@impression.in_request) 
+
+    %br
+    = "Out Response:"
+    = JSON.pretty_generate(@impression.out_response) 
+
+    %br
+    = "enabled: "
+    = @impression.enabled    
+    
+    %br
+    = "name_space: "
+    = @impression.name_space
+
+    %br
+    = "created_at:  "
+    = @impression.created_at
+
+    %br
+    = "updated_at: "
+    = @impression.updated_at
