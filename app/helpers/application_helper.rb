@@ -630,4 +630,8 @@ module ApplicationHelper
     }
   end
 
+  def crm_data_provider_exists(community)
+    community&.credential&.use_different_crm_provider && community&.crm_credential&.crm_provider.present?
+  end
+
 end
