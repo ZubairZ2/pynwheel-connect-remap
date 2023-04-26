@@ -514,8 +514,8 @@
                     = submit_tag 'Save', class: "btn btn-success pull-right mr-10", style: "  "              
 
     //////////////////////////////////////////////// Visiting hours ////////////////////////////////////              
-    - if @tour_setting.allow_self_tour
-      -unless @community&.credential&.use_different_crm_provider && @community&.crm_credential&.crm_provider == "salesforce"
+    -unless @community.use_crm_credentials?
+      - if @tour_setting.allow_self_tour
         .box.box-info.add-plan.mt-20#logo_header
           .box-header
             %h3.box-title
@@ -628,119 +628,119 @@
                     .pt-5.btn.btn-success#save-sorted-time{onclick: "ok();", class: "hide-sort-btn", style: "padding-top: 7px; padding-bottom:7px; padding-left:9px; padding-right: 8px;"}
                       Save Time Order
       
-    //////////////////////////------------------------------------ Guided  hours
-    - if !@community.is_salesforce_community? && @tour_setting.allow_guided_tour
-      .box.box-info.add-plan.mt-20#logo_header
-        .box-header
-          %h3.box-title
-            GUIDED TOUR VISITING HOURS
-            %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "9Popover","data-content" => " "}
-              %span#propertyDetailNameText
-                You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.
-            %span
-        %i.fa.fa-v.fa-check-circle#save_hours_guided{ style: "color: green; display: none;"}
-        %i.fa.fa-v.fa-check-circle#save_hours_guided{ style: "color: white"}
-        %h4.error-msg-v#same-days-guided{style: "margin-top: 0px; margin-bottom: 0px;"} same time exists or invalid time
-        .box-body{style: "padding: 0px 20px !important;"}
-          .row
-            .col-lg-12 
-              = form_tag save_guided_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
-                - index = 0
-                - monday_count = 1
-                - days_count = { "Monday" => 1, "Tuesday" => 1, "Wednesday" => 1, "Thursday" => 1, "Friday" => 1, "Saturday" => 1, "Sunday" => 1 }
-                .col-sm-12.list_guided.tour_time_sortable_guided
-                  - @community_guided_opening_hours.each_with_sortable_id do |current_day,sortable_id|
-                    .row.p-8-v{id: sortable_id, class: "#{current_day.day}_" + "#{days_count[current_day.day]}"  }
-                      - days_count[current_day.day] = days_count[current_day.day] +1
-                      %select.day-list-guided.font-17-v.pull-left.mr-20-v{id: "guided_day_#{index+1}",name: "guided_day_#{index+1}", onchange: "myFunctionGuided()"}
+      //////////////////////////------------------------------------ Guided  hours
+      - if !@community.is_salesforce_community? && @tour_setting.allow_guided_tour
+        .box.box-info.add-plan.mt-20#logo_header
+          .box-header
+            %h3.box-title
+              GUIDED TOUR VISITING HOURS
+              %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "9Popover","data-content" => " "}
+                %span#propertyDetailNameText
+                  You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.
+              %span
+          %i.fa.fa-v.fa-check-circle#save_hours_guided{ style: "color: green; display: none;"}
+          %i.fa.fa-v.fa-check-circle#save_hours_guided{ style: "color: white"}
+          %h4.error-msg-v#same-days-guided{style: "margin-top: 0px; margin-bottom: 0px;"} same time exists or invalid time
+          .box-body{style: "padding: 0px 20px !important;"}
+            .row
+              .col-lg-12 
+                = form_tag save_guided_opening_hours_community_tours_path(@community) ,{:class => 'tour-settings-form'} do
+                  - index = 0
+                  - monday_count = 1
+                  - days_count = { "Monday" => 1, "Tuesday" => 1, "Wednesday" => 1, "Thursday" => 1, "Friday" => 1, "Saturday" => 1, "Sunday" => 1 }
+                  .col-sm-12.list_guided.tour_time_sortable_guided
+                    - @community_guided_opening_hours.each_with_sortable_id do |current_day,sortable_id|
+                      .row.p-8-v{id: sortable_id, class: "#{current_day.day}_" + "#{days_count[current_day.day]}"  }
+                        - days_count[current_day.day] = days_count[current_day.day] +1
+                        %select.day-list-guided.font-17-v.pull-left.mr-20-v{id: "guided_day_#{index+1}",name: "guided_day_#{index+1}", onchange: "myFunctionGuided()"}
+                          - if current_day.day == "Monday"
+                            %option{selected: "", value: "Monday", class: "#{current_day.day}" + "_#{days_count["mon"]}"} Monday
+                            -# - days_count["mon"] = days_count["mon"] +1
+                          - else
+                            %option{value: "Monday"} Monday
+                          - if current_day.day == "Tuesday"
+                            %option{selected: "", value: "Tuesday" , class: "#{current_day.day}" + "_#{days_count["tue"]}"} Tuesday
+                            -# - days_count["tue"] = days_count["tue"] + 1
+                          - else
+                            %option{value: "Tuesday"} Tuesday
+                          - if current_day.day == "Wednesday"
+                            %option{selected: "", value: "Wednesday" , class: "#{current_day.day}" + "_#{days_count["wed"]}"} Wednesday
+                            -# - days_count["wed"] = days_count["wed"] + 1
+                          - else
+                            %option{value: "Wednesday"} Wednesday
+                          - if current_day.day == "Thursday"
+                            %option{selected: "", value: "Thursday" , class: "#{current_day.day}" + "_#{days_count["thur"]}"} Thursday
+                            -# - days_count["thur"]= days_count["thur"] +1
+                          - else
+                            %option{value: "Thursday"} Thursday
+                          - if current_day.day == "Friday"
+                            %option{selected: "", value: "Friday" , class: "#{current_day.day}" + "_#{days_count["fri"]}"} Friday
+                            -# -days_count["fri"] = days_count["fri"] +1
+                          - else
+                            %option{value: "Friday"} Friday
+                          - if current_day.day == "Saturday"
+                            %option{selected: "", value: "Saturday", class: "#{current_day.day}" + "_#{days_count["sat"]}"} Saturday
+                            -# - days_count["sat"] = days_count["sat"]
+                          - else
+                            %option{value: "Saturday"} Saturday
+                          - if current_day.day == "Sunday"
+                            %option{selected: "", value: "Sunday", class: "#{current_day.day}" + "_#{days_count["sun"]}"} Sunday
+                            -# - days_count["sun"] = days_count["sun"] +1
+                          - else
+                            %option{value: "Sunday"} Sunday
                         - if current_day.day == "Monday"
-                          %option{selected: "", value: "Monday", class: "#{current_day.day}" + "_#{days_count["mon"]}"} Monday
-                          -# - days_count["mon"] = days_count["mon"] +1
-                        - else
-                          %option{value: "Monday"} Monday
-                        - if current_day.day == "Tuesday"
-                          %option{selected: "", value: "Tuesday" , class: "#{current_day.day}" + "_#{days_count["tue"]}"} Tuesday
-                          -# - days_count["tue"] = days_count["tue"] + 1
-                        - else
+                          .font-17-v.pull-left.mr-20-v
+                            .p-4-v.pull-left.mr-10-v
+                              %label.text-grey-v From
+                            %input.day-list-guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "guided_monday_mor_" + "#{monday_count}",onkeyup: "myFunctionGuided()"}
+                          .font-17-v.pull-left.mr-20-v
+                            .p-4-v.pull-left.mr-10-v
+                              %label.text-grey-v To
+                            %input.day-list-guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "guided_monday_eve_" + "#{monday_count}", onkeyup: "myFunctionGuided()"}
+                          .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
+                        - if current_day.day != "Monday"
+                          .font-17-v.pull-left.mr-20-v
+                            .p-4-v.pull-left.mr-10-v
+                              %label.text-grey-v From
+                            %input.day-list-guided.morning_time_guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", onkeyup: "myFunctionGuided()"}
+                          .font-17-v.pull-left.mr-20-v
+                            .p-4-v.pull-left.mr-10-v
+                              %label.text-grey-v To
+                            %input.day-list-guided.evening_time_guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", onkeyup: "myFunctionGuided()"}
+                          .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
+                          -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
+                        - if current_day.day == "Monday"
+                          .pt-5.btn.btn-primary.apply-monday-btn-guided{:onclick => "apply_time_to_all_guided('#{monday_count}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;", :class => ""}
+                            .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply to All Weekdays
+                          - monday_count +=1
+                        - index +=1
+                    - if @community.guided_opening_hours.blank?
+                      .row.p-8-v
+                        %select.day-list-guided.font-17-v.pull-left.mr-20-v#guided_day_1{name: "guided_day_1", onchange: "myFunctionGuided()"}
+                          %option{selected: "", value: "Monday"} Monday
                           %option{value: "Tuesday"} Tuesday
-                        - if current_day.day == "Wednesday"
-                          %option{selected: "", value: "Wednesday" , class: "#{current_day.day}" + "_#{days_count["wed"]}"} Wednesday
-                          -# - days_count["wed"] = days_count["wed"] + 1
-                        - else
                           %option{value: "Wednesday"} Wednesday
-                        - if current_day.day == "Thursday"
-                          %option{selected: "", value: "Thursday" , class: "#{current_day.day}" + "_#{days_count["thur"]}"} Thursday
-                          -# - days_count["thur"]= days_count["thur"] +1
-                        - else
                           %option{value: "Thursday"} Thursday
-                        - if current_day.day == "Friday"
-                          %option{selected: "", value: "Friday" , class: "#{current_day.day}" + "_#{days_count["fri"]}"} Friday
-                          -# -days_count["fri"] = days_count["fri"] +1
-                        - else
                           %option{value: "Friday"} Friday
-                        - if current_day.day == "Saturday"
-                          %option{selected: "", value: "Saturday", class: "#{current_day.day}" + "_#{days_count["sat"]}"} Saturday
-                          -# - days_count["sat"] = days_count["sat"]
-                        - else
                           %option{value: "Saturday"} Saturday
-                        - if current_day.day == "Sunday"
-                          %option{selected: "", value: "Sunday", class: "#{current_day.day}" + "_#{days_count["sun"]}"} Sunday
-                          -# - days_count["sun"] = days_count["sun"] +1
-                        - else
                           %option{value: "Sunday"} Sunday
-                      - if current_day.day == "Monday"
                         .font-17-v.pull-left.mr-20-v
                           .p-4-v.pull-left.mr-10-v
                             %label.text-grey-v From
-                          %input.day-list-guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "guided_monday_mor_" + "#{monday_count}",onkeyup: "myFunctionGuided()"}
+                          %input.day-list-guided.bg-grey-v-guided{name: "guided_from_1", type: "time", value: "09:00", onchange: "myFunctionGuided()"}
                         .font-17-v.pull-left.mr-20-v
                           .p-4-v.pull-left.mr-10-v
                             %label.text-grey-v To
-                          %input.day-list-guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "guided_monday_eve_" + "#{monday_count}", onkeyup: "myFunctionGuided()"}
-                        .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
-                      - if current_day.day != "Monday"
-                        .font-17-v.pull-left.mr-20-v
-                          .p-4-v.pull-left.mr-10-v
-                            %label.text-grey-v From
-                          %input.day-list-guided.morning_time_guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", onkeyup: "myFunctionGuided()"}
-                        .font-17-v.pull-left.mr-20-v
-                          .p-4-v.pull-left.mr-10-v
-                            %label.text-grey-v To
-                          %input.day-list-guided.evening_time_guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", onkeyup: "myFunctionGuided()"}
-                        .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
-                        -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
-                      - if current_day.day == "Monday"
-                        .pt-5.btn.btn-primary.apply-monday-btn-guided{:onclick => "apply_time_to_all_guided('#{monday_count}','#{raw current_day.closing_time}')", :style => "margin-left: 8px; height: 27px; margin-top: -6px;", :class => ""}
-                          .texttt{style: "text-align: center; top: -3px; position: relative;"} Apply to All Weekdays
-                        - monday_count +=1
-                      - index +=1
-                  - if @community.guided_opening_hours.blank?
-                    .row.p-8-v
-                      %select.day-list-guided.font-17-v.pull-left.mr-20-v#guided_day_1{name: "guided_day_1", onchange: "myFunctionGuided()"}
-                        %option{selected: "", value: "Monday"} Monday
-                        %option{value: "Tuesday"} Tuesday
-                        %option{value: "Wednesday"} Wednesday
-                        %option{value: "Thursday"} Thursday
-                        %option{value: "Friday"} Friday
-                        %option{value: "Saturday"} Saturday
-                        %option{value: "Sunday"} Sunday
-                      .font-17-v.pull-left.mr-20-v
-                        .p-4-v.pull-left.mr-10-v
-                          %label.text-grey-v From
-                        %input.day-list-guided.bg-grey-v-guided{name: "guided_from_1", type: "time", value: "09:00", onchange: "myFunctionGuided()"}
-                      .font-17-v.pull-left.mr-20-v
-                        .p-4-v.pull-left.mr-10-v
-                          %label.text-grey-v To
-                        %input.day-list-guided.bg-grey-v-guided{name: "guided_to_1", type: "time", value: "05:00", onchange: "myFunctionGuided()"}
-                      .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger
-                .asd{style: "padding-bottom: 20px;"}
-                  %button.btn.btn-primary#add-btn-guided{style: "margin-left: 10;"}
-                    %span.fa.fa-v.fa-plus.font-17-v
-                      Add
-                  %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit-guided{type: "submit", value: "Save", class: "hide-save-btn-guided"}
-                  .pt-5.btn.btn-success#save-sorted-time-guided{onclick: "ok();", class: "hide-sort-btn-guided", style: "padding-top: 7px; padding-bottom:7px; padding-left:9px; padding-right: 8px;"}
-                    Save Time Order             
-    
+                          %input.day-list-guided.bg-grey-v-guided{name: "guided_to_1", type: "time", value: "05:00", onchange: "myFunctionGuided()"}
+                        .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger
+                  .asd{style: "padding-bottom: 20px;"}
+                    %button.btn.btn-primary#add-btn-guided{style: "margin-left: 10;"}
+                      %span.fa.fa-v.fa-plus.font-17-v
+                        Add
+                    %input.btn.btn-success.pull-right.mr-10#schedule-btn-submit-guided{type: "submit", value: "Save", class: "hide-save-btn-guided"}
+                    .pt-5.btn.btn-success#save-sorted-time-guided{onclick: "ok();", class: "hide-sort-btn-guided", style: "padding-top: 7px; padding-bottom:7px; padding-left:9px; padding-right: 8px;"}
+                      Save Time Order             
+      
     .box.box-info.add-plan.mt-40#logo_header
       .box-header
         %h3.box-title

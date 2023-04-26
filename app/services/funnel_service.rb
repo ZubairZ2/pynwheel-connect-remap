@@ -25,7 +25,7 @@ class FunnelService < BaseService
   end
 
   def get_available_days
-    url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/appointments/available-days/"
+    url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/appointments/available-days/?tour_type=#{tour_type}"
     
     response = HTTParty.get(url,
       headers: { 
@@ -33,12 +33,11 @@ class FunnelService < BaseService
       'Authorization' => "Bearer #{get_api_key}"
       }
     )
-
     response["available_days"]
   end
 
   def get_available_times day
-    url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/appointments/available-times/?date=#{day}"
+    url = "#{ENV["FUNNEL_BASE_URL"]}/api/partners/v1/community/#{get_community_id}/appointments/available-times/?date=#{day}&tour_type=#{tour_type}"
     
     response = HTTParty.get(url,
       headers: { 
@@ -142,6 +141,10 @@ class FunnelService < BaseService
   end
 
   private
+
+  def tour_type
+    'self-guided'
+  end
 
   def is_appointment_created response
     if ( response && response["prospect"] && response["appointment"] && response["prospect"]["id"] && response["appointment"]["id"] ).present?
