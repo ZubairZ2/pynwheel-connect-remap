@@ -43,11 +43,11 @@ namespace :triggered_email do
 
         email_msg_with_st = "Hi, #{tu.name.titleize}. It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. Please click the link below to reschedule. <br><br><div>#{reschedule_appointment_button}</div><br><br>Thank you!"
         
-        text_msg_with_st = "Hi, #{tu.name.titleize}. It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. Please click the link below to reschedule. 
+        text_msg_with_st = "Hi, #{tu.name.titleize}. It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. #{"\n"}#{"\n"}Please click the link below to reschedule:#{"\n"} 
 
       #{scheduler_link}
 
-      Thank you!"
+      #{"\n"}#{"\n"}Thank you!"
         
         email_msg_no_st_tour_user = "Hi, #{tu.name.titleize}. It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. Please contact us to reschedule: 
         <br><a href='mailto:#{community.email.present? ? community.email : ""}'>#{community.email.present? ? community.email : ""}</a>
