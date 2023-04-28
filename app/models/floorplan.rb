@@ -17,6 +17,8 @@ class Floorplan < ApplicationRecord
   after_update :crop_image
   after_update :crop_secondary_image
 
+  after_update :update_floorplan_units_description, if: :description_changed?
+
   def as_json options = {}
     super(
       :only => [:id, :name, :virtual_tour_url, :description, :image, :file],
@@ -27,6 +29,10 @@ class Floorplan < ApplicationRecord
       }, 
       :methods => [:description_text_limit]
     )
+  end
+
+  def update_floorplan_units_description
+    FloorPlans::UnitsService.new(self&.id).update_floorplan_units_description()
   end
 
   def description_text_limit
