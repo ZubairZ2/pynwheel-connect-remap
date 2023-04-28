@@ -6539,7 +6539,7 @@ ul.add-fav-options {
         width: 65%;
      }
      .c-connect-map-wrapper .c-modal-sidebar {
-         width: 35%;
+         width: 100%;
     }
 }
 .disable_btn{
