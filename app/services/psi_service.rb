@@ -157,7 +157,6 @@ class PsiService < BaseService
       units.each do |u|
         vacateDate = ""
         unit = get_psi_matched_unit(u)
-
         if unit.present?
           puts "----------------------------- #{unit.marketing_name} ------------------------\n"
           unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
@@ -410,7 +409,6 @@ class PsiService < BaseService
   def fill_psi_pricing_details()
     return unless @all_units_hash.present?
 
-    import_units = []
     floorplanHash = Hash.new
     property_ids = @credentials.property_id.split(',') rescue []
     
@@ -420,96 +418,115 @@ class PsiService < BaseService
 
       move_in_dates.compact.uniq.each do |move_in_date|
         response = get_units_pricing(property_id, move_in_date)
-        if response["response"]["code"] == 200
-          if (response["response"] && response["response"]["result"] && response["response"]["result"]["PropertyUnits"] && response["response"]["result"]["PropertyUnits"]["PropertyUnit"]).present?
-            psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
+        is_unit_space_enabled ? unit_space_enabled_pricing_update(response) : unit_space_disabled_pricing_update(response)
+      end
+    end
 
-            psi_units.each do |u|
-              u['UnitSpace'].each do |us|
-                begin
-                  
-                  unit = get_psi_space_matched_unit(u, us)
+  end
 
-                  if unit.present?
-                    puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
+  def unit_space_enabled_pricing_update response
+    import_units = []
 
-                    unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
-                      if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
-                        unit.availability = 'Unoccupied' if !unit.sold
-                        unit.available = true if !unit.sold
-                      else
-                        unit.availability = 'Occupied'
-                        unit.available = false
-                      end
-                    end
+    if response.dig("response", "code") == 200
+      psi_units = response.dig("response", "result", "PropertyUnits", "PropertyUnit")
 
-                    if us[1]["@attributes"]["AvailableOn"].present?
-                      date = us[1]["@attributes"]["AvailableOn"]
-                      dateSplit = date.split('/')
-                      day = dateSplit[0]
-                      month = dateSplit[1]
-                      year = dateSplit[2]
-                      unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
-                        unit.available_date = Date.parse("#{month}-#{day}-#{year}")
-                      end
-                    end
+      if psi_units.present?
+        psi_units.each do |u|
+          u['UnitSpace'].each do |us|
+            unit = get_psi_space_matched_unit(u, us)
 
-                    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
-                      if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                        unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
-                        unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
-                      else
-                        unit.min_effective_rent = 0
-                      end
-
-                      if (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                        unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
-                      else
-                        unit.max_effective_rent = 0 
-                      end
-                    end
-
-                    rentStr = ""
-                    begin
-
-                      if us[1]["Rent"]["TermRent"].count > 1
-                        us[1]["Rent"]["TermRent"].each do |tr|
-                          rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::\;"
-                        end
-                      end
-
-                    rescue => rt_ex
-                      raise rt_ex
-                    end
-
-                    unit.lease_pricing = rentStr
-                    import_units << unit
-                  end
-
-                rescue => ex
-                  begin
-                    com = Community.find @credentials.community_id
-                    unless com.entrata_exception_logs.present?
-                      com.entrata_exception_logs = ""
-                    end
-                    com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ ex.message
-                    PaperTrail.enabled = false
-                    com.save
-                    PaperTrail.enabled = true
-                  rescue => r
-                    raise r
-                  end
-                end
-
-              end
+            if unit.present?
+              puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
+              import_units << update_unit_pricing_and_availability(us, unit)
             end
           end
+        end
+      end
 
-        end        
+    end
+
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+  end
+
+  def unit_space_disabled_pricing_update response
+    import_units = []
+
+    if response.dig("response", "code") == 200
+      psi_units = response.dig("response", "result", "ILS_Units", "Unit")
+
+      if psi_units.present?
+        psi_units.each do |u|
+          unit = get_psi_space_matched_unit(u[1], nil)
+
+          if unit.present?
+            puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
+            import_units << update_unit_pricing_and_availability(u, unit)
+          end
+        end
       end
     end
 
     ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+  end
+
+  def update_unit_pricing_and_availability us, unit
+
+    unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+      if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
+        unit.availability = 'Unoccupied' if !unit.sold
+        unit.available = true if !unit.sold
+      else
+        unit.availability = 'Occupied'
+        unit.available = false
+      end
+    end
+
+    if us[1]["@attributes"]["AvailableOn"].present?
+      date = us[1]["@attributes"]["AvailableOn"]
+      dateSplit = date.split('/')
+      day = dateSplit[0]
+      month = dateSplit[1]
+      year = dateSplit[2]
+      unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+        unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+      end
+    end
+
+    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+      if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+        unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
+        unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+      else
+        unit.min_effective_rent = 0
+      end
+
+      if (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).to_i > 0
+        unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
+      else
+        unit.max_effective_rent = 0 
+      end
+    end
+
+    rentStr = ""
+    begin
+
+      if us[1]["Rent"]["TermRent"].count > 1
+        us[1]["Rent"]["TermRent"].each do |tr|
+          rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::\;"
+        end
+      end
+
+    rescue => rt_ex
+      raise rt_ex
+    end
+
+    unit.lease_pricing = rentStr
+
+    unit
+  end
+
+  def is_unit_space_enabled
+    ActiveRecord::Type::Boolean.new.cast(@credentials&.entrata_show_unit_spaces)
   end
 
   def getMoveInDate(property_id)
@@ -532,21 +549,29 @@ class PsiService < BaseService
   end
 
   def get_psi_matched_unit u
-    unit = @all_units_hash[(u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])]
-    unit = @all_units_hash[u["Units"]["Unit"]["Identification"]["IDValue"].to_s] unless unit.present?
-    unit = @all_units_hash[(u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)] unless unit.present?
+    unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s
+    space_id = u["Identification"]["IDValue"].to_s
+    marketing_name = u["Units"]["Unit"]["MarketingName"]
 
+    unit = @all_units_hash["#{unit_id}-#{marketing_name}"]
+    unit = @all_units_hash["#{unit_id}"] unless unit.present?
+    unit = @all_units_hash["#{unit_id}-#{space_id}"] unless unit.present?
+    unit= @all_units_hash["#{unit_id}-#{unit_id}"] unless unit.present?
+    unit = @all_units_hash.select { |key, value| key.to_s.include?(unit_id) }&.values[0] unless unit.present?
     unit
   end
 
   def get_psi_space_matched_unit u, us
-    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s)]
-    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)])] unless unit.present?
-    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
-    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
-    unit = @all_units_hash[(u["@attributes"]["Id"].to_s)] unless unit.present?
-    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] unless unit.present?
-    unit = @all_units_hash[(u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s))] unless unit.present?
+    unit_id = us.present? ? u["@attributes"]["Id"].to_s : u["@attributes"]["PropertyUnitId"].to_s
+    unit = @all_units_hash[(unit_id+"-"+u["@attributes"]["UnitNumber"].to_s)]
+    unit = @all_units_hash[(unit_id+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)])] unless unit.present?
+    unit = @all_units_hash[(unit_id+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] if !unit.present? && us.present?
+    unit = @all_units_hash[(unit_id+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] if !unit.present? && us.present?
+    unit = @all_units_hash[(unit_id)] unless unit.present?
+    unit = @all_units_hash[(unit_id+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] if !unit.present? && us.present?
+    unit = @all_units_hash[(unit_id+"-"+(us[1]["@attributes"]["Id"].to_s))] if !unit.present? && us.present?
+    unit = @all_units_hash[(unit_id+"-"+unit_id)] unless unit.present?
+    unit = @all_units_hash.select { |key, value| key.to_s.include?(unit_id) }&.values[0] unless unit.present?
     unit 
   end
 
