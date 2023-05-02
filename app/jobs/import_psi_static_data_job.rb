@@ -4,7 +4,7 @@ class ImportPsiStaticDataJob < ApplicationJob
 
   def perform(credentials)
 
-    psi_static_service = PsiStaticService.new(JSON.parse(credentials))
+    psi_static_service = PsiStaticService.new(credentials)
     psi_static_service.perform
 
     # psi_service = PsiService.new(JSON.parse(credentials))

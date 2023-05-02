@@ -933,7 +933,7 @@ class Community < ApplicationRecord
   end
 
   def import_psi_data
-    ImportPsiStaticDataJob.perform_async credential.attributes.to_json
+    ImportPsiStaticDataJob.perform_async credential
   end
 
   def clean_data_psi
@@ -949,7 +949,7 @@ class Community < ApplicationRecord
 s  end
 
   def swap_psi_data
-    ImportPsiSwapDataJob.perform_async credential.attributes.to_json
+    ImportPsiSwapDataJob.perform_async credential
   end
   def swap_resman_data
     ((credential.resman_api_version === "GetMarketing4_0") ? swap_resman4_data : swap_resman2_data)
