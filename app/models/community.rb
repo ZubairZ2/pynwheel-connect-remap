@@ -1251,10 +1251,10 @@ s  end
     end
   end
   def neighbourhood_counter_mail_200
-    NeighbourhoodMailer.email_counter_200("salahudin@pynwheel.com","salahudinali78@gmail.com","",self).deliver
+    NeighbourhoodMailer.email_counter_200(ENV["PYNWHEEL_DEV_EMAIL"],ENV["PYNWHEEL_DEV_EMAIL"],"",self).deliver
   end
   def neighbourhood_counter_mail_400
-    NeighbourhoodMailer.email_counter_400("salahudin@pynwheel.com","salahudinali78@gmail.com","",self).deliver
+    NeighbourhoodMailer.email_counter_400(ENV["PYNWHEEL_DEV_EMAIL"],ENV["PYNWHEEL_DEV_EMAIL"],"",self).deliver
   end
 
   def image_src

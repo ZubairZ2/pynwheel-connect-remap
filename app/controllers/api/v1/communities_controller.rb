@@ -765,13 +765,13 @@ module Api
                 com = Community.find params[:id]
                 com.neighbourhood_counter_mail_200
                 @community.limit_200_hit = true
-                NeighbourhoodMailer.email_counter_200("salahudin@pynwheel.com","salahudin@intagleo.com","","Testing api calls 200").deliver
+                NeighbourhoodMailer.email_counter_200(ENV["PYNWHEEL_DEV_EMAIL"],ENV["PYNWHEEL_DEV_EMAIL"],"","Testing api calls 200").deliver
               end
               if @community.neighborhood_request_counter > 39 && @community.neighborhood_request_counter < 41 && !@community.limit_400_hit
                 com = Community.find params[:id]
                 com.neighbourhood_counter_mail_400
                 @community.limit_400_hit = true
-                NeighbourhoodMailer.email_counter_400("salahudin@pynwheel.com","salahudin@intagleo.com","","Testing api calls 400").deliver
+                NeighbourhoodMailer.email_counter_400(ENV["PYNWHEEL_DEV_EMAIL"],ENV["PYNWHEEL_DEV_EMAIL"],"","Testing api calls 400").deliver
               end
             rescue => ex
     

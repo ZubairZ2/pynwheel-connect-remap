@@ -243,7 +243,7 @@
           %a{:href => "#{community_logs_path(current_community)}"}
             %i.fa.fa-history
             %span CMS Logs
-      -if (current_user.email == "development@intagleo.com")
+      -if (current_user.email == ENV["PYNWHEEL_DEV_EMAIL"])
         %li.loader_class{:class=>"#{controller_name =='impressions' ? 'active' : ''}"}
           %a{:href => "#{community_impressions_path(current_community)}"}
             %i.fa.fa-history
