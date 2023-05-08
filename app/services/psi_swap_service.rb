@@ -1,19 +1,28 @@
 class PsiSwapService < BaseService
   @@floorplanHash = Hash.new
+  attr_reader :credentials
+
+  def initialize(credentials)
+    @credentials = credentials
+    @unit_record = []
+    @all_units_hash = []
+    @all_floorplans_hash = []
+  end
+
   def perform
-    com_test = Community.find credentials.community_id
-    property_ids = credentials.property_id.split(',') rescue []
+    com_test = Community.find @credentials.community_id
+    property_ids = @credentials.property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
         @@floorplanHash = {}
-        if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
-          url = credentials.entrata_url
+        if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
+          url = @credentials.entrata_url
         else
-          url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
+          url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
         end
-        password = credentials.password
-        username = credentials.username
-        #property_id = credentials.property_id
+        password = @credentials.password
+        username = @credentials.username
+        #property_id = @credentials.property_id
         #######
         response = HTTParty.post(url,
                                  :body => {
@@ -36,8 +45,6 @@ class PsiSwapService < BaseService
         if response["response"]["code"] == 200
           units = []
           floorplans = []
-          # Unit.where(community_id: credentials.community_id, provider: "psi_new").destroy_all
-          # Floorplan.where(community_id: credentials.community_id, provider: "psi_new").delete_all
           response['response']['result']["PhysicalProperty"]["Property"].each do |pro|
             pro["ILS_Unit"].each do |ils|
               units << ils
@@ -50,10 +57,8 @@ class PsiSwapService < BaseService
           save_psi_floorplans(floorplans,property_id)
           save_psi_units(units,property_id)
 
-          # save_website_column_of_community(response)
           end
       rescue => e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
     fill_psi_pricing_details
@@ -65,27 +70,15 @@ class PsiSwapService < BaseService
 
       vacateDate = ""
 
-      # unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"])
-      # if unit.count > 1
-      #   unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],floorplan_id: Floorplan.find_by(name: u["Units"]["Unit"]["UnitType"], community_id: credentials.community_id).provider_floorplan_id)
-      # end
-      # if unit.count > 1
-      #   unit = Unit.where(community_id: credentials.community_id,marketing_name: u["Units"]["Unit"]["MarketingName"],building: u["Units"]["Unit"]["BuildingName"].present? ? u["Units"]["Unit"]["BuildingName"].gsub("Building ", "") : "")
-      # end
-
-      unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
+      unit = Unit.find_by(community_id: @credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
       
       unless unit.present?
-        unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)#.first_or_initialize
+        unit = Unit.find_by(community_id: @credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)#.first_or_initialize
       end
 
       unless unit.present?
-        unit = Unit.find_by(community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
-      end
-      
-      puts "******************psi swap*******************"*20
-      puts unit.inspect
-      puts "*************************************"*20
+        unit = Unit.find_by(community_id: @credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
+      end-
 
       if unit.present?
         # unit = unit.first
@@ -148,23 +141,8 @@ class PsiSwapService < BaseService
         unit.building = building.present? ? building.gsub("Building ", "") : ""
         unit.save(validate: false)
       else
-        # dup = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Units"]["Unit"]["MarketingName"])#.first_or_initialize
-      
-        # unless dup.present?
-        #   dup = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s)#.first_or_initialize
-        # end
-  
-        # unless dup.present?
-        #   dup = Unit.find_by(provider: "psi",community_id: credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
-        # end     
-
-        # if dup.present?
-        #   dup.destroy
-        # end
-        
-        # unit = Unit.where(community_id: credentials.community_id).first
         unit = Unit.new
-        unit.community_id = credentials.community_id
+        unit.community_id = @credentials.community_id
         unit.provider = "psi_new"
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
@@ -172,7 +150,6 @@ class PsiSwapService < BaseService
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
 
-        # unit.effective_rent = 1.0 #Setting rent to avoid validation issues
         if u["EffectiveRent"].present?
           unit.market_rent = u["EffectiveRent"]
           unit.effective_rent = u["EffectiveRent"]
@@ -226,21 +203,15 @@ class PsiSwapService < BaseService
 
       end
     end
-    # Unit.where(community_id: credentials.community_id, provider: "psi_new").destroy_all
-    # unit.each do |d|
-    #   unless d.provider == "psi_new" || d.provider == "manually"
-    #     d.destroy
-    #   end
-    # end
 
   end
 
   def save_psi_floorplans(floorplans,property_id)
     floorplans.each do |f|
 
-      floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"])
+      floorplan = Floorplan.where(community_id: @credentials.community_id,name: f["Name"])
       if floorplan.count > 1
-        floorplan = Floorplan.where(community_id: credentials.community_id,name: f["Name"],square_feet: f["SquareFeet"]["@attributes"]["Min"],bedrooms: f["Room"][0]["Count"],bathrooms: f["Room"][1]["Count"])
+        floorplan = Floorplan.where(community_id: @credentials.community_id,name: f["Name"],square_feet: f["SquareFeet"]["@attributes"]["Min"],bedrooms: f["Room"][0]["Count"],bathrooms: f["Room"][1]["Count"])
       end
       if floorplan.present?
         floorplan = floorplan.first
@@ -284,14 +255,8 @@ class PsiSwapService < BaseService
         end
         floorplan.save
       else
-        # dup = Floorplan.find_by(community_id: credentials.community_id,provider_floorplan_id: f["Identification"]["IDValue"])
-        # if dup.present?
-        #   dup.destroy
-        # end
-        # floorplan = Floorplan.where(community_id: credentials.community_id).first
-        # c = Community.find(credentials.community_id)
         floorplan = Floorplan.new
-        floorplan.community_id = credentials.community_id
+        floorplan.community_id = @credentials.community_id
         floorplan.provider_floorplan_id = f["Identification"]["IDValue"]
         floorplan.provider = "psi_new"
         floorplan.property_id = property_id
@@ -335,398 +300,260 @@ class PsiSwapService < BaseService
 
   end
 
-  def fill_psi_pricing_details
+  def fill_psi_pricing_details()
     floorplanHash = Hash.new
-    property_ids = credentials.property_id.split(',') rescue []
+    property_ids = @credentials.property_id.split(',') rescue []
+    set_units_hash()
+    set_floorplans_hash()
     property_ids.each do |property_id|
       move_in_dates = getMoveInDate(property_id)
-      unless move_in_dates.present?
-        move_in_dates = []
-        move_in_dates << "0"
+      move_in_dates << "0" unless move_in_dates.present?
+
+      move_in_dates.compact.uniq.each do |move_in_date|
+        response = get_units_pricing(property_id, move_in_date)
+        is_unit_space_enabled ? unit_space_enabled_pricing_update(response) : unit_space_disabled_pricing_update(response)
       end
-      ########################################## Space configuration
-      move_in_dates.each do |move_in_date|
-        begin
-          if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
-            url = credentials.entrata_url
-          else
-            url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
-          end
-          password = credentials.password
-          username = credentials.username
-          #property_id = credentials.property_id
-          if move_in_date == "0"
-            response = HTTParty.post(url,
-                                     :body => {
-                                         "auth": {
-                                             "type": "basic",
-                                             "password": password,
-                                             "username": username
-                                         },
-                                         "method": {
-                                             "name": "getUnitsAvailabilityAndPricing",
-                                             "params": {
-                                                 "propertyId": property_id,
-                                                 "availableUnitsOnly": credentials&.entrata_available_units_only,
-                                                 "showUnitSpaces": credentials&.entrata_show_unit_spaces,
-                                                 "useSpaceConfiguration": credentials&.entrata_use_space_configuration
-                                             }
-                                         }
-                                     }.to_json,
-                                     :headers => { 'Content-Type' => 'application/json' } )
-            response =  JSON.parse(response.body)
-          else
-            response = HTTParty.post(url,
-                                     :body => {
-                                         "auth": {
-                                             "type": "basic",
-                                             "password": password,
-                                             "username": username
-                                         },
-                                         "method": {
-                                             "name": "getUnitsAvailabilityAndPricing",
-                                             "params": {
-                                                 "propertyId": property_id,
-                                                 "availableUnitsOnly": credentials&.entrata_available_units_only,
-                                                 "showUnitSpaces": credentials&.entrata_show_unit_spaces,
-                                                 "useSpaceConfiguration": credentials&.entrata_use_space_configuration,
-                                                 "moveInStartDate": move_in_date
-                                             }
-                                         }
-                                     }.to_json,
-                                     :headers => { 'Content-Type' => 'application/json' } )
-            response =  JSON.parse(response.body)
-          end
-          sleep 5
-
-          if response["response"]["code"] == 200
-            unless response["response"]["result"].include?('No records found')
-              psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
-              psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
-
-              # psi_floorplan.each_with_index do |f,index|
-              #   floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
-              # end
-              
-              psi_units.each do |u|
-                u['UnitSpace'].each do |us|
-
-                  begin
-                    if u['UnitSpace'].count == 1
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                      unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                        unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)],community_id: credentials.community_id)
-                      end
-                    else
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                      unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                        unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                      end
-                    end
-                    unless unit.present?
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"],community_id: credentials.community_id)
-                    end
-                    unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                    end
-
-                    unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                    end
-
-                    unless unit.present? # filter by unitId + unitSpaceId
-                      unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
-                    end
-                    
-                    puts "**************"*20
-                    puts "psi swap UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
-                    puts "**************"*20
-
-                    if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
-                      unit.availability = 'Unoccupied'
-                      unit.available = true
-                    else
-                      unit.availability = 'Occupied'
-                      unit.available = false
-                    end
-
-                    if us[1]["@attributes"]["AvailableOn"].present?
-                      date = us[1]["@attributes"]["AvailableOn"]
-                      dateSplit = date.split('/')
-                      day = dateSplit[0]
-                      month = dateSplit[1]
-                      year = dateSplit[2]
-                      unit.available_date = Date.parse("#{month}-#{day}-#{year}")
-                    end
-
-                    if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                      unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
-                      unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
-                    else
-                      unit.min_effective_rent = 0
-                    end
-
-                    if (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                      unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
-                    else
-                      unit.max_effective_rent = 0 
-                    end
-
-                    rentStr = ""
-                    
-                    begin
-                      if us[1]["Rent"]["TermRent"].count > 1# && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
-                        us[1]["Rent"]["TermRent"].each do |tr|
-                          spaceOption = tr["@attributes"]["SpaceOption"].present? ? tr["@attributes"]["SpaceOption"] : "" rescue ""
-                          startDate = tr["@attributes"]["StartDate"].present? ? tr["@attributes"]["StartDate"] : "" rescue ""
-                          endDate = tr["@attributes"]["EndDate"].present? ? tr["@attributes"]["EndDate"] : "" rescue ""
-                          rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +":"+spaceOption+":"+startDate+":"+endDate+"\;"
-                        end
-                      end
-                    rescue => rt_ex
-
-                    end
-
-                    unit.lease_pricing = rentStr
-                    unit.save(validate: false)
-                  rescue => ex
-                  end
-                end
-              end
-              #else
-              #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
-            else
-              #################################### with unit space pricing
-              begin
-                if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
-                  url = credentials.entrata_url
-                else
-                  url = "https://"+credentials.entrata_url+".entrata.com/api/v1/propertyunits"
-                end
-                password = credentials.password
-                username = credentials.username
-                #property_id = credentials.property_id
-                response = HTTParty.post(url,
-                                         :body => {
-                                             "auth": {
-                                                 "type": "basic",
-                                                 "password": password,
-                                                 "username": username
-                                             },
-                                             "method": {
-                                                 "name": "getUnitsAvailabilityAndPricing",
-                                                 "params": {
-                                                     "propertyId": property_id,
-                                                     "availableUnitsOnly": credentials&.entrata_available_units_only,
-                                                     "showUnitSpaces": credentials&.entrata_show_unit_spaces
-                                                 }
-                                             }
-                                         }.to_json,
-                                         :headers => { 'Content-Type' => 'application/json' } )
-                response =  JSON.parse(response.body)
-                sleep 5
-                if response["response"]["code"] == 200
-                  psi_units = response["response"]["result"]["PropertyUnits"]["PropertyUnit"]
-                  psi_floorplan = response["response"]["result"]["Properties"]["Property"][0]["Floorplans"]["Floorplan"]
-                  
-                  # psi_floorplan.each_with_index do |f,index|
-                  #   floorplanHash[psi_floorplan[index]["Name"]] = (psi_floorplan[index]["MarketRent"]["@attributes"]["Min"].to_s.gsub(/[\s,]/ ,"")).to_f
-                  # end
-
-                  psi_units.each do |u|
-                    u['UnitSpace'].each do |us|
-                      begin
-                        if u['UnitSpace'].count == 1
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                          unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                            unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)],community_id: credentials.community_id)
-                          end
-                        else
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                          unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                            unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                          end
-                        end
-                        unless unit.present?
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"],community_id: credentials.community_id)
-                        end
-                        unless unit.present? # for unit with have extra 'A' in unit number getavailabilityandpricing
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                        end
-
-                        unless unit.present? # for unit with have extra 'A' in unit number in getavailabilityandpricing
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s,community_id: credentials.community_id)
-                        end
-
-                        unless unit.present? # filter by unitId + unitSpaceId
-                          unit = Unit.find_by(provider_unit_id: u["@attributes"]["Id"].to_s+"-"+(us[1]["@attributes"]["Id"].to_s),community_id: credentials.community_id)
-                        end
-                        
-                        puts "**************"*20
-                        puts "psi swap UnitsAvailabilityAndPricing of the Unit of ID #{unit.provider_unit_id}" 
-                        puts "**************"*20
-
-                        if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
-                          unit.availability = 'Unoccupied'
-                          unit.available = true
-                        else
-                          unit.availability = 'Occupied'
-                          unit.available = false
-                        end
-
-                        if us[1]["@attributes"]["AvailableOn"].present?
-                          date = us[1]["@attributes"]["AvailableOn"]
-                          dateSplit = date.split('/')
-                          day = dateSplit[0]
-                          month = dateSplit[1]
-                          year = dateSplit[2]
-                          unit.available_date = Date.parse("#{month}-#{day}-#{year}")
-                        end
-                        
-                        if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                          unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
-                          unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
-                        else
-                          unit.min_effective_rent = 0
-                        end
-  
-                        if (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).to_i > 0
-                          unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
-                        else
-                          unit.max_effective_rent = 0 
-                        end
-
-                        rentStr = ""
-                        begin
-                          if us[1]["Rent"]["TermRent"].count > 1 #0 && us[1]["Rent"]["TermRent"][0]["@attributes"]["LeaseTerm"].present?
-                            us[1]["Rent"]["TermRent"].each do |tr|
-                              rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::\;"
-                            end
-                          end
-                        rescue => rt_ex
-
-                        end
-
-                        unit.lease_pricing = rentStr
-                        unit.save(validate: false)
-                      rescue => ex
-                      end
-                    end
-                  end
-                  #else
-                  #ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
-                end
-              rescue => e
-                begin
-                  com = Community.find credentials.community_id
-                  unless com.entrata_exception_logs.present?
-                    com.entrata_exception_logs = ""
-                  end
-                  com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ e.message
-                  com.save
-                rescue => r
-                end
-                #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
-              end
-
-              ####################################
-            end
-
-          end
-        rescue => e
-          begin
-            com = Community.find credentials.community_id
-            unless com.entrata_exception_logs.present?
-              com.entrata_exception_logs = ""
-            end
-            com.entrata_exception_logs = Time.now.to_s + com.entrata_exception_logs + "|||||||Pricing|||||||| " + com.id.to_s + "--- "+ e.message
-            com.save
-          rescue => r
-          end
-          #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
-        end
-      end
-
-      ##########################################
-
-
     end
+
   end
+
   def getMoveInDate(property_id)
-    url = get_move_in_dates_endpoint()
-    password = credentials.password
-    username = credentials.username
-    #property_id = credentials.property_id
-    begin
-      response = HTTParty.post(url,
-                               :body => {
-                                   "auth": {
-                                       "type": "basic",
-                                       "password": password,
-                                       "username": username
-                                   },
-                                   "requestId": 15,
-                                   "method": {
-                                       "name": "getPropertyPickLists",
-                                       "version":"r1",
-                                       "params": {
-                                           "propertyIds": property_id
-                                       }
-                                   }
-                               }.to_json,
-                               :headers => { 'Content-Type' => 'application/json' } )
-      response =  JSON.parse(response.body)
-      moveIn_dates = []
+    response = get_move_in_dates(property_id)
+    moveIn_dates = []
+    if (response.present? && response["response"].present? && (response["response"]["code"] == 200) )
       response['response']['result']['Property'][0]['leasePeriods']['leasePeriod'].each do |dates|
         if dates['leaseStartDate'].present?
-          moveIn_dates << dates['leaseStartDate']
+          ss = dates['leaseStartDate'].split('/')
+          date1 = ss[2] + "-" +ss[0] + "-" + ss[1]
+          date1 = (date1.to_date + 31).to_s
+          ss = date1.split('-')
+          added_date = ss[1] + "/" + ss[2] + "/" + ss[0]
+          moveIn_dates << added_date
         end
       end
-    rescue
     end
+
     moveIn_dates
   end
 
-  def save_website_column_of_community(response)
-    community = Community.find credentials.community_id
-    community.update_attribute(:website,response['response']['result']["PhysicalProperty"]["Property"][0]["PropertyID"]["WebSite"])
-  end
-  def rename_provider
-    Floorplan.where(community_id: credentials.community_id, provider: "psi").delete_all
-    Floorplan.where(community_id: credentials.community_id, provider: "psi_new").update_all(provider: "psi")
-    # fp = Floorplan.where(community_id: credentials.community_id)
-    # fp.each do |d|
-    #   unless d.provider == "psi_new"
-    #     d.destroy
-    #   end
-    # end
-    Unit.where(community_id: credentials.community_id, provider: "psi").delete_all
-    Unit.where(community_id: credentials.community_id, provider: "psi_new").update_all(provider: "psi")
-    # unit = Unit.where(community_id: credentials.community_id)
-    # unit.each do |d|
-    #   if d.provider == "psi_new"
-    #     d.provider = "psi"
-    #     d.save
-    #   end
-    # end
-
-    # fp = Floorplan.where(community_id: credentials.community_id)
-    # fp.each do |d|
-    #   if d.provider == "psi_new"
-    #     d.provider = "psi"
-    #     d.save
-    #   end
-    # end
+  def get_move_in_dates property_id
+    response = HTTParty.post(get_move_in_dates_endpoint(),
+      :body => {
+        "auth": {
+          "type": "basic",
+          "password": @credentials.password,
+          "username": @credentials.username
+        },
+        "requestId": 15,
+        "method": {
+          "name": "getPropertyPickLists",
+          "version":"r1",
+          "params": {
+            "propertyIds": property_id
+          }
+        }
+      }.to_json,
+      :headers => { 'Content-Type' => 'application/json' } )
+    
+    JSON.parse(response.body)
   end
 
-  def get_move_in_dates_endpoint
-    if credentials.entrata_url.include?('https://') || credentials.entrata_url.include?('http://')
-      url = credentials.entrata_url
+  def unit_space_enabled_pricing_update response
+    import_units = []
+
+    if response.dig("response", "code") == 200
+      psi_units = response.dig("response", "result", "PropertyUnits", "PropertyUnit")
+
+      if psi_units.present?
+        psi_units.each do |u|
+          u['UnitSpace'].each do |us|
+            unit = get_psi_space_matched_unit(u, us)
+
+            if unit.present?
+              puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
+              import_units << update_unit_pricing_and_availability(us, unit)
+            end
+          end
+        end
+      end
+
+    end
+
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+  end
+
+  def unit_space_disabled_pricing_update response
+    import_units = []
+
+    if response.dig("response", "code") == 200
+      psi_units = response.dig("response", "result", "ILS_Units", "Unit")
+
+      if psi_units.present?
+        psi_units.each do |u|
+          unit = get_psi_space_matched_unit(u[1], nil)
+
+          if unit.present?
+            puts "----------------------------- Updating pricing for: #{unit.marketing_name} ------------------------\n"
+            import_units << update_unit_pricing_and_availability(u, unit)
+          end
+        end
+      end
+    end
+
+    ProvidersDataUpdationService.new().update_or_create_units_records(import_units)
+  end
+
+  def update_unit_pricing_and_availability us, unit
+
+    unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
+      if us[1]["@attributes"]["Availability"].present? && us[1]["@attributes"]["Availability"] == "Available"
+        unit.availability = 'Unoccupied' if !unit.sold
+        unit.available = true if !unit.sold
+      else
+        unit.availability = 'Occupied'
+        unit.available = false
+      end
+    end
+
+    if us[1]["@attributes"]["AvailableOn"].present?
+      date = us[1]["@attributes"]["AvailableOn"]
+      dateSplit = date.split('/')
+      day = dateSplit[0]
+      month = dateSplit[1]
+      year = dateSplit[2]
+      unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
+        unit.available_date = Date.parse("#{month}-#{day}-#{year}")
+      end
+    end
+
+    unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
+      if (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_i > 0
+        unit.min_effective_rent = (us[1]["Rent"]["@attributes"]['MinRent'].gsub(/[\s,]/ ,"")).to_f
+        unit.effective_rent = (us[1]["Rent"]["@attributes"]["MinRent"].gsub(/[\s,]/ ,"")).to_f
+      else
+        unit.min_effective_rent = 0
+      end
+
+      if (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).present? && (us[1]["Rent"]["@attributes"]["MaxRent"].gsub(/[\s,]/ ,"")).to_i > 0
+        unit.max_effective_rent = (us[1]["Rent"]["@attributes"]['MaxRent'].gsub(/[\s,]/ ,"")).to_f
+      else
+        unit.max_effective_rent = 0 
+      end
+    end
+
+    rentStr = ""
+    begin
+
+      if us[1]["Rent"]["TermRent"].count > 1
+        us[1]["Rent"]["TermRent"].each do |tr|
+          rentStr = rentStr + tr["@attributes"]["LeaseTerm"].split(" ")[0] +":"+ tr["@attributes"]["Rent"].gsub(/[\s,]/ ,"") +"::\;"
+        end
+      end
+
+    rescue => rt_ex
+      raise rt_ex
+    end
+
+    unit.lease_pricing = rentStr
+
+    unit
+  end
+
+  def get_psi_matched_unit u
+    unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s
+    space_id = u["Identification"]["IDValue"].to_s
+    marketing_name = u["Units"]["Unit"]["MarketingName"]
+
+    unit = @all_units_hash["#{unit_id}-#{marketing_name}"]
+    unit = @all_units_hash["#{unit_id}"] unless unit.present?
+    unit = @all_units_hash["#{unit_id}-#{space_id}"] unless unit.present?
+    unit= @all_units_hash["#{unit_id}-#{unit_id}"] unless unit.present?
+    unit = @all_units_hash.select { |key, value| key.to_s.include?(unit_id) }&.values[0] unless unit.present?
+    unit
+  end
+
+  def get_psi_space_matched_unit u, us
+    unit_id = us.present? ? u["@attributes"]["Id"].to_s : u["@attributes"]["PropertyUnitId"].to_s
+    unit = @all_units_hash[(unit_id+"-"+u["@attributes"]["UnitNumber"].to_s)]
+    unit = @all_units_hash[(unit_id+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)])] unless unit.present?
+    unit = @all_units_hash[(unit_id+"-"+u["@attributes"]["UnitNumber"].to_s+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] if !unit.present? && us.present?
+    unit = @all_units_hash[(unit_id+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 2)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] if !unit.present? && us.present?
+    unit = @all_units_hash[(unit_id)] unless unit.present?
+    unit = @all_units_hash[(unit_id+"-"+u["@attributes"]["UnitNumber"].to_s[0..(u["@attributes"]["UnitNumber"].length - 1)]+"-"+us[1]["@attributes"]["UnitNumber"].to_s)] if !unit.present? && us.present?
+    unit = @all_units_hash[(unit_id+"-"+(us[1]["@attributes"]["Id"].to_s))] if !unit.present? && us.present?
+    unit = @all_units_hash[(unit_id+"-"+unit_id)] unless unit.present?
+    unit = @all_units_hash.select { |key, value| key.to_s.include?(unit_id) }&.values[0] unless unit.present?
+    unit 
+  end
+
+  def is_unit_space_enabled
+    ActiveRecord::Type::Boolean.new.cast(@credentials&.entrata_show_unit_spaces)
+  end
+
+  def get_units_pricing property_id, move_in_date
+    response = HTTParty.post(get_units_pricing_endpoint(),
+      :body => {
+        "auth": {
+          "type": "basic",
+          "password": @credentials.password,
+          "username": @credentials.username
+        },
+        "method": {
+          "name": "getUnitsAvailabilityAndPricing",
+          "params": get_pricing_params(property_id, move_in_date)
+        }
+      }.to_json,
+      :headers => { 'Content-Type' => 'application/json' } )
+
+    JSON.parse(response.body)
+  end
+
+  def get_pricing_params property_id, move_in_date
+    {
+      "propertyId": property_id,
+      "availableUnitsOnly": @credentials&.entrata_available_units_only,
+      "showUnitSpaces": @credentials&.entrata_show_unit_spaces,
+      "useSpaceConfiguration": @credentials&.entrata_use_space_configuration,
+    }.merge(move_in_date_param(move_in_date))
+  end
+
+
+  def get_units_pricing_endpoint
+    if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
+      url = @credentials.entrata_url
     else
-      url = "https://#{credentials.entrata_url}.entrata.com/api/v1/properties"
+      url = "https://"+@credentials.entrata_url+".entrata.com/api/v1/propertyunits"
     end
 
     url
   end
 
+  def get_move_in_dates_endpoint
+    if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
+      url = @credentials.entrata_url
+    else
+      url = "https://#{@credentials.entrata_url}.entrata.com/api/v1/properties"
+    end
+
+    url
+  end
+
+  def move_in_date_param move_in_date
+    h_move_in_date = (move_in_date.present? && move_in_date != "0") ? { "moveInStartDate": move_in_date } : {}
+  end
+  
+  def set_units_hash
+    @all_units_hash = ProvidersDataUpdationService.new().get_all_units_hash(@credentials.community_id, "psi")
+  end
+
+  def set_floorplans_hash
+    @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "psi")
+  end
+
+  def rename_provider
+    Floorplan.where(community_id: @credentials.community_id, provider: "psi").delete_all
+    Floorplan.where(community_id: @credentials.community_id, provider: "psi_new").update_all(provider: "psi")
+    Unit.where(community_id: @credentials.community_id, provider: "psi").delete_all
+    Unit.where(community_id: @credentials.community_id, provider: "psi_new").update_all(provider: "psi")
+  end
 end
