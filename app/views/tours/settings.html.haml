@@ -1208,7 +1208,6 @@
       var last_dropdown = document.getElementById(last_dropdown_id);
       var last_day = last_dropdown.options[last_dropdown.selectedIndex].text;
       var new_day_with_selected_options = get_next_day_with_selected_option(last_day)
-
       $(".list").append(`
         <div class="row p-8-v">
           <select class="day-list font-17-v pull-left mr-20-v" id="day_${current_day}" name="day_${current_day}">
@@ -1243,7 +1242,7 @@
 
       $(".list_guided").append(`
         <div class="row p-8-v">
-          <select class="day-list-guided font-17-v pull-left mr-20-v" id="gudided_day_${current_day_guided}" name="guided_day_${current_day_guided}">
+          <select class="day-list-guided font-17-v pull-left mr-20-v" id="guided_day_${current_day_guided}" name="guided_day_${current_day_guided}">
             ${new_day_with_selected_options}
           </select>
 
