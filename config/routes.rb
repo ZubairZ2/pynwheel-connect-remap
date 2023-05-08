@@ -651,6 +651,12 @@ Rails.application.routes.draw do
           delete :delete_ebrouchure_image
         end
 
+        resources :tours, only: :index do
+          post :update_tour_stops
+          post :add_tour_stops
+          delete :delete_tour_stop
+        end
+
         resources :community_additional_pages
         post :add_additional_pages, to: 'community_additional_pages#add_additional_pages'
         delete :delete_imagepage_image, to: 'community_additional_pages#delete_imagepage_image'
@@ -673,12 +679,14 @@ Rails.application.routes.draw do
         post :send_follow_up_emails, to: 'follow_up_emails#send_follow_up_emails'
         get :preview_follow_up_email, to: 'follow_up_emails#preview_follow_up_email'
         get :preview_submit_for_review_email, to: 'follow_up_emails#preview_submit_for_review_email'
+        
         resources :community_floor_plans do
           member do
             delete :delete_floorplan_amenity
             delete :delete_floorplan_image
           end
         end
+
         post :add_floorplan, to: 'community_floor_plans#add_floorplan'
         resources :pynwheel_touch_homepage do
           member do

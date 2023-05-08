@@ -39,6 +39,46 @@ class Tour < ApplicationRecord
   
   after_create :define_opening_hours
 
+  def as_json options = {}
+    super(
+      :only => [:id, :name, :max_self_tour_users],
+      :include => {
+
+        :community => {
+          :only => [:id, :name, :one_hour_email_text],
+
+          :include => { 
+            :units => {}
+          }
+        },
+
+        :tour_stops => {
+          :only => [:id, :name, :stop_id, :stop_type, :display_stop], :methods => [:description_text, :directional_text]
+        }
+      },
+    )
+  end
+
+  def available_units
+    self&.community&.units&.available_units rescue []
+  end
+
+  def available_amenities
+    self&.community&.amenities  rescue []
+  end
+
+  def start_tour
+    self&.community&.one_hour_email_text
+  end
+
+  def max_tour
+    self&.max_self_tour_users
+  end
+
+  def start_tour_point
+    self&.name
+  end
+
   def define_opening_hours
     return if self.tour_user_id.present?
 
