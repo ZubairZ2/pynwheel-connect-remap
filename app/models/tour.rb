@@ -44,14 +44,14 @@ class Tour < ApplicationRecord
       :only => [:id, :name, :max_self_tour_users],
       :include => {
         :community => {
-          :only => [:id, :name, :one_hour_email_text],
+          :only => [:id, :one_hour_email_text],
           :include => { 
-            :plotted_units =>  { :only => [:id, :marketing_name, :floor, :building], :methods => [:stop_description_text, :stop_directional_text] },
-            :plotted_amenities =>  { :only => [:id, :name, :floor, :building], :methods => [:stop_description_text, :stop_directional_text] }
+            :plotted_units =>  { :only => [:id, :marketing_name, :floor, :building, :x_plot, :y_plot], :methods => [:stop_description_text, :stop_directional_text] },
+            :plotted_amenities =>  { :only => [:id, :name, :floor, :building, :x_plot, :y_plot], :methods => [:stop_description_text, :stop_directional_text] }
           }
         },
         :tour_stops => {
-          :only => [:id, :name, :stop_id, :stop_type, :display_stop], :methods => [:stop_description_text, :stop_directional_text]
+          :only => [:id, :name, :stop_id, :stop_type, :display_stop, :latitude, :longitude], :methods => [:stop_description_text, :stop_directional_text]
         }
       },
     )
