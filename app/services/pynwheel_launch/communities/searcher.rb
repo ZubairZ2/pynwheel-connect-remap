@@ -350,8 +350,8 @@ attr_reader :user , :params
   end
 
   def tour_stops_status(community)
-    return nil if community.portal_tour&.portal_tour_stops.blank?
-    tour_stops = community.portal_tour&.portal_tour_stops
+    return nil if community.community_tour&.tour_stops.blank?
+    tour_stops = community.community_tour&.tour_stops
     
     tour_stops_status = tour_stops.map {|ts| ts&.status&.status rescue nil}
     status = status_check(tour_stops_status)
