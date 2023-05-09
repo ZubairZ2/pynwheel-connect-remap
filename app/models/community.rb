@@ -107,6 +107,14 @@ class Community < ApplicationRecord
     end
   end
 
+  def plotted_units
+    self&.units&.are_ploted_units - self&.community_tour&.unit_tour_stops rescue []
+  end
+
+  def plotted_amenities
+    self&.amenities&.plotted_amenities - self&.community_tour&.amenity_tour_stops rescue []
+  end
+
   def community_code
     (JWT.encode ({"community_id" => self.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256') if self.present?
   end

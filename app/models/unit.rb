@@ -96,6 +96,14 @@ class Unit < ApplicationRecord
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   before_destroy :delete_data
 
+  def stop_description_text
+    self&.description
+  end
+
+  def stop_directional_text
+    self.stop_description
+  end
+
   def get_virtual_tour_label
     if self&.virtual_tour_button_label.present?
       self.virtual_tour_button_label

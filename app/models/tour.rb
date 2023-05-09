@@ -43,28 +43,28 @@ class Tour < ApplicationRecord
     super(
       :only => [:id, :name, :max_self_tour_users],
       :include => {
-
         :community => {
           :only => [:id, :name, :one_hour_email_text],
-
           :include => { 
-            :units => {}
+            :plotted_units =>  { :only => [:id, :marketing_name, :floor, :building], :methods => [:stop_description_text, :stop_directional_text] },
+            :plotted_amenities =>  { :only => [:id, :name, :floor, :building], :methods => [:stop_description_text, :stop_directional_text] }
           }
         },
-
         :tour_stops => {
-          :only => [:id, :name, :stop_id, :stop_type, :display_stop], :methods => [:description_text, :directional_text]
+          :only => [:id, :name, :stop_id, :stop_type, :display_stop], :methods => [:stop_description_text, :stop_directional_text]
         }
       },
     )
   end
 
-  def available_units
-    self&.community&.units&.available_units rescue []
+  def unit_tour_stops
+    stop_ids = self&.tour_stops.where(stop_type: "unit").pluck(:stop_id)
+    Unit.where(id: stop_ids)
   end
 
-  def available_amenities
-    self&.community&.amenities  rescue []
+  def amenity_tour_stops
+    stop_ids = self&.tour_stops.where(stop_type: "amenity").pluck(:stop_id)
+    Amenity.where(id: stop_ids)
   end
 
   def start_tour

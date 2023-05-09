@@ -652,7 +652,6 @@ Rails.application.routes.draw do
         end
 
         resources :tours, only: :index do
-          post :update_tour_stops
           post :add_tour_stops
           delete :delete_tour_stop
         end

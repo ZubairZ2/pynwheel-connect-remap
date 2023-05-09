@@ -68,6 +68,15 @@ class Amenity < ApplicationRecord
       :only => [:id, :name, :image, :video_link]
     )
   end
+
+  def stop_description_text
+    self&.description
+  end
+
+  def stop_directional_text
+    self.directional_text
+  end
+
   def get_amenity_galleries galler_obj = []
     galler_obj << {
       image: self.image
