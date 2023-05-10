@@ -65,7 +65,13 @@ class Amenity < ApplicationRecord
 
   def as_json options = {}
     super(
-      :only => [:id, :name, :image, :video_link]
+      :only => [:id, :name, :image, :video_link], 
+      :methods => [:amenity_types],
+      :include => {
+        :amenity_galleries => {
+          :only => [:id, :name, :image]
+        }
+      }
     )
   end
 
@@ -132,6 +138,10 @@ class Amenity < ApplicationRecord
   end
 
   private
+
+  def amenity_types
+    Amenity::AMENITY_TYPE.collect(&:first)
+  end
 
   def sort_associated_unit_amenities
     if sort_changed?

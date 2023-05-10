@@ -656,6 +656,12 @@ Rails.application.routes.draw do
           delete :delete_tour_stop
         end
 
+        resources :amenities, only: [:index, :destroy] do
+          collection do
+            post :add_or_update_amenities
+          end
+        end
+
         resources :community_additional_pages
         post :add_additional_pages, to: 'community_additional_pages#add_additional_pages'
         delete :delete_imagepage_image, to: 'community_additional_pages#delete_imagepage_image'
