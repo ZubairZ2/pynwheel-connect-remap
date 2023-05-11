@@ -60,7 +60,8 @@ class Api::V2::ToursController < Api::V2::ApiApplicationController
       tour_stop_params&.each do |stop_param|
         actual_stop = stop_param["stop_type"].classify.constantize.find stop_param["stop_id"]
         next unless actual_stop.present?
-        stop_param["id"].present? ? update_actual_stop_attributes(actual_stop, stop_param) : create_new_tour_stop(actual_stop, stop_param)
+        update_actual_stop_attributes(actual_stop, stop_param)
+        create_new_tour_stop(actual_stop, stop_param) unless stop_param["id"].present?
       end
     end
 
