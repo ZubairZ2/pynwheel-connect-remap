@@ -835,10 +835,10 @@ json.ui_settigs do
           if @community.design.expressionist.present? && (@community.design.expressionist.home_page_position_of_logo == "Left" || @community.design.expressionist.home_page_position_of_logo == "Right")
             json.home_page_position_of_logo "Top"
           else
-            json.home_page_position_of_logo @community.design.expressionist.home_page_position_of_logo.sub '=',''
+            json.home_page_position_of_logo @community.design.expressionist.home_page_position_of_logo&.sub '=',''
           end
         elsif @community.theme_name == "expressionist" || @community.theme_name == "modernist"
-          json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? (@community.design.expressionist.home_page_position_of_logo.sub '=','') : "Right"
+          json.home_page_position_of_logo (@community.design.expressionist.present? and @community.design.expressionist.home_page_position_of_logo.present?) ? (@community.design.expressionist.home_page_position_of_logo&.sub '=','') : "Right"
         else
           json.home_page_position_of_logo "Right"
         end
