@@ -638,8 +638,11 @@ Rails.application.routes.draw do
       resources :communities do
         resources :community_property_map
 
-        resources :community_amenity
-        post :add_community_amenity, to: 'community_amenity#add_community_amenity'
+        resources :amenities,  only: [:index, :destroy] do
+          collection do
+            post :add_or_update_amenities
+          end
+        end
 
         resources :design_direction do
           delete :delete_design_image
@@ -654,12 +657,6 @@ Rails.application.routes.draw do
         resources :tours, only: :index do
           post :add_tour_stops
           delete :delete_tour_stop
-        end
-
-        resources :amenities, only: [:index, :destroy] do
-          collection do
-            post :add_or_update_amenities
-          end
         end
 
         resources :community_additional_pages

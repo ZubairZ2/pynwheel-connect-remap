@@ -44,7 +44,7 @@ class Api::V2::ToursController < Api::V2::ApiApplicationController
   private
     def update_tour_stops_status
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(TOUR_STOPS)
-      @community.set_tour_stops_status(current_pynwheel_user, tour_params.dig("status"))
+      @community.set_tour_stops_status(current_pynwheel_user, params.dig("status"))
       FollowUpMailer.send_email_after_form_submission(@community, TOUR_STOPS, previous_status)
     end
 
