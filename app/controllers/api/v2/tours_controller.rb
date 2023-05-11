@@ -44,42 +44,42 @@ class Api::V2::ToursController < Api::V2::ApiApplicationController
   private
     def update_tour_stops_status
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(TOUR_STOPS)
-      @community.set_tour_stops_status(current_pynwheel_user, params.dig("status"))
+      @community.set_tour_stops_status(current_pynwheel_user, params["status"])
       FollowUpMailer.send_email_after_form_submission(@community, TOUR_STOPS, previous_status)
     end
 
     def update_tour_attributes
-      @tour.update(name: tour_params.dig("starting_point"), max_self_tour_users: tour_params.dig("max_self_tour_users"))
+      @tour.update(name: tour_params["starting_point"], max_self_tour_users: tour_params["max_self_tour_users"])
     end
 
     def update_community_attributes
-      @community.update(one_hour_email_text: community_params.dig("one_hour_email_text"))
+      @community.update(one_hour_email_text: community_params["one_hour_email_text"])
     end
 
     def update_tour_stops_attributes
-      tour_stop_params&.each do |param_stop|
-        actual_stop = param_stop.dig("stop_type").classify.constantize.find param_stop.dig("stop_id")
+      tour_stop_params&.each do |stop_param|
+        actual_stop = stop_param["stop_type"].classify.constantize.find stop_param["stop_id"]
         next unless actual_stop.present?
-        param_stop.dig("id").present? ? update_actual_stop_attributes(actual_stop, param_stop) : create_new_tour_stop(actual_stop, param_stop)
+        stop_param["id"].present? ? update_actual_stop_attributes(actual_stop, stop_param) : create_new_tour_stop(actual_stop, stop_param)
       end
     end
 
-    def update_actual_stop_attributes actual_stop, param_stop
-      if param_stop.dig("stop_type") == "unit"
-        actual_stop.update(description: param_stop.dig("description_text"), stop_description: param_stop.dig("directional_text"))
+    def update_actual_stop_attributes actual_stop, stop_param
+      if stop_param["stop_type"] == "unit"
+        actual_stop.update(description: stop_param["description_text"], stop_description: stop_param["directional_text"])
       else
-        actual_stop.update(description: param_stop.dig("description_text"), directional_text: param_stop.dig("directional_text"))
+        actual_stop.update(description: stop_param["description_text"], directional_text: stop_param["directional_text"])
       end
     end
 
-    def create_new_tour_stop actual_stop, param_stop
+    def create_new_tour_stop actual_stop, stop_param
       TourStop.create(
-        stop_type: param_stop.dig("stop_type"), 
-        stop_id: param_stop.dig("stop_id"),
+        stop_type: stop_param["stop_type"], 
+        stop_id: stop_param["stop_id"],
         latitude: actual_stop.x_plot,
         longitude: actual_stop.y_plot,
         tour_id: @tour.id,
-        name: (param_stop.dig("stop_type") == "unit") ? actual_stop.marketing_name : actual_stop.name
+        name: (stop_param["stop_type"] == "unit") ? actual_stop.marketing_name : actual_stop.name
       )
     end
 
@@ -111,15 +111,15 @@ class Api::V2::ToursController < Api::V2::ApiApplicationController
     end
 
     def tour_params
-      params.dig("tour")
+      params["tour"]
     end
 
     def community_params
-      params.dig("tour", "community")
+      params["tour"]["community"]
     end
 
     def tour_stop_params
-      params.dig("tour", "tour_stops")
+      params["tour"]["tour_stops"]
     end
 
     def load_community

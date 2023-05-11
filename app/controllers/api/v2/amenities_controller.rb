@@ -60,12 +60,12 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
 
     def update_amenities_form_status
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(AMENITY_IMAGES)
-      @community.set_community_amenity_status(current_pynwheel_user,  params.dig("status"))
+      @community.set_community_amenity_status(current_pynwheel_user,  params["status"])
       FollowUpMailer.send_email_after_form_submission(@community, AMENITY_IMAGES, previous_status)
     end
 
     def amenity_params
-      params.dig("amenity")
+      params["amenity"]
     end
 
     def load_amenity
