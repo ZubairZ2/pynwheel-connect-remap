@@ -97,11 +97,15 @@ class Unit < ApplicationRecord
   before_destroy :delete_data
 
   def stop_description_text
-    self&.description
+    description
   end
 
   def stop_directional_text
-    self.stop_description
+    stop_description
+  end
+
+  def name
+    api_unit_marketing_name()
   end
 
   def get_virtual_tour_label

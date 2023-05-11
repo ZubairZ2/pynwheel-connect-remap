@@ -46,7 +46,7 @@ class Tour < ApplicationRecord
         :community => {
           :only => [:id, :one_hour_email_text],
           :include => { 
-            :plotted_units =>  { :only => [:id, :marketing_name, :floor, :building, :x_plot, :y_plot], :methods => [:stop_description_text, :stop_directional_text] },
+            :plotted_units =>  { :only => [:id, :floor, :building, :x_plot, :y_plot], :methods => [:stop_description_text, :stop_directional_text, :name] },
             :plotted_amenities =>  { :only => [:id, :name, :floor, :building, :x_plot, :y_plot], :methods => [:stop_description_text, :stop_directional_text] }
           }
         },
