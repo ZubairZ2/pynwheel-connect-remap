@@ -73,6 +73,8 @@ class Api::V2::ToursController < Api::V2::ApiApplicationController
     end
 
     def create_new_tour_stop actual_stop, stop_param
+      return if TourStop.where(stop_id: stop_param["stop_id"]).last.present?
+
       TourStop.create(
         stop_type: stop_param["stop_type"], 
         stop_id: stop_param["stop_id"],
