@@ -33,6 +33,9 @@ class WebpagesController < ActionController::Base
           @units_with_floorplan_info = @units_with_floorplan_info.to_json
         end
       end
+      @amenities_data = []
+      normalize_amenities
+      @amenities_data = @amenities_data.to_json
     end
     response.headers.delete "X-Frame-Options"  
   end
@@ -40,6 +43,17 @@ class WebpagesController < ActionController::Base
     community_code = get_community_code @community
     # base_url =  Rails.env.development? ? "http://localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelapp.com/")
     return "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
+  end
+
+  def normalize_amenities
+    @amenities.each do |amenity|
+      struct = {
+        id: amenity.id,
+        floor: amenity.floor,
+        floorplate_id: amenity.amenityable_id
+      }
+      @amenities_data << struct
+    end
   end
 
   def normalize_units
