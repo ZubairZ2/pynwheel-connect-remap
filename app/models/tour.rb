@@ -46,15 +46,26 @@ class Tour < ApplicationRecord
         :community => {
           :only => [:id, :one_hour_email_text],
           :include => { 
-            :plotted_units =>  { :only => [:id, :floor, :building, :x_plot, :y_plot], :methods => [:stop_description_text, :stop_directional_text, :name] },
-            :plotted_amenities =>  { :only => [:id, :name, :floor, :building, :x_plot, :y_plot], :methods => [:stop_description_text, :stop_directional_text] }
+            :plotted_units =>  { 
+              :only => [:id, :floor, :building, :x_plot, :y_plot], 
+              :methods => [:stop_description_text, :stop_directional_text, :name] 
+            },
+            :plotted_amenities =>  { 
+              :only => [:id, :name, :floor, :building, :x_plot, :y_plot], 
+              :methods => [:stop_description_text, :stop_directional_text] 
+            }
           }
         },
-        :tour_stops => {
-          :only => [:id, :name, :stop_id, :stop_type, :display_stop, :latitude, :longitude], :methods => [:stop_description_text, :stop_directional_text]
+        :filtered_tour_stops => {
+          :only => [:id, :name, :stop_id, :stop_type, :display_stop, :latitude, :longitude], 
+          :methods => [:stop_description_text, :stop_directional_text],
         }
       },
     )
+  end
+
+  def filtered_tour_stops
+    self.tour_stops.where(stop_type: ["unit", "amenity"])
   end
 
   def unit_tour_stops
