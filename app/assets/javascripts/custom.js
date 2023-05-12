@@ -141,7 +141,7 @@ $(".import_data").on("click",function(e){
     $(".divLoading").removeClass("hidden")
 });
 
-setTimeout(function() {
+timeoutId = setTimeout(function() {
     $('.alert').fadeOut('slow');
 }, 10000); // <-- time in milliseconds
 

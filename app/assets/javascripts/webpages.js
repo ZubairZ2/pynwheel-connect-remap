@@ -216,16 +216,15 @@ $(window).bind('load', function () {
         populate_current_units();
         if ($(this).hasClass('only-amenity')) {
           $('.alert').show()
-          setTimeout(function () {
+          timer = setTimeout(function () {
             $('.alert').fadeOut('slow');
           }, 2000); // <-- time in milliseconds
         }
         else if ($(this).hasClass('no-units'))
         {
           $(".alert").show()
-          setTimeout(function () {
-            $('.alert').fadeOut('slow');
-          }, 3600000); // <-- time in milliseconds
+          clearTimeout(timeoutId);
+          clearTimeout(timer);
         }
         else
           $(".alert").hide()
@@ -923,7 +922,7 @@ function disabled_enabled_anchors() {
       $('#' + floors[i]).addClass('only-amenity');
       if ($('#' + floors[i]).hasClass('selected')) {
         $('.alert').show()
-        setTimeout(function () {
+        timer = setTimeout(function () {
           $('.alert').fadeOut('slow');
         }, 2000); // <-- time in milliseconds
       }
@@ -932,9 +931,8 @@ function disabled_enabled_anchors() {
       $('#' + floors[i]).addClass('no-units');
       if ($('#' + floors[i]).hasClass('selected')) {
         $('.alert').show()
-        setTimeout(function () {
-          $('.alert').fadeOut('slow');
-        }, 3600000); // <-- time in milliseconds
+        clearTimeout(timeoutId);
+        clearTimeout(timer);
       }
     } else {
       $('#' + floors[i]).removeClass('no-units');
@@ -967,6 +965,20 @@ function disabled_enabled_anchors() {
   }
   else{
     $('.custom-iframe-modeule').addClass('sitemap');
+    if (units.length == 0 && amenities.length!=0) {
+      $('.alert').show()
+      timer = setTimeout(function () {
+        $('.alert').fadeOut('slow');
+      }, 2000); // <-- time in milliseconds
+    } 
+    else if (units.length == 0 && amenities.length == 0) {
+      $('.alert').show()
+      clearTimeout(timeoutId);
+      clearTimeout(timer);
+    }
+    else{
+      $('.alert').hide()
+    }
     if($(window).width() < 567){
       $('.c-footer').css({"bottom": 70});
     }    
