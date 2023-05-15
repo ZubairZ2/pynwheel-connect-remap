@@ -28,7 +28,6 @@
                                 %td
                                   %div{:style => "width:100%; overflow:hidden;"}
                                     %img{:alt => "", :src => "#{img.image.url}", :width => "580", :height => "auto", :style => "max-width:580px; margin:auto;", :title => ""}/
-
                   - if img.video_link.present?
                     %tr
                       %td{:align => "center", :valign => "top"}
@@ -41,5 +40,6 @@
                                   %td{:style=> "text-align: center;"}
                                     %div{:style => "width:100%; overflow:hidden;"}
                                       %a{:href => "#{img.video_link}", :target => "_blank"}
-                                        %input{:type => "submit", :value => "#{img.video_link_button_label.upcase}", :style=> "font-size: large; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium; width: 130px; height: 46px;  border-width: medium;  width: fit-content; height: 46px;"}/
+                                        %span{ :style=> "font-size: large; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium; width: 130px; height: 46px;  border-width: medium;  width: fit-content; height: 46px;"} 
+                                          = "#{img.video_link_button_label.upcase}"
                         
