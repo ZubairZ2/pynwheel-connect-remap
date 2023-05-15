@@ -638,11 +638,19 @@ Rails.application.routes.draw do
       resources :communities do
         resources :community_property_map
 
-        resources :amenities,  only: [:index, :destroy] do
-          collection do
-            post :add_or_update_amenities
+        resources :amenities,  only: [:index, :create, :destroy] do
+          member do
+            put :update_amenity_media
+            delete :remove_amenity_media
           end
+
+          collection do
+            post :save_amenity_form
+          end
+
+          resources :amenity_galleries,  only: [:create, :update, :destroy]
         end
+
 
         resources :design_direction do
           delete :delete_design_image

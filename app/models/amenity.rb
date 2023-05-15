@@ -76,11 +76,11 @@ class Amenity < ApplicationRecord
   end
 
   def stop_description_text
-    self&.description
+    description
   end
 
   def stop_directional_text
-    self.directional_text
+    directional_text
   end
 
   def get_amenity_galleries galler_obj = []
