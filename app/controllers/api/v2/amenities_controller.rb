@@ -3,6 +3,7 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
   before_action :load_community
   before_action :load_amenity, only: [:update_amenity_media, :remove_amenity_media, :destroy]
+  after_action :update_amenity_form_status, except: [:index, :save_amenity_form]
 
   def index
     render json: {success: true, data:  @community&.amenities.as_json, code: 200}
@@ -52,7 +53,6 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
 
   def destroy
     if @amenity.destroy!
-      @community.set_community_amenity_status(current_pynwheel_user, "in_progress")
       render json: {success: true, message: "Amenity deleted successfully"}
     else
       render json: {success: false, message: "Failed to delete amenity"}
@@ -60,6 +60,10 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
   end
 
   private
+
+    def update_amenity_form_status
+      @community.set_community_amenity_status(current_pynwheel_user, "in_progress")
+    end
 
     def create_amenity
       @community.amenities.create!(

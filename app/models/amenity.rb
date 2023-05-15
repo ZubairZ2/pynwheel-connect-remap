@@ -65,7 +65,7 @@ class Amenity < ApplicationRecord
 
   def as_json options = {}
     super(
-      :only => [:id, :name, :image, :video_link], 
+      :only => [:id, :name, :image, :video_link, :amenity_type], 
       :include => {
         :amenity_galleries => {
           :only => [:id, :name, :image]

@@ -3,10 +3,10 @@ class Api::V2::AmenityGalleriesController < Api::V2::ApiApplicationController
   before_action :load_community
   before_action :load_amenity
   before_action :load_amenity_gallery, only: [:destroy]
+  after_action :update_amenity_form_status
 
   def create
     amenity_gallery =  @amenity.amenity_galleries.new(image: params[:file], name: params[:file].original_filename)
-
     if amenity_gallery.save!
       render json: {success: true, message: "Amenity gallery added successfully", data: @amenity.as_json}
     else
@@ -16,7 +16,6 @@ class Api::V2::AmenityGalleriesController < Api::V2::ApiApplicationController
 
   def destroy
     if @amenity_gallery.destroy!
-      @community.set_community_amenity_status(current_pynwheel_user, "in_progress")
       render json: {success: true, message: "Amenity gallery deleted successfully"}
     else
       render json: {success: false, message: "Failed to delete amenity gallery"}
@@ -24,6 +23,10 @@ class Api::V2::AmenityGalleriesController < Api::V2::ApiApplicationController
   end
 
   private
+
+    def update_amenity_form_status
+      @community.set_community_amenity_status(current_pynwheel_user, "in_progress")
+    end
   
     def load_amenity_gallery
       @amenity_gallery = @amenity.amenity_galleries.find params[:id]
