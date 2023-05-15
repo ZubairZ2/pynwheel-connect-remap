@@ -648,7 +648,7 @@ Rails.application.routes.draw do
             post :save_amenity_form
           end
 
-          resources :amenity_galleries,  only: [:create, :update, :destroy]
+          resources :amenity_galleries,  only: [:create, :destroy]
         end
 
 

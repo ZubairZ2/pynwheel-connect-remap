@@ -10,8 +10,8 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
 
   def create
     begin
-      create_amenity()
-      render json: {success: true, message: "Amenity added successfully", data: @community&.amenities.as_json}
+      amenity = create_amenity()
+      render json: {success: true, message: "Amenity added successfully", data: amenity.as_json}
       
     rescue => exception
       render json: {success: false, message: exception.message}
@@ -20,7 +20,7 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
 
   def update_amenity_media
     if @amenity.update!(image: params[:file])
-      render json: {success: true, message: "Amenity media updated successfully", data: @community&.amenities.as_json}
+      render json: {success: true, message: "Amenity media updated successfully", data: @amenity.as_json}
     else
       render json: {success: false, message: "Failed to update media", data: nil}
     end
@@ -28,9 +28,9 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
 
   def remove_amenity_media
     if @amenity.remove_image!
-      render json: {success: true, message: "Amenity media removed successfully", data: @community&.amenities.as_json}
+      render json: {success: true, message: "Amenity media removed successfully"}
     else
-      render json: {success: false, message: "Failed to remove amenity media", data: nil}
+      render json: {success: false, message: "Failed to remove amenity media"}
     end
   end
 
@@ -53,9 +53,9 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
   def destroy
     if @amenity.destroy!
       @community.set_community_amenity_status(current_pynwheel_user, "in_progress")
-      render json: {success: true, message: "Amenity deleted successfully", data: @community&.amenities.as_json}
+      render json: {success: true, message: "Amenity deleted successfully"}
     else
-      render json: {success: false, message: "Failed to delete amenity", data: nil}
+      render json: {success: false, message: "Failed to delete amenity"}
     end
   end
 

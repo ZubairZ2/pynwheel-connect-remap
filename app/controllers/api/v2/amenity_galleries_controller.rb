@@ -5,29 +5,21 @@ class Api::V2::AmenityGalleriesController < Api::V2::ApiApplicationController
   before_action :load_amenity_gallery, only: [:destroy]
 
   def create
-    amenity_gallery =  @amenity.amenity_galleries.new(image: params[:file])
+    amenity_gallery =  @amenity.amenity_galleries.new(image: params[:file], name: params[:file].original_filename)
 
     if amenity_gallery.save!
-      render json: {success: true, message: "Amenity gallery added successfully", data: @community&.amenities.as_json}
+      render json: {success: true, message: "Amenity gallery added successfully", data: @amenity.as_json}
     else
       render json: {success: false, message: "Failed to add amenity gallery", data: nil}
-    end
-  end
-
-  def update
-    if @amenity.update!(image: params[:file])
-      render json: {success: true, message: "Amenity gallery updated successfully", data: @community&.amenities.as_json}
-    else
-      render json: {success: false, message: "Failed to update media file", data: nil}
     end
   end
 
   def destroy
     if @amenity_gallery.destroy!
       @community.set_community_amenity_status(current_pynwheel_user, "in_progress")
-      render json: {success: true, message: "Amenity gallery deleted successfully", data: @community&.amenities.as_json}
+      render json: {success: true, message: "Amenity gallery deleted successfully"}
     else
-      render json: {success: false, message: "Failed to delete amenity gallery", data: nil}
+      render json: {success: false, message: "Failed to delete amenity gallery"}
     end
   end
 
