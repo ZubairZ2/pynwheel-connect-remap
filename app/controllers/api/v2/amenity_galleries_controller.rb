@@ -30,6 +30,9 @@ class Api::V2::AmenityGalleriesController < Api::V2::ApiApplicationController
   
     def load_amenity_gallery
       @amenity_gallery = @amenity.amenity_galleries.find params[:id]
+
+      rescue ActiveRecord::RecordNotFound
+        render json: {success: false, error_code: 400, message: 'Amenity Gallery not found', data: nil}, status: :not_found
     end
       
     def load_amenity
