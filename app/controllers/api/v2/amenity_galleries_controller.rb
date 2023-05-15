@@ -7,8 +7,9 @@ class Api::V2::AmenityGalleriesController < Api::V2::ApiApplicationController
 
   def create
     amenity_gallery =  @amenity.amenity_galleries.new(image: params[:file], name: params[:file].original_filename)
+
     if amenity_gallery.save!
-      render json: {success: true, message: "Amenity gallery added successfully", data: @amenity.as_json}
+      render json: {success: true, message: "Amenity gallery added successfully", data: amenity_gallery.as_json}
     else
       render json: {success: false, message: "Failed to add amenity gallery", data: nil}
     end
