@@ -28,10 +28,15 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
   end
 
   def remove_amenity_media
-    if @amenity.remove_image!
+    begin
+      @amenity.remove_image!
+      @amenity.standard_image_url = nil
+      @amenity.save
+
       render json: {success: true, message: "Amenity media removed successfully"}
-    else
-      render json: {success: false, message: "Failed to remove amenity media"}
+  
+    rescue => exception
+      render json: {success: false, message: exception.message}
     end
   end
 
