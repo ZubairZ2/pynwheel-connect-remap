@@ -65,13 +65,18 @@ class Amenity < ApplicationRecord
 
   def as_json options = {}
     super(
-      :only => [:id, :name, :image, :video_link, :amenity_type], 
+      :only => [:id, :name, :video_link, :amenity_type],
+      :methods => [:amenity_image],
       :include => {
         :amenity_galleries => {
           :only => [:id, :name, :image]
         }
       }
     )
+  end
+
+  def amenity_image
+    image&.url.present? ? image : nil
   end
 
   def stop_description_text
