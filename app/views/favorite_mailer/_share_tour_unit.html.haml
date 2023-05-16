@@ -124,16 +124,16 @@
                               %tr
                                 %br
                                 - if unit.virtual_tour_url.present?
-                                  %td.textContent{:align => "left", :style => "padding: 10px;width: 270px; color: white !important;", :valign => "top"}
-                                    %h1{:style => "margin-bottom:0px;text-align:center;  color: white !important; float: left;background: #4c4d4e;"}
-                                      %a{:href => "#{unit.virtual_tour_url}", :target => "_blank", :style=> "color: white !important; text-decoration: none !important;"}
-                                        %span{:style=> "font-size: 17px;  color: white !important; border-color: #878789; border-width: medium;  width: fit-content; height: 46px; width: fit-content;"} 
+                                  %td.textContent{:align => "left", :style => "padding: 10px;width: 270px; color: #FFFFFF !important;", :valign => "top"}
+                                    %h1{:style => "margin-bottom:0px;text-align:center;  color: #FFFFFF !important; float: left;background: #4c4d4e;"}
+                                      %a{:href => "#{unit.virtual_tour_url}", :target => "_blank", :style=> "color: #FFFFFF !important; text-decoration: none !important;"}
+                                        %span{:style=> "font-size: 17px;  color: #FFFFFF !important; border-color: #878789; border-width: medium;  width: fit-content; height: 46px; width: fit-content;"} 
                                           = "#{unit.virtual_tour_button_label.upcase}" 
                                 - if unit.availability_url.present?
-                                  %td.textContent{:align => "left", :style => "width: 270px; color: white !important;", :valign => "top"}
-                                    %h1{:style => "margin-bottom:0px;text-align:center;  color: white !important; padding:10px 0;background: #4c4d4e;margin-top: 10px;"}
-                                      %a{:href => "#{unit.availability_url}", :target => "_blank", :style => "text-decoration: none !important; color: white !important;"}
-                                        %span{:style=> "font-size: 17px; color: white !important; border-color: #878789; width: 250px; height: 46px;padding: 15px;"}FLOOR PLAN AVAILABILITY
+                                  %td.textContent{:align => "left", :style => "width: 270px; color: #FFFFFF !important;", :valign => "top"}
+                                    %h1{:style => "margin-bottom:0px;text-align:center;  color: #FFFFFF !important; padding:10px 0;background: #4c4d4e;margin-top: 10px;"}
+                                      %a{:href => "#{unit.availability_url}", :target => "_blank", :style => "text-decoration: none !important; color: #FFFFFF !important;"}
+                                        %span{:style=> "font-size: 17px; color: #FFFFFF !important; border-color: #878789; width: 250px; height: 46px;padding: 15px;"}FLOOR PLAN AVAILABILITY
                                 %br
                   -#                      %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                   -#                        %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
