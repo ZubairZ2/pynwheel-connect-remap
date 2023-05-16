@@ -29,17 +29,18 @@
                                   %div{:style => "width:100%; overflow:hidden;"}
                                     %img{:alt => "", :src => "#{img.image.url}", :width => "580", :height => "auto", :style => "max-width:580px; margin:auto;", :title => ""}/
                   - if img.video_link.present?
+                    %br 
                     %tr
                       %td{:align => "center", :valign => "top"}
-                        %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                        %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "270px", :style=> "width: 270px;", :align => "center"}
                           %tr
-                            %td{:width => "100%"}
-                              %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                            %td{:width => "270px;"}
+                              %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "270px", :align => "center"}
                               
                                 %tr
-                                  %td{:style=> "text-align: center;"}
+                                  %td{:style=> "background: #4c4d4e;text-align: center;width: 270px;"}
                                     %div{:style => "width:100%; overflow:hidden;"}
                                       %a{:href => "#{img.video_link}", :target => "_blank"}
-                                        %span{ :style=> "font-size: large; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium; width: 130px; height: 46px;  border-width: medium;  width: fit-content; height: 46px;"} 
+                                        %span{ :style=> "font-size: large; color: white; border-color: #878789; border-width: medium; width: 130px; height: 46px;  border-width: medium;  width: fit-content; height: 46px;"} 
                                           = "#{img.video_link_button_label.upcase}"
-                        
+                    %br 
