@@ -120,7 +120,8 @@
                       %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
                         %tr
                           %td{:align => "center", :valign => "top"}
-                            %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "270px", :style=> "margin: 10px; width: 270px;"}
+                            %p
+                            %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "270px", :style=> "width: 270px;"}
                               %tr
                                 - if unit.virtual_tour_url.present?
                                   %td.textContent{:align => "left", :bgcolor=> "#4c4d4e;", :style => "text-align: center;background: #4c4d4e;width: 270px; color: #FFFFFF !important;", :valign => "top"}
@@ -128,7 +129,7 @@
                                 - if unit.availability_url.present?
                                   %td.textContent{:align => "left", :bgcolor=> "#4c4d4e;", :style => "text-align: center;background: #4c4d4e;width: 270px; color: #FFFFFF !important;", :valign => "top"}
                                     = link_to "<p>FLOOR PLAN AVAILABILITY</p>".html_safe , "#{unit.availability_url}" , :class=>"btn mr-5", style: " color:white;  height: 80px;padding-top: 7px; border-radius: 2px;",:target => "_blank"  
-                                    
+                            %p       
                   -#                      %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                   -#                        %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
                   -#                          %b
