@@ -120,21 +120,15 @@
                       %table{:bgcolor => "#fff", :border => "0", :cellpadding => "0", :cellspacing => "0", :style => "color:#FFFFFF; border-bottom:#000 1px solid;", :width => "100%"}
                         %tr
                           %td{:align => "center", :valign => "top"}
-                            %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "270px", :style=> "width: 270px;"}
+                            %table.flexibleContainer{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "270px", :style=> "margin: 10px; width: 270px;"}
                               %tr
-                                %br
                                 - if unit.virtual_tour_url.present?
-                                  %td.textContent{:align => "left", :style => "padding: 10px;width: 270px; color: #FFFFFF !important;", :valign => "top"}
-                                    %h1{:style => "margin-bottom:0px;text-align:center;  color: #FFFFFF !important; float: left;background: #4c4d4e;"}
-                                      %a{:href => "#{unit.virtual_tour_url}", :target => "_blank", :style=> "color: #FFFFFF !important; text-decoration: none !important;"}
-                                        %span{:style=> "font-size: 17px;  color: #FFFFFF !important; border-color: #878789; border-width: medium;  width: fit-content; height: 46px; width: fit-content;"} 
-                                          = "#{unit.virtual_tour_button_label.upcase}" 
+                                  %td.textContent{:align => "left", :bgcolor=> "#4c4d4e;", :style => "text-align: center;background: #4c4d4e;width: 270px; color: #FFFFFF !important;", :valign => "top"}
+                                    = link_to "<p>#{unit.virtual_tour_button_label.upcase}</p>".html_safe , "#{unit.virtual_tour_url}" , :class=>"btn mr-5", style: " color:white;  height: 80px;padding-top: 7px; border-radius: 2px;",:target => "_blank"  
                                 - if unit.availability_url.present?
-                                  %td.textContent{:align => "left", :style => "width: 270px; color: #FFFFFF !important;", :valign => "top"}
-                                    %h1{:style => "margin-bottom:0px;text-align:center;  color: #FFFFFF !important; padding:10px 0;background: #4c4d4e;margin-top: 10px;"}
-                                      %a{:href => "#{unit.availability_url}", :target => "_blank", :style => "text-decoration: none !important; color: #FFFFFF !important;"}
-                                        %span{:style=> "font-size: 17px; color: #FFFFFF !important; border-color: #878789; width: 250px; height: 46px;padding: 15px;"}FLOOR PLAN AVAILABILITY
-                                %br
+                                  %td.textContent{:align => "left", :bgcolor=> "#4c4d4e;", :style => "text-align: center;background: #4c4d4e;width: 270px; color: #FFFFFF !important;", :valign => "top"}
+                                    = link_to "<p>FLOOR PLAN AVAILABILITY</p>".html_safe , "#{unit.availability_url}" , :class=>"btn mr-5", style: " color:white;  height: 80px;padding-top: 7px; border-radius: 2px;",:target => "_blank"  
+                                    
                   -#                      %td.textContent{:align => "left", :style => "padding: 0px 20px;", :valign => "top"}
                   -#                        %h1{:style => "margin-bottom:0px;text-align:center; color:#323232; padding:20px 0;"}
                   -#                          %b
