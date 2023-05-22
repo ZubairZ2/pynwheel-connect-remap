@@ -6109,6 +6109,7 @@ ul.add-fav-options {
     max-width: 400px;
 }
 .c-modal-wrapper {
+    min-height: 600px;
     float: left;
     width: 60%;
     overflow: hidden;
@@ -6216,7 +6217,7 @@ ul.add-fav-options {
     cursor: pointer;
 }
 .c-modal-sidebar-description .des-heading {
-    padding: 10px 10px 0px 10px;
+    padding: 10px 10px 0px 0px;
     margin-bottom: 0;
     font-weight: 500;
     margin-top: 0;
@@ -6225,6 +6226,7 @@ ul.add-fav-options {
     font-weight: 500;
     font-size: 13px;
     line-height: 2;
+    min-height: 150px;
 }
 .c-modal-sidebar-filters {
     background: #1d2425;

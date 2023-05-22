@@ -60,7 +60,7 @@
                 %span.available-heading#available-text
                 %b
                   %span#available-date
-              %div{style: "max-height: 9em; overflow-y: auto;"}
+              %div{style: "max-height: 15em; overflow-y: auto;"}
                 #unit-lease-pricing-text-li.availabilty-container
                   %span.text-left.available-info
 
@@ -77,9 +77,9 @@
                 .c-modal-sidebar-description
                   %h4.des-heading Description
                   %p.c-m-description#unit-description
-
-              %div{style: "padding: 0px 0px 8px 7px"}
-                .unit-buttons
+                %div{style: "max-height: 6em; overflow-y: auto;"}
+                  %div{style: "padding: 0px 0px 8px 7px"}
+                    .unit-buttons
             .c-modal-sidebar-filters
               - if @community_info.credential.present? and @community_info.credential.apply_now.to_s == "true"
                 .m-filters
