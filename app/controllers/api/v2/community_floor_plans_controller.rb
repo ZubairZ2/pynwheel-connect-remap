@@ -63,6 +63,7 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
     if @load_floorplan.present?
       @amenity = @load_floorplan.amenities.find_by(id: params[:amenity_id])
       if @amenity.destroy!
+        FloorPlans::UnitsService.new(@load_floorplan.id).delete_floorplan_units_image(@amenity.id)
         @community.set_floorplan_status(current_pynwheel_user, "in_progress")
         render :json => {:success => true, :error_code => 200, :message => "Floorplan amenity deleted successfully", data: nil}
       else
@@ -103,7 +104,7 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
     if floorplan["aminities"].present?
       floorplan["aminities"].values.each do |amenity|
         if !amenity[:id].present?
-          @floorplan.amenities.create(image: amenity["image"])
+          image_filter_down_to_units(amenity)
         end
       end
     end
@@ -116,11 +117,17 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
     @floorplan.file = floorplan[:file] if floorplan[:file].present?
     if @floorplan.save
       if floorplan["aminities"].present?
-        floorplan["aminities"].values.each do |aminity|
-          @amenity = @floorplan.amenities.create(image: aminity["image"])
+        floorplan["aminities"].values.each do |amenity|
+          image_filter_down_to_units(amenity)
         end
       end
     end
+  end
+
+  def image_filter_down_to_units amenity_params
+    amenity = @floorplan.amenities.create(image:  amenity_params["image"], name: amenity_params["image"].original_filename )
+    amenity.update!(floorplan_amenity_id: amenity.id)
+    FloorPlans::UnitsService.new(@floorplan.id).create_floorplan_units_image(amenity_params["image"], amenity.name, amenity.id)
   end
 
   def load_floorplan

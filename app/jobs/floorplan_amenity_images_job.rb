@@ -9,7 +9,7 @@ class FloorplanAmenityImagesJob < ApplicationJob
       end
     else
       floorplan_units = Unit.where(floorplan_id: floorplan.provider_floorplan_id, community_id: community_id)
-      floorplan_units.each do |floorplan_unit|
+      floorplan_units&.each do |floorplan_unit|
         floorplan_unit.amenities.create!(image: source, name: name, floorplan_amenity_id: amenity.id)
       rescue => error
         puts error.inspect
