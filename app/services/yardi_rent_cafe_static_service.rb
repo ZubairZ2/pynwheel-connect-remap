@@ -95,7 +95,7 @@ class YardiRentCafeStaticService < BaseService
                 end
 
                 unit.lease_pricing = leasing
-
+                unit.description = unit_description(r["Amenities"]) if r["Amenities"].present?
                 unit.save(validate: false)
               end
 
@@ -129,6 +129,10 @@ class YardiRentCafeStaticService < BaseService
     end
   end
 
+  def unit_description description
+    return "" unless description.present?
+    "<ul>#{description&.split("^")&.map{|desc| "<li>#{desc}</li>"}&.join("")}</ul>"
+  end
 
   def import_yardirentcafe_floorplans
     property_codes = credentials.p_code.split(',') rescue []
