@@ -48,16 +48,23 @@
                   %label Bedrooms
                   = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
                 .selectable-field
-                  %label Availability
-                  = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
-                .selectable-field
                   %label Max Price
                   = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select", :include_blank => "All"}
                 .selectable-field
                   %label Min Square Footage
                   = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select", :include_blank => "All"}
+                .selectable-field
+                  %label Availability
+                  = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
+                
+                %button._3d-apply-filter-button{:type => "button", :onclick => "apply3DFilters();"}
+                  Apply
+                  %i.fa.fa-filter
 
-                %button._3d-apply-filter-button{:type => "button", :onclick => "apply3DFilters();"} Apply Filters
+                %button.reset-filter-button.web-reset-button{:type => "button", :onclick => "webResetFilters();"}
+                  Reset
+                  %i.fa.fa-refresh
+               
                 %ul.selected-data-mobile.responsive-content
                   %li
                     %span.data-title Bedrooms
@@ -66,11 +73,12 @@
                     %span.data-title Max Price:
                     %strong#max_price_responsive
                   %li
-                    %span.data-title Availability:
-                    %strong#unit_availability
-                  %li
                     %span.data-title Min Sq Ft:
                     %strong#sq_feet_responsive
+                  %li
+                    %span.data-title Availability:
+                    %strong#unit_availability
+                    
               .header-buttons-groups
                 - if @square_feet.present?
                   %a.transparent-btn.header-action-btn{:href => "#{favorites_community_webpages_path(@community)}",:target=>"_parent"}
@@ -89,17 +97,23 @@
                   %label Bedrooms
                   = select_tag :responsive_unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
                 .selectable-field
-                  %label Availability
-                  = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
-                .selectable-field
                   %label Maximum Price
                   = select_tag :responsive_market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select", :include_blank => "All"}
                 .selectable-field
                   %label Min Square Footage
                   = select_tag :responsive_square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select", :include_blank => "All"}
+                .selectable-field
+                  %label Availability
+                  = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
+                
+                %div{:style => "text-align: center; padding-bottom: 9px;display: flex;"}
+                  %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
+                    Apply
+                    %i.fa.fa-filter
 
-                %div{:style => "text-align: center; padding-bottom: 9px;"}
-                  %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"} Apply Filters
+                  %button.reset-filter-button{:type => "button", :onclick => "mobileResetFilters();"}
+                    Reset
+                    %i.fa.fa-refresh
           
           - if @community_info.has_floorplates?
             .c-sidebar#sidebar
@@ -524,6 +538,7 @@
     
     if(current_width <= 993){
       $("._3d-apply-filter-button").hide();
+      $(".web-reset-button").hide();
     }
     $("#max_price_responsive").html("Max Price");
     $("#sq_feet_responsive").html("Min Sq Feet");
