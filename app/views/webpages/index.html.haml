@@ -272,7 +272,6 @@
                     units = JSON.parse(units);
                     var is_floorplate = "#{@community_info.has_floorplates?}"
                     var community = "#{@community_info.name}"
-                    units = select_units_according_to_filters(units);
                     var amenities = "#{@amenities_data}";
                     amenities = amenities.replace(/&quot;/g,'"');
                     amenities = JSON.parse(amenities);
@@ -518,7 +517,6 @@
       units = JSON.parse(units);
       var is_floorplate = "#{@community_info.has_floorplates?}"
       var community_name = "#{@community_info.name}"
-      units = select_units_according_to_filters(units);
       renderChangedUnits(units, is_floorplate, community_name);
       }
       catch(err) {
@@ -561,7 +559,6 @@
     units = JSON.parse(units);
     var is_floorplate = "#{@community_info.has_floorplates?}"
     var community_name = "#{@community_info.name}"
-    units = select_units_according_to_filters(units)
     renderChangedUnits(units, is_floorplate, community_name);
   });
 
