@@ -5937,6 +5937,8 @@ ul.add-fav-options {
 
     .c-modal-sidebar-filters {
         padding: 3px !important;
+        position: unset !important;
+        width: 100% !important;
     }
     .c-modal-footer-fav {
         padding: 5px 24px 5px 0px !important;
@@ -6231,6 +6233,9 @@ ul.add-fav-options {
 .c-modal-sidebar-filters {
     background: #1d2425;
     padding: 15px;
+    bottom: 0;
+    position: absolute;
+    width: 40%;
 }
 .sidebar-footer {
 	bottom: 0;
@@ -6289,12 +6294,12 @@ ul.add-fav-options {
     color: white;
     width: 50%;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 15px;
  }
  .c-modal-sidebar-filters .filter-action .apply-now {
     border-radius: 50px;
     padding: 8px;
-    font-size: 12px;
+    font-size: 15px;
     text-transform: uppercase;
     font-weight: 500;
     font-family: 'Raleway', sans-serif;
