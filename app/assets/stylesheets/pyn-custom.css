@@ -5918,7 +5918,7 @@ ul.add-fav-options {
     }
 
     .per-month-price-text {
-        left: 115px !important;
+        left: 95px !important;
     }
     .c-modal-sidebar-filters .filter-action .apply-now {
         padding: 10px !important;
@@ -6397,10 +6397,10 @@ ul.add-fav-options {
     background: white;
 }
 .per-month-price-text{
-    font-size: 12px;
+    font-size: 9px;
     color: white;
     position: fixed;
-    left: 80px;
+    left: 90px;
     font-weight: 600;
 }
 .c-modal-footer-fav {
