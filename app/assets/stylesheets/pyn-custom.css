@@ -6408,7 +6408,7 @@ ul.add-fav-options {
     background: white;
 }
 .show-more-option{
-    position: fixed;
+    position: static;
     padding: 0;
     left: 27%;
 }

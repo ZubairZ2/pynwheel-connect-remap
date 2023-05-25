@@ -60,19 +60,19 @@
                 %span.available-heading#available-text
                 %b
                   %span#available-date
-              %div{style: "max-height: 15em; overflow-y: auto;"}
+              %div.overall-scroller.hidden{style: "height: 25em; max-height: 25em; overflow-y: auto;"}
                 #unit-lease-pricing-text-li.availabilty-container
                   %span.text-left.available-info
 
                   - if @community.display_rent && @community.display_pricing_options
+                    %span.text-right.show-more-option.available-info#leas-price-option
+                      %a.show-more#show-more-price Show more prices
+                      %a.show-more#hide-more-price.hidden Hide more prices
+
                     %span#first-unit-lease-pricing
                     #pricing-option.hidden
                       %div{style: "max-height: 6em; overflow-y: auto;"}
                         %span#unit-lease-pricing
-
-                    %span.text-right.show-more-option.available-info#leas-price-option
-                      %a.show-more#show-more-price Show more prices
-                      %a.show-more#hide-more-price.hidden Hide more prices
 
                 .c-modal-sidebar-description
                   %h4.des-heading Description
