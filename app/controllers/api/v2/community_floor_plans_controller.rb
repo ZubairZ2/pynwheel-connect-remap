@@ -62,8 +62,8 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
   def delete_floorplan_amenity
     if @load_floorplan.present?
       @amenity = @load_floorplan.amenities.find_by(id: params[:amenity_id])
-      if @amenity.destroy!
-        FloorPlans::UnitsService.new(@load_floorplan.id).delete_floorplan_units_image(@amenity.id)
+      if @amenity.destroy
+        FloorPlans::UnitsService.new(@load_floorplan.id).delete_floorplan_units_image( params[:amenity_id] )
         @community.set_floorplan_status(current_pynwheel_user, "in_progress")
         render :json => {:success => true, :error_code => 200, :message => "Floorplan amenity deleted successfully", data: nil}
       else
