@@ -885,13 +885,29 @@ function updateSquareFootageFilterDropdownList(floorplateUnits) {
     $('#square_feet').append(`<option value="${uniqueList[i]}-${maxValue}"> ${uniqueList[i]} </option>`); //works on web view
     $('#responsive_square_feet').append(`<option value="${uniqueList[i]}-${maxValue}"> ${uniqueList[i]} </option>`); //works on mobile view
   }
+
+  disableSquareFeetOptions();
+}
+
+function disableSquareFeetOptions() {
+  if ($('#square_feet option').length === 0) {
+    $('#square_feet').prop('disabled', true).append('<option value="">No option available</option>');
+  } else {
+    $('#square_feet').prop('disabled', false) 
+  }
+
+  if ($('#responsive_square_feet option').length === 0) {
+    $('#responsive_square_feet').prop('disabled', true).append('<option value="">No option available</option>');
+  } else {
+    $('#responsive_square_feet').prop('disabled', false) 
+  }
 }
 
 function updateMaxPriceFilterDropDownList(floorplateUnits){
   floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
   var unitsMarketRent = floorplateUnits.map(unit => unit.market_rent);
   var uniqueList = getUniqueAndSortedList(unitsMarketRent);
-  var minValue = Math.max(...uniqueList);
+  var minValue = Math.min(...uniqueList);
 
   reInitializeDropDownList("market_rent");
 
@@ -899,24 +915,22 @@ function updateMaxPriceFilterDropDownList(floorplateUnits){
     $('#market_rent').append(`<option value="${minValue}-${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on web view
     $('#responsive_market_rent').append(`<option value="${minValue}-${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on mobile view
   }
-
-  $("#market_rent option:last").attr("selected", "selected");  
+  disablePriceRentOptions();
+  $("#market_rent option:last").attr("selected", "selected");
 }
 
-function updateMaxPriceFilterDropDownList(floorplateUnits){
-  floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
-  var unitsMarketRent = floorplateUnits.map(unit => unit.market_rent);
-  var uniqueList = getUniqueAndSortedList(unitsMarketRent);
-  var minValue = Math.max(...uniqueList);
-
-  reInitializeDropDownList("market_rent");
-
-  for(var i=0 ; i < uniqueList.length; i++) {
-    $('#market_rent').append(`<option value="${minValue}-${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on web view
-    $('#responsive_market_rent').append(`<option value="${minValue}-${uniqueList[i]}"> ${uniqueList[i]} </option>`); //works on mobile view
+function disablePriceRentOptions() {
+  if ($('#market_rent option').length === 0) {
+    $('#market_rent').prop('disabled', true).append('<option value="">No option available</option>');
+  } else {
+    $('#market_rent').prop('disabled', false) 
   }
 
-  $("#market_rent option:last").attr("selected", "selected");  
+  if ($('#responsive_market_rent option').length === 0) {
+    $('#responsive_market_rent').prop('disabled', true).append('<option value="">No option available</option>');
+  } else {
+    $('#responsive_market_rent').prop('disabled', false) 
+  }
 }
 
 function filterUnitsBasedOnCommunityType(floorplateUnits) {
