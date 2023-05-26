@@ -67,9 +67,9 @@ class Api::V2::ToursController < Api::V2::ApiApplicationController
 
     def update_actual_stop_attributes actual_stop, stop_param
       if stop_param["stop_type"] == "unit"
-        actual_stop.update(description: stop_param["description_text"], stop_description: stop_param["directional_text"])
+        actual_stop.update(stop_description: stop_param["directional_text"])
       else
-        actual_stop.update(description: stop_param["description_text"], directional_text: stop_param["directional_text"])
+        actual_stop.update(directional_text: stop_param["directional_text"])
       end
     end
 

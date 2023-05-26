@@ -44,7 +44,8 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
     begin
       params[:amenities]&.each do |amenity_param|
         amenity = @community.amenities.find amenity_param[:id]
-        amenity.update_attributes(name: amenity_param[:name], amenity_type: amenity_param[:amenity_type], video_link: amenity_param[:video_link])
+        amenity.update_attributes(name: amenity_param[:name], amenity_type: amenity_param[:amenity_type], video_link: amenity_param[:video_link], description: amenity_param[:description]) if amenity.present?
+        update_amenity_galleries_info(amenity, amenity_param[:amenity_galleries])
       end
 
       update_amenities_form_status()
@@ -65,6 +66,15 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
   end
 
   private
+
+    def update_amenity_galleries_info amenity, amenity_galleries
+      amenity_galleries&.each do |amenity_gallery_param|
+        if amenity.present?
+          amenity_gallery = amenity.amenity_galleries.find amenity_gallery_param[:id]
+          amenity_gallery.update_attributes(name: amenity_gallery_param[:name], description: amenity_gallery_param[:description])
+        end
+      end
+    end
 
     def update_amenity_form_status
       @community.set_community_amenity_status(current_pynwheel_user, "in_progress")
