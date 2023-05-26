@@ -1620,14 +1620,14 @@ function setModalAttributes(element) {
       {
         $('#unitModal').find('#unit-description').html("Not Available");
         $('#unitModal').find('.c-modal-sidebar-description').hide();
-        $(".overall-scroller").addClass('hidden')
+        // $(".overall-scroller").addClass('hidden')
       }
       else
       {
         $('#unitModal').find('.c-modal-sidebar-description').show();
         $('#unitModal').find('#unit-description').html($(element).data('unit-description'));
         $('#unit-description').addClass("description-text");
-        $(".overall-scroller").removeClass('hidden')
+        // $(".overall-scroller").removeClass('hidden')
       }
   }
 
