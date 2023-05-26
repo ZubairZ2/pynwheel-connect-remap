@@ -49,10 +49,10 @@
                   = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
                 .selectable-field
                   %label Max Price
-                  = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select", :include_blank => "All"}
+                  = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select"}
                 .selectable-field
                   %label Min Square Footage
-                  = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select", :include_blank => "All"}
+                  = select_tag :square_feet, options_for_select(@square_feet.present? ? @square_feet : []),{:class=>"custom-select"}
                 .selectable-field
                   %label Availability
                   = select_tag :available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
@@ -61,7 +61,7 @@
                   Apply
                   %i.fa.fa-filter
 
-                %button.reset-filter-button.web-reset-button{:type => "button", :onclick => "webResetFilters();"}
+                %button.reset-filter-button.web-reset-button{:type => "button", :onclick => "resetFilters();"}
                   Reset
                   %i.fa.fa-refresh
                
@@ -111,7 +111,7 @@
                     Apply
                     %i.fa.fa-filter
 
-                  %button.reset-filter-button{:type => "button", :onclick => "mobileResetFilters();"}
+                  %button.reset-filter-button{:type => "button", :onclick => "resetFilters();"}
                     Reset
                     %i.fa.fa-refresh
           
@@ -270,6 +270,7 @@
                     var units = "#{@units_with_floorplan_info}";
                     units = units.replace(/&quot;/g,'"');
                     units = JSON.parse(units);
+                    total_units = units;
                     var is_floorplate = "#{@community_info.has_floorplates?}"
                     var community = "#{@community_info.name}"
                     var amenities = "#{@amenities_data}";
@@ -517,7 +518,7 @@
       units = JSON.parse(units);
       var is_floorplate = "#{@community_info.has_floorplates?}"
       var community_name = "#{@community_info.name}"
-      renderChangedUnits(units, is_floorplate, community_name);
+      renderChangedUnits();
       }
       catch(err) {
       }
@@ -559,7 +560,7 @@
     units = JSON.parse(units);
     var is_floorplate = "#{@community_info.has_floorplates?}"
     var community_name = "#{@community_info.name}"
-    renderChangedUnits(units, is_floorplate, community_name);
+    renderChangedUnits();
   });
 
   $("#show-more-price").click(function(){

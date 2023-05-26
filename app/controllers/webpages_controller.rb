@@ -159,7 +159,7 @@ class WebpagesController < ActionController::Base
   end
 
   def build_market_rent_range
-    rent_list = @units_with_floorplan_info.map{|obj| obj[:market_rent].to_i}.uniq.sort()
+    rent_list = @units_with_floorplan_info.map{|obj| obj[:market_rent].to_i}.uniq.sort().reverse!
     @market_rent =  rent_list.map{|price| [price, "#{rent_list.min}-#{price}"]}
   end
 
