@@ -27,7 +27,7 @@ $(document).ready(function () {
     selectMap = webCommunity.web_map_type;
     enable3DMaps = webCommunity.enable_three_d_maps;
     defaultMapType = webCommunity.web_map_type;
-    _3dUnitsToBeSelected = units; //select_units_according_to_filters(units)
+    _3dUnitsToBeSelected = filterUnitsBasedOnCommunityType(units); //select_units_according_to_filters(units)
     selected_units = _3dMapViewMarker()
     beansWidget.initMap(`${webCommunity.address}, ${webCommunity.city}, ${webCommunity.state}`,_beansApiKey, 
       {
@@ -220,6 +220,7 @@ $(window).bind('load', function () {
         current_floor = floor_for_showing_image
       
         populate_current_units();
+        debugger;
         if ($(this).hasClass('only-amenity')) {
           $('.alert').show()
           timer = setTimeout(function () {
@@ -1132,7 +1133,7 @@ function disabled_enabled_anchors() {
         floorplate_amenities.push(amenities[j]);
       }
     }
-    var units_to_display = units; //select_units_according_to_filters(units)
+    var units_to_display = filterUnitsBasedOnCommunityType(units);
     if (units_to_display.length == 0 && floorplate_amenities.length!=0) {
       $('#' + floors[i]).addClass('only-amenity');
       if ($('#' + floors[i]).hasClass('selected')) {
