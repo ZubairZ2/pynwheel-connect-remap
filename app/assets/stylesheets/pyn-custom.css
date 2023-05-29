@@ -3856,7 +3856,6 @@ a#favoriteclickme {
         width: 100% !important;
     }
     .show-more-option {
-        position: absolute !important;
         right: 16px !important;
     }
     .c-modal-sidebar {
@@ -5912,9 +5911,6 @@ ul.add-fav-options {
     #webpages-overlay-text {
         width: 100%;
     }
-    #first-unit-lease-pricing{
-        position: inherit !important;
-    }
     .c-popup .c-m-iframe-content img {
         max-height: 350px;
     }
@@ -6207,7 +6203,7 @@ ul.add-fav-options {
     font-size: 13px;
 }
 .availabilty-container {
-    display: inline-grid;
+    
     width: -webkit-fill-available;
     border-bottom: 1px solid #cccccc94;
     padding: 0px 13px 15px 13px;
@@ -6415,7 +6411,6 @@ ul.add-fav-options {
     background: white;
 }
 .show-more-option{
-    position: static;
     padding: 0;
     left: 27%;
 }
