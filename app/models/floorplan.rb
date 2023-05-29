@@ -19,15 +19,17 @@ class Floorplan < ApplicationRecord
 
   after_update :update_floorplan_units_description, if: :description_changed?
 
+
   def as_json options = {}
     super(
-      :only => [:id, :name, :virtual_tour_url, :description, :image, :file],
+      :only => [:id, :name, :virtual_tour_url, :description, :image],
+      :methods => [:description_text_limit],
       :include => {
         :amenities => {
-          :only => [:id  , :image] 
-        } 
-      }, 
-      :methods => [:description_text_limit]
+          :only => [:id, :name, :description],
+          :methods => [:amenity_image]
+        }
+      }
     )
   end
 

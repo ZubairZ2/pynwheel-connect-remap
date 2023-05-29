@@ -11,9 +11,9 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
 
   def create
     begin
-      amenity = create_amenity()
-      render json: {success: true, message: "Amenity added successfully", data: amenity.as_json}
-      
+      binding.pry
+      @amenity = @community.amenities.create!(name: params[:name], amenity_type: params[:amenity_type], video_link: params[:video_link], image: params[:file])
+      render json: {success: true, message: "Amenity added successfully", data: @amenity.as_json}
     rescue => exception
       render json: {success: false, message: exception.message}
     end
@@ -78,15 +78,6 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
 
     def update_amenity_form_status
       @community.set_community_amenity_status(current_pynwheel_user, "in_progress")
-    end
-
-    def create_amenity
-      @community.amenities.create!(
-        name: params[:name], 
-        amenity_type: params[:amenity_type], 
-        video_link: params[:video_link], 
-        image: params[:file]
-      )
     end
 
     def update_amenities_form_status

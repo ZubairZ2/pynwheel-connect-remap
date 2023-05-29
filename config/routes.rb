@@ -638,16 +638,26 @@ Rails.application.routes.draw do
       resources :communities do
         resources :community_property_map
 
+        resources :floorplans, only: [:index, :create, :destroy] do
+          resources :floorplan_amenities, only: [:create, :destroy]
+          
+          member do
+            put :update_floorplan_media
+            delete :remove_floorplan_media
+          end
+          collection do
+            post :save_floorplans_form
+          end
+        end
+
         resources :amenities,  only: [:index, :create, :destroy] do
           member do
             put :update_amenity_media
             delete :remove_amenity_media
           end
-
           collection do
             post :save_amenity_form
           end
-
           resources :amenity_galleries,  only: [:create, :destroy]
         end
 
