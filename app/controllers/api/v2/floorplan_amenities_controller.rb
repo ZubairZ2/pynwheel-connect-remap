@@ -3,6 +3,7 @@ class Api::V2::FloorplanAmenitiesController < Api::V2::ApiApplicationController
   before_action :load_community
   before_action :load_floorplan
   before_action :load_floorplan_amenity, only: [:destroy]
+  after_action :update_floorplan_form_status_to_inprogress
 
   def create
     begin
@@ -32,6 +33,9 @@ class Api::V2::FloorplanAmenitiesController < Api::V2::ApiApplicationController
 
 
   private
+    def update_floorplan_form_status_to_inprogress
+      @community.set_floorplan_status(current_pynwheel_user, "in_progress")
+    end
 
     def load_floorplan_amenity
       @floorplan_amenity = @floorplan.amenities.find params[:id]

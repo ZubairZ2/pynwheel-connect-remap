@@ -11,7 +11,6 @@ class Api::V2::AmenitiesController < Api::V2::ApiApplicationController
 
   def create
     begin
-      binding.pry
       @amenity = @community.amenities.create!(name: params[:name], amenity_type: params[:amenity_type], video_link: params[:video_link], image: params[:file])
       render json: {success: true, message: "Amenity added successfully", data: @amenity.as_json}
     rescue => exception
