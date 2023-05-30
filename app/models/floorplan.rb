@@ -22,8 +22,8 @@ class Floorplan < ApplicationRecord
 
   def as_json options = {}
     super(
-      :only => [:id, :name, :virtual_tour_url, :description, :image],
-      :methods => [:description_text_limit],
+      :only => [:id, :name, :virtual_tour_url, :description],
+      :methods => [:description_text_limit, :floorplan_image],
       :include => {
         :amenities => {
           :only => [:id, :name, :description],
@@ -31,6 +31,10 @@ class Floorplan < ApplicationRecord
         }
       }
     )
+  end
+
+  def floorplan_image
+    image&.url.present? ? image : nil
   end
 
   def update_floorplan_units_description
