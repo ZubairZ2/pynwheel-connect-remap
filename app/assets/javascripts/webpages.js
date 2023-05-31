@@ -1616,18 +1616,19 @@ function setModalAttributes(element) {
       $('#unitModal').find('#unit-lease-pricing').html("No more prices are available");
   }
   try {
+      scroller = document.getElementById("overall-scroller");
       if ($(element).data('unit-description') == "")
       {
         $('#unitModal').find('#unit-description').html("Not Available");
         $('#unitModal').find('.c-modal-sidebar-description').hide();
-        // $(".overall-scroller").addClass('hidden')
+        scroller.style.overflowY= '';
       }
       else
       {
         $('#unitModal').find('.c-modal-sidebar-description').show();
         $('#unitModal').find('#unit-description').html($(element).data('unit-description'));
         $('#unit-description').addClass("description-text");
-        // $(".overall-scroller").removeClass('hidden')
+        scroller.style.overflowY= 'auto';
       }
   }
 

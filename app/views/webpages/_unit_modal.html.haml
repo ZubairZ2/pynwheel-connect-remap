@@ -26,7 +26,7 @@
                   %a.hide{:href => "##", :id => "add-to-fav"}
                     %i.fa.fa-heart
             .modal-wrapper-mobile.hidden{style: "overflow: hidden"}
-              .c-modal-body#zoomable-modal-image-responsive
+              .c-modal-body#zoomable-modal-image-responsive.centered-image
                 .c-m-iframe-content
                   %img#responsive-floorplan-image{:src => "/assets/default.jpeg", :title => ""}/
             .c-modal-footer.zooming-content.zoomable-map-container
@@ -60,8 +60,7 @@
                 %span.available-heading#available-text
                 %b
                   %span#available-date
-                -# %div.overall-scroller.hidden{style: "height: 25em; max-height: 25em; overflow-y: auto;"}
-              %div{style: "max-height: 15em; overflow-y: auto;"}
+              %div#overall-scroller.overall-scroller{style: "height: 25em; max-height: 25em;"}
                 #unit-lease-pricing-text-li.availabilty-container
                   %span.text-left.available-info
 
@@ -78,9 +77,8 @@
                 .c-modal-sidebar-description
                   %h4.des-heading Description
                   %p.c-m-description#unit-description
-                %div{style: "max-height: 6em; overflow-y: auto;"}
-                  %div{style: "padding: 0px 0px 8px 7px"}
-                    .unit-buttons
+                %div{style: "padding: 0px 0px 8px 7px"}
+                  .unit-buttons
             .c-modal-sidebar-filters
               - if @community_info.credential.present? and @community_info.credential.apply_now.to_s == "true"
                 .m-filters

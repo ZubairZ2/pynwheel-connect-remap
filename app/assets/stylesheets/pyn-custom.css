@@ -6232,8 +6232,6 @@ ul.add-fav-options {
     background: #1d2425;
     padding: 15px;
     bottom: 0;
-    position: absolute;
-    width: 40%;
 }
 .sidebar-footer {
 	bottom: 0;
@@ -6420,7 +6418,10 @@ ul.add-fav-options {
     text-align: end;
     margin-top: -18px;
 }
-
+.centered-image{
+    min-height: 535px;
+    display: flex;
+}
 ::-webkit-calendar-picker-indicator {
     filter: invert(1);
 }
@@ -6581,7 +6582,8 @@ ul.add-fav-options {
     position: absolute !important;
 }
 .description-text{
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     max-height: 100px;
 }
 .alert_message{
