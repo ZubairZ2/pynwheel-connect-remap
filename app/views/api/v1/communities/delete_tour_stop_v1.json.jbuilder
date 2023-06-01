@@ -12,7 +12,7 @@ description_limit = ENV["DESCRIPTION_LIMIT"].to_i
 need_original_id_arr = ["elevator", "building_starting_point"]
 is_zerv_lock_present = false
 
-styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
+styling_start = '<div style="font-family: gotham-light; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
 styling_end = '</p></div>'
 json.tours @tours do |tour|
   if @dwelo_guest_id.present?
