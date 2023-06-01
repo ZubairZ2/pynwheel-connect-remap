@@ -121,7 +121,7 @@ class FunnelService < BaseService
       }
     )
 
-    display_logs("Appointment status updated", url, response)
+    display_logs("Statu of the appointment with ID #{@scheduled_tour&.funnel_appointment_id} updated to #{appointment_status}.", url, response)
   end
 
   def cancel_funnel_appointment
