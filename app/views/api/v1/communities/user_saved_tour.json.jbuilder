@@ -1,5 +1,5 @@
 description_limit = ENV["DESCRIPTION_LIMIT"].to_i
-styling_start = '<div style="font-family: gotham-light; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
+styling_start = '<div style="font-family: gotham-light; color: white !important;"><p>'
 styling_end = '</p></div>'
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number

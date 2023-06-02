@@ -1,6 +1,6 @@
 i = 0
 description_limit = 90
-styling_start = '<div style="font-family: gotham-light; color: white  !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
+styling_start = '<div style="font-family: gotham-light; color: white  !important;"><p>'
 styling_end = '</p></div>'
 json.tours @tours do |tour|
 
