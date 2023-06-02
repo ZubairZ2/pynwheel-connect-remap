@@ -1094,7 +1094,7 @@ json.tours @tours do |tour|
 
       if unit.modal_unit
         lease_pricing = []
-        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit.floorplan_id,unit.community_id,true) if unit.present?
+        @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', unit&.floorplan_id,unit.community_id,true) if unit.present?
         @units.each do |floorplan_unit|
           unless floorplan_unit.id == unit.id
             pricing_str = {"pricing_option" => floorplan_unit.marketing_name + " #{@community.get_currency_symbol}" + floorplan_unit.effective_rent.to_i.to_s} rescue next
@@ -1115,13 +1115,13 @@ json.tours @tours do |tour|
       if @community.credential.present? and @community.credential.apply_now == "separate_link"
         availability_url = @community.credential.separate_link
       else
-        availability_url = (unit.availability_url.present? ? unit.availability_url : u.floorplan.availability_url rescue "")
+        availability_url = (unit.availability_url.present? ? unit.availability_url : u&.floorplan&.availability_url rescue "")
       end
 
       floorplan_for_name = Floorplan.find_by(id: unit&.floorplan&.id)
       stop_dat = {"floorplan" => (floorplan_for_name.name rescue ""),"floorplan_full_name" => (floorplan_for_name.name + "- #{(floorplan_for_name.bedrooms.present? ? (floorplan_for_name.bedrooms.to_i.to_s + " BR") : "") } / #{(floorplan_for_name.bathrooms.present? ? (floorplan_for_name.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date, "display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
       json.stop_data stop_dat
-      json.availability_url unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url
+      json.availability_url unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit&.floorplan_id).availability_url
 
       @unit_amenities = unit.amenities
       unit_amenities_hit = true

@@ -67,7 +67,7 @@ json.tours @tours do |tour|
           if add_stop.stop_type == "unit"
             unit = Unit.find_by_id add_stop.stop_id
 
-            if unit.floorplan.bedrooms.to_i == @tour_user.desired_bedroom.to_i
+            if unit&.floorplan&.bedrooms.to_i == @tour_user.desired_bedroom.to_i
               stops_arr1 << add_stop
             end
           else
@@ -117,7 +117,7 @@ json.tours @tours do |tour|
                   if add_stop.stop_type == "unit" and @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.present? ? tour.tour_setting.show_desired_bedroom : false) : false)
                     unit = Unit.find_by_id add_stop.stop_id
 
-                    unless unit.floorplan.bedrooms.to_i == @tour_user.desired_bedroom.to_i
+                    unless unit&.floorplan&.bedrooms.to_i == @tour_user.desired_bedroom.to_i
                       bedroom_flag = false
                     end
                   end
@@ -332,7 +332,7 @@ json.tours @tours do |tour|
 
       unit = Unit.find_by_id stop.stop_id
       if unit.present?
-      json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "no image") ): "no image"
+      json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit&.floorplan&.image.present? ? unit&.floorplan&.image.url : "no image") ): "no image"
       json.name unit.api_unit_marketing_name
       json.floorplate_image (unit.floorplate.image.present? ? unit.floorplate.image.url : nil) if unit.floorplate.present?
       unit_directional_text = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
@@ -388,7 +388,7 @@ json.tours @tours do |tour|
         show_long_description = true
       end
 
-      stop_dat = {"floorplan" => Floorplan.find_by(id: unit.floorplan.id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description + styling_end  rescue ""), "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
+      stop_dat = {"floorplan" => Floorplan.find_by(id: unit&.floorplan&.id).name,"effective_rent" => unit.effective_rent,"available_date" => unit.available_date,"lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description + styling_end  rescue ""), "availability_url"=> unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url}
       json.stop_data stop_dat
       @unit_amenities = unit.amenities #Amenity.where(community_id: @community.id, amenityable_type: "Unit", amenityable_id: stop.stop_id)
       unit_amenities_hit = true
