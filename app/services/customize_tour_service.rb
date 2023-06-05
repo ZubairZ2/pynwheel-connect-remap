@@ -6,7 +6,7 @@ class CustomizeTourService
 
   def available_stops
     tour = get_user_tour()
-    tour.tour_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
+    tour.tour_stops.plotted_stops.where(display_stop: true).pluck(:stop_type, :stop_id)
   end
 
   def get_user_tour
@@ -88,7 +88,7 @@ class CustomizeTourService
 
   def stops_available_for_tour building
     tour = user_customized_tour
-    visible_stops_ids = tour.tour_stops.where(stop_type: ["unit", "amenity"], display_stop: true).pluck(:stop_id)
+    visible_stops_ids = tour.tour_stops.plotted_stops.where(stop_type: ["unit", "amenity"], display_stop: true).pluck(:stop_id)
     available_units_count = @community.units.where(id: visible_stops_ids, building: building, available: true).count
     available_amenities_count = @community.amenities.where(id: visible_stops_ids, building: building, breezway_lock_visible: true).count
     (available_units_count + available_amenities_count) > 0

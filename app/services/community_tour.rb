@@ -144,7 +144,7 @@ class CommunityTour
     if @scheduled_tour_stops.present?
       @stops_arr = @community.mdu ? @scheduled_tour_stops : @scheduled_tour_stops.where.not(stop_type: "unit").order(:sort)
     else
-      @stops_arr =  @community.mdu ? @tour.tour_stops.where(display_stop: true).order(:sort) : @tour.tour_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
+      @stops_arr =  @community.mdu ? @tour.tour_stops.plotted_stops.where(display_stop: true).order(:sort) : @tour.tour_stops.plotted_stops.where(display_stop: true, stop_type: "amenity").order(:sort)
     end
   end
 

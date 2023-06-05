@@ -498,8 +498,8 @@ class Community < ApplicationRecord
   end
 
   def set_tour_stops_status(current_user, status)
-    return if self.community_tour&.tour_stops.blank?
-    tour_stops = self.community_tour.tour_stops.compact
+    return if self.community_tour&.tour_stops.plotted_stops.blank?
+    tour_stops = self.community_tour.tour_stops.plotted_stops.compact
     tour_stops.each do |ts|
       if status.empty?
         status_attr = status_string(ts.name.present?)
@@ -1368,7 +1368,8 @@ s  end
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, self, false).get_scheduled_tour
 
     if scheduled_tour.present? && scheduled_tour.stops_list.present?
-      tour.tour_stops.where(id: scheduled_tour.stops_list).order(:sort)
+      stops = tour.tour_stops.plotted_stops.where(id: scheduled_tour.stops_list).order(:sort)
+      stops = stops.where()
     else
       nil
     end

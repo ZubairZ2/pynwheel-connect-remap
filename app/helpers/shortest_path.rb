@@ -674,7 +674,7 @@ module ShortestPath
   def check_stops_have_multiple_buildings(new_stops_arr, community, tour_user)
     tour = tour_user.present? ? CustomizeTourService.new(community, tour_user).get_user_tour : community.community_tour
     sorted_building = tour.building_order.reject { |e| e.to_s.strip.empty? } rescue []
-    tour_stops = tour&.tour_stops.visible.order('sort ASC')
+    tour_stops = tour&.tour_stops.plotted_stops.visible.order('sort ASC')
     unit_ids = tour_stops.where(stop_type: "unit").pluck(:stop_id)
     amenity_ids = tour_stops.where(stop_type: "amenity").pluck(:stop_id)
     building_list, actual_building_list = []
@@ -702,7 +702,7 @@ module ShortestPath
   def fetch_multiple_stops(stop_types, new_stops_arr, community_id, tour_user)
     community = Community.find community_id
     tour = tour_user.present? ? CustomizeTourService.new(community, tour_user).get_user_tour : community.community_tour
-    tour_stops = tour&.tour_stops.visible.order('sort ASC')
+    tour_stops = tour&.tour_stops.plotted_stops.visible.order('sort ASC')
     floorplate_mobile_stops = []
 
     tour_stops.each do |tour_stop|
@@ -781,7 +781,7 @@ module ShortestPath
       @stops_id_hash = {}
       @community = Community.find community_id
       tour = @community.community_tour
-      tour_stops = tour&.tour_stops.visible.order('sort ASC')
+      tour_stops = tour&.tour_stops.plotted_stops.visible.order('sort ASC')
       tour_stops.each {|tour_stop| @stops_id_hash[tour_stop.id] = tour_stop.stop_id}
       @precedence_arr = tour_stops.pluck(:stop_id, :stop_type) # due to sortable gem its sorted so we fetch in a line 
       @planned_to_visit_units_and_doors_ids     = []
@@ -936,7 +936,7 @@ module ShortestPath
       @community = Community.find community_id
       tour = @community.community_tour
       # stops input data hash connect with each floor 1 => stops, 2 => stops  
-      tour_stops = tour&.tour_stops.visible.order('sort ASC')
+      tour_stops = tour&.tour_stops.plotted_stops.visible.order('sort ASC')
       tour_stops.each {|tour_stop| @stops_id_hash[tour_stop.id] = tour_stop.stop_id}
       @planned_to_visit_units_and_doors_ids, @planned_to_visit_amenities_and_doors_ids, @floors_specific_units, @floors_specific_amenities = [], [], {}, {}
       @floorplates = @community.floorplates
@@ -996,7 +996,7 @@ module ShortestPath
       @community = Community.find community_id
       tour = @community.community_tour
       # stops input data hash connect with each building => floor 1 => stops, 2 => stops  
-      tour_stops = tour&.tour_stops.visible.order('sort ASC')
+      tour_stops = tour&.tour_stops.plotted_stops.visible.order('sort ASC')
       tour_stops.each {|tour_stop| @stops_id_hash[tour_stop.id] = tour_stop.stop_id}
       @planned_to_visit_units_and_doors_ids, @planned_to_visit_amenities_and_doors_ids, @floors_specific_units, @floors_specific_amenities = [], [], {}, {}
       @floorplates = @community.floorplates

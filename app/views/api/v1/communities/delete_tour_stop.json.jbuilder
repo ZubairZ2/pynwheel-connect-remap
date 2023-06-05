@@ -40,8 +40,8 @@ json.tours @tours do |tour|
   end
   if @community.show_map
 
-    ts = @community.mdu ? tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort) : tour.tour_stops.where.not(id: @community.deleted_ids, stop_type: "unit").order(:sort)
-    ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
+    ts = @community.mdu ? tour.tour_stops.plotted_stops.where.not(id: @community.deleted_ids).order(:sort) : tour.tour_stops.plotted_stops.where.not(id: @community.deleted_ids, stop_type: "unit").order(:sort)
+    ts1 = tour.tour_stops.plotted_stops.where(id: @community.deleted_ids).map{|x| x.id}
 
     if @community.is_sitemap
       sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first
@@ -60,7 +60,7 @@ json.tours @tours do |tour|
     stops_arr = []  
     if @community.is_sitemap
 
-      stops_arr = @community.mdu ? @community.community_tour.tour_stops.where(display_stop: true).order(:sort) : @community.community_tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      stops_arr = @community.mdu ? @community.community_tour.tour_stops.plotted_stops.where(display_stop: true).order(:sort) : @community.community_tour.tour_stops.plotted_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       if stops_arr.present? and @tour_user.desired_bedroom.present? and (tour.tour_setting.present? ? (tour.tour_setting.show_desired_bedroom.present? ? tour.tour_setting.show_desired_bedroom : false) : false)
         stops_arr1 = []
         stops_arr.each do |add_stop|
@@ -170,7 +170,7 @@ json.tours @tours do |tour|
   
 
 
-    stops = @community.mdu ? tour.tour_stops : tour.tour_stops.where.not(stop_type: "unit")
+    stops = @community.mdu ? tour.tour_stops.plotted_stops : tour.tour_stops.plotted_stops.where.not(stop_type: "unit")
     all_stop_ids = stops_arr.compact.pluck(:id)
     stops_except_deleted_ids = all_stop_ids - @community.deleted_ids
     stops_except_deleted = []
@@ -192,7 +192,7 @@ json.tours @tours do |tour|
     ########------------------------ Sorting tour Stop in an array-----------------------
     if @community.is_sitemap
 
-      stops_arr = @community.mdu ? @community.community_tour.tour_stops.where(display_stop: true).order(:sort) : @community.community_tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      stops_arr = @community.mdu ? @community.community_tour.tour_stops.plotted_stops.where(display_stop: true).order(:sort) : @community.community_tour.tour_stops.plotted_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 2]
       last_stop_desc = stops_arr.compact[stop_count - 1]
@@ -242,7 +242,7 @@ json.tours @tours do |tour|
     #########-------------------- End tour stop sort-----------------------
     new_stops_arr = stops_arr.compact
     json.path_points []
-    # new_stops_arr = @community.mdu ? tour.tour_stops : tour.tour_stops.where.not(stop_type: "unit")
+    # new_stops_arr = @community.mdu ? tour.tour_stops.plotted_stops : tour.tour_stops.plotted_stops.where.not(stop_type: "unit")
     # stop_count = new_stops_arr.count
     # second_last = new_stops_arr[stop_count - 2]
     # last_stop_desc = new_stops_arr[stop_count - 1]

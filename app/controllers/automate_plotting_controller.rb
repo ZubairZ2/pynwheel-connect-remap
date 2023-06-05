@@ -6,7 +6,7 @@ class AutomatePlottingController < ApplicationController
     @current_locks_provider = existing_locks_provider(@community)
     @all_locks = all_locks(@community)
     @tour = @community.community_tour
-    @tour_stops = @tour&.tour_stops.visible.order('sort ASC')
+    @tour_stops = @tour&.tour_stops.plotted_stops.visible.order('sort ASC')
     @precedence_arr = @tour_stops.pluck(:stop_id, :stop_type) # due to sortable gem its sorted so we fetch in a line 
     @planned_to_visit_units_and_doors_ids     = []
     @planned_to_visit_amenities_and_doors_ids = []

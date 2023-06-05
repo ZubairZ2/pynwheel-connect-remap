@@ -35,8 +35,8 @@ class TourStop < ApplicationRecord
   before_destroy :remove_associated_stops
 
   scope :visible, -> { where(display_stop: true) }
-
   scope :visible, -> { where(display_stop: true) }
+  scope :plotted_stops, -> { where("latitude > ? AND longitude > ? ", 0, 0)}
 
   def stop_description_text
     return "" unless (self.stop_id && self.stop_type).present?

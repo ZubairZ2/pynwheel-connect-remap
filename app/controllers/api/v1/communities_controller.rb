@@ -217,7 +217,7 @@ module Api
       def delete_tour_stop
         @community = Community.find params[:id]
         delete_array = params[:stop_id].split(",") if params[:stop_id].present?
-        te = @community.community_tour.tour_stops.where(display_stop: false).map{|x| x.id} rescue []
+        te = @community.community_tour.tour_stops.plotted_stops.where(display_stop: false).map{|x| x.id} rescue []
         @community.deleted_ids = delete_array.present? ? delete_array + te : [] + te
         @community.save 
         @tours = []
@@ -239,7 +239,7 @@ module Api
         if @community.enable_locks and @community.multiple_locks_provider.include?("EdgeState") and edge_state.present? and @tour_user.tour_type != "virtual_tour"
           Thread.new do
             access_token = RemoteLockService.new(@community).client_credentials
-            allowed_stops = @community.community_tour.tour_stops.where(display_stop: true).pluck(:stop_id)
+            allowed_stops = @community.community_tour.tour_stops.plotted_stops.where(display_stop: true).pluck(:stop_id)
             allowed_stops << @community.community_tour.id
             locks = RemoteLock.where(stop_id: allowed_stops, edge_state_id: edge_state.id).pluck(:device_id, :remote_lock_type)
             if locks.present?
@@ -323,7 +323,7 @@ module Api
           
           stops_arr = []
           if @community.is_sitemap
-            stops_arr = @community.mdu ? @tour.tour_stops.where(display_stop: true).order(:sort) :  @tour.tour_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
+            stops_arr = @community.mdu ? @tour.tour_stops.plotted_stops.where(display_stop: true).order(:sort) :  @tour.tour_stops.plotted_stops.where(display_stop: true,stop_type: "amenity").order(:sort)
           else
             @building_list = @floor_list = []
     
