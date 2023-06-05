@@ -6227,6 +6227,9 @@ ul.add-fav-options {
     font-size: 13px;
     line-height: 2;
     min-height: 150px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 100px;
 }
 .c-modal-sidebar-filters {
     background: #1d2425;
