@@ -5868,8 +5868,7 @@ ul.add-fav-options {
         max-height: 100% !important;
     }
     .centered-image{
-        min-height: 400px !important;
-        display: flex;
+        min-height: 0px !important;
     }
     .c-connect-map-wrapper .c-modal-wrapper {
         max-height: 350px !important;
@@ -6424,10 +6423,7 @@ ul.add-fav-options {
     text-align: end;
     margin-top: -18px;
 }
-.centered-image{
-    min-height: 535px;
-    display: flex;
-}
+
 ::-webkit-calendar-picker-indicator {
     filter: invert(1);
 }
@@ -6956,4 +6952,9 @@ span.to-input {
 
 .slick-dots {
     pointer-events: none;
+}
+
+.centered-image{
+    min-height: 535px;
+    display: flex;
 }
