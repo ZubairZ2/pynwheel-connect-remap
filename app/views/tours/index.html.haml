@@ -113,7 +113,7 @@
                 %tbody.tour_sortable
                   - orderVar = 0
                   - if @community.is_sitemap || ((@tours.starting_floor.present? ? @tours.starting_floor : @community.floorplates.map{|f| f.floors}.flatten.sort.first) == params[:floorNo].to_i && ([@building,nil].include? (@tours.building))) && (@tours.building.present? ? @tours.building == @building : @building_list[0] == @building )
-                    - if (@tours.x_plot >= 0 || @tours.y_plot >= 0 )
+                    - if (@tours.x_plot.to_i >= 0 || @tours.y_plot.to_i >= 0 )
                       %tr
                         %td
                           = orderVar = orderVar + 1
@@ -186,7 +186,7 @@
                                 %i.fa.fa-eye-slash.icon_size.additionalPageAction
                                   %span#additionalPageActionText
                                     Click on the eye icon to temporarily remove a stop from the tour. 
-                            - unless u.modal_unit  && ((u.x_plot + u.y_plot) < 1)
+                            - unless u.modal_unit  && ((u.x_plot.to_i + u.y_plot.to_i) < 1)
                               - if @community.show_map
                                 = link_to draw_line_path(u) << "?stop_type=#{stop.stop_type}", id: "create_path", :data => {:idattr => u.id}, class: "text-warning ml-5" do
                                   %i.fa.fa-road.icon_size.additionalPageAction
@@ -365,9 +365,9 @@
                     -#= form_tag community_tours_path(@community), {:class => 'tour_floor_form'} do
                     -#  = hidden_field_tag "floorNo", 6, :class => "hidden_floor"
                     - if @community.is_sitemap
-                      = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
+                      = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot.to_i}px; top:#{@tours.y_plot.to_i == 0 ? 30 : @tours.y_plot.to_i}px; position:absolute;", :onclick => "return false;"
                     - elsif @sitemap.present? && (@floor.to_i == (@tours.starting_floor.present? ? @tours.starting_floor : @community.floorplates.map{|f| f.floors}.flatten.min.to_i)) && (@tours.building.present? ? (@tours.building rescue nil) == (@building rescue nil) : @building_list[0] == @building )
-                      = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot}px; top:#{@tours.y_plot == 0 ? 30 : @tours.y_plot}px; position:absolute;", :onclick => "return false;"
+                      = link_to image_tag("/assets/star.png"), "#", :class => "start-point marker", 'data-toggle' => "tooltip", :title => "Starting Point", :id => "stop_#{@tours.id}", :style => "left:#{@tours.x_plot.to_i}px; top:#{@tours.y_plot.to_i == 0 ? 30 : @tours.y_plot.to_i}px; position:absolute;", :onclick => "return false;"
                     - if @sitemap.present? && @sitemap.image.present? && @sitemap.image.content_type == "image/svg+xml"
                       = image_tag @sitemap.present? ? ( @sitemap.image? ? @sitemap.image.url : "default.jpeg") : "default.jpeg", id: "testimg", :style => "margin-left: -15px; width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
                     - else 
@@ -376,30 +376,30 @@
                   - coordinates_array = []
                   - path_point_coords = {}
                   - @existing_stops.flatten.each_with_index do |stop, index|
-                    - next if (stop.x_plot + stop.y_plot) < 1
+                    - next if (stop.x_plot.to_i + stop.y_plot.to_i) < 1
                     - if stop.class.to_s == "Amenity"
-                      %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot - 2}px; left: #{stop.x_plot - 4}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
+                      %i.custom-icon.stops{:id => "stop_#{stop.id}", :style => "position: absolute; top: #{stop.y_plot.to_i - 2}px; left: #{stop.x_plot.to_i - 4}px; height:25px;width: 25px;border: 2px solid  #d37474;"}
                         %i.fa.fa-camera-retro{:style => " font-size:12px; color: #d37474; margin-top: 3px; "}
 
                     - elsif stop.class.to_s == "Elevator"
 
 
                       - if (!@community.is_sitemap && (stop.floors.include?(@floor.to_i)) && (@building_choice.include? stop.building ) ) || (stop.floorplate_covering_range == "-")
-                        %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                        %i.fa.fa-reorder.stops.stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot.to_i}px; left: #{stop.x_plot.to_i}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
                     
                     - elsif stop.class.to_s == "BuildingStartingPoint"
 
         
-                      %i.fa.fa-circle.stops.bsp_stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot}px; left: #{stop.x_plot}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                      %i.fa.fa-circle.stops.bsp_stop{:id => "stop_#{stop.id}", :style => "font-size: 25px; position: absolute; top: #{stop.y_plot.to_i}px; left: #{stop.x_plot.to_i}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
 
                     - else
-                      - next if (stop.y_plot + stop.x_plot) < 1
-                      %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot - right_margin + 6}px; left: #{stop.x_plot - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
+                      - next if (stop.y_plot.to_i + stop.x_plot.to_i) < 1
+                      %i.fa.fa-map-marker.stops{:id => "stop_#{stop.id}", :style => "font-size: 35px; position: absolute; top: #{stop.y_plot.to_i - right_margin + 6}px; left: #{stop.x_plot.to_i - left_margin + 3}px; height:25px;width: 25px; color: #d37474; margin-top: 3px; "}
 
                   /- binding.pry
                   - @existing_path_points.each_with_index do |point, index|
-                    .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot - 3}px; left: #{point.x_plot - 3}px;"}
+                    .path_point{:id => "point_#{point.id}", :data => "#{point.path.map_path_to ? point.path.map_path_to&.id : @tours.id}", :value => "#{point.path.map_path_from ? point.path.map_path_from&.id : @tours.id }", title: "Drag to change, double click to remove", :style => "position: absolute; top: #{point.y_plot.to_i - 3}px; left: #{point.x_plot.to_i - 3}px;"}
   #select_status.modal.fade.select_status                    
 .row
   .col-md-12
