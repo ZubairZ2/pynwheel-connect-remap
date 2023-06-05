@@ -107,11 +107,13 @@ class Community < ApplicationRecord
   end
 
   def plotted_units
-    self&.units&.are_ploted_units - self&.community_tour&.unit_tour_stops rescue []
+    # self&.units&.are_ploted_units
+    self&.units - self&.community_tour&.unit_tour_stops rescue []
   end
 
   def plotted_amenities
-    self&.amenities&.plotted_amenities - self&.community_tour&.amenity_tour_stops rescue []
+    # self&.amenities&.plotted_amenities 
+    self&.amenities - self&.community_tour&.amenity_tour_stops rescue []
   end
 
   def community_code
