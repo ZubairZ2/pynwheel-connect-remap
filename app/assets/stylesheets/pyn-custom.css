@@ -5867,7 +5867,10 @@ ul.add-fav-options {
         overflow-x: hidden !important;
         max-height: 100% !important;
     }
-
+    .centered-image{
+        min-height: 400px !important;
+        display: flex;
+    }
     .c-connect-map-wrapper .c-modal-wrapper {
         max-height: 350px !important;
     }
