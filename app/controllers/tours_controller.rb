@@ -6,7 +6,7 @@ class ToursController < ApplicationController
   def index
     @community = Community.find params[:community_id]
     @tours = @community.community_tour || @community.create_tour
-    @tour_stops = @tours.present? ? @tours.tour_stops.plotted_stops : nil
+    @tour_stops = @tours.present? ? @tours.tour_stops : nil
     @tour_setting = @tours.tour_setting ||  @tours.create_tour_setting
     @community_opening_hours = @community.opening_hours.order(:sort).all
     @tour_elevator_array =  TourStop.where(tour_id: @community.community_tour.id,stop_type: "elevator").map{|x| x.stop_id}
@@ -63,7 +63,7 @@ class ToursController < ApplicationController
     ele_ids = []
     @community.floorplates.map{|x|  ele_ids << x.id if x.floors.include?(1)}
 
-    @community.community_tour.tour_stops.plotted_stops.order(:sort).each do |stop|
+    @community.community_tour.tour_stops.order(:sort).each do |stop|
 
       next if !@community.mdu && stop.stop_type == "unit"
       if !@community.is_sitemap
@@ -87,7 +87,7 @@ class ToursController < ApplicationController
       end
     end
     
-    @community.community_tour.tour_stops.plotted_stops.where(stop_id: @all_stops).map{|x| @existing_path_points << @community.community_tour.tour_stops.plotted_stops.where(stop_id: @all_stops).map{|y| Path.find_by(map_path_from_id: x.stop_id, map_path_to_id: y.stop_id).path_points.reorder('id ASC') unless x == y rescue next}.compact }
+    @community.community_tour.tour_stops.where(stop_id: @all_stops).map{|x| @existing_path_points << @community.community_tour.tour_stops.where(stop_id: @all_stops).map{|y| Path.find_by(map_path_from_id: x.stop_id, map_path_to_id: y.stop_id).path_points.reorder('id ASC') unless x == y rescue next}.compact }
     
     @all_stops
     @existing_path_points.flatten!
@@ -121,7 +121,7 @@ class ToursController < ApplicationController
   def settings
     @community = Community.find params[:community_id]
     @tours = @community.community_tour || @community.create_tour
-    @tour_stops = @tours.present? ? @tours.tour_stops.plotted_stops : nil
+    @tour_stops = @tours.present? ? @tours.tour_stops : nil
     @tour_setting = @tours.tour_setting ||  @tours.create_tour_setting
     @community_opening_hours = @community.opening_hours.order(:sort).all
     @community_guided_opening_hours = @community.guided_opening_hours.order(:sort).all
@@ -132,7 +132,7 @@ class ToursController < ApplicationController
   
   def point_json
 
-    @community.community_tour.tour_stops.plotted_stops.each do |x|
+    @community.community_tour.tour_stops.each do |x|
       
       if x.present?
         ua = x.stop_type.classify.constantize.find_by_id(x.stop_id)
@@ -299,7 +299,7 @@ class ToursController < ApplicationController
     @sitemap = @community.is_sitemap ? @community.sitemap : @community.floorplates.first
     @amenities = @community.amenities
     @units = @community.units
-    @tour_stops = @community.community_tour.tour_stops.plotted_stops
+    @tour_stops = @community.community_tour.tour_stops
 
     @tour_amenity_array =  TourStop.where(tour_id: @community.community_tour.id,stop_type: "amenity").map{|x| x.stop_id}
     @tour_unit_array =  TourStop.where(tour_id: @community.community_tour.id,stop_type: "unit").map{|x| x.stop_id}

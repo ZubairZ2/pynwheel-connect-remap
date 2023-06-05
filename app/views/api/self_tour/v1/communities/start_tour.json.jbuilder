@@ -95,7 +95,7 @@ json.tours @tours do |tour|
       @building_list.each do |building|
 
         # If no availble units or amenity in the building do not add elevator or staarting point in stops
-        visible_stops_ids = tour.tour_stops.where(stop_type: ["unit", "amenity"], display_stop: true).pluck(:stop_id)
+        visible_stops_ids = tour.tour_stops.plotted_stops.where(stop_type: ["unit", "amenity"], display_stop: true).pluck(:stop_id)
         available_units_count = @community.units.where(id: visible_stops_ids, building: building, available: true).count
         available_amenities_count = @community.amenities.where(id: visible_stops_ids, building: building,breezway_lock_visible: true).count
 
