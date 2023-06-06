@@ -1781,8 +1781,8 @@ function amenityAddFrame(src) {
 function addVirtualTour(element) {
   removeFrame();
   let label = $(element).data('unit-virtual-tour-label');
-  let url = $(element).data('unit-virtual-tour-url');
-
+  let unit_id = $(element).data('unit-id');
+  let url = $(element).data('unit-virtual-tour-url') || $(element).parents().find('#unitModal').parents().find('#m_'+unit_id).data('unit-virtual-tour-url')
   if(url != null && url != "") {
     $('.virtual-tour-btn').css("display", "block");
     $('.virtual-tour-btn').html(label);
