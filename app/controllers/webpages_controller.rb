@@ -98,7 +98,7 @@ class WebpagesController < ActionController::Base
     units.present? && units.each do |unit|
       bedroom_number = unit.to_i
       if bedroom_number == 0 
-        @unit_bedrooms << ["Studio", "zero_bedrooms"] 
+        @unit_bedrooms << ["Studio", "0_bedrooms"] 
       elsif bedroom_number == 1 
         @unit_bedrooms << ["#{bedroom_number} Bedroom", "1_bedroom"] 
       else
@@ -122,19 +122,19 @@ class WebpagesController < ActionController::Base
         @available_units << ["Now", "now"]
       end
       if (available_date > today && available_date <= thirty_days) 
-        @available_units << ["In the next 30 days","in_next_30_days"]
+        @available_units << ["In the next 30 days","0-30"]
       end
       if (available_date >= thirty_days && available_date <= sixty_days)
-        @available_units << ["In 31-60 days","in_30_to_60_days"]
+        @available_units << ["In 31-60 days","31-60"]
       end
       if (available_date >= sixty_days && available_date <= ninty_days)
-        @available_units << ["In 61-90 days","in_61_to_90_days"]
+        @available_units << ["In 61-90 days","61-90"]
       end
       if (available_date >= ninty_days && available_date <= one_twenty_days)
-        @available_units << ["In 91-120 days","in_91_to_120_days"]
+        @available_units << ["In 91-120 days","91-120"]
       end
       if (available_date > one_twenty_days)
-        @available_units << ["In 121+ days","in_121_plus_days"]
+        @available_units << ["In 121+ days","121-"]
       end
     end
     @available_units = @available_units.uniq
@@ -146,7 +146,7 @@ class WebpagesController < ActionController::Base
     @square_feet = []
     square_feet_range = minimum_square_feet.to_i..maximum_square_feet.to_i
     square_feet_range_hash = {}
-    slice = square_feet_range.last/4 > 0 ? square_feet_range.last/4 : 1
+    slice = 100 #square_feet_range.last/4 > 0 ? square_feet_range.last/4 : 1
     starting_value = minimum_square_feet
     while starting_value <= maximum_square_feet
       square_feet_range_hash[starting_value.to_i.to_s+'-'+maximum_square_feet.to_f.ceil.to_s] = starting_value.to_i
@@ -159,15 +159,8 @@ class WebpagesController < ActionController::Base
   end
 
   def build_market_rent_range
-    maximum_market_rent = @units_with_floorplan_info.max_by{|k| k[:market_rent] }[:market_rent]
-    minimum_market_rent = @units_with_floorplan_info.min_by{|k| k[:market_rent] }[:market_rent]
-    @market_rent = []
-    market_rent_range = minimum_market_rent.to_i..maximum_market_rent.to_i
-    market_rent_range_hash = market_rent_range.each_slice((market_rent_range.last/4 > 0 ? market_rent_range.last/4 : 1)).with_index.with_object({}) { |(a,i),h| h[minimum_market_rent.to_i.to_s+'-'+a.last.to_s]=a.last }
-    market_rent_range_hash = market_rent_range_hash.invert
-    market_rent_range_hash.each do |v|
-      @market_rent << v
-    end
+    rent_list = @units_with_floorplan_info.map{|obj| obj[:market_rent].to_i}.uniq.sort().reverse!
+    @market_rent =  rent_list.map{|price| [price, "#{rent_list.min}-#{price}"]}
   end
 
   def apply_now
