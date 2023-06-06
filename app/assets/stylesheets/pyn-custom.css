@@ -5727,11 +5727,17 @@ html, .add-fav-body {
 	.sidebar-footer {
     position: static !important;
 	}
+
+    .c-modal-wrapper{
+        float: none !important;
+    }
+
 	.c-connect-map-wrapper  .c-modal-wrapper {
     min-height: auto !important;
 	}
 	.c-connect-map-wrapper .c-modal-sidebar {
     min-height: auto !important;
+    width: 100% !important;
 	}
 	.c-modal-sidebar-filters .filter-action .apply-now {
     font-size: 12px !important;
