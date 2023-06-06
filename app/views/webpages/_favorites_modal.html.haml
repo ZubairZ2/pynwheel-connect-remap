@@ -128,7 +128,7 @@
                   %span{style: 'font-size: 12px'} /month
         
         .c-modal-wrapper.h-class
-          .c-modal-body{:id => "#{unit.id}-zoomable-fav-image"}
+          .c-modal-body.centered-image{:id => "#{unit.id}-zoomable-fav-image"}
             .c-m-iframe-content
               = image_tag unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
           .c-modal-footer-fav.zooming-content.zoomable-map-container
