@@ -10,15 +10,15 @@
             - rn =  rand(9999999999999999999999999)
             - if amenity.present?
               - if amenity.crop_x.present?
-                %a.preview-image{:href=> amenity.image.url  + "?timestamp=#{rn}","data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
-                  = image_tag amenity.crop_x.present? ? amenity.image.url  + "?timestamp=#{rn}" : amenity.image.url  + "?timestamp=#{rn}", id: "cropbox"
+                %a.preview-image{:href=> amenity&.image&.url  + "?timestamp=#{rn}","data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+                  = image_tag amenity.crop_x.present? ? amenity&.image&.url  + "?timestamp=#{rn}" : amenity&.image&.url  + "?timestamp=#{rn}", id: "cropbox"
 
               - else
-                %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
-                  = image_tag amenity.image.url
+                %a.preview-image{:href=>amenity.image? ? amenity&.image&.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+                  = image_tag amenity&.image&.url
             - else
-              %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
-                = image_tag amenity.image.url
+              %a.preview-image{:href=>amenity.image? ? amenity&.image&.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
+                = image_tag amenity&.image&.url
           -# = image_tag "exclamation-mark.png", class: "waring_exal #{(amenity.image.width < 350 && amenity.image.height < 300) ? "" : "hidden"}", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
         .icons

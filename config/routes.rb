@@ -640,8 +640,29 @@ Rails.application.routes.draw do
       resources :communities do
         resources :community_property_map
 
-        resources :community_amenity
-        post :add_community_amenity, to: 'community_amenity#add_community_amenity'
+        resources :floorplans, only: [:index, :create, :destroy] do
+          resources :floorplan_amenities, only: [:create, :destroy]
+          
+          member do
+            put :update_floorplan_media
+            delete :remove_floorplan_media
+          end
+          collection do
+            post :save_floorplans_form
+          end
+        end
+
+        resources :amenities,  only: [:index, :create, :destroy] do
+          member do
+            put :update_amenity_media
+            delete :remove_amenity_media
+          end
+          collection do
+            post :save_amenity_form
+          end
+          resources :amenity_galleries,  only: [:create, :destroy]
+        end
+
 
         resources :design_direction do
           delete :delete_design_image
@@ -651,6 +672,11 @@ Rails.application.routes.draw do
           post :add_favorite_ebrochure
           delete :delete_ebrochure_weblink
           delete :delete_ebrouchure_image
+        end
+
+        resources :tours, only: :index do
+          post :add_tour_stops
+          delete :delete_tour_stop
         end
 
         resources :community_additional_pages
@@ -665,22 +691,20 @@ Rails.application.routes.draw do
         post :create_opening_hours, to: 'opening_hours#create_opening_hours'
         delete :delete_opening_hours, to: 'opening_hours#delete_opening_hours'
         resources :secure_locks
-        post :add_tour_step_details, to: 'portal_tours#add_tour_step_details'
-        get :get_tour_step_details, to: 'portal_tours#get_tour_step_details'
-        delete :delete_tour_stop_gallery, to: 'portal_tours#delete_tour_stop_gallery'
-        delete :delete_tour_stop, to: 'portal_tours#delete_tour_stop'
         post :add_secure_locks, to: 'secure_locks#add_secure_locks'
         delete :delete_secure_lock, to: 'secure_locks#delete_secure_lock'
         delete :delete_lock_files, to: 'secure_locks#delete_lock_files'
         post :send_follow_up_emails, to: 'follow_up_emails#send_follow_up_emails'
         get :preview_follow_up_email, to: 'follow_up_emails#preview_follow_up_email'
         get :preview_submit_for_review_email, to: 'follow_up_emails#preview_submit_for_review_email'
+        
         resources :community_floor_plans do
           member do
             delete :delete_floorplan_amenity
             delete :delete_floorplan_image
           end
         end
+
         post :add_floorplan, to: 'community_floor_plans#add_floorplan'
         resources :pynwheel_touch_homepage do
           member do

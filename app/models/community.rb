@@ -57,7 +57,6 @@ class Community < ApplicationRecord
   has_one :igloohome, dependent: :destroy
   has_one :three_d_maps_configuration, dependent: :destroy
   has_many :comments , as: :commentable
-  has_one :portal_tour, dependent: :destroy
   has_one :hardware_spec
   has_one :status, as: :statusable
   has_one :yale
@@ -105,6 +104,16 @@ class Community < ApplicationRecord
     else
       data.merge!(:brand_feature_access => false)
     end
+  end
+
+  def plotted_units
+    # self&.units&.are_ploted_units
+    self&.units - self&.community_tour&.unit_tour_stops rescue []
+  end
+
+  def plotted_amenities
+    # self&.amenities&.plotted_amenities 
+    self&.amenities - self&.community_tour&.amenity_tour_stops rescue []
   end
 
   def community_code
@@ -489,8 +498,8 @@ class Community < ApplicationRecord
   end
 
   def set_tour_stops_status(current_user, status)
-    return if self.portal_tour&.portal_tour_stops.blank?
-    tour_stops = self.portal_tour.portal_tour_stops.compact
+    return if self.community_tour&.tour_stops.blank?
+    tour_stops = self.community_tour.tour_stops.compact
     tour_stops.each do |ts|
       if status.empty?
         status_attr = status_string(ts.name.present?)

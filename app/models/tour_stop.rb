@@ -38,6 +38,20 @@ class TourStop < ApplicationRecord
 
   scope :visible, -> { where(display_stop: true) }
 
+  def stop_description_text
+    return "" unless (self.stop_id && self.stop_type).present?
+    stop = self.stop_type.classify.constantize.find_by_id self.stop_id
+    return "" unless stop.present?
+    stop.description
+  end
+
+  def stop_directional_text
+    return "" unless (self.stop_id && self.stop_type).present?
+    stop = self.stop_type.classify.constantize.find_by_id self.stop_id
+    return "" unless stop.present?
+    (self.stop_type == "unit") ? stop.stop_description : stop.directional_text
+  end
+
   def check_unit_occupied
     if self.stop_type == "unit"
       u = Unit.find self.stop_id

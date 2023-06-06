@@ -39,22 +39,63 @@ class Tour < ApplicationRecord
   
   after_create :define_opening_hours
 
+  def as_json options = {}
+    super(
+      :only => [:id, :name, :max_self_tour_users],
+      :include => {
+        :community => {
+          :only => [:id, :one_hour_email_text],
+          :include => { 
+            :plotted_units =>  { 
+              :only => [:id, :floor, :building, :x_plot, :y_plot], 
+              :methods => [:stop_description_text, :stop_directional_text, :name] 
+            },
+            :plotted_amenities =>  { 
+              :only => [:id, :name, :floor, :building, :x_plot, :y_plot], 
+              :methods => [:stop_description_text, :stop_directional_text] 
+            }
+          }
+        },
+        :filtered_tour_stops => {
+          :only => [:id, :name, :stop_id, :stop_type, :display_stop, :latitude, :longitude], 
+          :methods => [:stop_description_text, :stop_directional_text],
+        }
+      },
+    )
+  end
+
+  def filtered_tour_stops
+    tour_stops.where(stop_type: ["unit", "amenity"])
+  end
+
+  def unit_tour_stops
+    stop_ids = tour_stops.where(stop_type: "unit").pluck(:stop_id)
+    Unit.where(id: stop_ids)
+  end
+
+  def amenity_tour_stops
+    stop_ids = tour_stops.where(stop_type: "amenity").pluck(:stop_id)
+    Amenity.where(id: stop_ids)
+  end
+
+  def start_tour
+    community&.one_hour_email_text
+  end
+
+  def max_tour
+    max_self_tour_users
+  end
+
+  def start_tour_point
+    name
+  end
+
   def define_opening_hours
     return if self.tour_user_id.present?
-
-    self.community.opening_hours.create(day: "Monday", opening_time: "09:00", closing_time: "17:00")
-    self.community.opening_hours.create(day: "Tuesday", opening_time: "09:00", closing_time: "17:00")
-    self.community.opening_hours.create(day: "Wednesday", opening_time: "09:00", closing_time: "17:00")
-    self.community.opening_hours.create(day: "Thursday", opening_time: "09:00", closing_time: "17:00")
-    self.community.opening_hours.create(day: "Friday", opening_time: "09:00", closing_time: "17:00")
-    self.community.opening_hours.create(day: "Saturday", opening_time: "09:00", closing_time: "17:00")
-
-    self.community.guided_opening_hours.create(day: "Monday", opening_time: "09:00", closing_time: "17:00")
-    self.community.guided_opening_hours.create(day: "Tuesday", opening_time: "09:00", closing_time: "17:00")
-    self.community.guided_opening_hours.create(day: "Wednesday", opening_time: "09:00", closing_time: "17:00")
-    self.community.guided_opening_hours.create(day: "Thursday", opening_time: "09:00", closing_time: "17:00")
-    self.community.guided_opening_hours.create(day: "Friday", opening_time: "09:00", closing_time: "17:00")
-    self.community.guided_opening_hours.create(day: "Saturday", opening_time: "09:00", closing_time: "17:00")
+    %w(Monday Tuesday Wednesday Thursday Friday Saturday).each do |day|
+      self.community.opening_hours.create(day: day, opening_time: "09:00", closing_time: "17:00")
+      self.community.guided_opening_hours.create(day: day, opening_time: "09:00", closing_time: "17:00")
+    end
   end
   
 end

@@ -1,2 +1,0 @@
-class PortalToursController < ApplicationController
-end

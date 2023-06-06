@@ -56,6 +56,7 @@ class Amenity < ApplicationRecord
   after_update :crop_amenity_image
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
   after_update :sort_associated_unit_amenities, if: Proc.new { amenityable_id.present? && amenityable_type == "Floorplan" }
+  before_destroy :destroy_associated_stops
 
   # validate :url_validity
   # validate :image_size
@@ -65,9 +66,28 @@ class Amenity < ApplicationRecord
 
   def as_json options = {}
     super(
-      :only => [:id, :name, :image, :video_link]
+      :only => [:id, :name, :video_link, :amenity_type, :description],
+      :methods => [:amenity_image],
+      :include => {
+        :amenity_galleries => {
+          :only => [:id, :name, :image, :description]
+        }
+      }
     )
   end
+
+  def amenity_image
+    image&.url.present? ? image : nil
+  end
+
+  def stop_description_text
+    description
+  end
+
+  def stop_directional_text
+    directional_text
+  end
+
   def get_amenity_galleries galler_obj = []
     galler_obj << {
       image: self.image
@@ -120,6 +140,14 @@ class Amenity < ApplicationRecord
 
   def digital_lock_provider?
     self.lock_provider.present? and self.lock_provider != "" and self.lock_provider != "Manual"
+  end
+
+  def destroy_associated_stops
+    begin
+      res = TourStop.where(stop_id: self.id, stop_type: "amenity").destroy_all
+      VisitedStop.where(tour_stop_id: res.pluck(:id)).destroy_all
+    rescue => ex
+    end
   end
 
   private

@@ -18,4 +18,10 @@ class AmenityGallery < ApplicationRecord
   set_sortable :sort  
   belongs_to :amenity
   mount_base64_uploader :image, AvatarUploader
+
+  def as_json options = {}
+    super(
+      :only => [:id, :name, :image]
+    )
+  end
 end

@@ -94,7 +94,19 @@ class Unit < ApplicationRecord
   after_update :crop_unit_image
   after_update :crop_unit_secondary_image
   after_update :remove_doors_plotting, if: Proc.new { x_plot == 0 and y_plot == 0 }
-  before_destroy :delete_data
+  before_destroy :destroy_associated_stops
+
+  def stop_description_text
+    description
+  end
+
+  def stop_directional_text
+    stop_description
+  end
+
+  def name
+    api_unit_marketing_name()
+  end
 
   def get_virtual_tour_label
     if self&.virtual_tour_button_label.present?
@@ -237,7 +249,8 @@ class Unit < ApplicationRecord
     image.recreate_versions! if (crop_x.present? && image_bit && do_crop)
     self.update_columns(do_crop: false)
   end
-  def delete_data
+
+  def destroy_associated_stops
     begin
       res = TourStop.where(stop_id: self.id, stop_type: "unit").destroy_all
       VisitedStop.where(tour_stop_id: res.pluck(:id)).destroy_all

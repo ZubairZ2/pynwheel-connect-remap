@@ -34,7 +34,7 @@ json.tours tours do |tour|
       json.type @tour.stop_type
       if @tour.stop_type == "unit"
         unit = Unit.find @tour.stop_id
-        json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit.floorplan.image.present? ? unit.floorplan.image.url : "") ): ""
+        json.image unit.present? ? (unit.image.present? ? unit.image.url : (unit&.floorplan&.image.present? ? unit&.floorplan&.image.url : "") ): ""
         json.name unit.marketing_name
         json.unit_id unit.id
         json.x_plot unit.x_plot
@@ -43,8 +43,8 @@ json.tours tours do |tour|
 
         json.floorplan_image @community.unit_floorplan_images(unit)
         json.event_time (stop.event_date.present? ? stop.event_date.strftime("%m/%d/%Y") + " " : "") + (stop.event_time.present? ? stop.event_time.strftime("%H:%M:%S") : "")  rescue ""
-        json.video_link_button_label  unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
-        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""        
+        json.video_link_button_label  unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit&.floorplan&.virtual_tour_button_label
+        json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit&.floorplan&.present? && unit&.floorplan&.virtual_tour_url.present? ) ? unit&.floorplan&.virtual_tour_url : ""        
 
         lease_pricing = []
         if unit.lease_pricing.present? && @community.display_pricing_options
@@ -89,7 +89,7 @@ json.tours tours do |tour|
         json.update_apply ((unit.provider == "resman" || unit.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
         json.provider unit.provider
 
-        stop_dat = {"floorplan" => unit.floorplan_id, "floorplan_id" => unit.floorplan.id, "floorplan_full_name" => unit.floorplan.name,"effective_rent" => "#{@community.get_currency_symbol}#{unit.effective_rent.to_i.to_s}","available_date" => unit.available_date,"display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
+        stop_dat = {"floorplan" => unit.floorplan_id, "floorplan_id" => unit&.floorplan&.id, "floorplan_full_name" => unit&.floorplan&.name,"effective_rent" => "#{@community.get_currency_symbol}#{unit.effective_rent.to_i.to_s}","available_date" => unit.available_date,"display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
         
         json.stop_data stop_dat
         @unit_gallery_arr = []
@@ -114,8 +114,8 @@ json.tours tours do |tour|
           json.long_stop_description  styling_start + unit_amenity.description.gsub('red','') + styling_end rescue ""
 
           json.directional_text unit_amenity.directional_text
-          json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit.floorplan.virtual_tour_button_label
-          json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit.floorplan.present? && unit.floorplan.virtual_tour_url.present? ) ? unit.floorplan.virtual_tour_url : ""
+          json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit&.floorplan&.virtual_tour_button_label
+          json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit&.floorplan&.present? && unit&.floorplan&.virtual_tour_url.present? ) ? unit&.floorplan&.virtual_tour_url : ""
 
             @unit_gallery_arr << unit_amenity
 

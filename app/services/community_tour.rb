@@ -52,7 +52,7 @@ class CommunityTour
           unit_id = u.id
           modal_unit = u.modal_unit
           available = u.available
-          floorplan_id = u.floorplan.id
+          floorplan_id = u&.floorplan&.id
           available_date = u.available_date
           availability = u.availability
           availability_url = u.availability_url
@@ -60,8 +60,8 @@ class CommunityTour
           if u.present? && (u.available || u.modal_unit)
             name = u.api_unit_marketing_name
             is_favorite = @favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
-            bedrooms = u.floorplan.bedrooms.to_i
-            bathrooms = u.floorplan.bathrooms.to_i
+            bedrooms = u&.floorplan&.bedrooms.to_i
+            bathrooms = u&.floorplan&.bathrooms.to_i
             pricing = "#{u.community.get_currency_symbol}#{u&.floorplan&.market_rent&.to_i}"
             floorplan_image = u.present? ? (u.image.present? ? u.image.url : (u&.floorplan&.image.present? ? u&.floorplan&.image.url : nil rescue nil) ): nil
             primary_floorplan = u.present? ? (u.standard_image_url.present? ? u.standard_image_url : (u&.floorplan&.standard_image_url.present? ? u&.floorplan&.standard_image_url : nil rescue nil) ): nil

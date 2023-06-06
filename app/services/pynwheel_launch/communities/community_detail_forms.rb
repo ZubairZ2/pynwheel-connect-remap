@@ -48,7 +48,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   def amenity_images_form_require
     return false if @community.product_options.nil?
     products = JSON.parse(@community.product_options)
-    return true if !products["product_options"]["self_tour"]["is_enabled"] && (products["product_options"]["pynwheel_touch"]["is_enabled"] || products["product_options"]["pynwheel_maps"])
+    return true if (products["product_options"]["pynwheel_touch"]["is_enabled"] || products["product_options"]["pynwheel_maps"])
     false
   end
 
@@ -213,6 +213,12 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     ]
   end
 
+  def update_pynwheel_connect_fields params
+    return unless @community.community_tour.present?
+    @community.community_tour.update(max_self_tour_users: params["tour"]["max_tours"].to_i)
+    @community.update(one_hour_email_text: params["tour"]["start_tour"])  
+  end
+
   private
 
   def company_status
@@ -327,8 +333,8 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def tour_stops_status
-    return [] if @community.portal_tour&.portal_tour_stops.blank?
-    tour_stops = @community.portal_tour&.portal_tour_stops
+    return [] if @community.community_tour&.tour_stops.blank?
+    tour_stops = @community.community_tour&.tour_stops
     
     tour_stops_status = tour_stops.map {|ts| ts&.status&.status_and_remarks_obj rescue nil}
     tour_stops_status.compact.uniq
@@ -420,8 +426,8 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   end
 
   def update_tour_stops_status_and_remarks status, remarks
-    return if @community.portal_tour&.portal_tour_stops.blank?
-    tour_stops = @community.portal_tour&.portal_tour_stops
+    return if @community.community_tour&.tour_stops.blank?
+    tour_stops = @community.community_tour&.tour_stops
     tour_stops.map do |ts|
       unless ts.status.nil?
         ts&.status.update_attributes(status: status, remarks: remarks)

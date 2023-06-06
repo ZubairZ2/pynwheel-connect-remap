@@ -23,14 +23,13 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
             @floorplan = @community.floorplans.find_by_id(floorplan_id)
             if @floorplan.present?
               update_floorplan(floorplan)
-              # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "update", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
             end
           else
             create_floorplan(floorplan)
-            # PaperTrail::Version.create(item_type: "Floorplan", item_id: @floorplan.id, event: "create", whodunnit: current_pynwheel_user.id, community_id: @community.id, company_id: @community.company.id, object: "name: '#{@floorplan.name}' community_id: '#{@community.id}'")
           end
         end
       end
+      
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(FLOORPLAN_IMAGES)
       @community.set_floorplan_status(current_pynwheel_user, @status)
       FollowUpMailer.send_email_after_form_submission(@community, FLOORPLAN_IMAGES, previous_status)
@@ -63,7 +62,8 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
   def delete_floorplan_amenity
     if @load_floorplan.present?
       @amenity = @load_floorplan.amenities.find_by(id: params[:amenity_id])
-      if @amenity.destroy!
+      if @amenity.destroy
+        FloorPlans::UnitsService.new(@load_floorplan.id).delete_floorplan_units_image( params[:amenity_id] )
         @community.set_floorplan_status(current_pynwheel_user, "in_progress")
         render :json => {:success => true, :error_code => 200, :message => "Floorplan amenity deleted successfully", data: nil}
       else
@@ -93,20 +93,22 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
   def update_floorplan(floorplan)
     if floorplan["image"].present?
       @floorplan.remove_file!
-       @floorplan.update(name: floorplan["name"], image: floorplan["image"])
+       @floorplan.update(name: floorplan["name"], description: floorplan["description"], virtual_tour_url: floorplan["virtualTourUrl"], image: floorplan["image"])
     elsif floorplan["file"].present?
       @floorplan.remove_image!
-       @floorplan.update(name: floorplan["name"], file: floorplan["file"])
+       @floorplan.update(name: floorplan["name"], description: floorplan["description"], virtual_tour_url: floorplan["virtualTourUrl"], file: floorplan["file"])
     else
-      @floorplan.update(name: floorplan["name"])
+      @floorplan.update(name: floorplan["name"], description: floorplan["description"], virtual_tour_url: floorplan["virtualTourUrl"])
     end
+
     if floorplan["aminities"].present?
       floorplan["aminities"].values.each do |amenity|
         if !amenity[:id].present?
-          @floorplan.amenities.create(image: amenity["image"])
+          image_filter_down_to_units(amenity)
         end
       end
     end
+
   end
 
   def create_floorplan(floorplan)
@@ -115,11 +117,17 @@ class Api::V2::CommunityFloorPlansController < Api::V2::ApiApplicationController
     @floorplan.file = floorplan[:file] if floorplan[:file].present?
     if @floorplan.save
       if floorplan["aminities"].present?
-        floorplan["aminities"].values.each do |aminity|
-          @amenity = @floorplan.amenities.create(image: aminity["image"])
+        floorplan["aminities"].values.each do |amenity|
+          image_filter_down_to_units(amenity)
         end
       end
     end
+  end
+
+  def image_filter_down_to_units amenity_params
+    amenity = @floorplan.amenities.create(image:  amenity_params["image"], name: amenity_params["image"].original_filename )
+    amenity.update!(floorplan_amenity_id: amenity.id)
+    FloorPlans::UnitsService.new(@floorplan.id).create_floorplan_units_image(amenity_params["image"], amenity.name, amenity.id)
   end
 
   def load_floorplan
