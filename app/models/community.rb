@@ -498,8 +498,8 @@ class Community < ApplicationRecord
   end
 
   def set_tour_stops_status(current_user, status)
-    return if self.community_tour&.tour_stops.plotted_stops.blank?
-    tour_stops = self.community_tour.tour_stops.plotted_stops.compact
+    return if self.community_tour&.tour_stops.blank?
+    tour_stops = self.community_tour.tour_stops.compact
     tour_stops.each do |ts|
       if status.empty?
         status_attr = status_string(ts.name.present?)
