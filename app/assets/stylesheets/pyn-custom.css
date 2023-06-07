@@ -6449,6 +6449,7 @@ ul.add-fav-options {
 }
  .c-connect-map-wrapper .c-modal-body-content .slick-slide {
     height: 100%;
+    overflow-y: auto;
  }
 .module-info {
     background: white;
@@ -6553,6 +6554,15 @@ ul.add-fav-options {
      }
      .c-connect-map-wrapper .c-modal-sidebar {
          width: 35%;
+    }
+    .c-modal-sidebar-filters .filter-action .c-m-total-price {
+        font-size: 12px;
+    }
+    .c-modal-sidebar-filters .filter-action .apply-now {
+        font-size: 12px;
+    }
+    .per-month-price-text {
+        left: 80px;
     }
 }
 .disable_btn{
