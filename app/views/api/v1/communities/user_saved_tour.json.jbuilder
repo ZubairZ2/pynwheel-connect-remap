@@ -1,5 +1,5 @@
 description_limit = ENV["DESCRIPTION_LIMIT"].to_i
-styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
+styling_start = '<div style="font-family: gotham-light; color: white !important;"><p>'
 styling_end = '</p></div>'
 json.name @tour_user.name
 json.phone_number @tour_user.phone_number
@@ -68,16 +68,12 @@ json.tours tours do |tour|
           lease_pricing << h
         end
 
-        unit_stop_description = ActionView::Base.full_sanitizer.sanitize(unit.description.present? ? unit.description : "")
-
-        if unit_stop_description.size < description_limit
-          show_long_description = false
-        else
-          show_long_description = true
-        end
+        additional_details = unit.description.present? ? unit.description :  unit&.floorplan.description        
+        unit_stop_description = ActionView::Base.full_sanitizer.sanitize(additional_details.present? ? additional_details : "")
+        show_long_description = (unit_stop_description.size <= description_limit) ? false : true
   
         short_unit_stop_description = show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description
-        long_unit_stop_description = styling_start + unit_stop_description.gsub('red','') + styling_end rescue ""
+        long_unit_stop_description = styling_start + additional_details.gsub('red','') + styling_end rescue ""
 
         json.show_long_stop_description show_long_description
         json.floorplate_image @community.unit_floorplate_image_url(@community, tour, unit)

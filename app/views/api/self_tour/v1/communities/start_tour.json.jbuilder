@@ -8,7 +8,7 @@ is_edgestate_lock_present = false
 is_dwello_lock_present = false
 list_of_zerv_lock_ids = []
 
-styling_start = '<div style="font-family: gotham; color: white !important;"><p style="font-size: 45px; padding-bottom: 10px;">'
+styling_start = '<div style="font-family: gotham-light; color: white !important;"><p>'
 styling_end = '</p></div>'
 json.tours @tours do |tour|
   json.dwelo_guest_id @dwelo_guest_id.present? ? @dwelo_guest_id : ""
@@ -1103,14 +1103,6 @@ json.tours @tours do |tour|
         end
         lease_pricing = lease_pricing.sort_by!(&:zip)
       end
-      
-      unit_stop_description = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
-
-      if unit_stop_description.size <= description_limit
-        show_long_description = false
-      else
-        show_long_description = true
-      end
 
       if @community.credential.present? and @community.credential.apply_now == "separate_link"
         availability_url = @community.credential.separate_link
@@ -1118,10 +1110,14 @@ json.tours @tours do |tour|
         availability_url = (unit.availability_url.present? ? unit.availability_url : u&.floorplan&.availability_url rescue "")
       end
 
-      floorplan_for_name = Floorplan.find_by(id: unit&.floorplan&.id)
-      stop_dat = {"floorplan" => (floorplan_for_name.name rescue ""),"floorplan_full_name" => (floorplan_for_name.name + "- #{(floorplan_for_name.bedrooms.present? ? (floorplan_for_name.bedrooms.to_i.to_s + " BR") : "") } / #{(floorplan_for_name.bathrooms.present? ? (floorplan_for_name.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date, "display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + unit.stop_description.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
-      json.stop_data stop_dat
-      json.availability_url unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit&.floorplan_id).availability_url
+      additional_details = unit.description.present? ? unit.description :  unit&.floorplan.description        
+      unit_stop_description = ActionView::Base.full_sanitizer.sanitize(additional_details.present? ? additional_details : "")
+      show_long_description = (unit_stop_description.size <= description_limit) ? false : true
+      stop_data = {"floorplan" => (unit&.floorplan&.name rescue ""), "floorplan_full_name" => (unit&.floorplan&.name + "- #{(unit&.floorplan&.bedrooms.present? ? (unit&.floorplan&.bedrooms.to_i.to_s + " BR") : "") } / #{(unit&.floorplan&.bathrooms.present? ? (unit&.floorplan&.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date, "display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + additional_details.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
+      
+      json.stop_data stop_data
+
+      json.availability_url unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url
 
       @unit_amenities = unit.amenities
       unit_amenities_hit = true
