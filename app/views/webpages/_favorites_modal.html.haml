@@ -66,7 +66,7 @@
               
             .c-modal-sidebar-description
               %h4.des-heading Description
-              %p.c-m-description= (unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")).html_safe
+              .c-m-description= (unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")).html_safe
             - if @community.credential.present? and @community.credential.apply_now.to_s == "true"
               - available_date = determine_available_date(unit.available_date)
               .c-modal-sidebar-filters.sidebar-footer
@@ -128,7 +128,7 @@
                   %span{style: 'font-size: 12px'} /month
         
         .c-modal-wrapper.h-class
-          .c-modal-body{:id => "#{unit.id}-zoomable-fav-image"}
+          .c-modal-body.centered-image{:id => "#{unit.id}-zoomable-fav-image"}
             .c-m-iframe-content
               = image_tag unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
           .c-modal-footer-fav.zooming-content.zoomable-map-container

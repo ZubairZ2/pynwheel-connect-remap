@@ -3856,7 +3856,6 @@ a#favoriteclickme {
         width: 100% !important;
     }
     .show-more-option {
-        position: absolute !important;
         right: 16px !important;
     }
     .c-modal-sidebar {
@@ -5728,11 +5727,17 @@ html, .add-fav-body {
 	.sidebar-footer {
     position: static !important;
 	}
+
+    .c-modal-wrapper{
+        float: none !important;
+    }
+
 	.c-connect-map-wrapper  .c-modal-wrapper {
     min-height: auto !important;
 	}
 	.c-connect-map-wrapper .c-modal-sidebar {
     min-height: auto !important;
+    width: 100% !important;
 	}
 	.c-modal-sidebar-filters .filter-action .apply-now {
     font-size: 12px !important;
@@ -5868,7 +5873,9 @@ ul.add-fav-options {
         overflow-x: hidden !important;
         max-height: 100% !important;
     }
-
+    .centered-image{
+        min-height: 0px !important;
+    }
     .c-connect-map-wrapper .c-modal-wrapper {
         max-height: 350px !important;
     }
@@ -5912,13 +5919,12 @@ ul.add-fav-options {
     #webpages-overlay-text {
         width: 100%;
     }
-
     .c-popup .c-m-iframe-content img {
         max-height: 350px;
     }
 
     .per-month-price-text {
-        left: 115px !important;
+        left: 95px !important;
     }
     .c-modal-sidebar-filters .filter-action .apply-now {
         padding: 10px !important;
@@ -5937,6 +5943,8 @@ ul.add-fav-options {
 
     .c-modal-sidebar-filters {
         padding: 3px !important;
+        position: unset !important;
+        width: 100% !important;
     }
     .c-modal-footer-fav {
         padding: 5px 24px 5px 0px !important;
@@ -6109,6 +6117,7 @@ ul.add-fav-options {
     max-width: 400px;
 }
 .c-modal-wrapper {
+    min-height: 600px;
     float: left;
     width: 60%;
     overflow: hidden;
@@ -6202,7 +6211,7 @@ ul.add-fav-options {
     font-size: 13px;
 }
 .availabilty-container {
-    display: inline-grid;
+    
     width: -webkit-fill-available;
     border-bottom: 1px solid #cccccc94;
     padding: 0px 13px 15px 13px;
@@ -6216,7 +6225,7 @@ ul.add-fav-options {
     cursor: pointer;
 }
 .c-modal-sidebar-description .des-heading {
-    padding: 10px 10px 0px 10px;
+    padding: 10px 10px 0px 0px;
     margin-bottom: 0;
     font-weight: 500;
     margin-top: 0;
@@ -6225,10 +6234,15 @@ ul.add-fav-options {
     font-weight: 500;
     font-size: 13px;
     line-height: 2;
+    min-height: 150px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 100px;
 }
 .c-modal-sidebar-filters {
     background: #1d2425;
     padding: 15px;
+    bottom: 0;
 }
 .sidebar-footer {
 	bottom: 0;
@@ -6287,12 +6301,12 @@ ul.add-fav-options {
     color: white;
     width: 50%;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 15px;
  }
  .c-modal-sidebar-filters .filter-action .apply-now {
     border-radius: 50px;
     padding: 8px;
-    font-size: 12px;
+    font-size: 15px;
     text-transform: uppercase;
     font-weight: 500;
     font-family: 'Raleway', sans-serif;
@@ -6389,10 +6403,10 @@ ul.add-fav-options {
     background: white;
 }
 .per-month-price-text{
-    font-size: 12px;
+    font-size: 9px;
     color: white;
     position: fixed;
-    left: 80px;
+    left: 90px;
     font-weight: 600;
 }
 .c-modal-footer-fav {
@@ -6405,7 +6419,6 @@ ul.add-fav-options {
     background: white;
 }
 .show-more-option{
-    position: fixed;
     padding: 0;
     left: 27%;
 }
@@ -6435,6 +6448,7 @@ ul.add-fav-options {
 }
  .c-connect-map-wrapper .c-modal-body-content .slick-slide {
     height: 100%;
+    overflow-y: auto;
  }
 .module-info {
     background: white;
@@ -6540,6 +6554,15 @@ ul.add-fav-options {
      .c-connect-map-wrapper .c-modal-sidebar {
          width: 100%;
     }
+    .c-modal-sidebar-filters .filter-action .c-m-total-price {
+        font-size: 12px;
+    }
+    .c-modal-sidebar-filters .filter-action .apply-now {
+        font-size: 12px;
+    }
+    .per-month-price-text {
+        left: 80px;
+    }
 }
 .disable_btn{
   pointer-events: none;
@@ -6576,7 +6599,8 @@ ul.add-fav-options {
     position: absolute !important;
 }
 .description-text{
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     max-height: 100px;
 }
 .alert_message{
@@ -6947,4 +6971,9 @@ span.to-input {
 
 .slick-dots {
     pointer-events: none;
+}
+
+.centered-image{
+    min-height: 535px;
+    display: flex;
 }
