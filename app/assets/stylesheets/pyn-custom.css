@@ -6477,11 +6477,14 @@ ul.add-fav-options {
 	width: 25%;
 	position: relative;
 	background: white;
-    min-height: 710px
+    min-height: 710px;
+    max-height: 710px
+
 }
 .c-connect-map-wrapper .c-modal-wrapper {
     width: 75%;
     min-height: 710px;
+    max-height: 710px;
     position: relative;
 }
 
