@@ -6,7 +6,7 @@ class ToursController < ApplicationController
   def index
     @community = Community.find params[:community_id]
     @tours = @community.community_tour || @community.create_tour
-    @tour_stops = @tours.present? ? @tours.tour_stops : nil
+    @tour_stops = @tours.present? ? @tours.tour_stops.plotted_stops : nil
     @tour_setting = @tours.tour_setting ||  @tours.create_tour_setting
     @community_opening_hours = @community.opening_hours.order(:sort).all
     @tour_elevator_array =  TourStop.where(tour_id: @community.community_tour.id,stop_type: "elevator").map{|x| x.stop_id}

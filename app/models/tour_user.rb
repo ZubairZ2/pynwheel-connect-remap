@@ -131,7 +131,7 @@ class TourUser < ApplicationRecord
         end
 
         if floor.present? && building.present?
-          tour_stops = community.community_tour.tour_stops.where(display_stop: true, stop_type: "elevator")
+          tour_stops = community.community_tour.tour_stops.plotted_stops.where(display_stop: true, stop_type: "elevator")
           # tour_stops = tour.tour_stops.where(display_stop: true, stop_type: "elevator")
           tour_stops.each do |elevator_stop|
             elevator = elevator_stop.stop_type.classify.constantize.find_by_id elevator_stop.stop_id if (elevator_stop && elevator_stop&.stop_type && elevator_stop&.stop_id).present?

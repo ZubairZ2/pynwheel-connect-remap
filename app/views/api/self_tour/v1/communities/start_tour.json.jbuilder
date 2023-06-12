@@ -47,8 +47,8 @@ json.tours @tours do |tour|
   end
 
   if @community.show_map
-    ts = @community.mdu ? tour.tour_stops.where.not(id: @community.deleted_ids).order(:sort) : tour.tour_stops.where.not(id: @community.deleted_ids, stop_type: "unit").order(:sort)
-    ts1 = tour.tour_stops.where(id: @community.deleted_ids).map{|x| x.id}
+    ts = @community.mdu ? tour.tour_stops.plotted_stops.where.not(id: @community.deleted_ids).order(:sort) : tour.tour_stops.plotted_stops.where.not(id: @community.deleted_ids, stop_type: "unit").order(:sort)
+    ts1 = tour.tour_stops.plotted_stops.where(id: @community.deleted_ids).map{|x| x.id}
 
     if @community.is_sitemap
       sp = Path.where(map_path_from_id: ts&.last&.stop_id, map_path_to_id: nil)&.first
@@ -79,8 +79,8 @@ json.tours @tours do |tour|
       if scheduled_tour_stops.present?
         stops_arr = @community.mdu ? scheduled_tour_stops : scheduled_tour_stops.where.not(stop_type: "unit").order(:sort)
       else
-        unoccupied = tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit }.compact
-        stops_arr = @community.mdu ? tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+        unoccupied = tour.tour_stops.plotted_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit }.compact
+        stops_arr = @community.mdu ? tour.tour_stops.plotted_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : tour.tour_stops.plotted_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       end
 
       stop_count = stops_arr.compact.count
@@ -95,7 +95,7 @@ json.tours @tours do |tour|
       @building_list.each do |building|
 
         # If no availble units or amenity in the building do not add elevator or staarting point in stops
-        visible_stops_ids = tour.tour_stops.where(stop_type: ["unit", "amenity"], display_stop: true).pluck(:stop_id)
+        visible_stops_ids = tour.tour_stops.plotted_stops.where(stop_type: ["unit", "amenity"], display_stop: true).pluck(:stop_id)
         available_units_count = @community.units.where(id: visible_stops_ids, building: building, available: true).count
         available_amenities_count = @community.amenities.where(id: visible_stops_ids, building: building,breezway_lock_visible: true).count
 
@@ -276,7 +276,7 @@ json.tours @tours do |tour|
 
 
 
-    stops = @community.mdu ? tour.tour_stops : tour.tour_stops.where.not(stop_type: "unit")
+    stops = @community.mdu ? tour.tour_stops.plotted_stops : tour.tour_stops.plotted_stops.where.not(stop_type: "unit")
     stops_except_deleted = []
     stops_except_deleted << @community.community_tour if @community.is_sitemap
 
@@ -301,8 +301,8 @@ json.tours @tours do |tour|
     ########------------------------ Sorting tour Stop in an array-----------------------
     if @community.is_sitemap
 
-      unoccupied = tour.tour_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit}.compact
-      stops_arr = @community.mdu ? tour.tour_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : tour.tour_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
+      unoccupied = tour.tour_stops.plotted_stops.where(stop_type: "unit").map{|x| x.id if (u = Unit.find x.stop_id) and !u.available and !u.modal_unit}.compact
+      stops_arr = @community.mdu ? tour.tour_stops.plotted_stops.where(display_stop: true).where.not(id: unoccupied).order(:sort) : tour.tour_stops.plotted_stops.where.not(display_stop: false,stop_type: "unit").order(:sort)
       stops_arr = stops_arr.map{|x| x if !(@community.deleted_ids.include? x.id)}.compact
       stop_count = stops_arr.compact.count
       second_last = stops_arr.compact[stop_count - 2]

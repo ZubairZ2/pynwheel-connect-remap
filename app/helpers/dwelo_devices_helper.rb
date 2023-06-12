@@ -307,7 +307,7 @@ module DweloDevicesHelper
 
       tour = CustomizeTourService.new(community, tour_user).get_user_tour
 
-      stops_arr = tour.tour_stops.where(display_stop: true).order(:sort)
+      stops_arr = tour.tour_stops.plotted_stops.where(display_stop: true).order(:sort)
       stops_ids = stops_arr.ids
 
       unit_ids = TourStop.where(id: stops_ids, stop_type: "unit").pluck(:stop_id)
@@ -574,9 +574,9 @@ module DweloDevicesHelper
     # tour = CustomizeTourService.new(community, tour_user).get_user_tour
 
     if scheduled_tour.present? && scheduled_tour.stops_list.present?
-      tour.tour_stops.where(stop_type: ["amenity", "unit"]).pluck(:id) - scheduled_tour.stops_list
+      tour.tour_stops.plotted_stops.where(stop_type: ["amenity", "unit"]).pluck(:id) - scheduled_tour.stops_list
     else
-      tour.tour_stops.where(display_stop: false).pluck(:id)
+      tour.tour_stops.plotted_stops.where(display_stop: false).pluck(:id)
     end
   end
 
@@ -585,9 +585,9 @@ module DweloDevicesHelper
     tour = CustomizeTourService.new(community, tour_user).get_user_tour
 
     if scheduled_tour.present? && scheduled_tour.stops_list.present?
-      tour.tour_stops.where(id: scheduled_tour.stops_list).pluck(:stop_id)
+      tour.tour_stops.plotted_stops.where(id: scheduled_tour.stops_list).pluck(:stop_id)
     else
-      tour.tour_stops.where(display_stop: true).pluck(:stop_id)
+      tour.tour_stops.plotted_stops.where(display_stop: true).pluck(:stop_id)
     end
   end
 

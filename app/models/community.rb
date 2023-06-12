@@ -1368,7 +1368,8 @@ s  end
     scheduled_tour = MaxDateScheduledTourService.new(tour_user, self, false).get_scheduled_tour
 
     if scheduled_tour.present? && scheduled_tour.stops_list.present?
-      tour.tour_stops.where(id: scheduled_tour.stops_list).order(:sort)
+      stops = tour.tour_stops.plotted_stops.where(id: scheduled_tour.stops_list).order(:sort)
+      stops = stops.where()
     else
       nil
     end
