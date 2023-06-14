@@ -36,7 +36,7 @@ class TourStop < ApplicationRecord
 
   scope :visible, -> { where(display_stop: true) }
   scope :visible, -> { where(display_stop: true) }
-  scope :plotted_stops, -> { where("latitude > ? AND longitude > ? ", 0, 0)}
+  scope :plotted_stops, -> { where.not(latitude: [0, nil]).or(where.not(longitude: [0, nil])).or(where.not(stop_type: ["unit", "amenity"])) }
 
   def stop_description_text
     return "" unless (self.stop_id && self.stop_type).present?
