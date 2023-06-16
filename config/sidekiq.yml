@@ -1,6 +1,5 @@
 :concurrency: 5
 :queues:
-  # - base_worker
   - restarts
   - real_page
   - yardi_rent_cafe

@@ -595,11 +595,7 @@ Rails.application.routes.draw do
 
     namespace :partner do
       namespace :realync do
-        resources :webhooks, only: :update do
-          collection do
-            post :update_video_links
-          end
-        end
+        post :update_video_links, to: 'webhooks#update_video_links'
       end
     end
   
