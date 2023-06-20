@@ -1024,6 +1024,17 @@ function showMarkers() {
   disabled_enabled_anchors();
 } //function ending curl
 
+window.addEventListener('resize', handleResize);
+
+function handleResize(){
+  window.location.reload(true);
+}
+
+function performHardRefresh() {
+  if(performance.navigation.type === 0){
+    window.location.reload(true);
+  }
+}
 
 function populate_current_units() {
   $('.marker').addClass('hidden');
@@ -1045,7 +1056,6 @@ function populate_current_units() {
       current_units.push(units[i]);
     }
   }
-
   showMarkers();
 }
 
@@ -2197,6 +2207,7 @@ function getElementHeight(element) {
 
   // for floorplates
 function adjustMarkerPosition(marker) {
+  performHardRefresh()
   /*adjusting markers according to screen size*/
   var in_browser_height = 0;
   var in_browser_width = 0;
@@ -2224,7 +2235,6 @@ function adjustMarkerPosition(marker) {
     y_plot = y_plot - 14
     // x_plot = x_plot 
   }
-
   $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
   // $(marker).removeClass('hidden');
   // marker_width = $('#m_' + unit_id).width();
