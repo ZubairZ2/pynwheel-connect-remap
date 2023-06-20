@@ -456,7 +456,7 @@ $(window).bind('load', function () {
       stretched_image_width = image_width_2d || parseInt($('.sitemap-image').width());
       stretched_image_height = parseInt($('.sitemap-image').height());
       left_diff = (in_browser_width - stretched_image_width) / 2
-
+      performHardRefresh()
       $('.marker').each(function () {
         var x_plot = parseFloat($(this).data('unit-x-plot'));
         var y_plot = parseFloat($(this).data('unit-y-plot'));
