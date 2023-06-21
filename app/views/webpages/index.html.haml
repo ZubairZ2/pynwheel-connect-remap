@@ -368,7 +368,7 @@
   $(".webPageLoader").removeClass("hidden");
   $(window).on( "orientationchange", function( event ) {
         $(".webPageLoader").removeClass("hidden");
-        window.location.reload(true);
+        window.location.reload();
     });
   setTimeout(function(){
     $(".webPageLoader").addClass("hidden");
@@ -425,7 +425,7 @@
   $(window).on('resize', function(){
     var win = $(this);
     $(".webPageLoader").removeClass("hidden");
-    window.location.reload(true);
+    window.location.reload();
     if (win.width() >= 568) {
       $('#slider').slick('unslick');
       $slider.on('init', () => {
