@@ -456,7 +456,7 @@ $(window).bind('load', function () {
       stretched_image_width = image_width_2d || parseInt($('.sitemap-image').width());
       stretched_image_height = parseInt($('.sitemap-image').height());
       left_diff = (in_browser_width - stretched_image_width) / 2
-      performHardRefresh()
+      // performHardRefresh()
       $('.marker').each(function () {
         var x_plot = parseFloat($(this).data('unit-x-plot'));
         var y_plot = parseFloat($(this).data('unit-y-plot'));
@@ -1024,21 +1024,21 @@ function showMarkers() {
   disabled_enabled_anchors();
 } //function ending curl
 
-window.addEventListener('resize', handleResize);
+// window.addEventListener('resize', handleResize);
 
-function handleResize(){
-  // debugger
-  var url = window.location.href;
-  var timestamp = new Date().getTime();
-  var newUrl = url + '?refresh=' + timestamp;
-  window.location.href = newUrl;
-}
+// function handleResize(){
+//   // debugger
+//   var url = window.location.href;
+//   var timestamp = new Date().getTime();
+//   var newUrl = url + '?refresh=' + timestamp;
+//   window.location.href = newUrl;
+// }
 
-function performHardRefresh() {
-  if(performance.navigation.type === 0){
-    window.location.reload(true);
-  }
-}
+// function performHardRefresh() {
+//   if(performance.navigation.type === 0){
+//     window.location.reload(true);
+//   }
+// }
 
 function populate_current_units() {
   $('.marker').addClass('hidden');
@@ -2211,7 +2211,7 @@ function getElementHeight(element) {
 
   // for floorplates
 function adjustMarkerPosition(marker) {
-  performHardRefresh()
+  // performHardRefresh()
   /*adjusting markers according to screen size*/
   var in_browser_height = 0;
   var in_browser_width = 0;
