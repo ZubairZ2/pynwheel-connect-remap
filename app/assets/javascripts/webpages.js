@@ -1024,7 +1024,13 @@ function showMarkers() {
   disabled_enabled_anchors();
 } //function ending curl
 
-window.addEventListener('resize', handleResize);
+
+window.addEventListener('beforeunload', function() {
+  window.location.reload(true);
+});
+
+
+// window.addEventListener('resize', handleResize);
 
 function handleResize(){
   window.location.reload(true);

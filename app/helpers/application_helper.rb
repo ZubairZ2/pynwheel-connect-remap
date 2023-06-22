@@ -1,9 +1,8 @@
 module ApplicationHelper
 
   def javascript_version
-    file_path = Rails.root.join('app', 'assets', 'javascripts', 'webpages.js')
-    file_modified_time = File.mtime(file_path).to_i
-    "v#{file_modified_time}"
+    timestamp = DateTime.now.to_i
+    "v#{timestamp}"
   end
 
   def sidemenu_communities_actions
