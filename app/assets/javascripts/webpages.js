@@ -278,7 +278,7 @@ $(window).bind('load', function () {
 
     $(".reset-webpage").on('click', function (e) {
       $(".webPageLoader").removeClass("hidden");
-      window.location.reload()
+      window.location.reload(true)
     });
     
     $(".zoom-in-webpage").on('click', function (e) {
@@ -1024,7 +1024,7 @@ function showMarkers() {
   disabled_enabled_anchors();
 } //function ending curl
 
-window.addEventListener('resize', handleResize);
+// window.addEventListener('resize', handleResize);
 
 function handleResize(){
   window.location.reload(true);
