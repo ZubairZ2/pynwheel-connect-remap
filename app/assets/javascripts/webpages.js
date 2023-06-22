@@ -1027,10 +1027,7 @@ function showMarkers() {
 window.addEventListener('resize', handleResize);
 
 function handleResize(){
-  var url = window.location.href;
-  var timestamp = new Date().getTime();
-  var newUrl = url + '?refresh=' + timestamp;
-  window.location.href = newUrl;
+  window.location.reload(true);
 }
 
 function performHardRefresh() {
