@@ -479,49 +479,39 @@ $(window).bind('load', function () {
         }
 
         if($(window).width() >= 1125 && $(window).width() <= 1360 ){
-          $(this).css({"margin-left": 2, "margin-top": 7})
+          $(this).css({"margin-left": -5, "margin-top": -7})
         }
 
         if($(window).width() >= 950 && $(window).width() <= 1125 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-21 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-35)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-16 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
         }
 
         if($(window).width() >= 825 && $(window).width() <= 950 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-20 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-32)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-14 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-22)})       
         }
 
         if($(window).width() >= 700 && $(window).width() <= 825 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-18), "margin-top": -($('.fa-map-marker-alt-responsive').height()-30)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
         }
 
         if($(window).width() >= 567 && $(window).width() <= 700 ){
-          if(navigator.userAgent.indexOf('Firefox') > -1){
-            $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-15), "margin-top": -($('.fa-map-marker-alt-responsive').height()-30)})       
-          }
-          else{
-            $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-30)})       
-          }
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-16)}) 
         }
 
         if($(window).width() >= 480 && $(window).width() <= 567){
-          if(navigator.userAgent.indexOf('Firefox') > -1){
-            $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-15), "margin-top": -($('.fa-map-marker-alt-responsive').height()-28)})       
-          }
-          else{
-            $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-28)})       
-          }
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-15)})
         }
         
         if($(window).width() >= 420 && $(window).width() <= 480){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-13), "margin-top": -($('.fa-map-marker-alt-responsive').height()-27)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-13)})       
         }
 
         if($(window).width() >= 320 && $(window).width() <= 420){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-12), "margin-top": -($('.fa-map-marker-alt-responsive').height()-25)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-5), "margin-top": -($('.fa-map-marker-alt-responsive').height()-11)})       
         }
 
         if($(window).width() <= 320 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-25)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-4), "margin-top": -($('.fa-map-marker-alt-responsive').height()-10)})       
         }
       });
 
@@ -2273,33 +2263,23 @@ function adjustMarkerPosition(marker) {
   // marker_height = $('#m_' + unit_id).height();
   // $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
   if($(window).width() >= 1125 && $(window).width() <= 1360 ){
-    $(marker).css({"margin-left": -1, "margin-top": -2})   
+    $(marker).css({"margin-left": -5, "margin-top": -2})
   }
 
   if($(window).width() >= 950 && $(window).width() <= 1125 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()+2)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+4), "margin-top": -($('#s_'+unit_id).height()+5)})       
   }
 
   if($(window).width() >= 825 && $(window).width() <= 950 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+3)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+5)})       
   }
 
   if($(window).width() >= 700 && $(window).width() <= 825 ){
-    if(navigator.userAgent.indexOf('Firefox') > -1){
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()+1)})       
-    }
-    else{
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+8), "margin-top": -($('#s_'+unit_id).height()+1)})             
-    }
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+1)})
   }
 
   if($(window).width() >= 567 && $(window).width() <= 700 ){
-    if(navigator.userAgent.indexOf('Firefox') > -1){
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+1), "margin-top": -($('#s_'+unit_id).height()-1)})       
-    }
-    else{
-      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+8), "margin-top": -($('#s_'+unit_id).height()-1)})       
-    }
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()-1)})
   }
 
   if($(window).width() >= 480 && $(window).width() <= 567){
