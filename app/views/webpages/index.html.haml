@@ -3,7 +3,6 @@
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
     %meta{:charset => "utf-8"}/
     %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
-
     %title Pynwheel | Dashboard
     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
     %script{:src => "https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"}
@@ -529,6 +528,7 @@
     if(current_width >= 993){
 
       let main_container_height = $('.c-body').height() - $('.c-footer').height();
+      console.log("main_container_height "+main_container_height)
       $('.floorplate-image').attr("height", main_container_height - 100)
 
       /*if(isSiteMap == 'true') {

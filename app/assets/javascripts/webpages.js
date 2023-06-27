@@ -220,7 +220,6 @@ $(window).bind('load', function () {
         current_floor = floor_for_showing_image
       
         populate_current_units();
-        debugger;
         if ($(this).hasClass('only-amenity')) {
           $('.alert').show()
           timer = setTimeout(function () {
@@ -444,6 +443,8 @@ $(window).bind('load', function () {
     populate_current_units();
 
     if (!(has_floorplate == 'true')) {
+      // performHardRefresh()
+      setImageHeight()
       var in_browser_height = 0;
       var in_browser_width = 0;
       var left_diff = 0;
@@ -456,7 +457,6 @@ $(window).bind('load', function () {
       stretched_image_width = image_width_2d || parseInt($('.sitemap-image').width());
       stretched_image_height = parseInt($('.sitemap-image').height());
       left_diff = (in_browser_width - stretched_image_width) / 2
-      performHardRefresh()
       $('.marker').each(function () {
         var x_plot = parseFloat($(this).data('unit-x-plot'));
         var y_plot = parseFloat($(this).data('unit-y-plot'));
@@ -1025,15 +1025,20 @@ function showMarkers() {
 } //function ending curl
 
 
-window.addEventListener('beforeunload', function() {
-  window.location.reload(true);
-});
-
-
 // window.addEventListener('resize', handleResize);
 
 function handleResize(){
-  window.location.reload(true);
+  var url = new URL(window.location.href);
+  var timestamp = new Date().getTime();
+  if (url.searchParams.has('refresh')) {
+    url.searchParams.set('refresh', timestamp);
+  } else {
+    url.searchParams.append('refresh', timestamp);
+  }
+
+  var newUrl = url.toString();
+
+  window.location.href = newUrl;
 }
 
 function performHardRefresh() {
@@ -1042,6 +1047,13 @@ function performHardRefresh() {
   }
 }
 
+function setImageHeight(){
+  if(current_width >= 993){
+    let main_container_height = ($('.c-body').height() - $('.c-footer').height())+54;
+    console.log("main_container_height "+main_container_height)
+    $('.floorplate-image').attr("height", main_container_height - 100)
+  }
+}
 function populate_current_units() {
   $('.marker').addClass('hidden');
   current_units = [];
@@ -2213,8 +2225,9 @@ function getElementHeight(element) {
 
   // for floorplates
 function adjustMarkerPosition(marker) {
-  performHardRefresh()
+  // performHardRefresh()
   /*adjusting markers according to screen size*/
+  setImageHeight()
   var in_browser_height = 0;
   var in_browser_width = 0;
   var left_diff = 0;
@@ -2241,6 +2254,17 @@ function adjustMarkerPosition(marker) {
     y_plot = y_plot - 14
     // x_plot = x_plot 
   }
+  console.log("in_browser_height "+in_browser_height)
+  console.log("in_browser_width "+in_browser_width)
+  console.log("actual_image_height "+actual_image_height)
+  console.log("actual_image_width "+actual_image_width)
+  console.log("stretched_image_width "+stretched_image_width)
+  console.log("stretched_image_height "+stretched_image_height)
+
+  console.log("x_plot "+x_plot)
+  console.log("y_plot "+y_plot)
+  console.log("left_diff "+left_diff)
+  console.log("-------------------------------------------")
   $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
   // $(marker).removeClass('hidden');
   // marker_width = $('#m_' + unit_id).width();
