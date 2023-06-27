@@ -220,7 +220,6 @@ $(window).bind('load', function () {
         current_floor = floor_for_showing_image
       
         populate_current_units();
-        debugger;
         if ($(this).hasClass('only-amenity')) {
           $('.alert').show()
           timer = setTimeout(function () {
@@ -278,7 +277,7 @@ $(window).bind('load', function () {
 
     $(".reset-webpage").on('click', function (e) {
       $(".webPageLoader").removeClass("hidden");
-      window.location.reload()
+      window.location.reload(true)
     });
     
     $(".zoom-in-webpage").on('click', function (e) {
@@ -444,6 +443,8 @@ $(window).bind('load', function () {
     populate_current_units();
 
     if (!(has_floorplate == 'true')) {
+      // performHardRefresh()
+      setImageHeight()
       var in_browser_height = 0;
       var in_browser_width = 0;
       var left_diff = 0;
@@ -456,7 +457,6 @@ $(window).bind('load', function () {
       stretched_image_width = image_width_2d || parseInt($('.sitemap-image').width());
       stretched_image_height = parseInt($('.sitemap-image').height());
       left_diff = (in_browser_width - stretched_image_width) / 2
-
       $('.marker').each(function () {
         var x_plot = parseFloat($(this).data('unit-x-plot'));
         var y_plot = parseFloat($(this).data('unit-y-plot'));
@@ -472,7 +472,6 @@ $(window).bind('load', function () {
           y_plot = y_plot - 1
           // x_plot = x_plot - 4
         }
-
         $(this).css({"left": ((x_plot)) + left_diff, "top": y_plot});
         
         if ($(window).width() > 1360) {
@@ -480,39 +479,49 @@ $(window).bind('load', function () {
         }
 
         if($(window).width() >= 1125 && $(window).width() <= 1360 ){
-          $(this).css({"margin-left": -5, "margin-top": -7})
+          $(this).css({"margin-left": 2, "margin-top": 7})
         }
 
         if($(window).width() >= 950 && $(window).width() <= 1125 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-16 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-21 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-35)})       
         }
 
         if($(window).width() >= 825 && $(window).width() <= 950 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-14 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-22)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-20 ), "margin-top": -($('.fa-map-marker-alt-responsive').height()-32)})       
         }
 
         if($(window).width() >= 700 && $(window).width() <= 825 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-20)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-18), "margin-top": -($('.fa-map-marker-alt-responsive').height()-30)})       
         }
 
         if($(window).width() >= 567 && $(window).width() <= 700 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-16)})       
+          if(navigator.userAgent.indexOf('Firefox') > -1){
+            $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-15), "margin-top": -($('.fa-map-marker-alt-responsive').height()-30)})       
+          }
+          else{
+            $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-30)})       
+          }
         }
 
         if($(window).width() >= 480 && $(window).width() <= 567){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-15)})       
+          if(navigator.userAgent.indexOf('Firefox') > -1){
+            $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-15), "margin-top": -($('.fa-map-marker-alt-responsive').height()-28)})       
+          }
+          else{
+            $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-28)})       
+          }
         }
-
+        
         if($(window).width() >= 420 && $(window).width() <= 480){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-8), "margin-top": -($('.fa-map-marker-alt-responsive').height()-13)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-13), "margin-top": -($('.fa-map-marker-alt-responsive').height()-27)})       
         }
 
         if($(window).width() >= 320 && $(window).width() <= 420){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-5), "margin-top": -($('.fa-map-marker-alt-responsive').height()-11)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-12), "margin-top": -($('.fa-map-marker-alt-responsive').height()-25)})       
         }
 
         if($(window).width() <= 320 ){
-          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-4), "margin-top": -($('.fa-map-marker-alt-responsive').height()-10)})       
+          $(this).css({"margin-left": -($('.fa-map-marker-alt-responsive').width()-10), "margin-top": -($('.fa-map-marker-alt-responsive').height()-25)})       
         }
       });
 
@@ -1016,6 +1025,35 @@ function showMarkers() {
 } //function ending curl
 
 
+// window.addEventListener('resize', handleResize);
+
+function handleResize(){
+  var url = new URL(window.location.href);
+  var timestamp = new Date().getTime();
+  if (url.searchParams.has('refresh')) {
+    url.searchParams.set('refresh', timestamp);
+  } else {
+    url.searchParams.append('refresh', timestamp);
+  }
+
+  var newUrl = url.toString();
+
+  window.location.href = newUrl;
+}
+
+function performHardRefresh() {
+  if(performance.navigation.type === 0){
+    window.location.reload(true);
+  }
+}
+
+function setImageHeight(){
+  if(current_width >= 993){
+    let main_container_height = ($('.c-body').height() - $('.c-footer').height())+54;
+    console.log("main_container_height "+main_container_height)
+    $('.floorplate-image').attr("height", main_container_height - 100)
+  }
+}
 function populate_current_units() {
   $('.marker').addClass('hidden');
   current_units = [];
@@ -1036,7 +1074,6 @@ function populate_current_units() {
       current_units.push(units[i]);
     }
   }
-
   showMarkers();
 }
 
@@ -2182,19 +2219,26 @@ function setUnitAttributes(element) {
   setModalAttributes(element);
 }
 
+function getElementHeight(element) {
+  var height = $(element).outerHeight();
+
+  return height;
+}
+
   // for floorplates
 function adjustMarkerPosition(marker) {
+  // performHardRefresh()
   /*adjusting markers according to screen size*/
+  setImageHeight()
   var in_browser_height = 0;
   var in_browser_width = 0;
   var left_diff = 0;
   unit_id = $(marker).data('unit-id')
-  in_browser_height = parseFloat($('#f_' + current_floor).parent().height());
+  in_browser_height = getElementHeight($('#f_' + current_floor).parent());
   in_browser_width = parseFloat($('#f_' + current_floor).parent().width());
 
   actual_image_height = parseInt($('#f_' + current_floor).data("height"))
   actual_image_width = parseInt($('#f_' + current_floor).data("width"))
-  
   stretched_image_width = $('#f_' + current_floor).width();
   stretched_image_height = $('#f_' + current_floor).height();
   var x_plot = parseFloat($(marker).data('unit-x-plot'));
@@ -2212,30 +2256,50 @@ function adjustMarkerPosition(marker) {
     y_plot = y_plot - 14
     // x_plot = x_plot 
   }
+  console.log("in_browser_height "+in_browser_height)
+  console.log("in_browser_width "+in_browser_width)
+  console.log("actual_image_height "+actual_image_height)
+  console.log("actual_image_width "+actual_image_width)
+  console.log("stretched_image_width "+stretched_image_width)
+  console.log("stretched_image_height "+stretched_image_height)
 
+  console.log("x_plot "+x_plot)
+  console.log("y_plot "+y_plot)
+  console.log("left_diff "+left_diff)
+  console.log("-------------------------------------------")
   $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
   // $(marker).removeClass('hidden');
   // marker_width = $('#m_' + unit_id).width();
   // marker_height = $('#m_' + unit_id).height();
   // $(marker).css({"left": ((x_plot - (marker_width/2)) + 7) +  left_diff, "top": (y_plot - marker_height) + 9});
   if($(window).width() >= 1125 && $(window).width() <= 1360 ){
-    $(marker).css({"margin-left": -5, "margin-top": -2})   
+    $(marker).css({"margin-left": -1, "margin-top": -2})   
   }
 
   if($(window).width() >= 950 && $(window).width() <= 1125 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+4), "margin-top": -($('#s_'+unit_id).height()+5)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()+2)})       
   }
 
   if($(window).width() >= 825 && $(window).width() <= 950 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+5)})       
+    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+3)})       
   }
 
   if($(window).width() >= 700 && $(window).width() <= 825 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()+1)})       
+    if(navigator.userAgent.indexOf('Firefox') > -1){
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+2), "margin-top": -($('#s_'+unit_id).height()+1)})       
+    }
+    else{
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+8), "margin-top": -($('#s_'+unit_id).height()+1)})             
+    }
   }
 
   if($(window).width() >= 567 && $(window).width() <= 700 ){
-    $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+3), "margin-top": -($('#s_'+unit_id).height()-1)})       
+    if(navigator.userAgent.indexOf('Firefox') > -1){
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+1), "margin-top": -($('#s_'+unit_id).height()-1)})       
+    }
+    else{
+      $('.fa-map-marker-alt-responsive').css({"margin-left": -($('#s_'+unit_id).width()+8), "margin-top": -($('#s_'+unit_id).height()-1)})       
+    }
   }
 
   if($(window).width() >= 480 && $(window).width() <= 567){

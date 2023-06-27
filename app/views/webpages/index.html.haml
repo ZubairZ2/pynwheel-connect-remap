@@ -3,7 +3,6 @@
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
     %meta{:charset => "utf-8"}/
     %meta{:content => "IE=edge", "http-equiv" => "X-UA-Compatible"}/
-
     %title Pynwheel | Dashboard
     %meta{:content => "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", :name => "viewport"}/
     %script{:src => "https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"}
@@ -17,6 +16,7 @@
     = javascript_include_tag 'slick'
     = javascript_include_tag "update_session"
     = javascript_include_tag "moment"
+    = javascript_include_tag 'webpages', v: javascript_version
     %script{:src => "https://beans.ai/widgets/3d-maps/v2.0.3/beans-mapbox.min.js"}
     %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css", :rel => "stylesheet"}/
     %link{:href => "https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css", :rel => "stylesheet"}/
@@ -528,6 +528,7 @@
     if(current_width >= 993){
 
       let main_container_height = $('.c-body').height() - $('.c-footer').height();
+      console.log("main_container_height "+main_container_height)
       $('.floorplate-image').attr("height", main_container_height - 100)
 
       /*if(isSiteMap == 'true') {

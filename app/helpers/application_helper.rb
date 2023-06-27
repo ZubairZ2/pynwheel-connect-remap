@@ -1,5 +1,10 @@
 module ApplicationHelper
 
+  def javascript_version
+    timestamp = DateTime.now.to_i
+    "v#{timestamp}"
+  end
+
   def sidemenu_communities_actions
     ["index","new","create","update"]
   end
