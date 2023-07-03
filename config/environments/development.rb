@@ -15,14 +15,14 @@ Rails.application.configure do
   # Enable/disable caching. By default caching is disabled.
   if Rails.root.join('tmp/caching-dev.txt').exist?
     config.action_controller.perform_caching = true
+    config.action_dispatch.rack_cache = true
 
-    config.cache_store = :memory_store
     config.public_file_server.headers = {
-      'Cache-Control' => 'public, max-age=172800'
+      'Cache-Control' => "public, max-age=#{10.days.to_i}"
     }
   else
-    config.action_controller.perform_caching = true
-    config.cache_store = :memory_store
+    config.action_controller.perform_caching = false
+    config.cache_store = :null_store
   end
 
   # config.time_zone = 'Eastern Time (US & Canada)'
