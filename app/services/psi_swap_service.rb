@@ -78,7 +78,7 @@ class PsiSwapService < BaseService
 
       unless unit.present?
         unit = Unit.find_by(community_id: @credentials.community_id,provider_unit_id: u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s)#.first_or_initialize
-      end-
+      end
 
       if unit.present?
         # unit = unit.first
