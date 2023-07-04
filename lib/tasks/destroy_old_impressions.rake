@@ -1,5 +1,5 @@
 namespace :destroy_old_impressions do
   task :destroy_impressions => :environment do
-    Impression.where("created_at < ? ", Date.today.prev_month).destroy_all
+    Impression.where("created_at < ? ", Date.today.prev_month).delete_all
   end
 end 
