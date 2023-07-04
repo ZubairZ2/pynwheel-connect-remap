@@ -70,11 +70,14 @@ class ProvidersDataUpdationService
   def create_new_units_records(new_units)
     return unless new_units.present?
     new_units = avoid_null_exception(new_units)
+    puts "------------ new units: \n #{new_units[0]}----------------------------------------------"
     Unit.import new_units, validate: false  if new_units.present?
   end
 
   def update_existing_units_records(existing_units)
     return unless existing_units.present?
+    puts "------------ existing units: \n #{existing_units[0]}----------------------------------------------"
+
     Unit.import existing_units, on_duplicate_key_update: {
       conflict_target: [:id],
       columns: (Unit.column_names.map! &:to_sym)
