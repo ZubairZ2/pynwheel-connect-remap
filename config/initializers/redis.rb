@@ -3,8 +3,7 @@ if Rails.env == 'production'
   Resque.redis = Redis.new(
     host:     uri.host,
     port:     uri.port,
-    password: uri.password,
-    ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE }
+    password: uri.password
   )
 elsif Rails.env == 'development'
   uri = URI.parse(ENV["REDIS_URL"])
