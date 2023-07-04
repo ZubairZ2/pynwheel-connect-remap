@@ -38,31 +38,20 @@ preload_app!
 #
 # preload_app!
 
+before_fork do
+  ActiveRecord::Base.connection_pool.disconnect! if defined?(ActiveRecord)
+end
+
 # The code in the `on_worker_boot` will be called if you are using
 # clustered mode by specifying a number of `workers`. After each worker
-# process is booted this block will be run, if you are using `preload_app!`
-# option you will want to use this block to reconnect to any threads
-# or connections that may have been created at application boot, Ruby
+# process is booted, this block will be run. If you are using the `preload_app!`
+# option, you will want to use this block to reconnect to any threads
+# or connections that may have been created at application boot, as Ruby
 # cannot share connections between processes.
 #
-# on_worker_boot do
-#   ActiveRecord::Base.establish_connection if defined?(ActiveRecord)
-# end
+on_worker_boot do
+  ActiveRecord::Base.establish_connection if defined?(ActiveRecord)
+end
 
 # Allow puma to be restarted by `rails restart` command.
 plugin :tmp_restart
-unless Rails.env.development?
-  before_fork do
-    require 'puma_worker_killer'
-
-    PumaWorkerKiller.config do |config|
-      config.ram           = Rails.env.production? ? 2500 : 500 # mb
-      config.frequency     = 5    # seconds
-      config.percent_usage = 0.98
-      config.rolling_restart_frequency = 1800 # 30 min in seconds
-    end
-    #PumaWorkerKiller.enable_rolling_restart(1 * 3600) # 1 hour in seconds
-    #PumaWorkerKiller.enable_rolling_restart(900) # Every Fifteen minutes
-    PumaWorkerKiller.start
-  end
-end
