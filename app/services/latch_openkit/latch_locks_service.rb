@@ -1,15 +1,15 @@
 module LatchOpenkit
   class LatchLocksService < LatchOpenkit::BaseService
 
-    def generate_latch_doors_accesses(community_id, start_time, end_time, key_ids, allow_key_card_count)
-      set_parameter_for_latch(community_id, start_time, end_time, key_ids, allow_key_card_count)
-      @partner_scopped_token = parner_scopped_access_token()
-      invite_user()
+    def generate_latch_doors_accesses(community_id, start_time, end_time, key_ids)
+      set_parameter_for_latch(community_id, start_time, end_time, key_ids)
+      partner_scopped_token = parner_scopped_access_token()
+      response = invite_user(partner_scopped_token)
+      update_latch_lock_access(response)
     end
 
     def generate_latch_verification_code
       user_scopped_passwordless_start()
-
     end
 
     def generate_latch_sdk_token verfication_code
@@ -23,7 +23,6 @@ module LatchOpenkit
                                   body: parner_scopped_access_token_payload.to_json,
                                   headers: { 'Content-Type' => 'application/json' }
                                 )
-                                
         response["access_token"]
       end
 
@@ -41,14 +40,14 @@ module LatchOpenkit
                       )
       end
 
-      def invite_user
+      def invite_user partner_scopped_token
         HTTParty.post("#{ENV["Latch_OPENKIT_URL"]}/v1/users",
                         body: invite_user_payload.to_json,
                         headers: { 
                           'Content-Type' => 'application/json',
-                          'Authorization' => "Bearer #{@partner_scopped_token}"
+                          'Authorization' => "Bearer #{partner_scopped_token}"
                         }                                  
-                      )  
+                      )
       end
 
       def invite_user_payload
@@ -94,6 +93,13 @@ module LatchOpenkit
           "connection": "email",
           "send": "code"
         }
+      end
+
+      def update_latch_lock_access response
+        granted_accesses = response&.dig("doors").map{|x| x["uuid"]}&.compact&.uniq
+        granted_accesses&.each do |lock_id|
+          LatchLock.where(lock_id: lock_id).map{|stop_data| @tour_user.latch_guests.create(community_id: @community_id, latch_link: lock_id, guest_of_stop_type: stop_data.stop_type.classify , guest_of_stop_id: stop_data.stop_id, start_time: @start_time.to_i, end_time: @end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
+        end
       end
   end
 end
