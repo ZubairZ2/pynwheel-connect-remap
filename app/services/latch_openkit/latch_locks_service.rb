@@ -1,17 +1,23 @@
 module LatchOpenkit
-  class LocksService < LatchOpenkit::BaseService
+  class LatchLocksService < LatchOpenkit::BaseService
 
-    def generate_doors_accesses
+    def generate_latch_doors_accesses(community_id, start_time, end_time, key_ids, allow_key_card_count)
+      set_parameter_for_latch(community_id, start_time, end_time, key_ids, allow_key_card_count)
       @partner_scopped_token = parner_scopped_access_token()
-
-      user_scopped_passwordless_start()
-      @user_scopped_token = user_scopped_passwordless_token()
-
       invite_user()
     end
 
-    private
+    def generate_latch_verification_code
+      user_scopped_passwordless_start()
 
+    end
+
+    def generate_latch_sdk_token verfication_code
+      user_scopped_passwordless_token(verfication_code)
+    end
+
+    private
+    
       def parner_scopped_access_token
         response = HTTParty.post("#{ENV["Latch_OPENKIT_AUTH_URL"]}/v1/oauth/token",
                                   body: parner_scopped_access_token_payload.to_json,
@@ -28,13 +34,11 @@ module LatchOpenkit
                       )
       end
 
-      def user_scopped_passwordless_token
-        response = HTTParty.post("#{ENV["Latch_OPENKIT_AUTH_URL"]}/v1/oauth/token",
-                                  body: user_scopped_passwordless_token_payload.to_json,
-                                  headers: { 'Content-Type' => 'application/json' }
-                                )
-
-        response["access_token"]
+      def user_scopped_passwordless_token verfication_code
+        HTTParty.post("#{ENV["Latch_OPENKIT_AUTH_URL"]}/v1/oauth/token",
+                        body: user_scopped_passwordless_token_payload(verfication_code).to_json,
+                        headers: { 'Content-Type' => 'application/json' }
+                      )
       end
 
       def invite_user
@@ -60,7 +64,7 @@ module LatchOpenkit
         }
       end
 
-      def user_scopped_passwordless_token_payload
+      def user_scopped_passwordless_token_payload verfication_code
         {
           "audience": ENV["Latch_OPENKIT_URL"],
           "client_id": ENV["Latch_OPENKIT_PASSWORDLESS_CLIENT_ID"],
@@ -69,7 +73,7 @@ module LatchOpenkit
           "realm": "email",
           "scope": "openid profile email offline_access",
           "username": @tour_user&.email,
-          "otp": "563647" #Need to be handled dynamically
+          "otp": verfication_code
         }
       end
 

@@ -595,6 +595,13 @@ Rails.application.routes.draw do
   
     namespace :self_tour do
       namespace :v1 do
+        resources :latch_accounts, only: [:index] do
+          collection do
+            post :generate_verification_code
+            get :get_user_auth_token
+          end
+        end
+
         resources :communities do
           get :user_tour_status
           get :initialize_tour
