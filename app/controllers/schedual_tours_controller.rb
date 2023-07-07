@@ -545,7 +545,7 @@ Download #{community_text} #{app_link}#{"\n"}
 Get information about your tour here: #{confirmation_page_link}"
 
       else
-        "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}.#{"\n"} When you go to the property, you will need: 
+        "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}.#{"\n"}When you go to the property, you will need: 
         - A photo ID
         - Your mobile device with the #{community_text} app installed#{"\n"}
 Download #{community_text} #{app_link}#{"\n"}
