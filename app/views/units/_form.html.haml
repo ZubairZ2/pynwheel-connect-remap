@@ -375,7 +375,7 @@
                     var t = wysihtml5Editor.getValue();
                     t1 = t.substr(0, characterLimit)
                     t2 = t.substr(characterLimit, t.length)
-                    t2 = t2.fontcolor("red");
+                    <!-- t2 = t2.fontcolor("red"); -->
                     wysihtml5Editor.setValue(t1 + t2);
                 },
                 load: function(){
@@ -391,7 +391,7 @@
                     var t = wysihtml5Editor.getValue();
                     t1 = t.substr(0, characterLimit)
                     t2 = t.substr(characterLimit, t.length)
-                    t2 = t2.fontcolor("red");
+                    <!-- t2 = t2.fontcolor("red"); -->
                     wysihtml5Editor.setValue(t1 + t2);
                     var text_split = $('.unit_details_text').text().split(" ")
                     var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
