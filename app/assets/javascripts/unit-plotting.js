@@ -416,12 +416,14 @@ function start__original_work(event, ui) {
     xpos = Math.round(ui.position.left);
     ypos = Math.round(ui.position.top);
 
+    xpos1 = xpos+2;     // for new markers
+    ypos1 = ypos+24;    // for new markers
     // temp array of just markers at same x/y
     temp = [];
 
     if (arr != null) {
         for (i = 0; i < arr.length; i++) {
-            if (arr[i][1] == xpos && arr[i][2] == ypos) {
+            if ((arr[i][1] == xpos && arr[i][2] == ypos) || (arr[i][1] == xpos1 && arr[i][2] == ypos1)) {
                 // alert(arr[i]);
                 // alert(arr[i][0]);
                 temp.push(arr[i][0])
