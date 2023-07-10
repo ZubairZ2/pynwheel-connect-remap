@@ -96,9 +96,10 @@ module LatchOpenkit
       end
 
       def update_latch_lock_access response
-        granted_accesses = response&.dig("doors").map{|x| x["uuid"]}&.compact&.uniq
-        granted_accesses&.each do |lock_id|
-          LatchLock.where(lock_id: lock_id).map{|stop_data| @tour_user.latch_guests.create(community_id: @community_id, latch_link: lock_id, guest_of_stop_type: stop_data.stop_type.classify , guest_of_stop_id: stop_data.stop_id, start_time: @start_time.to_i, end_time: @end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
+        granted_accesses = response&.dig("doors")&.compact&.uniq
+
+        granted_accesses&.each do |lock|
+          LatchLock.where(lock_id: lock["uuid"]).map{|stop_data| @tour_user.latch_guests.create(community_id: @community_id, latch_link: "#{lock["uuid"]} | #{lock["name"]}", guest_of_stop_type: stop_data.stop_type.classify , guest_of_stop_id: stop_data.stop_id, start_time: @start_time.to_i, end_time: @end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
         end
       end
   end
