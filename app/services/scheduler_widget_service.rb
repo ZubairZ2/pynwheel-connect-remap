@@ -135,7 +135,7 @@ class SchedulerWidgetService < BaseService
     end
     community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Self Tour" : "Pynwheel Self Tour"
     sms_content = !is_rescheduled ? 
-    "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}. When you go to the property, you will need: 
+    "Thank you for scheduling your tour! We look forward to having you at #{community.name if community.present?} on #{schedual_tour.tour_date.strftime("%A, %b %-d %Y")} at #{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}.#{"\n"}When you go to the property, you will need: 
     - A photo ID
     - Your mobile device with the #{community_text} app installed 
     Download #{community_text} #{app_link} 

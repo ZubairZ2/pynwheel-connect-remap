@@ -221,7 +221,7 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 					content = "<div style='vertical-align:middle; font-family: arial,helvetica,sans-serif; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/>Your tour starts soon!<br><a href=' https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()}'>Directions to Property</a><br>When you arrive at the property, open the #{community_text} app to begin your tour.<br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a> <br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br>#{community.one_hour_email_text.gsub("\n", "<br>").html_safe rescue ""}"
 				end
 				sms_content = "Your tour starts soon!
-				Here are directions to #{community.name} https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()} #{"\n"} When you arrive at the property, open the #{community_text} app to begin your tour. #{"\n"} #{"\n"} Open #{community_text} #{one_link} #{"\n"} #{"\n"} #{confirmation_page_link}
+				#{"\n"}Here are directions to #{community.name}:#{"\n"}https://www.google.com/maps/search/?api=1&query=#{community.get_propery_address()} #{"\n"}#{"\n"}When you arrive at the property, open the #{community_text} app to begin your tour. #{"\n"} #{"\n"}Open #{community_text}:#{"\n"}#{one_link}#{"\n"} #{"\n"}Get more information about your tour here: #{"\n"}#{confirmation_page_link}
 				#{community.one_hour_email_text}"
 				schedual_tour.update_columns(hourly_email_sent: true)
 				emails = community_email.gsub(" ","").split(',')
