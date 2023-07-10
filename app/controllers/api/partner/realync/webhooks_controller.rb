@@ -32,7 +32,7 @@ module Api
 
           def update_unit_video_link(video_obj_param, communities)
             # units = Unit.joins(community: :credential).where(marketing_name: video_obj_param["unitName"], provider_unit_id: realync_unit_id(video_obj_param), communities: { id: communities })
-            units = Unit.joins(community: :credential).where(marketing_name: video_obj_param["unitName"], communities: { id: communities })
+            units = Unit.joins(community: :credential).where(provider: realync_data_provider, property_id: realync_property_id, marketing_name: video_obj_param["unitName"], communities: { id: communities })
             units.update_all(virtual_tour_button_label: video_obj_param["videoName"], virtual_tour_url: video_obj_param["shareLink"])
           end
 
@@ -58,7 +58,13 @@ module Api
           end
 
           def realync_property_id(video_obj_param)
-            video_obj_param["yardiPropertyId"] || video_obj_param["entrataPropertyId"]
+            if video_obj_param["yardiPropertyId"].present?
+              video_obj_param["yardiPropertyId"]
+            elsif video_obj_param["entrataPropertyId"].present?
+              video_obj_param["entrataPropertyId"]
+            else
+              nil
+            end
           end
 
           def realync_data_provider(video_obj_param)
