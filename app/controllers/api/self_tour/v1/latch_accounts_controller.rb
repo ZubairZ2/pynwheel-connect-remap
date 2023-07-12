@@ -6,12 +6,12 @@ module Api
         before_action :load_tour_user
 
         def generate_verification_code
-          response = LatchOpenkit::LatchLocksService.new(@tour_user).generate_latch_verification_code()
+          response = LatchOpenkit::LatchLocksService.new(@tour_user, @community.id).generate_latch_verification_code()
           render :json=> response
         end
 
         def get_user_auth_token
-          response = LatchOpenkit::LatchLocksService.new(@tour_user).generate_latch_sdk_token(params[:verification_code])
+          response = LatchOpenkit::LatchLocksService.new(@tour_user, @community.id).generate_latch_sdk_token(params[:verification_code])
           render :json=> response
         end
 

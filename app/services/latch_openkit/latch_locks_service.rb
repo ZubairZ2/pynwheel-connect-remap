@@ -1,8 +1,8 @@
 module LatchOpenkit
   class LatchLocksService < LatchOpenkit::BaseService
 
-    def generate_latch_doors_accesses(community_id, start_time, end_time, key_ids)
-      set_parameter_for_latch(community_id, start_time, end_time, key_ids)
+    def generate_latch_doors_accesses(start_time, end_time, key_ids)
+      set_parameter_for_latch(start_time, end_time, key_ids)
       partner_scopped_token = parner_scopped_access_token()
       response = invite_user(partner_scopped_token)
       update_latch_lock_access(response)

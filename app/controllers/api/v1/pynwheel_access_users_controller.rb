@@ -283,7 +283,7 @@ module Api
           end
           
           locks_data = locks_data.map{|lock| lock[0]}
-          LatchOpenkit::LatchLocksService.new(@pynwheel_access_user).generate_latch_doors_accesses(@community.id, start_time, end_time, locks_data)  if locks_data.present?
+          LatchOpenkit::LatchLocksService.new(@pynwheel_access_user, @community.id).generate_latch_doors_accesses(start_time, end_time, locks_data)  if locks_data.present?
           
           @pynwheel_access_user.update_column 'latch_status' , 'complete'
 
