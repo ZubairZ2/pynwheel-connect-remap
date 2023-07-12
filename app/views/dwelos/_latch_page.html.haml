@@ -10,14 +10,26 @@
         .col-lg-9.col-lg-offset-1
           .form-group
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              Client ID
+              Partner Scoped Client ID
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=> @community.latch.present? ? @community.latch.client_id : ""
+              = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Partner Scoped Client ID", :value=> @community.latch.present? ? @community.latch.client_id : ""
           .form-group
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              Client Secret
+              Partner Scoped Client Secret
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> @community.latch.present? ? @community.latch.client_secret : ""
+              = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Partner Scoped Client Secret", :value=> @community.latch.present? ? @community.latch.client_secret : ""
+          
+          .form-group
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              User Scoped Client ID
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = f.text_field :passwordless_client_id, :class=>"form-control validate[required]", :placeholder=>"User Scoped Client ID", :value=> @community.latch.present? ? @community.latch.passwordless_client_id : ""
+          .form-group
+            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+              User Scoped Client Secret
+            .col-sm-12.col-lg-9.col-md-9.col-xs-12
+              = f.text_field :passwordless_client_secret, :class=>"form-control validate[required]", :placeholder=>"User Scoped Client Secret", :value=> @community.latch.present? ? @community.latch.passwordless_client_secret : ""
+
           .form-group
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               Upload CSV File
@@ -52,15 +64,7 @@
 
                 %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
                   = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"latch-preview-image"
-                  -# = image_tag "exclamation-mark.png", class: "waring_exal", style: "width: 25px", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
-            -# - if lock_image.present?
-            -#   .row{:style => "padding-left: 47%;"}
-            -#     = link_to show_lock_image_in_modal_community_latch_accounts_path(),:class => "", remote: true do
-            -#       %span.btn.btn-primary.btn-success.ml-15{"data-target" => "#edit-name", "data-toggle" => "modal"}
-            -#         Crop
-
-    / /.box-body
     .box-footer
       - if current_community.latch.present?
         = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"

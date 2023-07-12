@@ -66,8 +66,8 @@ module LatchOpenkit
       def user_scopped_passwordless_token_payload verfication_code
         {
           "audience": ENV["Latch_OPENKIT_URL"],
-          "client_id": ENV["Latch_OPENKIT_PASSWORDLESS_CLIENT_ID"],
-          "client_secret": ENV["Latch_OPENKIT_PASSWORDLESS_CLIENT_SECRET"],
+          "client_id": @latch.passwordless_client_id,
+          "client_secret": @latch.passwordless_client_secret,
           "grant_type": "http://auth0.com/oauth/grant-type/passwordless/otp",
           "realm": "email",
           "scope": "openid profile email offline_access",
@@ -79,16 +79,16 @@ module LatchOpenkit
       def parner_scopped_access_token_payload
         {
           "audience": ENV["Latch_OPENKIT_URL"],
-          "client_id": ENV["Latch_OPENKIT_M2M_CLIENT_ID"],
-          "client_secret": ENV["Latch_OPENKIT_M2M_CLIENT_SECRET"],
+          "client_id": @latch.client_id,
+          "client_secret": @latch.client_secret,
           "grant_type": "client_credentials"
         }
       end
 
       def user_scopped_passwordless_start_payload
         {
-          "client_id": ENV["Latch_OPENKIT_PASSWORDLESS_CLIENT_ID"],
-          "client_secret": ENV["Latch_OPENKIT_PASSWORDLESS_CLIENT_SECRET"],
+          "client_id": @latch.passwordless_client_id,
+          "client_secret": @latch.passwordless_client_secret,
           "email": @tour_user&.email,
           "connection": "email",
           "send": "code"
