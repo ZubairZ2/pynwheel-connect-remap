@@ -74,10 +74,17 @@ class AnalyticsController < ApplicationController
     if @self_tour_records_all.any? && (@product_type == "all" || @product_type == "self_tour")
       tour_site_or_tour_state_session(start_date, @days_count, @self_tour_records_all, :tour_state)
     end
+    @communities_list = params[:company].present? ? Community.where(company_id: params[:company]).pluck(:name, :id) : communities_list(current_user)
+    @communities_list = params[:region].present? ? Community.where(region_id: params[:region]).pluck(:name, :id) : @communities_list
     @start_date = start_date
     @end_date = end_date
   end
 
+  def get_associated_communities
+    communities = params[:company].present ? Community.where(company_id: params[:company]).pluck(:id, :name) : params[:region].present? ? Community.where(region_id: params[:region]).pluck(:id, :name) : ''
+
+    render json: communities.map { |id, name| { id: id, name: name } }
+  end
   private
     
     def apply_filters(params)
@@ -85,6 +92,10 @@ class AnalyticsController < ApplicationController
       @admin_type = params[:admin_type] if params[:admin_type]
       @community_id = params[:community] if params[:community].present?
       @company_id = params[:company] if params[:company].present?
+      if @community_id.present?
+        @show_self_tour = Community.find(@community_id).self_tour
+        @company_id = Community.find(@community_id).company_id
+      end
       @region_id = params[:region] if params[:region].present?
       if params[:community].present? && !params[:community].blank?
         on_selected_communities(@community_id)
@@ -123,9 +134,9 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = records_start_date.count(uniq_start_date[i])
         records_start_date = records_start_date - [uniq_start_date[i]]
       end
-      visited_days_count = for_device_type == "self_tour" ? total_records.pluck(:arrived).map {|x| x.strftime("%d")}.uniq.count : 1
+      visited_days_count = for_device_type == "self_tour" ? total_records.pluck(:arrived).map {|x| x.strftime("%d")}.uniq.count : days_count
       instance_variable_set("@track_session_count_#{for_device_type}", total_records.count)
-      instance_variable_set("@avg_track_session_#{for_device_type}", total_records.count / visited_days_count)
+      instance_variable_set("@avg_track_session_#{for_device_type}", (total_records.count.to_f / visited_days_count.to_f).round)
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
       session_each_day_data, session_each_day_options = make_bar_chart(session_each_day_labels, session_each_day_counts, "Total Sessions", "rgba(137, 199, 101, 0.5)", "rgba(137, 199, 101, 1)")
@@ -380,7 +391,6 @@ class AnalyticsController < ApplicationController
       records.each { |ar| session_with_counts += 1  if ar.last > 0 }
       records_count = records.size
       records_last_counts = records.map{ |arr| arr.last }
-  
       instance_variable_set("@total_number_of_price_opened_#{for_device_type}", records_last_counts.sum)
       session_without_counts = records_count - session_with_counts
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
