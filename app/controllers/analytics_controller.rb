@@ -134,7 +134,7 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = records_start_date.count(uniq_start_date[i])
         records_start_date = records_start_date - [uniq_start_date[i]]
       end
-      visited_days_count = for_device_type == "self_tour" ? total_records.pluck(:arrived).map {|x| x.strftime("%d")}.uniq.count : days_count
+      visited_days_count = for_device_type == "self_tour" ? total_records.pluck(:arrived).map {|x| x.strftime("%d")}.uniq.count : 1
       instance_variable_set("@track_session_count_#{for_device_type}", total_records.count)
       instance_variable_set("@avg_track_session_#{for_device_type}", (total_records.count.to_f / visited_days_count.to_f).round)
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
