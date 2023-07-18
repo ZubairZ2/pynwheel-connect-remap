@@ -27,11 +27,11 @@
               - unless current_user.is_company_admin?
                 .col-xl-4.col-lg-4
                   %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any company
-                  = select_tag 'companies', options_for_select(companies_list(current_user), company_id),{ :class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
+                  = select_tag 'companies', options_for_select(companies_list(current_user), company_id),{ :class=>"form-control filter_select2 company_filter", :include_blank => 'All', :style => "width: 100%" }
               - if current_user.is_company_admin?
                 .col-xl-4.col-lg-4
                   %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any community
-                  = select_tag 'communities', options_for_select(communities_list(current_user), community_id), { :class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
+                  = select_tag 'communities', options_for_select(@communities_list, community_id), { :class=>"form-control filter_select2 community_filter", :include_blank => 'All', :style => "width: 100%" }
               .col-xl-4.col-lg-4
                 %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any region
                 = select_tag 'regions', options_for_select(regions_list(current_user), region_id),{:class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
@@ -47,7 +47,7 @@
           - unless current_user.is_company_admin?
             .col-xl-4.col-lg-4
               %h4.empty_other{:title => "On Selected this other marked(*) filters will unselect"} Select any community
-              = select_tag 'communities', options_for_select(communities_list(current_user), community_id), { :class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
+              = select_tag 'communities', options_for_select(@communities_list, community_id), { :class=>"form-control filter_select2 community_filter", :include_blank => 'All', :style => "width: 100%" }
 
           - unless current_user.is_dwelo_admin? || current_user.is_company_admin?
             .col-xl-4.col-lg-4
@@ -58,7 +58,7 @@
         .col-md-12.theme-setting.product_tabs
           %ul#product_type_tabs.nav.nav-tabs.add-new-lock{:role => "tablist"}
             %li{:role => "presentation",:class => "active"}
-              %a#self-tour-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-self-tour", :role => "tab"} Self Tour
+              %a#self-tour-tab{"class" => "#{@show_self_tour ? '' : 'hidden'}","aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-self-tour", :role => "tab"} Self Tour
             / %li{:role => "presentation",:class => ""}
             /   %a#maps-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-maps", :role => "tab"} Maps
             %li{:role => "presentation",:class => ""}
@@ -77,4 +77,27 @@
   console.log("minDateForSelfTour:  ", minDateForSelfTour)
   console.log("minDateForTouch:  ", minDateForTouch)
 
-
+  $(document).ready(function() {
+    $('.company_filter').change(function() { 
+      var selectedCompany = $(this).val();
+      $.ajax({
+        url: '/analytics/get_associated_communities', 
+        type: 'GET',
+        data: { company: selectedCompany },
+        dataType: 'json',
+        success: function(response) {
+          var options = '';
+  
+          $.each(response, function(index, community) {
+            options += '<option value="' + community.id + '">' + community.name + '</option>';
+          });
+  
+          $('.community_filter').html(options);
+        },
+        error: function(xhr) {
+          console.log(xhr.responseText);
+        }
+      });
+    });
+  });
+  
