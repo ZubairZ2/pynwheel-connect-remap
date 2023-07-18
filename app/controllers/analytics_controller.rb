@@ -91,11 +91,12 @@ class AnalyticsController < ApplicationController
       @product_type = params[:product_type].present? ? params[:product_type] : "all"
       @admin_type = params[:admin_type] if params[:admin_type]
       @community_id = params[:community] if params[:community].present?
-      @company_id = params[:company] if params[:company].present?
+      @show_self_tour = @community_id.present? ? Community.find(@community_id).self_tour : true
       if @community_id.present?
-        @show_self_tour = Community.find(@community_id).self_tour
-        @company_id = Community.find(@community_id).company_id
+        params[:company] = Community.find(@community_id).company_id
+        params[:region] = Community.find(@community_id).region_id
       end
+      @company_id = params[:company] if params[:company].present?
       @region_id = params[:region] if params[:region].present?
       if params[:community].present? && !params[:community].blank?
         on_selected_communities(@community_id)
