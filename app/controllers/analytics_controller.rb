@@ -81,7 +81,7 @@ class AnalyticsController < ApplicationController
   end
 
   def get_associated_communities
-    communities = params[:company].present ? Community.where(company_id: params[:company]).pluck(:id, :name) : params[:region].present? ? Community.where(region_id: params[:region]).pluck(:id, :name) : ''
+    communities = params[:company].present? ? Community.where(company_id: params[:company]).pluck(:id, :name) : params[:region].present? ? Community.where(region_id: params[:region]).pluck(:id, :name) : ''
 
     render json: communities.map { |id, name| { id: id, name: name } }
   end
