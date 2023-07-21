@@ -156,7 +156,7 @@
           %p.chart_heading Pages per session
           .col-lg-4.numbers_div
             .center_it
-              .count_int= @average_number_of_pages_per_session
+              .count_int= @average_number_of_pages_per_session_metro
               .count_text= "Average number of visited pages per session"
           .col-lg-8
             = bar_chart @session_each_day_hour_pages_data, @session_each_day_hour_pages_options
@@ -165,10 +165,6 @@
       .row.mt-80
         .col-lg-6.col-md-12.h-500
           %p.chart_heading Top Pages
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @average_number_of_pages_per_session_metro
-              .count_text= "Average number of visited pages per session"
           .col-lg-8
             = horizontal_bar_chart @visited_pages_data_labels, @visited_pages_data_options
 

@@ -41,7 +41,7 @@
                 = select_tag 'admin_type', options_for_select(admin_type, admin_type_selected),{:class=>"form-control filter_select2", :include_blank => 'All', :style => "width: 100%" }
             - if current_user.is_dwelo_admin? || current_user.is_company_admin?
               .col-xl-4.col-lg-4
-                %h4 TimeFrame
+                %h4 Time frame
                 = text_field_tag 'timeframe', nil, { class: 'date_range_filter', :style => "width: 100%" }
         .row
           - unless current_user.is_company_admin?
@@ -51,24 +51,25 @@
 
           - unless current_user.is_dwelo_admin? || current_user.is_company_admin?
             .col-xl-4.col-lg-4
-              %h4 TimeFrame
+              %h4 Time frame
               = text_field_tag 'timeframe', nil, { class: 'date_range_filter', :style => "width: 100%" }
+          .col-xl-4.col-lg-4
+            %button.btn.btn-secondary{:style=> "margin-top: 35px;", :type=> "button", :id=> "reset-filters"} Reset Filters
     .box.box-info
       .box-header
         .col-md-12.theme-setting.product_tabs
           %ul#product_type_tabs.nav.nav-tabs.add-new-lock{:role => "tablist"}
-            %li{:role => "presentation",:class => "active"}
+            %li{:role => "presentation"}
               %a#self-tour-tab{"class" => "#{@show_self_tour ? '' : 'hidden'}","aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-self-tour", :role => "tab"} Self Tour
             / %li{:role => "presentation",:class => ""}
             /   %a#maps-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-maps", :role => "tab"} Maps
-            %li{:role => "presentation",:class => ""}
-              %a#maps-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-touch", :role => "tab"} Touch
-
-          #s-self-tour.tab-pane.fade.in.active{:role => "tabpanel"}
+            %li{:role => "presentation"}
+              %a#maps-tab{"class" => "#{@show_touch ? '' : 'hidden'}","aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-touch", :role => "tab"} Touch
+          #s-self-tour.tab-pane.fade.in{:class => "#{@show_self_tour ? 'active' : ''}",:role => "tabpanel"}
             = render 'self_tour'
           / #s-maps.tab-pane.fade{:role => "tabpanel"}
           /   =# render 'maps'
-          #s-touch.tab-pane.fade{:role => "tabpanel"}
+          #s-touch.tab-pane.fade{:class => "#{@show_touch ? 'active' : ''}",:role => "tabpanel"}
             = render 'touch'
 
 :javascript
@@ -98,6 +99,15 @@
           console.log(xhr.responseText);
         }
       });
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {  
+    var resetButton = document.getElementById('reset-filters');
+    resetButton.addEventListener('click', function(event) {
+      event.preventDefault();
+      var newUrl = window.location.origin + window.location.pathname;
+      window.location.href = newUrl;
     });
   });
   

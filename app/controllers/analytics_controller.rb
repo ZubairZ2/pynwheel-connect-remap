@@ -81,7 +81,7 @@ class AnalyticsController < ApplicationController
   end
 
   def get_associated_communities
-    communities = params[:company].present ? Community.where(company_id: params[:company]).pluck(:id, :name) : params[:region].present? ? Community.where(region_id: params[:region]).pluck(:id, :name) : ''
+    communities = params[:company].present? ? Community.where(company_id: params[:company]).pluck(:id, :name) : params[:region].present? ? Community.where(region_id: params[:region]).pluck(:id, :name) : ''
 
     render json: communities.map { |id, name| { id: id, name: name } }
   end
@@ -92,6 +92,7 @@ class AnalyticsController < ApplicationController
       @admin_type = params[:admin_type] if params[:admin_type]
       @community_id = params[:community] if params[:community].present?
       @show_self_tour = @community_id.present? ? Community.find(@community_id).self_tour : true
+      @show_touch = @community_id.present? ? Community.find(@community_id).touchscreen_app : true
       if @community_id.present?
         params[:company] = Community.find(@community_id).company_id
         params[:region] = Community.find(@community_id).region_id
@@ -565,18 +566,22 @@ class AnalyticsController < ApplicationController
       tour_stops = TourStop.where(id: tour_stop_ids)
       stops = tour_stops.where.not(stop_id: nil).pluck(:stop_type, :stop_id)
       stops.each do |arr|
-        stop = arr.first.camelcase.constantize.find arr.last
-        if arr.first == "unit"
-          unit_type_or_name = stop.unit_type_or_name
-          visites_stops_hash[unit_type_or_name] = visites_stops_hash[unit_type_or_name].nil? ? (1) : (visites_stops_hash[unit_type_or_name] + 1)
-        elsif arr.first == "amenity"
-          if stop.amenity_type == ""
-            visites_stops_hash["Other amenity"] = visites_stops_hash["Other amenity"].nil? ? (1) : (visites_stops_hash["Other amenity"] + 1)
+        begin
+          stop = arr.first.camelcase.constantize.find arr.last
+          if arr.first == "unit"
+            unit_type_or_name = stop.unit_type_or_name
+            visites_stops_hash[unit_type_or_name] = visites_stops_hash[unit_type_or_name].nil? ? (1) : (visites_stops_hash[unit_type_or_name] + 1)
+          elsif arr.first == "amenity"
+            if stop.amenity_type == ""
+              visites_stops_hash["Other amenity"] = visites_stops_hash["Other amenity"].nil? ? (1) : (visites_stops_hash["Other amenity"] + 1)
+            else
+              visites_stops_hash[stop.amenity_type] = visites_stops_hash[stop.amenity_type].nil? ? (1) : (visites_stops_hash[stop.amenity_type] + 1)
+            end
           else
-            visites_stops_hash[stop.amenity_type] = visites_stops_hash[stop.amenity_type].nil? ? (1) : (visites_stops_hash[stop.amenity_type] + 1)
+            visites_stops_hash["Other than unit and amenity stop"] = visites_stops_hash["Other than unit and amenity stop"].nil? ? (1) : (visites_stops_hash["Other than unit and amenity stop"] + 1)
           end
-        else
-          visites_stops_hash["Other than unit and amenity stop"] = visites_stops_hash["Other than unit and amenity stop"].nil? ? (1) : (visites_stops_hash["Other than unit and amenity stop"] + 1)
+        rescue => error
+          next
         end
       end
       visites_stops_hash = Hash[visites_stops_hash.sort_by{ |_, v| -v }]
@@ -625,7 +630,6 @@ class AnalyticsController < ApplicationController
       tour_histories_date_with_user = tour_histories.where(tour_status: ["self_tour", "virtual_tour", "guided_tour"]).pluck(:arrived, :tour_user_id, :tour_status).map do |arr| 
         arr[2] == "virtual_tour" ? [arr[0].to_date, arr[1], "Virtual Tour"] : [arr[0].to_date, arr[1], arr[2]]
       end
-
       no_shows_schedule_records = scheduled_tours_date_with_user - tour_histories_date_with_user
       records_start_date = no_shows_schedule_records.map {|arr| arr.first}
       uniq_start_date = records_start_date.uniq
