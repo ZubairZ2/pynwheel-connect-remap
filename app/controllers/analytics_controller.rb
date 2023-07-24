@@ -14,7 +14,6 @@ class AnalyticsController < ApplicationController
     @pesent_end_dattime_metro_records = @metro_records.where.not(end_datetime: nil)
     @self_tour_records = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
-    
     @min_date_for_self_tour = tour_histories.order('created_at asc')&.first&.created_at
     @min_date_for_touch = track_sessions.where(track_session_type: "metro").order('created_at asc')&.first&.created_at
 
@@ -604,7 +603,7 @@ class AnalyticsController < ApplicationController
     def pages_per_session(start_date, days_count, total_records)
       # No 5 in Document
       sessions_each_day_hourly_hash = return_empty_hash_hourly
-      records_start_date_hours = total_records.pluck(:start_datetime).map {|dt| dt.strftime("%H").to_i }
+      records_start_date_hours = total_records.pluck(:start_datetime,:community_time_zone).map {|dt| dt[0].in_time_zone(dt[1]).strftime("%H").to_i }
       uniq_hours = records_start_date_hours.uniq
 
       uniq_hours.each do |h|
