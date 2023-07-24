@@ -37,7 +37,7 @@ class AnalyticsController < ApplicationController
     # For Metro 
     if @metro_records.any? && (@product_type == "all" || @product_type == "touch")
       collect_session_each_day_data(start_date, @days_count, @metro_records, :start_datetime, "metro")
-      collect_session_each_day_data_in_minutes(start_date, @days_count, @pesent_end_dattime_metro_records, :start_datetime, :end_datetime, "metro")
+      collect_session_each_day_data_in_minutes(start_date, @days_count, @metro_records, :start_datetime, :end_datetime, "metro")
       collect_session_each_day_data_in_hours(@metro_records, :start_datetime, "metro")
       bounce_rate_on_pages(@metro_records, :visited_pages ,"metro")
       pages_per_session(start_date, @days_count, @metro_records)
