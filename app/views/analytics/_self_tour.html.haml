@@ -233,7 +233,7 @@
           %p.chart_heading Stops Per Tour
           .col-lg-4.numbers_div
             .center_it
-              .count_int= @average_number_of_stops_per_session
+              .count_int= @average_number_of_stops_per_session_tour_stop
               .count_text= "Average number of stops visited per session"
           .col-lg-8
             = bar_chart @session_each_day_stops_hour_data, @session_each_day_stops_hour_options
@@ -241,10 +241,6 @@
         - if current_user.is_super_admin?
           .col-lg-6.col-md-12.h-500
             %p.chart_heading Top Stops
-            .col-lg-4.numbers_div
-              .center_it
-                .count_int= @average_number_of_stops_per_session_tour_stop
-                .count_text= "Average number of stops visited per session"
             .col-lg-8
               = horizontal_bar_chart @visited_per_tour_stop_data_labels, @visited_per_tour_stop_data_options
 

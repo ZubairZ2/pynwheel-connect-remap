@@ -14,7 +14,6 @@ class AnalyticsController < ApplicationController
     @pesent_end_dattime_metro_records = @metro_records.where.not(end_datetime: nil)
     @self_tour_records = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
-    
     @min_date_for_self_tour = tour_histories.order('created_at asc')&.first&.created_at
     @min_date_for_touch = track_sessions.where(track_session_type: "metro").order('created_at asc')&.first&.created_at
 
@@ -37,7 +36,7 @@ class AnalyticsController < ApplicationController
     # For Metro 
     if @metro_records.any? && (@product_type == "all" || @product_type == "touch")
       collect_session_each_day_data(start_date, @days_count, @metro_records, :start_datetime, "metro")
-      collect_session_each_day_data_in_minutes(start_date, @days_count, @pesent_end_dattime_metro_records, :start_datetime, :end_datetime, "metro")
+      collect_session_each_day_data_in_minutes(start_date, @days_count, @metro_records, :start_datetime, :end_datetime, "metro")
       collect_session_each_day_data_in_hours(@metro_records, :start_datetime, "metro")
       bounce_rate_on_pages(@metro_records, :visited_pages ,"metro")
       pages_per_session(start_date, @days_count, @metro_records)
@@ -83,8 +82,13 @@ class AnalyticsController < ApplicationController
   def get_associated_communities
     communities = params[:company].present? ? Community.where(company_id: params[:company]).pluck(:id, :name) : params[:region].present? ? Community.where(region_id: params[:region]).pluck(:id, :name) : ''
 
-    render json: communities.map { |id, name| { id: id, name: name } }
+    if communities.present?
+      render json: communities.map { |id, name| { id: id, name: name } }
+    else
+      render json: {}
+    end
   end
+  
   private
     
     def apply_filters(params)
@@ -92,6 +96,7 @@ class AnalyticsController < ApplicationController
       @admin_type = params[:admin_type] if params[:admin_type]
       @community_id = params[:community] if params[:community].present?
       @show_self_tour = @community_id.present? ? Community.find(@community_id).self_tour : true
+      @show_touch = @community_id.present? ? Community.find(@community_id).touchscreen_app : true
       if @community_id.present?
         params[:company] = Community.find(@community_id).company_id
         params[:region] = Community.find(@community_id).region_id
@@ -135,7 +140,7 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = records_start_date.count(uniq_start_date[i])
         records_start_date = records_start_date - [uniq_start_date[i]]
       end
-      visited_days_count = for_device_type == "self_tour" ? total_records.pluck(:arrived).map {|x| x.strftime("%d")}.uniq.count : days_count
+      visited_days_count = for_device_type == "self_tour" ? total_records.pluck(:arrived).map {|x| x.strftime("%d")}.uniq.count : uniq_start_date.size
       instance_variable_set("@track_session_count_#{for_device_type}", total_records.count)
       instance_variable_set("@avg_track_session_#{for_device_type}", (total_records.count.to_f / visited_days_count.to_f).round)
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
@@ -565,18 +570,22 @@ class AnalyticsController < ApplicationController
       tour_stops = TourStop.where(id: tour_stop_ids)
       stops = tour_stops.where.not(stop_id: nil).pluck(:stop_type, :stop_id)
       stops.each do |arr|
-        stop = arr.first.camelcase.constantize.find arr.last
-        if arr.first == "unit"
-          unit_type_or_name = stop.unit_type_or_name
-          visites_stops_hash[unit_type_or_name] = visites_stops_hash[unit_type_or_name].nil? ? (1) : (visites_stops_hash[unit_type_or_name] + 1)
-        elsif arr.first == "amenity"
-          if stop.amenity_type == ""
-            visites_stops_hash["Other amenity"] = visites_stops_hash["Other amenity"].nil? ? (1) : (visites_stops_hash["Other amenity"] + 1)
+        begin
+          stop = arr.first.camelcase.constantize.find arr.last
+          if arr.first == "unit"
+            unit_type_or_name = stop.unit_type_or_name
+            visites_stops_hash[unit_type_or_name] = visites_stops_hash[unit_type_or_name].nil? ? (1) : (visites_stops_hash[unit_type_or_name] + 1)
+          elsif arr.first == "amenity"
+            if stop.amenity_type == ""
+              visites_stops_hash["Other amenity"] = visites_stops_hash["Other amenity"].nil? ? (1) : (visites_stops_hash["Other amenity"] + 1)
+            else
+              visites_stops_hash[stop.amenity_type] = visites_stops_hash[stop.amenity_type].nil? ? (1) : (visites_stops_hash[stop.amenity_type] + 1)
+            end
           else
-            visites_stops_hash[stop.amenity_type] = visites_stops_hash[stop.amenity_type].nil? ? (1) : (visites_stops_hash[stop.amenity_type] + 1)
+            visites_stops_hash["Other than unit and amenity stop"] = visites_stops_hash["Other than unit and amenity stop"].nil? ? (1) : (visites_stops_hash["Other than unit and amenity stop"] + 1)
           end
-        else
-          visites_stops_hash["Other than unit and amenity stop"] = visites_stops_hash["Other than unit and amenity stop"].nil? ? (1) : (visites_stops_hash["Other than unit and amenity stop"] + 1)
+        rescue => error
+          next
         end
       end
       visites_stops_hash = Hash[visites_stops_hash.sort_by{ |_, v| -v }]
@@ -599,7 +608,7 @@ class AnalyticsController < ApplicationController
     def pages_per_session(start_date, days_count, total_records)
       # No 5 in Document
       sessions_each_day_hourly_hash = return_empty_hash_hourly
-      records_start_date_hours = total_records.pluck(:start_datetime).map {|dt| dt.strftime("%H").to_i }
+      records_start_date_hours = total_records.pluck(:start_datetime,:community_time_zone).map {|dt| dt[0].in_time_zone(dt[1]).strftime("%H").to_i }
       uniq_hours = records_start_date_hours.uniq
 
       uniq_hours.each do |h|
@@ -625,7 +634,6 @@ class AnalyticsController < ApplicationController
       tour_histories_date_with_user = tour_histories.where(tour_status: ["self_tour", "virtual_tour", "guided_tour"]).pluck(:arrived, :tour_user_id, :tour_status).map do |arr| 
         arr[2] == "virtual_tour" ? [arr[0].to_date, arr[1], "Virtual Tour"] : [arr[0].to_date, arr[1], arr[2]]
       end
-
       no_shows_schedule_records = scheduled_tours_date_with_user - tour_histories_date_with_user
       records_start_date = no_shows_schedule_records.map {|arr| arr.first}
       uniq_start_date = records_start_date.uniq
