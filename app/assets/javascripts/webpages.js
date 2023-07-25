@@ -2478,16 +2478,18 @@ function handleViewportChange() {
   let filters_width = "65%";
   let buttons_width = "15%";
   let logo_width = "25%";
-  if (viewportWidth <= 767) {
+  if (viewportWidth <= 567) {
     $(".c-footer").css("margin-left", "0px");
     filters_width = "100%"; buttons_width = "100%";
-  } else if (viewportWidth >= 768 && viewportWidth <= 925) {
+  } else if (viewportWidth >= 567 && viewportWidth <= 768) {
+    filters_width = "100%"; buttons_width = "50%";
+  } else if (viewportWidth >= 768 && viewportWidth <= 993) {
     if(webCommunity['is_sitemap']) {
       filters_width = "100%"; buttons_width = "50%"; 
     } else {
       filters_width = "100%"; buttons_width = "50%"; 
     }
-  }  else if (viewportWidth >= 925 && viewportWidth <= 1024) {
+  }  else if (viewportWidth >= 993 && viewportWidth <= 1024) {
     if(webCommunity['is_sitemap']) {
       filters_width = "60%"; buttons_width = "20%"; 
     } else {
