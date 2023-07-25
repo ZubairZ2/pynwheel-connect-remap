@@ -3817,6 +3817,13 @@ a#favoriteclickme {
 }
 
 @media (max-width:767px) {
+    .custom-iframe-modeule .app-logo-mobile {
+        display: block;
+    }
+
+    .custom-iframe-modeule .app-logo {
+        display: none;
+    }
     
     .slider-amenity-modal-height {
         width: 100% !important;
@@ -3836,8 +3843,12 @@ a#favoriteclickme {
     }
 
     .custom-iframe-modeule .app-logo {
-        width: 20% !important;
-      }
+        display: none;
+    }
+
+    .custom-iframe-modeule .app-logo-mobile {
+        display: block;
+    }
     .c-modal-dialog {
         overflow: auto !important;
     }
@@ -5256,13 +5267,13 @@ body {
     top: 0;
     bottom: 0;
     z-index: 1030;
-    right: 0;
+    left: 0;
     background: #1d2425;
     width: 100%;
     max-width: 90px;
     text-align: center;
     padding: 0 2px;
-    overflow-y: auto;
+    /* overflow-y: auto; */
 }
 .selectable-field label {
     display: block;
@@ -5287,14 +5298,23 @@ body {
     width: 100%;
     padding: 0 15px 0 15px;
 }
+.custom-iframe-modeule .app-logo-mobile {
+    width: 25%;
+    text-align: center;
+    padding-bottom: inherit;
+    display: none;
+}
 .custom-iframe-modeule .app-logo {
     /* width: 7%; */
-    width: 90px;
+    width: 25%;
+    text-align: center;
     padding-bottom: inherit;
 }
 .custom-iframe-modeule .header-buttons-groups {
-    text-align: center;
-    width: 42%;
+    text-align: right;
+    /* width: 42%; */
+    width: 20%;
+    /* display: flex; */
 }
 
 .virtual-tour-modal-height {
@@ -5360,7 +5380,7 @@ body {
     color: white;
 }
 .custom-iframe-modeule .c-wrapper {
-    margin-right: 90px;
+    margin-left: 90px;
 }
 .floorplate_image {
     overscroll-behavior: contain;
@@ -5618,12 +5638,34 @@ html, .add-fav-body {
         width: 75%;
         bottom: 0;
     }
+    .custom-iframe-modeule .app-logo-mobile {
+        display: none;
+      }
+
+      .custom-iframe-modeule .app-logo {
+        display: block;
+      }
 }
 
 @media only screen and (min-width: 993px) and (max-width: 1350px){
     footer.c-footer{
         width: 70%;
         bottom: 0;
+    }
+
+    .custom-iframe-modeule .app-logo-mobile {
+        display: none;
+    }
+
+    .custom-iframe-modeule .app-logo {
+        display: block;
+    }
+
+    .custom-iframe-modeule .header-buttons-groups {
+        width: 21%;
+    }
+    .custom-iframe-modeule .selection-fields {
+        width: 100%;
     }
 }
 @media screen and (min-width:568px) and (max-width:993px){
@@ -5642,6 +5684,14 @@ html, .add-fav-body {
       bottom: 9px;
       z-index: 999;
   }
+  .custom-iframe-modeule .app-logo-mobile {
+    display: block;
+}
+
+.custom-iframe-modeule .app-logo {
+    display: none;
+}
+
   .zooming-content {
       width: auto;
       text-align: left;
@@ -5667,11 +5717,19 @@ html, .add-fav-body {
       max-width: 72px;
   }
   .custom-iframe-modeule .c-wrapper {
-      margin-right: 72px !important;
+      margin-left: 72px !important;
   }
 }
 
 @media screen and (min-width:568px) and (max-width:700px){
+    .custom-iframe-modeule .app-logo-mobile {
+        display: block;
+    }
+
+    .custom-iframe-modeule .app-logo {
+        display: none;
+    }
+    
   .selected-data-mobile li {
       font-size: 12px !important;
   }
@@ -5685,6 +5743,14 @@ html, .add-fav-body {
 }
 
 @media screen and (min-width:350px) and (max-width:567px){
+    .custom-iframe-modeule .app-logo-mobile {
+        display: block;
+    }
+
+    .custom-iframe-modeule .app-logo {
+        display: none;
+    }
+    
     .webpage-left-list-view-title {
         width: 100% !important;
     }
@@ -5863,12 +5929,28 @@ ul.add-fav-options {
     align-items: center;
     justify-content: center;
 }
+@media screen and (max-width: 320px){
+    .custom-iframe-modeule .app-logo-mobile {
+        display: block;
+    }
+
+    .custom-iframe-modeule .app-logo {
+        display: none;
+    }
+}
 
 @media only screen 
   and (min-device-width: 320px) 
   and (max-device-width: 480px)
   and (-webkit-min-device-pixel-ratio: 2)
   and (orientation: portrait) {
+    .custom-iframe-modeule .app-logo-mobile {
+        display: block;
+    }
+
+    .custom-iframe-modeule .app-logo {
+        display: none;
+    }
     .c-modal-dialog {
         overflow-x: hidden !important;
         max-height: 100% !important;
@@ -6007,7 +6089,7 @@ ul.add-fav-options {
     margin-left: 0 !important;
 	}
   .custom-iframe-modeule .c-wrapper {
-      margin-right: 0 !important;
+      margin-left: 0 !important;
   }
   .floor-counts .product-single__thumb-arrow_left i {
       transform: unset;
@@ -6495,7 +6577,7 @@ ul.add-fav-options {
     padding: 50px 0px 0px 0px;
 }
 .sitemap .c-wrapper {
-    margin-right: 0 !important;
+    margin-left: 0 !important;
 }
 
 .no-fav{
@@ -6627,9 +6709,14 @@ ul.add-fav-options {
         margin-top: unset !important;
     }
     .custom-iframe-modeule .app-logo{
-        width: 15% !important;
-        margin-top: 8px !important;
+        display: none;
     }
+
+    .custom-iframe-modeule .app-logo-mobile{
+        display: block;
+    }
+
+
 }
 .addon-i{
     top: 4px !important

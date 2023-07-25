@@ -39,7 +39,7 @@
         .c-wrapper
           %header.app-header
             .header-inner
-              .app-logo
+              .app-logo-mobile
                 - if @community.community_logo
                   %a.logo{:href => @community.community_website}
                     %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
@@ -114,6 +114,10 @@
                   %button.reset-filter-button{:type => "button", :onclick => "resetFilters();"}
                     Reset
                     %i.fa.fa-refresh
+              .app-logo
+                - if @community.community_logo
+                  %a.logo{:href => @community.community_website}
+                    %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
           
           - if @community_info.has_floorplates?
             .c-sidebar#sidebar
