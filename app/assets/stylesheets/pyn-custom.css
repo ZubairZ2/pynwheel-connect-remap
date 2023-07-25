@@ -5303,18 +5303,24 @@ body {
     text-align: center;
     padding-bottom: inherit;
     display: none;
+    /* margin: auto; */
+
 }
 .custom-iframe-modeule .app-logo {
     /* width: 7%; */
     width: 25%;
     text-align: center;
     padding-bottom: inherit;
+    margin: auto;
 }
 .custom-iframe-modeule .header-buttons-groups {
-    text-align: right;
+    text-align: left;
     /* width: 42%; */
     width: 20%;
-    /* display: flex; */
+    display: flex;
+    justify-content: space-evenly;
+
+    
 }
 
 .virtual-tour-modal-height {
@@ -5373,7 +5379,7 @@ body {
 .header-buttons-groups .transparent-btn {
     background: transparent;
     color: black;
-    margin-right: 20px;
+    /* margin-right: 20px; */
 }
 .header-buttons-groups .colourd-btn {
     background: black;
@@ -5659,11 +5665,18 @@ html, .add-fav-body {
 
     .custom-iframe-modeule .app-logo {
         display: block;
+        /* margin-left: 20px; */
     }
 
     .custom-iframe-modeule .header-buttons-groups {
         width: 21%;
     }
+    .header-buttons-groups .header-action-btn {
+        max-width: 90px;
+        font-size: 9px;
+        margin-right: 4px;
+    }
+    
     .custom-iframe-modeule .selection-fields {
         width: 100%;
     }

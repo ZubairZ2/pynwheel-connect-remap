@@ -2480,36 +2480,36 @@ function handleViewportChange() {
   let logo_width = "25%";
   if (viewportWidth <= 767) {
     $(".c-footer").css("margin-left", "0px");
-    filters_width = "100%"; buttons_width = "100%"; logo_width = "100%";
+    filters_width = "100%"; buttons_width = "100%";
   } else if (viewportWidth >= 768 && viewportWidth <= 925) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "100%"; buttons_width = "50%"; logo_width = "25%";
+      filters_width = "100%"; buttons_width = "50%"; 
     } else {
-      filters_width = "100%"; buttons_width = "50%"; logo_width = "25%";
+      filters_width = "100%"; buttons_width = "50%"; 
     }
   }  else if (viewportWidth >= 925 && viewportWidth <= 1024) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "65%"; buttons_width = "15%"; logo_width = "25%";
+      filters_width = "60%"; buttons_width = "20%"; 
     } else {
-      filters_width = "95%"; buttons_width = "20%"; logo_width = "25%";
+      filters_width = "80%"; buttons_width = "25%"; 
     }
   } else if (viewportWidth >= 1024 && viewportWidth <= 1280) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "56%"; buttons_width = "15%"; logo_width = "25%";
+      filters_width = "51%"; buttons_width = "20%"; 
     } else {
-      filters_width = "66%"; buttons_width = "15%"; logo_width = "25%";
+      filters_width = "56%"; buttons_width = "20%"; 
     }
   } else if (viewportWidth >= 1280 && viewportWidth <= 1520) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "56%"; buttons_width = "25%"; logo_width = "25%";
+      filters_width = "51%"; buttons_width = "25%"; 
     } else {
-      filters_width = "75%"; buttons_width = "40%"; logo_width = "25%";
+      filters_width = "75%"; buttons_width = "40%"; 
     }
   } else if (viewportWidth >= 1520) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "56%"; buttons_width = "25%"; logo_width = "25%";
+      filters_width = "51%"; buttons_width = "25%"; 
     } else {
-      filters_width = "72%"; buttons_width = "35%"; logo_width = "25%";
+      filters_width = "72%"; buttons_width = "35%"; 
     }
   }
 
@@ -2517,7 +2517,7 @@ function handleViewportChange() {
 
   setCSSForElements(".custom-iframe-modeule .selection-fields", filters_width);
   setCSSForElements(".custom-iframe-modeule .header-buttons-groups", buttons_width);
-  setCSSForElements(".custom-iframe-modeule .app-logo", logo_width);
+  // setCSSForElements(".custom-iframe-modeule .app-logo", logo_width);
 }
 
 function setCSSForElements(element, percentage){
