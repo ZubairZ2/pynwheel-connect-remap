@@ -106,7 +106,7 @@
                   %label Availability
                   = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
                 
-                %div{:style => "text-align: center; padding-bottom: 9px;display: flex;"}
+                %div{:style => "text-align: center; padding-bottom: 9px;display: flex;justify-content: center;"}
                   %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
                     Apply
                     %i.fa.fa-filter

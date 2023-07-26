@@ -5318,7 +5318,7 @@ body {
     /* width: 42%; */
     width: 20%;
     display: flex;
-    justify-content: space-evenly;
+    justify-content: end;
 
     
 }
@@ -5375,6 +5375,7 @@ body {
     font-weight: 400;
     text-transform: uppercase;
     padding: 0 6px;
+    margin-left: 15px;
 }
 .header-buttons-groups .transparent-btn {
     background: transparent;
@@ -5625,12 +5626,14 @@ html, .add-fav-body {
   ul.location-items span {
       font-size: 16px;
   }
+
   .header-buttons-groups .header-action-btn {
       width: 100%;
       max-width: 139px;
       font-size: 13px;
-      margin-right: 4px;
+      /* margin-right: 4px; */
   }
+  
   .custom-iframe-modeule .app-logo {
       width: 10%;
   }
@@ -5666,16 +5669,17 @@ html, .add-fav-body {
     .custom-iframe-modeule .app-logo {
         display: block;
         /* margin-left: 20px; */
+        width: 20%;
     }
 
     .custom-iframe-modeule .header-buttons-groups {
         width: 21%;
     }
-    .header-buttons-groups .header-action-btn {
+    /* .header-buttons-groups .header-action-btn {
         max-width: 90px;
         font-size: 9px;
         margin-right: 4px;
-    }
+    } */
     
     .custom-iframe-modeule .selection-fields {
         width: 100%;
@@ -5777,12 +5781,18 @@ html, .add-fav-body {
     .left-side-30-units:last-child {
         margin-bottom: 345px;
       }
+      .header-buttons-groups {
+        justify-content: center !important;
+    }
   
   }
 
 @media screen and (max-width:993px){
     #webpages-overlay-button {
         top: 55% !important;
+    }
+    .header-buttons-groups {
+        justify-content: center !important;
     }
 
     .alert_message{
@@ -6008,9 +6018,17 @@ ul.add-fav-options {
         border-radius: 5px;
         border-bottom: 1px solid rgb(225, 225, 225);
     }
+
+    .header-buttons-groups {
+        justify-content: center !important;
+    }
 }
 
 @media screen and (max-width:567px){
+    .header-buttons-groups {
+        justify-content: center !important;
+    }
+
     #webpages-overlay-text {
         width: 100%;
     }
@@ -6448,23 +6466,21 @@ ul.add-fav-options {
 .reset-filter-button,
 ._3d-apply-filter-button, 
 .apply-now-responsive {
-    border-radius: 50px;
-    padding: 16px;
-    font-size: 12px;
-    text-transform: uppercase;
-    font-weight: 500;
-    font-family: 'Raleway', sans-serif;
-    width: 50%;
+    display: inline-block;
+    width: 100%;
+    max-width: 189px;
+    height: 49px;
     border: 1px solid black;
-    cursor: pointer;
-    color: black;
-    background: transparent;
-    display: block;
     text-align: center;
-    margin-top: 17px;
-    margin-bottom: 14px;
-    margin-right: 10px;
-    margin-left: 10px;
+    text-decoration: none;
+    line-height: 48px;
+    border-radius: 110px;
+    font-size: 16px;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    padding: 0 6px;
+    margin: 17px 10px 14px 10px;
 }
 
 .reset-filter-button:hover,
@@ -6783,19 +6799,37 @@ ul.add-fav-options {
     visibility: visible;
 }
 
-@media only screen and (min-width: 993px) and (max-width: 1301px) {
+@media only screen and (min-width: 993px) and (max-width: 1180px) {
     .reset-filter-button,
     ._3d-apply-filter-button,
     .apply-now-responsive {
-        font-size: 9px !important;
+        width: 100%;
+        max-width: 139px;
+        font-size: 10px;      
+    }
+
+    .header-buttons-groups .header-action-btn {
+        width: 100%;
+        max-width: 139px;
+        font-size: 10px;     
+    }
+}
+
+@media only screen and (min-width: 1181px) and (max-width: 1301px) {
+    .reset-filter-button,
+    ._3d-apply-filter-button,
+    .apply-now-responsive {
+        width: 100%;
+        max-width: 139px;
+        font-size: 13px;      
     }
 }
 @media only screen and (min-width: 1301px) and (max-width: 1390px) {
-    .reset-filter-button,
+    /* .reset-filter-button,
     ._3d-apply-filter-button,
     .apply-now-responsive {
         font-size: 9px !important;
-    }
+    } */
 }
 .c-modal-sidebar-filters-bottom {
     position: absolute;

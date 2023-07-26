@@ -2489,21 +2489,39 @@ function handleViewportChange() {
     } else {
       filters_width = "100%"; buttons_width = "50%"; 
     }
-  }  else if (viewportWidth >= 993 && viewportWidth <= 1024) {
+  }  else if (viewportWidth >= 993 && viewportWidth <= 1050) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "60%"; buttons_width = "20%"; 
+      filters_width = "55%"; buttons_width = "23%"; 
     } else {
       filters_width = "80%"; buttons_width = "25%"; 
     }
-  } else if (viewportWidth >= 1024 && viewportWidth <= 1280) {
+  } else if (viewportWidth >= 1050 && viewportWidth <= 1180) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "51%"; buttons_width = "20%"; 
+      filters_width = "52%"; buttons_width = "22%"; 
+    } else {
+      filters_width = "80%"; buttons_width = "25%"; 
+    }
+  } else if (viewportWidth >= 1180 && viewportWidth <= 1300) {
+    if(webCommunity['is_sitemap']) {
+      filters_width = "47%"; buttons_width = "24%"; 
     } else {
       filters_width = "56%"; buttons_width = "20%"; 
     }
-  } else if (viewportWidth >= 1280 && viewportWidth <= 1520) {
+  }else if (viewportWidth >= 1300 && viewportWidth <= 1370) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "51%"; buttons_width = "25%"; 
+      filters_width = "45%"; buttons_width = "26%"; 
+    } else {
+      filters_width = "56%"; buttons_width = "20%"; 
+    }
+  } else if (viewportWidth >= 1370 && viewportWidth <= 1470) {
+    if(webCommunity['is_sitemap']) {
+      filters_width = "50%"; buttons_width = "27%"; 
+    } else {
+      filters_width = "56%"; buttons_width = "20%"; 
+    }
+  }else if (viewportWidth >= 1470 && viewportWidth <= 1520) {
+    if(webCommunity['is_sitemap']) {
+      filters_width = "52%"; buttons_width = "25%"; 
     } else {
       filters_width = "75%"; buttons_width = "40%"; 
     }
