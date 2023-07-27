@@ -2493,7 +2493,7 @@ function handleViewportChange() {
     if(webCommunity['is_sitemap']) {
       filters_width = "55%"; buttons_width = "25%"; 
     } else {
-      filters_width = "90%"; buttons_width = "39%"; 
+      filters_width = "100%"; buttons_width = "43%"; 
     }
   } else if (viewportWidth >= 1050 && viewportWidth <= 1120) {
     if(webCommunity['is_sitemap']) {
