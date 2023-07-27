@@ -5312,6 +5312,7 @@ body {
     text-align: center;
     padding-bottom: inherit;
     margin: auto;
+    padding: 0px 20px 0px 20px;
 }
 .custom-iframe-modeule .header-buttons-groups {
     text-align: left;
@@ -5872,9 +5873,9 @@ html, .add-fav-body {
     margin: 0;
     margin-top: 20px;
   }
-  .responsive-content{
-      display: block;
-  }
+    .responsive-content{
+        display: block;
+    }
   .responsive-legends{
     z-index: 4;
     position: relative;

@@ -2493,47 +2493,51 @@ function handleViewportChange() {
     if(webCommunity['is_sitemap']) {
       filters_width = "55%"; buttons_width = "23%"; 
     } else {
-      filters_width = "80%"; buttons_width = "25%"; 
+      filters_width = "90%"; buttons_width = "39%"; 
     }
-  } else if (viewportWidth >= 1050 && viewportWidth <= 1180) {
+  } else if (viewportWidth >= 1050 && viewportWidth <= 1120) {
     if(webCommunity['is_sitemap']) {
       filters_width = "52%"; buttons_width = "22%"; 
     } else {
-      filters_width = "80%"; buttons_width = "25%"; 
+      filters_width = "65%"; buttons_width = "27%"; 
+    }
+  } else if (viewportWidth >= 1120 && viewportWidth <= 1180) {
+    if(webCommunity['is_sitemap']) {
+      filters_width = "52%"; buttons_width = "22%"; 
+    } else {
+      filters_width = "53%"; buttons_width = "24%"; 
     }
   } else if (viewportWidth >= 1180 && viewportWidth <= 1300) {
     if(webCommunity['is_sitemap']) {
       filters_width = "47%"; buttons_width = "24%"; 
     } else {
-      filters_width = "56%"; buttons_width = "20%"; 
+      filters_width = "51%"; buttons_width = "25%"; 
     }
   }else if (viewportWidth >= 1300 && viewportWidth <= 1370) {
     if(webCommunity['is_sitemap']) {
       filters_width = "45%"; buttons_width = "26%"; 
     } else {
-      filters_width = "56%"; buttons_width = "20%"; 
+      filters_width = "49%"; buttons_width = "28%"; 
     }
   } else if (viewportWidth >= 1370 && viewportWidth <= 1470) {
     if(webCommunity['is_sitemap']) {
       filters_width = "50%"; buttons_width = "27%"; 
     } else {
-      filters_width = "56%"; buttons_width = "20%"; 
+      filters_width = "70%"; buttons_width = "35%"; 
     }
   }else if (viewportWidth >= 1470 && viewportWidth <= 1520) {
     if(webCommunity['is_sitemap']) {
       filters_width = "52%"; buttons_width = "25%"; 
     } else {
-      filters_width = "75%"; buttons_width = "40%"; 
+      filters_width = "70%"; buttons_width = "35%"; 
     }
   } else if (viewportWidth >= 1520) {
     if(webCommunity['is_sitemap']) {
       filters_width = "51%"; buttons_width = "25%"; 
     } else {
-      filters_width = "72%"; buttons_width = "35%"; 
+      filters_width = "61%"; buttons_width = "35%";
     }
   }
-
-
 
   setCSSForElements(".custom-iframe-modeule .selection-fields", filters_width);
   setCSSForElements(".custom-iframe-modeule .header-buttons-groups", buttons_width);
