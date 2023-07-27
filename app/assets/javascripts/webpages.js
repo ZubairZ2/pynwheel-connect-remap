@@ -2491,7 +2491,7 @@ function handleViewportChange() {
     }
   }  else if (viewportWidth >= 993 && viewportWidth <= 1050) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "55%"; buttons_width = "23%"; 
+      filters_width = "55%"; buttons_width = "25%"; 
     } else {
       filters_width = "90%"; buttons_width = "39%"; 
     }
