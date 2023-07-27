@@ -2477,7 +2477,8 @@ function handleViewportChange() {
   const viewportWidth = window.innerWidth;
   let filters_width = "65%";
   let buttons_width = "15%";
-  let logo_width = "25%";
+  // let logo_width = "25%";
+
   if (viewportWidth <= 567) {
     $(".c-footer").css("margin-left", "0px");
     filters_width = "100%"; buttons_width = "100%";
@@ -2491,33 +2492,74 @@ function handleViewportChange() {
     }
   }  else if (viewportWidth >= 993 && viewportWidth <= 1050) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "55%"; buttons_width = "25%"; 
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "55%"; buttons_width = "25%"; 
+      } else{
+        filters_width = "60%"; buttons_width = "13%"; 
+      }
     } else {
-      filters_width = "100%"; buttons_width = "43%"; 
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "100%"; buttons_width = "43%"; 
+      } else{
+        filters_width = "100%"; buttons_width = "20%"; 
+      }
     }
   } else if (viewportWidth >= 1050 && viewportWidth <= 1120) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "52%"; buttons_width = "22%"; 
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "52%"; buttons_width = "22%"; 
+      } else{
+        filters_width = "57%"; buttons_width = "14%";
+      }       
     } else {
-      filters_width = "65%"; buttons_width = "27%"; 
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "65%"; buttons_width = "27%"; 
+      } else{
+        filters_width = "60%"; buttons_width = "17%";
+      } 
+       
     }
   } else if (viewportWidth >= 1120 && viewportWidth <= 1180) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "52%"; buttons_width = "22%"; 
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "52%"; buttons_width = "22%"; 
+      } else{
+        filters_width = "55%"; buttons_width = "16%";
+      } 
     } else {
-      filters_width = "53%"; buttons_width = "24%"; 
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "53%"; buttons_width = "24%";
+      } else{
+        filters_width = "60%"; buttons_width = "17%";
+      } 
     }
   } else if (viewportWidth >= 1180 && viewportWidth <= 1300) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "47%"; buttons_width = "24%"; 
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "47%"; buttons_width = "24%"; 
+      } else{
+        filters_width = "57%"; buttons_width = "14%";
+      }
     } else {
-      filters_width = "51%"; buttons_width = "25%"; 
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "51%"; buttons_width = "25%";
+      } else{
+        filters_width = "60%"; buttons_width = "16%";
+      }
     }
   }else if (viewportWidth >= 1300 && viewportWidth <= 1370) {
     if(webCommunity['is_sitemap']) {
-      filters_width = "45%"; buttons_width = "26%"; 
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "45%"; buttons_width = "26%";
+      } else{
+        filters_width = "55%"; buttons_width = "15%";
+      }
     } else {
-      filters_width = "49%"; buttons_width = "28%"; 
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "49%"; buttons_width = "28%";
+      } else{
+        filters_width = "60%"; buttons_width = "16%";
+      }
     }
   } else if (viewportWidth >= 1370 && viewportWidth <= 1470) {
     if(webCommunity['is_sitemap']) {
