@@ -211,16 +211,21 @@ $(window).bind('load', function () {
       }
     });
     ///////////////////////////////////////////
-    $('.floorplate-anchor').click(function () {
+    $('.floorplate-anchor').click(function (e) {
+      e.stopPropagation();
+
       var floor_for_showing_image = $(this).attr('id');
       if (floor_for_showing_image != current_floor) { 
         $('.floorplate-image').addClass('hidden');
         $('#f_' + floor_for_showing_image).removeClass('hidden');
-        $('.floorplate-anchor').removeClass('selected');
         $('#' + floor_for_showing_image).addClass('selected');
+
+        $(".digits-list-item").removeClass("selected");
+        $(this).parent().addClass("selected");
+
         current_floor = floor_for_showing_image
-      
         populate_current_units();
+        
         if ($(this).hasClass('only-amenity')) {
           $('.alert').show()
           timer = setTimeout(function () {

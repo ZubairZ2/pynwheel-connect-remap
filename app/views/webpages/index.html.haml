@@ -512,20 +512,10 @@
     }
   }
   
-  $(".slider_class").click(function(){
-    try {
-      var i = $("#slider li a.selected").parent().parent().parent().index()
-      $(".digits-list-item").removeClass("selected");
-      $($(this).find(".digits-list-item")[i]).addClass("selected");
-      var units = "#{@units_with_floorplan_info}";
-      units = units.replace(/&quot;/g,'"');
-      units = JSON.parse(units);
-      var is_floorplate = "#{@community_info.has_floorplates?}"
-      var community_name = "#{@community_info.name}"
-      renderChangedUnits();
-      }
-      catch(err) {
-      }
+  $(".slick-slide").click(function() {
+    var anchorTag = $(this).find('a.floorplate-anchor');
+    _3dFilterByFloor(anchorTag);
+    anchorTag.click();
   });
 
   $(document).ready(function () {
