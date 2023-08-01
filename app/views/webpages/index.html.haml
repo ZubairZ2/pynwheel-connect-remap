@@ -425,7 +425,8 @@
   var slides_to_scroll = 1;
   var $slider = $("#slider");
   var initial_start;
-  floors.length < 5 ? initial_start = 0 : initial_start = 1 
+
+  floors.length < 5 ? initial_start = 0 : initial_start = 0
   $(window).on('resize', function(){
     var win = $(this);
     $(".webPageLoader").removeClass("hidden");
@@ -453,7 +454,7 @@
         slidesToScroll: 1,
         vertical: false,
         speed: 6,
-        initialSlide: floors.length < 4 ? 0 : 1,
+        initialSlide: floors.length < 4 ? 0 : 0,
         prevArrow:
           "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
         nextArrow:
@@ -487,7 +488,7 @@
         slidesToScroll: 1,
         vertical: false,
         speed: 6,
-        initialSlide: floors.length < 4 ? 0 : 1,
+        initialSlide: floors.length < 4 ? 0 : 0,
         prevArrow:
           "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
         nextArrow:

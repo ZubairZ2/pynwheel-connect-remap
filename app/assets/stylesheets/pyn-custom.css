@@ -6027,6 +6027,11 @@ ul.add-fav-options {
 }
 
 @media screen and (max-width:567px){
+    #sidebar .floor-counts .slick-list .slick-track {
+        display: flex;
+        flex-direction: row-reverse;
+    }
+
     .header-buttons-groups {
         justify-content: center !important;
     }
