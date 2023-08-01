@@ -46,6 +46,7 @@ $(document).ready(function () {
 
     handleMapControl()
   }
+
 });
 
 
@@ -210,16 +211,21 @@ $(window).bind('load', function () {
       }
     });
     ///////////////////////////////////////////
-    $('.floorplate-anchor').click(function () {
+    $('.floorplate-anchor').click(function (e) {
+      e.stopPropagation();
+
       var floor_for_showing_image = $(this).attr('id');
       if (floor_for_showing_image != current_floor) { 
         $('.floorplate-image').addClass('hidden');
         $('#f_' + floor_for_showing_image).removeClass('hidden');
-        $('.floorplate-anchor').removeClass('selected');
         $('#' + floor_for_showing_image).addClass('selected');
+
+        $(".digits-list-item").removeClass("selected");
+        $(this).parent().addClass("selected");
+
         current_floor = floor_for_showing_image
-      
         populate_current_units();
+        
         if ($(this).hasClass('only-amenity')) {
           $('.alert').show()
           timer = setTimeout(function () {
@@ -1040,7 +1046,6 @@ function performHardRefresh() {
 function setImageHeight(){
   if(current_width >= 993){
     let main_container_height = ($('.c-body').height() - $('.c-footer').height())+54;
-    console.log("main_container_height "+main_container_height)
     $('.floorplate-image').attr("height", main_container_height - 100)
   }
 }
@@ -2246,17 +2251,7 @@ function adjustMarkerPosition(marker) {
     y_plot = y_plot - 14
     // x_plot = x_plot 
   }
-  console.log("in_browser_height "+in_browser_height)
-  console.log("in_browser_width "+in_browser_width)
-  console.log("actual_image_height "+actual_image_height)
-  console.log("actual_image_width "+actual_image_width)
-  console.log("stretched_image_width "+stretched_image_width)
-  console.log("stretched_image_height "+stretched_image_height)
 
-  console.log("x_plot "+x_plot)
-  console.log("y_plot "+y_plot)
-  console.log("left_diff "+left_diff)
-  console.log("-------------------------------------------")
   $(marker).css({"left": ((x_plot)) + left_diff, "top": y_plot});
   // $(marker).removeClass('hidden');
   // marker_width = $('#m_' + unit_id).width();
@@ -2377,7 +2372,8 @@ function display3DMap() {
   $('.zoom-out-webpage').hide();
   $("#panzomm-container").css("width", "100%");
   // $(".location-items").hide();
-  $(".c-wrapper").css("margin-right", "0px");
+  $(".c-wrapper").css("margin-left", "0px");
+  $(".c-footer").css("margin-left", "0px");
   $(".desktop-content").hide();
   $(".2d-map-option").removeClass("hidden");
   $(".3d-map-option").addClass("hidden");
@@ -2423,7 +2419,8 @@ function display2DMap() {
   $('.zoom-in-webpage').show();
   $('.zoom-out-webpage').show();
   $("#panzomm-container").css("width", "");
-  $(".c-wrapper").css("margin-right", "90px");
+  $(".c-wrapper").css("margin-left", "90px");
+  $(".c-footer").css("margin-left", webCommunity['is_sitemap'] ? "0px" : "90px");
   $(".c-sidebar").show();
   $(".desktop-content").show();
   $(".satelite-view-icon").addClass("hidden");
@@ -2468,6 +2465,8 @@ function display2DMap() {
         inner_footer.style.width = "100%";
       }
     }
+
+    handleViewportChange(windowWidth);
     $(".popup-title").css("background-color", $(".fa-map-marker-alt")[0].style.color);
     $(".popup-arrow").css("background-color", $(".fa-map-marker-alt")[0].style.color);
 
@@ -2477,6 +2476,123 @@ function display2DMap() {
       renderChangedUnits();
     })
   }
+}
+
+function handleViewportChange() {
+  const viewportWidth = window.innerWidth;
+  let filters_width = "65%";
+  let buttons_width = "15%";
+  // let logo_width = "25%";
+
+  if (viewportWidth <= 567) {
+    $(".c-footer").css("margin-left", "0px");
+    filters_width = "100%"; buttons_width = "100%";
+  } else if (viewportWidth >= 567 && viewportWidth <= 768) {
+    filters_width = "100%"; buttons_width = "50%";
+  } else if (viewportWidth >= 768 && viewportWidth <= 993) {
+    if(webCommunity['is_sitemap']) {
+      filters_width = "100%"; buttons_width = "50%"; 
+    } else {
+      filters_width = "100%"; buttons_width = "50%"; 
+    }
+  }  else if (viewportWidth >= 993 && viewportWidth <= 1050) {
+    if(webCommunity['is_sitemap']) {
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "55%"; buttons_width = "25%"; 
+      } else{
+        filters_width = "60%"; buttons_width = "13%"; 
+      }
+    } else {
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "100%"; buttons_width = "43%"; 
+      } else{
+        filters_width = "100%"; buttons_width = "20%"; 
+      }
+    }
+  } else if (viewportWidth >= 1050 && viewportWidth <= 1120) {
+    if(webCommunity['is_sitemap']) {
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "52%"; buttons_width = "22%"; 
+      } else{
+        filters_width = "57%"; buttons_width = "14%";
+      }       
+    } else {
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "65%"; buttons_width = "27%"; 
+      } else{
+        filters_width = "60%"; buttons_width = "17%";
+      } 
+       
+    }
+  } else if (viewportWidth >= 1120 && viewportWidth <= 1180) {
+    if(webCommunity['is_sitemap']) {
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "52%"; buttons_width = "22%"; 
+      } else{
+        filters_width = "55%"; buttons_width = "16%";
+      } 
+    } else {
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "53%"; buttons_width = "24%";
+      } else{
+        filters_width = "60%"; buttons_width = "17%";
+      } 
+    }
+  } else if (viewportWidth >= 1180 && viewportWidth <= 1300) {
+    if(webCommunity['is_sitemap']) {
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "47%"; buttons_width = "24%"; 
+      } else{
+        filters_width = "57%"; buttons_width = "14%";
+      }
+    } else {
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "51%"; buttons_width = "25%";
+      } else{
+        filters_width = "60%"; buttons_width = "16%";
+      }
+    }
+  }else if (viewportWidth >= 1300 && viewportWidth <= 1370) {
+    if(webCommunity['is_sitemap']) {
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "45%"; buttons_width = "26%";
+      } else{
+        filters_width = "55%"; buttons_width = "15%";
+      }
+    } else {
+      if($(".colourd-btn").is(":visible")){
+        filters_width = "49%"; buttons_width = "28%";
+      } else{
+        filters_width = "60%"; buttons_width = "16%";
+      }
+    }
+  } else if (viewportWidth >= 1370 && viewportWidth <= 1470) {
+    if(webCommunity['is_sitemap']) {
+      filters_width = "50%"; buttons_width = "27%"; 
+    } else {
+      filters_width = "70%"; buttons_width = "35%"; 
+    }
+  }else if (viewportWidth >= 1470 && viewportWidth <= 1520) {
+    if(webCommunity['is_sitemap']) {
+      filters_width = "52%"; buttons_width = "25%"; 
+    } else {
+      filters_width = "70%"; buttons_width = "35%"; 
+    }
+  } else if (viewportWidth >= 1520) {
+    if(webCommunity['is_sitemap']) {
+      filters_width = "51%"; buttons_width = "25%"; 
+    } else {
+      filters_width = "61%"; buttons_width = "35%";
+    }
+  }
+
+  setCSSForElements(".custom-iframe-modeule .selection-fields", filters_width);
+  setCSSForElements(".custom-iframe-modeule .header-buttons-groups", buttons_width);
+  // setCSSForElements(".custom-iframe-modeule .app-logo", logo_width);
+}
+
+function setCSSForElements(element, percentage){
+  $(`${element}`).css("width", percentage)
 }
 
 function _3dFilterByFloor(floor) {

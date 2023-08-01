@@ -39,7 +39,7 @@
         .c-wrapper
           %header.app-header
             .header-inner
-              .app-logo
+              .app-logo-mobile
                 - if @community.community_logo
                   %a.logo{:href => @community.community_website}
                     %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
@@ -106,7 +106,7 @@
                   %label Availability
                   = select_tag :responsive_available_unit, options_for_select(@available_units.present? ? @available_units : []),{:class=>"custom-select", :include_blank => "All "}
                 
-                %div{:style => "text-align: center; padding-bottom: 9px;display: flex;"}
+                %div{:style => "text-align: center; padding-bottom: 9px;display: flex;justify-content: center;"}
                   %button.apply-now-responsive{:type => "button", :onclick => "applyFilters();"}
                     Apply
                     %i.fa.fa-filter
@@ -114,6 +114,10 @@
                   %button.reset-filter-button{:type => "button", :onclick => "resetFilters();"}
                     Reset
                     %i.fa.fa-refresh
+              .app-logo
+                - if @community.community_logo
+                  %a.logo{:href => @community.community_website}
+                    %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
           
           - if @community_info.has_floorplates?
             .c-sidebar#sidebar
@@ -421,7 +425,8 @@
   var slides_to_scroll = 1;
   var $slider = $("#slider");
   var initial_start;
-  floors.length < 5 ? initial_start = 0 : initial_start = 1 
+
+  floors.length < 5 ? initial_start = 0 : initial_start = 0
   $(window).on('resize', function(){
     var win = $(this);
     $(".webPageLoader").removeClass("hidden");
@@ -449,7 +454,7 @@
         slidesToScroll: 1,
         vertical: false,
         speed: 6,
-        initialSlide: floors.length < 4 ? 0 : 1,
+        initialSlide: floors.length < 4 ? 0 : 0,
         prevArrow:
           "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
         nextArrow:
@@ -483,7 +488,7 @@
         slidesToScroll: 1,
         vertical: false,
         speed: 6,
-        initialSlide: floors.length < 4 ? 0 : 1,
+        initialSlide: floors.length < 4 ? 0 : 0,
         prevArrow:
           "<div class='product-single__thumb-arrow product-single__thumb-arrow_left'><i class='fa fa-angle-left'></i></div>",
         nextArrow:
@@ -508,20 +513,10 @@
     }
   }
   
-  $(".slider_class").click(function(){
-    try {
-      var i = $("#slider li a.selected").parent().parent().parent().index()
-      $(".digits-list-item").removeClass("selected");
-      $($(this).find(".digits-list-item")[i]).addClass("selected");
-      var units = "#{@units_with_floorplan_info}";
-      units = units.replace(/&quot;/g,'"');
-      units = JSON.parse(units);
-      var is_floorplate = "#{@community_info.has_floorplates?}"
-      var community_name = "#{@community_info.name}"
-      renderChangedUnits();
-      }
-      catch(err) {
-      }
+  $(".slick-slide").click(function() {
+    var anchorTag = $(this).find('a.floorplate-anchor');
+    _3dFilterByFloor(anchorTag);
+    anchorTag.click();
   });
 
   $(document).ready(function () {
