@@ -1558,6 +1558,7 @@ json.tours @tours do |tour|
     json.dotted_line_color @community.community_tour.dotted_line_color rescue "green"
     json.visual_id_verification (@tour_user.tour_type != "virtual_tour") ? tour.visual_id_verification : false
     json.apply_now_self_tour show_apply_now(@community)
+    json.show_apply_now show_apply_now(@community)
     json.chat_control (@community.chat_control and @community.is_chat_available) ? @community.chat_control : false
     json.enable_auto_zoom (@community.community_tour.present?) ? @community.community_tour.enable_auto_zoom : false
     json.show_map @community.show_map

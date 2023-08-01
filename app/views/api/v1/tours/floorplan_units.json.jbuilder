@@ -3,6 +3,7 @@ json.message "success"
 json.data @units do |u|
   json.id u.id
   json.availability_url u.get_availability_url()
+  json.show_apply_now show_apply_now(@community)
   json.community_id u.community_id
   json.provider u.provider
   json.property_id u.property_id
