@@ -7,10 +7,6 @@ module Api
       before_action :set_perq_tour_user, only: :perq_tour_webhook
 
       def perq_tour_webhook
-        puts "-----------"*20
-        puts params.inspect
-        puts "-----------"*20
-
         if is_required_params_present
           tour_in_future = get_tour_in_future
           if tour_in_future.present? && !tour_in_future.is_tour_completed

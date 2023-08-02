@@ -43,9 +43,14 @@ class TourUser < ApplicationRecord
   # validates :desired_bedroom, :numericality => { greater_than_or_equal_to: 0, less_than: 10 }
 
   after_update :crop_user_image
+  after_update :set_tour_user_name, if: ->(obj){ obj.first_name_changed? ||  obj.last_name_changed? }
 
   mount_base64_uploader :image, AvatarUploader
   mount_base64_uploader :id_card, AvatarUploader
+
+  def set_tour_user_name
+    self.update_column :name, "#{self.first_name} #{self.last_name}"
+  end
 
   def crop_user_image
     begin

@@ -92,7 +92,8 @@ module Api
       def schedule_tour
         phone_number = make_phone
 
-        @tu = TourUser.where(email: params[:email].downcase)
+        # @tu = TourUser.where(email: params[:email].downcase)
+        @tu = TourUser.where(phone_number: phone_number)
         @tu = @tu.last if @tu.present?
         desired_bedroom = params[:desired_bedroom] if params[:desired_bedroom].present?
 
@@ -102,7 +103,8 @@ module Api
         @tu.name = (f_name + " " + l_name)
         @tu.first_name = f_name
         @tu.last_name = l_name
-        @tu.phone_number = phone_number if phone_number.present?
+        # @tu.phone_number = phone_number if phone_number.present?
+        @tu.email = params[:email].downcase if params[:email].present?
         @tu.desired_bedroom = params[:desired_bedroom] if params[:desired_bedroom].present?
         @tu.card_last_digits = params[:credit_card_number].last 4 if params[:credit_card_number].present?
         credit_card_number = params[:credit_card_number] if params[:credit_card_number].present?

@@ -56,6 +56,18 @@ module Api
           end
         end
 
+        def update
+          if @tour_user.present?
+            if @tour_user.update(tour_user_params(:update))
+              render json: {message: "User info updated successfully", success_code: 200, status: true, data: @tour_user, token: fetch_token()}
+            else
+              render json: {message: "Something went wrong!", success_code: 500, status: false}
+            end
+          else
+            render json: {message: "User not found", success_code: 404, status: false}
+          end
+        end
+
         private
 
         def send_otp_phone
@@ -146,8 +158,8 @@ module Api
             @tour_user ||= TourUser.find_by_id(params[:tour_user_id])
           else
             # For login screen
-            tour_users = TourUser.where(phone_number: params[:phone_number])
-            @tour_user ||= (tour_users.count === 1) ? tour_users.last : nil
+            @tour_user = TourUser.where(phone_number: params[:phone_number]).last
+            # @tour_user ||= (tour_users.count === 1) ? tour_users.last : nil
           end
         end
 
@@ -167,6 +179,14 @@ module Api
           has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
           render json: {message: "Invalid Token, Not Authorized!", success_code: 401, status: false} unless has_access
         end
+
+        def tour_user_params(action)
+          case action
+          when :update
+            params.require(:tour_user).permit(:first_name, :last_name, :email, :phone_number)
+          end
+        end
+
       end
     end
   end

@@ -45,7 +45,8 @@ class SchedualToursController < ApplicationController
   
   def create_tour_user_from
     phone_number = make_phone
-    tu = TourUser.where(email: params[:tour_user][:email].downcase)
+    # tu = TourUser.where(email: params[:tour_user][:email].downcase)
+    tu = TourUser.where(phone_number: phone_number)
     tu = tu.last if tu.present?
 
     community = Community.find_by_id params[:community_id]
@@ -57,7 +58,8 @@ class SchedualToursController < ApplicationController
     tu.name = (f_name + " " + l_name)
     tu.first_name = f_name
     tu.last_name = l_name
-    tu.phone_number = phone_number if phone_number.present?
+    # tu.phone_number = phone_number if phone_number.present?
+    tu.email = params[:tour_user][:email].downcase if params[:tour_user][:email].present?
     tu.desired_bedroom = params[:desired_bedroom]
     tu.card_last_digits = params[:last_digits] if params[:last_digits].present?
     tu.is_sms_enabled = params[:tour_user][:is_sms_enabled] == "0" ? false : true

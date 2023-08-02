@@ -324,28 +324,31 @@
                   <%= f.text_field :last_name, class: "form-control", placeholder: "Last Name", id: "last_name", required: 'required' %>
                 </div>
               <% end %>
-              <div class="form-group w-left-50 w-100">
-                <label>Email Address <span class="asterisk_color" >*</span></label>
-                <%= f.email_field :email, class: "form-control", placeholder: "Email Address", id: "tour_user_email", required: 'required' %>
-              </div>
-              <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_phone.nil? ? true : current_community.community_tour.tour_setting.show_phone) %>
-                <div class="form-group w-20 w-100">
-                  <label data-toggle="tooltip" data-placement="top" title="(Default US)">Country Code <span class="asterisk_color" >*</span></label> 
-                  <select name="country_code" class="form-control select_number" id="country_code">
-                    <% SchedualTour::COUNTRY_CODES.each do  |code| %>
-                      <% if code === @default_country_code %>
-                        <option value="<%= code %>" selected= "selected"> <%= code %> </option>
-                      <% else %>
-                        <option value="<%= code %>"> <%= code %> </option>
-                      <% end %>
+             
+              <div class="form-group w-20 w-100 ml-0">
+                <label data-toggle="tooltip" data-placement="top" title="(Default US)">Country Code <span class="asterisk_color" >*</span></label> 
+                <select name="country_code" class="form-control select_number" id="country_code">
+                  <% SchedualTour::COUNTRY_CODES.each do  |code| %>
+                    <% if code === @default_country_code %>
+                      <option value="<%= code %>" selected= "selected"> <%= code %> </option>
+                    <% else %>
+                      <option value="<%= code %>"> <%= code %> </option>
                     <% end %>
-                  </select>
-                </div>
-                <div class="form-group w-30 w-100">
-                  <label>Phone Number <span class="asterisk_color" >*</span></label> 
-                  <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", minlength: 10, maxlength: 10 , required: 'required', id: "user_phone_number_field" %>
+                  <% end %>
+                </select>
+              </div>
+              <div class="form-group w-30 w-100">
+                <label>Phone Number <span class="asterisk_color" >*</span></label> 
+                <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", minlength: 10, maxlength: 10 , required: 'required', id: "user_phone_number_field" %>
+              </div>
+
+              <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_email.nil? ? true : current_community.community_tour.tour_setting.show_email) %>
+                <div class="form-group w-right-50">
+                  <label>Email Address <%#<span class="asterisk_color" >*</span> %></label>
+                  <%= f.email_field :email, class: "form-control", placeholder: "Email Address", id: "tour_user_email"%>
                 </div>
               <% end %>
+
               <span class="reshedule-notification" style="display: <%= @tour_user.id.present? && !@reschedule_tour && @schedule_tour.is_tour_completed ? "block" : "none" %>">A user with this email address already has a scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
 
               <div class="clearfix"></div>
@@ -501,7 +504,7 @@
               <%# <% unless @time_slots.any? %>
                 <span class="no-tour-time-error" style="display: none; color: red; margin-bottom: 5px;">*There is no slot available. please check your available slots in tour setting page</span>
               <%# <% end %>
-              <%= hidden_field_tag 'existing_tour_user_email_arr', @existing_tour_users.to_json %>
+              <%= hidden_field_tag 'existing_tour_user_phone_arr', @existing_tour_users.to_json %>
               <div>
                 <% if @reschedule_tour %>
                   <button type="submit" id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
@@ -767,10 +770,11 @@
             $('.divLoading').addClass('hidden');
         }
 
-      $("#tour_user_email").keyup(function() {
-        const existing_tour_users = JSON.parse($("#existing_tour_user_email_arr").val());
-        const isEmail = isEmailExist(existing_tour_users.emails);
-        displayNotification(isEmail);
+      $("#user_phone_number_field").keyup(function() {
+        console.log("1")
+        const existing_tour_users = JSON.parse($("#existing_tour_user_phone_arr").val());
+        const isPhone = isPhoneNumberExist(existing_tour_users.phone_numbers);
+        displayNotification(isPhone);
       });
 
       $('.select_property_tour').change(function() {
@@ -1152,21 +1156,13 @@
         $(".tour_time").removeClass("col-lg-6 col-md-6");
       }
 
-      function displayNotification(isEmail) {
-        if (isEmail) {
-          $(".reshedule-notification").html('A user with this email already has a scheduled tour, if you submit again with this email your tour will be rescheduled!');
+      function displayNotification(isPhone) {
+        if (isPhone) {
+          $(".reshedule-notification").html('A user with this phone number already has a scheduled tour, if you submit again with this phone number your tour will be rescheduled!');
           $(".reshedule-notification").css("display", "block");
-
         }else {
           $(".reshedule-notification").css("display", "none");
         }
-      }
-
-      function isEmailExist(arrayOfEmails) {
-        if(arrayOfEmails && arrayOfEmails.indexOf($("#tour_user_email").val()) !== -1 && tour_is_completed)
-          return true;
-        else 
-          return false;
       }
       
       function isPhoneNumberExist(arrayOfPhoneNumbers) {
