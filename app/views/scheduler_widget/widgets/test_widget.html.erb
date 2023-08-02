@@ -328,15 +328,16 @@
               <div class="form-group w-20 w-100 ml-0">
                 <label data-toggle="tooltip" data-placement="top" title="(Default US)">Country Code <span class="asterisk_color" >*</span></label> 
                 <select name="country_code" class="form-control select_number" id="country_code">
-                  <% SchedualTour::COUNTRY_CODES.each do  |code| %>
-                    <% if code === @default_country_code %>
-                      <option value="<%= code %>" selected= "selected"> <%= code %> </option>
+                  <% SchedualTour::COUNTRIES.each do  |country| %>
+                    <% if country["code"] === @default_country_code %>
+                      <option value="<%= country["code"] %>" selected= "selected"> <%= country["code"] %> </option>
                     <% else %>
-                      <option value="<%= code %>"> <%= code %> </option>
+                      <option value="<%= country["code"] %>"> <%= country["code"] %> </option>
                     <% end %>
                   <% end %>
                 </select>
               </div>
+
               <div class="form-group w-30 w-100">
                 <label>Phone Number <span class="asterisk_color" >*</span></label> 
                 <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", minlength: 10, maxlength: 10 , required: 'required', id: "user_phone_number_field" %>
@@ -504,7 +505,10 @@
               <%# <% unless @time_slots.any? %>
                 <span class="no-tour-time-error" style="display: none; color: red; margin-bottom: 5px;">*There is no slot available. please check your available slots in tour setting page</span>
               <%# <% end %>
+
               <%= hidden_field_tag 'existing_tour_user_phone_arr', @existing_tour_users.to_json %>
+              <%= hidden_field_tag 'countries_data', SchedualTour::COUNTRIES.to_json %>
+
               <div>
                 <% if @reschedule_tour %>
                   <button type="submit" id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
@@ -591,7 +595,10 @@
       var realpage_provider = "<%= @community.data_provider == "realpagesvc" && @marketing_source_required%>"
       var phone_country_code = "+<%= @phone_country_code&.country_code %>"
       var tour_type = "<%= @schedule_tour&.tour_type.split('_').map(&:capitalize).join(' ') rescue "" %>"
-      var existing_tour_users = []
+      var existing_tour_users = [];
+      var countries_data = [];
+      var selectedDialingCountryCode = "+1";
+    
       var use_yardi_as_lead = <%= raw @use_yardi_as_lead %>;
       var is_virtual_on = <%= raw @is_virtual_on %>;
 
@@ -600,13 +607,24 @@
       function redirectSheduledTourPage(url){
         window.location.href = url
       }
+
       function onlyNumbers() {
         let pNum = $("#user_phone_number_field").val();
         if(pNum)
           $("#user_phone_number_field").val(pNum.replace(phone_country_code, ""));        
       }
 
+      function setCountryDialingCode() {
+        let  countryCode = $('#country_code').find(":selected").val();
+        let obj = countries_data.find(function (el) { return (el["code"] === countryCode)});
+        selectedDialingCountryCode = obj["dial_code"]
+      }
+
       $(document).ready(function(){
+        existing_tour_users = JSON.parse($("#existing_tour_user_phone_arr").val()).phone_numbers;
+        countries_data = JSON.parse($("#countries_data").val());
+        setCountryDialingCode();
+
         knock_available_time_slots = $("#knock-data").data("availableTimeSlots");
         is_knock_community = $("#knock-data").data("isKnockCommunity");
 
@@ -696,6 +714,11 @@
 
       verification_type_authenteq = ($("#verification_type_authenteq").val() == "true") ? true : false
 
+      $('#country_code').change(function() {
+        setCountryDialingCode();
+        displayNotification();
+      });
+
       $('.select_property_tour').change(function() {
         if (this.value == 'remote_tour'){
           $(".tour_date").addClass('hidden');
@@ -732,7 +755,7 @@
         }
       })
 
-      $(document).ready(function(){
+      $(document).ready(function(){       
         onlyNumbers();
 
         $("#user_phone_number_field").change(function() {
@@ -771,10 +794,7 @@
         }
 
       $("#user_phone_number_field").keyup(function() {
-        console.log("1")
-        const existing_tour_users = JSON.parse($("#existing_tour_user_phone_arr").val());
-        const isPhone = isPhoneNumberExist(existing_tour_users.phone_numbers);
-        displayNotification(isPhone);
+        displayNotification();
       });
 
       $('.select_property_tour').change(function() {
@@ -1156,7 +1176,9 @@
         $(".tour_time").removeClass("col-lg-6 col-md-6");
       }
 
-      function displayNotification(isPhone) {
+      function displayNotification() {
+        const isPhone = isPhoneNumberExist();
+
         if (isPhone) {
           $(".reshedule-notification").html('A user with this phone number already has a scheduled tour, if you submit again with this phone number your tour will be rescheduled!');
           $(".reshedule-notification").css("display", "block");
@@ -1165,11 +1187,12 @@
         }
       }
       
-      function isPhoneNumberExist(arrayOfPhoneNumbers) {
-        const phoneNumber = $("#user_phone_number_field").val();
+      function isPhoneNumberExist() {
+        let phoneNumber = $("#user_phone_number_field").val();
+        phoneNumber = selectedDialingCountryCode + phoneNumber;
 
-        const match = arrayOfPhoneNumbers.find(element => {
-          if ((element.slice(-10) == phoneNumber) && tour_is_completed) {
+        const match = existing_tour_users.find(element => {
+          if ((element == phoneNumber) && tour_is_completed) {
             return true;
           }
         });
