@@ -1,5 +1,9 @@
 module ApplicationHelper
 
+  def show_apply_now(community)
+    community.credential.apply_now == "true" || community.credential.apply_now == "separate_link"
+  end
+
   def javascript_version
     timestamp = DateTime.now.to_i
     "v#{timestamp}"
