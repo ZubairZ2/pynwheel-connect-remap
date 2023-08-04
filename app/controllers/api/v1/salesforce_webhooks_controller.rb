@@ -71,7 +71,7 @@ module Api
       end
 
       def set_tour_user
-        @tour_user ||= TourUserSearcher.new(make_phone_number, params[:neighborEmail].downcase).find_tour_user()
+        @tour_user ||= TourUserSearcherService.new(make_phone_number, params[:neighborEmail].downcase).find_tour_user()
       end
 
       def webhook_form_validate

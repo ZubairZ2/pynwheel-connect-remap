@@ -1,4 +1,4 @@
-class TourUserSearcher
+class TourUserSearcherService
   def initialize(phone_number, email_address)
     @phone_number = phone_number
     @email_address = email_address

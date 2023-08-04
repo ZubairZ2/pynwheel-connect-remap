@@ -129,7 +129,7 @@ module Api
       end
 
       def ser_tour_user
-        @tour_user ||= TourUserSearcher.new("+1#{params["Phone"]}", params["Email"].downcase).find_tour_user()
+        @tour_user ||= TourUserSearcherService.new("+1#{params["Phone"]}", params["Email"].downcase).find_tour_user()
       end
 
       def get_community_by_name

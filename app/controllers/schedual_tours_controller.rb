@@ -45,7 +45,7 @@ class SchedualToursController < ApplicationController
   
   def create_tour_user_from
     phone_number = make_phone
-    tu = TourUserSearcher.new(phone_number, params[:tour_user][:email].downcase).find_tour_user()
+    tu = TourUserSearcherService.new(phone_number, params[:tour_user][:email].downcase).find_tour_user()
 
     community = Community.find_by_id params[:community_id]
     realpage_marketing_source = ""

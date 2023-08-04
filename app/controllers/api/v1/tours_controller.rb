@@ -463,7 +463,7 @@ module Api
       end
     
       def set_tour_user
-        @tour_user = TourUserSearcher.new(params[:phone_number], params[:email].downcase).find_tour_user()
+        @tour_user = TourUserSearcherService.new(params[:phone_number], params[:email].downcase).find_tour_user()
     
         if @tour_user.present?
           @tour_user.update(

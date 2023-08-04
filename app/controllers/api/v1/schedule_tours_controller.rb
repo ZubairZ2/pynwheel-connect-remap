@@ -91,7 +91,7 @@ module Api
 
       def schedule_tour
         phone_number = make_phone
-        @tu = TourUserSearcher.new(phone_number, params[:email].downcase).find_tour_user()
+        @tu = TourUserSearcherService.new(phone_number, params[:email].downcase).find_tour_user()
 
         desired_bedroom = params[:desired_bedroom] if params[:desired_bedroom].present?
 
