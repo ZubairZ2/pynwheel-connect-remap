@@ -463,19 +463,15 @@ module Api
       end
     
       def set_tour_user
-        @tour_user = TourUser.where(email: params[:email].downcase, phone_number: params[:phone_number])&.last
-        
-        unless @tour_user.present?
-          @tour_user = TourUser.where(phone_number: params[:phone_number])&.last
-        end
+        @tour_user = TourUserSearcher.new(params[:phone_number], params[:email].downcase).find_tour_user()
     
         if @tour_user.present?
           @tour_user.update(
             name: "#{params[:first_name]} #{params[:last_name]}",
-            last_name: params[:last_name], 
-            first_name: params[:first_name], 
-            phone_number: params[:phone_number],
-            email: params[:email].downcase
+            last_name: params[:last_name],
+            first_name: params[:first_name],
+            phone_number: params[:phone_number].present? ? params[:phone_number] : @tour_user.phone_number,
+            email: params[:email].present? ? params[:email].downcase : @tour_user.email
           )
         end
       end

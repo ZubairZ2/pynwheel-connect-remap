@@ -159,7 +159,6 @@ module Api
           else
             # For login screen
             @tour_user = TourUser.where(phone_number: params[:phone_number]).last
-            # @tour_user ||= (tour_users.count === 1) ? tour_users.last : nil
           end
         end
 
