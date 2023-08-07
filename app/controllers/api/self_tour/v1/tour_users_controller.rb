@@ -153,9 +153,10 @@ module Api
         end
 
         def set_tour_user
-          if params[:tour_user_id].present?
+          tour_user_id =  params[:tour_user_id] || params[:id]
+          if tour_user_id.present?
             # For registration screen
-            @tour_user ||= TourUser.find_by_id(params[:tour_user_id])
+            @tour_user ||= TourUser.find_by_id(tour_user_id)
           else
             # For login screen
             @tour_user ||= TourUser.where(phone_number: params[:phone_number]).last
