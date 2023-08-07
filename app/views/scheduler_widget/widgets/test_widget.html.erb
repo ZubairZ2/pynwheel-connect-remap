@@ -890,6 +890,7 @@
                       options += `<option value="${tour_types[i][0]}" >${tour_types[i][1]}</option>`
                     }
                     $('#tour_type').html(options)
+                    $("#tour_type").prop('required',true);
                     // showTourTypeDropDown();
                   }
                   else if(tour_types.length == 1){

@@ -30,6 +30,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @scheduled_tour_for_another_tour = SchedualTour.find @scheduled_tour_id if @scheduled_tour_id.present?
     @exiting_schedule_tour = SchedualTour.find_by(community_id: params[:community_id])
     @schedule_tour = params[:scheduled_tour_id].present? ? SchedualTour.find_by_id(params[:scheduled_tour_id]) : @exiting_schedule_tour.present? ? @exiting_schedule_tour : SchedualTour.create(community_id: params[:community_id])
+    @schedule_tour.property_tour_type = params[:property_tour_type].present? ? params[:property_tour_type] : "scheduled_tour"
     @phone_country_code = ISO3166::Country.new(@schedule_tour.country_code) if @schedule_tour.country_code.present?
     @community_id = params[:community_id]
     @community = Community.find params[:community_id]
@@ -60,7 +61,6 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @enabled_tour_types = community_allowed_tour_types(@community)
     @tour_type_count = @enabled_tour_types.count
     @default_country_code = @community.set_default_country_code()
-
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
     if @use_yardi_as_lead
       @yardi_time_slots = @community.available_slots(@schedule_tour)
