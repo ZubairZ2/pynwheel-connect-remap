@@ -102,7 +102,7 @@ module Api
         @tu.first_name = f_name
         @tu.last_name = l_name
         @tu.phone_number =  phone_number.present? ? phone_number : @tu.phone_number
-        @tu.email = if params[:email].present? ? params[:email].downcase : @tu.email
+        @tu.email = params[:email].present? ? params[:email].downcase : @tu.email
         @tu.desired_bedroom = params[:desired_bedroom] if params[:desired_bedroom].present?
         @tu.card_last_digits = params[:credit_card_number].last 4 if params[:credit_card_number].present?
         credit_card_number = params[:credit_card_number] if params[:credit_card_number].present?

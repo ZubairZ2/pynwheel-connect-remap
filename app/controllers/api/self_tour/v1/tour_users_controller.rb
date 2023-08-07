@@ -158,7 +158,7 @@ module Api
             @tour_user ||= TourUser.find_by_id(params[:tour_user_id])
           else
             # For login screen
-            @tour_user = TourUser.where(phone_number: params[:phone_number]).last
+            @tour_user ||= TourUser.where(phone_number: params[:phone_number]).last
           end
         end
 
