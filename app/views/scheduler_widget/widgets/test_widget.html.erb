@@ -345,12 +345,12 @@
 
               <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_email.nil? ? true : current_community.community_tour.tour_setting.show_email) %>
                 <div class="form-group w-right-50">
-                  <label>Email Address <%#<span class="asterisk_color" >*</span> %></label>
-                  <%= f.email_field :email, class: "form-control", placeholder: "Email Address", id: "tour_user_email"%>
+                  <label>Email Address <span class="asterisk_color" >*</span> </label>
+                  <%= f.email_field :email, class: "form-control", placeholder: "Email Address", id: "tour_user_email", required: 'required'%>
                 </div>
               <% end %>
 
-              <span class="reshedule-notification" style="display: <%= @tour_user.id.present? && !@reschedule_tour && @schedule_tour.is_tour_completed ? "block" : "none" %>">A user with this email address already has a scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
+              <span class="reshedule-notification" style="display: <%= @tour_user.id.present? && !@reschedule_tour && @schedule_tour.is_tour_completed ? "block" : "none" %>">A user with this phone number already has a scheduled tour, if you submit again with this phone number your tour will be rescheduled!</span>
 
               <div class="clearfix"></div>
 
