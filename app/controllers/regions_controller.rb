@@ -13,7 +13,7 @@ class RegionsController < ApplicationController
   
   def new
     @region = Region.new
-    @not_assigned_communities = current_company.communities.where(region_id: nil).collect{|c| [c.name,c.id]}
+    @not_assigned_communities = current_company.communities.where(region_id: nil).order(:name).collect{|c| [c.name,c.id]}
   end
 
   def create
@@ -30,7 +30,7 @@ class RegionsController < ApplicationController
   end
 
   def edit
-    @not_assigned_communities = current_company.communities.where(region_id: [nil, @region.id]).collect{|c| [c.name,c.id]}
+    @not_assigned_communities = current_company.communities.where(region_id: [nil, @region.id]).order(:name).collect{|c| [c.name,c.id]}
   end
 
   def update
