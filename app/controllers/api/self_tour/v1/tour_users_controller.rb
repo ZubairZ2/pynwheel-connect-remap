@@ -147,7 +147,7 @@ module Api
         end
 
         def sms_otp_to_mobile
-          to_phone_number = @tour_user.phone_number
+          to_phone_number = params[:phone_number].present? ? params[:phone_number] : @tour_user.phone_number
           message_body = "Verification code #{ @tour_user.pin_code }. Code will expire in 15 minutes."
           TwilioSmsService.new().send_sms(message_body, to_phone_number)
         end
@@ -156,10 +156,10 @@ module Api
           tour_user_id =  params[:tour_user_id] || params[:id]
           if tour_user_id.present?
             # For registration screen
-            @tour_user ||= TourUser.find_by_id(tour_user_id)
+            @tour_user = TourUser.find_by_id(tour_user_id)
           else
             # For login screen
-            @tour_user ||= TourUser.where(phone_number: params[:phone_number]).last
+            @tour_user = TourUser.where(phone_number: params[:phone_number]).last
           end
         end
 
