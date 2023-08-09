@@ -40,6 +40,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @marketing_source_required = @community.community_tour.marketing_source_required
     @community_time_zone = @community.get_time_zone()
     @current_time = Time.now.in_time_zone(@community_time_zone).strftime("%H:%M %p") if @community_time_zone.present?
+
     if params[:direct].present?
       @direct =  true
       params[:message].present? ? @show_first = false : @show_first = true
@@ -90,6 +91,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     
     @occupied_slots = OccupiedTourTimeSlotsService.new(@community).occupied_slots()
     @occupied_dates = @occupied_slots&.keys rescue []
+    @is_allowed_schedule = can_user_schedule_tour(@tour_type_count, @community)
 
     community = Community.find params[:community_id]
     app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
@@ -125,6 +127,10 @@ class SchedulerWidget::WidgetsController < ApplicationController
   end
 
   private
+
+  def can_user_schedule_tour tour_type_count, community
+    tour_type_count > 0 && community.self_tour && (community.scheduler_widget.nil? ? true : community.scheduler_widget) && !community.locked
+  end
 
   def community_allowed_tour_types community
     tour = community.community_tour
