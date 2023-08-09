@@ -26,7 +26,7 @@ module Api
                 render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true }
               else
                 send_otp_phone    
-                render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true}
+                render json: {message: "OTP is generated successfully and sent at #{params[:phone_number].present? ? params[:phone_number] : @tour_user.phone_number}", success_code: 200, status: true}
               end
             else
               render json: {message: "User not found", success_code: 404, status: false, is_zerv_lock: false, zerv_credentials: {}}
