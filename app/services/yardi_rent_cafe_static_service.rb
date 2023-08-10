@@ -83,7 +83,7 @@ class YardiRentCafeStaticService < BaseService
                 unit.manually_updated = false
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
 
-                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
+                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials, available_date_convertor(r["AvailableDate"]))
                 leasing = ""
                 
                 if rentStrs.present?
@@ -195,9 +195,26 @@ class YardiRentCafeStaticService < BaseService
     "#{available_date[2]}-#{available_date[0]}-#{available_date[1]}"
   end
 
-  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name, credentials)
+  def available_date_convertor available_date
+    today_date = Date.today.strftime("%m/%d/%Y")
+
+    if ( available_date != "" && available_date != nil )
+      parsed_today_date = Date.parse(set_availabilty_date(today_date))
+      parsed_available_date = Date.parse(set_availabilty_date(available_date))
+
+      if parsed_available_date > parsed_today_date
+        available_date
+      else
+        today_date
+      end
+    else
+      today_date
+    end
+  end
+
+  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name, credentials, available_date)
     request_type = "pricingmatrix"
-    url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
+    url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}&availabledate=#{available_date}"
     begin
       response = HTTParty.get(url)
       rent_matrix = JSON.parse(response.body)

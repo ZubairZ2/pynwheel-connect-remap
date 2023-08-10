@@ -40,12 +40,12 @@ class YardiRentCafeService < BaseService
           community = Community.find @credentials.community_id
           community&.community_data_updated_on()
           response.each do |r|
-            puts "-------------------------------------------------------- #{r["ApartmentId"].to_s} --------------------------------\n"
+            # puts "-------------------------------------------------------- #{r["ApartmentId"].to_s} --------------------------------\n"
             begin
               unit = @all_units_hash[r["ApartmentId"].to_s]
 
               if unit.present?
-                puts "----------------------------- #{unit.marketing_name} ------------------------\n"
+                # puts "----------------------------- #{unit.marketing_name} ------------------------\n"
                 unit.market_rent = r["MinimumRent"]
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = r["MinimumRent"]
@@ -97,7 +97,7 @@ class YardiRentCafeService < BaseService
                 lease_prices_array = []
 
                 if unit.available
-                  rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
+                  rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials, available_date_convertor(r["AvailableDate"]))
                   if rentStrs.present?
                     rentStrs.each do |rentStr|
                       if rentStr[0].to_i > 0
@@ -192,7 +192,7 @@ class YardiRentCafeService < BaseService
                   lease_prices_array = []
 
                   if  unit.available
-                    rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
+                    rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials, available_date_convertor(r["AvailableDate"]))
 
                     if rentStrs.present?
                       rentStrs.each do |rentStr|
@@ -297,7 +297,7 @@ class YardiRentCafeService < BaseService
             fp = @all_floorplans_hash[r["FloorplanId"].to_s]
             
             if fp.present?
-              puts "----------------- #{fp.name} -----------------------\n"
+              # puts "----------------- #{fp.name} -----------------------\n"
               unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated && fp.manual_override
                 fp.market_rent = r["MinimumRent"]
               end
@@ -357,18 +357,36 @@ class YardiRentCafeService < BaseService
     "#{available_date[2]}-#{available_date[0]}-#{available_date[1]}"
   end
 
-  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name, credentials)
+  def available_date_convertor available_date
+    today_date = Date.today.strftime("%m/%d/%Y")
+
+    if ( available_date != "" && available_date != nil )
+      parsed_today_date = Date.parse(set_availabilty_date(today_date))
+      parsed_available_date = Date.parse(set_availabilty_date(available_date))
+
+      if parsed_available_date > parsed_today_date
+        available_date
+      else
+        today_date
+      end
+    else
+      today_date
+    end
+  end
+
+  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name, credentials, available_date)
    
     begin
       
       request_type = "pricingmatrix"
-      url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
+      url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}&availabledate=#{available_date}"
     
       response = HTTParty.get(url)
       rent_matrix = JSON.parse(response.body)
 
       unless rent_matrix[0]["Error"].present?
-        puts "---------------------------- pricing Matrix Present --------------------------"
+        # puts "---------------------------- pricing Matrix Present --------------------------"
+        # puts "URL :   #{url}"
         uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
         distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
 

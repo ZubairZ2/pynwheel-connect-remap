@@ -58,7 +58,7 @@ class YardiRentCafeSwapService < BaseService
                   unit.effective_rent = 1.0
                 end
 
-                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
+                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials, available_date_convertor(r["AvailableDate"]))
                 leasing = ""
                 if rentStrs.present?
                   rentStrs.each do |rentStr|
@@ -103,7 +103,7 @@ class YardiRentCafeSwapService < BaseService
                   unit.effective_rent = 1.0
                 end
 
-                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials)
+                rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["ApartmentName"], credentials, available_date_convertor(r["AvailableDate"]))
                 leasing = ""
                 if rentStrs.present?
                   rentStrs.each do |rentStr|
@@ -216,6 +216,24 @@ class YardiRentCafeSwapService < BaseService
     available_date = available_date.split("/")
     "#{available_date[2]}-#{available_date[0]}-#{available_date[1]}"
   end
+
+  def available_date_convertor available_date
+    today_date = Date.today.strftime("%m/%d/%Y")
+
+    if ( available_date != "" && available_date != nil )
+      parsed_today_date = Date.parse(set_availabilty_date(today_date))
+      parsed_available_date = Date.parse(set_availabilty_date(available_date))
+
+      if parsed_available_date > parsed_today_date
+        available_date
+      else
+        today_date
+      end
+    else
+      today_date
+    end
+  end
+
   def rename_provider
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
@@ -247,9 +265,9 @@ class YardiRentCafeSwapService < BaseService
     end
   end
 
-  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name, credentials)
+  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name, credentials, available_date)
     request_type = "pricingmatrix"
-    url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}"
+    url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}&availabledate=#{available_date}"
     begin
       response = HTTParty.get(url)
       rent_matrix = JSON.parse(response.body)
