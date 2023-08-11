@@ -20,7 +20,7 @@
                 This description will appear above the image. Only the first #{ENV["DESCRIPTION_LIMIT"].to_i} characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
 
           = f.text_area :description, :class=>"form-control edit_gallery_image_description_field edit_gallery_image_wysihtml5", :placeholder=>"Description"
-          %span.edit_gallery_image_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i}
+          <!-- %span.edit_gallery_image_description_count{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i} -->
 
         .form-group
           %button.btn.btn-success.pull-right.btn-sm.mb-20#crop_image{:type => "submit"}
@@ -48,7 +48,7 @@
               {
                 t1 = t.substr(0, characterLimit)
                 t2 = t.substr(characterLimit, t.length)
-                t2 = t2.fontcolor("red");
+                <!-- t2 = t2.fontcolor("red"); -->
                 wysihtml5Editor.setValue(t1 + t2);
                 var text_split = $('.edit_gallery_image_description_count').text().split(" ")
                 var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
