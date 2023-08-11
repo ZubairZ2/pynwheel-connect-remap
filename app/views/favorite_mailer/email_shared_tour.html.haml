@@ -8,6 +8,16 @@
     / disable auto telephone linking in iOS
     / %title Welcome
     :css
+      .MsoNormal {
+        display: none;
+      }
+
+      .ii a[href] {
+        color: #fff;
+        border: none;
+        text-decoration: none;
+      }
+
       body,#bodyTable,#bodyCell,#bodyCell{
            height:100% !important;
            margin:0;
@@ -83,7 +93,8 @@
          .ExternalClass td[class=ecxflexibleContainerBox] h3{
            padding-top:10px !important;
          }
-         a, a:link, a:visited, a:hover, a:active {color: #ffffff;}
+         a, a:link, a:visited, a:hover, a:active {color: #fff;}
+
          h1{
            display:block;
            font-size:26px;
