@@ -612,6 +612,10 @@ class Community < ApplicationRecord
     status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user.id)
   end
 
+  def show_apply_now
+    self.credential.apply_now == "true" || self.credential.apply_now == "separate_link"
+  end
+
   def set_default_country_code
     begin
 

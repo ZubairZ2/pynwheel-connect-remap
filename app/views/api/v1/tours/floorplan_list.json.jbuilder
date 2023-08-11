@@ -4,7 +4,7 @@ json.floorplans @floorplans do |floorplan|
 	json.bedrooms_bathrooms (floorplan.bedrooms.present? ? (floorplan.bedrooms.to_i.to_s + " Bedroom  ") : "") + (floorplan.bathrooms.present? ? (floorplan.bathrooms.to_i.to_s + " Bathroom") : "" )
 	json.square_footage (floorplan.square_feet.present? ? floorplan.square_feet.to_i.to_s + " Square Footage" : "")
 	json.availability_url floorplan.availability_url
-	json.show_apply_now show_apply_now(@community)
+	json.show_apply_now @community.show_apply_now
 	json.thumbnail_image floorplan.image.present? ? floorplan.image.url : ""
 	floorplan_images = []
 	floorplan.image.present? ? (floorplan_images << {imageURL: floorplan.image.url}) : ""

@@ -21,7 +21,7 @@ json.tours @tours do |tour|
     json.visual_id_verification tour.visual_id_verification
     json.chat_control (@community.chat_control and @community.is_chat_available) ? @community.chat_control : false
     json.show_map @community.show_map
-    json.show_apply_now show_apply_now(@community)
+    json.show_apply_now @community.show_apply_now
     json.mdu @community.mdu
 
   end

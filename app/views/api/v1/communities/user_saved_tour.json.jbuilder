@@ -22,7 +22,7 @@ json.tours tours do |tour|
   json.image @community.community_tour.image.present? ? @community.community_tour.image.url : (@community.is_sitemap ? @community.sitemap.image.url : @community.floorplates.first.image.url) rescue ""
   json.display_rent @community.display_rent
   json.display_pricing_options @community.display_pricing_options     
-  json.show_apply_now show_apply_now(@community)   
+  json.show_apply_now @community.show_apply_now   
 
   json.visited_tour @visited_stops do |visited_stop|
     @tour = TourStop.find visited_stop rescue next
