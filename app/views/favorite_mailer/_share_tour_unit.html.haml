@@ -114,28 +114,33 @@
 
 
 
+                    
+                  %tr
+                    %td{style: "height: 20px"}
                   %tr
                     -# units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND available_date > ?', unit.floorplan_id,unit.community_id,true, Date.today)
-                    %td{:align => "center", :valign => "top"}
+                    %td{:align => "center", :valign => "center"}
                       / Container for the buttons
-                      %table{cellpadding: "0", cellspacing: "0", role: "presentation", style: "margin: 10px;", width: "100%"}
+                      %table{cellpadding: "0", cellspacing: "0", role: "presentation", width: "100%"}
                         %tr
                           %td{align: "center"}
                             - if unit.virtual_tour_url.present?
                               / First button
-                              %table{cellpadding: "0", cellspacing: "0", role: "presentation", style: "margin-bottom: 10px;"}
+                              %table{cellpadding: "0", cellspacing: "0", role: "presentation"}
                                 %tr
-                                  %td{style: "border-radius: 3px; background: #4c4d4e; text-align: center;", width: "260"}
-                                    = link_to "#{unit.virtual_tour_button_label.upcase}", "#{unit.virtual_tour_url}" , :class=>"btn mr-5", style: "font-size: 16px; color: #ffffff; text-decoration: none; padding: 10px 20px; display: block;", :target => "_blank"  
+                                  %td{style: "border-radius: 3px; background: #4c4d4e; text-align: center;", width: "260", :align => "center", :valign => "center"}
+                                    = link_to "#{unit.virtual_tour_button_label.upcase}", "#{unit.virtual_tour_url}" , :class=>"btn mr-5", style: "font-size: 16px; color: #ffffff; text-decoration: none; padding: 10px 20px; display: block; text-align:center", :target => "_blank"  
+                                %tr
+                                  %td{style: "height: 20px"}
 
                             - if unit.availability_url.present?
                               / Second button
-                              %table{cellpadding: "0", cellspacing: "0", role: "presentation", style: "margin-bottom: 10px;"}
+                              %table{cellpadding: "0", cellspacing: "0", role: "presentation"}
                                 %tr
-                                  %td{style: "border-radius: 3px; background: #4c4d4e; text-align: center;", width: "260"}
-                                    = link_to "FLOOR PLAN AVAILABILITY", "#{unit.availability_url}" , :class=>"btn mr-5", style: " color:white;  height: 80px;padding-top: 7px; border-radius: 2px;",:target => "_blank"  
-
-                        
+                                  %td{style: "border-radius: 3px; background: #4c4d4e; text-align: center;", width: "260", :align => "center", :valign => "center"}
+                                    = link_to "FLOOR PLAN AVAILABILITY", "#{unit.availability_url}" , :class=>"btn mr-5", style: " color:white;  height: 80px;padding-top: 7px; border-radius: 2px; text-align:center",:target => "_blank"  
+                                %tr
+                                  %td{style: "height: 20px"}
                       
                       
                       
