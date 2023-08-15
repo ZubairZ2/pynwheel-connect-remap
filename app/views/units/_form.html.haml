@@ -152,7 +152,7 @@
 
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_area :description,:class=>"form-control mb-20 validate[required] unit-description-wysihtml5",:placeholder=>"Enter Description"
-      %span.unit_details_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i}
+      <!-- %span.unit_details_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i} -->
 
 - if @community.self_tour
   .form-group
@@ -163,7 +163,7 @@
           This description will appear above the image. Only the first #{ENV["DESCRIPTION_LIMIT"].to_i} characters will appear on the page with the image; the rest of the description can be accessed by pulling up a separate page in the app.
     .col-sm-12.col-lg-9.col-md-9.col-xs-12
       = f.text_area :stop_description,:class=>"form-control mb-20 wysihtml5",:placeholder=>"Enter Directional Description", :rows => "8"
-      %span.unit_directional_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i}
+      <!-- %span.unit_directional_text{:style => "float: right; margin: 10px 15px 0px 0px;"} Character limit: #{ENV["DESCRIPTION_LIMIT"].to_i} -->
 -#.form-group
 -#  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
 -#    Available
@@ -340,7 +340,7 @@
                     var t = wysihtml5Editor.getValue();
                     t1 = t.substr(0, characterLimit)
                     t2 = t.substr(characterLimit, t.length)
-                    t2 = t2.fontcolor("red");
+                    <!-- t2 = t2.fontcolor("red"); -->
                     wysihtml5Editor.setValue(t1 + t2);
                 },
                 load: function(){
@@ -356,7 +356,7 @@
                     var t = wysihtml5Editor.getValue();
                     t1 = t.substr(0, characterLimit)
                     t2 = t.substr(characterLimit, t.length)
-                    t2 = t2.fontcolor("red");
+                    <!-- t2 = t2.fontcolor("red"); -->
                     wysihtml5Editor.setValue(t1 + t2);
                     var text_split = $('.unit_directional_text').text().split(" ")
                     var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
@@ -375,7 +375,7 @@
                     var t = wysihtml5Editor.getValue();
                     t1 = t.substr(0, characterLimit)
                     t2 = t.substr(characterLimit, t.length)
-                    t2 = t2.fontcolor("red");
+                    <!-- t2 = t2.fontcolor("red"); -->
                     wysihtml5Editor.setValue(t1 + t2);
                 },
                 load: function(){
@@ -391,7 +391,7 @@
                     var t = wysihtml5Editor.getValue();
                     t1 = t.substr(0, characterLimit)
                     t2 = t.substr(characterLimit, t.length)
-                    t2 = t2.fontcolor("red");
+                    <!-- t2 = t2.fontcolor("red"); -->
                     wysihtml5Editor.setValue(t1 + t2);
                     var text_split = $('.unit_details_text').text().split(" ")
                     var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length

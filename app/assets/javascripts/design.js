@@ -47,7 +47,7 @@ $(document).ready(function () {
                 {
                   t1 = t.substr(0, characterLimit)
                   t2 = t.substr(characterLimit, t.length)
-                  t2 = t2.fontcolor("red");
+                  // t2 = t2.fontcolor("red");
                   wysihtml5Editor.setValue(t1 + t2);
                   var text_split = $('.amenity_description_count').text().split(" ")
                   var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
@@ -82,7 +82,7 @@ $(document).ready(function () {
                     {
                       t1 = t.substr(0, characterLimit)
                       t2 = t.substr(characterLimit, t.length)
-                      t2 = t2.fontcolor("red");
+                      // t2 = t2.fontcolor("red");
                       wysihtml5Editor.setValue(t1 + t2);
                       var text_split = $('.amenity_directional_text_count').text().split(" ")
                       var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
@@ -1067,7 +1067,7 @@ function zervLockIntructionText() {
           if(t!= '') {
             t1 = t.substr(0, characterLimit)
             t2 = t.substr(characterLimit, t.length)
-            t2 = t2.fontcolor("red");
+            // t2 = t2.fontcolor("red");
             wysihtml5Editor.setValue(t1 + t2);
             var text_split = $('.zerv_lock_instruction_count').text().split(" ")
             var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
@@ -1105,7 +1105,7 @@ function latchLockIntructionText() {
           if(t!= '') {
             t1 = t.substr(0, characterLimit)
             t2 = t.substr(characterLimit, t.length)
-            t2 = t2.fontcolor("red");
+            // t2 = t2.fontcolor("red");
             wysihtml5Editor.setValue(t1 + t2);
             var text_split = $('.latch_lock_instruction_count').text().split(" ")
             var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
@@ -1143,7 +1143,7 @@ function dweloLockIntructionText() {
           if(t!= '') {
             t1 = t.substr(0, characterLimit)
             t2 = t.substr(characterLimit, t.length)
-            t2 = t2.fontcolor("red");
+            // t2 = t2.fontcolor("red");
             wysihtml5Editor.setValue(t1 + t2);
             var text_split = $('.dwelo_lock_instruction_count').text().split(" ")
             var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
@@ -1181,7 +1181,7 @@ function editElevatorDirectionalTextField () {
           if(t!= '') {
             t1 = t.substr(0, characterLimit)
             t2 = t.substr(characterLimit, t.length)
-            t2 = t2.fontcolor("red");
+            // t2 = t2.fontcolor("red");
             wysihtml5Editor.setValue(t1 + t2);
             var text_split = $('.elevator_directional_text_edit_field_count').text().split(" ")
             var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
@@ -1219,7 +1219,7 @@ function editElevatorDescriptionField () {
           if(t!= '') {
             t1 = t.substr(0, characterLimit)
             t2 = t.substr(characterLimit, t.length)
-            t2 = t2.fontcolor("red");
+            // t2 = t2.fontcolor("red");
             wysihtml5Editor.setValue(t1 + t2);
             var text_split = $('.elevator_description_edit_field_count').text().split(" ")
             var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
@@ -1257,7 +1257,7 @@ function igloohomeLockIntructionText() {
           if(t!= '') {
             t1 = t.substr(0, characterLimit)
             t2 = t.substr(characterLimit, t.length)
-            t2 = t2.fontcolor("red");
+            // t2 = t2.fontcolor("red");
             wysihtml5Editor.setValue(t1 + t2);
             var text_split = $('.igloohome_lock_instruction_count').text().split(" ")
             var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
@@ -1295,7 +1295,7 @@ function edgestateLockIntructionText() {
           if(t!= '') {
             t1 = t.substr(0, characterLimit)
             t2 = t.substr(characterLimit, t.length)
-            t2 = t2.fontcolor("red");
+            // t2 = t2.fontcolor("red");
             wysihtml5Editor.setValue(t1 + t2);
             var text_split = $('.edgestate_lock_instruction_count').text().split(" ")
             var total_length = wysihtml5Editor.getValue().replace(/<(?:.|\n)*?>/gm, '').replace(/(\r\n|\n|\r)/gm,"").replace(/\&nbsp;/g, '').length
