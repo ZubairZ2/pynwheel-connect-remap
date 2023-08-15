@@ -28,18 +28,24 @@
                                 %td
                                   %div{:style => "width:100%; overflow:hidden;"}
                                     %img{:alt => "", :src => "#{img.image.url}", :width => "580", :height => "auto", :style => "max-width:580px; margin:auto;", :title => ""}/
-
                   - if img.video_link.present?
                     %tr
-                      %td{:align => "center", :valign => "top"}
-                        %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "100%"}
+                      %td{style: "height: 20px"}
+                    %tr
+                      %td{:align => "center", :valign => "center"}
+                        %table{cellpadding: "0", cellspacing: "0", role: "presentation"}
                           %tr
-                            %td{:width => "100%"}
-                              %table{:border => "0", :cellpadding => "30", :cellspacing => "0", :width => "100%"}
+                            %td{style: "border-radius: 3px; background: #4c4d4e; text-align: center; height: 50px;", width: "260", height: "50", :align => "center", :valign => "center"}
+                              = link_to "#{img.video_link_button_label.upcase}", "#{img.video_link}" , :class=>"btn mr-5", style: "font-size: 16px; color: #fff; text-decoration: none !important; padding: 10px 20px; display: block; text-align:center; border: none !important;",:target => "_blank"
+                          %tr
+                            %td{style: "height: 20px"}
+                            
+                        -# %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "270px", :style=> "width: 270px;", :align => "center"}
+                        -#   %tr
+                        -#     %td{:width => "270px;"}
+                        -#       %p
+                        -#       %table{:border => "0", :cellpadding => "0", :cellspacing => "0", :width => "270px", :align => "center"}
                               
-                                %tr
-                                  %td{:style=> "text-align: center;"}
-                                    %div{:style => "width:100%; overflow:hidden;"}
-                                      %a{:href => "#{img.video_link}", :target => "_blank"}
-                                        %input{:type => "submit", :value => "#{img.video_link_button_label.upcase}", :style=> "font-size: large; background: #4c4d4e; border-radius: 0px; color: white; border-color: #878789; border-width: medium; width: 130px; height: 46px;  border-width: medium;  width: fit-content; height: 46px;"}/
-                        
+                        -#         %tr
+                        -#           %td.textContent{:align => "left", :height=> "45px", :bgcolor=> "#4c4d4e;", :style => "display: inline-block; text-align: center; margin: 10px; height: 45px; background: #4c4d4e;width: 270px; color: #FFFFFF !important;", :valign => "top"}
+                        -#             = link_to "<p>#{img.video_link_button_label.upcase}</p>".html_safe , "#{img.video_link}" , :class=>"btn mr-5", style: " color:white;  height: 80px;padding-top: 7px; border-radius: 2px;",:target => "_blank"  
