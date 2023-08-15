@@ -1,0 +1,33 @@
+<div>
+  <span style="color: red">
+    <div style="text-align: left">
+      <strong> Error: </strong>
+      <ul>
+        <% if @community.locked %>
+          <li>Property is Inactive <% unless (@tour_type_count > 0 && @community.scheduler_widget && @community.self_tour) %> <strong>or</strong> <%end%>  </li>
+        <% end %>
+
+        <% unless @community.self_tour %>
+          <li>Self Tour is Disabled <% unless (@tour_type_count > 0 && @community.scheduler_widget) %> <strong>or</strong> <%end%> </li>
+        <% end %>
+
+        <% unless @community.scheduler_widget %>
+          <li>Scheduler is Disabled <% unless @tour_type_count > 0 %> <strong>or</strong> <%end%> </li>
+        <% end %>
+
+        <% unless @tour_type_count > 0 %>
+          <li>No Tour Type is Active</li>
+        <% end %>
+      </ul>
+    </div>
+
+    <br />
+
+    <strong>Sorry</strong> for the inconvenience. It seems
+    <strong><%= @community.name %></strong> does not offer self tours or it's under construction.
+    For inquiries please call the property at
+    <strong><%= @community.phone %></strong> or email
+    <strong><%= @community.email %></strong>.
+  </span>
+
+</div>

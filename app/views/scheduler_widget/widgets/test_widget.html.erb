@@ -222,10 +222,7 @@
                 <% if @is_allowed_schedule %>
                   <h2> PROPERTY TOUR </h2>
                 <% else %>
-                  <div class="w3-panel w3-blue">
-                    <span style = "color: red"><strong>Sorry</strong> for the inconvenience. It seems <strong> <%= @community.name %> </strong> does not offer self tours or it's under construction. For inquiries please call the property at <strong> <%= @community.phone %> </strong> or email <strong> <%= @community.email %></strong>.
-                      </span>
-                  </div> 
+                  <%= render "scheduler_error_suggessions" %>
                 <% end %>
               <%end%>
             </div>
