@@ -19,7 +19,7 @@ class GoogleNeighbourhoodService
   private
 
   def valid_token?
-    @params[:token] == ENV['Neighbourhood_API_TOKEN']
+    @params[:token] == ENV['NEIGHBOURHOOD_API_TOKEN']
   end
 
   def find_community
