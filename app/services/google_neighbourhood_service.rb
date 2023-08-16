@@ -50,7 +50,7 @@ class GoogleNeighbourhoodService
   end
 
   def fetch_neighbourhood_data
-    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{@params[:cat]}&location=#{@params[:latitude]},#{@params[:longitude]}&radius=#{@params[:radius]}&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
+    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{@params[:cat]}&location=#{@params[:latitude]},#{@params[:longitude]}&rankby=distance&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
     fetch_recursive(url, 1)
     @results
 
