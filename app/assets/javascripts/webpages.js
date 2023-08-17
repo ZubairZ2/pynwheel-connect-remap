@@ -394,7 +394,8 @@ $(window).bind('load', function () {
           
           var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
           var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
-          $('#marker-popover').css({left: (new_dx + 25) + "px", top: (new_dy - 100) + "px"});
+          const diffLeft = webCommunity['is_sitemap'] ? 25 : 115
+          $('#marker-popover').css({left: (new_dx + diffLeft) + "px", top: (new_dy - 100) + "px"});
           $('#marker-popover').removeClass('hidden');
           $($('#unit_'+ $(this).data('unit-marketing-name'))).css("border", `5px solid ${marker_color_map}`)
         })
