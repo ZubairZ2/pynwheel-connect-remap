@@ -49,7 +49,6 @@ $(document).ready(function () {
 
 });
 
-
 function displayOverlayText() {
   let instruction = localStorage.getItem(`webpagesInstruction${webCommunity.id}`);
 
@@ -347,105 +346,8 @@ $(window).bind('load', function () {
     $('#zoomable-modal-image-responsive').on('wheel', function(e) {
       $(imageArea).removeClass("transform-none"); 
     })
-    /////////////////////////////////////////////
-    /*popover*/
-    if (!hasTouch()) {
-      $(".marker")
-        .mouseenter(function (event) {
-          if ($(this).data('is-fav') || favoritesArr.includes($(this).data('unit-id'))) {
-            $('.fav-heart').removeClass('hidden')
-          } else {
-            $('.fav-heart').addClass('hidden')
-          }
-          $('#popover-marketing-name').html($(this).data('unit-marketing-name') + "</b>");            
-            $('#popover-floorplan').html($(this).data('unit-description'))
-            $('#popover-floorplan').html($(this).data('unit-lease-pricing'))
-            $('#popover-floorplan').html($(this).data('floorplan-name'))
-          if ($(this).data('floorplan-image') != '') {
-            $('#media-object').attr('src', $(this).data('floorplan-image'));
-          } else {
-            $('#media-object').attr('src', '/assets/default.jpeg');
-          }
-          $('#popover-square-feet').html($(this).data('square-feet'));
-          $('#popover-bathrooms').html($(this).data('bathrooms'));
-          if ($('#popover-bathrooms').html() == '1') {
-            $('#popover-bathrooms').siblings("small").html("Bathroom")
-          } else {
-            $('#popover-bathrooms').siblings("small").html("Bathrooms")
-          }
-          $('#popover-bedrooms').html($(this).data('bedrooms'));
-          if ($('#popover-bedrooms').html() == '1') {
-            $('#popover-bedrooms').siblings("small").html("Bedroom")
-          } else {
-            $('#popover-bedrooms').siblings("small").html("Bedrooms")
-          }
 
-          if ($(this).data('sold')) {
-            $('#popover-available-date').html('');
-            $('#hover-available-text').html('Sold')
-          } else {
-            $('#hover-available-text').html('Available');
-            $('#popover-available-date').html($(this).data('available-date'));
-          }
-        
-          $('#popover-price').html((currency + $(this).data('market-rent')))
-          var marker_color_map = $(".fa-map-marker-alt")[0].style.color
-          $($('#unit_'+ $(this).data('unitId')))[0].scrollIntoView({behavior: 'smooth', block: 'center', inline: 'center' });
-          
-          var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
-          var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
-          const diffLeft = webCommunity['is_sitemap'] ? 25 : 115
-          $('#marker-popover').css({left: (new_dx + diffLeft) + "px", top: (new_dy - 100) + "px"});
-          $('#marker-popover').removeClass('hidden');
-          $($('#unit_'+ $(this).data('unitId'))).css("border", `5px solid ${marker_color_map}`)
-        })
-        .mouseleave(function () {
-          $('#marker-popover').addClass('hidden');
-          $($('#unit_'+ $(this).data('unitId'))).css("border", "none")
-        });
-
-      let focused_marker ;
-
-      $(document).on("mousemove", "div.left-side-30-units", function(e){
-        let unit_num;
-        if (e.target.classList[0] === "left-side-30-units"){
-          unit_num = e.target.id;
-        } else if(e.target.classList[0] === "image-styles"){
-          unit_num = e.target.parentElement.id;
-        } else if(e.target.classList[0] === "image-image-styles"){
-          unit_num = e.target.parentElement.parentElement.parentElement.id;
-        }
-        let all_markers =  document.getElementsByClassName('marker');
-          Array.from(all_markers).forEach((marker) => {
-            if (unit_num === `unit_${marker.dataset.unitId}`){
-              let selectedMarker = marker;
-              if(selectedMarker.classList.contains('overlapping-unit')){
-                Array.from(all_markers).forEach((findOverlappedMarker) => {
-                  if (selectedMarker.dataset.unitXPlot === findOverlappedMarker.dataset.unitXPlot && selectedMarker.dataset.unitYPlot === findOverlappedMarker.dataset.unitYPlot && !findOverlappedMarker.classList.contains("hidden")){
-                    selectedMarker =findOverlappedMarker;
-                  }
-                })
-              }
-              focused_marker = document.getElementById(selectedMarker.id);
-              focused_marker.childNodes[0].style.fontSize = "25px";
-              $('#popover-marketing-unit').html(marker.dataset.unitMarketingName)
-              var position = selectedMarker.getBoundingClientRect();
-              $('#marker-popover-unit').css({left: (position.left -92) + "px", top: (position.top - 53) + "px",height: "100px", background: "transparent", margin: "0px", padding: "0px"});
-              $('#marker-popover-unit').removeClass('hidden');
-            }
-          })
-      });
-
-      $(document).on("mouseleave", "div.left-side-30-units", function(e){
-        if(focused_marker){
-          focused_marker.childNodes[0].style.fontSize="20px";
-          $('#marker-popover-unit').addClass('hidden');
-        }
-      });
-        
-    }
-    ///////////////////////////////////////////////
-    /*adjusting markers according to screen size*/
+    unitMarkerHover();    
 
     populate_current_units();
 
@@ -1148,6 +1050,126 @@ function renderChangedUnits(){
     
     element.innerHTML += unit_details_div  
   });
+
+  unitListHover();
+}
+
+function unitListHover() {
+  if (hasTouch()) return;
+
+  let focused_marker ;
+
+  $('div.left-side-30-units').hover(function (e) {
+    let unit_num;
+    if (e.target.classList.contains("left-side-30-units")) {
+      unit_num = e.target.id;
+    } else if (e.target.classList.contains("image-styles")) {
+      unit_num = e.target.parentElement.id;
+    } else if (e.target.classList.contains("image-image-styles")) {
+      unit_num = e.target.parentElement.parentElement.parentElement.id;
+    }
+
+    const all_markers = document.getElementsByClassName('marker');
+    Array.from(all_markers).forEach((marker) => {
+      if (unit_num === `unit_${marker.dataset.unitId}`) {
+        let selectedMarker = marker;
+        if (selectedMarker.classList.contains('overlapping-unit')) {
+          Array.from(all_markers).forEach((findOverlappedMarker) => {
+            if (
+              selectedMarker.dataset.unitXPlot === findOverlappedMarker.dataset.unitXPlot &&
+              selectedMarker.dataset.unitYPlot === findOverlappedMarker.dataset.unitYPlot &&
+              !findOverlappedMarker.classList.contains("hidden")
+            ) {
+              selectedMarker = findOverlappedMarker;
+            }
+          });
+        }
+
+        focused_marker = document.getElementById(selectedMarker.id);
+        focused_marker.childNodes[0].style.fontSize = "25px";
+        $('#popover-marketing-unit').html(marker.dataset.unitMarketingName);
+
+        const position = selectedMarker.getBoundingClientRect();
+        const markerPopover = $('#marker-popover-unit');
+        markerPopover.css({
+          left: `${position.left - 92}px`,
+          top: `${position.top - 53}px`,
+          height: "100px",
+          background: "transparent",
+          margin: "0px",
+          padding: "0px"
+        });
+        markerPopover.removeClass('hidden');
+      }
+    });
+  },
+  function () {
+    if (focused_marker) {
+      focused_marker.childNodes[0].style.fontSize = "20px";
+      $('#marker-popover-unit').addClass('hidden');
+    }
+  });
+}
+
+function unitMarkerHover() {
+  if (hasTouch()) return;
+
+  $(".marker").hover(function (event) {
+    if ($(this).data('is-fav') || favoritesArr.includes($(this).data('unit-id'))) {
+      $('.fav-heart').removeClass('hidden')
+    } else {
+      $('.fav-heart').addClass('hidden')
+    }
+    $('#popover-marketing-name').html($(this).data('unit-marketing-name') + "</b>");            
+      $('#popover-floorplan').html($(this).data('unit-description'))
+      $('#popover-floorplan').html($(this).data('unit-lease-pricing'))
+      $('#popover-floorplan').html($(this).data('floorplan-name'))
+    if ($(this).data('floorplan-image') != '') {
+      $('#media-object').attr('src', $(this).data('floorplan-image'));
+    } else {
+      $('#media-object').attr('src', '/assets/default.jpeg');
+    }
+    $('#popover-square-feet').html($(this).data('square-feet'));
+    $('#popover-bathrooms').html($(this).data('bathrooms'));
+    if ($('#popover-bathrooms').html() == '1') {
+      $('#popover-bathrooms').siblings("small").html("Bathroom")
+    } else {
+      $('#popover-bathrooms').siblings("small").html("Bathrooms")
+    }
+    $('#popover-bedrooms').html($(this).data('bedrooms'));
+    if ($('#popover-bedrooms').html() == '1') {
+      $('#popover-bedrooms').siblings("small").html("Bedroom")
+    } else {
+      $('#popover-bedrooms').siblings("small").html("Bedrooms")
+    }
+
+    if ($(this).data('sold')) {
+      $('#popover-available-date').html('');
+      $('#hover-available-text').html('Sold')
+    } else {
+      $('#hover-available-text').html('Available');
+      $('#popover-available-date').html($(this).data('available-date'));
+    }
+  
+    $('#popover-price').html((currency + $(this).data('market-rent')))
+    var marker_color_map = $(".fa-map-marker-alt")[0].style.color
+    $($('#unit_'+ $(this).data('unitId')))[0].scrollIntoView({behavior: 'smooth', block: 'center', inline: 'center' });
+    
+    var new_dx = parseInt(event.pageX) - parseInt($('#panzomm-container').offset().left) + parseInt($('#panzomm-container').scrollLeft());
+    var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
+    const diffLeft = webCommunity['is_sitemap'] ? 25 : 115
+    $('#marker-popover').css({left: (new_dx + diffLeft) + "px", top: (new_dy - 100) + "px"});
+    $('#marker-popover').removeClass('hidden');
+    $($('#unit_'+ $(this).data('unitId'))).css("border", `5px solid ${marker_color_map}`)
+  },
+  function() {
+    $('#marker-popover').addClass('hidden');
+    $($('#unit_'+ $(this).data('unitId'))).css("border", "none")        
+  });   
+}
+
+function hasTouch() {
+  return 'ontouchstart' in document.documentElement || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 }
 
 function disabled_enabled_anchors() {
@@ -1804,10 +1826,6 @@ function set_realpagesvc_url(element) {
   }
 
   window.open(url, '_blank');
-}
-
-function hasTouch() {
-  return 'ontouchstart' in document.documentElement || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 }
 
 function disable_rent_filter_options(min_rent) {
