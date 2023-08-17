@@ -1055,8 +1055,6 @@ function renderChangedUnits(){
 }
 
 function unitListHover() {
-  // if (hasTouch()) return;
-
   let focused_marker ;
 
   $('div.left-side-30-units').hover(function (e) {
@@ -1106,8 +1104,6 @@ function unitListHover() {
     });
   },
   function () {
-    console.log("Box hover left");
-
     if (focused_marker) {
       focused_marker.childNodes[0].style.fontSize = "20px";
       $('#marker-popover-unit').addClass('hidden');
@@ -1119,7 +1115,6 @@ function unitMarkerHover() {
   // if (hasTouch()) return;
 
   $(".marker").hover(function (event) {
-    console.log("marker hover entered");
     if ($(this).data('is-fav') || favoritesArr.includes($(this).data('unit-id'))) {
       $('.fav-heart').removeClass('hidden')
     } else {
@@ -1168,7 +1163,6 @@ function unitMarkerHover() {
     $($('#unit_'+ $(this).data('unitId'))).css("border", `5px solid ${marker_color_map}`)
   },
   function() {
-    console.log("marker hover left");
     $('#marker-popover').addClass('hidden');
     $($('#unit_'+ $(this).data('unitId'))).css("border", "none")        
   });   
