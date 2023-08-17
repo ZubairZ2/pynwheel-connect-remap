@@ -57,9 +57,9 @@ class FloorplanAmenitiesController < ApplicationController
   end
 
   def destroy
-    @amenity = @floorplan.amenities.find (params[:id])
+    @amenity = @floorplan.amenities.find(params[:id])
     if @amenity.destroy
-      DeleteFloorplanAmenityImagesJob.perform_async @floorplan, params[:id], params[:community_id] if floorplan_units.present?
+      DeleteFloorplanAmenityImagesJob.perform_async @floorplan, params[:id], params[:community_id]
       redirect_to community_floorplan_amenities_path(@community, @floorplan), notice: "Amenity deleted successfully"
     else
       redirect_to community_floorplan_amenities_path(@community, @floorplan), error: @amenity.errors.full_messages.join(',')
