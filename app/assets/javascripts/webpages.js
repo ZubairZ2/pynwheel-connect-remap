@@ -397,11 +397,11 @@ $(window).bind('load', function () {
           const diffLeft = webCommunity['is_sitemap'] ? 25 : 115
           $('#marker-popover').css({left: (new_dx + diffLeft) + "px", top: (new_dy - 100) + "px"});
           $('#marker-popover').removeClass('hidden');
-          $($('#unit_'+ $(this).data('unit-marketing-name'))).css("border", `5px solid ${marker_color_map}`)
+          $($('#unit_'+ $(this).data('unitId'))).css("border", `5px solid ${marker_color_map}`)
         })
         .mouseleave(function () {
           $('#marker-popover').addClass('hidden');
-          $($('#unit_'+ $(this).data('unit-marketing-name'))).css("border", "none")
+          $($('#unit_'+ $(this).data('unitId'))).css("border", "none")
         });
 
       let focused_marker ;
@@ -417,7 +417,7 @@ $(window).bind('load', function () {
         }
         let all_markers =  document.getElementsByClassName('marker');
           Array.from(all_markers).forEach((marker) => {
-            if (unit_num === `unit_${marker.dataset.unitMarketingName}`){
+            if (unit_num === `unit_${marker.dataset.unitId}`){
               let selectedMarker = marker;
               if(selectedMarker.classList.contains('overlapping-unit')){
                 Array.from(all_markers).forEach((findOverlappedMarker) => {
@@ -427,7 +427,7 @@ $(window).bind('load', function () {
                 })
               }
               focused_marker = document.getElementById(selectedMarker.id);
-              focused_marker.childNodes[0].style.fontSize="25px";
+              focused_marker.childNodes[0].style.fontSize = "25px";
               $('#popover-marketing-unit').html(marker.dataset.unitMarketingName)
               var position = selectedMarker.getBoundingClientRect();
               $('#marker-popover-unit').css({left: (position.left -92) + "px", top: (position.top - 53) + "px",height: "100px", background: "transparent", margin: "0px", padding: "0px"});
