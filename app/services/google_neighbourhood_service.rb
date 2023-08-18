@@ -20,12 +20,12 @@ class GoogleNeighbourhoodService
   private
 
   def get_formatted_response
-    !@results.empty? ? {
+    !@results.empty? ? [{
       html_attributions: [],
       next_page_token: @next_page_token,
       results: @results.flatten!, 
       status: "OK"
-    } : 'No results found'
+    }] : 'No results found'
   end
 
   def valid_token?
