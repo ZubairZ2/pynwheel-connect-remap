@@ -4,8 +4,11 @@ module LatchOpenkit
     def generate_latch_doors_accesses(start_time, end_time, key_ids)
       set_parameter_for_latch(start_time, end_time, key_ids)
       partner_scopped_token = parner_scopped_access_token()
-      response = invite_user(partner_scopped_token)
-      update_latch_lock_access(response)
+
+      if partner_scopped_token.present?
+        response = invite_user(partner_scopped_token)
+        update_latch_lock_access(response)        
+      end
     end
 
     def generate_latch_verification_code
@@ -16,7 +19,50 @@ module LatchOpenkit
       user_scopped_passwordless_token(verfication_code)
     end
 
+    def get_latch_buildings_list
+      partner_scopped_token = parner_scopped_access_token()
+      
+      if partner_scopped_token.present?
+        buildings_list = get_buildings(partner_scopped_token)
+        building = filter_property_uuid(buildings_list)
+
+        doors = get_doors(partner_scopped_token) 
+        doors = filter_property_doors(doors, building["uuid"]) if building.present?
+
+        {building: building, doors: doors}
+      else
+        {credentials: "Invalid credentials"}
+      end
+    end
+
     private
+      def get_doors partner_scopped_token
+        HTTParty.get("#{ENV["Latch_OPENKIT_URL"]}/v1/doors",
+          headers: { 
+            'Content-Type' => 'application/json',
+            'Authorization' => "Bearer #{partner_scopped_token}"
+          }                                  
+        )
+      end
+
+      def get_buildings partner_scopped_token
+        HTTParty.get("#{ENV["Latch_OPENKIT_URL"]}/v1/buildings",
+          headers: { 
+            'Content-Type' => 'application/json',
+            'Authorization' => "Bearer #{partner_scopped_token}"
+          }                                  
+        )
+      end
+
+      def filter_property_doors doors_list, building_uuid
+        return if doors_list.empty?
+        doors_list&.dig("doors").filter{|door| door.dig("buildingUuid") == building_uuid}.compact
+      end
+
+      def filter_property_uuid buildings_list
+        return if buildings_list.empty?
+        buildings_list&.dig("buildings")&.filter{@community.name}&.compact&.uniq[0]
+      end
     
       def parner_scopped_access_token
         response = HTTParty.post("#{ENV["Latch_OPENKIT_AUTH_URL"]}/v1/oauth/token",
@@ -99,7 +145,7 @@ module LatchOpenkit
         granted_accesses = response&.dig("doors")&.compact&.uniq
 
         granted_accesses&.each do |lock|
-          LatchLock.where(lock_id: lock["uuid"]).map{|stop_data| @tour_user.latch_guests.create(community_id: @community_id, latch_link: "#{lock["uuid"]} | #{lock["name"]}", guest_of_stop_type: stop_data.stop_type.classify , guest_of_stop_id: stop_data.stop_id, start_time: @start_time.to_i, end_time: @end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
+          LatchLock.where(lock_id: lock["uuid"]).map{|stop_data| @tour_user.latch_guests.create(community_id: @community.id, latch_link: "#{lock["uuid"]} | #{lock["name"]}", guest_of_stop_type: stop_data.stop_type.classify , guest_of_stop_id: stop_data.stop_id, start_time: @start_time.to_i, end_time: @end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
         end
       end
   end

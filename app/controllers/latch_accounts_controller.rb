@@ -31,6 +31,16 @@ class LatchAccountsController < ApplicationController
     redirect_to new_community_dwelo_path(current_community)
   end
 
+  def test_latch_connection
+    if current_community.enable_locks and current_community.multiple_locks_provider.include?("Latch") and current_community.latch.present?
+      response = LatchOpenkit::LatchLocksService.new(nil, current_community.id).get_latch_buildings_list()
+      render :xml => response
+    else
+      flash[:error] = "Please enter the Latch credentials before testing data."
+      redirect_to new_community_dwelo_path(current_community)
+    end
+  end
+
   def destroy
     @latch = Latch.find(params[:id])
     @latch.destroy

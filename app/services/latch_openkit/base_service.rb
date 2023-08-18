@@ -6,13 +6,13 @@ module LatchOpenkit
       return unless @latch.present?
 
       @tour_user = tour_user
-      @community_id = community_id
+      @community = Community.find community_id
     end
 
     private
 
       def set_parameter_for_latch(start_time, end_time, key_ids)
-        LatchGuest.where(tour_user_id: @tour_user.id, community_id: @community_id).update_all(status: "deleted")
+        LatchGuest.where(tour_user_id: @tour_user.id, community_id: @community.id).update_all(status: "deleted")
         
         @start_time = start_time
         @end_time = end_time
