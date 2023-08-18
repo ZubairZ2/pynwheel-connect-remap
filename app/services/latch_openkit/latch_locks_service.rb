@@ -19,9 +19,8 @@ module LatchOpenkit
       user_scopped_passwordless_token(verfication_code)
     end
 
-    def get_latch_buildings_list
+    def property_latch_locks_data
       partner_scopped_token = parner_scopped_access_token()
-      
       if partner_scopped_token.present?
         buildings_list = get_buildings(partner_scopped_token)
         building = filter_property_uuid(buildings_list)
@@ -29,9 +28,9 @@ module LatchOpenkit
         doors = get_doors(partner_scopped_token) 
         doors = filter_property_doors(doors, building["uuid"]) if building.present?
 
-        {building: building, doors: doors}
+        {building: building, doors: doors, status: :OK, code: 200}
       else
-        {credentials: "Invalid credentials"}
+        {message: "Invalid latch credentials", status: :unprocessable_entity, code: 400}
       end
     end
 

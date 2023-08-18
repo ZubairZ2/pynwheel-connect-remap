@@ -30,13 +30,6 @@
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
               = f.text_field :passwordless_client_secret, :class=>"form-control validate[required]", :placeholder=>"User Scoped Client Secret", :value=> @community.latch.present? ? @community.latch.passwordless_client_secret : ""
 
-          -# .form-group
-          -#   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-          -#     Upload CSV File
-          -#   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-          -#     = file_field_tag 'file'
-          -#   = f.hidden_field :community_id, :value=> current_community.id
-
           .form-group{:style => "margin-bottom: 0px;"}
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               Lock Instructions
@@ -70,8 +63,6 @@
         = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
       - else
         = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
-      -# - if @community.latch.present?
-      -#   = link_to "Delete all Existing Locks" , remove_latch_locks_community_latch_accounts_path(current_community) , :class=>"btn btn-danger", :method => :delete, :style=> "background-color: #dd4b39d4;"
 
 .row#data-connection-buttons
   .col-lg-12.col-md-12
@@ -98,8 +89,8 @@
             %i.fa.fa-warning
             This action will either import new, or update existing, Latch lock records, based on community.
 
-        -# .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-        -#   %button.btn.btn-primary.impo#import_locks{:onclick => "import_dwelo_locks(#{@community.dwelo.id rescue 0})", :type => "button"} Import Locks Data
-        -#   - if @community.latch.present? and @community.latch.latch_locks.present?
-        -#     = link_to "Map Units" , map_dwelo_locks_path(community_id: current_community) , :method => :post, :class=>"btn btn-success"
-        -#     = link_to "Delete all Existing Locks" , remove_latch_locks_community_latch_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
+        .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+          = link_to "Import Locks Data" , import_latch_locks_community_latch_accounts_path(community_id: current_community) , :method => :post, :class=>"btn btn-primary"
+
+          - if @community.latch.present? and @community.latch.latch_locks.present?
+            = link_to "Delete all Existing Locks" , remove_latch_locks_community_latch_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"

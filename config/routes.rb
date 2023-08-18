@@ -167,6 +167,7 @@ Rails.application.routes.draw do
         put :upload_lock_image
         delete :remove_latch_locks
         get :test_latch_connection
+        post :import_latch_locks
       end
     end
 
