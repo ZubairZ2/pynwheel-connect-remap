@@ -38,7 +38,7 @@ module Api
 
           def update_amenity_video_link(video_obj_param, communities)
             amenities = Amenity.joins(community: :credential).where(name: video_obj_param["videoName"], communities: { id: communities })
-            amenities.update_all(video_link_button_label: video_obj_param["videoName"], video_link["shareLink"])
+            amenities.update_all(video_link_button_label: video_obj_param["videoName"], video_link: video_link["shareLink"])
           end
 
           def realync_unit_id(video_obj_param)
