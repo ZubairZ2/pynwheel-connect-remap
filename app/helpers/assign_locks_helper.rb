@@ -130,7 +130,7 @@ module AssignLocksHelper
 
   def assign_latch_lock community, stop, lock_id
     if lock_id.present?
-      latch_lock = LatchLock.find_by(lock_uuid: lock_id, latch_id: community.latch.id) rescue nil
+      latch_lock = LatchLock.find_by(lock_id: lock_id, latch_id: community.latch.id) rescue nil
       if latch_lock.present? and stop.latch_locks.present? and stop.latch_locks.last.lock_id != latch_lock.lock_id
         latch_lock.stop.update_column(:lock_provider, "") rescue nil
         stop.latch_locks.update_all(stop_id: nil, stop_type: nil)
