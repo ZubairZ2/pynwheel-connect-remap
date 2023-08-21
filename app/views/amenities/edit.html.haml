@@ -269,7 +269,7 @@
         else if(res.lock_provider == "Dwelo")
           $('#lock_id').val(res.digital_lock.dwelo_lock === null ? '' : res.digital_lock.dwelo_lock.device_id)
         else if(res.lock_provider == "Latch")
-          $('#lock_id').val(res.digital_lock.latch_lock === null ? '' : res.digital_lock.latch_lock.door_uuid)
+          $('#lock_id').val(res.digital_lock.latch_lock === null ? '' : res.digital_lock.latch_lock.lock_id)
         else if(res.lock_provider == "Zerv")
           $('#lock_id').val(res.digital_lock.zerv_lock === null ? '' : res.digital_lock.zerv_lock.mac_id)
         else if(res.lock_provider == "Igloohome")
