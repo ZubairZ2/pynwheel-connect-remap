@@ -168,6 +168,7 @@ Rails.application.routes.draw do
         delete :remove_latch_locks
         get :test_latch_connection
         post :import_latch_locks
+        post :map_latch_locks
       end
     end
 

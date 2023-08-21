@@ -17,7 +17,6 @@ class LatchAccountsController < ApplicationController
 
   def upload_lock_image
     return unless params[:lock_image].present?
-
     @latch.update(lock_image: params[:lock_image])
   end
 
@@ -45,7 +44,6 @@ class LatchAccountsController < ApplicationController
     if current_community.enable_locks and current_community.multiple_locks_provider.include?("Latch") and current_community.latch.present?
       response = LatchOpenkit::LatchLocksService.new(nil, current_community.id).property_latch_locks_data()
       if response[:status] == :OK
-        clear_latch_provider_status
         import_latch_locks_in_database(response)
         flash[:notice] = "Locks imported successfully."
       else
@@ -57,6 +55,13 @@ class LatchAccountsController < ApplicationController
 
     redirect_to new_community_dwelo_path(current_community)
   end
+
+  def map_latch_locks
+    @latch.map_locks_with_stops
+    flash[:notice] =  "Locks are automapped successfully."
+    redirect_to new_community_dwelo_path(current_community)
+  end
+
 
   def destroy
     @latch = Latch.find(params[:id])
@@ -74,15 +79,6 @@ class LatchAccountsController < ApplicationController
         door_lock = LatchLock.find_or_initialize_by(lock_id: property["uuid"], lock_name: door["name"], door_uuid: door["uuid"], latch_id: current_community&.latch&.id)
         door_lock.save! if door_lock.id.nil?
       end
-    end
-
-    def clear_latch_provider_status
-      current_community.units.where(lock_provider: "Latch").update_all(lock_provider: "")
-      current_community.amenities.where(lock_provider: "Latch").update_all(lock_provider: "")
-      current_community.elevators.where(lock_provider: "Latch").update_all(lock_provider: "")
-      current_community.building_starting_point.where(lock_provider: "Latch").update_all(lock_provider: "")
-      current_community.community_tour.update(lock_provider: "") if current_community.community_tour.lock_provider === "Latch"
-      current_community.doors.where(lock_provider: "Latch").update_all(lock_provider: "")
     end
 
     def add_lock_provider

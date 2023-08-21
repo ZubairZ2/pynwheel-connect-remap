@@ -16,6 +16,10 @@ class Latch < ApplicationRecord
     return LATCH
   end
 
+  def map_locks_with_stops
+    MapLocksJob.perform_async community, "Latch"
+  end
+
 #   def import_data(file)
 #       Thread.new do
 #           execution_context = Rails.application.executor.run!

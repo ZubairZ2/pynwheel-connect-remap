@@ -93,4 +93,5 @@
           = link_to "Import Locks Data" , import_latch_locks_community_latch_accounts_path(community_id: current_community) , :method => :post, :class=>"btn btn-primary"
 
           - if @community.latch.present? and @community.latch.latch_locks.present?
+            = link_to "Map Units" , map_latch_locks_community_latch_accounts_path(current_community) , :method => :post, :class=>"btn btn-success"
             = link_to "Delete all Existing Locks" , remove_latch_locks_community_latch_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
