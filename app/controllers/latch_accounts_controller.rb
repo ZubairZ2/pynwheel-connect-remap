@@ -76,7 +76,7 @@ class LatchAccountsController < ApplicationController
       property_doors = property_data[:doors]
 
       property_doors.each do |door|
-        door_lock = LatchLock.find_or_initialize_by(lock_id: door["uuid"], lock_name: door["name"], door_uuid: door["uuid"], latch_id: current_community&.latch&.id)
+        door_lock = LatchLock.find_or_initialize_by(lock_id: door["uuid"], lock_name: door["name"], latch_id: current_community&.latch&.id)
         door_lock.save! if door_lock.id.nil?
       end
     end
