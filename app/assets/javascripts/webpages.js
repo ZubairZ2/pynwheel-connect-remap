@@ -948,8 +948,8 @@ function performHardRefresh() {
 
 function setImageHeight(){
   if(current_width >= 993){
-    let main_container_height = ($('.c-body').height() - $('.c-footer').height())+54;
-    $('.floorplate-image').attr("height", main_container_height - 100)
+    let main_container_height = ($('.c-body').height() - $('.c-footer').height());
+    $('.floorplate-image').attr("height", main_container_height - large_image_height)
   }
 }
 function populate_current_units() {
