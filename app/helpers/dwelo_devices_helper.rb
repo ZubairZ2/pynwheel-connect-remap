@@ -321,7 +321,7 @@ module DweloDevicesHelper
       building_starting_points = BuildingStartingPoint.where(id: building_starting_point_ids, lock_provider: "Latch").includes(:latch_locks)
 
       locks_data = []
-      locks_data << community.community_tour.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.community_tour.latch_locks.present?
+      locks_data << community.latch.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.latch.latch_locks.present?
 
       units.each do |unit|
         if unit.door.present?
