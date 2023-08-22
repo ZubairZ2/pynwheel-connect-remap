@@ -58,11 +58,12 @@ function addAttributes(){
 
 function setAttributes(){
   var currency = $("#communityWebpagesFavoriteData").data("currency");
+
   for(var x = 0; x < units.length; x++) {
     var unit_id = units[x].id
     var lease_pricing = $('#'+unit_id+'-lease-pricing').text();
     try {
-      if (lease_pricing == "" || lease_pricing == undefined )
+      if (lease_pricing == "" || lease_pricing == undefined ) 
       {
           $('#'+unit_id+'-unit-lease-pricing-text-li').addClass('hidden');
           $('#'+unit_id+'-leas-price-option').addClass('hidden');
@@ -72,7 +73,6 @@ function setAttributes(){
       {
           var lease = [];
           var first_lease_item = unit_id+'-first_lease_item';
-          var smallest_lease_month = "";
           var lease_price_arr = [];
           var lease_months_arr = [];
           ss = lease_pricing.split(';');
@@ -98,21 +98,24 @@ function setAttributes(){
             }
           }
           if(lease_price_arr.every(a => a === lease_price_arr[0])){
-            smallest_lease_month = Math.min(...lease_months_arr)
-            var indexOfMinMonth = lease_months_arr.indexOf(smallest_lease_month.toString())
-            first_lease_item = lease[indexOfMinMonth]
-            if (indexOfMinMonth > -1) {
+            const leaseMonthsArrInt = lease_months_arr.map(value => parseInt(value, 10));
+            const indexOfMinMonth = leaseMonthsArrInt.indexOf(Math.min(...leaseMonthsArrInt));
+
+            if (indexOfMinMonth !== -1) {
+              first_lease_item = lease[indexOfMinMonth];
               lease.splice(indexOfMinMonth, 1);
             }
           }
           else{
-            var smallest_lease_price = Math.min(...lease_price_arr)
-            var indexOfMinLease = lease_price_arr.indexOf(smallest_lease_price.toString())
-            first_lease_item = lease[indexOfMinLease]
-            if (indexOfMinLease > -1) {
+            const smallestLeasePrice = Math.min(...lease_price_arr.map(value => parseFloat(value)));
+            const indexOfMinLease = lease_price_arr.findIndex(value => parseFloat(value) === smallestLeasePrice);
+
+            if (indexOfMinLease !== -1) {
+              first_lease_item = lease[indexOfMinLease];
               lease.splice(indexOfMinLease, 1);
             }
           }
+          
           var leaseTermOptions = ""
           for (let i = 0; i < lease_months_arr.length; ++i) {
             leaseTermOptions += `<option value="${lease_months_arr[i]+" months"}" data-lease-price="${lease_price_arr[i]}" >${lease_months_arr[i]+" months"}</option>`

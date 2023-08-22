@@ -139,6 +139,8 @@
             %a.refresh-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-reset-zoom"}
               %img{:src => "/assets/refresh.png"}/
 
+#communityWebpagesFavoriteData{data: {currency: @community.get_currency_symbol()} }
+
 :javascript
   var data_provider = "#{@community.data_provider}"
   var units = "#{@fav_units_info}";
