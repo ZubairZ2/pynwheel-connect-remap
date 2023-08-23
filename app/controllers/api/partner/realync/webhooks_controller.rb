@@ -86,7 +86,11 @@ module Api
           end
 
           def load_pyn_properties
-            @pyn_properties = Community.includes(:credential, :units, :amenities)
+            if ENV["PROPERTIES"] == "TRUE"
+              @pyn_properties = Community.includes(:credential, :units, :amenities)
+            else
+              @pyn_properties = Community.where(id: [2194]).includes(:credential, :units, :amenities)
+            end
           end
       end
     end
