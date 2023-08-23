@@ -4,6 +4,7 @@ class GoogleNeighbourhoodService
     @community = find_community
     @results = []
     @request_counter = 0
+    @next_page_token = ""
   end
 
   def call
@@ -13,10 +14,19 @@ class GoogleNeighbourhoodService
     process_neighbourhood_request
     @community.save
 
-    render_response(success: true, counter: @community.neighborhood_request_counter, message: @results.empty? ? 'No results found' : @results)
+    render_response(success: true, counter: @community.neighborhood_request_counter, message: get_formatted_response())
   end
 
   private
+
+  def get_formatted_response
+    !@results.empty? ? [{
+      html_attributions: [],
+      next_page_token: @next_page_token,
+      results: @results.flatten!, 
+      status: "OK"
+    }] : 'No results found'
+  end
 
   def valid_token?
     @params[:token] == ENV['NEIGHBOURHOOD_API_TOKEN']
@@ -51,10 +61,10 @@ class GoogleNeighbourhoodService
 
   def fetch_neighbourhood_data
     # Rank By Distance API URL
-    # url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{@params[:cat]}&location=#{@params[:latitude]},#{@params[:longitude]}&rankby=distance&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
+    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{@params[:cat]}&location=#{@params[:latitude]},#{@params[:longitude]}&rankby=distance&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
     
     # Radius based API URL 
-    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{@params[:cat]}&location=#{@params[:latitude]},#{@params[:longitude]}&radius=#{@params[:radius]}&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
+    # url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{@params[:cat]}&location=#{@params[:latitude]},#{@params[:longitude]}&radius=#{@params[:radius]}&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
     
     fetch_recursive(url, 1)
     @results
@@ -67,8 +77,9 @@ class GoogleNeighbourhoodService
     response = HTTParty.get(url)
 
     if response['status'] == 'OK'
-      @results << response
+      @results << response["results"]
       if response['next_page_token'].present? && remaining_iterations > 0
+        @next_page_token = response['next_page_token']
         sleep(2)  # Wait before the next request to avoid rate limiting
         next_url = "#{url}&pagetoken=#{response['next_page_token']}"
         fetch_recursive(next_url, remaining_iterations - 1 )
