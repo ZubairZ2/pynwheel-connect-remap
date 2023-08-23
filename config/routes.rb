@@ -592,6 +592,12 @@ Rails.application.routes.draw do
   end
 
   namespace :api, constraints: { format: 'json' } do
+
+    namespace :partner do
+      namespace :realync do
+        post :update_video_links, to: 'webhooks#update_video_links'
+      end
+    end
   
     namespace :self_tour do
       namespace :v1 do
