@@ -96,8 +96,8 @@ class LatchAccountsController < ApplicationController
 
     def latch_params
       params.require(:latch).permit(
-        :passwordless_client_id, :passwordless_client_secret,
-        :client_id, :client_secret, :community_id, :lock_instruction_text
+        :passwordless_client_id, :passwordless_client_secret, :client_id, 
+        :latch_property_name, :client_secret, :community_id, :lock_instruction_text
       )
     end
 end

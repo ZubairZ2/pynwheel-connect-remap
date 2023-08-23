@@ -27,7 +27,8 @@ module LatchOpenkit
 
         doors = get_doors(partner_scopped_token) 
         doors = filter_property_doors(doors, building["uuid"]) if building.present?
-        if building["name"]&.strip&.casecmp?(@community&.name&.strip)
+        # if building["name"]&.strip&.casecmp?(@community&.name&.strip)
+        if @latch.latch_property_name === building["name"]
           {building: building, doors: doors, status: :OK, code: 200}
         else
           {message: "No exact matches for property name", status: :unprocessable_entity, code: 400}
