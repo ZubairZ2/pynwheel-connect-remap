@@ -26,8 +26,8 @@ module PynwheelCms
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do
-        origins 'https://pynwheelconnect.com', 'https://pynwheelapp.com', 'https://pynwheellaunch.com', "https://pynwheel.com"
-        resource '*', headers: :any, methods: [:get, :post, :options , :patch, :put , :delete], credentials: true
+        origins '*'
+        resource '*', headers: :any, methods: [:get, :post, :options , :patch, :put , :delete]
       end
     end
     # ========TAIM LOGGING WITH LOGRAGGE========
