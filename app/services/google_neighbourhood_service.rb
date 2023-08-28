@@ -59,9 +59,31 @@ class GoogleNeighbourhoodService
     nil
   end
 
+  def categories
+    case @params[:cat]
+    when 'restaurant'
+      'restaurant'
+    when 'shopping'
+      ['shopping_mall', 'shoe_store', 'department_store', 'electronics_store', 'clothing_store', 'home_goods_store', 'furniture_store', 'pet_store', 'book_store', 'jewelry_store'].join('|')
+    when 'entertainment'
+      ['movie_theater', 'bowling_alley', 'amusement_park', 'zoo', 'stadium', 'gym', 'library', 'aquarium', 'art_gallery'].join('|')
+    when 'school'
+      'school'
+    when 'bank'
+      ['bank', 'atm'].join('|')
+    when 'park'
+      'park'
+    when 'errands'
+      ['car_repair', 'car_wash', 'gas_station', 'hair_care', 'hardware_store', 'veterinary_care', 'post_office', 'pharmacy', 'grocery', 'supermarket', 'convenience_store'].join('|')
+    else
+      ''
+    end
+  end
+
   def fetch_neighbourhood_data
+    base_
     # Rank By Distance API URL
-    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{@params[:cat]}&location=#{@params[:latitude]},#{@params[:longitude]}&rankby=distance&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
+    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{categories()}&location=#{@params[:latitude]},#{@params[:longitude]}&rankby=distance&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
     
     # Radius based API URL 
     # url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{@params[:cat]}&location=#{@params[:latitude]},#{@params[:longitude]}&radius=#{@params[:radius]}&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
