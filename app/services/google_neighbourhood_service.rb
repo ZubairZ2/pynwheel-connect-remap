@@ -33,7 +33,7 @@ class GoogleNeighbourhoodService
   end
 
   def find_community
-    community_id = (@params[:id].to_i == 1) ? 748 : @params[:id]
+    community_id = (@params[:id].to_i == 1) ? 748 : @params[:community_id]
     Community.find_by(id: community_id)
   end
 

@@ -749,11 +749,59 @@ module Api
           @community_master = Community.where(community_group_id: @community_group.id).first
         end
       end
-      
+
       def get_neighbourhood_data
-        data_service = GoogleNeighbourhoodService.new(params)
-        response = data_service.call
-        render response
+        if params[:token] == "pynwheeltoken12345"
+          app_version = AppVersion.first
+    
+          @community = (params[:id].to_i == 1 ? (Community.find(748)) : (Community.find params[:id]))
+          @community.neighborhood_request_counter = @community.neighborhood_request_counter + 1
+          result = nil
+          if @community.neighborhood_request_counter < @community.neighborhood_request_counter_limit
+            NeighbourhoodLog.create(from_ip: request.ip,cat: params[:cat])
+            begin
+              if @community.neighborhood_request_counter > 19 && @community.neighborhood_request_counter < 21 && !@community.limit_200_hit
+                com = Community.find params[:id]
+                com.neighbourhood_counter_mail_200
+                @community.limit_200_hit = true
+                NeighbourhoodMailer.email_counter_200("salahudin@pynwheel.com","salahudin@intagleo.com","","Testing api calls 200").deliver
+              end
+              if @community.neighborhood_request_counter > 39 && @community.neighborhood_request_counter < 41 && !@community.limit_400_hit
+                com = Community.find params[:id]
+                com.neighbourhood_counter_mail_400
+                @community.limit_400_hit = true
+                NeighbourhoodMailer.email_counter_400("salahudin@pynwheel.com","salahudin@intagleo.com","","Testing api calls 400").deliver
+              end
+            rescue => ex
+    
+            end
+            @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI"
+            response = HTTParty.get(@url)
+            # @client = GooglePlaces::Client.new()
+            results = []
+            # cata = []
+            # cata << params[:cat]
+            # result = @client.spots(params[:latitude].to_f, params[:longitude].to_f,:radius => params[:radius].to_i, :types => cata)
+    
+            if response['next_page_token'].present? && (params[:cat] == "restaurant" || params[:cat] == "school" || params[:cat] == "park" || params[:cat] == "bank" || params[:cat] == "atm" )
+              results << response
+              begin
+                @url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{params[:cat]}&location=#{params[:latitude]},#{params[:longitude]}&radius=#{params[:radius]}&key=AIzaSyCOUsWrubjWjFSmsTs68dJT7u9ah7hDGMI&pagetoken=#{response['next_page_token']}"
+                sleep 2
+                response = HTTParty.get(@url)
+              rescue  => ex
+              end
+            end
+            results = []
+            results << response
+            render :json=> {:success=>true,:counter => @community.neighborhood_request_counter, :message => results}, :status=>200
+          else
+            render :json=> {:success=>true,:counter => @community.neighborhood_request_counter, :message => "Limit Exceeded"}, :status=>200
+          end
+          @community.save
+        else
+          render :json=> {:success=>false, :message => "You are not allowd to make this call."}, :status=>200
+        end
       end
     
       def reset_counter
