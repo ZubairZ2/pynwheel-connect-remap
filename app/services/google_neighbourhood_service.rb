@@ -59,41 +59,68 @@ class GoogleNeighbourhoodService
     nil
   end
 
+  def fetch_neighbourhood_data
+    categories_list = categories() # Get the list of categories based on input
+    @results = [] # Initialize results array
+  
+    if categories_list.length == 1
+      # If only one category, fetch up to 40 records for that category
+      fetch_single_category_data(categories_list.first)
+    else
+      # If multiple categories, mix records and fetch up to 40 mixed records
+      fetch_mixed_category_data(categories_list)
+    end
+  
+    @results
+  rescue StandardError
+    nil
+  end
+  
+  def fetch_single_category_data(category)
+    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{category}&location=#{@params[:latitude]},#{@params[:longitude]}&rankby=distance&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
+    fetch_recursive(url, 1)
+  end
+  
+  def fetch_mixed_category_data(categories_list)
+    mixed_results = [] # Initialize mixed results array
+  
+    categories_list.each do |category|
+      url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{category}&location=#{@params[:latitude]},#{@params[:longitude]}&rankby=distance&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
+      response = HTTParty.get(url)
+  
+      if response['status'] == 'OK'
+        mixed_results.concat(response['results']) # Mix results from different categories
+      end
+    end
+  
+    mixed_results.shuffle! # Shuffle the mixed results
+    mixed_results = mixed_results.take(60) # Fetch up to 40 mixed records
+  
+    @results << mixed_results
+  end
+  
+
   def categories
     case @params[:cat]
     when 'restaurant', 'restaurants'
-      'restaurant'
+      ['restaurant']
     when 'shopping'
-      ['shopping_mall', 'shoe_store', 'department_store', 'electronics_store', 'clothing_store', 'home_goods_store', 'furniture_store', 'pet_store', 'book_store', 'jewelry_store'].join('|')
+      ['shopping_mall', 'shoe_store', 'department_store', 'electronics_store', 'clothing_store', 'home_goods_store', 'furniture_store', 'pet_store', 'book_store', 'jewelry_store']
     when 'entertainment'
-      ['movie_theater', 'bowling_alley', 'amusement_park', 'zoo', 'stadium', 'gym', 'library', 'aquarium', 'art_gallery'].join('|')
+      ['movie_theater', 'bowling_alley', 'amusement_park', 'zoo', 'stadium', 'gym', 'library', 'aquarium', 'art_gallery']
     when 'school', 'schools'
-      'school'
+      ['school']
     when 'bank', 'banks'
-      ['bank', 'atm'].join('|')
+      ['bank', 'atm']
     when 'park', 'parks'
-      'park'
+      ['park']
     when 'errand', 'errands'
-      ['car_repair', 'car_wash', 'gas_station', 'hair_care', 'hardware_store', 'veterinary_care', 'post_office', 'pharmacy', 'grocery', 'supermarket', 'convenience_store'].join('|')
+      ['car_repair', 'car_wash', 'gas_station', 'hair_care', 'hardware_store', 'veterinary_care', 'post_office', 'pharmacy', 'grocery', 'supermarket', 'convenience_store']
     else
       @params[:cat]
     end
   end
 
-  def fetch_neighbourhood_data
-    # Rank By Distance API URL
-    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{categories()}&location=#{@params[:latitude]},#{@params[:longitude]}&rankby=distance&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
-    
-    # Radius based API URL 
-    # url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=#{@params[:cat]}&location=#{@params[:latitude]},#{@params[:longitude]}&radius=#{@params[:radius]}&key=#{ENV['GOOGLE_MAPS_API_KEY']}"
-    
-    fetch_recursive(url, 1)
-    @results
-
-  rescue StandardError
-    nil
-  end
-  
   def fetch_recursive(url, remaining_iterations)
     response = HTTParty.get(url)
 
