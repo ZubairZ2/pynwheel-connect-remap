@@ -664,19 +664,30 @@ function bedroomFilterChanged() {
 
 function maxPriceFilterFilterChanged() {
   filterUnitsBasedOnSelectedFilters();
+
   showMarkers();
 }
 
 function squareFootageFilterChanged() {
-  filterUnitsBasedOnSelectedFilters();  
+  filterUnitsBasedOnBedroom();
+  filterUnitsBasedOnSqfeet();
+
   updateMaxPriceFilterDropDownList(units);
+  filterUnitsBasedOnMarketRent();
+
   showMarkers();
 }
 
 function availabilityFilterChanged() {
-  filterUnitsBasedOnSelectedFilters();
-  updateMaxPriceFilterDropDownList(units);
+  filterUnitsBasedOnBedroom();
+  filterUnitsBasedOnAvailability();
+  
   updateSquareFootageFilterDropdownList(units);
+  filterUnitsBasedOnSqfeet();
+
+  updateMaxPriceFilterDropDownList(units);
+  filterUnitsBasedOnMarketRent();
+
   showMarkers();
 }
 
@@ -1018,9 +1029,9 @@ function renderChangedUnits(){
   sortType = document.getElementById('filter');
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
   document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
-
+  var unit_details_div = '';
   filtered_units.forEach((unit) => {
-    var unit_details_div = `
+    unit_details_div += `
     <div class='left-side-30-units' id='unit_${unit['id']}'>
       <div class='image-styles'>
         <a class='image_link' href='#' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
@@ -1052,11 +1063,10 @@ function renderChangedUnits(){
         </p>
       </div>
     </div>
-    `;
-    
-    element.innerHTML += unit_details_div  
+    `;    
   });
 
+  element.innerHTML += unit_details_div 
   unitListHover();
 }
 
