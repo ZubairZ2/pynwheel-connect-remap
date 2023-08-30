@@ -93,8 +93,8 @@ class GoogleNeighbourhoodService
       end
     end
   
-    mixed_results.shuffle! # Shuffle the mixed results
-    mixed_results = mixed_results.take(40) # Fetch up to 40 mixed records
+    # mixed_results.shuffle! # Shuffle the mixed results
+    # mixed_results = mixed_results.take(40) # Fetch up to 40 mixed records
   
     @results << mixed_results
   end
