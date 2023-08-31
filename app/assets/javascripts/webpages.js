@@ -1193,6 +1193,7 @@ function hasTouch() {
 function disabled_enabled_anchors() {
   var min_market_rent = 100000
   var max_area = 0
+  $(".floorplate-anchor").removeClass("selected");
   for (var i = 0; i < floors.length; i++) {
     var floorplate_units = [];
     for (let j = 0; j < units.length; j++) {
