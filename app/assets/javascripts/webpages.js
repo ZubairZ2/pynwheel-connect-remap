@@ -217,9 +217,9 @@ $(window).bind('load', function () {
     ///////////////////////////////////////////
     $('.floorplate-anchor').click(function (e) {
       e.stopPropagation();
-      $(".alert").hide();
       var floor_for_showing_image = $(this).attr('id');
-      if (floor_for_showing_image != current_floor) { 
+      if (floor_for_showing_image != current_floor) {
+        $(".alert").hide();
         $('.floorplate-image').addClass('hidden');
         $('#f_' + floor_for_showing_image).removeClass('hidden');
         $('#' + floor_for_showing_image).addClass('selected');
