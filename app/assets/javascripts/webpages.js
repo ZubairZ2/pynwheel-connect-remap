@@ -747,6 +747,7 @@ function filterUnitsBasedOnMarketRent() {
 
 function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
+
   units = total_units;
   unitBedroom = parseInt( ($('#unit_bedroom').val() || $('#responsive_unit_bedroom').val()).split("_")[0] )
 
@@ -1193,20 +1194,28 @@ function hasTouch() {
 function disabled_enabled_anchors() {
   var min_market_rent = 100000
   var max_area = 0
-  $(".floorplate-anchor").removeClass("selected");
   for (var i = 0; i < floors.length; i++) {
     var floorplate_units = [];
+
+    if(floors[i] == current_floor){
+      $('#' + floors[i]).addClass("selected");
+    } else {
+      $('#' + floors[i]).removeClass("selected");
+    }
+
     for (let j = 0; j < units.length; j++) {
       if (units[j]['floor'] == floors[i]) {
         floorplate_units.push(units[j]);
       }
     }
+
     var floorplate_amenities = [];
     for (let j = 0; j < amenities.length; j++) {
       if (amenities[j]['floor'] == floors[i]) {
         floorplate_amenities.push(amenities[j]);
       }
     }
+
     var units_to_display = filterUnitsBasedOnCommunityType(units);
     if (units_to_display.length == 0 && floorplate_amenities.length!=0) {
       $('#' + floors[i]).addClass('only-amenity');
