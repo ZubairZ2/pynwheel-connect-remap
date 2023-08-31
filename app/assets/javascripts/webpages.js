@@ -746,6 +746,7 @@ function filterUnitsBasedOnMarketRent() {
 }
 
 function filterUnitsBasedOnBedroom() {
+  $(".alert").hide();
   units = total_units;
   unitBedroom = parseInt( ($('#unit_bedroom').val() || $('#responsive_unit_bedroom').val()).split("_")[0] )
 
