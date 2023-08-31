@@ -624,6 +624,14 @@ Rails.application.routes.draw do
       end
     end
 
+    namespace :touch do
+      namespace :v1 do
+        resources :communities do
+          get :get_neighbourhood_data
+        end
+      end
+    end
+
     namespace :v2 do
       post '/communities/:community_id/create_new_gallery', to: 'galleries#create_new_gallery'
       get '/communities/:community_id/get_gallery_media', to: 'galleries#get_gallery_media'
