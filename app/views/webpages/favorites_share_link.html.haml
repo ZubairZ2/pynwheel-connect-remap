@@ -33,18 +33,18 @@
         .modal-body
           .container
             .row
-              .col-md-10
+              .col-md-10.custom-left-column
                 .plane-details
                   .plan-modal
                     -# %h1.mb-20.text-primary
                       -# My Selections
-                    %h3= @community.name 
-                    %p= @community.address 
+                    %h3= @community.name
+                    %p= @community.address
                     %p= @community.website if @community.website.present?
                   
-              .col-md-2
+              .col-md-2.custom-right-column
                 .plan-image.plan-image-pop
-                  = image_tag @community.logo.present? ? @community.logo.url : "logo-small.png"
+                  = image_tag @community.logo.present? ? @community.logo.url : "logo-small.png" ,class: "img-responsive"
               .clear-fix
       .container{style: "width: 100%; display: inline-block; padding: inherit;"}
         = render partial: "favorites_modal"                                                       
