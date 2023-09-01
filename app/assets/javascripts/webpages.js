@@ -1024,9 +1024,6 @@ function click_marker_tag(id){
 }
 
 function renderChangedUnits(){
-  var element = document.getElementById("units-body");
-  if(element == null) return;
-  element.innerHTML = ""
   filtered_units = filterUnitsBasedOnCommunityType(units);
 
   sortType = document.getElementById('filter');
