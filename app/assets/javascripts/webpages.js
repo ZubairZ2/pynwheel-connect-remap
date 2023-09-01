@@ -1024,14 +1024,18 @@ function click_marker_tag(id){
 }
 
 function renderChangedUnits(){
+  var element = document.getElementById("units-body");
+  
+  if(element == null) return;
+  element.innerHTML = ""
+  
   filtered_units = filterUnitsBasedOnCommunityType(units);
 
   sortType = document.getElementById('filter');
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
   document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
-  var unit_details_div = '';
   filtered_units.forEach((unit) => {
-    unit_details_div += `
+    var unit_details_div = `
     <div class='left-side-30-units' id='unit_${unit['id']}'>
       <div class='image-styles'>
         <a class='image_link' href='#' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
@@ -1063,10 +1067,11 @@ function renderChangedUnits(){
         </p>
       </div>
     </div>
-    `;    
+    `;
+    
+    element.innerHTML += unit_details_div
   });
 
-  element.innerHTML += unit_details_div 
   unitListHover();
 }
 
