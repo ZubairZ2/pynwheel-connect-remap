@@ -10,7 +10,10 @@
     - if @metro_records.present? && @metro_records.any? 
       .row
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Sessions
+          .chart-title
+            %p.chart_heading Sessions
+            = render 'title_info', {info_text: TOUCH_SESSIONS_INFO }
+
           .col-lg-4.numbers_div
             .center_it
               .count_int= @track_session_count_metro
@@ -30,7 +33,9 @@
        
       .row.mt-80
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Sessions by Time of Day
+          .chart-title
+            %p.chart_heading Sessions by Time of Day
+            = render 'title_info', {info_text: TOUCH_SESSIONS_BY_TIME_OF_DAY_INFO }
           .col-lg-4.numbers_div
             .center_it
               .count_int= @session_in_highest_hour_metro
@@ -39,7 +44,9 @@
             = bar_chart @session_each_day_hour_data_metro, @session_each_day_hour_options_metro
 
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Single vs Multiple Page Visits
+          .chart-title
+            %p.chart_heading Single vs Multiple Page Visits
+            = render 'title_info', {info_text: TOUCH_SINGLE_VS_MULTIPLE_PAGE_VISITS_INFO }
           .col-lg-4.numbers_div
             .center_it
               .pie_description
@@ -55,7 +62,9 @@
       
       .row.mt-80
         .col-lg-12.h-500
-          %p.chart_heading Events
+          .chart-title
+            %p.chart_heading Events
+            = render 'title_info', {info_text: TOUCH_EVENTS_INFO }
           .col-lg-2.numbers_div
             .center_it
               .count_int= @total_number_of_events_metro
@@ -96,7 +105,9 @@
 
       .row.mt-80
         .col-lg-12.h-500
-          %p.chart_heading Favorite Saved
+          .chart-title
+            %p.chart_heading Favorite Saved
+            = render 'title_info', {info_text: TOUCH_FAVORITE_SAVED_INFO }
           .col-lg-2.numbers_div
             .center_it
               .count_int= @total_number_of_favourite_saved_metro
@@ -116,7 +127,9 @@
 
       .row.mt-80
         .col-lg-12.h-500
-          %p.chart_heading Favorite Mailed
+          .chart-title
+            %p.chart_heading Favorite Mailed
+            = render 'title_info', {info_text: TOUCH_FAVORITE_MAILED_INFO }
           .col-lg-2.numbers_div
             .center_it
               .count_int= @total_number_of_favourite_sent_metro
@@ -135,25 +148,11 @@
             = bar_chart @bar_favourite_sent_data_labels_metro, @bar_favourite_sent_data_options_metro
 
 
-      .row.mt-80
+      .row.mt-80      
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Price Opened
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @total_number_of_price_opened_metro
-              .count_text= 'Total number of times price was opened'
-              .pie_description
-                %span.dot.price_opened_with
-                %span Sessions with price opened
-                %span= @percentage_session_with_price_opened_metro
-              .pie_description
-                %span.dot.price_opened_without
-                %span Sessions without price opened
-                %span= @percentage_session_without_price_opened_metro
-          .col-lg-8.pie_width
-            = pie_chart @pie_price_opened_data_labels_metro, @pie_price_opened_data_options_metro
-        .col-lg-6.col-md-12.h-500
-          %p.chart_heading Pages per session
+          .chart-title
+            %p.chart_heading Pages per session
+            = render 'title_info', {info_text: TOUCH_PAGES_PER_SESSION_INFO }
           .col-lg-4.numbers_div
             .center_it
               .count_int= @average_number_of_pages_per_session_metro
@@ -164,9 +163,32 @@
       
       .row.mt-80
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Top Pages
+          .chart-title
+            %p.chart_heading Top Pages
+            = render 'title_info', {info_text: TOUCH_TOP_PAGES_INFO }
+
           .col-lg-8
             = horizontal_bar_chart @visited_pages_data_labels, @visited_pages_data_options
 
     - else
-      %h3 There is no record found on selected date range  
+      %h3 There is no record found on selected date range
+
+
+-# Commented temporarry
+
+-# .col-lg-6.col-md-12.h-500
+-#   %p.chart_heading Price Opened
+-#   .col-lg-4.numbers_div
+-#     .center_it
+-#       .count_int= @total_number_of_price_opened_metro
+-#       .count_text= 'Total number of times price was opened'
+-#       .pie_description
+-#         %span.dot.price_opened_with
+-#         %span Sessions with price opened
+-#         %span= @percentage_session_with_price_opened_metro
+-#       .pie_description
+-#         %span.dot.price_opened_without
+-#         %span Sessions without price opened
+-#         %span= @percentage_session_without_price_opened_metro
+-#   .col-lg-8.pie_width
+-#     = pie_chart @pie_price_opened_data_labels_metro, @pie_price_opened_data_options_metro

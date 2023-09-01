@@ -4308,14 +4308,17 @@ a#favoriteclickme {
 }
 
 .propertyDetailName,
-.pyn-toolTip, .mapConfigurationToolTip {
+.pyn-toolTip,
+.mapConfigurationToolTip, 
+.analyticsToolTip {
     position: relative;
     display: inline-block;
     white-space: initial;
     z-index: 1000;
 }
 
-.propertyDetailName #propertyDetailNameText {
+.propertyDetailName #propertyDetailNameText,
+.analyticsToolTip #analyticsToolTipText {
     visibility: hidden;
     width: 350px;
     background-color: #000000;
@@ -4372,7 +4375,8 @@ a#favoriteclickme {
     left: -5% !important;
 }
 
-.propertyDetailName #propertyDetailNameText::after {
+.propertyDetailName #propertyDetailNameText::after,
+.analyticsToolTip #analyticsToolTipText::after {
     content: "";
     position: absolute;
     top: 100%;
@@ -4383,7 +4387,8 @@ a#favoriteclickme {
     border-color: black transparent transparent transparent;
 }
 
-.propertyDetailName:hover #propertyDetailNameText {
+.propertyDetailName:hover #propertyDetailNameText,
+.analyticsToolTip:hover #analyticsToolTipText {
     visibility: visible;
 }
 
@@ -7120,4 +7125,13 @@ span.to-input {
 .centered-image{
     min-height: 535px;
     display: flex;
+}
+
+.chart-title {
+    display: flex;
+}
+.chart-title i{
+    font-size: 20px;
+    margin-top: 32px;
+    margin-left: 9px;
 }
