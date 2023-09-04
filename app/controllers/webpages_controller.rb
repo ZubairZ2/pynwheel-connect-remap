@@ -3,7 +3,7 @@ class WebpagesController < ActionController::Base
   #after_action :maintain_session, except: [:update_session]
   before_action :set_timezone, except: [:update_session]
   protect_from_forgery :except => [:update_session]
-  before_action :set_webpages_session_id
+  before_action :set_webpages_session_id, only: [:index, :save_favorite, :delete_favorite, :favorites, :clear_favorites, :favorites_share_link]
   def index
     @floorplans = []
     units_ids_not_present = (cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]")
