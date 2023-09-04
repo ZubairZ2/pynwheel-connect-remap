@@ -3,13 +3,22 @@ class WebpagesController < ActionController::Base
   #after_action :maintain_session, except: [:update_session]
   before_action :set_timezone, except: [:update_session]
   protect_from_forgery :except => [:update_session]
+  before_action :set_webpages_session_id, only: [:index, :save_favorite, :delete_favorite, :favorites, :clear_favorites, :favorites_share_link]
   def index
     @floorplans = []
     units_ids_not_present = (cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]")
-    is_cookies_session_nil = cookies[:webpages_session_id].nil?
+    # is_cookies_session_nil = cookies[:webpages_session_id].nil?
+    webpages_session_id = @webpages_session_id
     cookies.permanent[:favorite_unit_ids] = JSON.generate([]) if units_ids_not_present
-    cookies.permanent[:webpages_session_id] = SecureRandom.hex(8) if is_cookies_session_nil
-    Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: []) if is_cookies_session_nil
+    # cookies.permanent[:webpages_session_id] = SecureRandom.hex(8) if is_cookies_session_nil
+    if webpages_session_id.nil?
+      webpages_session_id = SecureRandom.hex(8)
+      Rails.cache.write('webpages_session_id', webpages_session_id)
+    end
+    # Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: []) if is_cookies_session_nil
+    if webpages_session_id.present? && Favorite.where(session_id: webpages_session_id).empty?
+      Favorite.create(session_id: webpages_session_id, unit_ids: [])
+    end
     @scheduler_widget_link = get_scheduler_link
     @units_with_floorplan_info = []
     @community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
@@ -193,11 +202,11 @@ class WebpagesController < ActionController::Base
     cookies[:favorite_unit_ids] = { value: JSON.generate(favorite_unit_ids), expiry: 5.years.from_now, same_site: :none }
 
     # Find or create a Favorite object based on the session ID
-    favorite = Favorite.find_or_create_by(session_id: cookies[:webpages_session_id])
+    # favorite = Favorite.find_or_create_by
+    favorite = Favorite.find_or_create_by(session_id: @webpages_session_id)
 
     # Add the unit_id to the favorite.unit_ids array
     favorite.unit_ids |= [params[:unit_id]]
-
     # Save the Favorite object
     favorite.save!
 
@@ -228,7 +237,7 @@ class WebpagesController < ActionController::Base
     array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
     @unit = Unit.find params[:unit_id]
     cookies[:favorite_unit_ids] = { value: JSON.generate(array), expiry: 5.years.from_now, same_site: :none}
-    favorite = Favorite.find_by_session_id(cookies[:webpages_session_id]) 
+    favorite = Favorite.find_by_session_id(@webpages_session_id)
     fs = @community.favorite_stop if @community.favorite_stop.present?
     if fs.present?
       fs.favorite_unit = fs.favorite_unit - [params[:unit_id]] if fs.favorite_unit.include?(params[:unit_id])
@@ -244,7 +253,8 @@ class WebpagesController < ActionController::Base
   def favorites
     begin
       @scheduler_widget_link = get_scheduler_link
-      @favorite = Favorite.find_by_session_id(cookies[:webpages_session_id])
+      # @favorite = Favorite.find_by_session_id(cookies[:webpages_session_id])
+      @favorite = Favorite.find_by_session_id(@webpages_session_id)
       @units = Unit.where(id: JSON.parse(cookies[:favorite_unit_ids]),community_id: params[:community_id]).where.not(available_date: nil)
       @fav_units_info = @units.to_json
       @floorplans = Floorplan.where(provider_floorplan_id: @units.map(&:floorplan_id),community_id: params[:community_id])
@@ -261,7 +271,7 @@ class WebpagesController < ActionController::Base
 
   def clear_favorites
     cookies[:favorite_unit_ids] = { value: JSON.generate([]), expiry: 5.years.from_now, same_site: :none}
-    favorite = Favorite.find_by_session_id(cookies[:webpages_session_id]) 
+    favorite = Favorite.find_by_session_id(@webpages_session_id)
     if favorite.present?
       favorite.unit_ids = []
       favorite.save
@@ -364,7 +374,9 @@ class WebpagesController < ActionController::Base
   def fetch_datetime
     Time.zone.now.utc.in_time_zone(@timezone)
   end
-
+  def set_webpages_session_id
+    @webpages_session_id = Rails.cache.read('webpages_session_id') || cookies[:webpages_session_id]
+  end
   def return_community_datetime(datetime)
     Time.zone.parse(datetime).in_time_zone(@timezone).to_datetime if datetime.present? && @timezone.present?
   end
