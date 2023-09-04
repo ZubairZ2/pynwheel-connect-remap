@@ -7,8 +7,10 @@ class WebpagesController < ActionController::Base
     @floorplans = []
     units_ids_not_present = (cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]")
     is_cookies_session_nil = cookies[:webpages_session_id].nil?
+
     cookies.permanent[:favorite_unit_ids] = JSON.generate([]) if units_ids_not_present
     cookies.permanent[:webpages_session_id] = SecureRandom.hex(8) if is_cookies_session_nil
+
     Favorite.create(session_id: cookies[:webpages_session_id],unit_ids: []) if is_cookies_session_nil
     @scheduler_widget_link = get_scheduler_link
     @units_with_floorplan_info = []
@@ -169,10 +171,16 @@ class WebpagesController < ActionController::Base
 
   def save_favorite
     array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
+    webpages_session_id = cookies[:webpages_session_id].present? ? cookies[:webpages_session_id] : SecureRandom.hex(8)
+
     @unit = Unit.find params[:unit_id]
     array << params[:unit_id] if params[:unit_id].present?
-    cookies[:favorite_unit_ids] = { value: JSON.generate(array), expiry: 5.years.from_now, same_site: :none}
+
+    cookies.permanent[:favorite_unit_ids] = { value: JSON.generate(array), expiry: 5.years.from_now, same_site: :none}
+    cookies.permanent[:webpages_session_id] = { value: webpages_session_id, expiry: 5.years.from_now, same_site: :none}
+
     favorite = Favorite.find_or_create_by(session_id: cookies[:webpages_session_id]) 
+
     favorite.unit_ids.present? ? (favorite.unit_ids << params[:unit_id]) :  (favorite.unit_ids = [params[:unit_id]])
     fs = @community.favorite_stop.present? ? @community.favorite_stop : FavoriteStop.create(community_id: @community.id) 
     fs.favorite_unit << params[:unit_id] unless fs.favorite_unit.include?(params[:unit_id])
