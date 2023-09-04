@@ -207,6 +207,17 @@
                 %span= @percentage_tour_unscheduled_counts
           .col-lg-8.pie_width
             = pie_chart @pie_tour_type_data_labels, @pie_tour_type_data_options
+        
+        .col-lg-6.col-md-12.h-500
+          .chart-title
+            %p.chart_heading No Shows
+            = render 'title_info', {info_text: SELF_TOUR_NO_SHOWS }
+          .col-lg-4.numbers_div
+            .center_it
+              .count_int= @no_show_count
+              .count_text= "Total number of no shows"
+          .col-lg-8
+            = bar_chart @session_each_day_no_show_data, @session_each_day_no_show_options
 
 
       .row.mt-80
@@ -248,18 +259,6 @@
               = render 'title_info', {info_text: SELF_TOUR_TOP_STOPS_INFO }
             .col-lg-8
               = horizontal_bar_chart @visited_per_tour_stop_data_labels, @visited_per_tour_stop_data_options
-
-      .row.mt-80
-        .col-lg-6.col-md-12.h-500
-          .chart-title
-            %p.chart_heading No Shows
-            = render 'title_info', {info_text: SELF_TOUR_NO_SHOWS }
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @no_show_count
-              .count_text= "Total number of no shows"
-          .col-lg-8
-            = bar_chart @session_each_day_no_show_data, @session_each_day_no_show_options
 
     - else
       %h3 There is no record found on selected date range
