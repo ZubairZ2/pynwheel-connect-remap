@@ -176,8 +176,8 @@ class WebpagesController < ActionController::Base
     @unit = Unit.find params[:unit_id]
     array << params[:unit_id] if params[:unit_id].present?
 
-    cookies.permanent[:favorite_unit_ids] = { value: JSON.generate(array), expiry: 5.years.from_now, same_site: :none}
-    cookies.permanent[:webpages_session_id] = { value: webpages_session_id, expiry: 5.years.from_now, same_site: :none}
+    cookies[:favorite_unit_ids] = { value: JSON.generate(array), expiry: 5.years.from_now, same_site: :none}
+    cookies[:webpages_session_id] = { value: webpages_session_id, expiry: 5.years.from_now, same_site: :none}
 
     favorite = Favorite.find_or_create_by(session_id: cookies[:webpages_session_id]) 
 
