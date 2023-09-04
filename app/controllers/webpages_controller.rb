@@ -376,7 +376,8 @@ class WebpagesController < ActionController::Base
     Time.zone.now.utc.in_time_zone(@timezone)
   end
   def set_webpages_session_id
-    @webpages_session_id = cookies[:webpages_session_id].present? ? cookies[:webpages_session_id] : Rails.cache.read('webpages_session_id')
+    # @webpages_session_id = cookies[:webpages_session_id].present? ? cookies[:webpages_session_id] : Rails.cache.read('webpages_session_id')
+    @webpages_session_id = Rails.cache.read('webpages_session_id')
   end
   def return_community_datetime(datetime)
     Time.zone.parse(datetime).in_time_zone(@timezone).to_datetime if datetime.present? && @timezone.present?
