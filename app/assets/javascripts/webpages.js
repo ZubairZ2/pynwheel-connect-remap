@@ -217,9 +217,9 @@ $(window).bind('load', function () {
     ///////////////////////////////////////////
     $('.floorplate-anchor').click(function (e) {
       e.stopPropagation();
-      $(".alert").hide();
       var floor_for_showing_image = $(this).attr('id');
-      if (floor_for_showing_image != current_floor) { 
+      if (floor_for_showing_image != current_floor) {
+        $(".alert").hide();
         $('.floorplate-image').addClass('hidden');
         $('#f_' + floor_for_showing_image).removeClass('hidden');
         $('#' + floor_for_showing_image).addClass('selected');
@@ -747,6 +747,7 @@ function filterUnitsBasedOnMarketRent() {
 
 function filterUnitsBasedOnBedroom() {
   $(".alert").hide();
+
   units = total_units;
   unitBedroom = parseInt( ($('#unit_bedroom').val() || $('#responsive_unit_bedroom').val()).split("_")[0] )
 
@@ -1024,16 +1025,17 @@ function click_marker_tag(id){
 
 function renderChangedUnits(){
   var element = document.getElementById("units-body");
+  
   if(element == null) return;
   element.innerHTML = ""
+  
   filtered_units = filterUnitsBasedOnCommunityType(units);
 
   sortType = document.getElementById('filter');
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
   document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
-  var unit_details_div = '';
   filtered_units.forEach((unit) => {
-    unit_details_div += `
+    var unit_details_div = `
     <div class='left-side-30-units' id='unit_${unit['id']}'>
       <div class='image-styles'>
         <a class='image_link' href='#' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
@@ -1065,10 +1067,11 @@ function renderChangedUnits(){
         </p>
       </div>
     </div>
-    `;    
+    `;
+    
+    element.innerHTML += unit_details_div
   });
 
-  element.innerHTML += unit_details_div 
   unitListHover();
 }
 
@@ -1195,17 +1198,26 @@ function disabled_enabled_anchors() {
   var max_area = 0
   for (var i = 0; i < floors.length; i++) {
     var floorplate_units = [];
+
+    if(floors[i] == current_floor){
+      $('#' + floors[i]).addClass("selected");
+    } else {
+      $('#' + floors[i]).removeClass("selected");
+    }
+
     for (let j = 0; j < units.length; j++) {
       if (units[j]['floor'] == floors[i]) {
         floorplate_units.push(units[j]);
       }
     }
+
     var floorplate_amenities = [];
     for (let j = 0; j < amenities.length; j++) {
       if (amenities[j]['floor'] == floors[i]) {
         floorplate_amenities.push(amenities[j]);
       }
     }
+
     var units_to_display = filterUnitsBasedOnCommunityType(units);
     if (units_to_display.length == 0 && floorplate_amenities.length!=0) {
       $('#' + floors[i]).addClass('only-amenity');
