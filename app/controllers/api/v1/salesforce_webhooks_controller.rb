@@ -1,8 +1,7 @@
 module Api
   module V1
     class SalesforceWebhooksController < BaseController
-      # before_action :set_tour_user, only: :salesforce_tour_webhook
-      before_action :set_tour_user_by_email, only: [:salesforce_tour_webhook, :salesforce_cancel_tour_webhook]
+      before_action :set_tour_user, only: [:salesforce_tour_webhook, :salesforce_cancel_tour_webhook]
       before_action :set_logs, only: :salesforce_tour_webhook
       before_action :set_community_by_id
       before_action :set_community_by_name
@@ -71,12 +70,8 @@ module Api
         @community ||= Community.where(name: params[:neighborhoodName]).last
       end
 
-      def set_tour_user_by_email
-        @tour_user ||= TourUser.where(email: params[:neighborEmail].downcase).last
-      end
-
       def set_tour_user
-        @tour_user ||= TourUser.where("lower(email) = ? OR phone_number = ?", params[:neighborEmail].downcase, make_phone_number)&.last
+        @tour_user ||= TourUserSearcherService.new(make_phone_number, params[:neighborEmail].downcase).find_tour_user()
       end
 
       def webhook_form_validate

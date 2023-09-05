@@ -26,7 +26,7 @@ module Api
                 render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true }
               else
                 send_otp_phone    
-                render json: {message: "OTP is generated successfully and sent to user", success_code: 200, status: true}
+                render json: {message: "OTP is generated successfully and sent at #{params[:phone_number].present? ? params[:phone_number] : @tour_user.phone_number}", success_code: 200, status: true}
               end
             else
               render json: {message: "User not found", success_code: 404, status: false, is_zerv_lock: false, zerv_credentials: {}}
@@ -51,6 +51,18 @@ module Api
         def get_tour_user
           if @tour_user.present?
             render json: {message: "User is verified successfully", success_code: 200, status: true, data: @tour_user, token: fetch_token()}
+          else
+            render json: {message: "User not found", success_code: 404, status: false}
+          end
+        end
+
+        def update
+          if @tour_user.present?
+            if @tour_user.update(tour_user_params(:update))
+              render json: {message: "User info updated successfully", success_code: 200, status: true, data: @tour_user, token: fetch_token()}
+            else
+              render json: {message: "Something went wrong!", success_code: 500, status: false}
+            end
           else
             render json: {message: "User not found", success_code: 404, status: false}
           end
@@ -135,19 +147,19 @@ module Api
         end
 
         def sms_otp_to_mobile
-          to_phone_number = @tour_user.phone_number
+          to_phone_number = params[:phone_number].present? ? params[:phone_number] : @tour_user.phone_number
           message_body = "Verification code #{ @tour_user.pin_code }. Code will expire in 15 minutes."
           TwilioSmsService.new().send_sms(message_body, to_phone_number)
         end
 
         def set_tour_user
-          if params[:tour_user_id].present?
+          tour_user_id =  params[:tour_user_id] || params[:id]
+          if tour_user_id.present?
             # For registration screen
-            @tour_user ||= TourUser.find_by_id(params[:tour_user_id])
+            @tour_user = TourUser.find_by_id(tour_user_id)
           else
             # For login screen
-            tour_users = TourUser.where(phone_number: params[:phone_number])
-            @tour_user ||= (tour_users.count === 1) ? tour_users.last : nil
+            @tour_user = TourUser.where(phone_number: params[:phone_number]).last
           end
         end
 
@@ -167,6 +179,14 @@ module Api
           has_access = (api_access || grant_access(decoded(params[:token]), params[:tour_user_id])) rescue false
           render json: {message: "Invalid Token, Not Authorized!", success_code: 401, status: false} unless has_access
         end
+
+        def tour_user_params(action)
+          case action
+          when :update
+            params.require(:tour_user).permit(:first_name, :last_name, :email, :phone_number)
+          end
+        end
+
       end
     end
   end

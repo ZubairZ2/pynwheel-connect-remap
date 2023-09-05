@@ -3,14 +3,10 @@ module Api
     class PerqWebhooksController < BaseController
       before_action :get_community_by_property_id, only: :perq_tour_webhook
       before_action :get_community_by_name, only: :perq_tour_webhook
-      before_action :get_tour_user_by_email, only: :perq_tour_webhook
-      before_action :set_perq_tour_user, only: :perq_tour_webhook
+      before_action :ser_tour_user, only: :perq_tour_webhook
+      before_action :create_or_update_perq_tour_user, only: :perq_tour_webhook
 
       def perq_tour_webhook
-        puts "-----------"*20
-        puts params.inspect
-        puts "-----------"*20
-
         if is_required_params_present
           tour_in_future = get_tour_in_future
           if tour_in_future.present? && !tour_in_future.is_tour_completed
@@ -104,7 +100,7 @@ module Api
         tour.stops_list rescue []
       end
 
-      def set_perq_tour_user
+      def create_or_update_perq_tour_user
         unless @tour_user.present?
           create_perq_tour_user
         else
@@ -127,12 +123,13 @@ module Api
           first_name: params["FirstName"], 
           last_name: params["LastName"], 
           name: "#{params["FirstName"]} #{params["LastName"]}",
-          phone_number: "+1#{params["Phone"]}"
+          email: params["Email"].downcase,
+          phone_number: params["Phone"].present? ? "+1#{params["Phone"]}" : @tour_user.phone_number
         )
       end
 
-      def get_tour_user_by_email
-        @tour_user ||= TourUser.where(email: params["Email"].downcase).last if params["Email"].present?
+      def ser_tour_user
+        @tour_user ||= TourUserSearcherService.new("+1#{params["Phone"]}", params["Email"].downcase).find_tour_user()
       end
 
       def get_community_by_name

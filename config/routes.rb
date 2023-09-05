@@ -610,7 +610,7 @@ Rails.application.routes.draw do
           delete :start_tour
         end
 
-        resources :tour_users do
+        resources :tour_users, only: :update do
           member do
             delete :delete_account
           end

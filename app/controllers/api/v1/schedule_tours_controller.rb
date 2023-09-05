@@ -91,9 +91,8 @@ module Api
 
       def schedule_tour
         phone_number = make_phone
+        @tu = TourUserSearcherService.new(phone_number, params[:email].downcase).find_tour_user()
 
-        @tu = TourUser.where(email: params[:email].downcase)
-        @tu = @tu.last if @tu.present?
         desired_bedroom = params[:desired_bedroom] if params[:desired_bedroom].present?
 
         f_name = params[:first_name].present? ? params[:first_name] : ""
@@ -102,7 +101,8 @@ module Api
         @tu.name = (f_name + " " + l_name)
         @tu.first_name = f_name
         @tu.last_name = l_name
-        @tu.phone_number = phone_number if phone_number.present?
+        @tu.phone_number =  phone_number.present? ? phone_number : @tu.phone_number
+        @tu.email = params[:email].present? ? params[:email].downcase : @tu.email
         @tu.desired_bedroom = params[:desired_bedroom] if params[:desired_bedroom].present?
         @tu.card_last_digits = params[:credit_card_number].last 4 if params[:credit_card_number].present?
         credit_card_number = params[:credit_card_number] if params[:credit_card_number].present?

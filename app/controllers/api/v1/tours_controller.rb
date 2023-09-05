@@ -438,21 +438,6 @@ module Api
     
       private
     
-      def existing_user_error_message tour_user
-        user_with_email = TourUser.where(email: params[:email]&.downcase).last
-        user_with_phone_number = TourUser.where(phone_number: params[:phone_number]).last
-    
-        if user_with_email.present? && user_with_phone_number.present?
-          "Provided email and phone number already exists!"
-        elsif user_with_phone_number.present?
-          "Provided phone number already exists!"
-        elsif user_with_email.present?
-          "Provided email already exists!"
-        else
-          "Something went wrong!"
-        end
-      end
-    
       def create_new_tour_user
         TourUser.create(
           email: params[:email].downcase, 
@@ -478,19 +463,15 @@ module Api
       end
     
       def set_tour_user
-        @tour_user = TourUser.where(email: params[:email].downcase, phone_number:  params[:phone_number])&.last
-        
-        unless @tour_user.present?
-          @tour_user = TourUser.where(email: params[:email].downcase)&.last
-        end
+        @tour_user = TourUserSearcherService.new(params[:phone_number], params[:email].downcase).find_tour_user()
     
         if @tour_user.present?
           @tour_user.update(
             name: "#{params[:first_name]} #{params[:last_name]}",
-            last_name: params[:last_name], 
-            first_name: params[:first_name], 
-            phone_number: params[:phone_number],
-            email: params[:email].downcase
+            last_name: params[:last_name],
+            first_name: params[:first_name],
+            phone_number: params[:phone_number].present? ? params[:phone_number] : @tour_user.phone_number,
+            email: params[:email].present? ? params[:email].downcase : @tour_user.email
           )
         end
       end

@@ -802,6 +802,9 @@ table#miyazaki tbody td:last-child {
 .mr-40 {
     margin-right: 40px;
 }
+.ml-0 {
+    margin-left: 0px;
+}
 
 .ml-5 {
     margin-left: 5px;

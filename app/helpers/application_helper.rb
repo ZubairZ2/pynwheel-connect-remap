@@ -37,7 +37,7 @@ module ApplicationHelper
     begin
       tour_user = TourUser.find tour_user_id
       if tour_user.present?
-        ((tour_user&.id == token[0]['tour_user_id'].to_i) && tour_user.email == token[0]['tour_user_email'])
+        (tour_user&.id == token[0]['tour_user_id'].to_i)
       else
         false
       end

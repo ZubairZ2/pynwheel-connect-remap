@@ -219,21 +219,26 @@
               <% if @reschedule_tour %>
                 <p class="reschedule-heading">Select a date and time below to reschedule your <%= @schedule_tour.tour_type.split('_').map(&:capitalize).join(' ') %> at <%= @community.name %></p>
               <%else%>
-                <h2> PROPERTY TOUR </h2>
+                <% if @is_allowed_schedule %>
+                  <h2> PROPERTY TOUR </h2>
+                <% else %>
+                  <%= render "scheduler_error_suggessions" %>
+                <% end %>
               <%end%>
             </div>
             
             <% url = @reschedule_tour ? "/" : "/create_tour_user_from" %>
             <% id = @reschedule_tour ? "rescheduleTourForm" : "tour_user_form" %>
-            <%= form_for @tour_user, url: url, class: "form_popup", id: id, method: 'post' do |f| %>
 
-              <%= hidden_field_tag :sched_tour_id, nil , :id => "sched_tour_id"%>
-              <%= hidden_field_tag :community_id, @community_id %>
-              <%= hidden_field_tag :user_time_zone, value: nil %>
+            <% if @is_allowed_schedule %>
+              <%= form_for @tour_user, url: url, class: "form_popup", id: id, method: 'post' do |f| %>
 
-              <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_first_name.nil? ? true : current_community.community_tour.tour_setting.show_first_name) %>
+                <%= hidden_field_tag :sched_tour_id, nil , :id => "sched_tour_id"%>
+                <%= hidden_field_tag :community_id, @community_id %>
+                <%= hidden_field_tag :user_time_zone, value: nil %>
+
                 <div class="row mb-20 mt-20">
-                 
+                
                   <%# ---------------- Disable virtual tour for now --------------------- %>
 
                   <%#
@@ -256,7 +261,7 @@
                     <%# <%= f.radio_button :property_tour_type, 'scheduled_tour', :id => "scheduled_tour",:class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false  %>
 
                     <%= f.radio_button :property_tour_type, 'scheduled_tour', :id => "scheduled_tour",:class => "select_property_tour", :checked => true %>
-                     
+                    
                     <%= label :select_property_tour, 'Schedule a tour on a specific date', value: 'tour_on_specific_date', for: "scheduled_tour" %>
                     <i class="fa fa-question-circle propertyDetailName" data-content=" " data-toggle="tooltip" data-placement="top" >
                       <span id="propertyDetailNameText" class="tooltip-pynwheel">
@@ -268,11 +273,11 @@
                   <%# ---------------- Disable virtual tour for now --------------------- %>
                   <%#
                   <% if current_community.community_tour.tour_setting.allow_virtual_tour %> 
-                     <%#<div class="w-20-for-check">
+                    <%#<div class="w-20-for-check">
                       <%= f.radio_button :property_tour_type, 'remote_tour', :id => "remote_tour", :class => "select_property_tour", :checked => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "remote_tour" ? true : false  %> 
-                       <%#<%= label :select_property_tour, 'Tour remotely', value: 'remote_tour', for: "remote_tour" %>
+                      <%#<%= label :select_property_tour, 'Tour remotely', value: 'remote_tour', for: "remote_tour" %>
                       <%# <i class="fa fa-question-circle remote_tour_tip" data-toggle="tooltip" data-placement="top" ></i> %>
-                       <%#<i class="propertyDetailName fa fa-question-circle" data-content=" " data-toggle="tooltip" data-placement="top">
+                      <%#<i class="propertyDetailName fa fa-question-circle" data-content=" " data-toggle="tooltip" data-placement="top">
                         <span id="propertyDetailNameText" class="tooltip-pynwheel">
                           Use an app to tour our property remotely at your convenience; we will send you instructions.
                         </span>
@@ -303,6 +308,7 @@
                         <%= select_tag :tour_type , options_for_select([]),:class => "form-control", :include_blank => 'Select tour type', :required => @schedule_tour.property_tour_type.present? && @schedule_tour.property_tour_type == "scheduled_tour" ? true : false %>
                     </div>
                   <% else %>
+
                     <div class="form-group col-lg-4 col-md-4 col-sm-12 col-xs-12 w-100 tour_type" style="display: none">
                       <label>Tour Type <span class="asterisk_color" >*</span>
                         <i class="fa fa-question-circle tour_type_tip hidden propertyDetailName" data-toggle="tooltip" data-placement="top" title="" >
@@ -323,206 +329,202 @@
                   <label>Last Name <span class="asterisk_color" >*</span></label>
                   <%= f.text_field :last_name, class: "form-control", placeholder: "Last Name", id: "last_name", required: 'required' %>
                 </div>
-              <% end %>
-              <div class="form-group w-left-50 w-100">
-                <label>Email Address <span class="asterisk_color" >*</span></label>
-                <%= f.email_field :email, class: "form-control", placeholder: "Email Address", id: "tour_user_email", required: 'required' %>
-              </div>
-              <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_phone.nil? ? true : current_community.community_tour.tour_setting.show_phone) %>
-                <div class="form-group w-20 w-100">
+              
+                <div class="form-group w-20 w-100 ml-0">
                   <label data-toggle="tooltip" data-placement="top" title="(Default US)">Country Code <span class="asterisk_color" >*</span></label> 
                   <select name="country_code" class="form-control select_number" id="country_code">
-                    <% SchedualTour::COUNTRY_CODES.each do  |code| %>
-                      <% if code === @default_country_code %>
-                        <option value="<%= code %>" selected= "selected"> <%= code %> </option>
+                    <% SchedualTour::COUNTRIES.each do  |country| %>
+                      <% if country["code"] === @default_country_code %>
+                        <option value="<%= country["code"] %>" selected= "selected"> <%= country["code"] %> </option>
                       <% else %>
-                        <option value="<%= code %>"> <%= code %> </option>
+                        <option value="<%= country["code"] %>"> <%= country["code"] %> </option>
                       <% end %>
                     <% end %>
                   </select>
                 </div>
+
                 <div class="form-group w-30 w-100">
                   <label>Phone Number <span class="asterisk_color" >*</span></label> 
                   <%= f.text_field :phone_number, class: "form-control phoneNumber validate[required,custom[onlyNumber]", placeholder: "Phone Number", minlength: 10, maxlength: 10 , required: 'required', id: "user_phone_number_field" %>
                 </div>
-              <% end %>
-              <span class="reshedule-notification" style="display: <%= @tour_user.id.present? && !@reschedule_tour && @schedule_tour.is_tour_completed ? "block" : "none" %>">A user with this email address already has a scheduled tour, if you submit again with this email your tour will be rescheduled.</span>
 
-              <div class="clearfix"></div>
+                <div class="form-group w-right-50 w-100">
+                  <label>Email Address <span class="asterisk_color" >*</span> </label>
+                  <%= f.email_field :email, class: "form-control", placeholder: "Email Address", id: "tour_user_email", required: 'required'%>
+                </div>
 
-              <% if @credit_card_required %>
-                <%= hidden_field_tag :verification_type_authenteq, ((@community.community_tour.present? and @community.community_tour.tour_setting.present?) ? (@community.community_tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.community_tour.present? ? @community.community_tour.visual_id_verification : true)  && (@community.community_tour.verification_type == "authenteq") %>
-                <% if ((@community.community_tour.present? and @community.community_tour.tour_setting.present?) ? (@community.community_tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.community_tour.present? ? @community.community_tour.visual_id_verification : true)  && (@community.community_tour.verification_type == "authenteq") && @schedule_tour.property_tour_type == "scheduled_tour" %>
-                  <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.</p>
-                <% else %>
-                  <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)</p>
-                <% end %>
-              
+                <span class="reshedule-notification" style="display: <%= @tour_user.id.present? && !@reschedule_tour && @schedule_tour.is_tour_completed ? "block" : "none" %>">A user with this phone number already has a scheduled tour, if you submit again with this phone number your tour will be rescheduled!</span>
+
                 <div class="clearfix"></div>
-                <div class="card-information">
-                  <div class="form-group cardNumber w-left-50 w-100">
-                    <label>Credit Card Number <span class="asterisk_color" >*</span></label>    
-                    <input type="text" data-stripe="number" id="tour_user_credit_card_number" class="form-control" placeholder = "Credit Card" required />
-                  </div>
-                  <div class="form-group expiry w-right-50 w-100">
-                    <label>CVV <span class="asterisk_color" >*</span></label>
-                    <%= text_field_tag :card_verification, nil, class: "form-control", "data-stripe" => "cvv", placeholder: "123", required: 'required' %>
-                  </div>
 
-                  <div class="form-group cardNumber w-left-50">
-                    <%# <%= label_tag "Exp Month", nil, required: true %>
-                    <%= label_tag :exp_month, nil, required: true do %>
-                      Exp Month <span class="asterisk_color">*</span>
-                    <% end %>
-                    <%= select_tag :exp_month, options_for_select(Date::MONTHNAMES.compact.each_with_index.map { |name,i| ["#{i+1} - #{name}", i+1] }), include_blank: false, "data-stripe" => "exp-month", class: "span2 form-control" %>
-                  </div>
-
-                  <div class="form-group expiry w-right-50" id="expiry-year">
-                    <%# <%= label_tag "Exp Year", nil, required: true %>
-                    <%= label_tag :exp_year, nil, required: true do %>
-                      Exp Year <span class="asterisk_color">*</span>
-                    <% end %>
-                    <%= select_tag :exp_year, options_for_select((Date.today.year..(Date.today.year+10)).to_a), include_blank: false, "data-stripe" => "exp-year", class: "span1 form-control" %>
-                  </div>
-                </div>
-              <% end %>
-
-              <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_desired_bedroom.nil? ? true : current_community.community_tour.tour_setting.show_desired_bedroom )  %>
-                <div class="w-left-50">
-                  <label>Desired Number of Bedrooms</label>
-                  <span class="hidden" id="bedroom"></span>
-                  <%= select_tag :desired_bedroom, options_for_select( @bedroom_list ), :class=>"form-control ", :checked => 'checked' %>
-                </div>
-              <% end %> 
-
-              <div class="form-group hidden">
-                <span class="hidden" id="hidden_tour_type"></span>
-                <%= hidden_field_tag :hidden_tour_type,"", :class=>"form-control"%>
-              </div>
-              <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.community_tour.tour_setting.show_desired_move_in_date) %>
-              <div class="form-group w-right-50">
-                <label>Desired Move-in Date <span class="asterisk_color" >*</span></label>
-                <span class="hidden" id="move-in-date"></span>
-                <%= text_field_tag :desired_move_in_date,"", :class=>"form-control moveindatepicker", :placeholder=>"Move in date",:maxlength=>"15",required: 'required',:autocomplete=>"off"%>
-                
-              </div>
-              <% end %> 
-
-              <% if @community.is_funnel_community? %>
-                <div class="w-left-50">
-                  <label>How did you hear about us ?</label>
-                  <span class="hidden" id="discovery-source"></span>
-                  <%= select_tag :funnel_prospect_discover_source, options_for_select( @funnel_discovery_sources ), :class=>"form-control", include_blank: @selected_discovery_source %>
-                </div>
-              <% end %>
-        
-              <% if false %>
-                <div class="form-group expiry">
-                  <label>Expiration Date</label>
-                  <%= f.text_field :card_expiry, class: "form-control", placeholder: "MM/YY" %>
-                </div>
-                <%= form_tag payments_path, method: 'post', id: 'payment-form' do %>
-                  <%= label_tag "Card Number", nil, required: true %>
-                  <div class="control-group">
-                    <div class="controls">
-                      <%= text_field_tag :card_number, nil, class: "input-block-level", "data-stripe" => "number" %>
-                    </div>
-                  </div>
-                  <%= label_tag "Card Verification", nil, required: true %>
-                  <div class="control-group">
-                    <div class="controls">
-                      <%= text_field_tag :card_verification, nil, class: "input-block-level", "data-stripe" => "cvv" %>
-                    </div>
-                  </div>
-                <% end %>
-
-
-                <%= form_tag payments_path, method: 'post', id: 'payment-form' do %>
-                  <span class="payment-errors"></span>
-
-                  <div class="form-row">
-                    <label>
-                      <span>Card Number</span>
-                      <input type="text" size="20" data-stripe="number" />
-                    </label>
-                  </div>
-
-                  <div class="form-row">
-                    <label>
-                      <span>CVC</span>
-                      <input type="text" size="4" data-stripe="cvc"/>
-                    </label>
-                  </div>
-
-                  <div class="form-row">
-                    <label>
-                      <span>Expiration (MM/YYYY)</span>
-                      <input type="text" size="2" data-stripe="exp-month"/>
-                    </label>
-                    <span> / </span>
-                    <input type="text" size="4" data-stripe="exp-year"/>
-                  </div>
-
-                  <button type="submit">Submit Payment</button>
-                  
-                <% end %>
-              <% end %>
-
-
-              <div class="clearfix"></div>
-
-              <% if @community.data_provider == "realpagesvc" && @marketing_source_required %>
-                <div class="form-group w-left-50 w-100 tag-margin">
-                  <label> How did you hear about <%= @community.name.titleize %> ? <span class="asterisk_color" >*</span></label>
-                  <%= select_tag :marketing_source, options_for_select(@community.credential.realpage_marketing_sources.present? ? @community.credential.realpage_marketing_sources.collect{|s| [ s["Text"], s["Value"] ]} : []), include_blank: false , prompt: "Select your option", required: 'required', class: "span2 form-control marketing_source"%>
-                </div>
-              <% end %>
-              
-              <div class="<%= @community.data_provider == "realpagesvc" && @marketing_source_required ? "form-group w-100 w-right-checkbox" : "form-group w-100" %>" style="margin-top: 20px;">
-                <% privacy_policy_link = 'https://pynwheeltouchscreens.com/privacy-policy' %>
-                <%= f.check_box :is_sms_enabled, id: "text_instructions", class: "hidden" %>
-
-                <% if @community.is_knock_community? %>
-                  <label for="text_instructions" class="inst_text_label"> 
-                  By clicking "Submit," you agree to Knock's <a href="https://www.knock.com/terms-of-use" target="_blank">Terms of Use</a> and <a href="https://www.knock.com/privacy-policy" target="_blank">Privacy Policy</a> and consent to be contacted at this phone number by text message, and/or by autodialer for any purpose, including marketing, by the property and anyone acting on their behalf. Consent is not required to purchase or rent. Also, you consent to receive delivery notifications sent by text and/or email communications. Please visit Pynwheel's <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.
-                  </label>
-                  
-                <% else %>
-                  <label for="text_instructions" class="inst_text_label"> By clicking on submit, you consent to receive delivery notification sent by text and/or email communications. Please visit our <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.
-                  </label>
-                <% end %>
-              </div>
-
-              <% if false %>
-                <% unless @any_tour_type_selected %>
-                  <span style=" display: block; color: red; margin-bottom: 5px;">*Please select atleast one tour type from setting for schedule</span>
-                <% end %>
-              <%end%>
-              <%# <% unless @time_slots.any? %>
-                <span class="no-tour-time-error" style="display: none; color: red; margin-bottom: 5px;">*There is no slot available. please check your available slots in tour setting page</span>
-              <%# <% end %>
-              <%= hidden_field_tag 'existing_tour_user_email_arr', @existing_tour_users.to_json %>
-              <div>
-                <% if @reschedule_tour %>
-                  <button type="submit" id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
-                  <button type="submit" class="btn_popup" id="cancel-visit" style="border-left: 5px solid #fff;  width: 50%;">Cancel my visit</button>
-                <%else%>
-                  
-                  <% if @community.self_tour && (@community.scheduler_widget.nil? ? true : @community.scheduler_widget) && !@community.locked %>
-                    <button type="submit" id ="confirm_reservation" class="btn_popup">Submit</button>
+                <% if @credit_card_required %>
+                  <%= hidden_field_tag :verification_type_authenteq, ((@community.community_tour.present? and @community.community_tour.tour_setting.present?) ? (@community.community_tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.community_tour.present? ? @community.community_tour.visual_id_verification : true)  && (@community.community_tour.verification_type == "authenteq") %>
+                  <% if ((@community.community_tour.present? and @community.community_tour.tour_setting.present?) ? (@community.community_tour.tour_setting.charge_user_for_id_verfication) : false) && (@community.community_tour.present? ? @community.community_tour.visual_id_verification : true)  && (@community.community_tour.verification_type == "authenteq") && @schedule_tour.property_tour_type == "scheduled_tour" %>
+                    <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded) and $2.00 for ID verification processing when you begin the tour.</p>
                   <% else %>
-                    <span style = "color: red"><strong>Sorry</strong> for the inconvenience. It seems <strong> <%= @community.name %> </strong> does not offer self tours or it's under construction. For inquiries please call the property at <strong> <%= @community.phone %> </strong> or email <strong> <%= @community.email %></strong>.
-                    </span>
-                    <br></br>
-                    <button type="button" class="disable-submit-btn" disabled>Submit</button>
+                    <p id="charge_text">A credit card is required to complete the reservation. Your credit card will be charged $0.50 now (which will be refunded)</p>
+                  <% end %>
+                
+                  <div class="clearfix"></div>
+                  <div class="card-information">
+                    <div class="form-group cardNumber w-left-50 w-100">
+                      <label>Credit Card Number <span class="asterisk_color" >*</span></label>    
+                      <input type="text" data-stripe="number" id="tour_user_credit_card_number" class="form-control" placeholder = "Credit Card" required />
+                    </div>
+                    <div class="form-group expiry w-right-50 w-100">
+                      <label>CVV <span class="asterisk_color" >*</span></label>
+                      <%= text_field_tag :card_verification, nil, class: "form-control", "data-stripe" => "cvv", placeholder: "123", required: 'required' %>
+                    </div>
+
+                    <div class="form-group cardNumber w-left-50">
+                      <%# <%= label_tag "Exp Month", nil, required: true %>
+                      <%= label_tag :exp_month, nil, required: true do %>
+                        Exp Month <span class="asterisk_color">*</span>
+                      <% end %>
+                      <%= select_tag :exp_month, options_for_select(Date::MONTHNAMES.compact.each_with_index.map { |name,i| ["#{i+1} - #{name}", i+1] }), include_blank: false, "data-stripe" => "exp-month", class: "span2 form-control" %>
+                    </div>
+
+                    <div class="form-group expiry w-right-50" id="expiry-year">
+                      <%# <%= label_tag "Exp Year", nil, required: true %>
+                      <%= label_tag :exp_year, nil, required: true do %>
+                        Exp Year <span class="asterisk_color">*</span>
+                      <% end %>
+                      <%= select_tag :exp_year, options_for_select((Date.today.year..(Date.today.year+10)).to_a), include_blank: false, "data-stripe" => "exp-year", class: "span1 form-control" %>
+                    </div>
+                  </div>
+                <% end %>
+
+                <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_desired_bedroom.nil? ? true : current_community.community_tour.tour_setting.show_desired_bedroom )  %>
+                  <div class="w-left-50">
+                    <label>Desired Number of Bedrooms</label>
+                    <span class="hidden" id="bedroom"></span>
+                    <%= select_tag :desired_bedroom, options_for_select( @bedroom_list ), :class=>"form-control ", :checked => 'checked' %>
+                  </div>
+                <% end %> 
+
+                <div class="form-group hidden">
+                  <span class="hidden" id="hidden_tour_type"></span>
+                  <%= hidden_field_tag :hidden_tour_type,"", :class=>"form-control"%>
+                </div>
+                <% if current_community.community_tour.tour_setting.nil? ? true : (current_community.community_tour.tour_setting.show_desired_move_in_date.nil? ? true : current_community.community_tour.tour_setting.show_desired_move_in_date) %>
+                <div class="form-group w-right-50">
+                  <label>Desired Move-in Date <span class="asterisk_color" >*</span></label>
+                  <span class="hidden" id="move-in-date"></span>
+                  <%= text_field_tag :desired_move_in_date,"", :class=>"form-control moveindatepicker", :placeholder=>"Move in date",:maxlength=>"15",required: 'required',:autocomplete=>"off"%>
+                  
+                </div>
+                <% end %> 
+
+                <% if @community.is_funnel_community? %>
+                  <div class="w-left-50">
+                    <label>How did you hear about us ?</label>
+                    <span class="hidden" id="discovery-source"></span>
+                    <%= select_tag :funnel_prospect_discover_source, options_for_select( @funnel_discovery_sources ), :class=>"form-control", include_blank: @selected_discovery_source %>
+                  </div>
+                <% end %>
+          
+                <% if false %>
+                  <div class="form-group expiry">
+                    <label>Expiration Date</label>
+                    <%= f.text_field :card_expiry, class: "form-control", placeholder: "MM/YY" %>
+                  </div>
+                  <%= form_tag payments_path, method: 'post', id: 'payment-form' do %>
+                    <%= label_tag "Card Number", nil, required: true %>
+                    <div class="control-group">
+                      <div class="controls">
+                        <%= text_field_tag :card_number, nil, class: "input-block-level", "data-stripe" => "number" %>
+                      </div>
+                    </div>
+                    <%= label_tag "Card Verification", nil, required: true %>
+                    <div class="control-group">
+                      <div class="controls">
+                        <%= text_field_tag :card_verification, nil, class: "input-block-level", "data-stripe" => "cvv" %>
+                      </div>
+                    </div>
                   <% end %>
 
+
+                  <%= form_tag payments_path, method: 'post', id: 'payment-form' do %>
+                    <span class="payment-errors"></span>
+
+                    <div class="form-row">
+                      <label>
+                        <span>Card Number</span>
+                        <input type="text" size="20" data-stripe="number" />
+                      </label>
+                    </div>
+
+                    <div class="form-row">
+                      <label>
+                        <span>CVC</span>
+                        <input type="text" size="4" data-stripe="cvc"/>
+                      </label>
+                    </div>
+
+                    <div class="form-row">
+                      <label>
+                        <span>Expiration (MM/YYYY)</span>
+                        <input type="text" size="2" data-stripe="exp-month"/>
+                      </label>
+                      <span> / </span>
+                      <input type="text" size="4" data-stripe="exp-year"/>
+                    </div>
+
+                    <button type="submit">Submit Payment</button>
+                    
+                  <% end %>
+                <% end %>
+
+
+                <div class="clearfix"></div>
+
+                <% if @community.data_provider == "realpagesvc" && @marketing_source_required %>
+                  <div class="form-group w-left-50 w-100 tag-margin">
+                    <label> How did you hear about <%= @community.name.titleize %> ? <span class="asterisk_color" >*</span></label>
+                    <%= select_tag :marketing_source, options_for_select(@community.credential.realpage_marketing_sources.present? ? @community.credential.realpage_marketing_sources.collect{|s| [ s["Text"], s["Value"] ]} : []), include_blank: false , prompt: "Select your option", required: 'required', class: "span2 form-control marketing_source"%>
+                  </div>
+                <% end %>
+                
+                <div class="<%= @community.data_provider == "realpagesvc" && @marketing_source_required ? "form-group w-100 w-right-checkbox" : "form-group w-100" %>" style="margin-top: 20px;">
+                  <% privacy_policy_link = 'https://pynwheeltouchscreens.com/privacy-policy' %>
+                  <%= f.check_box :is_sms_enabled, id: "text_instructions", class: "hidden" %>
+
+                  <% if @community.is_knock_community? %>
+                    <label for="text_instructions" class="inst_text_label"> 
+                    By clicking "Submit," you agree to Knock's <a href="https://www.knock.com/terms-of-use" target="_blank">Terms of Use</a> and <a href="https://www.knock.com/privacy-policy" target="_blank">Privacy Policy</a> and consent to be contacted at this phone number by text message, and/or by autodialer for any purpose, including marketing, by the property and anyone acting on their behalf. Consent is not required to purchase or rent. Also, you consent to receive delivery notifications sent by text and/or email communications. Please visit Pynwheel's <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.
+                    </label>
+                    
+                  <% else %>
+                    <label for="text_instructions" class="inst_text_label"> By clicking on submit, you consent to receive delivery notification sent by text and/or email communications. Please visit our <a href=<%= privacy_policy_link %> target="_blank">Privacy Policy</a> for more information regarding the protection of your information.
+                    </label>
+                  <% end %>
+                </div>
+
+                <% if false %>
+                  <% unless @any_tour_type_selected %>
+                    <span style=" display: block; color: red; margin-bottom: 5px;">*Please select atleast one tour type from setting for schedule</span>
+                  <% end %>
                 <%end%>
-              </div>
-              
+                <%# <% unless @time_slots.any? %>
+                  <span class="no-tour-time-error" style="display: none; color: red; margin-bottom: 5px;">*There is no slot available. please check your available slots in tour setting page</span>
+                <%# <% end %>
+
+                <%= hidden_field_tag 'existing_tour_user_phone_arr', @existing_tour_users.to_json %>
+                <%= hidden_field_tag 'countries_data', SchedualTour::COUNTRIES.to_json %>
+
+                <div>
+                  <% if @reschedule_tour %>
+                    <button type="submit" id ="confirm_reservation" class="btn_popup" style="float: left; width: 50%;">Submit</button>
+                    <button type="submit" class="btn_popup" id="cancel-visit" style="border-left: 5px solid #fff;  width: 50%;">Cancel my visit</button>
+                  <%else%>
+                    <button type="submit" id ="confirm_reservation" class="btn_popup">Submit</button>
+                  <%end%>
+                </div>
+                
+              <% end %>
             <% end %>
+
           </div>
-        
       </div>
     </div>
 
@@ -588,7 +590,10 @@
       var realpage_provider = "<%= @community.data_provider == "realpagesvc" && @marketing_source_required%>"
       var phone_country_code = "+<%= @phone_country_code&.country_code %>"
       var tour_type = "<%= @schedule_tour&.tour_type.split('_').map(&:capitalize).join(' ') rescue "" %>"
-      var existing_tour_users = []
+      var existing_tour_users = [];
+      var countries_data = [];
+      var selectedDialingCountryCode = "+1";
+    
       var use_yardi_as_lead = <%= raw @use_yardi_as_lead %>;
       var is_virtual_on = <%= raw @is_virtual_on %>;
 
@@ -597,13 +602,24 @@
       function redirectSheduledTourPage(url){
         window.location.href = url
       }
+
       function onlyNumbers() {
         let pNum = $("#user_phone_number_field").val();
         if(pNum)
           $("#user_phone_number_field").val(pNum.replace(phone_country_code, ""));        
       }
 
+      function setCountryDialingCode() {
+        let  countryCode = $('#country_code').find(":selected").val();
+        let obj = countries_data.find(function (el) { return (el["code"] === countryCode)});
+        selectedDialingCountryCode = obj["dial_code"]
+      }
+
       $(document).ready(function(){
+        existing_tour_users = JSON.parse($("#existing_tour_user_phone_arr").val()).phone_numbers;
+        countries_data = JSON.parse($("#countries_data").val());
+        setCountryDialingCode();
+
         knock_available_time_slots = $("#knock-data").data("availableTimeSlots");
         is_knock_community = $("#knock-data").data("isKnockCommunity");
 
@@ -693,6 +709,11 @@
 
       verification_type_authenteq = ($("#verification_type_authenteq").val() == "true") ? true : false
 
+      $('#country_code').change(function() {
+        setCountryDialingCode();
+        displayNotification();
+      });
+
       $('.select_property_tour').change(function() {
         if (this.value == 'remote_tour'){
           $(".tour_date").addClass('hidden');
@@ -729,7 +750,7 @@
         }
       })
 
-      $(document).ready(function(){
+      $(document).ready(function(){       
         onlyNumbers();
 
         $("#user_phone_number_field").change(function() {
@@ -767,10 +788,8 @@
             $('.divLoading').addClass('hidden');
         }
 
-      $("#tour_user_email").keyup(function() {
-        const existing_tour_users = JSON.parse($("#existing_tour_user_email_arr").val());
-        const isEmail = isEmailExist(existing_tour_users.emails);
-        displayNotification(isEmail);
+      $("#user_phone_number_field").keyup(function() {
+        displayNotification();
       });
 
       $('.select_property_tour').change(function() {
@@ -866,6 +885,7 @@
                       options += `<option value="${tour_types[i][0]}" >${tour_types[i][1]}</option>`
                     }
                     $('#tour_type').html(options)
+                    $("#tour_type").prop('required',true);
                     // showTourTypeDropDown();
                   }
                   else if(tour_types.length == 1){
@@ -1152,28 +1172,23 @@
         $(".tour_time").removeClass("col-lg-6 col-md-6");
       }
 
-      function displayNotification(isEmail) {
-        if (isEmail) {
-          $(".reshedule-notification").html('A user with this email already has a scheduled tour, if you submit again with this email your tour will be rescheduled!');
-          $(".reshedule-notification").css("display", "block");
+      function displayNotification() {
+        const isPhone = isPhoneNumberExist();
 
+        if (isPhone) {
+          $(".reshedule-notification").html('A user with this phone number already has a scheduled tour, if you submit again with this phone number your tour will be rescheduled!');
+          $(".reshedule-notification").css("display", "block");
         }else {
           $(".reshedule-notification").css("display", "none");
         }
       }
-
-      function isEmailExist(arrayOfEmails) {
-        if(arrayOfEmails && arrayOfEmails.indexOf($("#tour_user_email").val()) !== -1 && tour_is_completed)
-          return true;
-        else 
-          return false;
-      }
       
-      function isPhoneNumberExist(arrayOfPhoneNumbers) {
-        const phoneNumber = $("#user_phone_number_field").val();
+      function isPhoneNumberExist() {
+        let phoneNumber = $("#user_phone_number_field").val();
+        phoneNumber = selectedDialingCountryCode + phoneNumber;
 
-        const match = arrayOfPhoneNumbers.find(element => {
-          if ((element.slice(-10) == phoneNumber) && tour_is_completed) {
+        const match = existing_tour_users.find(element => {
+          if ((element == phoneNumber) && tour_is_completed) {
             return true;
           }
         });

@@ -30,6 +30,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @scheduled_tour_for_another_tour = SchedualTour.find @scheduled_tour_id if @scheduled_tour_id.present?
     @exiting_schedule_tour = SchedualTour.find_by(community_id: params[:community_id])
     @schedule_tour = params[:scheduled_tour_id].present? ? SchedualTour.find_by_id(params[:scheduled_tour_id]) : @exiting_schedule_tour.present? ? @exiting_schedule_tour : SchedualTour.create(community_id: params[:community_id])
+    @schedule_tour.property_tour_type = params[:property_tour_type].present? ? params[:property_tour_type] : "scheduled_tour"
     @phone_country_code = ISO3166::Country.new(@schedule_tour.country_code) if @schedule_tour.country_code.present?
     @community_id = params[:community_id]
     @community = Community.find params[:community_id]
@@ -39,6 +40,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @marketing_source_required = @community.community_tour.marketing_source_required
     @community_time_zone = @community.get_time_zone()
     @current_time = Time.now.in_time_zone(@community_time_zone).strftime("%H:%M %p") if @community_time_zone.present?
+
     if params[:direct].present?
       @direct =  true
       params[:message].present? ? @show_first = false : @show_first = true
@@ -60,7 +62,6 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @enabled_tour_types = community_allowed_tour_types(@community)
     @tour_type_count = @enabled_tour_types.count
     @default_country_code = @community.set_default_country_code()
-
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
     if @use_yardi_as_lead
       @yardi_time_slots = @community.available_slots(@schedule_tour)
@@ -90,6 +91,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     
     @occupied_slots = OccupiedTourTimeSlotsService.new(@community).occupied_slots()
     @occupied_dates = @occupied_slots&.keys rescue []
+    @is_allowed_schedule = can_user_schedule_tour(@tour_type_count, @community)
 
     community = Community.find params[:community_id]
     app_link = (Company.find community.company_id).name.downcase == "lincoln" ? "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129" : "https://apps.apple.com/us/app/self-tour/id1488907392"
@@ -125,6 +127,10 @@ class SchedulerWidget::WidgetsController < ApplicationController
   end
 
   private
+
+  def can_user_schedule_tour tour_type_count, community
+    tour_type_count > 0 && community.self_tour && (community.scheduler_widget.nil? ? true : community.scheduler_widget) && !community.locked
+  end
 
   def community_allowed_tour_types community
     tour = community.community_tour
