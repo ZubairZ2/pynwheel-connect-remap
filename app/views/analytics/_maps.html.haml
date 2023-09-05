@@ -134,23 +134,26 @@
           .col-lg-5
             = bar_chart @bar_favourite_sent_data_labels_maps, @bar_favourite_sent_data_options_maps
 
-      .row.mt-80
-        .col-lg-6.col-md-12.h-500
-          %p.chart_heading Price Opened
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @total_number_of_price_opened_maps
-              .count_text= 'Total number of times price was opened'
-              .pie_description
-                %span.dot.price_opened_with
-                %span Sessions with price opened
-                %span= @percentage_session_with_price_opened_maps
-              .pie_description
-                %span.dot.price_opened_without
-                %span Sessions without price opened
-                %span= @percentage_session_without_price_opened_maps
-          .col-lg-8.pie_width
-            = pie_chart @pie_price_opened_data_labels_maps, @pie_price_opened_data_options_maps
-
     - else
       %h3 There is no record found on selected date range
+
+
+-# Commented Temporary
+
+-# .row.mt-80
+-#   .col-lg-6.col-md-12.h-500
+-#     %p.chart_heading Price Opened
+-#     .col-lg-4.numbers_div
+-#       .center_it
+-#         .count_int= @total_number_of_price_opened_maps
+-#         .count_text= 'Total number of times price was opened'
+-#         .pie_description
+-#           %span.dot.price_opened_with
+-#           %span Sessions with price opened
+-#           %span= @percentage_session_with_price_opened_maps
+-#         .pie_description
+-#           %span.dot.price_opened_without
+-#           %span Sessions without price opened
+-#           %span= @percentage_session_without_price_opened_maps
+-#     .col-lg-8.pie_width
+-#       = pie_chart @pie_price_opened_data_labels_maps, @pie_price_opened_data_options_maps

@@ -10,7 +10,10 @@
     - if @self_tour_records.any?
       .row
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Sessions
+          .chart-title
+            %p.chart_heading Sessions
+            = render 'title_info', {info_text: SELF_TOUR_TOURS_INFO }
+
           .col-lg-4.numbers_div
             .center_it
               .count_int= @track_session_count_self_tour
@@ -19,6 +22,7 @@
               .count_text= 'Average number of sessions per day'
           .col-lg-8
             = bar_chart @session_each_day_data_self_tour, @session_each_day_options_self_tour
+
         .col-lg-6.col-md-12.h-500
           %p.chart_heading Session Duration
           .col-lg-4.numbers_div
@@ -32,7 +36,9 @@
       .row.mt-80
         - if current_user.is_super_admin?
           .col-lg-6.col-md-12.h-500
-            %p.chart_heading Sessions by Time of Day
+            .chart-title
+              %p.chart_heading Sessions by Time of Day
+              = render 'title_info', {info_text: SELF_TOUR_TOURS_BY_TIME_OF_DAY_INFO }
             .col-lg-4.numbers_div
               .center_it
                 .count_int= @session_in_highest_hour_self_tour
@@ -58,7 +64,10 @@
       - if current_user.is_super_admin?
         .row.mt-80
           .col-lg-12.h-500
-            %p.chart_heading Events
+            .chart-title
+              %p.chart_heading Events
+              = render 'title_info', {info_text: SELF_TOUR_EVENTS_INFO }
+            
             .col-lg-2.numbers_div
               .center_it
                 .count_int= @total_number_of_events_self_tour
@@ -78,7 +87,9 @@
 
       .row.mt-80
         .col-lg-12.h-500
-          %p.chart_heading Tour Location
+          .chart-title
+            %p.chart_heading Tour Location
+            = render 'title_info', {info_text: SELF_TOUR_TOUR_LOCATION_INFO }
           .col-lg-2.numbers_div
             .center_it
               .pie_description
@@ -97,7 +108,9 @@
       - if current_user.is_super_admin?
         .row.mt-80
           .col-lg-12.h-500
-            %p.chart_heading Apply Clicks
+            .chart-title
+              %p.chart_heading Apply Clicks
+              = render 'title_info', {info_text: SELF_TOUR_APPLY_CLICKS_INFO }
             .col-lg-2.numbers_div
               .center_it
                 .count_int= @total_number_of_apply_clicks_self_tour
@@ -118,7 +131,9 @@
       - if current_user.is_super_admin?
         .row.mt-80
           .col-lg-12.h-500
-            %p.chart_heading See Availability
+            .chart-title
+              %p.chart_heading See Availability
+              = render 'title_info', {info_text: SELF_TOUR_SEE_AVAILABILITY_INFO }
             .col-lg-2.numbers_div
               .center_it
                 .count_int= @total_number_of_see_availability
@@ -171,27 +186,11 @@
             .col-lg-8.pie_width
               = pie_chart @pie_notes_opened_counter_data_labels, @pie_notes_opened_counter_data_options
 
-      .row.mt-80
-        - if current_user.is_super_admin?
-          .col-lg-6.col-md-12.h-500
-            %p.chart_heading Price Opened
-            .col-lg-4.numbers_div
-              .center_it
-                .count_int= @total_number_of_price_opened_self_tour
-                .count_text= 'Total number of times price was opened'
-                .pie_description
-                  %span.dot.price_opened_with
-                  %span Sessions with price opened
-                  %span= @percentage_session_with_price_opened_self_tour
-                .pie_description
-                  %span.dot.price_opened_without
-                  %span Sessions without price opened
-                  %span= @percentage_session_without_price_opened_self_tour
-            .col-lg-8.pie_width
-              = pie_chart @pie_price_opened_data_labels_self_tour, @pie_price_opened_data_options_self_tour
-        
+      .row.mt-80       
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Scheduled vs. Unscheduled
+          .chart-title
+            %p.chart_heading Scheduled vs. Unscheduled
+            = render 'title_info', {info_text: SELF_TOUR_SCHEDULED_VS_UNSCHEDULED_INFO }
           .col-lg-4.numbers_div
             .center_it
               .count_int= @tour_scheduled_counts
@@ -208,11 +207,24 @@
                 %span= @percentage_tour_unscheduled_counts
           .col-lg-8.pie_width
             = pie_chart @pie_tour_type_data_labels, @pie_tour_type_data_options
+        
+        .col-lg-6.col-md-12.h-500
+          .chart-title
+            %p.chart_heading No Shows
+            = render 'title_info', {info_text: SELF_TOUR_NO_SHOWS }
+          .col-lg-4.numbers_div
+            .center_it
+              .count_int= @no_show_count
+              .count_text= "Total number of no shows"
+          .col-lg-8
+            = bar_chart @session_each_day_no_show_data, @session_each_day_no_show_options
 
 
       .row.mt-80
         .col-lg-12.h-500
-          %p.chart_heading Tour Completions
+          .chart-title
+            %p.chart_heading Tour Completions
+            = render 'title_info', {info_text: SELF_TOUR_TOUR_COMPLETION_INFO }
           .col-lg-2.numbers_div
             .center_it
               .pie_description
@@ -230,7 +242,9 @@
 
       .row.mt-80
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Stops Per Tour
+          .chart-title
+            %p.chart_heading Stops Per Tour
+            = render 'title_info', {info_text: SELF_TOUR_STOPS_PER_TOUR_INFO }
           .col-lg-4.numbers_div
             .center_it
               .count_int= @average_number_of_stops_per_session_tour_stop
@@ -240,19 +254,34 @@
         
         - if current_user.is_super_admin?
           .col-lg-6.col-md-12.h-500
-            %p.chart_heading Top Stops
+            .chart-title
+              %p.chart_heading Top Stops
+              = render 'title_info', {info_text: SELF_TOUR_TOP_STOPS_INFO }
             .col-lg-8
               = horizontal_bar_chart @visited_per_tour_stop_data_labels, @visited_per_tour_stop_data_options
 
-      .row.mt-80
-        .col-lg-6.col-md-12.h-500
-          %p.chart_heading No Shows
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @no_show_count
-              .count_text= "Total number of no shows"
-          .col-lg-8
-            = bar_chart @session_each_day_no_show_data, @session_each_day_no_show_options
-
     - else
-      %h3 There is no record found on selected date range 
+      %h3 There is no record found on selected date range
+
+
+
+
+-# Commented for temporary 
+
+-# - if current_user.is_super_admin?
+-#   .col-lg-6.col-md-12.h-500
+-#     %p.chart_heading Price Opened
+-#     .col-lg-4.numbers_div
+-#       .center_it
+-#         .count_int= @total_number_of_price_opened_self_tour
+-#         .count_text= 'Total number of times price was opened'
+-#         .pie_description
+-#           %span.dot.price_opened_with
+-#           %span Sessions with price opened
+-#           %span= @percentage_session_with_price_opened_self_tour
+-#         .pie_description
+-#           %span.dot.price_opened_without
+-#           %span Sessions without price opened
+-#           %span= @percentage_session_without_price_opened_self_tour
+-#     .col-lg-8.pie_width
+-#       = pie_chart @pie_price_opened_data_labels_self_tour, @pie_price_opened_data_options_self_tour

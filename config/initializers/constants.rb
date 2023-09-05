@@ -72,3 +72,27 @@ ZERV_LOCK_INSTRUCTION_TEXT = "When you are near the fob reader press unlock belo
 LATCH_LOCK_INSTRUCTION_TEXT = "Tap the center of the black Latch Lens on the device and enter your Doorcode."
 IGLOOHOME_LOCK_INSTRUCTION_TEXT = "Tap the black circle to wake lock up. Enter code then press the unlock button in the middle of the lock face."
 ELEVATOR_STOP_TEXT = "The next stop is on floor "
+
+# TOUCH INFO
+TOUCH_SESSIONS_INFO = "One “Session” is defined as an instance in which the user goes from the Home screen to at least one other page and then back to the Home screen."
+TOUCH_SESSIONS_BY_TIME_OF_DAY_INFO = "Number of sessions per time of day at the location of the property. This graph shows the trends of traffic at the touchscreen."
+TOUCH_SINGLE_VS_MULTIPLE_PAGE_VISITS_INFO = "A single page visit means one page in addition to the home page. This does not necessarily imply that the session was not valuable because each page provides value. However, multiple page visits implies greater engagement during the leasing agent’s presentation."
+TOUCH_EVENTS_INFO = "”Events” include favorites saved, brochures sent, and pricing opened."
+TOUCH_FAVORITE_SAVED_INFO = "This is the tally of the number of floor plans or images that users have favorited."
+TOUCH_FAVORITE_MAILED_INFO = "The total number of ebrochures sent. Ideally, leasing agents will send an ebrochure to every visitor."
+TOUCH_PAGES_PER_SESSION_INFO = "The average number of pages per session. Ideally, leasing agents should be hitting all pages."
+TOUCH_TOP_PAGES_INFO = "The most popular pages visited in the Pynwheel Touch application."
+
+# SELF TOUR INFO
+SELF_TOUR_TOURS_INFO = "A “Session” is defined as any usage of the app that includes a visit to at least one stop."
+SELF_TOUR_TOURS_BY_TIME_OF_DAY_INFO = "Number of tours per time of day at the location of the property. This graph shows the trends of tour traffic."
+SELF_TOUR_APP_OPENS_INFO = "Shows the number of times a user opened a property’s app but did not conduct a tour. For example, if a user opened the app a day prior to the tour to make sure they could access it."
+SELF_TOUR_EVENTS_INFO = "“Events” include action taken by the user such as Availability opened, Apply opened, Notes Opened, Camera Opened, and Pricing opened."
+SELF_TOUR_TOUR_LOCATION_INFO = "Users can either take a tour on-site or they can opt to take a virtual tour from a remote location, which does not give them access to unlock locked doors. This shows the number of tours that were location-based tours and non-location based tours based on which option the user selected (not necessarily their geographic position)."
+SELF_TOUR_APPLY_CLICKS_INFO = "The number of times users touched the apply link in the application."
+SELF_TOUR_SEE_AVAILABILITY_INFO = "The number of times users touched the availability link in the application."
+SELF_TOUR_SCHEDULED_VS_UNSCHEDULED_INFO = "The number of tours that were scheduled in advance versus on the fly, without prior scheduling."
+SELF_TOUR_TOUR_COMPLETION_INFO = "The number of tours during which the user visited every stop on the tour before closing the app."
+SELF_TOUR_STOPS_PER_TOUR_INFO =  "The number of stops that were visited during the tour."
+SELF_TOUR_TOP_STOPS_INFO = "The most visited stops on the tour."
+SELF_TOUR_NO_SHOWS = "The number of scheduled tours that did not use the application to conduct a tour."

@@ -206,7 +206,12 @@ module AnalyticsHelper
     else
       companies = Company.where(id: user.company_id)
     end
-    companies
+
+    if(["development@intagleo.com", "dev_pynwheel@intagleo.com", "qa_pynwheel@intagleo.com"].include?(user.email))
+      companies
+    else
+      companies.remove_pynwheel_company
+    end
   end
 
   def fetch_communities(user)

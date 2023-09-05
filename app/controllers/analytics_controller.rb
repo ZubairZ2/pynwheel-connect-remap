@@ -600,8 +600,10 @@ class AnalyticsController < ApplicationController
           visites_pages_hash[page_name] = visites_pages_hash[page_name].nil? ? (1) : (visites_pages_hash[page_name] + 1)
         end
       end
+      
       visites_pages_hash = Hash[visites_pages_hash.sort_by{ |_, v| -v }]
-      @average_number_of_pages_per_session_metro = visites_pages_hash.values.sum / total_records.size
+
+      @average_number_of_pages_per_session_metro = (visites_pages_hash&.values&.sum&.to_f / total_records&.size&.to_f).round
       @visited_pages_data_labels, @visited_pages_data_options = make_horizontal_chart(visites_pages_hash.keys, visites_pages_hash.values, "Total Sessions", "rgba(143, 73, 156, 0.5)", "rgba(143, 73, 156, 1)")
     end
 
