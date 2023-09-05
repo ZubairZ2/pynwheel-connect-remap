@@ -6,6 +6,7 @@ json.company_name @community.company.name
 json.community_name @community.name
 json.currency_symbol @community.get_currency_symbol()
 json.show_apply_now @community.show_apply_now
+json.show_amenity_name @community.show_amenity_name
 
 json.ui_settigs do
   json.selected_theme @community.temporary_theme_name
