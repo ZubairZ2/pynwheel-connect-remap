@@ -4,31 +4,33 @@
       Self Tour
       %span Analytics
     %h3.box-title.align-right
-      Sessions
+      Tours
       %span= @date_range_text
   .box-body.maps-box
     - if @self_tour_records.any?
       .row
         .col-lg-6.col-md-12.h-500
           .chart-title
-            %p.chart_heading Sessions
+            %p.chart_heading Tours
             = render 'title_info', {info_text: SELF_TOUR_TOURS_INFO }
 
           .col-lg-4.numbers_div
             .center_it
               .count_int= @track_session_count_self_tour
-              .count_text= 'Total number of sessions'
+              .count_text= 'Total number of tours'
               .count_int= @avg_track_session_self_tour
-              .count_text= 'Average number of sessions per day'
+              .count_text= 'Average number of tours per day'
           .col-lg-8
             = bar_chart @session_each_day_data_self_tour, @session_each_day_options_self_tour
 
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Session Duration
+          .chart-title
+            %p.chart_heading Tour Duration
+            = render 'title_info', {info_text: SELF_TOUR_TOURS_DURATION }
           .col-lg-4.numbers_div
             .center_it
               .count_int= @average_duration_each_session_in_minutes_self_tour
-              .count_text= 'Average duration of each session in minutes'
+              .count_text= 'Average duration of each tour in minutes'
           .col-lg-8
             = line_chart @session_each_day_minutes_data_self_tour, @session_each_day_minutes_options_self_tour
       
@@ -37,12 +39,12 @@
         - if current_user.is_super_admin?
           .col-lg-6.col-md-12.h-500
             .chart-title
-              %p.chart_heading Sessions by Time of Day
+              %p.chart_heading Tours by Time of Day
               = render 'title_info', {info_text: SELF_TOUR_TOURS_BY_TIME_OF_DAY_INFO }
             .col-lg-4.numbers_div
               .center_it
                 .count_int= @session_in_highest_hour_self_tour
-                .count_text= 'Maximum number of sessions at ' + @highest_hour_self_tour
+                .count_text= 'Maximum number of tours at ' + @highest_hour_self_tour
             .col-lg-8
               = bar_chart @session_each_day_hour_data_self_tour, @session_each_day_hour_options_self_tour
 
@@ -52,11 +54,11 @@
             .center_it
               .pie_description
                 %span.dot.single_page
-                %span One page viewed sessions
+                %span One page viewed tours
                 %span= @percentage_single_page_visitor_self_tour
               .pie_description
                 %span.dot.multiple_page
-                %span Multiple page viewed sessions
+                %span Multiple page viewed tours
                 %span= @percentage_multiple_page_visitor_self_tour
           .col-lg-8.pie_width
             = pie_chart @bounce_data_labels_self_tour, @bounce_data_options_self_tour
@@ -74,11 +76,11 @@
                 .count_text= 'Total number of events'
                 .pie_description
                   %span.dot.events_with
-                  %span Sessions with events
+                  %span Tours with events
                   %span= @percentage_session_with_events_self_tour
                 .pie_description
                   %span.dot.events_without
-                  %span Sessions without events 
+                  %span Tours without events 
                   %span= @percentage_session_without_events_self_tour
             .col-lg-5.pie_width
               = pie_chart @pie_events_data_labels_self_tour, @pie_events_data_options_self_tour
@@ -94,11 +96,11 @@
             .center_it
               .pie_description
                 %span.dot.tour_site_true
-                %span Onsite Sessions
+                %span Onsite Tours
                 %span= @percentage_tour_site_true_counts
               .pie_description
                 %span.dot.tour_site_false
-                %span Offsite Sessions
+                %span Offsite Tours
                 %span= @percentage_tour_site_false_counts
           .col-lg-5.pie_width
             = pie_chart @pie_tour_site_data_labels, @pie_tour_site_data_options
@@ -117,11 +119,11 @@
                 .count_text= 'Total number of apply clicks' 
                 .pie_description
                   %span.dot.apply_clicks_with
-                  %span Sessions with apply clicks
+                  %span Tours with apply clicks
                   %span= @percentage_session_with_apply_clicks_self_tour
                 .pie_description
                   %span.dot.apply_clicks_without
-                  %span Sessions without apply clicks
+                  %span Tours without apply clicks
                   %span= @percentage_session_without_apply_clicks_self_tour
             .col-lg-5.pie_width
               = pie_chart @pie_apply_click_data_labels_self_tour, @pie_apply_click_data_options_self_tour
@@ -140,11 +142,11 @@
                 .count_text= 'Total number of See Availability' 
                 .pie_description
                   %span.dot.see_availability_with
-                  %span Sessions With "See Availability"
+                  %span Tours With "See Availability"
                   %span= @percentage_session_with_see_availability
                 .pie_description
                   %span.dot.see_availability_without
-                  %span Sessions Without "See Availability"
+                  %span Tours Without "See Availability"
                   %span= @percentage_session_without_see_availability
             .col-lg-5.pie_width
               = pie_chart @pie_see_availbility_data_labels, @pie_see_availbility_data_options
@@ -161,11 +163,11 @@
                 .count_text= "Total number of times camera was opened"
                 .pie_description
                   %span.dot.tour_counter_with
-                  %span Sessions with Camera Opened
+                  %span Tours with Camera Opened
                   %span= @percentage_session_with_counts_camera_opened_counter
                 .pie_description
                   %span.dot.tour_counter_without
-                  %span Sessions without Camera Opened
+                  %span Tours without Camera Opened
                   %span= @percentage_session_without_counts_camera_opened_counter
             .col-lg-8.pie_width
               = pie_chart @pie_camera_opened_counter_data_labels, @pie_camera_opened_counter_data_options
@@ -177,11 +179,11 @@
                 .count_text= 'Total number of times notes was opened'
                 .pie_description
                   %span.dot.tour_counter_with
-                  %span Sessions with Notes Opened
+                  %span Tours with Notes Opened
                   %span= @percentage_session_with_counts_notes_opened_counter
                 .pie_description
                   %span.dot.tour_counter_without
-                  %span Sessions without Notes Opened
+                  %span Tours without Notes Opened
                   %span= @percentage_session_without_counts_notes_opened_counter
             .col-lg-8.pie_width
               = pie_chart @pie_notes_opened_counter_data_labels, @pie_notes_opened_counter_data_options
@@ -194,16 +196,16 @@
           .col-lg-4.numbers_div
             .center_it
               .count_int= @tour_scheduled_counts
-              .count_text= 'Total number of Scheduled Sessions' 
+              .count_text= 'Total number of Scheduled Tours' 
               .count_int= @tour_unscheduled_counts
-              .count_text= 'Total number of Unscheduled Sessions' 
+              .count_text= 'Total number of Unscheduled Tours' 
               .pie_description
                 %span.dot.tour_scheduled
-                %span Scheduled Sessions
+                %span Scheduled Tours
                 %span= @percentage_tour_scheduled_counts
               .pie_description
                 %span.dot.tour_unscheduled
-                %span Unscheduled Sessions
+                %span Unscheduled Tours
                 %span= @percentage_tour_unscheduled_counts
           .col-lg-8.pie_width
             = pie_chart @pie_tour_type_data_labels, @pie_tour_type_data_options
@@ -229,11 +231,11 @@
             .center_it
               .pie_description
                 %span.dot.tour_site_true
-                %span Completed Sessions
+                %span Completed Tours
                 %span= @percentage_tour_state_true_counts
               .pie_description
                 %span.dot.tour_site_false
-                %span Abandoned Sessions
+                %span Abandoned Tours
                 %span= @percentage_tour_state_false_counts
           .col-lg-5.pie_width
             = pie_chart @pie_tour_state_data_labels, @pie_tour_state_data_options
@@ -248,7 +250,7 @@
           .col-lg-4.numbers_div
             .center_it
               .count_int= @average_number_of_stops_per_session_tour_stop
-              .count_text= "Average number of stops visited per session"
+              .count_text= "Average number of stops visited per tour"
           .col-lg-8
             = bar_chart @session_each_day_stops_hour_data, @session_each_day_stops_hour_options
         
@@ -277,11 +279,11 @@
 -#         .count_text= 'Total number of times price was opened'
 -#         .pie_description
 -#           %span.dot.price_opened_with
--#           %span Sessions with price opened
+-#           %span Tours with price opened
 -#           %span= @percentage_session_with_price_opened_self_tour
 -#         .pie_description
 -#           %span.dot.price_opened_without
--#           %span Sessions without price opened
+-#           %span Tours without price opened
 -#           %span= @percentage_session_without_price_opened_self_tour
 -#     .col-lg-8.pie_width
 -#       = pie_chart @pie_price_opened_data_labels_self_tour, @pie_price_opened_data_options_self_tour

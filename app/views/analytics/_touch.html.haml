@@ -23,7 +23,9 @@
           .col-lg-8
             = bar_chart @session_each_day_data_metro, @session_each_day_options_metro
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Session Duration
+          .chart-title
+            %p.chart_heading Session Duration
+            = render 'title_info', {info_text: TOUCH_SESSION_DURATION }
           .col-lg-4.numbers_div
             .center_it
               .count_int= @average_duration_each_session_in_minutes_metro
