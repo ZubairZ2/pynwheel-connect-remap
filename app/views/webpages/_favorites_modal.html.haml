@@ -1,5 +1,5 @@
 .c-connect-map-wrapper{"data-action": "#{params[:action]}"}
-  .c-modal-body-content{:style => "height: 88%"}
+  .c-modal-body-content
     - @units = [] if @units.nil?
     - @units.each do |unit|
       - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
