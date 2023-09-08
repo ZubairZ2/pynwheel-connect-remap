@@ -95,17 +95,23 @@ class AnalyticsController < ApplicationController
       @product_type = params[:product_type].present? ? params[:product_type] : "all"
       @admin_type = params[:admin_type] if params[:admin_type]
       @community_id = params[:community] if params[:community].present?
-      @show_self_tour = @community_id.present? ? Community.find(@community_id).self_tour : true
-      @show_touch = @community_id.present? ? Community.find(@community_id).touchscreen_app : true
-      if @community_id.present?
-        params[:company] = Community.find(@community_id).company_id
-        params[:region] = Community.find(@community_id).region_id
+      @community = Community.find(@community_id) if @community_id.present?
+      @show_self_tour = @community.present? ? @community.self_tour : true
+      @show_touch = @community.present? ? @community.touchscreen_app : true
+      @only_scheduled_tours = @community.present? ? @community&.community_tour&.only_scheduled_tour : false
+
+      if @community.present?
+        params[:company] = @community.company_id
+        params[:region] = @community.region_id
       end
+      
       @company_id = params[:company] if params[:company].present?
       @region_id = params[:region] if params[:region].present?
+
       if params[:community].present? && !params[:community].blank?
         on_selected_communities(@community_id)
       end
+      
       if params[:admin_type].present? && !params[:admin_type].blank?
         if params[:admin_type] == "all_pynwheel"
           community_ids = Community.all.ids
@@ -114,10 +120,12 @@ class AnalyticsController < ApplicationController
         end
         on_selected_communities(community_ids)
       end
+      
       if params[:company].present? && !params[:company].blank?
         company = Company.find @company_id
         on_selected_communities(company.communities.ids)
       end
+      
       if params[:region].present? && !params[:region].blank?
         region = Region.find @region_id
         on_selected_communities(region.communities.ids)
