@@ -773,8 +773,10 @@ Rails.application.routes.draw do
       get :get_tour_user, to: 'communities#get_tour_user'
       get :get_filtered_tours, to: 'communities#get_filtered_tours'
       get :get_count_screen, to: 'communities#get_count_screen'
+
       post '/communities/:community_id/metro_send_analytics_data', to: 'communities#metro_send_analytics_data'
-      
+      post '/communities/:community_id/rn_touch_send_analytics_data', to: 'communities#rn_touch_send_analytics_data'
+
       resources :communities, only: :index do
         member do
           get :data

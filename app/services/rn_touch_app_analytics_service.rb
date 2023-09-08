@@ -1,4 +1,4 @@
-class MetroAnalyticsService
+class RnTouchAppAnalyticsService
   def initialize community
     @community = community
   end
@@ -6,7 +6,7 @@ class MetroAnalyticsService
   def create_analytics_session params
     TrackSession.create!(
       community_id: @community.id, 
-      track_session_type: "metro", 
+      track_session_type: "rn_touch", 
       start_datetime: params["SessionStartime"].to_datetime.in_time_zone( @community.time_zone ),
       end_datetime: params["SessionEndTime"].to_datetime.in_time_zone( @community.time_zone ),
       session_id: params["SeessionId"],
