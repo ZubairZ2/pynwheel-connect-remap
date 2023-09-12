@@ -85,7 +85,7 @@ TOUCH_PAGES_PER_SESSION_INFO = "The average number of pages per session. Ideally
 TOUCH_TOP_PAGES_INFO = "The most popular pages visited in the Pynwheel Touch application."
 
 # SELF TOUR INFO
-SELF_TOUR_TOURS_INFO = "A “Tour” is defined as any usage of the app that includes a visit to at least one stop."
+SELF_TOUR_TOURS_INFO = "A tour is defined as any usage of the app once the “start tour” button has been touched, regardless of whether or not they visit any stops before the app is closed."
 SELF_TOUR_TOURS_DURATION = "Amount of time a user spends in the tour starting with the first stop, before they end the tour or close the application."
 SELF_TOUR_TOURS_BY_TIME_OF_DAY_INFO = "Number of tours per time of day at the location of the property. This graph shows the trends of tour traffic."
 SELF_TOUR_APP_OPENS_INFO = "Shows the number of times a user opened a property’s app but did not conduct a tour. For example, if a user opened the app a day prior to the tour to make sure they could access it."
