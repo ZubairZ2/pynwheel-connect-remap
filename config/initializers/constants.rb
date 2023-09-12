@@ -83,6 +83,7 @@ TOUCH_FAVORITE_SAVED_INFO = "This is the tally of the number of floor plans or i
 TOUCH_FAVORITE_MAILED_INFO = "The total number of ebrochures sent. Ideally, leasing agents will send an ebrochure to every visitor."
 TOUCH_PAGES_PER_SESSION_INFO = "The average number of pages per session. Ideally, leasing agents should be hitting all pages."
 TOUCH_TOP_PAGES_INFO = "The most popular pages visited in the Pynwheel Touch application."
+TOUCH_TYPES = ["metro", "ipad"]
 
 # SELF TOUR INFO
 SELF_TOUR_TOURS_INFO = "A “Tour” is defined as any usage of the app that includes a visit to at least one stop."

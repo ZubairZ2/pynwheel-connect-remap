@@ -2,6 +2,7 @@ class AnalyticsController < ApplicationController
   include AnalyticsHelper
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Analytics"
+
   def index
     start_date , end_date = (params[:start_date].present? && params[:end_date].present?) ? [(params[:start_date].split("/")[1] + "/" + params[:start_date].split("/")[0] + "/" + params[:start_date].split("/")[2]).to_date, ((params[:end_date].split("/")[1] + "/" + params[:end_date].split("/")[0] + "/" + params[:end_date].split("/")[2]).to_date)] : [Date.today - 7.day, Date.today]
     @days_count = return_total_days(start_date, end_date) > 0 ? return_total_days(start_date, end_date) : 1
@@ -9,13 +10,13 @@ class AnalyticsController < ApplicationController
     track_sessions = TrackSession.where(community_id: communities.ids)
     tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
     @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
-    @metro_records = track_sessions.where(track_session_type: "metro").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
+    @metro_records = track_sessions.where(track_session_type: TOUCH_TYPES).where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @pesent_end_dattime_maps_records = @maps_records.where.not(end_datetime: nil)
     @pesent_end_dattime_metro_records = @metro_records.where.not(end_datetime: nil)
     @self_tour_records = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @min_date_for_self_tour = tour_histories.order('created_at asc')&.first&.created_at
-    @min_date_for_touch = track_sessions.where(track_session_type: "metro").order('created_at asc')&.first&.created_at
+    @min_date_for_touch = track_sessions.where(track_session_type: TOUCH_TYPES).order('created_at asc')&.first&.created_at
 
     apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
