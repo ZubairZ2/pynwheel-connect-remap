@@ -1,4 +1,4 @@
-class RnTouchAppAnalyticsService
+class IpadAnalyticsService
   def initialize community
     @community = community
   end
@@ -6,7 +6,7 @@ class RnTouchAppAnalyticsService
   def create_analytics_session params
     TrackSession.create!(
       community_id: @community.id, 
-      track_session_type: "rn_touch", 
+      track_session_type: "ipad", 
       start_datetime: params["SessionStartime"].to_datetime.in_time_zone( @community.time_zone ),
       end_datetime: params["SessionEndTime"].to_datetime.in_time_zone( @community.time_zone ),
       session_id: params["SeessionId"],

@@ -12,7 +12,7 @@ module Api
       include ShortestPath
       
       before_action :check_authentication, only: [:lincoln_list_communities, :portico_list_communities]
-      before_action :set_community, only: [:email_favorites, :metro_send_analytics_data, :rn_touch_send_analytics_data]
+      before_action :set_community, only: [:email_favorites, :metro_send_analytics_data, :ipad_send_analytics_data]
       before_action :load_tour_user, only: [:portico_list_communities, :lincoln_list_communities]
     
       require 'securerandom'
@@ -403,9 +403,9 @@ module Api
         end
       end
 
-      def rn_touch_send_analytics_data
+      def ipad_send_analytics_data
         begin
-          RnTouchAppAnalyticsService.new(community).create_analytics_session(params)
+          IpadAnalyticsService.new(community).create_analytics_session(params)
           render :json=> {status: true, code: 200, message: "RN touch app analytics data sent sucessfully!"}
         rescue => exception
           render :json=> {status: false, code: 401, message: exception.message}
