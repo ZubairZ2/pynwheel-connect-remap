@@ -7207,6 +7207,10 @@ span.to-input {
 }
 .chart-title i{
     font-size: 20px;
-    margin-top: 32px;
     margin-left: 9px;
+    @media (max-width: 768px) {
+        margin-top: 24px;    }
+    @media (min-width: 769px) {
+        margin-top: 32px;
+    }
 }

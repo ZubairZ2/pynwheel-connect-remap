@@ -15,14 +15,9 @@
             = render 'title_info', {info_text: SELF_TOUR_TOURS_INFO }
 
           .col-lg-4.numbers_div
-            .center_it
-              .count_int= @track_session_count_self_tour
-              .count_text= 'Total number of tours'
-              .count_int= @avg_track_session_self_tour
-              .count_text= 'Average number of tours per day'
+            .count_text= 'Average number of tours per day'
           .col-lg-8
             = bar_chart @session_each_day_data_self_tour, @session_each_day_options_self_tour
-
         .col-lg-6.col-md-12.h-500
           .chart-title
             %p.chart_heading Tour Duration
