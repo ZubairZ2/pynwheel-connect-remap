@@ -1,5 +1,5 @@
 .c-connect-map-wrapper{"data-action": "#{params[:action]}"}
-  .c-modal-body-content{:style => "height: 88%"}
+  .c-modal-body-content
     - @units = [] if @units.nil?
     - @units.each do |unit|
       - floorplan = @floorplans.select{|f| f.provider_floorplan_id == unit.floorplan_id}.first
@@ -67,6 +67,7 @@
             .c-modal-sidebar-description
               %h4.des-heading Description
               .c-m-description= (unit.description.present? ? unit.description : (floorplan.description.present? ? floorplan.description : "Not Available")).html_safe
+          .c-modal-sidebar-filters.sidebar-footer
             - if @community.credential.present? and @community.credential.apply_now.to_s == "true"
               - available_date = determine_available_date(unit.available_date)
               .c-modal-sidebar-filters.sidebar-footer
@@ -103,8 +104,8 @@
                   - else
                     .unit-total-pricing{style: 'text-align: center'}
                       - if @community.display_rent
-                        %span.c-m-total-price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
-                        %span.per-month-price-text.text-p /month
+                        %span.price{id: "#{unit.id}-total-price"}= "#{@community.get_currency_symbol}#{number_with_precision(unit.effective_rent, :precision => 2, :delimiter => ',')}"
+                        %span.per-month /month
 
                 %span.move-in-date-text Pricing is based on a move-in date of today. Click “apply now” for more options.           
             
@@ -132,7 +133,7 @@
             .c-m-iframe-content
               = image_tag unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
           .c-modal-footer-fav.zooming-content.zoomable-map-container
-            %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-in"}
+            %a.plus-action.zooming-action.zoom-in-modal.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-in"}
               %img{:src => "/assets/plus.png"}/
             %a.minus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-out"}
               %img{:src => "/assets/minus.png"}/
