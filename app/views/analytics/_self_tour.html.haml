@@ -15,9 +15,14 @@
             = render 'title_info', {info_text: SELF_TOUR_TOURS_INFO }
 
           .col-lg-4.numbers_div
-            .count_text= 'Average number of tours per day'
+            .center_it
+              .count_int= @track_session_count_self_tour
+              .count_text= 'Total number of tours'
+              .count_int= @avg_track_session_self_tour
+              .count_text= 'Average number of tours per day'
           .col-lg-8
             = bar_chart @session_each_day_data_self_tour, @session_each_day_options_self_tour
+
         .col-lg-6.col-md-12.h-500
           .chart-title
             %p.chart_heading Tour Duration
@@ -28,8 +33,8 @@
               .count_text= 'Average duration of each tour in minutes'
           .col-lg-8
             = line_chart @session_each_day_minutes_data_self_tour, @session_each_day_minutes_options_self_tour
-      
-      
+
+
       .row.mt-80
         - if current_user.is_super_admin?
           .col-lg-6.col-md-12.h-500
@@ -57,14 +62,14 @@
                 %span= @percentage_multiple_page_visitor_self_tour
           .col-lg-8.pie_width
             = pie_chart @bounce_data_labels_self_tour, @bounce_data_options_self_tour
-      
+
       - if current_user.is_super_admin?
         .row.mt-80
           .col-lg-12.h-500
             .chart-title
               %p.chart_heading Events
               = render 'title_info', {info_text: SELF_TOUR_EVENTS_INFO }
-            
+
             .col-lg-2.numbers_div
               .center_it
                 .count_int= @total_number_of_events_self_tour
@@ -101,7 +106,7 @@
             = pie_chart @pie_tour_site_data_labels, @pie_tour_site_data_options
           .col-lg-5
             = bar_chart @bar_tour_site_data_labels, @bar_tour_site_data_options
-      
+
       - if current_user.is_super_admin?
         .row.mt-80
           .col-lg-12.h-500
@@ -124,7 +129,7 @@
               = pie_chart @pie_apply_click_data_labels_self_tour, @pie_apply_click_data_options_self_tour
             .col-lg-5
               = line_chart @line_apply_click_data_labels_self_tour, @line_apply_click_data_options_self_tour
-      
+
       - if current_user.is_super_admin?
         .row.mt-80
           .col-lg-12.h-500
@@ -189,10 +194,10 @@
             .chart-title
               %p.chart_heading No Shows
               = render 'title_info', {info_text: SELF_TOUR_NO_SHOWS }
-    
+
             .col-lg-8
               = bar_chart @session_each_day_no_show_data, @session_each_day_no_show_options
-            
+
             .col-lg-4.numbers_div
               .center_it
                 .count_int= @no_show_count
@@ -219,7 +224,7 @@
                   %span= @percentage_tour_unscheduled_counts
             .col-lg-8.pie_width
               = pie_chart @pie_tour_type_data_labels, @pie_tour_type_data_options
-          
+
           .col-lg-6.col-md-12.h-500
             .chart-title
               %p.chart_heading No Shows
@@ -262,7 +267,7 @@
         -#       .count_text= "Average number of stops visited per tour"
         -#   .col-lg-8
         -#     = bar_chart @session_each_day_stops_hour_data, @session_each_day_stops_hour_options
-        
+
         - if current_user.is_super_admin?
           .col-lg-12.col-md-12.h-500
             .chart-title
