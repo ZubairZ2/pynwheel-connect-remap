@@ -188,39 +188,53 @@
             .col-lg-8.pie_width
               = pie_chart @pie_notes_opened_counter_data_labels, @pie_notes_opened_counter_data_options
 
-      .row.mt-80       
-        .col-lg-6.col-md-12.h-500
-          .chart-title
-            %p.chart_heading Scheduled vs. Unscheduled
-            = render 'title_info', {info_text: SELF_TOUR_SCHEDULED_VS_UNSCHEDULED_INFO }
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @tour_scheduled_counts
-              .count_text= 'Total number of Scheduled Tours' 
-              .count_int= @tour_unscheduled_counts
-              .count_text= 'Total number of Unscheduled Tours' 
-              .pie_description
-                %span.dot.tour_scheduled
-                %span Scheduled Tours
-                %span= @percentage_tour_scheduled_counts
-              .pie_description
-                %span.dot.tour_unscheduled
-                %span Unscheduled Tours
-                %span= @percentage_tour_unscheduled_counts
-          .col-lg-8.pie_width
-            = pie_chart @pie_tour_type_data_labels, @pie_tour_type_data_options
-        
-        .col-lg-6.col-md-12.h-500
-          .chart-title
-            %p.chart_heading No Shows
-            = render 'title_info', {info_text: SELF_TOUR_NO_SHOWS }
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @no_show_count
-              .count_text= "Total number of no shows"
-          .col-lg-8
-            = bar_chart @session_each_day_no_show_data, @session_each_day_no_show_options
+      .row.mt-80
+        - if @only_scheduled_tours        
+          .col-lg-12.col-md-12.h-500
+            .chart-title
+              %p.chart_heading No Shows
+              = render 'title_info', {info_text: SELF_TOUR_NO_SHOWS }
+    
+            .col-lg-8
+              = bar_chart @session_each_day_no_show_data, @session_each_day_no_show_options
+            
+            .col-lg-4.numbers_div
+              .center_it
+                .count_int= @no_show_count
+                .count_text= "Total number of no shows"
 
+        - else   
+          .col-lg-6.col-md-12.h-500
+            .chart-title
+              %p.chart_heading Scheduled vs. Unscheduled
+              = render 'title_info', {info_text: SELF_TOUR_SCHEDULED_VS_UNSCHEDULED_INFO }
+            .col-lg-4.numbers_div
+              .center_it
+                .count_int= @tour_scheduled_counts
+                .count_text= 'Total number of Scheduled Tours' 
+                .count_int= @tour_unscheduled_counts
+                .count_text= 'Total number of Unscheduled Tours' 
+                .pie_description
+                  %span.dot.tour_scheduled
+                  %span Scheduled Tours
+                  %span= @percentage_tour_scheduled_counts
+                .pie_description
+                  %span.dot.tour_unscheduled
+                  %span Unscheduled Tours
+                  %span= @percentage_tour_unscheduled_counts
+            .col-lg-8.pie_width
+              = pie_chart @pie_tour_type_data_labels, @pie_tour_type_data_options
+          
+          .col-lg-6.col-md-12.h-500
+            .chart-title
+              %p.chart_heading No Shows
+              = render 'title_info', {info_text: SELF_TOUR_NO_SHOWS }
+            .col-lg-4.numbers_div
+              .center_it
+                .count_int= @no_show_count
+                .count_text= "Total number of no shows"
+            .col-lg-8
+              = bar_chart @session_each_day_no_show_data, @session_each_day_no_show_options
 
       .row.mt-80
         .col-lg-12.h-500
@@ -235,7 +249,7 @@
                 %span= @percentage_tour_state_true_counts
               .pie_description
                 %span.dot.tour_site_false
-                %span Abandoned Tours
+                %span Incomplete Tours
                 %span= @percentage_tour_state_false_counts
           .col-lg-5.pie_width
             = pie_chart @pie_tour_state_data_labels, @pie_tour_state_data_options
@@ -243,24 +257,29 @@
             = bar_chart @bar_tour_state_data_labels, @bar_tour_state_data_options
 
       .row.mt-80
-        .col-lg-6.col-md-12.h-500
-          .chart-title
-            %p.chart_heading Stops Per Tour
-            = render 'title_info', {info_text: SELF_TOUR_STOPS_PER_TOUR_INFO }
-          .col-lg-4.numbers_div
-            .center_it
-              .count_int= @average_number_of_stops_per_session_tour_stop
-              .count_text= "Average number of stops visited per tour"
-          .col-lg-8
-            = bar_chart @session_each_day_stops_hour_data, @session_each_day_stops_hour_options
+        -# .col-lg-6.col-md-12.h-500
+        -#   .chart-title
+        -#     %p.chart_heading Stops Per Tour
+        -#     = render 'title_info', {info_text: SELF_TOUR_STOPS_PER_TOUR_INFO }
+        -#   .col-lg-4.numbers_div
+        -#     .center_it
+        -#       .count_int= @average_number_of_stops_per_session_tour_stop
+        -#       .count_text= "Average number of stops visited per tour"
+        -#   .col-lg-8
+        -#     = bar_chart @session_each_day_stops_hour_data, @session_each_day_stops_hour_options
         
         - if current_user.is_super_admin?
-          .col-lg-6.col-md-12.h-500
+          .col-lg-12.col-md-12.h-500
             .chart-title
               %p.chart_heading Top Stops
               = render 'title_info', {info_text: SELF_TOUR_TOP_STOPS_INFO }
             .col-lg-8
               = horizontal_bar_chart @visited_per_tour_stop_data_labels, @visited_per_tour_stop_data_options
+
+            .col-lg-4.numbers_div
+              .center_it
+                .count_int= @average_number_of_stops_per_session_tour_stop
+                .count_text= "Average number of stops visited per tour"
 
     - else
       %h3 There is no record found on selected date range

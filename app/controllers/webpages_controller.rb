@@ -3,6 +3,7 @@ class WebpagesController < ActionController::Base
   #after_action :maintain_session, except: [:update_session]
   before_action :set_timezone, except: [:update_session]
   protect_from_forgery :except => [:update_session]
+
   def index
     @floorplans = []
     units_ids_not_present = (cookies[:favorite_unit_ids] == nil || cookies[:favorite_unit_ids] == "[]")
@@ -258,6 +259,7 @@ class WebpagesController < ActionController::Base
   end
 
   private
+  
   def get_community_code community
     (JWT.encode ({"community_id" => community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
   end
