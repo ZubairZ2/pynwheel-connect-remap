@@ -33,7 +33,7 @@
         .modal-body
           .container
             .row
-              .col-md-10.custom-left-column
+              .col-xs-8.col-sm-8.col-md-9.custom-left-column
                 .plane-details
                   .plan-modal
                     -# %h1.mb-20.text-primary
@@ -41,10 +41,11 @@
                     %h3= @community.name
                     %p= @community.address
                     %p= @community.website if @community.website.present?
-                  
-              .col-md-2.custom-right-column
-                .plan-image.plan-image-pop
-                  = image_tag @community.logo.present? ? @community.logo.url : "logo-small.png" ,class: "img-responsive"
+
+              .col-xs-4.col-sm-4.col-md-3.custom-right-column
+                .plan-image
+                  .plan-image-pop
+                    = image_tag @community.logo.present? ? @community.logo.url : "/assets/pynwheel-default-logo.png" ,class: "img-responsive"
               .clear-fix
       .container{style: "width: 100%; display: inline-block; padding: inherit;"}
         = render partial: "favorites_modal"                                                       
