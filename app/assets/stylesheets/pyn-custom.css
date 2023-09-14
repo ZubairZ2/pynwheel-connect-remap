@@ -3949,7 +3949,7 @@ a#favoriteclickme {
     }
     .navbar-static-top {
         margin-top: 0px !important;
-        height: 60px !important;
+        /*height: 60px !important;*/
     }
 }
 
@@ -4348,8 +4348,8 @@ a#favoriteclickme {
     line-height: 1.3;
 
     @media (max-width: 700px) {
-        width: 220px;
-        transform: translateX(-37%);
+        width: 180px;
+        transform: translateX(-30%);
         left: 0%;
     }
     @media (min-width: 700px) {
@@ -7232,5 +7232,13 @@ span.to-input {
         margin-top: 24px;    }
     @media (min-width: 769px) {
         margin-top: 32px;
+    }
+}
+@media only screen and (max-width: 450px){
+    .navbar-nav>.user-menu>.dropdown-menu {
+        width: 252px;
+    }
+    .content-header{
+        padding: 26px 15px 0 15px;
     }
 }
