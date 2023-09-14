@@ -4357,6 +4357,10 @@ a#favoriteclickme {
         left: 50%;
 
     }
+    @media (min-width: 1200px) and (max-width: 1560px){
+        width: 240px;
+        transform: translateX(-35%);
+    }
 
 }
 
@@ -4408,6 +4412,7 @@ a#favoriteclickme {
     border-style: solid;
     border-color: black transparent transparent transparent;
 }
+
 @media (max-width: 700px) {
     .propertyDetailName #propertyDetailNameText::after,
     .analyticsToolTip #analyticsToolTipText::after {
@@ -4420,6 +4425,13 @@ a#favoriteclickme {
     .propertyDetailName #propertyDetailNameText::after,
     .analyticsToolTip #analyticsToolTipText::after {
         left: 50%;
+    }
+}
+@media (min-width: 1200px) and (max-width: 1560px){
+    .propertyDetailName #propertyDetailNameText::after,
+    .analyticsToolTip #analyticsToolTipText::after {
+        right: 37%;
+        left: auto;
     }
 }
 .propertyDetailName:hover #propertyDetailNameText,
