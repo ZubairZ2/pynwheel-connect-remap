@@ -394,10 +394,10 @@ class AnalyticsController < ApplicationController
 
     def interface_used(start_date, days_count, total_records, for_device_type)
       sessions_each_day_hash = return_empty_hash(days_count,start_date)
-      track_sessions = total_records.select("DATE(start_datetime) AS start_date", :track_session_type, 'COUNT(*) AS count').group("start_date", :track_session_type).order("start_date", :track_session_type)
-      
       labels = sessions_each_day_hash.keys.map{|date| date.to_date.to_s}
-      dates = []
+
+      track_sessions = total_records.select("DATE(start_datetime) AS start_date", :track_session_type, 'COUNT(*) AS count').group("start_date", :track_session_type).order("start_date")
+     
       metro_session_counts_array = []
       ipad_session_counts_array = []
       count_data = {}
@@ -406,11 +406,6 @@ class AnalyticsController < ApplicationController
         date = result.start_date.to_s
         track_session_type = result.track_session_type
         count = result.count
-
-        unless dates.include?(date)
-          dates << date
-        end
-
         count_data[date] ||= {}
         count_data[date][track_session_type] = count
       end
@@ -429,6 +424,7 @@ class AnalyticsController < ApplicationController
         end
       end
 
+
       total_count = metro_session_counts_array.sum + ipad_session_counts_array.sum
       percentage_metro_interface_used = ((metro_session_counts_array.sum.to_f / total_count.to_f).round(2) * 100).round(2) rescue 0.0
       percentage_ipad_interface_used = ((ipad_session_counts_array.sum.to_f / total_count.to_f).round(2) * 100).round(2) rescue 0.0
@@ -436,7 +432,7 @@ class AnalyticsController < ApplicationController
       bar_touch_data_labels, bar_touch_data_options = make_multiple_bar_chart(labels, metro_session_counts_array, ipad_session_counts_array)
       pie_chart_hash = {"Total sessions on tablet" => ipad_session_counts_array.sum, "Total sessions on touchscreen" => metro_session_counts_array.sum}
       pie_touch_data_labels, pie_touch_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(137, 199, 101, 0.5)", "rgba(255,212,0,0.8)"], ["rgba(137, 199, 101, 1)","rgba(255,212,0,1)"])
-      
+    
       instance_variable_set("@percentage_ipad_interface_used_#{for_device_type}", percentage_ipad_interface_used.to_s + "%")
       instance_variable_set("@percentage_metro_interface_used_#{for_device_type}", percentage_metro_interface_used.to_s + "%")
       instance_variable_set("@total_number_of_touch_sent_#{for_device_type}", ipad_session_counts_array.sum)

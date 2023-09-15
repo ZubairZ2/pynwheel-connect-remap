@@ -314,5 +314,6 @@ module AnalyticsHelper
         }]
     end
     styling_arr
+    
   end
 end
