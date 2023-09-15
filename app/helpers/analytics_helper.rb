@@ -56,28 +56,69 @@ module AnalyticsHelper
     return labels, options
   end
 
+  def make_multiple_bar_chart(labels, metro_data, ipad_data)
+    labels = {
+      labels: labels,
+      datasets: [
+        {
+          label: "Tablet sessions",
+          backgroundColor: "rgba(137, 199, 101, 0.8)",
+          borderColor: "rgba(137, 199, 101, 1)",
+          borderWidth: 3,
+          data: ipad_data,
+          stack: "Touch"
+        },
+        {
+          label: "Touchscreen sessions",
+          backgroundColor: "rgba(255, 212, 0, 0.8)",
+          borderColor:"rgba(255, 212, 0, 1)",
+          borderWidth: 3,
+          data: metro_data,
+          stack: "Touch"
+        }
+      ]
+    }
+
+    options = { legend: {display: false}, responsive: true, maintainAspectRatio: false, scales: {
+                  xAxes: charts_styling,
+                  yAxes: [{
+                    ticks: {
+                      beginAtZero: true,
+                      precision: 0
+                    }
+                  }]
+                } 
+              }
+
+    return labels, options
+  end
+
+
   def make_bar_chart(session_each_day_labels, session_each_day_counts, label, background_color, border_color)
     labels = {
       labels: session_each_day_labels,
       datasets: [
         {
-            label: label,
-            backgroundColor: background_color,
-            borderColor: border_color,
-            borderWidth: 3,
-            data: session_each_day_counts
+          label: label,
+          backgroundColor: background_color,
+          borderColor: border_color,
+          borderWidth: 3,
+          data: session_each_day_counts
         }
       ]
     }
+
     options = { legend: {display: false}, responsive: true, maintainAspectRatio: false, scales: {
-        xAxes: charts_styling,
-        yAxes: [{
-            ticks: {
-                beginAtZero: true,
-                precision: 0
-            }
-        }]
-    } }
+                  xAxes: charts_styling,
+                  yAxes: [{
+                    ticks: {
+                      beginAtZero: true,
+                      precision: 0
+                    }
+                  }]
+                } 
+              }
+
     return labels, options
   end
 
