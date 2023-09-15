@@ -5,15 +5,16 @@
 .h-700{
   height: 700px;
 }
-.numbers_div{
-  @media (max-width: 1149px) {
-    height: auto;
-  }
-  @media (min-width: 1150px) {
-    display: table;
-    height: 350px;
+.numbers_div {
+  height: auto;
+}
+@media (min-width: 1150px) {
+  .numbers_div {
+    display: table !important;
+    height: 350px !important;
   }
 }
+
 .numbers_div_700{
   height: 700px;
   display: table;
@@ -21,19 +22,19 @@
 .center_it{
   vertical-align: middle;
   text-align:center;
-  @media (max-width: 899px) {
-  }
-  @media (min-width: 900px) {
+}
+@media (min-width: 900px) {
+  .center_it {
     display: table-cell;
   }
 }
 .count_int{
   font-weight: 600;
-  @media (max-width: 768px) {
-    font-size: 25px;
-  }
-  @media (min-width: 769px) {
-    font-size: 50px;
+  font-size: 25px;
+}
+@media (min-width: 769px) {
+  .count_int {
+    font-size: 50px !important;
   }
 }
 .count_text{ font-size: 16px; }
@@ -56,19 +57,30 @@
  float: right;
  margin-right: 20px;
 }
-.chart_heading{
+/* Default styles for .chart_heading */
+.chart_heading {
   font-weight: 600;
   margin-top: 20px;
-    @media (max-width: 900px) {
-      text-align: center;
-      margin-left: 0;
-      font-size: 22px;
-    }
-    @media (min-width: 769px) {
-      font-size: 30px;
-      margin-left: 35px;
-    }
-  @media (max-width: 350px) {
+}
+
+/* Media queries for responsive design */
+@media (max-width: 900px) {
+  .chart_heading {
+    text-align: center;
+    font-size: 22px;
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 769px) {
+  .chart_heading {
+    font-size: 30px;
+    margin-left: 35px;
+  }
+}
+
+@media (max-width: 350px) {
+  .chart_heading {
     font-size: 18px;
   }
 }
