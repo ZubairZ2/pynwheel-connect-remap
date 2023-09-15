@@ -4357,11 +4357,6 @@ a#favoriteclickme {
         left: 50%;
 
     }
-    @media (min-width: 1200px) and (max-width: 1560px){
-        width: 240px;
-        transform: translateX(-35%);
-    }
-
 }
 
 .pyn-toolTip .toolTipText {
@@ -4432,6 +4427,11 @@ a#favoriteclickme {
     .analyticsToolTip #analyticsToolTipText::after {
         right: 37%;
         left: auto;
+    }
+    .propertyDetailName #propertyDetailNameText,
+    .analyticsToolTip #analyticsToolTipText {
+        width: 240px;
+        transform: translateX(-35%);
     }
 }
 .propertyDetailName:hover #propertyDetailNameText,
