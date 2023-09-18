@@ -3829,7 +3829,7 @@ a#favoriteclickme {
         margin-top: -80px;
     }
 }
-@media (max-width:767px) {
+@media (max-width:780px) {
     .chart-title i{
         margin-top: 24px !important;
     }
@@ -7231,5 +7231,5 @@ span.to-input {
 .chart-title i{
     font-size: 20px;
     margin-left: 9px;
-    margin-top: 32px;
+    margin-top: 30px;
 }

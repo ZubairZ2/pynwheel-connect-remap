@@ -61,21 +61,20 @@
 .chart_heading {
   font-weight: 600;
   margin-top: 20px;
+  margin-left: 20px;
 }
 
 /* Media queries for responsive design */
 @media (max-width: 900px) {
   .chart_heading {
-    text-align: center;
+    //text-align: center;
     font-size: 22px;
-    margin-left: 0;
   }
 }
 
 @media (min-width: 769px) {
   .chart_heading {
     font-size: 30px;
-    margin-left: 35px;
   }
 }
 
