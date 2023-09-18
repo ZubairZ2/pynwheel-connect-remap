@@ -26,7 +26,7 @@
           - unless (controller_name == "tours" &&  action_name == "id_selfie_matching") || sidemenu_communities_controllers.include?(controller_name) && params[:action] == "index"
             %span= current_company.name rescue ''
 
-  %nav.navbar.navbar-static-top
+  %nav.navbar.navbar-static-top.analytics-header{:style => "height: 81px;"}
     / Sidebar toggle button
     %a.sidebar-toggle{"data-toggle" => "push-menu", :href => "#", :role => "button"}
       %span.sr-only Toggle navigation

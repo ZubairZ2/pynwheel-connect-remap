@@ -3830,6 +3830,9 @@ a#favoriteclickme {
     }
 }
 @media (max-width:780px) {
+    .analytics-header{
+        height: auto !important;
+    }
     .chart-title i{
         margin-top: 24px !important;
     }
