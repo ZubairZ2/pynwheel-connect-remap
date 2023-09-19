@@ -24,7 +24,7 @@ class MetroAnalyticsService
     visited_pages = params["additionalPage"]
     visited_pages.concat( (1..params["ApartmentsPageVisited"]).map{ "Apartments Page".upcase } )
     visited_pages.concat( (1..params["GalleryPageVisited"]).map{ "Gallery Page".upcase } )
-    visited_pages.concat( (1..params["NeighbourhoodPageVisited"]).map{ "Neighbourhood Page".upcase } )
+    visited_pages.concat( (1..params["NeighbourhoodPageVisited"]).map{ "Neighborhood Page".upcase } )
     visited_pages.concat( (1..params["FavouritesPageVisited"]).map{ "Favorites Page".upcase } )
 
     visited_pages
