@@ -3819,6 +3819,9 @@ a#favoriteclickme {
     }
 }
 @media (max-width: 1100px) {
+    .analytics-header{
+        height: auto !important;
+    }
     .custom-left-column, .custom-right-column {
         width: 100%;
     }
@@ -3830,9 +3833,6 @@ a#favoriteclickme {
     }
 }
 @media (max-width:780px) {
-    .analytics-header{
-        height: auto !important;
-    }
     .chart-title i{
         margin-top: 24px !important;
     }
