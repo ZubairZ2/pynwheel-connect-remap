@@ -2656,12 +2656,13 @@ img-responsive {
     /* display: flex; */
     align-items: center;
     /* justify-content: space-between; */
+    max-width: 388px;
 }
 
 #unit-title-count{
     font-size: 14px;
     font-weight: bold;
-    font-family: 'Raleway', sans-serif;
+    font-family:  sans-serif;
     margin: 0;
 }
 
@@ -6438,10 +6439,7 @@ ul.add-fav-options {
     .c-modal-sidebar-filters .filter-action .apply-now{
         margin-top: 8px;
         width: auto !important;
-    }
-    .c-modal-sidebar-filters .filter-action .apply-now{
-        margin-top: 5px;
-        width: auto !important;
+        min-width: 45%;
     }
     .c-modal-wrapper {
         float: none;
@@ -6522,8 +6520,11 @@ ul.add-fav-options {
 .c-modal-sidebar-filters .filter-action {
     display: flex;
     align-items: center;
-    justify-content: space-around;
+    /*justify-content: space-around;*/
     padding: 5px 5px 15px 5px;
+}
+.fix-text{
+    width: 55%;
 }
 .lease-term-custom-select{
     background: transparent;
@@ -6538,7 +6539,7 @@ ul.add-fav-options {
     color: white;
     width: 55%;
     font-weight: 600;
-    font-size: 15px;
+    font-size: 17px;
  }
  .c-modal-sidebar-filters .filter-action .apply-now {
     border-radius: 50px;
@@ -6638,10 +6639,11 @@ ul.add-fav-options {
     background: white;
 }
 .per-month-price-text{
-    font-size: 9px;
+    font-size: 11px;
     color: white;
-    position: fixed;
-    left: 90px;
+    /*position: fixed;*/
+    position: relative;
+    /*left: 90px;*/
     font-weight: 600;
 }
 .c-modal-footer-fav {
@@ -6811,6 +6813,9 @@ ul.add-fav-options {
      .c-connect-map-wrapper .c-modal-sidebar {
          width: 35%;
     }
+    .c-connect-map-wrapper .c-modal-wrapper {
+        width: 65%;
+    }
     .c-modal-sidebar-filters .filter-action .c-m-total-price {
         font-size: 12px;
     }
@@ -6853,7 +6858,7 @@ ul.add-fav-options {
     border-color: #dddddd;
 }
 .text-p{
-    position: absolute !important;
+    /*position: absolute !important;*/
 }
 .description-text{
     overflow-y: auto;
@@ -7248,7 +7253,9 @@ span.to-input {
 .amenity-modal-image {
     display: block !important;
     margin: auto !important;
-    width: 750px !important;
+    width: auto !important;
+    height: auto !important;
+    max-height: 750px;
 }
 
 .slick-slider {
