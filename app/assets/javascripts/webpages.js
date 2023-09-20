@@ -1015,6 +1015,8 @@ function getFilteredUnits(units, type){
 }
 
 function click_marker_tag(id){
+  var $marea = document.getElementById('zoomable-modal-image')
+  $($marea).addClass("transform-none");
   var marker_tags = document.getElementsByClassName('unit_marker');
   Array.from(marker_tags).forEach(item => {
     if (item.id === id ){
