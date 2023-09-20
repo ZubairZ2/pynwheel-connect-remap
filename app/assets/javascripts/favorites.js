@@ -1,12 +1,21 @@
-$(window).on('resize', function(){
-  if(window.location.href.includes('favorites') || window.location.href.includes('favorites_share_link')){
-    $(".divLoading").removeClass("hidden");
-    window.location.reload();
-  }
-  $('#sidebar-for-responsive').addClass("hidden");
-  $('.h-class').removeClass('hidden');
-  addAttributes();
-})
+$(document).ready(function() {
+    // Store the initial window width
+    var initialWidth = $(window).width();
+    $(window).on('resize', function() {
+        var currentWidth = $(window).width();
+        // Check if the window width has changed significantly (e.g., ignore small changes due to scrollbars)
+        if (Math.abs(currentWidth - initialWidth) > 20 ) {
+            if (window.location.href.includes('favorites') || window.location.href.includes('favorites_share_link')) {
+                $(".divLoading").removeClass("hidden");
+                window.location.reload();
+            }
+            $('#sidebar-for-responsive').addClass("hidden");
+            $('.h-class').removeClass('hidden');
+            addAttributes();
+        }
+        initialWidth = currentWidth;
+    });
+});
 
 $(document).ready(function(){
 	if ($('.is-favorites')[0]){
