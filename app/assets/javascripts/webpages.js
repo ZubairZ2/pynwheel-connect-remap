@@ -2737,6 +2737,8 @@ $(document).on('click','.share-favorite',function(){
 });
 
 $(document).on('click','.unit_marker',function(){
+  var $marea = document.getElementById('zoomable-modal-image')
+  $($marea).addClass("transform-none");
   community_id = $("#maps_community_id").val()
   $.ajax({
     type: "GET",
