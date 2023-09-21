@@ -7258,11 +7258,11 @@ span.to-input {
     max-height: 750px;
 }
 
-.slick-slider {
-    display: table !important;
-    table-layout: fixed;
-    width: 100%;
-}
+/*.slick-slider {*/
+/*    display: table !important;*/
+/*    table-layout: fixed;*/
+/*    width: 100%;*/
+/*}*/
 
 .slick-dots {
     pointer-events: none;
