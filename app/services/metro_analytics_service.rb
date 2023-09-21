@@ -1,14 +1,15 @@
 class MetroAnalyticsService
   def initialize community
     @community = community
+    @timezone = @community.get_time_zone()
   end
 
   def create_analytics_session params
     TrackSession.create!(
       community_id: @community.id, 
       track_session_type: "metro", 
-      start_datetime: params["SessionStartime"].to_datetime.in_time_zone( @community.time_zone ),
-      end_datetime: params["SessionEndTime"].to_datetime.in_time_zone( @community.time_zone ),
+      start_datetime: params["SessionStartime"].to_datetime.in_time_zone(@timezone),
+      end_datetime: params["SessionEndTime"].to_datetime.in_time_zone(@timezone),
       session_id: params["SeessionId"],
       visited_pages: additional_pages( params ),
       apply_click_counter: 0,
