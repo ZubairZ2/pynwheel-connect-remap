@@ -396,7 +396,7 @@ module Api
     
       def metro_send_analytics_data
         begin
-          MetroAnalyticsService.new(community).create_analytics_session(params)
+          MetroAnalyticsService.new(@community).create_analytics_session(params)
           render :json=> {status: true, code: 200, message: "Metro touch app analytics data sent sucessfully!"}
         rescue => exception
           render :json=> {status: false, code: 401, message: exception.message}
@@ -405,7 +405,7 @@ module Api
 
       def ipad_send_analytics_data
         begin
-          IpadAnalyticsService.new(community).create_analytics_session(params)
+          IpadAnalyticsService.new(@community).create_analytics_session(params)
           render :json=> {status: true, code: 200, message: "RN touch app analytics data sent sucessfully!"}
         rescue => exception
           render :json=> {status: false, code: 401, message: exception.message}
