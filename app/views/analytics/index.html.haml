@@ -61,14 +61,15 @@
           %ul#product_type_tabs.nav.nav-tabs.add-new-lock{:role => "tablist"}
             %li{:role => "presentation",:class => "#{@show_self_tour ? 'active in' : ''}"}
               %a#self-tour-tab{"class" => "#{@show_self_tour ? '' : 'hidden'}","aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-self-tour", :role => "tab"} Self Tour
-            / %li{:role => "presentation",:class => ""}
-            /   %a#maps-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-maps", :role => "tab"} Maps
+            %li{:role => "presentation",:class => ""}
+              %a#maps-tab{"aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-maps", :role => "tab"} Maps
             %li{:role => "presentation"}
               %a#maps-tab{"class" => "#{@show_touch ? '' : 'hidden'}","aria-expanded" => "false", "data-toggle" => "tab", :href => "#s-touch", :role => "tab"} Touch
+          
           #s-self-tour.tab-pane.fade.in{:class => "#{@show_self_tour ? 'active' : ''}",:role => "tabpanel"}
             = render 'self_tour'
-          / #s-maps.tab-pane.fade{:role => "tabpanel"}
-          /   =# render 'maps'
+          #s-maps.tab-pane.fade{:role => "tabpanel"}
+            = render 'maps'
           #s-touch.tab-pane.fade{:class => "#{@show_touch ? 'active' : ''}",:role => "tabpanel"}
             = render 'touch'
 

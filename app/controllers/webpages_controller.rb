@@ -1,6 +1,6 @@
 class WebpagesController < ActionController::Base
   before_action :set_community, except: [:update_session]
-  #after_action :maintain_session, except: [:update_session]
+  after_action :maintain_session, except: [:update_session]
   before_action :set_timezone, except: [:update_session]
   protect_from_forgery :except => [:update_session]
 
@@ -195,7 +195,6 @@ class WebpagesController < ActionController::Base
   end
 
   def price_opened
-
   end
 
   def apply_now_count
