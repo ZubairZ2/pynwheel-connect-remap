@@ -18,9 +18,9 @@
               %h1.section-title 
                 = floorplan.present? ? floorplan.name : nil
             .c-modal-wrapper.modal-image-fav.hidden
-              .c-modal-body{:id => "#{unit.id}-res-zoomable-image"}
+              .c-modal-body
                 .c-m-iframe-content
-                  = image_tag unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
+                  = image_tag unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg"), :id => "#{unit.id}-res-zoomable-image"
               .c-modal-footer-fav.zooming-content.zoomable-map-container
                 %a.plus-action.zooming-action.zoom-controls{:href => "#", :id => "#{unit.id}-res-fav-zoom-in"}
                   %img{:src => "/assets/plus.png"}/
@@ -136,9 +136,9 @@
                     %span{style: 'font-size: 12px'} /month
 
         .c-modal-wrapper.h-class
-          .c-modal-body.centered-image{:id => "#{unit.id}-zoomable-fav-image"}
+          .c-modal-body.centered-image
             .c-m-iframe-content
-              = image_tag unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg")
+              = image_tag unit.standard_image_url.present? ? unit.standard_image_url : (floorplan.present? && floorplan.standard_image_url.present? ? floorplan.standard_image_url : "/assets/default.jpeg"), :id => "#{unit.id}-zoomable-fav-image"
           .c-modal-footer-fav.zooming-content.zoomable-map-container
             %a.plus-action.zooming-action.zoom-in-modal.zoom-controls{:href => "#", :id => "#{unit.id}-fav-zoom-in"}
               %img{:src => "/assets/plus.png"}/
