@@ -14,6 +14,8 @@ var maxSelectedPrice;
 var currency = "$";
 var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
+var applyNowChildClickHandled = false
+var unitChildClickHandled = false
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -117,6 +119,11 @@ $(window).bind('load', function () {
     });
     ////////////////////////////////////////////////
     /* unit modal*/
+    $('#unitModal').on('hidden.bs.modal', function (e) {
+      applyNowChildClickHandled = false
+      unitChildClickHandled = false
+    });
+
     $('#unitModal').on('show.bs.modal', function (e) {
       if(selectMap === "3d-map" && enable3DMaps) {
         _3dUnitModalDisplay();
@@ -139,7 +146,7 @@ $(window).bind('load', function () {
             $('.unit-buttons').append('<button class="btn modal-unit-button ml-5 ' + button_style + '" type="button" data-title="' + $(this).data('title') + '" data-community-id="' + $(this).data('community-id') + '" data-unit-id="' + $(this).data('unit-id') + '" data-is-fav="' + $(this).data('is-fav') + '" data-provider="' + $(this).data('provider') + '" data-website="' + $(this).data('website') + '" data-community-property-id="' + $(this).data('community-property-id') + '" data-unit-provider-id="' + $(this).data('unit-provider-id') + '" data-floorplan-provider-id="' + $(this).data('floorplan-provider-id') + '" data-floorplan-name="' + $(this).data('floorplan-name') + '" data-unit-description="' + $(this).data('unit-description') + '" data-unit-marketing-name="' + $(this).data('unit-marketing-name') + '" data-market-rent="' + $(this).data('market-rent') + '" data-square-feet="' + $(this).data('square-feet') + '" data-availability="' + $(this).data('availability') + '" data-available-date="' + $(this).data('available-date') + '" data-availability-url="' + $(this).data('availability-url') + '" data-bedrooms="' + $(this).data('bedrooms') + '" data-bathrooms="' + $(this).data('bathrooms') + '" data-floorplan-image="' + $(this).data('floorplan-image') + '" data-lease-term="' + $(this).data('lease-term') + '" data-unit-lease-pricing="' + $(this).data('unit-lease-pricing') +  '" onclick="setUnitAttributes(this);">' + $(this).data('title') + '</button>');
           });
         }
-        
+
         setModalAttributes(e.relatedTarget);
       }
     });
@@ -2726,6 +2733,8 @@ $(document).on('click','.share-favorite',function(){
 });
 
 $(document).on('click','.unit_marker',function(){
+  if (unitChildClickHandled) return;
+  unitChildClickHandled = true;
   community_id = $("#maps_community_id").val()
   $.ajax({
     type: "GET",
@@ -2735,6 +2744,8 @@ $(document).on('click','.unit_marker',function(){
 });
 
 $(document).on('click','.apply_now',function(){
+  if(applyNowChildClickHandled) return;
+  applyNowChildClickHandled = true;
   community_id = $("#maps_community_id").val()
     $.ajax({
       type: "GET",

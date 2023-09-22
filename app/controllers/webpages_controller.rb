@@ -191,14 +191,12 @@ class WebpagesController < ActionController::Base
   end
 
   def sent_favorite
-    
   end
 
   def price_opened
   end
 
   def apply_now_count
-
   end
 
   def delete_favorite
