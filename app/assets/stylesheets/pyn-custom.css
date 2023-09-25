@@ -1750,8 +1750,8 @@ element.style {}
     color: #232323;
     font-size: 14px;
     background: #e4e4e4;
-    padding-left: 28px;
-    padding-right: 28px;
+    padding-left: 23px;
+    padding-right: 23px;
     border-top: 4px solid #e4e4e4;
 }
 
@@ -1759,8 +1759,8 @@ element.style {}
     color: #232323;
     font-size: 14px;
     background: #fff;
-    padding-left: 28px;
-    padding-right: 28px;
+    padding-left: 23px;
+    padding-right: 23px;
     border-top: 4px solid #253339;
 }
 
@@ -3817,36 +3817,34 @@ a#favoriteclickme {
     .plan-image {
         /*margin-top: 50px;*/
     }
-    .plan-image img {
+}
+@media (max-width: 1100px) {
+    .analytics-header{
+        height: auto !important;
+    }
+    .custom-left-column, .custom-right-column {
         width: 100%;
     }
-    .modal-right {
-        width: 99%;
+    .plan-image img {
+        float: right;
+        display: block;
+        max-width: 20%;
+        margin-top: -80px;
     }
 }
-/*@media (max-width: 1100px) {*/
-/*    .custom-left-column, .custom-right-column {*/
-/*        width: 100%;*/
-/*    }*/
-/*}*/
-/*@media (max-width: 1000px) {*/
-/*    !*.plan-image img {*!*/
-/*    !*    display: block;*!*/
-/*    !*    max-width: 100%;*!*/
-/*    !*    height: auto;*!*/
-/*    !*}*!*/
-/*    img {*/
-/*        vertical-align: middle;*/
-/*    }*/
-/*    .plan-modal h3 {*/
-/*        font-size: 22px;*/
-/*        margin-bottom: 5px*/
-/*    }*/
-/*    .modal-body{*/
-/*        padding: 5px;*/
-/*    }*/
-/*}*/
-@media (max-width:767px) {
+@media (max-width:780px) {
+    .chart-title i{
+        margin-top: 24px !important;
+    }
+    #analyticsToolTipText::after {
+        right: 30% !important;
+        left: auto !important;
+    }
+    #analyticsToolTipText {
+        width: 180px !important;
+        transform: translateX(-30%) !important;
+        left: 0% !important;
+    }
     .custom-iframe-modeule .app-logo-mobile {
         display: block;
     }
@@ -3964,7 +3962,7 @@ a#favoriteclickme {
     }
     .navbar-static-top {
         margin-top: 0px !important;
-        height: 60px !important;
+        /*height: 60px !important;*/
     }
 }
 
@@ -4351,11 +4349,9 @@ a#favoriteclickme {
     white-space: initial;
     z-index: 1000;
 }
-
 .propertyDetailName #propertyDetailNameText,
 .analyticsToolTip #analyticsToolTipText {
     visibility: hidden;
-    width: 350px;
     background-color: #000000;
     color: white;
     text-align: left;
@@ -4364,6 +4360,7 @@ a#favoriteclickme {
     position: absolute;
     z-index: 1;
     bottom: 150%;
+    width: 350px;
     left: 50%;
     margin-left: -60px;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -4394,7 +4391,6 @@ a#favoriteclickme {
     content: "";
     position: absolute;
     top: 100%;
-    left: 50%;
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
@@ -4422,6 +4418,16 @@ a#favoriteclickme {
     border-color: black transparent transparent transparent;
 }
 
+@media (min-width: 1200px) and (max-width: 1560px){
+    #analyticsToolTipText::after {
+        right: 37% !important;
+        left: auto !important;
+    }
+    #analyticsToolTipText {
+        width: 240px !important;
+        transform: translateX(-35%) !important;
+    }
+}
 .propertyDetailName:hover #propertyDetailNameText,
 .analyticsToolTip:hover #analyticsToolTipText {
     visibility: visible;
@@ -6310,6 +6316,12 @@ ul.add-fav-options {
     .availabilty-container {
         padding: 0px 13px 15px 11px;
     }
+    .navbar-nav>.user-menu>.dropdown-menu {
+        width: 252px !important;
+    }
+    .content-header{
+        padding: 26px 15px 0 15px;
+    }
 }
 
 /***************** Marker Popup css ****************/
@@ -7271,6 +7283,6 @@ span.to-input {
 }
 .chart-title i{
     font-size: 20px;
-    margin-top: 32px;
     margin-left: 9px;
+    margin-top: 30px;
 }

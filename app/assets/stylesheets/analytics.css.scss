@@ -1,24 +1,42 @@
 .h-500{
-  height: 350px;
+  height: auto;
   background: "#d7d7d7";
 }
 .h-700{
   height: 700px;
 }
-.numbers_div{
-  height: 350px;
-  display: table;
+.numbers_div {
+  height: auto;
 }
+@media (min-width: 1150px) {
+  .numbers_div {
+    display: table !important;
+    height: 350px !important;
+  }
+}
+
 .numbers_div_700{
   height: 700px;
   display: table;
 }
 .center_it{
-  display: table-cell;
   vertical-align: middle;
   text-align:center;
 }
-.count_int{ font-size: 50px; font-weight: 600;}
+@media (min-width: 900px) {
+  .center_it {
+    display: table-cell;
+  }
+}
+.count_int{
+  font-weight: 600;
+  font-size: 25px;
+}
+@media (min-width: 769px) {
+  .count_int {
+    font-size: 50px !important;
+  }
+}
 .count_text{ font-size: 16px; }
 .marg-150 {
 	margin-top: 70px;
@@ -32,19 +50,43 @@
 }
 .row .pie_width .chartjs-render-monitor, .row .pie_width .chartjs-size-monitor{
   /*width: 330px !important;*/
-  margin-left: 35px;
+  //margin-left: 35px;
+
 }
 .align-right{
  float: right;
  margin-right: 20px;
 }
-.chart_heading{
+/* Default styles for .chart_heading */
+.chart_heading {
   font-weight: 600;
-  font-size: 30px;
   margin-top: 20px;
-  margin-left: 35px;
+  margin-left: 20px;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 900px) {
+  .chart_heading {
+    //text-align: center;
+    font-size: 22px;
+  }
+}
+
+@media (min-width: 769px) {
+  .chart_heading {
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 350px) {
+  .chart_heading {
+    font-size: 18px;
+  }
 }
 .pie_description .dot{
+  float: left;
+  margin-right: 4px;
+  margin-left: 4px;
   height: 25px;
   width: 25px;
   border-radius: 50%;
@@ -52,6 +94,7 @@
   display: inline-block;
 }
 .pie_description{
+  text-align: left;
   margin-top: 10px; 
 }
 .events_with, .multiple_page, .tour_site_true{
