@@ -1372,23 +1372,23 @@
     if ($(".list_guided").children().length > 1){
     $(this).parent().remove();
 
-    current_day = 0
+    current_day_guided = 0
     $(".list_guided").children().children('select').each(function(){
-      current_day = current_day + 1
-      $(this).attr("id", 'guided_day_'+current_day);
-      $(this).attr("name", 'guided_day_'+current_day);
+      current_day_guided = current_day_guided + 1
+      $(this).attr("id", 'guided_day_'+current_day_guided);
+      $(this).attr("name", 'guided_day_'+current_day_guided);
     })
 
-    current_day = 0
+    current_day_guided = 0
     $(".list_guided").children().children().children('input').each(function(i){
       if (Math.floor(i%2 == 0)){
-        current_day = current_day + 1
-        $(this).attr("id", 'guided_from_'+current_day);
-        $(this).attr("name", 'guided_from_'+current_day);
+        current_day_guided = current_day_guided + 1
+        $(this).attr("id", 'guided_from_'+current_day_guided);
+        $(this).attr("name", 'guided_from_'+current_day_guided);
       }
       else{
-        $(this).attr("id", 'guided_to_'+current_day);
-        $(this).attr("name", 'guided_to_'+current_day);
+        $(this).attr("id", 'guided_to_'+current_day_guided);
+        $(this).attr("name", 'guided_to_'+current_day_guided);
       }
     })
   }
