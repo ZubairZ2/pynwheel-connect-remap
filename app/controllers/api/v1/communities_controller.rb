@@ -396,7 +396,7 @@ module Api
     
       def metro_send_analytics_data
         community = Community.find_by_id params[:community_id]
-        MetroAnalyticsService.new(community).create_analytics_session(params) if community.present?
+        Analytics::MetroAnalyticsService.new(community).create_analytics_session(params) if community.present?
         render :json=> {:status=>true, code: 200}
       end
     

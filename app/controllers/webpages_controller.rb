@@ -257,91 +257,23 @@ class WebpagesController < ActionController::Base
 
   private
   
-  def get_community_code community
-    (JWT.encode ({"community_id" => community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
-  end
-
-  def set_community
-    @community = Community.find(params[:community_id])
-  end
-
-  def maintain_session
-    session = return_last_maps_session
-    manage_session_info(session)
-    session.save
-  end
-
-  def return_last_maps_session
-    # every time you close browser new session id will create
-    if session[:last_active_datetime].nil?
-      session[:last_active_datetime] = fetch_datetime
-      session_nil = true
+    def get_community_code community
+      (JWT.encode ({"community_id" => community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256')
     end
-    # Make a new session if not found or session limit expire otherwise retrurn last session 
-    if !TrackSession.where(session_id: cookies[:webpages_session_id]).any? || session_nil
-      session_nil = false
-      if TrackSession.where(session_id: cookies[:webpages_session_id]).any? && TrackSession.where(session_id: cookies[:webpages_session_id]).last.end_datetime.nil?
-        last_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
-        last_date_time = cookies[:coo_last_active_datetime].present? ? return_community_datetime(cookies[:coo_last_active_datetime]) + 1.minutes : return_community_datetime(last_session.start_datetime.to_s) + 10.minutes
-        last_session.update_column(:end_datetime, last_date_time)
-        track_session = return_new_session 
-      else
-        track_session = return_new_session
-      end
-    elsif TrackSession.where(session_id: cookies[:webpages_session_id]).last.end_datetime.present? 
-        track_session = return_new_session 
-    elsif session_datetime_not_in_limit?(return_community_datetime(session[:last_active_datetime]))
-      if TrackSession.where(session_id: cookies[:webpages_session_id]).last.end_datetime.nil?
-        last_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
-        last_session.update_column(:end_datetime, (return_community_datetime(session[:last_active_datetime]) + 10.minutes) )
-        track_session = return_new_session 
-      else
-        track_session = return_new_session
-      end
-    else
-      track_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
+
+    def set_community
+      @community = Community.find(params[:community_id])
     end
-    session[:last_active_datetime] = fetch_datetime
-    cookies.permanent[:coo_last_active_datetime] = fetch_datetime
-    track_session
-  end
 
-  def return_new_session
-    TrackSession.new(start_datetime: (fetch_datetime), track_session_type: "maps", community_id: @community.id, community_time_zone: @timezone,session_id: cookies[:webpages_session_id])
-  end
-
-  def manage_session_info(session)
-    visited_pages = session.visited_pages
-    if params[:action] == "index"
-      visited_pages << "Webpage main page" unless visited_pages.include?("Webpage main page")
-    elsif params[:action] == "favorites"
-      visited_pages << "View favorites page" unless visited_pages.include?("View favorites page")
-    elsif params[:action] == "save_favorite"
-      session.favorite_saved_counter += 1
-    elsif params[:action] == "sent_favorite"
-      session.favorite_sent_counter += 1
-    elsif params[:action] == "price_opened"
-      session.price_opened_counter += 1
-    elsif params[:action] == "apply_now_count"
-      session.apply_click_counter += 1
+    def maintain_session
+      Analytics::MapsAnalyticsService.new(@community, @timezone, session, cookies, params).maintain_maps_session()
     end
-    session.visited_pages = visited_pages
-  end
 
-  def session_datetime_not_in_limit?(session_datetime)
-   current_datetime = fetch_datetime
-   (current_datetime - session_datetime) > 10.minutes # return true to make a new record
-  end
+    def set_timezone
+      @timezone = @community.get_time_zone()
+    end
 
-  def set_timezone
-    @timezone = @community.get_time_zone()
-  end
-
-  def fetch_datetime
-    Time.zone.now.utc.in_time_zone(@timezone)
-  end
-
-  def return_community_datetime(datetime)
-    Time.zone.parse(datetime).in_time_zone(@timezone).to_datetime if datetime.present? && @timezone.present?
-  end
+    def return_community_datetime(datetime)
+      datetime.in_time_zone(@timezone).to_datetime if datetime.present? && @timezone.present?
+    end
 end
