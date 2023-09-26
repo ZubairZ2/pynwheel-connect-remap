@@ -189,7 +189,7 @@ class AnalyticsController < ApplicationController
         remove_index.each_with_index {|removing_index,j| start_end_datetime_arr.delete_at(removing_index - j) }
       end  
 
-      instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", (total_minutes / total_count).negative?() ? 0 : (total_minutes / total_count) )
+      instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", ( (total_minutes / total_count).negative?() rescue 0) ? 0 : (total_minutes / total_count) )
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
 

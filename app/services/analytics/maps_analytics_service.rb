@@ -15,47 +15,28 @@ module Analytics
     end  
     
     private
-
       def return_last_maps_session
-        # every time you close browser new session id will create
-        if @session[:last_active_datetime].nil?
-          @session[:last_active_datetime] = fetch_datetime
-          session_nil = true
+        initialize_last_active_datetime
+        track_sessions = get_track_sessions()      
+        return return_new_session unless track_sessions.any?
+      
+        track_session = track_sessions.last
+      
+        if session_datetime_not_in_limit?(return_community_datetime(@session[:last_active_datetime]))
+          update_last_session_end_datetime(track_session)
+          track_session = return_new_session
         end
-
-        track_sessions = get_track_sessions()
-
-        # Make a new session if not found or session limit expire otherwise retrurn last session 
-        if !track_sessions.any? || session_nil
-          session_nil = false
-
-          if track_sessions.any? && track_sessions.last.end_datetime.nil?
-            last_session = track_sessions.last
-            last_date_time = @cookies[:coo_last_active_datetime].present? ? return_community_datetime(@cookies[:coo_last_active_datetime]) + 1.minutes : return_community_datetime(last_session.start_datetime.to_s) + 10.minutes
-            last_session.update_column(:end_datetime, last_date_time)
-            track_session = return_new_session 
-          else
-            track_session = return_new_session
-          end
-
-        elsif track_sessions.last.end_datetime.present? 
-            track_session = return_new_session 
-        elsif session_datetime_not_in_limit?(return_community_datetime(@session[:last_active_datetime]))
-          if track_sessions.last.end_datetime.nil?
-            last_session = track_sessions.last
-            last_session.update_column(:end_datetime, (return_community_datetime(@session[:last_active_datetime]) + 10.minutes) )
-            track_session = return_new_session 
-          else
-            track_session = return_new_session
-          end
-        else
-          track_session = track_sessions.last
-        end
-
+      
         @session[:last_active_datetime] = fetch_datetime
-        @cookies.permanent[:coo_last_active_datetime] = fetch_datetime
-
         track_session
+      end
+      
+      def initialize_last_active_datetime
+        @session[:last_active_datetime] = fetch_datetime if @session[:last_active_datetime].nil?
+      end
+      
+      def update_last_session_end_datetime(track_session)
+        track_session.update_column(:end_datetime, (return_community_datetime(@session[:last_active_datetime]) + 10.minutes)) if track_session.end_datetime.nil?
       end
 
       def get_track_sessions
@@ -86,8 +67,7 @@ module Analytics
       
         track_session.visited_pages = visited_pages
       end
-      
-      
+    
       def session_datetime_not_in_limit?(session_datetime)
         current_datetime = fetch_datetime
         (current_datetime - session_datetime) > 10.minutes
