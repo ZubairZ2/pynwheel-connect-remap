@@ -15,6 +15,7 @@ module Analytics
     end  
     
     private
+    
       def return_last_maps_session
         initialize_last_active_datetime
         track_sessions = get_track_sessions()      

@@ -265,17 +265,17 @@ class WebpagesController < ActionController::Base
           value: SecureRandom.hex(8), 
           expiry: 5.years.from_now, 
           same_site: :none,
-          secure: true, domain: :all
+          secure: true
         } 
       end
     end
 
     def set_favorites_unit_ids_cookies unit_ids = []
-      cookies[:favorite_unit_ids] = { 
+      cookies[:favorite_unit_ids] = {
         value: unit_ids, 
         expiry: 5.years.from_now, 
         same_site: :none,
-        secure: true, domain: :all
+        secure: true
       }
     end
   
