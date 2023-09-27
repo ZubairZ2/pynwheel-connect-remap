@@ -1015,6 +1015,8 @@ function getFilteredUnits(units, type){
 }
 
 function click_marker_tag(id){
+  var $marea = document.getElementById('zoomable-modal-image')
+  $($marea).addClass("transform-none");
   var marker_tags = document.getElementsByClassName('unit_marker');
   Array.from(marker_tags).forEach(item => {
     if (item.id === id ){
@@ -1079,17 +1081,7 @@ function unitListHover() {
   let focused_marker ;
 
   $('div.left-side-30-units').hover(function (e) {
-    console.log("Box hover entered");
-
-    let unit_num;
-    if (e.target.classList.contains("left-side-30-units")) {
-      unit_num = e.target.id;
-    } else if (e.target.classList.contains("image-styles")) {
-      unit_num = e.target.parentElement.id;
-    } else if (e.target.classList.contains("image-image-styles")) {
-      unit_num = e.target.parentElement.parentElement.parentElement.id;
-    }
-
+    let unit_num = getUnitNum(e.target);
     const all_markers = document.getElementsByClassName('marker');
     Array.from(all_markers).forEach((marker) => {
       if (unit_num === `unit_${marker.dataset.unitId}`) {
@@ -1188,6 +1180,25 @@ function unitMarkerHover() {
     $($('#unit_'+ $(this).data('unitId'))).css("border", "none")        
   });   
 }
+
+function getUnitNum(targetElement) {
+  if (targetElement.classList.contains("left-side-30-units")) {
+    return targetElement.id;
+  } else if (targetElement.classList.contains("image-styles")) {
+    return targetElement.parentElement.id;
+  } else if (targetElement.classList.contains("image-image-styles")) {
+    return targetElement.parentElement.parentElement.parentElement.id;
+  } else {
+    let closestUnit = $(targetElement).closest('.left-side-30-units');
+
+    if (closestUnit.length > 0) {
+      return closestUnit[0].id;
+    } else {
+      return null;
+    }
+  }
+}
+
 
 function hasTouch() {
   return 'ontouchstart' in document.documentElement || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
@@ -2726,6 +2737,8 @@ $(document).on('click','.share-favorite',function(){
 });
 
 $(document).on('click','.unit_marker',function(){
+  var $marea = document.getElementById('zoomable-modal-image')
+  $($marea).addClass("transform-none");
   community_id = $("#maps_community_id").val()
   $.ajax({
     type: "GET",
