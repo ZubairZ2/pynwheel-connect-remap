@@ -15,7 +15,6 @@ var currency = "$";
 var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
 var applyNowChildClickHandled = false
-var unitChildClickHandled = false
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -121,7 +120,6 @@ $(window).bind('load', function () {
     /* unit modal*/
     $('#unitModal').on('hidden.bs.modal', function (e) {
       applyNowChildClickHandled = false
-      unitChildClickHandled = false
     });
 
     $('#unitModal').on('show.bs.modal', function (e) {
@@ -2261,6 +2259,8 @@ function leaseTermPricingOptions(ss) {
 }
 
 function setUnitAttributes(element) {
+  applyNowChildClickHandled = false
+
   $('.modal-unit-button').each(function () {
     $(this).removeClass('btn-primary');
     $(this).addClass('btn-default');
@@ -2728,17 +2728,6 @@ $(document).on('click','.share-favorite',function(){
   $.ajax({
     type: "GET",
     url: '/communities/'+community_id+'/webpages/sent_favorite',
-    success: function(response) {}
-  });
-});
-
-$(document).on('click','.unit_marker',function(){
-  if (unitChildClickHandled) return;
-  unitChildClickHandled = true;
-  community_id = $("#maps_community_id").val()
-  $.ajax({
-    type: "GET",
-    url: '/communities/'+community_id+'/webpages/price_opened',
     success: function(response) {}
   });
 });
