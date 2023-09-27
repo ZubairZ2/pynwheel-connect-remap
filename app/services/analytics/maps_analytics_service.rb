@@ -6,7 +6,6 @@ module Analytics
       @session = session
       @cookies = cookies
       @params = params
-      @idle_time = 2.minutes
     end
 
     def maintain_maps_session
@@ -18,27 +17,22 @@ module Analytics
     private
     
       def return_last_maps_session
-        initialize_last_active_datetime
-        track_sessions = get_track_sessions()      
+        track_sessions = get_track_sessions() 
         return return_new_session unless track_sessions.any?
       
         track_session = track_sessions.last
-      
-        if session_datetime_not_in_limit?(return_community_datetime(@session[:last_active_datetime]))
-          update_last_session_end_datetime(track_session)
+        track_session_last_updated_at = return_community_datetime(track_session.updated_at)
+
+        if session_datetime_not_in_limit?(track_session_last_updated_at)
+          update_last_session_end_datetime(track_session, track_session_last_updated_at)
           track_session = return_new_session
         end
       
-        @session[:last_active_datetime] = fetch_datetime
         track_session
       end
       
-      def initialize_last_active_datetime
-        @session[:last_active_datetime] = fetch_datetime if @session[:last_active_datetime].nil?
-      end
-      
-      def update_last_session_end_datetime(track_session)
-        track_session.update_column(:end_datetime, (return_community_datetime(@session[:last_active_datetime]) +  @idle_time)) if track_session.end_datetime.nil?
+      def update_last_session_end_datetime(track_session, track_session_last_updated_at)
+        track_session.update_column(:end_datetime, (track_session_last_updated_at +  ENV["IDLE_TIME_MAPS"].to_i.minutes)) if track_session.end_datetime.nil?
       end
 
       def get_track_sessions
@@ -71,12 +65,13 @@ module Analytics
       end
     
       def session_datetime_not_in_limit?(session_datetime)
-        current_datetime = fetch_datetime
-        (current_datetime - session_datetime) >  @idle_time
+        current_time = fetch_datetime
+        time_difference_in_minutes = ((current_time.to_datetime - session_datetime.to_datetime) * 24 * 60 ).to_i
+        time_difference_in_minutes >= ENV["IDLE_TIME_MAPS"].to_i
       end
       
       def fetch_datetime
-        Time.zone.now.utc.in_time_zone(@timezone)
+        Time.now.in_time_zone(@timezone)
       end
 
       def return_community_datetime(datetime)
