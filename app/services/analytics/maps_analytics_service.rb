@@ -6,6 +6,7 @@ module Analytics
       @session = session
       @cookies = cookies
       @params = params
+      @idle_time = 2.minutes
     end
 
     def maintain_maps_session
@@ -37,7 +38,7 @@ module Analytics
       end
       
       def update_last_session_end_datetime(track_session)
-        track_session.update_column(:end_datetime, (return_community_datetime(@session[:last_active_datetime]) + 10.minutes)) if track_session.end_datetime.nil?
+        track_session.update_column(:end_datetime, (return_community_datetime(@session[:last_active_datetime]) +  @idle_time)) if track_session.end_datetime.nil?
       end
 
       def get_track_sessions
@@ -71,7 +72,7 @@ module Analytics
     
       def session_datetime_not_in_limit?(session_datetime)
         current_datetime = fetch_datetime
-        (current_datetime - session_datetime) > 10.minutes
+        (current_datetime - session_datetime) >  @idle_time
       end
       
       def fetch_datetime
