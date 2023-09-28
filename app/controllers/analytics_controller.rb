@@ -11,7 +11,7 @@ class AnalyticsController < ApplicationController
     tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
     @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @metro_records = track_sessions.where(track_session_type: "metro").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
-    @pesent_end_dattime_maps_records = @maps_records.where.not(end_datetime: nil)
+    # @pesent_end_dattime_maps_records = @maps_records.where.not(end_datetime: nil)
     # @pesent_end_dattime_metro_records = @metro_records.where.not(end_datetime: nil)
     @self_tour_records = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
@@ -20,11 +20,10 @@ class AnalyticsController < ApplicationController
 
     apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
-    
     # For Webpage
     if @maps_records.any? && (@product_type == "all" || @product_type == "maps")
       collect_session_each_day_data(start_date, @days_count, @maps_records, :start_datetime, "maps")
-      collect_session_each_day_data_in_minutes(start_date, @days_count, @pesent_end_dattime_maps_records, :start_datetime, :end_datetime, "maps")
+      collect_session_each_day_data_in_minutes(start_date, @days_count, @maps_records, :start_datetime, :end_datetime, "maps")
       collect_session_each_day_data_in_hours(@maps_records, :start_datetime, "maps")
       bounce_rate_on_pages(@maps_records, :visited_pages ,"maps")
       events_per_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
@@ -210,6 +209,7 @@ class AnalyticsController < ApplicationController
         count = 0
         remove_index = []
         start_date_str = uniq_start_date[i].strftime("%y:%m:%d")
+
         start_end_datetime_arr.each_with_index do |arr, ind|
           if arr.first.strftime("%y:%m:%d") == start_date_str
             mins = return_time_in_minutes(arr.first,arr.last)
@@ -223,7 +223,7 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = (minutes / count).negative?() ? 0 : (minutes / count)
         records_start_date = records_start_date - [uniq_start_date[i]]
         remove_index.each_with_index {|removing_index,j| start_end_datetime_arr.delete_at(removing_index - j) }
-      end  
+      end
 
       instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", ( (total_minutes / total_count).negative?() rescue 0) ? 0 : (total_minutes / total_count) )
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
