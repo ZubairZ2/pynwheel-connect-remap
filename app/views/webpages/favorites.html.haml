@@ -29,7 +29,7 @@
     / Main content
     %div.alert_message
       = render partial: "/messages"
-    %section.is-favorites
+    %section.is-favorites.maps-analytics-container
       .mydiv-fav
         .select-list.select-list-fav
           = hidden_field_tag :maps_community_id, @community.id

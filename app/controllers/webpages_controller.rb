@@ -196,6 +196,9 @@ class WebpagesController < ActionController::Base
   def apply_now_count
   end
 
+  def update_last_active
+  end
+
   def delete_favorite
     array = cookies[:favorite_unit_ids].present? ? JSON.parse(cookies[:favorite_unit_ids]) : []
     @unit = Unit.find params[:unit_id]

@@ -35,7 +35,7 @@
     .webPageLoader.hidden
     - unless @community_info.locked
       = hidden_field_tag :maps_community_id, @community_info.id
-      %section.is-webpage
+      %section.is-webpage.maps-analytics-container
         .c-wrapper
           %header.app-header
             .header-inner

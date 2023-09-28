@@ -14,8 +14,16 @@ var maxSelectedPrice;
 var currency = "$";
 var real_page_provider_unit_id = null;
 var currentUnitSelected = null;
+
 var applyNowChildClickHandled = false
 var unitChildClickHandled = false
+var mapHoverHandler = false;
+var mapMouseClickHandler = false;
+var unitMarkerHoverHandler = false;
+var unitBoxHoverHandler = false;
+var amenityMarkerHoverHandler = false;
+var appHeaderHoverHandler = false;
+var unitModalClickHandler = false;
 
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
@@ -1086,8 +1094,7 @@ function unitListHover() {
   let focused_marker ;
 
   $('div.left-side-30-units').hover(function (e) {
-    console.log("Box hover entered");
-
+    updateSession("update_last_active")
     let unit_num;
     if (e.target.classList.contains("left-side-30-units")) {
       unit_num = e.target.id;
@@ -1140,8 +1147,6 @@ function unitListHover() {
 }
 
 function unitMarkerHover() {
-  // if (hasTouch()) return;
-
   $(".marker").hover(function (event) {
     if ($(this).data('is-fav') || favoritesArr.includes($(this).data('unit-id'))) {
       $('.fav-heart').removeClass('hidden')
@@ -2726,33 +2731,100 @@ function get_unit_availability(unit) {
   return availableDateString;
 }
 
-$(document).on('click','.share-favorite',function(){
+function updateSession(end_point_url) {
   community_id = $("#maps_community_id").val()
+  console.log("update session")
   $.ajax({
     type: "GET",
-    url: '/communities/'+community_id+'/webpages/sent_favorite',
+    url: `/communities/${community_id}/webpages/${end_point_url}`,
     success: function(response) {}
   });
-});
+}
 
-$(document).on('click','.unit_marker',function(){
-  if (unitChildClickHandled) return;
-  unitChildClickHandled = true;
-  community_id = $("#maps_community_id").val()
-  $.ajax({
-    type: "GET",
-    url: '/communities/'+community_id+'/webpages/price_opened',
-    success: function(response) {}
+$(document).ready(function() {
+  $(".apply_now").click(function(){
+    if(applyNowChildClickHandled) return;
+    applyNowChildClickHandled = true;
+    updateSession("apply_now_count")
   });
-});
+  $(".unit_marker").click(function(){
+    if (unitChildClickHandled) return;
+    unitChildClickHandled = true;
+    updateSession("price_opened")
+  });
 
-$(document).on('click','.apply_now',function(){
-  if(applyNowChildClickHandled) return;
-  applyNowChildClickHandled = true;
-  community_id = $("#maps_community_id").val()
-    $.ajax({
-      type: "GET",
-      url: '/communities/'+community_id+'/webpages/apply_now_count',
-      success: function(response) {}
+  $(".share-favorite").click(function(){ updateSession("sent_favorite") });
+
+  $("#unitModal").click(function(){ 
+    if(unitModalClickHandler) return;
+    unitModalClickHandler = true;
+    updateSession("update_last_active") 
   });
+
+  $("#unitModal").mouseleave(function() {
+    unitModalClickHandler = false;
+  });
+
+  $(".maps-analytics-container").click(function() { 
+    if(mapMouseClickHandler) return;
+    mapMouseClickHandler = true;
+    updateSession("update_last_active");
+  });
+
+  $(".maps-analytics-container").mouseleave(function() {
+    mapMouseClickHandler = false;
+  });
+
+  $(".maps-analytics-container").hover(
+    function() {
+      if(mapHoverHandler) return;
+      mapHoverHandler = true;
+      updateSession("update_last_active");
+    },
+    function() {
+      mapHoverHandler = false;
+    }
+  );
+
+  $(".marker").hover(
+    function() {
+      if(unitMarkerHoverHandler) return;
+      unitMarkerHoverHandler = true;
+      updateSession("update_last_active");
+    },
+    function() {
+      unitMarkerHoverHandler = false;
+    }
+  );
+
+  $('div.left-side-30-units').hover(function (e) {
+      if(unitBoxHoverHandler) return;
+      unitBoxHoverHandler = true;
+      updateSession("update_last_active");
+    },
+    function() {
+      unitBoxHoverHandler = false;
+    }
+  );
+
+  $('.sitemap-amenity-marker').hover(function (e) {
+      if(amenityMarkerHoverHandler) return;
+      amenityMarkerHoverHandler = true;
+      updateSession("update_last_active");
+    },
+    function() {
+      amenityMarkerHoverHandler = false;
+    }
+  );
+
+  $('.app-header').hover(function (e) {
+    if(appHeaderHoverHandler) return;
+    appHeaderHoverHandler = true;
+    updateSession("update_last_active");
+  },
+  function() {
+    appHeaderHoverHandler = false;
+  }
+);
+    
 });

@@ -548,6 +548,7 @@ Rails.application.routes.draw do
         get :sent_favorite
         get :price_opened
         get :apply_now_count
+        get :update_last_active
         get :delete_favorite
         get :favorites
         get :favorites_share_link
