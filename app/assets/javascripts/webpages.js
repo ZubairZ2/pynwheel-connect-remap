@@ -1172,7 +1172,9 @@ function unitMarkerHover() {
     var new_dy = parseInt(event.pageY) - parseInt($('#panzomm-container').offset().top) + parseInt($('#panzomm-container').scrollTop());
     const diffLeft = webCommunity['is_sitemap'] ? 25 : 115
     $('#marker-popover').css({left: (new_dx + diffLeft) + "px", top: (new_dy - 100) + "px"});
-    $('#marker-popover').removeClass('hidden');
+    if (window.innerWidth >= 768) {
+      $('#marker-popover').removeClass('hidden');
+    }
     $($('#unit_'+ $(this).data('unitId'))).css("border", `5px solid ${marker_color_map}`)
   },
   function() {
@@ -2509,6 +2511,7 @@ function display2DMap() {
         inner_footer.style.width = `Calc(100% - ${sidebarDiv.offsetWidth}px)`;
         footerWidth.style.width = `${windowWidth - (sidebarDiv.offsetWidth)}px`;
       } else if (windowWidth >= 991 ) {
+        title.style.width = `${leftSideWidth.offsetWidth - 12}px`;
         inner_footer.style.width = "100%";
         footerWidth.style.width = `${windowWidth - (sidebarDiv.offsetWidth + leftSideWidth.offsetWidth)}px`;
       }
