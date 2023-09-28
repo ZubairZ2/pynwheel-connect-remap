@@ -196,13 +196,14 @@ class AnalyticsController < ApplicationController
     def collect_session_each_day_data_in_minutes(start_date, days_count, total_records, start_attr_name, end_attr_name, for_device_type)
       
       sessions_each_day_hash = return_empty_hash(days_count,start_date)
-      total_records_with_abondoned = total_records.pluck(end_attr_name)
+      start_end_datetime_arr = total_records.pluck(
+        :start_datetime,
+        Arel.sql("COALESCE(end_datetime, updated_at) AS end_datetime")
+      )
 
-      start_end_datetime_arr = total_records_with_abondoned.include?(nil) ? total_records.pluck(start_attr_name, :updated_at) : total_records.pluck(start_attr_name, end_attr_name)
       records_start_date = total_records.pluck(start_attr_name).map(&:to_date)
       uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
-
       total_minutes , total_count = 0, 0
       uniq_start_date_size.times do |i|
         minutes = 0
@@ -224,7 +225,6 @@ class AnalyticsController < ApplicationController
         records_start_date = records_start_date - [uniq_start_date[i]]
         remove_index.each_with_index {|removing_index,j| start_end_datetime_arr.delete_at(removing_index - j) }
       end
-
       instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", ( (total_minutes / total_count).negative?() rescue 0) ? 0 : (total_minutes / total_count) )
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
