@@ -6,7 +6,7 @@ class AnalyticsController < ApplicationController
     start_date , end_date = (params[:start_date].present? && params[:end_date].present?) ? [(params[:start_date].split("/")[1] + "/" + params[:start_date].split("/")[0] + "/" + params[:start_date].split("/")[2]).to_date, ((params[:end_date].split("/")[1] + "/" + params[:end_date].split("/")[0] + "/" + params[:end_date].split("/")[2]).to_date)] : [Date.today - 7.day, Date.today]
     @days_count = return_total_days(start_date, end_date) > 0 ? return_total_days(start_date, end_date) : 1
     communities = fetch_communities(current_user).active_communities
-    update_track_sessions_end_datetime()
+    # update_track_sessions_end_datetime()
     track_sessions = TrackSession.where(community_id: communities.ids)
     tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
     @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
@@ -91,39 +91,39 @@ class AnalyticsController < ApplicationController
   
   private
 
-    def update_track_sessions_end_datetime
-      TrackSession.where(track_session_type: "maps", end_datetime: nil).find_each do |track_session|
-        update_session_end_datetime(track_session)
-      rescue => e
-        puts "\n\n #{e.message} \n\n"
-        next
-      end
-    end
+    # def update_track_sessions_end_datetime
+    #   TrackSession.where(track_session_type: "maps", end_datetime: nil).find_each do |track_session|
+    #     update_session_end_datetime(track_session)
+    #   rescue => e
+    #     puts "\n\n #{e.message} \n\n"
+    #     next
+    #   end
+    # end
     
-    def update_session_end_datetime(track_session)
-      community = Community.find(track_session.community_id)
-      time_zone = community.get_time_zone()
-      session_update_datetime = get_updated_datetime(track_session.updated_at, time_zone)
+    # def update_session_end_datetime(track_session)
+    #   community = Community.find(track_session.community_id)
+    #   time_zone = community.get_time_zone()
+    #   session_update_datetime = get_updated_datetime(track_session.updated_at, time_zone)
       
-      if check_session_time_limit_exceeded?(session_update_datetime, time_zone)
-        new_end_datetime = session_update_datetime + ENV["IDLE_TIME_MAPS"].to_i.minutes
-        track_session.update_column(:end_datetime, new_end_datetime)
-      end
-    end
+    #   if check_session_time_limit_exceeded?(session_update_datetime, time_zone)
+    #     new_end_datetime = session_update_datetime + ENV["IDLE_TIME_MAPS"].to_i.minutes
+    #     track_session.update_column(:end_datetime, new_end_datetime)
+    #   end
+    # end
     
-    def check_session_time_limit_exceeded?(session_datetime, time_zone)
-      current_time = fetch_datetime(time_zone)
-      time_difference_in_minutes = ((current_time.to_datetime - session_datetime.to_datetime) * 24 * 60 ).to_i
-      time_difference_in_minutes >= ENV["IDLE_TIME_MAPS"].to_i
-    end
+    # def check_session_time_limit_exceeded?(session_datetime, time_zone)
+    #   current_time = fetch_datetime(time_zone)
+    #   time_difference_in_minutes = ((current_time.to_datetime - session_datetime.to_datetime) * 24 * 60 ).to_i
+    #   time_difference_in_minutes >= ENV["IDLE_TIME_MAPS"].to_i
+    # end
     
-    def fetch_datetime(time_zone)
-      Time.now.in_time_zone(time_zone)
-    end
+    # def fetch_datetime(time_zone)
+    #   Time.now.in_time_zone(time_zone)
+    # end
     
-    def get_updated_datetime(datetime, time_zone)
-      datetime.in_time_zone(time_zone).to_datetime
-    end
+    # def get_updated_datetime(datetime, time_zone)
+    #   datetime.in_time_zone(time_zone).to_datetime
+    # end
    
 
     def apply_filters(params)

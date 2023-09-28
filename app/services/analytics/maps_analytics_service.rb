@@ -27,6 +27,8 @@ module Analytics
           update_last_session_end_datetime(track_session, track_session_last_updated_at)
           track_session = return_new_session
         end
+
+        track_session.updated_at = fetch_datetime()
       
         track_session
       end
