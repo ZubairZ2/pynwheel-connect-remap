@@ -2496,7 +2496,7 @@ function display2DMap() {
   let leftSideWidth = document.getElementsByClassName("left-side")[0];
   let rightSideWidth = document.getElementsByClassName("right-side")[0];
   let title = document.getElementsByClassName("webpage-left-list-view-title")[0];
-  title.style.width = `${leftSideWidth.offsetWidth}px`;
+  title.style.width = `${leftSideWidth.offsetWidth - 12}px`;
   let inner_footer = $(".inner-footer")[0];
   let footerWidth = document.getElementById("footer");
   var windowWidth = $(window).width();
