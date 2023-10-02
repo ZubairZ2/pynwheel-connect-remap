@@ -2766,43 +2766,40 @@ $(document).ready(function() {
   $(".share-favorite").click(function() { updateSession("sent_favorite") });
 });
 
-
 function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
   const currentTime = Date.now();
   const timeSinceLastActivity = currentTime - lastActivityTime;
   console.log("Clear timer");
-  if (!updateRequestSent && timeSinceLastActivity >= inactivityThreshold) {
-    // User has been inactive for the specified threshold, send the request
+  
+  if (!updateRequestSent) {
+    // User has become active, send the request immediately
     sendUpdateRequest();
-    updateRequestSent = true; // Set the flag to true to prevent further requests
+    updateRequestSent = true;
+  }
+  
+  if (timeSinceLastActivity >= inactivityThreshold) {
+    // User has been inactive for the specified threshold, send the request again
+    sendUpdateRequest();
   } else {
     // Calculate the remaining time within the 1-minute window
-    const remainingTime = Math.max(inactivityThreshold - timeSinceLastActivity, 0);
+    const remainingTime = inactivityThreshold - timeSinceLastActivity;
     inactivityTimer = setTimeout(sendUpdateRequest, remainingTime);
   }
 }
 
 function sendUpdateRequest() {
   console.log('User activity updated successfully.');
-  updateSession("update_last_active")
+  updateSession("update_last_active");
   updateRequestSent = false; // Reset the flag
+  lastActivityTime = Date.now();
 }
 
 function updateLastActive() {
-  lastActivityTime = Date.now();
   resetInactivityTimer();
 }
 
 $(document).ready(function() {
-  $("a").hover(function (e) {
-    updateLastActive();
-  });
-
-  $("button").hover(function (e) {
-    updateLastActive();
-  });
-
   document.addEventListener("mousemove", function () {
     updateLastActive();
   });
@@ -2811,6 +2808,5 @@ $(document).ready(function() {
     updateLastActive();
   });
 
-  // Start the inactivity timer when the page loads
   resetInactivityTimer();
 });
