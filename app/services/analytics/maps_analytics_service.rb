@@ -12,7 +12,7 @@ module Analytics
       track_session = return_last_maps_session
       manage_session_info(track_session)
       track_session.save
-    end  
+    end
     
     private
     
@@ -24,7 +24,7 @@ module Analytics
         track_session_last_updated_at = return_community_datetime(track_session.updated_at)
 
         if session_datetime_not_in_limit?(track_session_last_updated_at)
-          update_last_session_end_datetime(track_session, track_session_last_updated_at)
+          # update_last_session_end_datetime(track_session, track_session_last_updated_at)
           track_session = return_new_session
         end
 
@@ -34,7 +34,7 @@ module Analytics
       end
       
       def update_last_session_end_datetime(track_session, track_session_last_updated_at)
-        track_session.update_column(:end_datetime, (track_session_last_updated_at +  ENV["IDLE_TIME_MAPS"].to_i.minutes)) if track_session.end_datetime.nil?
+        track_session.update_column(:end_datetime, track_session_last_updated_at) if track_session.end_datetime.nil?
       end
 
       def get_track_sessions
@@ -67,7 +67,7 @@ module Analytics
       end
     
       def session_datetime_not_in_limit?(session_datetime)
-        current_time = fetch_datetime
+        current_time = fetch_datetime()
         time_difference_in_minutes = ((current_time.to_datetime - session_datetime.to_datetime) * 24 * 60 ).to_i
         time_difference_in_minutes >= ENV["IDLE_TIME_MAPS"].to_i
       end

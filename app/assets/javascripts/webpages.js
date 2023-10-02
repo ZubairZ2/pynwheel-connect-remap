@@ -25,6 +25,12 @@ var amenityMarkerHoverHandler = false;
 var appHeaderHoverHandler = false;
 var unitModalClickHandler = false;
 
+
+let inactivityTimer;
+const inactivityThreshold = 120000; // 1 minutes (adjust as needed)
+let lastActivityTime = Date.now();
+let updateRequestSent = false;
+
 $(document).ready(function () {
   webCommunity = $("#communityWebpagesData").data("community");
   _3dAmenities = $("#communityWebpagesData").data("amenities");
@@ -1094,7 +1100,7 @@ function unitListHover() {
   let focused_marker ;
 
   $('div.left-side-30-units').hover(function (e) {
-    updateSession("update_last_active")
+    updateLastActive();
     let unit_num;
     if (e.target.classList.contains("left-side-30-units")) {
       unit_num = e.target.id;
@@ -2733,98 +2739,78 @@ function get_unit_availability(unit) {
 
 function updateSession(end_point_url) {
   community_id = $("#maps_community_id").val()
+  console.log("community_id: ",community_id)
   console.log("update session")
-  $.ajax({
-    type: "GET",
-    url: `/communities/${community_id}/webpages/${end_point_url}`,
-    success: function(response) {}
-  });
-}
+    if(community_id) {
+      $.ajax({
+        type: "GET",
+        url: `/communities/${community_id}/webpages/${end_point_url}`,
+        success: function(response) {}
+      });
+    }
+  }
 
 $(document).ready(function() {
-  $(".apply_now").click(function(){
+  $(".apply_now").click(function() {
     if(applyNowChildClickHandled) return;
     applyNowChildClickHandled = true;
     updateSession("apply_now_count")
   });
-  $(".unit_marker").click(function(){
+
+  $(".unit_marker").click(function() {
     if (unitChildClickHandled) return;
     unitChildClickHandled = true;
     updateSession("price_opened")
   });
 
-  $(".share-favorite").click(function(){ updateSession("sent_favorite") });
+  $(".share-favorite").click(function() { updateSession("sent_favorite") });
+});
 
-  $("#unitModal").click(function(){ 
-    if(unitModalClickHandler) return;
-    unitModalClickHandler = true;
-    updateSession("update_last_active") 
-  });
 
-  $("#unitModal").mouseleave(function() {
-    unitModalClickHandler = false;
-  });
-
-  $(".maps-analytics-container").click(function() { 
-    if(mapMouseClickHandler) return;
-    mapMouseClickHandler = true;
-    updateSession("update_last_active");
-  });
-
-  $(".maps-analytics-container").mouseleave(function() {
-    mapMouseClickHandler = false;
-  });
-
-  $(".maps-analytics-container").hover(
-    function() {
-      if(mapHoverHandler) return;
-      mapHoverHandler = true;
-      updateSession("update_last_active");
-    },
-    function() {
-      mapHoverHandler = false;
-    }
-  );
-
-  $(".marker").hover(
-    function() {
-      if(unitMarkerHoverHandler) return;
-      unitMarkerHoverHandler = true;
-      updateSession("update_last_active");
-    },
-    function() {
-      unitMarkerHoverHandler = false;
-    }
-  );
-
-  $('div.left-side-30-units').hover(function (e) {
-      if(unitBoxHoverHandler) return;
-      unitBoxHoverHandler = true;
-      updateSession("update_last_active");
-    },
-    function() {
-      unitBoxHoverHandler = false;
-    }
-  );
-
-  $('.sitemap-amenity-marker').hover(function (e) {
-      if(amenityMarkerHoverHandler) return;
-      amenityMarkerHoverHandler = true;
-      updateSession("update_last_active");
-    },
-    function() {
-      amenityMarkerHoverHandler = false;
-    }
-  );
-
-  $('.app-header').hover(function (e) {
-    if(appHeaderHoverHandler) return;
-    appHeaderHoverHandler = true;
-    updateSession("update_last_active");
-  },
-  function() {
-    appHeaderHoverHandler = false;
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  const currentTime = Date.now();
+  const timeSinceLastActivity = currentTime - lastActivityTime;
+  console.log("Clear timer");
+  if (!updateRequestSent && timeSinceLastActivity >= inactivityThreshold) {
+    // User has been inactive for the specified threshold, send the request
+    sendUpdateRequest();
+    updateRequestSent = true; // Set the flag to true to prevent further requests
+  } else {
+    // Calculate the remaining time within the 1-minute window
+    const remainingTime = Math.max(inactivityThreshold - timeSinceLastActivity, 0);
+    inactivityTimer = setTimeout(sendUpdateRequest, remainingTime);
   }
-);
-    
+}
+
+function sendUpdateRequest() {
+  console.log('User activity updated successfully.');
+  updateSession("update_last_active")
+  updateRequestSent = false; // Reset the flag
+}
+
+function updateLastActive() {
+  lastActivityTime = Date.now();
+  resetInactivityTimer();
+}
+
+$(document).ready(function() {
+  $("a").hover(function (e) {
+    updateLastActive();
+  });
+
+  $("button").hover(function (e) {
+    updateLastActive();
+  });
+
+  document.addEventListener("mousemove", function () {
+    updateLastActive();
+  });
+
+  document.addEventListener("keydown", function () {
+    updateLastActive();
+  });
+
+  // Start the inactivity timer when the page loads
+  resetInactivityTimer();
 });
