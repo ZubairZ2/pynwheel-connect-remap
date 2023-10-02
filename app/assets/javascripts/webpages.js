@@ -27,7 +27,7 @@ var unitModalClickHandler = false;
 
 
 let inactivityTimer;
-const inactivityThreshold = 120000; // 1 minutes (adjust as needed)
+const inactivityThreshold = 60000; // 1 minutes (adjust as needed)
 let lastActivityTime = Date.now();
 let updateRequestSent = false;
 
