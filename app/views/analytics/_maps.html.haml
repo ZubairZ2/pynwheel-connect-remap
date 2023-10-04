@@ -10,7 +10,10 @@
     - if @maps_records.any?
       .row
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Sessions
+          .chart-title
+            %p.chart_heading Sessions
+            = render 'title_info', {info_text: MAPS_SESSIONS_INFO}
+
           .col-lg-4.numbers_div
             .center_it
               .count_int= @track_session_count_maps
@@ -20,7 +23,10 @@
           .col-lg-8
             = bar_chart @session_each_day_data_maps, @session_each_day_options_maps
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Session Duration
+          .chart-title
+            %p.chart_heading Session Duration
+            = render 'title_info', {info_text: MAPS_SESSION_DURATION}
+
           .col-lg-4.numbers_div
             .center_it
               .count_int= @average_duration_each_session_in_minutes_maps
@@ -30,7 +36,10 @@
        
       .row.mt-80
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Sessions by Time of Day
+          .chart-title
+            %p.chart_heading Sessions by Time of Day
+            = render 'title_info', {info_text: MAPS_SESSIONS_BY_TIME_OF_DAY_INFO}
+
           .col-lg-4.numbers_div
             .center_it
               .count_int= @session_in_highest_hour_maps
@@ -39,7 +48,10 @@
             = bar_chart @session_each_day_hour_data_maps, @session_each_day_hour_options_maps
 
         .col-lg-6.col-md-12.h-500
-          %p.chart_heading Single vs Multiple Page Visits
+          .chart-title
+            %p.chart_heading Single vs Multiple Page Visits
+            = render 'title_info', {info_text: MAPS_SINGLE_VS_MULTIPLE_PAGE_VISITS_INFO}
+
           .col-lg-4.numbers_div
             .center_it
               .pie_description
@@ -55,7 +67,10 @@
 
       .row.mt-80
         .col-lg-12.h-500
-          %p.chart_heading Events
+          .chart-title
+            %p.chart_heading Events
+            = render 'title_info', {info_text: MAPS_EVENTS_INFO}
+
           .col-lg-2.numbers_div
             .center_it
               .count_int= @total_number_of_events_maps
@@ -76,7 +91,10 @@
 
       .row.mt-80
         .col-lg-12.h-500
-          %p.chart_heading Apply Clicks
+          .chart-title
+            %p.chart_heading Apply Clicks
+            = render 'title_info', {info_text: MAPS_APPLY_CLICKS_INFO}
+
           .col-lg-2.numbers_div
             .center_it
               .count_int= @total_number_of_apply_clicks_maps
@@ -96,7 +114,10 @@
 
       .row.mt-80
         .col-lg-12.h-500
-          %p.chart_heading Favorite Saved
+          .chart-title
+            %p.chart_heading Favorite Saved
+            = render 'title_info', {info_text: MAPS_FAVORITE_SAVED_INFO}
+
           .col-lg-2.numbers_div
             .center_it
               .count_int= @total_number_of_favourite_saved_maps
@@ -116,7 +137,9 @@
 
       .row.mt-80
         .col-lg-12.h-500
-          %p.chart_heading Favorite Mailed
+          .chart-title
+            %p.chart_heading Favorite Shared
+            = render 'title_info', {info_text: MAPS_FAVORITE_SHARED_INFO}
           .col-lg-2.numbers_div
             .center_it
               .count_int= @total_number_of_favourite_sent_maps

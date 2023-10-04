@@ -98,3 +98,14 @@ SELF_TOUR_TOUR_COMPLETION_INFO = "The number of tours during which the visitor v
 SELF_TOUR_STOPS_PER_TOUR_INFO =  "The number of stops that were visited during the tour."
 SELF_TOUR_TOP_STOPS_INFO = "The most visited stops on a tour by type"
 SELF_TOUR_NO_SHOWS = "The number of scheduled tours that did not use the application to conduct a tour."
+
+
+# Maps INFO
+MAPS_SESSIONS_INFO = "One “Session” is defined as an instance in which the user interacts with the Pynwheel Map until the browser is closed or the activity is idle for two minutes."
+MAPS_SESSION_DURATION = "The average amount of time each session lasts."
+MAPS_SESSIONS_BY_TIME_OF_DAY_INFO = "Number of sessions per time of day at the location of the user."
+MAPS_SINGLE_VS_MULTIPLE_PAGE_VISITS_INFO = "A single page visit means the user only visited the map. Multiple pages means that they also visited the Favorites page."
+MAPS_EVENTS_INFO = "”Events” include favorites saved, clicks on the “Share” button, and clicks on the “Apply” button."
+MAPS_APPLY_CLICKS_INFO = "The number of times users touched the “apply” button for a particular unit."
+MAPS_FAVORITE_SAVED_INFO = "This is the tally of the number of units or images that users have marked as a favorite."
+MAPS_FAVORITE_SHARED_INFO = "The number of times that the user clicks on the “Share” button from the Favorites page."
