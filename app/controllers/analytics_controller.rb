@@ -115,17 +115,24 @@ class AnalyticsController < ApplicationController
         elsif params[:admin_type] == "all_dwello"
           community_ids = fetch_dwelo_communities().ids
         end
+
         on_selected_communities(community_ids)
       end
       
       if params[:company].present? && !params[:company].blank?
-        company = Company.find @company_id
-        on_selected_communities(company.communities.ids)
+        begin
+          company = Company.find @company_id
+          on_selected_communities(company.communities.ids)
+        rescue => error
+        end
       end
       
       if params[:region].present? && !params[:region].blank?
-        region = Region.find @region_id
-        on_selected_communities(region.communities.ids)
+        begin
+          region = Region.find @region_id
+          on_selected_communities(region.communities.ids)
+        rescue => error
+        end
       end
     end
     
