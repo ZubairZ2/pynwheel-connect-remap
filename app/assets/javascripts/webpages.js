@@ -2792,13 +2792,21 @@ function updateLastActive() {
 }
 
 $(document).ready(function() {
-  document.addEventListener("mousemove", function () {
-    updateLastActive();
-  });
+  var currentURL = window.location.pathname;
 
-  document.addEventListener("keydown", function () {
-    updateLastActive();
-  });
+  console.log("Current URL:", currentURL);
 
-  resetInactivityTimer();
+  if (currentURL.endsWith("/webpages") || currentURL.endsWith("/webpages/favorites")) {
+    console.log("Matching URL, executing code");
+
+    document.addEventListener("mousemove", function () {
+      updateLastActive();
+    });
+
+    document.addEventListener("keydown", function () {
+      updateLastActive();
+    });
+
+    resetInactivityTimer();
+  }
 });
