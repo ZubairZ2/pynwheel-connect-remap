@@ -10,8 +10,6 @@ class AnalyticsController < ApplicationController
     tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
     @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @metro_records = track_sessions.where(track_session_type: "metro").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
-    @pesent_end_dattime_maps_records = @maps_records.where.not(end_datetime: nil)
-    @pesent_end_dattime_metro_records = @metro_records.where.not(end_datetime: nil)
     @self_tour_records = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @min_date_for_self_tour = tour_histories.order('created_at asc')&.first&.created_at
@@ -19,11 +17,10 @@ class AnalyticsController < ApplicationController
 
     apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
-    
     # For Webpage
-    if false && @maps_records.any? && (@product_type == "all" || @product_type == "maps")
+    if @maps_records.any? && (@product_type == "all" || @product_type == "maps")
       collect_session_each_day_data(start_date, @days_count, @maps_records, :start_datetime, "maps")
-      collect_session_each_day_data_in_minutes(start_date, @days_count, @pesent_end_dattime_maps_records, :start_datetime, :end_datetime, "maps")
+      collect_session_each_day_data_in_minutes(start_date, @days_count, @maps_records, :start_datetime, :end_datetime, "maps")
       collect_session_each_day_data_in_hours(@maps_records, :start_datetime, "maps")
       bounce_rate_on_pages(@maps_records, :visited_pages ,"maps")
       events_per_session(start_date, @days_count, @maps_records, :start_datetime, "maps")
@@ -90,7 +87,7 @@ class AnalyticsController < ApplicationController
   end
   
   private
-    
+
     def apply_filters(params)
       @product_type = params[:product_type].present? ? params[:product_type] : "all"
       @admin_type = params[:admin_type] if params[:admin_type]
@@ -163,7 +160,15 @@ class AnalyticsController < ApplicationController
       sessions_each_day_hash = return_empty_hash(days_count,start_date)
       total_records_with_abondoned = total_records.pluck(end_attr_name)
 
-      start_end_datetime_arr = total_records_with_abondoned.include?(nil) ? total_records.pluck(start_attr_name, :updated_at) : total_records.pluck(start_attr_name, end_attr_name)
+      if for_device_type == "self_tour"
+        start_end_datetime_arr = total_records_with_abondoned.include?(nil) ? total_records.pluck(start_attr_name, :updated_at) : total_records.pluck(start_attr_name, end_attr_name)
+      else
+        start_end_datetime_arr = total_records.pluck(
+          start_attr_name,
+          Arel.sql("COALESCE(end_datetime, updated_at) AS end_datetime")
+        )
+      end
+
       records_start_date = total_records.pluck(start_attr_name).map(&:to_date)
       uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
@@ -174,6 +179,7 @@ class AnalyticsController < ApplicationController
         count = 0
         remove_index = []
         start_date_str = uniq_start_date[i].strftime("%y:%m:%d")
+
         start_end_datetime_arr.each_with_index do |arr, ind|
           if arr.first.strftime("%y:%m:%d") == start_date_str
             mins = return_time_in_minutes(arr.first,arr.last)
@@ -187,8 +193,9 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = (minutes / count).negative?() ? 0 : (minutes / count)
         records_start_date = records_start_date - [uniq_start_date[i]]
         remove_index.each_with_index {|removing_index,j| start_end_datetime_arr.delete_at(removing_index - j) }
-      end   
-      instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", (total_minutes / total_count).negative?() ? 0 : (total_minutes / total_count) )
+      end
+
+      instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", ( (total_minutes / total_count).negative?() rescue 0) ? 0 : (total_minutes / total_count) )
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
 
@@ -246,14 +253,17 @@ class AnalyticsController < ApplicationController
     def events_per_session(start_date, days_count, total_records, start_attr_name, for_device_type)
       sessions_each_day_hash = return_empty_hash(days_count,start_date)
       if for_device_type == "self_tour"
-        records = total_records.order(start_attr_name).pluck(start_attr_name, :see_availability_counter, :apply_click_counter, :price_opened_counter, :notes_opened_counter, :camera_opened_counter)
+        # records = total_records.order(start_attr_name).pluck(start_attr_name, :see_availability_counter, :apply_click_counter, :price_opened_counter, :notes_opened_counter, :camera_opened_counter)
+        records = total_records.order(start_attr_name).pluck(start_attr_name, :see_availability_counter, :apply_click_counter, 0, :notes_opened_counter, :camera_opened_counter)
       else
-        records = total_records.order(start_attr_name).pluck(start_attr_name, :apply_click_counter,:favorite_saved_counter, :favorite_sent_counter, :price_opened_counter)
+        # records = total_records.order(start_attr_name).pluck(start_attr_name, :apply_click_counter,:favorite_saved_counter, :favorite_sent_counter, :price_opened_counter)
+        records = total_records.order(start_attr_name).pluck(start_attr_name, :apply_click_counter,:favorite_saved_counter, :favorite_sent_counter, 0)
       end
+      
       session_with_counts = 0
-      for_device_type == "self_tour" ? (records.each {|ar| session_with_counts += 1 if ar[1] > 0 || ar[2] > 0 || ar[3] > 0 || ar[4] > 0 || ar[4] > 0}) : (records.each {|ar| session_with_counts += 1 if ar[1] > 0 || ar[2] > 0 || ar[3] > 0 || ar[4] > 0 })
+      for_device_type == "self_tour" ? (records.each {|ar| session_with_counts += 1 if ar[1] > 0 || ar[2] > 0 || ar[3] > 0 || ar[4] > 0 || ar[4] > 0 || ar[5] > 0}) : (records.each {|ar| session_with_counts += 1 if ar[1] > 0 || ar[2] > 0 || ar[3] > 0 || ar[4] > 0 })
       records_count = records.size
-      records = records.map{ |arr| [arr.first.to_date, arr[1], arr[2], arr[3], arr[4]] }
+      records = records.map{ |arr| for_device_type == "self_tour" ? [arr.first.to_date, arr[1], arr[2], arr[3], arr[4], arr[5]] : [arr.first.to_date, arr[1], arr[2], arr[3], arr[4]] }
       records_start_date = records.map{ |arr| arr.first }
       uniq_start_date = records_start_date.uniq
       uniq_start_date_size = uniq_start_date.size
@@ -262,7 +272,8 @@ class AnalyticsController < ApplicationController
         remove_index = []
         records.each_with_index do |arr, ind|
           if arr.first == uniq_start_date[i]
-            count += (arr[1] + arr[2] + arr[3] + arr[4])
+            
+            count += for_device_type == "self_tour" ? (arr[1] + arr[2] + arr[3] + arr[4] + arr[5]) :  (arr[1] + arr[2] + arr[3] + arr[4])
             remove_index << ind
           end
         end

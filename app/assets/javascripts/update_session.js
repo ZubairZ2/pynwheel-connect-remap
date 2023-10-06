@@ -150,7 +150,7 @@ $(document).ready(function () {
   current_user_id = 0 // For send post call
   var need_reload;
   // remove just beacuse of production issue 
-  //update_session_url = '/webpages/' + current_user_id + '/update_session'
+  update_session_url = '/webpages/' + current_user_id + '/update_session'
   var load_check = true
   $(document).on('click','a, img, .btn',function (e) {
     //load_check = false
@@ -173,9 +173,9 @@ $(document).ready(function () {
 
           if (load_check && need_reload) {
               // remove just beacuse of production issue 
-              //$.ajax({ type: 'POST', cache: false, url: update_session_url  });
-              //window.localStorage.removeItem("run_only_one_time");
-              //sleep(800)
+              $.ajax({ type: 'POST', cache: false, url: update_session_url  });
+              window.localStorage.removeItem("run_only_one_time");
+              sleep(800)
           }
       }
   });

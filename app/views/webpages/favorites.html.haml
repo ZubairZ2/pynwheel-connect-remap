@@ -29,7 +29,7 @@
     / Main content
     %div.alert_message
       = render partial: "/messages"
-    %section.is-favorites
+    %section.is-favorites.maps-analytics-container
       .mydiv-fav
         .select-list.select-list-fav
           = hidden_field_tag :maps_community_id, @community.id
@@ -68,7 +68,7 @@
                 %img{:src => "/assets/map-icon.png"}/
                 %span.fav-option-icon-text View Map
             %li
-              %a{"data-toggle"=>"modal","data-target"=>"#share-favorites"}
+              %a.share-favorite{"data-toggle"=>"modal","data-target"=>"#share-favorites"}
                 %img{:src => "/assets/share-icon.png"}/
                 %span.fav-option-icon-text Share Map
             %li

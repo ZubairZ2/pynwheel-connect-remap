@@ -12,6 +12,9 @@ $(document).ready(function() {
         window.localStorage.setItem('tab', "SelfTour");
       }
       else if(!$('#maps-tab').hasClass('hidden')){
+        window.localStorage.setItem('tab', "Maps");
+      }
+      else if(!$('#touch-tab').hasClass('hidden')){
         window.localStorage.setItem('tab', "Touch");
       }
     }
@@ -33,27 +36,25 @@ $(document).ready(function() {
 
   $('#product_type_tabs a[data-toggle="tab"]').on('click', function(){
     window.localStorage.setItem('tabSet', true);
-    if ($(this).html() == "Touch") {
+
+    if ($(this).html() == "Touch")
       window.localStorage.setItem('tab', "Touch");
-      // default_method(minDateForTouch);
-      // set_url();
-    }else {
+    else if ($(this).html() == "Maps")
+      window.localStorage.setItem('tab', "Maps");
+    else
       window.localStorage.setItem('tab', "SelfTour");
-      // default_method(minDateForSelfTour);
-      // set_url();
-    };
   });
 
 });
 
 window.addEventListener('beforeunload', function(event) {
   window.localStorage.setItem('tabSet', false);
-  if($("#s-self-tour").hasClass('active')){
+  if($("#s-self-tour").hasClass('active'))
     window.localStorage.setItem('currentTab', "SelfTour");
-  }
-  else{
+  else if ($("#s-maps").hasClass('active'))
+    window.localStorage.setItem('currentTab', "Maps");
+  else
     window.localStorage.setItem('currentTab', "Touch");
-  }
 });
 
 function default_method(min_date) {
@@ -138,13 +139,15 @@ function set_url(){
 
 function setAnalyticsTab() {
   let tabName = window.localStorage.getItem('tab');
-  if(tabName && tabName == "Touch") {
+
+  if(tabName && tabName == "Touch")
     $('a[href="#s-touch"]').tab("show");
-    default_method(minDateForTouch);
-  } else {
-    $('a[href="#self-tour-tab"]').tab("show");
-    default_method(minDateForSelfTour);
-  }
+  else if (tabName && tabName == "Maps")
+    $('a[href="#s-maps"]').tab("show");
+  else
+    $('a[href="#s-self-tour"]').tab("show");
+
+  default_method(minDateForSelfTour);
 }
 $(document).ready(function() {
   $('#product_type_tabs a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
