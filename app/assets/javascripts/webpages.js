@@ -17,14 +17,6 @@ var currentUnitSelected = null;
 
 var applyNowChildClickHandled = false
 var unitChildClickHandled = false
-var mapHoverHandler = false;
-var mapMouseClickHandler = false;
-var unitMarkerHoverHandler = false;
-var unitBoxHoverHandler = false;
-var amenityMarkerHoverHandler = false;
-var appHeaderHoverHandler = false;
-var unitModalClickHandler = false;
-
 
 let inactivityTimer;
 const inactivityThreshold = 60000; // 1 minutes (adjust as needed)
