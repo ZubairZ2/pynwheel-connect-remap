@@ -806,6 +806,7 @@ Rails.application.routes.draw do
           get :portico_list_communities
           post :portico_list_communities
           post :lincoln_list_communities
+          get :check_version
           post :update_version
         end
       end

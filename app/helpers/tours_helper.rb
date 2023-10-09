@@ -62,6 +62,7 @@ module ToursHelper
       allow_usage = false
       redirect_url = redirect_url(params[:appName], params[:appPlatform])
     end
+    
     return allow_usage, redirect_url 
 	end
 

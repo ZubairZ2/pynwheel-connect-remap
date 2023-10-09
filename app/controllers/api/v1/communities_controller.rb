@@ -93,6 +93,15 @@ module Api
           render :json=> {:success=>false, :message => e.message}, :status=>500
         end
       end
+
+      def check_version
+        begin
+          allow_usage, redirect_url = get_version_access params
+          render :json=> {success: true, message: "Version check successfully executed!", data: {allow_usage: allow_usage, redirect_url: redirect_url}}, status: 200
+        rescue Exception => e
+          render :json=> {success: false, message: e.message, data: {}}, status: 500
+        end
+      end
       
       def update_version
         app_version = AppVersion.first
