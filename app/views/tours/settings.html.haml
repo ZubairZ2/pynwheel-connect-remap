@@ -579,21 +579,21 @@
                           .font-17-v.pull-left.mr-20-v
                             .p-4-v.pull-left.mr-10-v
                               %label.text-grey-v From
-                            %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "monday_mor_" + "#{monday_count}",onkeyup: "myFunction()"}
+                            %input.day-list.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "monday_mor_" + "#{monday_count}",onchange: "myFunction()"}
                           .font-17-v.pull-left.mr-20-v
                             .p-4-v.pull-left.mr-10-v
                               %label.text-grey-v To
-                            %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "monday_eve_" + "#{monday_count}", onkeyup: "myFunction()"}
+                            %input.day-list.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "monday_eve_" + "#{monday_count}", onchange: "myFunction()"}
                           .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                         - if current_day.day != "Monday"
                           .font-17-v.pull-left.mr-20-v
                             .p-4-v.pull-left.mr-10-v
                               %label.text-grey-v From
-                            %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", onkeyup: "myFunction()"}
+                            %input.day-list.morning_time.bg-grey-v{name: "from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", onchange: "myFunction()"}
                           .font-17-v.pull-left.mr-20-v
                             .p-4-v.pull-left.mr-10-v
                               %label.text-grey-v To
-                            %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", onkeyup: "myFunction()"}
+                            %input.day-list.evening_time.bg-grey-v{name: "to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", onchange: "myFunction()"}
                           .font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                           -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
                         - if current_day.day == "Monday"
@@ -692,21 +692,21 @@
                           .font-17-v.pull-left.mr-20-v
                             .p-4-v.pull-left.mr-10-v
                               %label.text-grey-v From
-                            %input.day-list-guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "guided_monday_mor_" + "#{monday_count}",onkeyup: "myFunctionGuided()"}
+                            %input.day-list-guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", class: "guided_monday_mor_" + "#{monday_count}",onchange: "myFunctionGuided()"}
                           .font-17-v.pull-left.mr-20-v
                             .p-4-v.pull-left.mr-10-v
                               %label.text-grey-v To
-                            %input.day-list-guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "guided_monday_eve_" + "#{monday_count}", onkeyup: "myFunctionGuided()"}
+                            %input.day-list-guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", class: "guided_monday_eve_" + "#{monday_count}", onchange: "myFunctionGuided()"}
                           .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                         - if current_day.day != "Monday"
                           .font-17-v.pull-left.mr-20-v
                             .p-4-v.pull-left.mr-10-v
                               %label.text-grey-v From
-                            %input.day-list-guided.morning_time_guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", onkeyup: "myFunctionGuided()"}
+                            %input.day-list-guided.morning_time_guided.bg-grey-v-guided{name: "guided_from_#{index+1}", type: "time", value: "#{current_day.opening_time}", id: "from_t", onchange: "myFunctionGuided()"}
                           .font-17-v.pull-left.mr-20-v
                             .p-4-v.pull-left.mr-10-v
                               %label.text-grey-v To
-                            %input.day-list-guided.evening_time_guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", onkeyup: "myFunctionGuided()"}
+                            %input.day-list-guided.evening_time_guided.bg-grey-v-guided{name: "guided_to_#{index+1}", type: "time", value: "#{current_day.closing_time}", id: "to_t", onchange: "myFunctionGuided()"}
                           .font-17-v.pt-5-v.cancel_guided.fa.fa-v.fa-times.text-danger{style: "margin-left: 8px;"}
                           -#.font-17-v.pt-5-v.cancel.fa.fa-v.fa-times.text-danger
                         - if current_day.day == "Monday"
@@ -1372,23 +1372,23 @@
     if ($(".list_guided").children().length > 1){
     $(this).parent().remove();
 
-    current_day = 0
+    current_day_guided = 0
     $(".list_guided").children().children('select').each(function(){
-      current_day = current_day + 1
-      $(this).attr("id", 'guided_day_'+current_day);
-      $(this).attr("name", 'guided_day_'+current_day);
+      current_day_guided = current_day_guided + 1
+      $(this).attr("id", 'guided_day_'+current_day_guided);
+      $(this).attr("name", 'guided_day_'+current_day_guided);
     })
 
-    current_day = 0
+    current_day_guided = 0
     $(".list_guided").children().children().children('input').each(function(i){
       if (Math.floor(i%2 == 0)){
-        current_day = current_day + 1
-        $(this).attr("id", 'guided_from_'+current_day);
-        $(this).attr("name", 'guided_from_'+current_day);
+        current_day_guided = current_day_guided + 1
+        $(this).attr("id", 'guided_from_'+current_day_guided);
+        $(this).attr("name", 'guided_from_'+current_day_guided);
       }
       else{
-        $(this).attr("id", 'guided_to_'+current_day);
-        $(this).attr("name", 'guided_to_'+current_day);
+        $(this).attr("id", 'guided_to_'+current_day_guided);
+        $(this).attr("name", 'guided_to_'+current_day_guided);
       }
     })
   }
