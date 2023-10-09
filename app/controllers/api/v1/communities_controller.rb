@@ -408,6 +408,15 @@ module Api
         Analytics::MetroAnalyticsService.new(community).create_analytics_session(params) if community.present?
         render :json=> {:status=>true, code: 200}
       end
+
+      def ipad_send_analytics_data
+        begin
+          Analytics::IpadAnalyticsService.new(@community).create_analytics_session(params)
+          render :json=> {status: true, code: 200, message: "RN touch app analytics data sent sucessfully!"}
+        rescue => exception
+          render :json=> {status: false, code: 401, message: exception.message}
+        end
+      end
     
       def get_tour_user
         tour_user_id = params[:tour_user_id].downcase
