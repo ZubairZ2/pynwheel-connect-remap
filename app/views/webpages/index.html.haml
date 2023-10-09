@@ -225,7 +225,7 @@
               %div.tablinks
                 =button_tag " List View", :onClick => "change_units_view(event, 'list_view')", :class => "fa fa-list"
             %div.map-body
-              .right-side.parent.tabcontent.map_view#panzomm-container
+              .right-side.parent.tabcontent.map_view#panzomm-container.mobile_map_view
                 .image-map#zoomable.zoomable-map-container{style: "text-align: center"}
                   - if @community_info.has_floorplates?
                     - @floors.each do |floor|
@@ -265,7 +265,7 @@
               .left-side.tabcontent.list_view
                 -all_details = @units_with_floorplan_info.present? ? JSON.parse(@units_with_floorplan_info) : []
                 %div.left-side-title
-                  %div.webpage-left-list-view-title
+                  %div.webpage-left-list-view-title.webpage-header
                     %p#unit-title-count
                       #{all_details.count} Units Found
                     = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
