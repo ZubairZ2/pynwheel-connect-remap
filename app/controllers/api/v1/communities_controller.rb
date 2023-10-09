@@ -12,7 +12,7 @@ module Api
       include ShortestPath
       
       before_action :check_authentication, only: [:lincoln_list_communities, :portico_list_communities]
-      before_action :set_community, only: :email_favorites
+      before_action :set_community, only: [:email_favorites, :metro_send_analytics_data, :ipad_send_analytics_data]
       before_action :load_tour_user, only: [:portico_list_communities, :lincoln_list_communities]
     
       require 'securerandom'
@@ -1414,7 +1414,8 @@ module Api
       end
     
       def set_community
-        @community = Community.find(params[:id])
+        @community = Community.find(params[:id] || params[:community_id])
+
         rescue ActiveRecord::RecordNotFound
           render json: {success: false, error_code: 404, message: 'Community not found', data: nil}, status: :not_found
       end

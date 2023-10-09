@@ -2,6 +2,7 @@ class AnalyticsController < ApplicationController
   include AnalyticsHelper
   add_breadcrumb "Home", :root_path
   add_breadcrumb "Analytics"
+
   def index
     start_date , end_date = (params[:start_date].present? && params[:end_date].present?) ? [(params[:start_date].split("/")[1] + "/" + params[:start_date].split("/")[0] + "/" + params[:start_date].split("/")[2]).to_date, ((params[:end_date].split("/")[1] + "/" + params[:end_date].split("/")[0] + "/" + params[:end_date].split("/")[2]).to_date)] : [Date.today - 7.day, Date.today]
     @days_count = return_total_days(start_date, end_date) > 0 ? return_total_days(start_date, end_date) : 1
@@ -9,11 +10,11 @@ class AnalyticsController < ApplicationController
     track_sessions = TrackSession.where(community_id: communities.ids)
     tour_histories = TourHistory.where(community_id: communities.self_tour_enabled_only.ids)
     @maps_records = track_sessions.where(track_session_type: "maps").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
-    @metro_records = track_sessions.where(track_session_type: "metro").where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
+    @metro_records = track_sessions.where(track_session_type: TOUCH_TYPES).where('start_datetime > ? AND start_datetime < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @self_tour_records_all = tour_histories.where('arrived > ? AND arrived < ?',start_date.beginning_of_day, end_date.end_of_day)
     @min_date_for_self_tour = tour_histories.order('created_at asc')&.first&.created_at
-    @min_date_for_touch = track_sessions.where(track_session_type: "metro").order('created_at asc')&.first&.created_at
+    @min_date_for_touch = track_sessions.where(track_session_type: TOUCH_TYPES).order('created_at asc')&.first&.created_at
 
     apply_filters(params)
     @date_range_text = fetch_date_range_text(start_date , end_date, @days_count)
@@ -41,6 +42,7 @@ class AnalyticsController < ApplicationController
       apply_clicks_track_session(start_date, @days_count, @metro_records, :start_datetime, "metro")
       favourite_saved_track_session(start_date, @days_count, @metro_records, "metro")
       favourite_sent_track_session(start_date, @days_count, @metro_records, "metro")
+      interface_used(start_date, @days_count, @metro_records, "metro")
       price_opened_track_session(start_date, @days_count, @metro_records, :start_datetime, "metro")
       visits_per_session_page(@metro_records, "metro")
     end
@@ -415,6 +417,56 @@ class AnalyticsController < ApplicationController
       instance_variable_set("@pie_favourite_sent_data_options_#{for_device_type}", pie_favourite_sent_data_options)
       instance_variable_set("@bar_favourite_sent_data_labels_#{for_device_type}", bar_favourite_sent_data_labels)
       instance_variable_set("@bar_favourite_sent_data_options_#{for_device_type}", bar_favourite_sent_data_options)
+    end
+
+    def interface_used(start_date, days_count, total_records, for_device_type)
+      sessions_each_day_hash = return_empty_hash(days_count,start_date)
+      labels = sessions_each_day_hash.keys.map{|date| date.to_date.to_s}
+
+      track_sessions = total_records.select("DATE(start_datetime) AS start_date", :track_session_type, 'COUNT(*) AS count').group("start_date", :track_session_type).order("start_date")
+     
+      metro_session_counts_array = []
+      ipad_session_counts_array = []
+      count_data = {}
+
+      track_sessions.each do |result|
+        date = result.start_date.to_s
+        track_session_type = result.track_session_type
+        count = result.count
+        count_data[date] ||= {}
+        count_data[date][track_session_type] = count
+      end
+
+      result_hash = labels.each_with_object({}) do |date, merged_hash|
+        merged_hash[date] = { 'metro' => 0, 'ipad' => 0 }.merge(count_data[date] || {})
+      end
+      
+      labels.each do |date|
+        if count_data[date].present?
+          metro_session_counts_array << (count_data[date]['metro'] || 0)
+          ipad_session_counts_array << (count_data[date]['ipad'] || 0)
+        else
+          metro_session_counts_array << 0
+          ipad_session_counts_array << 0
+        end
+      end
+
+
+      total_count = metro_session_counts_array.sum + ipad_session_counts_array.sum
+      percentage_metro_interface_used = ((metro_session_counts_array.sum.to_f / total_count.to_f).round(2) * 100).round(2) rescue 0.0
+      percentage_ipad_interface_used = ((ipad_session_counts_array.sum.to_f / total_count.to_f).round(2) * 100).round(2) rescue 0.0
+      
+      bar_touch_data_labels, bar_touch_data_options = make_multiple_bar_chart(labels, metro_session_counts_array, ipad_session_counts_array)
+      pie_chart_hash = {"Total sessions on tablet" => ipad_session_counts_array.sum, "Total sessions on touchscreen" => metro_session_counts_array.sum}
+      pie_touch_data_labels, pie_touch_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(137, 199, 101, 0.5)", "rgba(255,212,0,0.8)"], ["rgba(137, 199, 101, 1)","rgba(255,212,0,1)"])
+    
+      instance_variable_set("@percentage_ipad_interface_used_#{for_device_type}", percentage_ipad_interface_used.to_s + "%")
+      instance_variable_set("@percentage_metro_interface_used_#{for_device_type}", percentage_metro_interface_used.to_s + "%")
+      instance_variable_set("@total_number_of_touch_sent_#{for_device_type}", ipad_session_counts_array.sum)
+      instance_variable_set("@bar_touch_data_labels_#{for_device_type}", bar_touch_data_labels)
+      instance_variable_set("@bar_touch_data_options_#{for_device_type}", bar_touch_data_options)
+      instance_variable_set("@pie_touch_data_labels_#{for_device_type}", pie_touch_data_labels)
+      instance_variable_set("@pie_touch_data_options_#{for_device_type}", pie_touch_data_options)
     end
 
     def price_opened_track_session(start_date, days_count, total_records, start_attr_name, for_device_type) 

@@ -101,9 +101,13 @@
   background-color: rgba(0, 143, 212,0.5);
   border: 2px solid rgba(0, 143, 212,1);
 }
-.events_without, .apply_clicks_without, .favourite_saved_without, .favourite_sent_without, .price_opened_without, .tour_site_false, .see_availability_without, .tour_counter_without, .tour_unscheduled{
+.metro_interface_used, .events_without, .apply_clicks_without, .favourite_saved_without, .favourite_sent_without, .price_opened_without, .tour_site_false, .see_availability_without, .tour_counter_without, .tour_unscheduled{
   background-color: rgba(255,212,0,0.5);
   border: 2px solid rgba(255,212,0,1);
+}
+.ipad_interface_used {
+  background-color: rgba(137, 199, 101, 0.5);
+  border: 2px solid rgba(137, 199, 101, 1);
 }
 .apply_clicks_with, .price_opened_with, .tour_scheduled{
   background-color: rgba(137, 199, 101, 0.7);
