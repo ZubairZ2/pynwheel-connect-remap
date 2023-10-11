@@ -5,7 +5,7 @@ module AnalyticsHelper
     end_date = Time.new(end_date.strftime("%Y"), end_date.strftime("%m"), end_date.strftime("%d"))
     seconds = (end_date - start_date).to_i
     dd, hh = seconds.divmod(60*60*24)
-    return dd;
+    return (dd + 1);
   end
 
   def return_time_in_minutes(start_datetime,end_datetime)
