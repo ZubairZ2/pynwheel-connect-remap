@@ -100,7 +100,7 @@
                 .plot-image#map
                   - if @sitemap.present? && @sitemap.image.present? && @sitemap.image.content_type == "image/svg+xml"
                     %object{:data => "your.svg", :type => "image/svg+xml"}
-                    = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
+                    = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;", name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
                   - else
                     = image_tag @sitemap.image.present? ? @sitemap.image.url : "default.jpeg",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
 

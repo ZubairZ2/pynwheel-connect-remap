@@ -317,7 +317,7 @@
                   .grid-graph.hidden
                   - if @sitemap.present? && @sitemap.image.present? && @sitemap.image.content_type == "image/svg+xml"
                     %object{:data => "your.svg", :type => "image/svg+xml"}
-                      = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;"
+                      = image_tag (@sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg"), :style => "width: #{@sitemap.width}px; height: #{@sitemap.height}px;", id:"map_img",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
                   - else
                     = image_tag @sitemap.present? && @sitemap.image.present? ? @sitemap.image.url : "default.jpeg", id:"map_img",name:"viewArea", id:"viewArea",draggable:"false", class: 'viewArea', data: {'map_id' => "map"}
                     - if @community.community_tour.x_plot.to_i + @community.community_tour.y_plot.to_i > 0
