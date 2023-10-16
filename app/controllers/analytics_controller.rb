@@ -636,6 +636,7 @@ class AnalyticsController < ApplicationController
         start_to = h_key < 10 ? ("0" + h_key.to_s) : (h_key.to_s)
         end_then = (h_key + 1) < 10 ? ("0" + (h_key + 1).to_s) : ((h_key + 1).to_s)
         label_str = start_to + "-" + end_then
+        label_str = convert_to_12_hour_format(label_str)
         label_str
       end
       hour_values = sessions_each_day_hourly_hash.values
@@ -703,6 +704,7 @@ class AnalyticsController < ApplicationController
         start_to = h_key < 10 ? ("0" + h_key.to_s) : (h_key.to_s)
         end_then = (h_key + 1) < 10 ? ("0" + (h_key + 1).to_s) : ((h_key + 1).to_s)
         label_str = start_to + "-" + end_then
+        label_str = convert_to_12_hour_format(label_str)
         label_str
       end
       hour_values = sessions_each_day_hourly_hash.values
