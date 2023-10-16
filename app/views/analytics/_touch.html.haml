@@ -41,7 +41,8 @@
           .col-lg-4.numbers_div
             .center_it
               .count_int= @session_in_highest_hour_metro
-              .count_text= 'Maximum number of sessions at ' + @highest_hour_metro
+              .count_text= 'Maximum number of sessions at '
+              .count_text=  @highest_hour_metro
           .col-lg-8
             = bar_chart @session_each_day_hour_data_metro, @session_each_day_hour_options_metro
 

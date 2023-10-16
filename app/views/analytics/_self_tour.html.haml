@@ -44,7 +44,8 @@
             .col-lg-4.numbers_div
               .center_it
                 .count_int= @session_in_highest_hour_self_tour
-                .count_text= 'Maximum number of tours at ' + @highest_hour_self_tour
+                .count_text= 'Maximum number of tours at '
+                .count_text=  @highest_hour_self_tour
             .col-lg-8
               = bar_chart @session_each_day_hour_data_self_tour, @session_each_day_hour_options_self_tour
 
