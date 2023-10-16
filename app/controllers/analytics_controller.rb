@@ -235,7 +235,7 @@ class AnalyticsController < ApplicationController
       instance_variable_set("@session_in_highest_hour_#{for_device_type}", max_count)
       hour_labels = sessions_each_day_hourly_hash.keys.map do |h_key|
         start_to = h_key < 10 ? ("0" + h_key.to_s) : (h_key.to_s)
-        end_then = (h_key + 2) < 10 ? ("0" + (h_key + 2).to_s) : ((h_key + 2).to_s)
+        end_then = (h_key + 1) < 10 ? ("0" + (h_key + 1).to_s) : ((h_key + 1).to_s)
         label_str = start_to + "-" + end_then
         label_str = convert_to_12_hour_format(label_str)
         label_str

@@ -26,12 +26,14 @@ module AnalyticsHelper
     end_period = end_time < 12 ? 'AM' : 'PM'
 
     start_time = start_time % 12
+    # start_period = "AM" if start_time.zero?
     start_time = 12 if start_time.zero?
 
     end_time = end_time % 12
+    end_period = "AM" if end_time.zero?
     end_time = 12 if end_time.zero?
 
-    "#{start_time}-#{end_time} #{start_period}"
+    "#{start_time}-#{end_time} #{end_period}"
   end
 
 
