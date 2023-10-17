@@ -209,23 +209,10 @@ class CredentialsValid < BaseService
       end
     elsif community.data_provider == "yardirentcafe"
       begin
-        request_type = "apartmentavailability"
-        company_code = credentials.c_code
-        api_token = credentials.api_token
-        property_code = credentials.p_code.split(',')[0]
-        if api_token.present?
-          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
-        else
-          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
-        end
-        response = HTTParty.get(@url)
-        response = JSON.parse(response.body)
-
-        if response[0]["Error"].nil?
-          return true
-        else
-          return false
-        end
+        property_code = credentials&.p_code&.split(",")[0] rescue ""
+        property_code = property_code&.strip
+        response = RentCafeApiV2Service.new(community&.id).get_appartment_availability(property_code)
+        return response&.dig("errorCode") == 200 ? true : false
       rescue => e
         return false
       end
