@@ -90,6 +90,8 @@ class Community < ApplicationRecord
   scope :active_communities, -> { where(locked: false) }
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
   scope :desc_created_at, -> { order(created_at: :desc) }
+  scope :active_properties, -> {where(locked: [false, nil])}
+  scope :active_client_properties, -> { active_properties.where.not(company_id: [44, 728, 730]) }
 
   amoeba do
     include_association :design
