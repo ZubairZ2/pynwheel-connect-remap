@@ -1,77 +1,103 @@
 class LatchAccountsController < ApplicationController
-  # include Error::ErrorHandler
-  before_action :set_user
+  before_action :set_latch_account, except: [:new, :remove_latch_locks]
 
   def new
     @latch = Latch.new
   end
-  
+
   def create
-    locks_provider = current_community.multiple_locks_provider
-    locks_provider << "Latch" unless locks_provider.include?("Latch")
-    unless @is_already_exists
-      @latch = Latch.new(latch_params)
-      result = parse_csv(params[:file]) if params[:file].present?
-      if @latch.save
-        current_community.update_columns(:multiple_locks_provider => locks_provider)
-        flash[:notice] = "Latch credentails saved successfully"
-        redirect_to new_community_dwelo_path
-      else
-        flash[:error] = @latch.errors.full_messages.join(',')
-        redirect_to new_community_dwelo_path
-      end
+    if @latch.update(latch_params)
+      add_lock_provider
+      flash[:notice] = "Latch credentials saved successfully"
     else
-      @latch = Latch.find_by(community_id: current_community.id)
-      result = parse_csv(params[:file]) if params[:file].present?
-      if @latch.update_attributes(latch_params)
-        current_community.update_columns(:multiple_locks_provider => locks_provider)
-        flash[:notice] = "Latch credentails updated successfully"
-        redirect_to new_community_dwelo_path
-      else
-        flash[:error] = @latch.errors.full_messages.join(',')
-        redirect_to new_community_dwelo_path
-      end
+      flash[:error] = @latch.errors.full_messages.join(', ')
     end
+    redirect_to new_community_dwelo_path
   end
 
   def upload_lock_image
     return unless params[:lock_image].present?
-    @latch = current_community.latch || Latch.new(community_id: current_community.id)
     @latch.update(lock_image: params[:lock_image])
   end
 
   def remove_latch_locks
-    if current_community.latch.present?
-      if current_community.latch.latch_locks.present?
-        current_community.latch.latch_locks.destroy_all
-        flash[:notice] = "Locks deleted successfully"
-        redirect_to new_community_dwelo_path(current_community)
-      else
-        flash[:error] = "No locks are present"
-        redirect_to new_community_dwelo_path(current_community)
-      end
+    if current_community.latch&.latch_locks&.destroy_all
+      flash[:notice] = "Latch locks deleted successfully"
     else
-      flash[:error] = "Credentials for Latch are missing"
+      flash[:error] = current_community.latch.present? ? "No locks are present" : "Credentials for Latch are missing"
+    end
+
+    redirect_to new_community_dwelo_path(current_community)
+  end
+
+  def test_latch_connection
+    if current_community.enable_locks and current_community.multiple_locks_provider.include?("Latch") and current_community.latch.present?
+      response = LatchOpenkit::LatchLocksService.new(nil, current_community.id).property_latch_locks_data()
+      render :xml => response
+    else
+      flash[:error] = "Please enter the Latch credentials before testing data."
       redirect_to new_community_dwelo_path(current_community)
     end
   end
 
-  def parse_csv(file)
-    @latch.import_data(file)
+  def import_latch_locks
+    if current_community.enable_locks and current_community.multiple_locks_provider.include?("Latch") and current_community.latch.present?
+      response = LatchOpenkit::LatchLocksService.new(nil, current_community.id).property_latch_locks_data()
+      if response[:status] == :OK
+        import_latch_locks_in_database(response)
+        flash[:notice] = "Locks imported successfully."
+      else
+        flash[:error] = response[:message]
+      end
+    else
+      flash[:error] = "Please enter the Latch credentials before testing data."
+    end
+
+    redirect_to new_community_dwelo_path(current_community)
   end
 
+  def map_latch_locks
+    @latch.map_locks_with_stops
+    flash[:notice] =  "Locks are automapped successfully."
+    redirect_to new_community_dwelo_path(current_community)
+  end
+
+
   def destroy
-    @latch  = EdgeState.find(params[:id])
+    @latch = Latch.find(params[:id])
     @latch.destroy
+    redirect_to new_community_dwelo_path(current_community), notice: 'Latch account successfully destroyed.'
   end
 
   private
 
-  def latch_params
-    params.require(:latch).permit(:client_id, :client_secret, :community_id, :lock_instruction_text)
-  end
+    def import_latch_locks_in_database property_data
+      property = property_data[:building]
+      property_doors = property_data[:doors]
 
-  def set_user
-    @is_already_exists = Latch.find_by(community_id: current_community.id).present?
-  end
+      property_doors.each do |door|
+        door_lock = LatchLock.find_or_initialize_by(lock_id: door["uuid"], lock_name: door["name"], latch_id: current_community&.latch&.id)
+        door_lock.save! if door_lock.id.nil?
+      end
+    end
+
+    def add_lock_provider
+      locks_provider = current_community.multiple_locks_provider
+
+      unless locks_provider.include?("Latch")
+        locks_provider << "Latch"
+        current_community.update_columns(multiple_locks_provider: locks_provider)
+      end
+    end
+
+    def set_latch_account
+      @latch = Latch.find_or_initialize_by(community_id: current_community.id)
+    end
+
+    def latch_params
+      params.require(:latch).permit(
+        :passwordless_client_id, :passwordless_client_secret, :client_id, 
+        :latch_property_name, :client_secret, :community_id, :lock_instruction_text
+      )
+    end
 end
