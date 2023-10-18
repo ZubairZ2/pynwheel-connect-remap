@@ -1,58 +1,44 @@
 class PropertiesAverageDataReportService < BaseService
+  HEADERS = %w{Company\ Name Property\ Name Property\ Type Number\ of\ Units Number\ of\ Floorplates Number\ of\ Floors}.freeze
+
   def initialize
   end
-
+  
   def get_report
-    csv_file = CSV.generate(headers: true) do |csv|
-      csv << headers
-      communities = get_communities()
-
+    CSV.generate(headers: true) do |csv|
+      csv << HEADERS
+      communities = get_communities
       communities.each do |community|
-        csv << formate_csv(community)
+        csv << format_csv(community)
       end
-
     end
-
-    csv_file
   end
 
   private
 
-  def headers
-    %w{Company\ Name Property\ Name Property\ Type Number\ of\ Units Number\ of\ Floorplates Number\ of\ Floors}
-  end
-
   def get_communities
-    Community.active_client_properties.order(is_sitemap: :asc, company_id: :asc)
+    Community
+      .active_client_properties
+      .order(is_sitemap: :asc, company_id: :asc)
+      .includes(:company, :units, :floorplates)
   end
 
-  def formate_csv community
+  def format_csv(community)
     [
-      community&.company&.name,
+      community.company&.name,
       community.name,
       community_type(community),
-      community.units.count,
-      community.floorplates.count,
+      community.units.size, # Use pluck or size to minimize queries
+      community.floorplates.size, # Use pluck or size to minimize queries
       floors_count(community)
     ]
   end
 
-  def floors_count community
-    sum = 0
-    
-    community.floorplates.each do |floorplate|
-      sum += floorplate.floors.count
-    end
-
-    sum
+  def floors_count(community)
+    community.floorplates.sum { |floorplate| floorplate.floors.size } # Use pluck or size to minimize queries
   end
 
-  def community_type community
-    if community.is_sitemap
-      "Property Map"
-    else
-      "Floorplate"
-    end
+  def community_type(community)
+    community.is_sitemap ? 'Property Map' : 'Floorplate'
   end
-
 end
