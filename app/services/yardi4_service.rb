@@ -59,13 +59,8 @@ class Yardi4Service < BaseService
               :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
         end
 
-        # response = HTTParty.post(
-        #   url,
-        #   :headers => {'POST'=>post,'HOST'=>host,'Content-Type'=>'text/xml; charset=utf-8','SOAPAction'=>soap_action},
-        #   :body => '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><UnitAvailability_Login xmlns="http://tempuri.org/YSI.Interfaces.WebServices/ItfILSGuestCard"><UserName>'+user_name+'</UserName><Password>'+password+'</Password><ServerName>'+server_name+'</ServerName><Database>'+database+'</Database><Platform>'+platform+'</Platform><YardiPropertyId>'+property_id+'</YardiPropertyId><InterfaceEntity>'+interface_entity+'</InterfaceEntity><InterfaceLicense>'+license_key+'</InterfaceLicense></UnitAvailability_Login></soap:Body></soap:Envelope>')
-
-        #result = Hash.from_xml(response.body) # This method consumes a lot of memory on heroku
         result = Ox.load(response.body, mode: :hash)
+
         if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult].present?
           if result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty].present?
             property_response = result[:"soap:Envelope"][1][:"soap:Body"][:UnitAvailability_LoginResponse][1][:UnitAvailability_LoginResult][:PhysicalProperty][1][:Property]
@@ -88,9 +83,7 @@ class Yardi4Service < BaseService
             save_yardi4_floorplans(floorplans)
             save_yardi4_units(ils_units, external_property_id)
           end
-          #else
-          #Thread.current[:errors] << "Invalid @credentials.Please enter correct one and try again."
-          #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid @credentials.Please enter correct one and try again.",community_id: @credentials.community_id})
+
           begin
             cred = Credential.find @credentials.id
             cred.data_error_message = nil
@@ -123,7 +116,6 @@ class Yardi4Service < BaseService
         rescue => err
           raise err
         end
-        #ExceptionNotifier.notify_exception(e,data: {community_id: @credentials.community_id})
       end
     end
   end
@@ -141,13 +133,14 @@ class Yardi4Service < BaseService
       unit = @all_units_hash[provider_unit_id]
 
       if unit.present?
-        puts  "---------------- #{unit.marketing_name} --------------------\n"
         unit.property_id = property_id
         unit.market_rent = u[:Units][:Unit][:MarketRent]
 
         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
           unit.effective_rent = u[:Units][:Unit][:MarketRent]
         end
+
+        unit.square_feet = u[:Units][:Unit][:SquareFeet]
 
         is_available = false
         vacate_date = ""
@@ -264,7 +257,8 @@ class Yardi4Service < BaseService
           unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated  && unit.manual_override
             unit.effective_rent = u[:Units][:Unit][:MarketRent]
           end
-          
+
+          unit.square_feet = u[:Units][:Unit][:SquareFeet]
           unit.market_rent = u[:Units][:Unit][:MarketRent]
           
           unless unit.floor_is_updated.present? && unit.floor_is_updated  && unit.manual_override
@@ -382,8 +376,6 @@ class Yardi4Service < BaseService
       fp = @all_floorplans_hash[floorplan[0][:IDValue].to_s]
 
       if fp.present?
-        puts "------------------- #{fp.name} --------------------\n"
-        
         floorplan&.each do |f|
           unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated  && fp.manual_override
             if f.key?(:MarketRent)

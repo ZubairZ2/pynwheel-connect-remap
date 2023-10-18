@@ -45,7 +45,6 @@ class Yardi2SwapService < BaseService
         end
       rescue => e
         e.message
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
   end
@@ -69,22 +68,29 @@ class Yardi2SwapService < BaseService
           is_available = false
           vacate_date = ""
           unit_entries.each do |u|
+
             if u.key?(:Unit)
               unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
             end
+
             if u.key?(:EffectiveRent)
               unit.market_rent = u[:EffectiveRent][0][:Min]
               unit.effective_rent = u[:EffectiveRent][0][:Min]
             end
+
             if u.key?(:Availability)
               if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
                 vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
                 is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
               end
+
               if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
                 vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
                 is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
               end
+
+              unit.square_feet = get_unit_sqft(unit_entries)
+
               begin
                 if unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitLeasedStatus"] == "on notice"
                   unit.availability = "Unoccupied"
@@ -93,6 +99,7 @@ class Yardi2SwapService < BaseService
               end
             end
           end
+
           unit.availability = is_available ? "Unoccupied" : "Occupied"
           unit.available = is_available ? true : false
           unit.available_date = vacate_date
@@ -107,7 +114,6 @@ class Yardi2SwapService < BaseService
             dup.destroy
           end
 
-          # unit = Unit.where(community_id: credentials.community_id).first
           unit = Unit.new
           unit.community_id = credentials.community_id
           unit.provider = "yardi_new"
@@ -115,26 +121,33 @@ class Yardi2SwapService < BaseService
           unit.property_id = property_id
           unit.unit_type = unit_entries[0][:Id]
           unit.marketing_name = unit_entries[0][:Id]
-          unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
+          unit.floor = evaluate_floor(unit.marketing_name) rescue nil
           is_available = false
           vacate_date = ""
+          
           unit_entries.each do |u|
             if u.key?(:Unit)
               unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
             end
+
             if u.key?(:EffectiveRent)
               unit.market_rent = u[:EffectiveRent][0][:Min]
               unit.effective_rent = u[:EffectiveRent][0][:Min]
             end
+
             if u.key?(:Availability)
               if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
                 vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
                 is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
               end
+
               if u[:Availability][:MadeReadyDate][0][:Year].present? and u[:Availability][:MadeReadyDate][0][:Year] != '0'
                 vacate_date = Date.parse("#{u[:Availability][:MadeReadyDate][0][:Year]}-#{u[:Availability][:MadeReadyDate][0][:Month]}-#{u[:Availability][:MadeReadyDate][0][:Day]}")
                 is_available = u[:Availability][:VacancyClass] == "Unoccupied" ? true : false
               end
+
+              unit.square_feet = get_unit_sqft(unit_entries)
+
               begin
                 if unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitLeasedStatus"] == "on notice"
                   unit.availability = "Unoccupied"
@@ -143,17 +156,14 @@ class Yardi2SwapService < BaseService
               end
             end
           end
+
           unit.availability = is_available ? "Unoccupied" : "Occupied"
           unit.available_date = vacate_date
           unit.available = is_available ? true : false
           unit.save(validate: false)
-          puts '+++++++++++++++++++++=', unit.errors.messages.join(',')
-
         end
 
       rescue => e
-        puts '----------------------------------', e.message
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
 
@@ -263,14 +273,10 @@ class Yardi2SwapService < BaseService
         end
 
       rescue => e
-        puts '----------------------------------', e.message
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
-
-
-
   end
+
   def rename_provider
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
@@ -303,5 +309,13 @@ class Yardi2SwapService < BaseService
     end
     
   end
+
+  private
+
+    def get_unit_sqft(unit_entries)
+      min_sqft = unit_entries.dig(1, :Unit, :"MITS:Information", :"MITS:MinSquareFeet").to_f
+      max_sqft = unit_entries.dig(1, :Unit, :"MITS:Information", :"MITS:MaxSquareFeet").to_f
+      [min_sqft, max_sqft].find { |sqft| sqft && sqft > 1 }
+    end
 
 end

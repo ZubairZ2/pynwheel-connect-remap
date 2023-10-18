@@ -85,9 +85,6 @@ class Yardi2Service < BaseService
           rescue => err
             raise err
           end
-          #else
-          #puts '------------------------------------' , result["Envelope"]["Body"]["UnitAvailability_LoginResponse"]["UnitAvailability_LoginResult"]["Messages"]["Message"] 
-          #ExceptionNotifier.notify_exception(Exception.new,data: {message: "Invalid @credentials.Please enter correct one and try again.",community_id: @credentials.community_id})
         else
           cred1 = Credential.find @credentials.id
           cred1.data_error_exp = "data_not present"
@@ -120,8 +117,6 @@ class Yardi2Service < BaseService
         rescue => err
           raise err
         end
-        #puts '----------------------------------', e.message
-        #ExceptionNotifier.notify_exception(e,data: {community_id: @credentials.community_id})  
       end
     end
   end
@@ -141,7 +136,6 @@ class Yardi2Service < BaseService
           if unit.present?
             is_available = false
             vacate_date = ""
-            puts "--------------------- #{unit.marketing_name} -------------------\n"
             unit_entries&.each do |u|
               if u.key?(:EffectiveRent)
 
@@ -182,6 +176,8 @@ class Yardi2Service < BaseService
                 raise ex
               end
             end
+
+            unit.square_feet = get_unit_sqft(unit_entries)
 
             unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
               if unit.availability == "Occupied"
@@ -240,7 +236,7 @@ class Yardi2Service < BaseService
                   end
                 end
 
-              end
+              end              
 
               unless unit.availability_is_updated.present? && unit.availability_is_updated
                 unit.availability = is_available ? "Unoccupied" : "Occupied"
@@ -252,6 +248,8 @@ class Yardi2Service < BaseService
                   raise ex
                 end
               end
+
+              unit.square_feet = get_unit_sqft(unit_entries)
 
               unless unit.available_date_is_updated.present? && unit.available_date_is_updated
                 unit.available_date = vacate_date
@@ -290,7 +288,6 @@ class Yardi2Service < BaseService
           fp = @all_floorplans_hash[floorplan[0][:Id]&.to_s]
           
           if fp.present?
-            puts "------------------- #{fp.name} --------------------\n"
             rooms = []
             floorplan&.each do |f|
               unless fp.market_rent_is_updated.present? && fp.market_rent_is_updated  && fp.manual_override
@@ -373,4 +370,11 @@ class Yardi2Service < BaseService
     ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
   end
 
+  private
+
+    def get_unit_sqft(unit_entries)
+      min_sqft = unit_entries.dig(1, :Unit, :"MITS:Information", :"MITS:MinSquareFeet").to_f
+      max_sqft = unit_entries.dig(1, :Unit, :"MITS:Information", :"MITS:MaxSquareFeet").to_f
+      [min_sqft, max_sqft].find { |sqft| sqft && sqft > 1 }
+    end
 end
