@@ -12,9 +12,19 @@ class RentCafeApiV2Service
     end
   end
 
-  def get_appartment_availability property_code
+  def get_apartment_availability property_code
     return unless is_user_authorized?
-    fetch_appartment_availability(property_code)
+    fetch_apartment_availability_data(property_code)
+  end
+
+  def get_apartment_pricing_matrix apartment_name, property_code
+    return unless is_user_authorized?
+    fetch_apartment_pricing_data(apartment_name, property_code)
+  end
+
+  def get_floorplans property_code
+    return unless is_user_authorized?
+    fetch_floorplans_data(property_code)
   end
 
   private
@@ -51,11 +61,11 @@ class RentCafeApiV2Service
       )
     end
 
-    def fetch_appartment_availability property_code
+    def fetch_apartment_availability_data property_code
       url = "#{ENV["RENT_CAFE_V2_BASE_URL"]}/apartmentavailability/getapartmentavailability"
 
       HTTParty.post(url,
-        body: get_appartment_availability_params(property_code),
+        body: get_apartment_availability_params(property_code),
         headers: { 
           'Content-Type' => 'application/json',
           'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
@@ -63,6 +73,33 @@ class RentCafeApiV2Service
         }
       )
     end
+
+    def fetch_apartment_pricing_data apartment_name, property_code
+      url = "#{ENV["RENT_CAFE_V2_BASE_URL"]}/UnitPricingData/getunitpricingdetails"
+
+      HTTParty.post(url,
+        body: get_unit_pricing_params(apartment_name, property_code),
+        headers: { 
+          'Content-Type' => 'application/json',
+          'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+          'vendor' => ENV['RENT_CAFE_V2_USERNAME']
+        }
+      )
+    end
+
+    def fetch_floorplans_data property_code
+      url = "#{ENV["RENT_CAFE_V2_BASE_URL"]}/floorplan/getfloorplans"
+
+      HTTParty.post(url,
+        body: get_floorplan_params(property_code),
+        headers: { 
+          'Content-Type' => 'application/json',
+          'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+          'vendor' => ENV['RENT_CAFE_V2_USERNAME']
+        }
+      )
+    end
+
 
     def get_auth_params
       {
@@ -73,13 +110,30 @@ class RentCafeApiV2Service
       }
     end
 
-    def get_appartment_availability_params property_code
+    def get_apartment_availability_params property_code
       {
-        apiToken: api_token, #must required
-        companyCode: company_code, #must required
-        propertyCode: property_code, #must required
-        propertyId: property_id, #option but if you add it in params it must belong to company. On invalid propertyId will generate occur error
+        apiToken: api_token, #required
+        companyCode: company_code, #required
+        propertyCode: property_code, #required
         showAllUnit: true
+      }.to_json
+    end
+
+    def get_unit_pricing_params apartment_name, property_code
+      {
+        apiToken: api_token, #required
+        companyCode: company_code, #required
+        propertyCode: property_code, #required
+        apartmentName: apartment_name,
+        showAllUnit: true
+      }.to_json
+    end
+
+    def get_floorplan_params property_code
+      {
+        apiToken: api_token, #required
+        companyCode: company_code, #required
+        propertyCode: property_code, #required
       }.to_json
     end
 
@@ -89,9 +143,5 @@ class RentCafeApiV2Service
 
     def company_code
       @credential&.c_code
-    end
-
-    def property_id
-      977826
     end
 end

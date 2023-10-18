@@ -211,7 +211,7 @@ class CredentialsValid < BaseService
       begin
         property_code = credentials&.p_code&.split(",")[0] rescue ""
         property_code = property_code&.strip
-        response = RentCafeApiV2Service.new(community&.id).get_appartment_availability(property_code)
+        response = RentCafeApiV2Service.new(community&.id).get_apartment_availability(property_code)
         return response&.dig("errorCode") == 200 ? true : false
       rescue => e
         return false

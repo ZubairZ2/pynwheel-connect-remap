@@ -9,7 +9,7 @@ class YardiRentCafeService < BaseService
   end
 
   def perform
-    # import_yardirentcafe_floorplans
+    import_yardirentcafe_floorplans
     import_yardirentcafe_units
   end
 
@@ -19,34 +19,23 @@ class YardiRentCafeService < BaseService
     property_codes.each do |property_code|
       begin
         property_code = property_code&.strip
-        # request_type = "apartmentavailability"
-        # company_code = @credentials.c_code
-        # api_token = @credentials.api_token
-        # showallunit =  @credentials.limit_result ? "0" : "-1"
         import_units = []
 
-        # if api_token.present?
-        #   @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
-        # else
-        #   @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
-        # end
+        response = get_appartments_availability(property_code)
 
-        # response = HTTParty.get(@url)
-        # response = JSON.parse(response.body)
-
-        response = get_appartments_availability(@credentials.community_id, property_code)
         unit_present = @all_units_hash.keys
+
         if response.present?
           community = Community.find @credentials.community_id
           community&.community_data_updated_on()
 
           response.each do |r|
-            # puts "-------------------------------------------------------- #{r["apartmentId"].to_s} --------------------------------\n"
             begin
               unit = @all_units_hash[r["apartmentId"].to_s]
+
               if unit.present?
-                # puts "----------------------------- #{unit.marketing_name} ------------------------\n"
                 unit.market_rent = r["minimumRent"]
+                
                 unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                   unit.effective_rent = r["minimumRent"]
                 end
@@ -97,7 +86,7 @@ class YardiRentCafeService < BaseService
                 lease_prices_array = []
 
                 if unit.available
-                  rentStrs = ""#yardi_rent_cafe_rent_matrix(api_token, property_code, r["apartmentName"], credentials, available_date_convertor(r["availableDate"]))
+                  rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"])
                   if rentStrs.present?
                     rentStrs.each do |rentStr|
                       if rentStr[0].to_i > 0
@@ -192,8 +181,7 @@ class YardiRentCafeService < BaseService
                   lease_prices_array = []
 
                   if  unit.available
-                    rentStrs = yardi_rent_cafe_rent_matrix(api_token, property_code, r["apartmentName"], credentials, available_date_convertor(r["availableDate"]))
-
+                    rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"])
                     if rentStrs.present?
                       rentStrs.each do |rentStr|
                         if rentStr[0].to_i > 0
@@ -279,20 +267,9 @@ class YardiRentCafeService < BaseService
       begin
 
         import_floorplans = []
-        request_type = "floorplan"
-        company_code = @credentials.c_code
-        api_token = @credentials.api_token
+        response = get_floorplan_details(property_code)
 
-        if api_token.present?
-          @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
-        else
-          @url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
-        end
-        
-        response = HTTParty.get(@url)
-        response = JSON.parse(response.body)
-
-        if response[0]["Error"].nil?
+        if response.present?
           response.each do |r|
             fp = @all_floorplans_hash[r["floorplanId"].to_s]
             
@@ -311,23 +288,23 @@ class YardiRentCafeService < BaseService
                 fp.provider_floorplan_id = r["floorplanId"]
 
                 unless fp.name_is_updated.present? && fp.name_is_updated
-                  fp.name = r["FloorplanName"]
+                  fp.name = r["floorplanName"]
                 end
 
                 fp.unit_count = r[""]
                 fp.units_available = r[""]
 
                 unless fp.bedroom_is_updated.present? && fp.bedroom_is_updated
-                  fp.bedrooms = r["Beds"]
+                  fp.bedrooms = r["beds"]
                 end
 
                 unless fp.bathroom_is_updated.present? && fp.bathroom_is_updated
-                  fp.bathrooms = r["Baths"]
+                  fp.bathrooms = r["baths"]
                 end
 
                 unless fp.square_feet_is_updated.present? && fp.square_feet_is_updated
-                  if r["MinimumSQFT"].present?
-                    fp.square_feet = r["MinimumSQFT"]
+                  if r["minimumSQFT"].present?
+                    fp.square_feet = r["minimumSQFT"]
                   elsif r["sqft"].present?
                     fp.square_feet = r["sqft"]
                   end
@@ -337,7 +314,7 @@ class YardiRentCafeService < BaseService
                   fp.market_rent = r["minimumRent"]
                 end
 
-                fp.deposit = r["MinimumDeposit"]
+                fp.deposit = r["minimumDeposit"]
 
                 import_floorplans << fp
               end
@@ -352,58 +329,61 @@ class YardiRentCafeService < BaseService
     end
   end
 
-  def set_availabilty_date(available_date)
-    available_date = available_date.split("/")
-    "#{available_date[2]}-#{available_date[0]}-#{available_date[1]}"
-  end
+  private
 
-  def available_date_convertor available_date
-    today_date = Date.today.strftime("%m/%d/%Y")
+    def set_availabilty_date(available_date)
+      available_date = available_date.split("/")
+      "#{available_date[2]}-#{available_date[0]}-#{available_date[1]}"
+    end
 
-    if ( available_date != "" && available_date != nil )
-      parsed_today_date = Date.parse(set_availabilty_date(today_date))
-      parsed_available_date = Date.parse(set_availabilty_date(available_date))
+    def available_date_convertor available_date
+      today_date = Date.today.strftime("%m/%d/%Y")
 
-      if parsed_available_date > parsed_today_date
-        available_date
+      if ( available_date != "" && available_date != nil )
+        parsed_today_date = Date.parse(set_availabilty_date(today_date))
+        parsed_available_date = Date.parse(set_availabilty_date(available_date))
+
+        if parsed_available_date > parsed_today_date
+          available_date
+        else
+          today_date
+        end
       else
         today_date
       end
-    else
-      today_date
     end
-  end
 
-  def yardi_rent_cafe_rent_matrix(api_token, property_code, apartment_name, credentials, available_date)
-   
-    begin
-      
-      request_type = "pricingmatrix"
-      url = "#{@credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&ApartmentName=#{apartment_name}&availabledate=#{available_date}"
-    
-      response = HTTParty.get(url)
-      rent_matrix = JSON.parse(response.body)
+    def yardi_rent_cafe_rent_matrix(property_code, apartment_name)
+     
+      begin
+        rent_matrix = get_apartment_pricing_details(apartment_name, property_code)
+        unless rent_matrix.present?
+          uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq
+          distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["term"] == term.to_s}.compact}.compact
 
-      unless rent_matrix[0]["Error"].present?
-        # puts "---------------------------- pricing Matrix Present --------------------------"
-        # puts "URL :   #{url}"
-        uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
-        distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
+          return distinct_data.map{|data| data.map{|r| [r["rent"].to_i, r["term"], r["start_Date"], r["end_Date"]]}.min}
 
-        return distinct_data.map{|data| data.map{|r| [r["Rent"].to_i, r["Term"], r["Start_Date"], r["End_Date"]]}.min}
+        else
+          return nil
+        end
 
-      else
-        return nil
+      rescue => ex
+        raise ex
       end
-
-    rescue => ex
-      raise ex
     end
-  end
 
-  private
-    def get_appartments_availability community_id, property_code
-      response = RentCafeApiV2Service.new(community_id).get_appartment_availability(property_code)
+    def get_appartments_availability property_code
+      response = RentCafeApiV2Service.new(@credentials.community_id).get_apartment_availability(property_code)
       (response&.dig("errorCode") == 200) ? response["apartmentAvailabilities"] : []
+    end
+
+    def get_apartment_pricing_details apartment_name, property_code
+      response = RentCafeApiV2Service.new(@credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code)
+      (response&.dig("errorCode") == 200) ? response["pricingDetails"] : []
+    end
+
+    def get_floorplan_details property_code
+      response = RentCafeApiV2Service.new(@credentials.community_id).get_floorplans(property_code)
+      (response&.dig("errorCode") == 200) ? response["floorplans"] : []    
     end
 end
