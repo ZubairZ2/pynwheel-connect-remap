@@ -3,7 +3,7 @@
 .container
   %section
     .row
-      .col-md-6
+      .col-md-4
         %h2 Communities
         %h5
           All communities are listed here.
@@ -35,7 +35,7 @@
           - if ["johnhall@pynwheel.com", "lizzy@pynwheel.com", ENV["PYNWHEEL_DEV_EMAIL"], "jennifer@pynwheel.com", "kellie@pynwheel.com"].include?(current_user.email)
             .mt-35
               %a.btn.btn-success.pull-right.mb-20{:href => "/companies/properties_average_data_report", :format => "csv"}
-                Average Data Report
+                Properties Data Report
 
     .box.box-widget.panel-box
       #new-search-area
