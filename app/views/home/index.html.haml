@@ -31,6 +31,12 @@
               %a.btn.btn-success.pull-right.mb-20{:href => "/companies/generate_salesforce_report", :format => "csv"}
                 Salesforce report
 
+        .col-md-2
+          - if ["johnhall@pynwheel.com", "lizzy@pynwheel.com", ENV["PYNWHEEL_DEV_EMAIL"], "jennifer@pynwheel.com", "kellie@pynwheel.com"].include?(current_user.email)
+            .mt-35
+              %a.btn.btn-success.pull-right.mb-20{:href => "/companies/properties_average_data_report", :format => "csv"}
+                Average Data Report
+
     .box.box-widget.panel-box
       #new-search-area
       %table#communities.table.table-hover.table-responsive

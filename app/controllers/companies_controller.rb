@@ -115,6 +115,10 @@ class CompaniesController < ApplicationController
     send_data(SalesforceReportService.new().get_report() , :type => 'application/xlsx', :filename => "salesforce-properties-report.csv")
   end
 
+  def properties_average_data_report
+    send_data(PropertiesAverageDataReportService.new().get_report() , :type => 'application/xlsx', :filename => "pynwheel-properties-data-report.csv")
+  end
+
   private
 
   def set_company
