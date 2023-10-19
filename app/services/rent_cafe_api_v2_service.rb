@@ -114,7 +114,7 @@ class RentCafeApiV2Service
       {
         apiToken: api_token, #required
         companyCode: company_code, #required
-        propertyCode: property_code, #required
+        propertyCode: property_code&.strip, #required
         showAllUnit: true
       }.to_json
     end
@@ -123,7 +123,7 @@ class RentCafeApiV2Service
       {
         apiToken: api_token, #required
         companyCode: company_code, #required
-        propertyCode: property_code, #required
+        propertyCode: property_code&.strip, #required
         apartmentName: apartment_name,
         showAllUnit: true
       }.to_json
@@ -133,15 +133,15 @@ class RentCafeApiV2Service
       {
         apiToken: api_token, #required
         companyCode: company_code, #required
-        propertyCode: property_code, #required
+        propertyCode: property_code&.strip, #required
       }.to_json
     end
 
     def api_token
-      @credential&.api_token
+      @credential&.api_token&.strip
     end
 
     def company_code
-      @credential&.c_code
+      @credential&.c_code&.strip
     end
 end
