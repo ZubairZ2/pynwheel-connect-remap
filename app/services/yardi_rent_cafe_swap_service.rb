@@ -265,17 +265,14 @@ class YardiRentCafeSwapService < BaseService
     end
 
     def get_appartments_availability property_code
-      response = RentCafeApiV2Service.new(credentials.community_id).get_apartment_availability(property_code)
-      (response&.dig("errorCode") == 200) ? response["apartmentAvailabilities"] : []
+      RentCafeApiV2Service.new(credentials.community_id).get_apartment_availability(property_code)
     end
 
     def get_apartment_pricing_details property_code, apartment_name
-      response = RentCafeApiV2Service.new(credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code)
-      (response&.dig("errorCode") == 200) ? response["pricingDetails"] : []
+      RentCafeApiV2Service.new(credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code)
     end
 
     def get_floorplan_details property_code
-      response = RentCafeApiV2Service.new(credentials.community_id).get_floorplans(property_code)
-      (response&.dig("errorCode") == 200) ? response["floorplans"] : []    
+      RentCafeApiV2Service.new(credentials.community_id).get_floorplans(property_code)
     end
 end

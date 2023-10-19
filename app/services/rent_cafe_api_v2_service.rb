@@ -14,28 +14,31 @@ class RentCafeApiV2Service
 
   def get_apartment_availability property_code
     return unless is_user_authorized?
-    fetch_apartment_availability_data(property_code)
+    response = fetch_apartment_availability_data(property_code)
+    (response&.dig("errorCode") == 200) ? response["apartmentAvailabilities"] : []
   end
 
   def get_apartment_pricing_matrix apartment_name, property_code
     return unless is_user_authorized?
-    fetch_apartment_pricing_data(apartment_name, property_code)
+    response = fetch_apartment_pricing_data(apartment_name, property_code)
+    (response&.dig("errorCode") == 200) ? response["pricingDetails"] : []
   end
 
   def get_floorplans property_code
     return unless is_user_authorized?
-    fetch_floorplans_data(property_code)
+    response = fetch_floorplans_data(property_code)
+    (response&.dig("errorCode") == 200) ? response["floorplans"] : []
   end
 
-  private
-
-    def is_user_authorized?
-      begin
-        token_expired? ? renew_token : true
-      rescue
-        false
-      end
+  def is_user_authorized?
+    begin
+      token_expired? ? renew_token : true
+    rescue
+      false
     end
+  end 
+
+  private
 
     def token_expired?
       @credential&.rentcafe_v2_auth_token.nil? || Time.now >= @credential&.rentcafe_v2_token_expires_at
