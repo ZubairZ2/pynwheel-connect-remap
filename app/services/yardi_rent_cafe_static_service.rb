@@ -34,7 +34,7 @@ class YardiRentCafeStaticService < BaseService
                   end
 
                   unit.market_rent = r["minimumRent"]
-                  
+
                   unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
                     unit.effective_rent = r["minimumRent"]
                   end
@@ -81,7 +81,7 @@ class YardiRentCafeStaticService < BaseService
                   unit.manually_updated = false
                   unit.availability_url = r["applyOnlineURL"] if r["applyOnlineURL"].present?
 
-                  rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"], credentials.community_id)
+                  rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"])
                   leasing = ""
                   
                   if rentStrs.present?
@@ -204,9 +204,9 @@ class YardiRentCafeStaticService < BaseService
       end
     end
 
-    def yardi_rent_cafe_rent_matrix(property_code, apartment_name, community_id)
+    def yardi_rent_cafe_rent_matrix(property_code, apartment_name)
       begin
-        rent_matrix = get_apartment_pricing_details(property_code, apartment_name, community_id)
+        rent_matrix = get_apartment_pricing_details(property_code, apartment_name)
         unless rent_matrix.present?
           uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq
           distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["term"] == term.to_s}.compact}.compact
@@ -223,20 +223,17 @@ class YardiRentCafeStaticService < BaseService
     end
 
     def get_appartments_availability property_code
-      response = RentCafeApiV2Service.new(@credentials.community_id).get_apartment_availability(property_code)
+      response = RentCafeApiV2Service.new(credentials.community_id).get_apartment_availability(property_code)
       (response&.dig("errorCode") == 200) ? response["apartmentAvailabilities"] : []
     end
 
-    def get_apartment_pricing_details property_code, apartment_name, community_id
-      response = RentCafeApiV2Service.new(@credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code)
+    def get_apartment_pricing_details property_code, apartment_name
+      response = RentCafeApiV2Service.new(credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code)
       (response&.dig("errorCode") == 200) ? response["pricingDetails"] : []
     end
 
     def get_floorplan_details property_code
-      response = RentCafeApiV2Service.new(@credentials.community_id).get_floorplans(property_code)
+      response = RentCafeApiV2Service.new(credentials.community_id).get_floorplans(property_code)
       (response&.dig("errorCode") == 200) ? response["floorplans"] : []    
     end
-
-
-
 end
