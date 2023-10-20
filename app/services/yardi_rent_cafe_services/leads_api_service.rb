@@ -3,7 +3,7 @@ module YardiRentCafeServices
 
     def upload_leads_data visited_stops, tour_history, is_tour_abandoned
       return unless is_user_authorized?
-      response = upload_leads(visited_stops, tour_history, is_tour_abandoned)
+      upload_leads(visited_stops, tour_history, is_tour_abandoned)
     end
 
     private
@@ -37,8 +37,8 @@ module YardiRentCafeServices
           city: city,
           zipCode: zip_code,
           desiredMoveinDate: prospect_move_in_date,
-          desiredBedrooms: prospect_desired_bedroorms,
-        }
+          desiredBedrooms: prospect_desired_bedroorms
+        }.to_json
       end
   end
 end

@@ -101,5 +101,15 @@ module YardiRentCafeServices
         apptTime: get_scheduled_tour_cancel_time(previous_tour)
       }.to_json
     end
+
+    def yardi_scheduled_tour_response yardi_scheduled_tour
+      yardirentcafe_prospect_id = yardi_scheduled_tour["voyProspectId"] rescue nil
+      yardirentcafe_appointment_id = yardi_scheduled_tour["voyProspectApptId"] rescue nil
+      update_yardi_scheduled_tour(yardirentcafe_prospect_id, yardirentcafe_appointment_id)
+    end
+
+    def update_yardi_scheduled_tour yardirentcafe_prospect_id = nil, yardirentcafe_appointment_id = nil
+      @scheduled_tour.update(yardirentcafe_prospect_id: yardirentcafe_prospect_id, yardirentcafe_appointment_id: yardirentcafe_appointment_id)
+    end
   end
 end

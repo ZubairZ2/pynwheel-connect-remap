@@ -71,8 +71,32 @@ module YardiRentCafeServices
         @scheduled_tour.tour_type
       end
 
+      def zip_code
+       @community&.zip
+      end
+
+      def city
+       @community&.city
+      end
+
+      def state
+       @community&.state.length > 4 ?  @community&.state.slice(0, 4) :  @community&.state
+      end
+
+      def address_1
+       @community&.address
+      end
+
+      def address_2
+       ""
+      end
+
+      def secondary_source
+       "ILS-Ads"
+      end
+
       def source
-        "Pynwheel"
+        "G5"
       end
 
       def get_scheduled_tour_cancel_date previous_tour
