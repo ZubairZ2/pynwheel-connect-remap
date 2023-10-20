@@ -18,7 +18,7 @@ module AssignLocksHelper
     community = Community.where(id: community_id).includes({igloohome: [:igloohome_locks], edge_state: [:remote_locks]}, {dwelo: [:remote_locks]}, {latch: [:latch_locks]}, {zerv: [:zerv_locks]}).first
     edge_state_locks =  community.edge_state.present? ? community.edge_state.remote_locks.sort_by { |l| l.id}.collect{ |l| {name: (l.name + " (" + l.remote_lock_type + ")"), id: (l.device_id), stop_id: (l.stop_id) } } : []
     dwelo_locks      =  community.dwelo.present?      ? community.dwelo.remote_locks.sort_by      { |l| l.id}.collect{ |l| {name: (l.name + " (" + l.remote_lock_type + ")"), id: (l.device_id), stop_id: (l.stop_id) } } : []
-    latch_locks      =  community.latch.present?      ? community.latch.latch_locks.sort_by       { |l| l.id}.collect{ |l| {name:  l.lock_name, id: l.lock_id, stop_id: (l.stop_id) } } : []
+    latch_locks      =  community.latch.present?      ? community.latch.latch_locks.sort_by       { |l| l.id}.collect{ |l| {name:  l.lock_name, id: l.door_uuid, stop_id: (l.stop_id) } } : []
     zerv_locks       =  community.zerv.present?       ? community.zerv.zerv_locks.sort_by         { |l| l.id}.collect{ |l| {name: (l.sub_location_name + " (" + l.sub_location_friendly_name + ")"), id: (l.mac_id), stop_id: (l.stop_id) } } : []
     igloohome_locks = community.igloohome.present? ? community.igloohome.igloohome_locks.sort_by { |l| l.id}.collect{ |l| {name: l.device_name, id: l.device_id } } : []
 
@@ -40,9 +40,9 @@ module AssignLocksHelper
     if door.lock_provider == "Latch"
 
       if lock_id.present?
-        latch_lock = LatchLock.find_by(lock_id: lock_id, latch_id: community.latch.id) rescue nil
+        latch_lock = LatchLock.find_by(door_uuid: lock_id, latch_id: community.latch.id) rescue nil
 
-        if latch_lock.present? and door.latch_lock.present? and door.latch_lock.lock_id != latch_lock.lock_id
+        if latch_lock.present? and door.latch_lock.present? and door.latch_lock.door_uuid != latch_lock.door_uuid
           latch_lock.stop.update_column(:lock_provider, "")   if latch_lock.stop.present?
           door.latch_lock.update_attributes(stop_id: nil, stop_type: nil)
           latch_lock.update_attributes(stop_id: door.id, stop_type: door.class.name) rescue nil
@@ -130,8 +130,9 @@ module AssignLocksHelper
 
   def assign_latch_lock community, stop, lock_id
     if lock_id.present?
-      latch_lock = LatchLock.find_by(lock_id: lock_id, latch_id: community.latch.id) rescue nil
-      if latch_lock.present? and stop.latch_locks.present? and stop.latch_locks.last.lock_id != latch_lock.lock_id
+      latch_lock = LatchLock.find_by(door_uuid: lock_id, latch_id: community.latch.id) rescue nil
+
+      if latch_lock.present? and stop.latch_locks.present? and stop.latch_locks.last.door_uuid != latch_lock.door_uuid
         latch_lock.stop.update_column(:lock_provider, "") rescue nil
         stop.latch_locks.update_all(stop_id: nil, stop_type: nil)
         latch_lock.update_attributes(stop_id: stop.id, stop_type: stop.class.name) rescue nil

@@ -10,32 +10,20 @@
         .col-lg-9.col-lg-offset-1
           .form-group
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              Partner Scoped Client ID
+              Client ID
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Partner Scoped Client ID", :value=> @community.latch.present? ? @community.latch.client_id : ""
+              = f.text_field :client_id, :class=>"form-control validate[required]", :placeholder=>"Client id", :value=> @community.latch.present? ? @community.latch.client_id : ""
           .form-group
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              Partner Scoped Client Secret
+              Client Secret
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Partner Scoped Client Secret", :value=> @community.latch.present? ? @community.latch.client_secret : ""
-          
+              = f.text_field :client_secret, :class=>"form-control validate[required]", :placeholder=>"Client Secret", :value=> @community.latch.present? ? @community.latch.client_secret : ""
           .form-group
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              User Scoped Client ID
+              Upload CSV File
             .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = f.text_field :passwordless_client_id, :class=>"form-control validate[required]", :placeholder=>"User Scoped Client ID", :value=> @community.latch.present? ? @community.latch.passwordless_client_id : ""
-          
-          .form-group
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              User Scoped Client Secret
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = f.text_field :passwordless_client_secret, :class=>"form-control validate[required]", :placeholder=>"User Scoped Client Secret", :value=> @community.latch.present? ? @community.latch.passwordless_client_secret : ""
-          
-          .form-group
-            %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-              Building Name
-            .col-sm-12.col-lg-9.col-md-9.col-xs-12
-              = f.text_field :latch_property_name, :class=>"form-control validate[required]", :placeholder=>"Latch Property Name", :value=> @community.latch.present? ? @community.latch.latch_property_name : ""
+              = file_field_tag 'file'
+            = f.hidden_field :community_id, :value=> current_community.id
 
           .form-group{:style => "margin-bottom: 0px;"}
             %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
@@ -64,41 +52,19 @@
 
                 %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
                   = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"latch-preview-image"
+                  -# = image_tag "exclamation-mark.png", class: "waring_exal", style: "width: 25px", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
 
+            -# - if lock_image.present?
+            -#   .row{:style => "padding-left: 47%;"}
+            -#     = link_to show_lock_image_in_modal_community_latch_accounts_path(),:class => "", remote: true do
+            -#       %span.btn.btn-primary.btn-success.ml-15{"data-target" => "#edit-name", "data-toggle" => "modal"}
+            -#         Crop
+
+    / /.box-body
     .box-footer
       - if current_community.latch.present?
         = f.submit "Update Account", :class=>"btn btn-success pull-right loader_class"
       - else
         = f.submit "Save Account", :class=>"btn btn-success pull-right loader_class"
-
-.row#data-connection-buttons
-  .col-lg-12.col-md-12
-    .row
-      .col-md-6
-        %h4.title Test Data Connection
-    .box.box-widget.panel-box.pl-20.pr-20.pb-20
-      .box-header
-        %p
-          This option allows you to test connection settings in the data section. A new browser window will open and attempt to write the data feed output.
-        = link_to "Test Connection" , test_latch_connection_community_latch_accounts_path(current_community) , :class=>"btn btn-primary",:target=>"_blank"
-        %p{:style => "margin-bottom: -7px; margin-top: 10px;"}
-          If the page that opens contains a bunch of data, it's probably good! Otherwise you will get the alert message that, Data cannot be imported. Please check the credentails or contact your data provider to troubleshoot.
-    .row
-      .col-md-6
-        %h4.title Import Locks Data
-        
-    .box.box-widget.panel-box.pl-20.pr-20.pb-20
-      .box-header
-        %p
-          This option allows you to import latch lock data.
-        .callout.callout-danger
-          %p
-            %i.fa.fa-warning
-            This action will either import new, or update existing, Latch lock records, based on community.
-
-        .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-          = link_to "Import Locks Data" , import_latch_locks_community_latch_accounts_path(community_id: current_community) , :method => :post, :class=>"btn btn-primary"
-
-          - if @community.latch.present? and @community.latch.latch_locks.present?
-            = link_to "Map Units" , map_latch_locks_community_latch_accounts_path(current_community) , :method => :post, :class=>"btn btn-success"
-            = link_to "Delete all Existing Locks" , remove_latch_locks_community_latch_accounts_path(current_community) , :method => :delete, :class=>"btn btn-danger", :style=> "background-color: #dd4b39d4;"
+      - if @community.latch.present?
+        = link_to "Delete all Existing Locks" , remove_latch_locks_community_latch_accounts_path(current_community) , :class=>"btn btn-danger", :method => :delete, :style=> "background-color: #dd4b39d4;"

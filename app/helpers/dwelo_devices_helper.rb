@@ -321,7 +321,7 @@ module DweloDevicesHelper
       building_starting_points = BuildingStartingPoint.where(id: building_starting_point_ids, lock_provider: "Latch").includes(:latch_locks)
 
       locks_data = []
-      locks_data << community&.latch&.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community&.latch&.latch_locks.present?
+      locks_data << community.community_tour.latch_locks.pluck(:lock_id, :stop_type, :stop_id).flatten if community.community_tour.latch_locks.present?
 
       units.each do |unit|
         if unit.door.present?
@@ -351,11 +351,26 @@ module DweloDevicesHelper
         locks_data << lock_info if lock_info.present? and locks_data.map{|x| x if x[0] == lock_info[0]}.compact.flatten.length == 0
       end
 
-      locks_data = locks_data.map{|lock| lock[0]}
-      LatchOpenkit::LatchLocksService.new(tour_user, community.id).generate_latch_doors_accesses(start_time, end_time, locks_data)  if locks_data.present?
-    
-      tour_user.update_column 'latch_status' , 'complete'
+      if locks_data.present?
+        LatchGuest.where(tour_user_id: tour_user.id, community_id: community.id).update_all(status: "deleted")
+        locks_data.each do |lock_info|
+          response = LatchCreateReservationService.call(
+            community_id: community.id,
+            startTime: start_time,
+            endTime: end_time,
+            keyIds: lock_info[0],
+            tour_user: tour_user,
+            allowedKeycardCount: 0
+          )
 
+          latch_link = response["payload"]["message"]["link"]
+
+          if latch_link.present?
+            LatchLock.where(lock_id: lock_info[0]).map{|stop_data| tour_user.latch_guests.create(community_id: community.id, latch_link: latch_link, guest_of_stop_type: stop_data.stop_type.classify , guest_of_stop_id: stop_data.stop_id, start_time: start_time.to_i, end_time: end_time.to_i, status: "active") if stop_data.stop_type.present? and stop_data.stop_id.present?}
+          end
+        end
+      end
+      tour_user.update_column 'latch_status' , 'complete'
       rescue => ex
         tour_user.update_column 'latch_status' , 'complete'
         puts "--------- Latch error -------- ", ex
