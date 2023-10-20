@@ -81,8 +81,6 @@ class Yardi2StaticService < BaseService
           cred.save
         rescue => err
         end
-        puts '----------------------------------'*400, e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
   end
@@ -122,6 +120,7 @@ class Yardi2StaticService < BaseService
               end
 
             end
+
             if u.key?(:Availability)
               if u[:Availability][:VacateDate][0][:Year].present? and u[:Availability][:VacateDate][0][:Year] != '0'
                 vacate_date = Date.parse("#{u[:Availability][:VacateDate][0][:Year]}-#{u[:Availability][:VacateDate][0][:Month]}-#{u[:Availability][:VacateDate][0][:Day]}")
@@ -133,6 +132,7 @@ class Yardi2StaticService < BaseService
               end
             end
           end
+
           unless unit.availability_is_updated.present? && unit.availability_is_updated && unit.manual_override
             unit.availability = is_available ? "Unoccupied" : "Occupied"
             begin
@@ -142,9 +142,13 @@ class Yardi2StaticService < BaseService
             rescue =>ex
             end
           end
+
           unless unit.available_date_is_updated.present? && unit.available_date_is_updated && unit.manual_override
             unit.available_date = vacate_date
           end
+
+          unit.square_feet = get_unit_sqft(unit_entries)
+
           unless unit.available_is_updated.present? && unit.available_is_updated && unit.manual_override
             if unit.availability == "Occupied"
               unit.available = false
@@ -157,8 +161,6 @@ class Yardi2StaticService < BaseService
           unit.save(validate: false)
         end
       rescue => e
-        puts '----------------------------------', e.message
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
   end
@@ -222,10 +224,16 @@ class Yardi2StaticService < BaseService
           fp.save(validate: false)
         end
       rescue => e
-        puts '----------------------------------', e.message
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
   end
+
+  private
+
+    def get_unit_sqft(unit_entries)
+      min_sqft = unit_entries.dig(1, :Unit, :"MITS:Information", :"MITS:MinSquareFeet").to_f
+      max_sqft = unit_entries.dig(1, :Unit, :"MITS:Information", :"MITS:MaxSquareFeet").to_f
+      [min_sqft, max_sqft].find { |sqft| sqft && sqft > 1 }
+    end
 
 end
