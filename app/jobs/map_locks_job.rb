@@ -22,26 +22,13 @@ class MapLocksJob < ApplicationJob
       clear_locks_provider(community, type)
       community.edge_state.edgestate_locks.each do |edgestate_lock|
         data = parse_stop(community, edgestate_lock.name)
+
         if data.present?
             data.edgestate_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
             edgestate_lock.update_attributes(stop_id: data.id, stop_type: data.class.name.classify) rescue nil
             data.update_column(:lock_provider, type)
         else
           edgestate_lock.update_attributes(stop_id: nil, stop_type: nil, stop_name: nil)
-        end
-      end
-
-    elsif community.latch.present? and type == "Latch"
-      clear_locks_provider(community, type)
-      community.latch.latch_locks.each do |latch_lock|
-        data = parse_stop(community, latch_lock.name)
-
-        if data.present?
-            data.latch_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-            latch_lock.update_attributes(stop_id: data.id, stop_type: data.class.name.classify) rescue nil
-            data.update_column(:lock_provider, type)
-        else
-          latch_lock.update_attributes(stop_id: nil, stop_type: nil, stop_name: nil)
         end
       end
 
@@ -59,9 +46,7 @@ class MapLocksJob < ApplicationJob
           dwelo_lock.update_attributes(stop_id: nil, stop_type: nil, stop_name: nil)
         end
       end
-      
     end
-
   end
 
   def clear_locks_provider(community, type)
