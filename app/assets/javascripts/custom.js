@@ -636,14 +636,17 @@ function showFileFields(){
 }
 
 function showYardiRentCafeCodeInputOption(value){
-  if (value == "Company Code"){
-    $('#api_token').hide();
+    $('#api_token').show();
     $('#c_code').show();
-  }
-  else{
-   $('#api_token').show();
-   $('#c_code').hide(); 
-  }
+
+  // if (value == "Company Code"){
+  //   $('#api_token').hide();
+  //   $('#c_code').show();
+  // }
+  // else{
+  //  $('#api_token').show();
+  //  $('#c_code').hide(); 
+  // }
 }
 
 function showCredentialsForm(){
