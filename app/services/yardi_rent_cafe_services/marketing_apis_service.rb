@@ -39,7 +39,7 @@ module YardiRentCafeServices
 
     def create_appointment
       url = "#{ENV["RENT_CAFE_V2_MARKETING_API_BASE_URL"]}/appointments/createappointment"
-      binding.pry
+
       HTTParty.post(url,
         body: create_appointment_body_params(),
         headers: { 
