@@ -32,7 +32,7 @@ module LeadsUploader
           phone: phone,
           message: message,
           source: source,
-          secondarySource: secondary_source
+          secondarySource: secondary_source,
           addr1: address_1,
           addr2: address_2,
           state: state,
