@@ -37,7 +37,7 @@ module YardiRentCafeServices
           city: city,
           zipCode: zip_code,
           desiredMoveinDate: prospect_move_in_date,
-          desiredBedrooms: prospect_desired_bedroorms
+          desiredBedrooms: prospect_desired_bedroorms || 1
         }.to_json
       end
   end

@@ -11,6 +11,7 @@ module YardiRentCafeServices
       return unless is_user_authorized?
       cancel_tour(previous_tour)
       response = create_appointment()
+      binding.pry
       response = (response&.dig("errorCode") == 200) ? response["prospectInfo"] : nil
       yardi_scheduled_tour_response(response) if response.present?
     end
@@ -85,7 +86,7 @@ module YardiRentCafeServices
         message: "Appointment created through pynwheel",
         source: source,
         desiredMoveinDate: prospect_move_in_date,
-        desiredBedrooms: prospect_desired_bedroorms,
+        desiredBedrooms: prospect_desired_bedroorms || 1,
         tourType: get_scheduled_tour_type
       }.to_json
     end
