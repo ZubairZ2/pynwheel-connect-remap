@@ -963,6 +963,10 @@
         // currentDay = (new Date($(this).val())).getDay()
         var d = new Date();
         var currentDay = d.getDay();
+
+        var datePickerTag = '.schedule_datepicker'
+        if(form_for_reschedule_tour)
+          datePickerTag = '.reschedule_datepicker'
         
         if(is_funnel_community && !isEmpty(funnel_available_days)) {
 
@@ -972,18 +976,8 @@
             minimumDate = minimumDate.replaceAll("-", "/");
           }
 
-          $('.schedule_datepicker').datetimepicker({
-              format : 'MM/DD/YYYY',
-              defaultDate: minimumDate, 
-              minDate: minimumDate, // moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
-              showTodayButton: true,
-              showClear: true,
-              showClose: true,
-              useCurrent: true,
-              toolbarPlacement: "bottom",
-              stepping: steps,
-              enabledDates: funnel_available_days
-          });
+          initializeDatePicker(datePickerTag, steps, [], funnel_available_days, minimumDate);
+
         }
         // Knock Date Picker
         else if(is_knock_community && !isEmpty(knock_available_time_slots)) {
@@ -992,66 +986,22 @@
             minimumDate = knock_available_time_slots.available_dates[0];
             minimumDate = minimumDate.replaceAll("-", "/");
           }
-
-          $('.schedule_datepicker').datetimepicker({
-              format : 'MM/DD/YYYY',
-              defaultDate: minimumDate, 
-              minDate: minimumDate, // moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
-              showTodayButton: true,
-              showClear: true,
-              showClose: true,
-              useCurrent: true,
-              toolbarPlacement: "bottom",
-              stepping: steps,
-              enabledDates: knock_available_time_slots.available_dates
-          });
+          let knockAvailableDates = knock_available_time_slots.available_dates
+          initializeDatePicker(datePickerTag, steps, [], availableDates, minimumDate);
         }
         else if (use_yardi_as_lead && !is_virtual_on){
-          var availableDates = <%= raw @yardi_enable_days %>;
-          $('.schedule_datepicker').datetimepicker({
-            format : 'MM/DD/YYYY',
-            minDate: moment(), //!time_slots[currentDay].length ? moment() : moment()+1,
-            showTodayButton: true,
-            showClear: true,
-            showClose: true,
-            useCurrent: true,
-            toolbarPlacement: "bottom",
-            stepping: steps,
-            daysOfWeekDisabled: days_disabled,
-            enabledDates: availableDates
-          });
+          let rentCafeAvailableDates = <%= raw @yardi_enable_days %>;
+          initializeDatePicker(datePickerTag, steps, [], rentCafeAvailableDates);
         }
         else {
-          $('.schedule_datepicker').datetimepicker({
-            format : 'MM/DD/YYYY',
-            minDate: moment(), //time_slots[currentDay].length ? moment()+1 : moment(),
-            showTodayButton: true,
-            showClear: true,
-            showClose: true,
-            useCurrent: true,//time_slots[currentDay].length ? false : true,
-            toolbarPlacement: "bottom",
-            stepping: steps,
-            daysOfWeekDisabled: days_disabled,
-          });
-          
+          initializeDatePicker(datePickerTag, steps, days_disabled);          
         }
 
         var today_day = moment().format("YYYY-MM-DD")
         scheduled_tour_date = '<%= @schedule_tour.tour_date %>'
         useCurrentFlag = scheduled_tour_date == today_day ? true : false
-        if(form_for_reschedule_tour){
-          $('.reschedule_datepicker').datetimepicker({
-            format : 'MM/DD/YYYY',
-            minDate: moment(),
-            sideBySide: true,
-            showTodayButton: true,
-            showClear: true,
-            showClose: true,
-            useCurrent: useCurrentFlag,
-            toolbarPlacement: "bottom",
-            stepping: steps,
-            daysOfWeekDisabled: days_disabled         
-          });
+
+        if(form_for_reschedule_tour) {
           if(scheduled_tour_date != today_day) {
             <% if @schedule_tour.tour_date.present? %>
               let dateTime = getTourDate(scheduled_tour_date);
@@ -1064,35 +1014,11 @@
           }
         }
 
-        // $(".datepicker").datetimepicker({minDate: new Date(), format: 'MM/DD/YYYY'});
-        $('.datepickertime').datetimepicker({
-          
-          format : 'MM/DD/YYYY hh:mm A',
-          minDate: moment(),
+        initializeDatePicker('.datepickertime', steps, days_disabled, [], null, 'MM/DD/YYYY hh:mm A');
 
-          sideBySide: true,
-          showTodayButton: true,
-          showClear: true,
-          showClose: true,
-          useCurrent: true,
-          toolbarPlacement: "bottom",
-          stepping: steps,
-          daysOfWeekDisabled: days_disabled
-        });
 
         $('#desired_move_in_date').focusin( function(){
-          $('.moveindatepicker').datetimepicker({
-            // minDate: 1,
-            defaultDate: new Date(),
-            minDate: new Date(),
-            format: 'MM/DD/YYYY',
-            sideBySide: true,
-            showTodayButton: true,
-            showClear: true,
-            showClose: true,
-            useCurrent: false,
-            toolbarPlacement: "bottom",
-          });
+          initializeDatePicker('.moveindatepicker');
         })
 
         $('.phoneNumber').keypress(function(event) {
@@ -1155,6 +1081,21 @@
         }
 
       });
+
+      function initializeDatePicker(element, steps = "", disabledDays = [], availableDates = [], minimumDate = moment(), dateFormate = 'MM/DD/YYYY' ) {
+        $(element).datetimepicker({
+          format : 'MM/DD/YYYY',
+          minDate: minimumDate, //!time_slots[currentDay].length ? moment() : moment()+1,
+          showTodayButton: true,
+          showClear: true,
+          showClose: true,
+          useCurrent: true,
+          toolbarPlacement: "bottom",
+          stepping: steps,
+          daysOfWeekDisabled: disabledDays,
+          enabledDates: availableDates
+        });
+      }
 
       function hideTourTypeDropDown() {
         $(".tour_type").css("display", "none");
