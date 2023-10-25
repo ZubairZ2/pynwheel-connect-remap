@@ -40,4 +40,5 @@ module LeadsUploader
           zipCode: zip_code
         }.to_json
       end
+  end
 end
