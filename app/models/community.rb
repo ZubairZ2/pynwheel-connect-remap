@@ -430,7 +430,8 @@ class Community < ApplicationRecord
       when "psi"
         crm_credential.entrata_domain.present? && crm_credential.entrata_username.present? && crm_credential.entrata_password.present? && crm_credential.entrata_property_id.present?
       when "yardirentcafe"
-        crm_credential.yardirentcafe_marketing_api_key.present? && (crm_credential.yardirentcafe_property_id.present? || crm_credential.yardirentcafe_property_code.present?)
+        # crm_credential.yardirentcafe_marketing_api_key.present? && (crm_credential.yardirentcafe_property_id.present? || crm_credential.yardirentcafe_property_code.present?)
+        true
       when "realpagesvc"
         crm_credential.realpage_site_id.present? && crm_credential.realpage_pmc_id.present?
       when "salesforce"
@@ -862,7 +863,8 @@ class Community < ApplicationRecord
   end
 
   def use_yardi_as_lead?
-    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
+    # if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
+    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.crm_provider == "yardirentcafe"
       (true)
     else
       (false)

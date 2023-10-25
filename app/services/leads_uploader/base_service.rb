@@ -7,8 +7,9 @@ module LeadsUploader
         @favorites = favorites
         @email = email
         @community = Community.find community_id
+        @credential = @community.credential
 
-        return unless (@community && @community&.crm_credential).present?
+        return unless (@community && @community&.credential).present?
       rescue => error
         return
       end
@@ -16,70 +17,83 @@ module LeadsUploader
 
     protected
 
-    def format_favorites_message units, floorplans, amenities, message_text = "" 
-      message_text += "Unit: #{units}\n" if units.present?
-      message_text += "Floorplan: #{floorplans}\n" if floorplans.present?
-      message_text += "Amenity: #{amenities}" if amenities.present?
-      message_text 
-    end
+      def is_user_authorized?
+        (@community.use_yardi_as_lead? && RentCafeApiV2Service.new(@community.id).is_user_authorized?)
+      end
 
-    def favorit_items
-      floorplans = @favorites.map{|fav| fav&.name if fav.class.name == "Floorplan" }&.compact&.join(', ')
-      units = @favorites.map{|fav| fav&.marketing_name if fav.class.name == "Unit" }&.compact&.join(', ')
-      amenities = @favorites.map{|fav| fav&.name if fav.class.name == "Amenity" }&.compact&.join(', ')
-      format_favorites_message(units, floorplans, amenities) 
-    end
+      def api_token
+        @credential&.api_token&.strip
+      end
 
-    def message
-      "#{@email},\nThank you for visiting #{@community.name}, Here are your favorites:\n#{favorit_items}"
-    end
+      def company_code
+        @credential&.c_code&.strip
+      end
 
-    def request_type
-      "lead"
-    end
+      def property_code
+        property_code = @credential&.p_code&.split(',')[0] rescue nil
+        property_code&.strip
+      end
 
-    def first_name
-      "Not Required"
-    end
+      def format_favorites_message units, floorplans, amenities, message_text = "" 
+        message_text += "Unit: #{units}\n" if units.present?
+        message_text += "Floorplan: #{floorplans}\n" if floorplans.present?
+        message_text += "Amenity: #{amenities}" if amenities.present?
+        message_text 
+      end
 
-    def last_name
-      "Not Required"
-    end
+      def favorit_items
+        floorplans = @favorites.map{|fav| fav&.name if fav.class.name == "Floorplan" }&.compact&.join(', ')
+        units = @favorites.map{|fav| fav&.marketing_name if fav.class.name == "Unit" }&.compact&.join(', ')
+        amenities = @favorites.map{|fav| fav&.name if fav.class.name == "Amenity" }&.compact&.join(', ')
+        format_favorites_message(units, floorplans, amenities) 
+      end
 
-    def phone
-      "(000)000-0000"
-    end
+      def message
+        "#{@email},\nThank you for visiting #{@community.name}, Here are your favorites:\n#{favorit_items}"
+      end
 
-    def email
-      @email
-    end
+      def first_name
+        "Not Required"
+      end
 
-    def zip_code
-      @community&.zip
-    end
+      def last_name
+        "Not Required"
+      end
 
-    def city
-      @community&.city
-    end
+      def phone
+        "(000)000-0000"
+      end
 
-    def state
-      @community&.state
-    end
+      def email
+        @email
+      end
 
-    def address_1
-      @community&.address
-    end
+      def zip_code
+        @community&.zip
+      end
 
-    def address_2
-      ""
-    end
+      def city
+        @community&.city
+      end
 
-    def source
-      "G5"
-    end
+      def state
+        @community&.state
+      end
 
-    def secondary_source
-      "ILS-Ads"
-    end
+      def address_1
+        @community&.address
+      end
+
+      def address_2
+        ""
+      end
+
+      def source
+        "G5"
+      end
+
+      def secondary_source
+        "ILS-Ads"
+      end
   end
 end

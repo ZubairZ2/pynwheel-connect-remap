@@ -8,7 +8,7 @@ module YardiRentCafeServices
       @c_time_zone = @community.get_time_zone()
     end
 
-    private
+    protected
 
       def is_user_authorized?
         (@community.use_yardi_as_lead? && RentCafeApiV2Service.new(@community.id).is_user_authorized?)
