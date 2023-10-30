@@ -1,6 +1,6 @@
 class DataProvidersService
   def initialize
-    @communities = Community.where(id: 1123)
+    @communities = Community.all
   end
 
   def update_providers_data
