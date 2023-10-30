@@ -663,6 +663,12 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :companies do
+        member do
+          post :import_data_credentials
+        end
+      end
+
       resources :communities do
         resources :community_property_map
 
