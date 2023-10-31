@@ -5,6 +5,11 @@ class PynwheelLaunch::Communities::FollowUpEmails
 
   def move_to_production_auto_email
     forms = forms_list
+
+    puts "\n\n Launch Forms \n\n"
+    puts forms
+    puts "\n\n Launch Forms \n\n"
+
     if forms.present?
       readable_forms_status = get_readable_form_status(forms)
       if forms.all?{ |x| x[:status].eql?(APPROVED) || x[:status].eql?(RELEASED) || x[:status].eql?(APPLICATION_IN_REVIEW) }
@@ -151,8 +156,9 @@ class PynwheelLaunch::Communities::FollowUpEmails
         detail_forms << x
       end
     end
+
     detail_forms << floorplan_form if @community&.floorplans&.count > 0
-    detail_forms << hardware_spec_form if hardware_spec_form_require
+    # detail_forms << hardware_spec_form if hardware_spec_form_require
     # detail_forms << design_direction_form if design_direction_form_require
     # detail_forms << amenity_images_form if amenity_images_form_require
     # detail_forms << ebrochure_form
@@ -346,10 +352,10 @@ class PynwheelLaunch::Communities::FollowUpEmails
       return REJECTED if statuses.any?{|x| x.eql?(REJECTED)}
       return SUBMITTED if statuses.all?{|x| x.eql?(SUBMITTED)}
       return APPROVED if statuses.all?{|x| x.eql?(APPROVED)}
-      return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.eql?(nil)}
       return RELEASED if statuses.all?{|x| x.eql?(RELEASED)}
       return FORM_APPROVED if statuses.all?{|x| x.eql?(FORM_APPROVED)}
       return APPLICATION_IN_REVIEW if statuses.all?{|x| x.eql?(APPLICATION_IN_REVIEW)}
+      return IN_PROGRESS if statuses.any? {|x| x.eql?(IN_PROGRESS) || x.eql?(nil)}
     else
       return nil
     end
