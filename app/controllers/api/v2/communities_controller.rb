@@ -89,16 +89,18 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   def update_status_and_remarks
     if @community.present? && @community_user.present?
       PynwheelLaunch::Communities::CommunityDetailForms.new(@community).update_status_and_remarks(params[:detail_type], params[:status][:name], params[:status][:remarks])
-      if params[:status][:name].eql?(APPROVED)
+      
+      if params[:status][:name].eql?(APPROVED) && excluded_forms()
         application_approved = PynwheelLaunch::Communities::FollowUpEmails.new(@community).move_to_production_auto_email
+        
+        @community.production_started_date = DateTime.now
+        @community.save
+        
         if application_approved
           FollowUpMailer.application_approved(@community)
         end
       end
-      if @community.production_started_date.nil? && params[:status][:name].eql?(APPROVED)
-        @community.production_started_date = DateTime.now
-        @community.save
-      end
+      
       render :json => {:success => true , data: @community_user.as_json}
     else
       render :json => {:success => false , :message=> "Community or community user not found"}
@@ -120,6 +122,10 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   end
 
   private
+
+  def excluded_forms
+    !([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS].include?(params[:detail_type]))
+  end
 
   def send_emails(community, status)
     unless community.company.name.include?("Dwelo")

@@ -312,9 +312,11 @@ class PynwheelLaunch::Communities::FollowUpEmails
 
   def get_readable_form_status(forms)
     readable_form_status = [];
+    
     forms.each do |form|
       readable_form_status << {name: form[:name], status: modify_status_readable(form[:status])}
     end
+
     readable_form_status
   end
 
