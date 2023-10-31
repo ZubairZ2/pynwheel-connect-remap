@@ -16,6 +16,28 @@ module AnalyticsHelper
     return mm;
   end
 
+  def convert_to_12_hour_format(time_range)
+    start_time, end_time = time_range.split('-')
+
+    start_time = start_time.to_i
+    end_time = end_time.to_i
+
+    start_period = start_time < 12 ? 'AM' : 'PM'
+    end_period = end_time < 12 ? 'AM' : 'PM'
+
+    start_time = start_time % 12
+    # start_period = "AM" if start_time.zero?
+    start_time = 12 if start_time.zero?
+
+    end_time = end_time % 12
+    end_period = "AM" if end_time.zero?
+    end_time = 12 if end_time.zero?
+
+    "#{start_time}-#{end_time} #{end_period}"
+  end
+
+
+
   def return_empty_hash(days_count,start_date)
     h = {}
     days_count.times do |i|

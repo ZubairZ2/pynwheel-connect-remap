@@ -231,12 +231,14 @@ class AnalyticsController < ApplicationController
       end
       max_hour_start = max_hour < 10 ? ("0" + max_hour.to_s + ":00") : (max_hour.to_s + ":00")
       max_hour_end = max_hour + 1 < 10 ? ("0" + (max_hour + 1).to_s + ":00") : ((max_hour + 1).to_s + ":00")
-      instance_variable_set("@highest_hour_#{for_device_type}", max_hour_start + "-" + max_hour_end)
+      max_sessions_slot =  convert_to_12_hour_format(max_hour_start + "-" + max_hour_end)
+      instance_variable_set("@highest_hour_#{for_device_type}", max_sessions_slot)
       instance_variable_set("@session_in_highest_hour_#{for_device_type}", max_count)
       hour_labels = sessions_each_day_hourly_hash.keys.map do |h_key|
         start_to = h_key < 10 ? ("0" + h_key.to_s) : (h_key.to_s)
         end_then = (h_key + 1) < 10 ? ("0" + (h_key + 1).to_s) : ((h_key + 1).to_s)
         label_str = start_to + "-" + end_then
+        label_str = convert_to_12_hour_format(label_str)
         label_str
       end
       hour_values = sessions_each_day_hourly_hash.values
@@ -634,6 +636,7 @@ class AnalyticsController < ApplicationController
         start_to = h_key < 10 ? ("0" + h_key.to_s) : (h_key.to_s)
         end_then = (h_key + 1) < 10 ? ("0" + (h_key + 1).to_s) : ((h_key + 1).to_s)
         label_str = start_to + "-" + end_then
+        label_str = convert_to_12_hour_format(label_str)
         label_str
       end
       hour_values = sessions_each_day_hourly_hash.values
@@ -701,6 +704,7 @@ class AnalyticsController < ApplicationController
         start_to = h_key < 10 ? ("0" + h_key.to_s) : (h_key.to_s)
         end_then = (h_key + 1) < 10 ? ("0" + (h_key + 1).to_s) : ((h_key + 1).to_s)
         label_str = start_to + "-" + end_then
+        label_str = convert_to_12_hour_format(label_str)
         label_str
       end
       hour_values = sessions_each_day_hourly_hash.values
