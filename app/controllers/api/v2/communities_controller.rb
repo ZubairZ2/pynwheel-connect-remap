@@ -91,13 +91,17 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
       PynwheelLaunch::Communities::CommunityDetailForms.new(@community).update_status_and_remarks(params[:detail_type], params[:status][:name], params[:status][:remarks])
       
       # if params[:status][:name].eql?(APPROVED)
-        application_approved = PynwheelLaunch::Communities::FollowUpEmails.new(@community).move_to_production_auto_email
-        
-        if application_approved
-          @community.production_started_date = DateTime.now
-          @community.save
-          FollowUpMailer.application_approved(@community)
+      unless disregard_forms()
+        if params[:status][:name].eql?(APPROVED)
+          application_approved = PynwheelLaunch::Communities::FollowUpEmails.new(@community).move_to_production_auto_email
+          
+          if application_approved
+            @community.production_started_date = DateTime.now
+            @community.save
+            FollowUpMailer.application_approved(@community)
+          end
         end
+      end
       # end
       
       render :json => {:success => true , data: @community_user.as_json}
@@ -123,8 +127,8 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
   private
 
 
-  def excluded_forms
-    !([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS].include?(params[:detail_type]))
+  def disregard_forms
+    ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION].include?(params[:detail_type]))
   end
 
   def send_emails(community, status)
