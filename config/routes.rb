@@ -86,12 +86,12 @@ Rails.application.routes.draw do
       get :generate_webpages_report
       get :properties_average_data_report
       get :generate_salesforce_report
-
     end
-
+    
     member do
       get :generate_csv
       get :generate_csv_for_scheduled_records
+      post :import_data_credentials
     end
 
   end
@@ -662,12 +662,6 @@ Rails.application.routes.draw do
       resources :user_details do
         member do
           put :update_company
-        end
-      end
-
-      resources :companies do
-        member do
-          post :import_data_credentials
         end
       end
 
