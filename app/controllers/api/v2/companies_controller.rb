@@ -4,11 +4,12 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
   before_action :set_community, only: :import_data_credentials
 
   def import_data_credentials
-    case @community.data_provider
+    case params[:data_provider]
     when "yardirentcafe"
+      set_data_provider()
       import_rent_cafe_data
     else
-      render_response("Please check property's data provider it should be rent cafe", false)
+      render_response("Wrong data provider, please check property's data provider", false)
     end
   end
 
@@ -36,6 +37,11 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
     def set_community
       @community = @company.communities.find_by(name: params[:property_name])
       render_response('Property not found! Invalid property name', false) unless @community.present?
+    end
+
+    def set_data_provider
+      return unless params[:data_provider].present?
+      @community.update(data_provider: params[:data_provider])
     end
 
     def update_property_credential
