@@ -19,17 +19,18 @@ module CommunitiesHelper
     worksheet.write(0, 8, "eBrochure 'From' Email Address", format)
     worksheet.write(0, 9, "eBrochure 'BCC' Email Address ", format)
     worksheet.write(0, 10, "Phone", format)
-    worksheet.write(0, 11, "Design Style", format)
-    worksheet.write(0, 12, "Data Provider", format)
-    worksheet.write(0, 13, "Self Tour (Yes/No)", format)
-    worksheet.write(0, 14, "Active/Inactive", format)
-    worksheet.write(0, 15, "Subscription Start Date", format)
-    worksheet.write(0, 16, "Date Inactivated", format)
-    worksheet.write(0, 17, "Billing Month", format)
-    worksheet.write(0, 18, "Billing Rate (Annual)", format)
-    worksheet.write(0, 19, "Billing Rate (Monthly)", format)
+    worksheet.write(0, 11, "Map Type", format)
+    worksheet.write(0, 12, "Design Style", format)
+    worksheet.write(0, 13, "Data Provider", format)
+    worksheet.write(0, 14, "Self Tour (Yes/No)", format)
+    worksheet.write(0, 15, "Active/Inactive", format)
+    worksheet.write(0, 16, "Subscription Start Date", format)
+    worksheet.write(0, 17, "Date Inactivated", format)
+    worksheet.write(0, 18, "Billing Month", format)
+    worksheet.write(0, 19, "Annual Billing Rate ($)", format)
+    worksheet.write(0, 20, "Monthly Billing Rate ($)", format)
 
-    Community.all.each do |community|
+    Community.active_client_properties.each do |community|
       if community.present?
         worksheet.write(row, 0, community.company.name, format1)
         worksheet.write(row, 1, community.name, format1)
@@ -42,7 +43,8 @@ module CommunitiesHelper
         worksheet.write(row, 8, community.favorite_setting.email_from, format1) if community.favorite_setting.present?
         worksheet.write(row, 9, community.favorite_setting.email_bcc, format1) if community.favorite_setting.present?
         worksheet.write(row, 10, community.phone, format1)
-        worksheet.write(row, 11, community.theme_name.capitalize, format1) if community.theme_name.present?
+        worksheet.write(row, 11, map_type(community), format1)
+        worksheet.write(row, 12, community.theme_name.capitalize, format1) if community.theme_name.present?
 
         if community.data_provider == "psi"
           data_provider = "Entrata"
@@ -55,32 +57,50 @@ module CommunitiesHelper
         else
           data_provider = "Nill"
         end
-        worksheet.write(row, 12, data_provider, format1)
-        worksheet.write(row, 13, community.self_tour == true ? "Yes" : "No", format1)
-        worksheet.write(row, 14, community.locked.present? ? (community.locked ? "Inactive" : "Active") : "Active", format1)
-        worksheet.write(row, 15, community.date_activated, format1)
-        worksheet.write(row, 16, community.date_inactivated, format1)
-        worksheet.write(row, 17, community.billing_type == "annual" ? "#{community.billing_month.present? ? community.billing_month : "Annually"}" : "Monthly", format1)
+        worksheet.write(row, 13, data_provider, format1)
+        worksheet.write(row, 14, community.self_tour == true ? "Yes" : "No", format1)
+        worksheet.write(row, 15, community.locked.present? ? (community.locked ? "Inactive" : "Active") : "Active", format1)
+        worksheet.write(row, 16, community.date_activated, format1)
+        worksheet.write(row, 17, community.date_inactivated, format1)
+        worksheet.write(row, 18, community.billing_type == "annual" ? "#{community.billing_month.present? ? community.billing_month : "Annually"}" : "Monthly", format1)
+        
         if community.touchscreen_app == true
-          worksheet.write(row, 18, community.billing_rate_touch, format1)
+          worksheet.write(row, 19, billing_rate_convertion(community.billing_rate_touch), format1)
+          worksheet.write(row, 20, billing_rate_convertion(community.billing_rate_touch)/12, format1)
         end
+
         if community.company.name.downcase == "lincoln"
-          worksheet.write(row, 19, community.lincoln_billing_rate, format1)
+          worksheet.write(row, 19, billing_rate_convertion(community.lincoln_billing_rate)*12, format1)
+          worksheet.write(row, 20, billing_rate_convertion(community.lincoln_billing_rate), format1)
+
         elsif community.creator_id.present? and community.creator.present? and community.creator.role == "Dwelo admin"
-          worksheet.write(row, 19, community.dwelo_billing_rate, format1)
+          worksheet.write(row, 19, billing_rate_convertion(community.dwelo_billing_rate)*12, format1)
+          worksheet.write(row, 20, billing_rate_convertion(community.dwelo_billing_rate), format1)
+
         elsif community.self_tour == true and community.touchscreen_app == true and community.company.name.downcase != "lincoln" and ((community.creator_id.present? and community.creator.present? and community.creator.role != "Dwelo admin") or community.creator_id.nil?)
-          worksheet.write(row, 19, community.billing_rate_selftour, format1)
+          worksheet.write(row, 19, billing_rate_convertion(community.billing_rate_selftour)*12, format1)
+          worksheet.write(row, 20, billing_rate_convertion(community.billing_rate_selftour), format1)
+
         elsif community.self_tour == false and community.touchscreen_app == false
-          worksheet.write(row, 19, community.billing_rate_maps, format1)
+          worksheet.write(row, 19, billing_rate_convertion(community.billing_rate_maps)*12, format1)
+          worksheet.write(row, 20, billing_rate_convertion(community.billing_rate_maps), format1)
+
         elsif community.self_tour == true and community.touchscreen_app == true
-          worksheet.write(row, 19, community.billing_rate_for_both, format1)
+          worksheet.write(row, 19, billing_rate_convertion(community.billing_rate_for_both)*12, format1)
+          worksheet.write(row, 20, billing_rate_convertion(community.billing_rate_for_both), format1)
+
         elsif community.self_tour == true and community.touchscreen_app == false
-          worksheet.write(row, 19, community.billing_rate_selftour, format1)
+          worksheet.write(row, 19, billing_rate_convertion(community.billing_rate_selftour)*12, format1)
+          worksheet.write(row, 20, billing_rate_convertion(community.billing_rate_selftour), format1)
+
         end
 
         row = row + 1
       end
     end
+
+    worksheet2 = create_work_sheet2(workbook)
+
     workbook.close
 
     temp_file = Tempfile.new("AccountReport.zip")
@@ -185,5 +205,64 @@ module CommunitiesHelper
       false
     end
   end
+
+  private
+
+    def create_work_sheet2 workbook
+      worksheet2 = workbook.add_worksheet("Sheet 2")
+      format = workbook.add_format({ 'align': 'left', 'font': 'Arial', 'size': '10', 'locked': true })
+      format.set_bold()
+      format.set_locked()
+      format1 = workbook.add_format({ 'align': 'left', 'font': 'Arial', 'size': '10' })
+      row = 1
+
+      worksheet2.write(0, 0, "All Active Properties", format)
+      worksheet2.write(0, 1, "Floorplates(Touch + Launch)", format)
+      worksheet2.write(0, 2, "Property Maps(Touch + Launch)", format)
+      worksheet2.write(0, 3, "Futurist(Touch + Launch)", format)
+      worksheet2.write(0, 4, "Modernist(Touch + Launch)", format)
+      worksheet2.write(0, 5, "Expressionist(Touch + Launch)", format)
+      worksheet2.write(0, 6, "State Name", format)
+      worksheet2.write(0, 7, "Properties Count In Each State", format)
+
+      worksheet2.write(1, 0, Community.active_client_properties.size, format)
+      worksheet2.write(1, 1, map_type_percentage(false), format)
+      worksheet2.write(1, 2, map_type_percentage(true), format)
+      worksheet2.write(1, 3, design_type_percentage("futurist"), format)
+      worksheet2.write(1, 4, design_type_percentage("modernist"), format)
+      worksheet2.write(1, 5, design_type_percentage("expressionist"), format)
+      
+      Community.count_properties_in_each_state.each_with_index do |state, index|
+        if state[0].present? 
+          worksheet2.write(index + 1, 6, state[0].strip, format)
+          worksheet2.write(index + 1, 7, state[1], format)
+        end
+      end
+
+      worksheet2
+    end
+
+    def map_type_percentage is_sitemap
+      total_count = Community.active_client_properties.size
+      touch_and_launch_properties = Community.active_touch_properties | Community.launch_properties
+      properties_count = Community.where(id: touch_and_launch_properties.map(&:id), is_sitemap: is_sitemap).size
+      "#{(properties_count *100) / total_count}%"
+    end
+
+    def design_type_percentage design_type
+      total_count = Community.active_client_properties.size
+      touch_and_launch_properties = Community.active_touch_properties | Community.launch_properties
+      properties_count = Community.where(id: touch_and_launch_properties.map(&:id), theme_name: design_type).size
+      "#{(properties_count *100) / total_count}%"
+    end
+
+    def billing_rate_convertion billing_rate
+      return 0 unless billing_rate.present?
+      billing_rate&.gsub(/[$,]/, '')&.to_i rescue 0
+    end
+
+    def map_type community
+      community.is_sitemap ? "Property Maps" : "Floorplates"
+    end
 
 end
