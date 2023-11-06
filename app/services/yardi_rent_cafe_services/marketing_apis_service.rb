@@ -2,111 +2,115 @@ module YardiRentCafeServices
   class MarketingApisService < YardiRentCafeServices::BaseService
 
     def available_slots
-      return unless @community.use_yardi_as_lead?
-      response = https_callback "/AvailableSlots?#{shared_query_params}"
+      return unless is_user_authorized?
+      response = fetch_available_slots()
+      (response&.dig("errorCode") == 200) ? response["availableSlots"] : []
     end
 
     def schedule_tour previous_tour = nil
-      return unless @community.use_yardi_as_lead?
-      cancel_tour previous_tour
-      response = https_callback "/createleadwithappointment?#{shared_query_params}&FirstName=#{prospect_first_name}&LastName=#{prospect_last_name}&Email=#{prospect_email}&Phone=#{prospect_phone}&ApptDate=#{get_scheduled_tour_date}&ApptTime=#{get_scheduled_tour_time}&Source=Website&DesiredMoveinDate=#{prospect_move_in_date}&DesiredBedrooms=#{prospect_desired_bedroorms}&To u c h Po i n t=Appointment"
-      yardi_scheduled_tour_response response      
+      return unless is_user_authorized?
+      cancel_tour(previous_tour)
+      response = create_appointment()
+      binding.pry
+      response = (response&.dig("errorCode") == 200) ? response["prospectInfo"] : nil
+      yardi_scheduled_tour_response(response) if response.present?
     end
 
     def cancel_tour previous_tour = nil
+      return unless is_user_authorized?
       return unless @community.use_yardi_as_lead? && @scheduled_tour.yardirentcafe_prospect_id.present? && @scheduled_tour.yardirentcafe_appointment_id.present?
-      https_callback "/cancelappointment?#{shared_query_params}&VoyProspectId=#{prospect_id}&VoyApptId=#{appointment_id}&ApptDate=#{get_scheduled_tour_cancel_date(previous_tour)}&ApptTime=#{get_scheduled_tour_cancel_time(previous_tour)}"
-      update_yardi_scheduled_tour
-    end
-
-    def lead_attribution
-      return unless @community.use_yardi_as_lead?
-      https_callback "/AvailableSlots?#{shared_query_params}"
+      response = cancel_appointment(previous_tour)
+      update_yardi_scheduled_tour if (response&.dig("errorCode") == 200)
     end
 
     private
 
-    def https_callback endpoint_url
-      response = HTTParty.post((ENV['YARDI_MARKETING_API_BASE_URL'] + endpoint_url), :body => {}, :headers => { 'Content-Type' => 'application/json' } )
-      JSON.parse(response.body)
+    def fetch_available_slots
+      url = "#{ENV["RENT_CAFE_V2_MARKETING_API_BASE_URL"]}/appointments/getavailableslots"
+
+      HTTParty.post(url,
+        body: available_slots_body_params(),
+        headers: { 
+          'Content-Type' => 'application/json',
+          'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+          'vendor' => ENV['RENT_CAFE_V2_USERNAME']
+        }
+      )
     end
 
-    def shared_query_params
-      if @api_key.present?
-        if @property_id.present?
-          "propertyId=#{@property_id}&MarketingAPIKey=#{@api_key}"
-        elsif @property_code.present?
-          "propertyCode=#{@property_code}&MarketingAPIKey=#{@api_key}"
-        end
-      end
-      # "MarketingAPIKey=#{@api_key}&CompanyCode=#{@company_code}&PropertyCode=#{@property_code}"
+    def create_appointment
+      url = "#{ENV["RENT_CAFE_V2_MARKETING_API_BASE_URL"]}/appointments/createappointment"
+
+      HTTParty.post(url,
+        body: create_appointment_body_params(),
+        headers: { 
+          'Content-Type' => 'application/json',
+          'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+          'vendor' => ENV['RENT_CAFE_V2_USERNAME']
+        }
+      )
+    end
+
+    def cancel_appointment previous_tour
+      url = "#{ENV["RENT_CAFE_V2_MARKETING_API_BASE_URL"]}/appointments/cancelappointment"
+
+      HTTParty.post(url,
+        body: cancel_appointment_body_params(previous_tour),
+        headers: { 
+          'Content-Type' => 'application/json',
+          'Authorization' => "Bearer #{@credential&.rentcafe_v2_auth_token}",
+          'vendor' => ENV['RENT_CAFE_V2_USERNAME']
+        }
+      )
+    end
+
+    def available_slots_body_params
+      {
+        apiToken: api_token,
+        companyCode: company_code,
+        propertyCode: property_code
+      }.to_json
+    end
+
+    def create_appointment_body_params
+      {
+        apiToken: api_token,
+        companyCode: company_code,
+        propertyCode: property_code,
+        firstName: prospect_first_name,
+        lastName: prospect_last_name,
+        email: prospect_email,
+        phone: prospect_phone,
+        apptDate: get_scheduled_tour_date,
+        apptTime: get_scheduled_tour_time,
+        message: "Appointment created through pynwheel",
+        source: source,
+        desiredMoveinDate: prospect_move_in_date,
+        desiredBedrooms: prospect_desired_bedroorms || 1,
+        tourType: get_scheduled_tour_type
+      }.to_json
+    end
+
+    def cancel_appointment_body_params previous_tour
+      {
+        apiToken: api_token,
+        companyCode: company_code,
+        propertyCode: property_code,
+        voyProspectId: prospect_id,
+        voyApptId: appointment_id,
+        apptDate: get_scheduled_tour_cancel_date(previous_tour),
+        apptTime: get_scheduled_tour_cancel_time(previous_tour)
+      }.to_json
     end
 
     def yardi_scheduled_tour_response yardi_scheduled_tour
-      yardirentcafe_prospect_id = yardi_scheduled_tour["Response"][0]["VoyProspectId"] rescue nil
-      yardirentcafe_appointment_id = yardi_scheduled_tour["Response"][0]["VoyProspectApptId"] rescue nil
+      yardirentcafe_prospect_id = yardi_scheduled_tour["voyProspectId"] rescue nil
+      yardirentcafe_appointment_id = yardi_scheduled_tour["voyProspectApptId"] rescue nil
       update_yardi_scheduled_tour(yardirentcafe_prospect_id, yardirentcafe_appointment_id)
     end
 
     def update_yardi_scheduled_tour yardirentcafe_prospect_id = nil, yardirentcafe_appointment_id = nil
       @scheduled_tour.update(yardirentcafe_prospect_id: yardirentcafe_prospect_id, yardirentcafe_appointment_id: yardirentcafe_appointment_id)
     end
-
-    def prospect_first_name
-      @tour_user&.name&.split(" ")[0]
-    end
-
-    def prospect_last_name
-      @tour_user&.name&.split(" ")[1]
-    end
-
-    def prospect_email
-      @tour_user&.email
-    end
-
-    def prospect_phone
-      @tour_user&.phone_number
-    end
-
-    def prospect_move_in_date
-      @scheduled_tour&.desired_move_in_date
-    end
-
-    def prospect_desired_bedroorms
-      @scheduled_tour&.desired_bedroom
-    end
-
-    def prospect_id
-      @scheduled_tour.yardirentcafe_prospect_id
-    end
-
-    def appointment_id
-      @scheduled_tour.yardirentcafe_appointment_id
-    end
-
-    def get_scheduled_tour_date
-      @scheduled_tour&.tour_date&.strftime("%m/%d/%Y")
-    end
-
-    def get_scheduled_tour_time
-      @scheduled_tour&.tour_time&.strftime("%I:%M%p")
-    end
-
-    def get_scheduled_tour_cancel_date previous_tour
-      if previous_tour.present? && previous_tour[:tour_date].present?
-        previous_tour[:tour_date]&.strftime("%m/%d/%Y")
-      else
-        @scheduled_tour&.tour_date&.strftime("%m/%d/%Y")
-      end
-    end
-
-    def get_scheduled_tour_cancel_time previous_tour
-      if previous_tour.present? && previous_tour[:tour_time].present?
-        previous_tour[:tour_time]&.strftime("%I:%M%p")
-      else
-        @scheduled_tour&.tour_time&.strftime("%I:%M%p")
-      end
-    end
-
   end
 end
