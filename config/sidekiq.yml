@@ -1,6 +1,7 @@
 :concurrency: 5
 :queues:
   - restarts
+  - import_data
   - real_page
   - yardi_rent_cafe
   - entrata
