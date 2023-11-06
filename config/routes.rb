@@ -67,9 +67,11 @@ Rails.application.routes.draw do
   post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages'
   resources :analytics, only: [:index]
   get '/analytics/get_associated_communities', to: 'analytics#get_associated_communities'
+
   resources :companies do
     resources :communities
     resources :community_groups
+    resources :company_settings
 
     resources :regions do
       delete :remove_community, on: :member
@@ -660,6 +662,12 @@ Rails.application.routes.draw do
       resources :user_details do
         member do
           put :update_company
+        end
+      end
+
+      resources :companies do
+        member do
+          post :import_data_credentials
         end
       end
 

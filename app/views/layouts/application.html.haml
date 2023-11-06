@@ -35,7 +35,7 @@
       - unless sidemenu_communities_controllers.include?(controller_name) || controller_name == "error_logs"  || (controller_name == "tours" &&  action_name == "id_selfie_matching")
         - if (controller_name == "communities" && sidemenu_communities_actions.include?(params[:action])) &&  user_signed_in?
           = render partial: "/sidemenu_communities"
-        - elsif controller_name == "users"  &&  user_signed_in?
+        - elsif controller_name == "users"  &&  user_signed_in? || (controller_name == "company_settings" && !params[:community_id].present?)
           = render partial: "/sidemenu_communities"
         - elsif user_signed_in?
           = render partial: "/side_menu"

@@ -1,0 +1,10 @@
+.form-group
+  %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
+    Import data at Company Level
+  .col-sm-12.col-lg-7.col-md-9.col-xs-12
+    .TriSea-technologies-Switch
+      %span.pr-15 No
+      = f.check_box :company_level_data_import
+      %label.label-primary{:for => "company_setting_company_level_data_import"}
+      %span.pl-15 Yes
+      = f.hidden_field :company_id, value: current_company.id
