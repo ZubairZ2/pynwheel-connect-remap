@@ -6,6 +6,7 @@ module YardiRentCafeServices
       @community = @scheduled_tour.community
       @credential = @community.credential
       @c_time_zone = @community.get_time_zone()
+      return unless is_user_authorized?
     end
 
     protected

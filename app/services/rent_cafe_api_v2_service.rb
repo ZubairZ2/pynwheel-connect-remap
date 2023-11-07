@@ -5,27 +5,26 @@ class RentCafeApiV2Service
     begin
       @community = Community.find community_id
       @credential = @community.credential
-
+      
       return unless @credential.present?
+      return unless is_user_authorized?
+
     rescue
       return
     end
   end
 
   def get_apartment_availability property_code
-    return unless is_user_authorized?
     response = fetch_apartment_availability_data(property_code)
     (response&.dig("errorCode") == 200) ? response["apartmentAvailabilities"] : []
   end
 
   def get_apartment_pricing_matrix apartment_name, property_code
-    return unless is_user_authorized?
     response = fetch_apartment_pricing_data(apartment_name, property_code)
     (response&.dig("errorCode") == 200) ? response["pricingDetails"] : []
   end
 
   def get_floorplans property_code
-    return unless is_user_authorized?
     response = fetch_floorplans_data(property_code)
     (response&.dig("errorCode") == 200) ? response["floorplans"] : []
   end
@@ -102,7 +101,6 @@ class RentCafeApiV2Service
         }
       )
     end
-
 
     def get_auth_params
       {

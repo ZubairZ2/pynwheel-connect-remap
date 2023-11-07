@@ -8,8 +8,9 @@ module LeadsUploader
         @email = email
         @community = Community.find community_id
         @credential = @community.credential
-
         return unless (@community && @community&.credential).present?
+        return unless is_user_authorized?
+
       rescue => error
         return
       end
