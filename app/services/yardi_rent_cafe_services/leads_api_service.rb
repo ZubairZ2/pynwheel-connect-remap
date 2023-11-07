@@ -2,7 +2,6 @@ module YardiRentCafeServices
   class LeadsApiService < YardiRentCafeServices::BaseService
 
     def upload_leads_data visited_stops, tour_history, is_tour_abandoned
-      return unless is_user_authorized?
       upload_leads(visited_stops, tour_history, is_tour_abandoned)
     end
 

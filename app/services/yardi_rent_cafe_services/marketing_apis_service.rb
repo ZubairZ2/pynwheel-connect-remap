@@ -2,22 +2,18 @@ module YardiRentCafeServices
   class MarketingApisService < YardiRentCafeServices::BaseService
 
     def available_slots
-      return unless is_user_authorized?
       response = fetch_available_slots()
       (response&.dig("errorCode") == 200) ? response["availableSlots"] : []
     end
 
     def schedule_tour previous_tour = nil
-      return unless is_user_authorized?
       cancel_tour(previous_tour)
       response = create_appointment()
-      binding.pry
       response = (response&.dig("errorCode") == 200) ? response["prospectInfo"] : nil
       yardi_scheduled_tour_response(response) if response.present?
     end
 
     def cancel_tour previous_tour = nil
-      return unless is_user_authorized?
       return unless @community.use_yardi_as_lead? && @scheduled_tour.yardirentcafe_prospect_id.present? && @scheduled_tour.yardirentcafe_appointment_id.present?
       response = cancel_appointment(previous_tour)
       update_yardi_scheduled_tour if (response&.dig("errorCode") == 200)

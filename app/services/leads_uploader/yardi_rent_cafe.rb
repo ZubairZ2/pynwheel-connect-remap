@@ -2,7 +2,6 @@ module LeadsUploader
   class YardiRentCafe < LeadsUploader::BaseService
 
     def leads_uploader
-      return unless is_user_authorized?
       upload_leads()
     end
 
