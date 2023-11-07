@@ -834,7 +834,7 @@
           else if (use_yardi_as_lead && !is_virtual_on){
             date_for_yardi = moment($(this).val()).format("M/D/YYYY");
             for (const key in time_slots) {
-              if(key == date_for_yardi)
+              if(Date.parse(key) == Date.parse(date_for_yardi))
                 selected_day_slots = time_slots[key];
             }
           }
