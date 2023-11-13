@@ -1,5 +1,6 @@
 class CompanySettingsController < ApplicationController
   before_action :find_company_setting, only: [ :edit, :update]
+  before_action :set_company_credentials, only: [ :edit, :new]
 
   def new
     @company_setting = CompanySetting.new
@@ -31,6 +32,13 @@ class CompanySettingsController < ApplicationController
 
   def find_company_setting
     @company_setting = CompanySetting.find(params[:id])
+  end
+
+  def set_company_credentials
+    @company = Company.find params[:company_id]
+    unless @company&.credential.present?
+      @company.build_credential
+    end
   end
 
   def company_setting_params

@@ -25,8 +25,10 @@ class Company < ApplicationRecord
   has_many :regions, dependent: :destroy
   has_one :status, as: :statusable
   has_one :company_setting
+  has_one :credential, dependent: :destroy
   validates_uniqueness_of :name
   scope :remove_pynwheel_company, -> { where.not(id: 44) }
+  accepts_nested_attributes_for :credential
 
   def as_json
     super(

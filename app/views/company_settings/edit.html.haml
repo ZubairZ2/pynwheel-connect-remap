@@ -16,3 +16,9 @@
         .box-footer
           = link_to "CANCEL" , companies_path, :class=>"btn btn-default pull-right"
           = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10"
+
+
+%section
+  .content
+    .box.box-info.add-plan.mt-20
+      = render :partial=>'company_credentials_form'
