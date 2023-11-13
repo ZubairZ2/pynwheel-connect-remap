@@ -3,8 +3,9 @@ module DataProviders
     class DataImportService < DataProviders::RentCafe::BaseService
 
       def perform
-        import_property_floorplans
-        import_property_units
+        update_property_details()
+        import_property_floorplans()
+        import_property_units()
       end
 
       private
