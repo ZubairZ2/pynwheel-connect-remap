@@ -75,7 +75,8 @@ module YardiRentCafeServices
       end
 
       def get_scheduled_tour_type
-        @scheduled_tour.tour_type
+        # @scheduled_tour.tour_type
+        1
       end
 
       def zip_code
