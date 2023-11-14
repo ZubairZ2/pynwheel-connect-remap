@@ -1,6 +1,6 @@
 module DataProviders
-  module PropertyDetails
-    class RentCafePropertyDetailsService < DataProviders::PropertyDetails::BaseService
+  module RentCafe
+    class PropertyDetailsService < DataProviders::RentCafe::BaseService
 
       def perform
         return unless @credential&.rentcafe_v2_auth_token.present?
@@ -54,14 +54,6 @@ module DataProviders
             companyCode: company_code,
             propertyCode: property_code&.strip
           }.to_json
-        end
-
-        def api_token
-          @credential.api_token
-        end
-
-        def company_code
-          @credential.c_code
         end
     end
   end
