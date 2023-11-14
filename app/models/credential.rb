@@ -95,11 +95,12 @@ class Credential < ApplicationRecord
   end
   
   def fetch_code(selected_code_option)
-    if selected_code_option.eql?(API_TOKEN)
-      {api_token: self.api_token}
-    else
-      {c_code: self.c_code}
-    end
+    # if selected_code_option.eql?(API_TOKEN)
+    #   {api_token: self.api_token}
+    # else
+    #   {c_code: self.c_code}
+    # end
+    {api_token: self.api_token, c_code: self.c_code}
   end
 
   def realpagesvc_credentials
