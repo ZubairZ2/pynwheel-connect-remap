@@ -13,16 +13,8 @@ module DataProviders
 
       protected
 
-        def api_token
-          @credential.api_token
-        end
-
-        def company_code
-          @credential.c_code
-        end
-
         def update_property_details()
-          DataProviders::RentCafe::PropertyDetailsService.new(@community_id).perform()
+          DataProviders::PropertyDetails::RentCafePropertyDetailsService.new(@community_id).perform()
         end
 
         def get_appartments_availability property_code

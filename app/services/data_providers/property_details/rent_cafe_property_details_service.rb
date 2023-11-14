@@ -1,6 +1,6 @@
 module DataProviders
-  module RentCafe
-    class PropertyDetailsService < DataProviders::RentCafe::BaseService
+  module PropertyDetails
+    class RentCafePropertyDetailsService < DataProviders::PropertyDetails::BaseService
 
       def perform
         return unless @credential&.rentcafe_v2_auth_token.present?
@@ -10,6 +10,7 @@ module DataProviders
           begin
             response = fetch_property_details(property_code)
             response = response.dig("properties", 0)
+            binding.pry
             next unless response.present?
             update_property_details(response)
           rescue => exception
@@ -54,6 +55,14 @@ module DataProviders
             companyCode: company_code,
             propertyCode: property_code&.strip
           }.to_json
+        end
+
+        def api_token
+          @credential.api_token
+        end
+
+        def company_code
+          @credential.c_code
         end
     end
   end
