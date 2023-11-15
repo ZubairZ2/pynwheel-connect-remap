@@ -169,7 +169,8 @@ module DataProviders
 
         def image_base64(image_url)
           return unless image_url.present?
-          uri = URI.parse(image_url)
+          encoded_url = URI.encode(image_url)
+          uri = URI.parse(encoded_url)
           file = uri.open
           image_data = file.read
           encoded_image = Base64.strict_encode64(image_data)
