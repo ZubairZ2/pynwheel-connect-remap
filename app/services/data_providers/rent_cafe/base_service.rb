@@ -13,6 +13,10 @@ module DataProviders
 
       protected
 
+        def update_property_details()
+          DataProviders::PropertyDetails::RentCafePropertyDetailsService.new(@community_id).perform()
+        end
+
         def get_appartments_availability property_code
           RentCafeApiV2Service.new(@community_id).get_apartment_availability(property_code)
         end
@@ -52,7 +56,6 @@ module DataProviders
 
           return floor 
         end
-
     end
   end
 end

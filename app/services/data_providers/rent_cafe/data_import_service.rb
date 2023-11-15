@@ -3,8 +3,9 @@ module DataProviders
     class DataImportService < DataProviders::RentCafe::BaseService
 
       def perform
-        import_property_floorplans
-        import_property_units
+        update_property_details()
+        import_property_floorplans()
+        import_property_units()
       end
 
       private
@@ -128,7 +129,7 @@ module DataProviders
         def process_floorplans_response(response)
           response.each_slice(@batch_size) do |batch|
             floorplans = build_floorplans(batch)
-            import_floorplans(floorplans)
+            # import_floorplans(floorplans)
           end
         end
 
@@ -159,10 +160,20 @@ module DataProviders
             fp.unit_count = r['']
             fp.units_available = r['']
             fp.deposit = r['minimumDeposit']
+            fp.image = image_base64(r['floorplanImageURL'])
+            fp.save
           rescue => exception
             raise exception
           end
+        end
 
+        def image_base64(image_url)
+          return unless image_url.present?
+          uri = URI.parse(image_url)
+          file = uri.open
+          image_data = file.read
+          encoded_image = Base64.strict_encode64(image_data)
+          "data:image/png;base64,#{encoded_image}"
         end
 
         def update_floorplan_square_feet(fp, min_sqft, sqft)
