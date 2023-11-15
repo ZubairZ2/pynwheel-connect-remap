@@ -160,11 +160,24 @@ module DataProviders
             fp.unit_count = r['']
             fp.units_available = r['']
             fp.deposit = r['minimumDeposit']
-            fp.image = image_base64(r['floorplanImageURL'])
+            add_floorplan_images(fp, r['floorplanImageURL'])
             fp.save
           rescue => exception
             raise exception
           end
+        end
+
+        def add_floorplan_images fp, image_urls
+          primary_image = fetch_floorplan_image_url(image_urls, 0)
+          secondary_image = fetch_floorplan_image_url(image_urls, 1)
+          fp.image = image_base64(primary_image) if primary_image.present?
+          fp.secondary_image = image_base64(secondary_image) if secondary_image.present?
+        end
+
+        def fetch_floorplan_image_url image_urls, index
+          return unless image_urls.present?
+          urls = image_urls&.split(",")&.reverse  
+          urls[index]
         end
 
         def image_base64(image_url)
