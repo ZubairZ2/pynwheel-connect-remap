@@ -199,7 +199,8 @@ class AnalyticsController < ApplicationController
 
         start_end_datetime_arr.each_with_index do |arr, ind|
           if arr.first.strftime("%y:%m:%d") == start_date_str
-            mins = return_time_in_minutes(arr.first,arr.last)
+            seconds = return_time_in_seconds(arr.first,arr.last)
+            mins = convert_seconds_into_minutes_data(seconds)
             minutes += mins
             total_minutes += mins
             count += 1
@@ -207,16 +208,16 @@ class AnalyticsController < ApplicationController
             remove_index << ind
           end
         end
-        sessions_each_day_hash[uniq_start_date[i]] = (minutes / count).negative?() ? 0 : (minutes / count)
+        sessions_each_day_hash[uniq_start_date[i]] = (minutes / count).negative?() ? 0 : (minutes / count).round(2)
         records_start_date = records_start_date - [uniq_start_date[i]]
         remove_index.each_with_index {|removing_index,j| start_end_datetime_arr.delete_at(removing_index - j) }
       end
 
-      instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", formatted_number( ((total_minutes / total_count).negative?() rescue 0) ? 0 : (total_minutes / total_count) ))
+      instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", formatted_number( ((total_minutes / total_count).negative?() rescue 0) ? 0 : (total_minutes / total_count).round(2) ))
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
 
-      session_each_day_minutes_data, session_each_day_minutes_options = make_line_chart(session_each_day_labels, session_each_day_counts, "#{get_name(for_device_type)} in Minutes", "rgba(0, 143, 212, 0.3)", "rgba(0, 143, 212, 1)")
+      session_each_day_minutes_data, session_each_day_minutes_options = make_line_chart(session_each_day_labels, session_each_day_counts, "#{get_name(for_device_type, "Activities")} in Minutes", "rgba(0, 143, 212, 0.3)", "rgba(0, 143, 212, 1)")
       instance_variable_set("@session_each_day_minutes_data_#{for_device_type}", session_each_day_minutes_data)
       instance_variable_set("@session_each_day_minutes_options_#{for_device_type}", session_each_day_minutes_options)
 
@@ -793,8 +794,8 @@ class AnalyticsController < ApplicationController
       @session_each_day_no_show_data, @session_each_day_no_show_options = make_bar_chart(sessions_each_day_hash.keys.map(&:to_s), sessions_each_day_hash.values, "Total #{get_name(for_device_type)}", "rgba(240, 90, 142, 0.8)", "rgba(240, 90, 142, 1)")
     end
 
-    def get_name product_type
-      product_type == "self_tour" ? "Tours" : "Sessions"
+    def get_name product_type, diff_name = nil
+      product_type == "self_tour" ? "Tours" : (diff_name.present? ? diff_name : "Sessions")
     end
 
     def get_single_name product_type
