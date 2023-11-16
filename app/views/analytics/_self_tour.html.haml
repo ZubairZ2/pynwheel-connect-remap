@@ -31,6 +31,7 @@
             .center_it
               .count_int= @average_duration_each_session_in_minutes_self_tour
               .count_text= 'Average duration of each tour in minutes'
+
           .col-lg-8
             = line_chart @session_each_day_minutes_data_self_tour, @session_each_day_minutes_options_self_tour
 
