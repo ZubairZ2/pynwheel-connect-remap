@@ -94,6 +94,10 @@ class AnalyticsController < ApplicationController
       number.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
     end
 
+    def formate_percentage initial_value, total_value
+      Rational(initial_value*100, total_value).to_f
+    end
+
     def apply_filters(params)
       @product_type = params[:product_type].present? ? params[:product_type] : "all"
       @admin_type = params[:admin_type] if params[:admin_type]
@@ -256,11 +260,12 @@ class AnalyticsController < ApplicationController
       visite_pages_counts = for_device_type == "self_tour" ? total_records.pluck(visited_pages_attr_name) : total_records.pluck(visited_pages_attr_name).map(&:count) 
       single_page_visitor = visite_pages_counts.count(1)
       multiple_page_visior = visite_pages_counts.size - single_page_visitor
-      pages_hash["Single"] = ((single_page_visitor.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
-      pages_hash["Multiple"] = ((multiple_page_visior.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
+      pages_hash["Single"] = formate_percentage(single_page_visitor, visite_pages_counts.size) #((single_page_visitor.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
+      pages_hash["Multiple"] = formate_percentage(multiple_page_visior,visite_pages_counts.size ) #((multiple_page_visior.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
+
       instance_variable_set("@visits_to_favorites_page_#{for_device_type}", formatted_number(multiple_page_visior))
-      instance_variable_set("@percentage_single_page_visitor_#{for_device_type}", pages_hash["Single"].to_s + "%")
-      instance_variable_set("@percentage_multiple_page_visitor_#{for_device_type}", pages_hash["Multiple"].to_s + "%")
+      instance_variable_set("@percentage_single_page_visitor_#{for_device_type}", "#{pages_hash["Single"]}%")
+      instance_variable_set("@percentage_multiple_page_visitor_#{for_device_type}", "#{pages_hash["Multiple"]}%")
       bounce_data_labels, bounce_data_options = make_pie_chart(pages_hash.keys, pages_hash.values, "Total #{get_name(for_device_type)}", ["rgba(240, 90, 142, 0.8)", "rgba(0, 143, 212,0.8)"], ["rgba(240, 90, 142, 0.8)","rgba(0, 143, 212,1)"])
       instance_variable_set("@bounce_data_labels_#{for_device_type}", bounce_data_labels)
       instance_variable_set("@bounce_data_options_#{for_device_type}", bounce_data_options)
@@ -299,13 +304,15 @@ class AnalyticsController < ApplicationController
 
       instance_variable_set("@total_number_of_events_#{for_device_type}", formatted_number(sessions_each_day_hash.values.sum))
       session_without_counts = records_count - session_with_counts
-      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
-      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      # percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      # percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
+      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
       pie_chart_hash = {"#{get_name(for_device_type)} with Events" => percentage_session_with_counts, "#{get_name(for_device_type)} without Events" => percentage_session_without_counts}
       pie_events_data_labels, pie_events_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(0, 143, 212,0.5)", "rgba(255,212,0,0.5)"], ["rgba(0, 143, 212,1)","rgba(255,212,0,1)"])
       bar_events_data_labels, bar_events_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Total Events", "rgba(0, 143, 212,0.5)", "rgba(0, 143, 212,1)")
-      instance_variable_set("@percentage_session_with_events_#{for_device_type}", percentage_session_with_counts.to_s + "%")
-      instance_variable_set("@percentage_session_without_events_#{for_device_type}", percentage_session_without_counts.to_s + "%")
+      instance_variable_set("@percentage_session_with_events_#{for_device_type}", "#{percentage_session_with_counts}%")
+      instance_variable_set("@percentage_session_without_events_#{for_device_type}", "#{percentage_session_without_counts}%")
       instance_variable_set("@pie_events_data_labels_#{for_device_type}", pie_events_data_labels)
       instance_variable_set("@pie_events_data_options_#{for_device_type}", pie_events_data_options)
       instance_variable_set("@bar_events_data_labels_#{for_device_type}", bar_events_data_labels)
@@ -337,13 +344,18 @@ class AnalyticsController < ApplicationController
       end
       instance_variable_set("@total_number_of_apply_clicks_#{for_device_type}", formatted_number(sessions_each_day_hash.values.sum))
       session_without_counts = records_count - session_with_counts
-      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
-      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      
+      # percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      # percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+
+      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
+      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
+
       pie_chart_hash = {"#{get_name(for_device_type)} with Apply Clicks" => percentage_session_with_counts, "#{get_name(for_device_type)} without Apply Clicks" => percentage_session_without_counts}
       pie_apply_click_data_labels, pie_apply_click_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(137, 199, 101, 0.7)", "rgba(255,212,0,0.5)"], ["rgba(137, 199, 101, 1)","rgba(255,212,0,1)"])
       line_apply_click_data_labels, line_apply_click_data_options = make_line_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Apply Clicks", "rgba(137, 199, 101, 0.5)", "rgba(137, 199, 101, 1)")
-      instance_variable_set("@percentage_session_with_apply_clicks_#{for_device_type}", percentage_session_with_counts.to_s + "%")
-      instance_variable_set("@percentage_session_without_apply_clicks_#{for_device_type}", percentage_session_without_counts.to_s + "%")
+      instance_variable_set("@percentage_session_with_apply_clicks_#{for_device_type}", "#{percentage_session_with_counts}%")
+      instance_variable_set("@percentage_session_without_apply_clicks_#{for_device_type}", "#{percentage_session_without_counts}%")
       instance_variable_set("@pie_apply_click_data_labels_#{for_device_type}", pie_apply_click_data_labels)
       instance_variable_set("@pie_apply_click_data_options_#{for_device_type}", pie_apply_click_data_options)
       instance_variable_set("@line_apply_click_data_labels_#{for_device_type}", line_apply_click_data_labels)
@@ -375,13 +387,18 @@ class AnalyticsController < ApplicationController
       end
       instance_variable_set("@total_number_of_favourite_saved_#{for_device_type}", formatted_number(sessions_each_day_hash.values.sum))
       session_without_counts = records_count - session_with_counts
-      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
-      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      
+      # percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      # percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      
+      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
+      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
+
       pie_chart_hash = {"#{get_single_name(for_device_type)} with favorite saved" => percentage_session_with_counts, "#{get_single_name(for_device_type)} without favorite saved" => percentage_session_without_counts}
       pie_favourite_saved_data_labels, pie_favourite_saved_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(143, 73, 156, 0.5)", "rgba(255,212,0,0.5)"], ["rgba(143, 73, 156, 1)","rgba(255,212,0,1)"])
       bar_favourite_saved_data_labels, bar_favourite_saved_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Favorite saved", "rgba(143, 73, 156, 0.5)", "rgba(143, 73, 156, 1)")
-      instance_variable_set("@percentage_session_with_favourite_saved_#{for_device_type}", percentage_session_with_counts.to_s + "%")
-      instance_variable_set("@percentage_session_without_favourite_saved_#{for_device_type}", percentage_session_without_counts.to_s + "%")
+      instance_variable_set("@percentage_session_with_favourite_saved_#{for_device_type}", "#{percentage_session_with_counts}%")
+      instance_variable_set("@percentage_session_without_favourite_saved_#{for_device_type}", "#{percentage_session_without_counts}%")
       instance_variable_set("@pie_favourite_saved_data_labels_#{for_device_type}", pie_favourite_saved_data_labels)
       instance_variable_set("@pie_favourite_saved_data_options_#{for_device_type}", pie_favourite_saved_data_options)
       instance_variable_set("@bar_favourite_saved_data_labels_#{for_device_type}", bar_favourite_saved_data_labels)
@@ -413,13 +430,18 @@ class AnalyticsController < ApplicationController
       end
       instance_variable_set("@total_number_of_favourite_sent_#{for_device_type}", formatted_number(sessions_each_day_hash.values.sum))
       session_without_counts = records_count - session_with_counts
-      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
-      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      
+      # percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      # percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      
+      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
+      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
+
       pie_chart_hash = {"#{get_single_name(for_device_type)} with favorite emailed" => percentage_session_with_counts, "#{get_single_name(for_device_type)} without favorite emailed" => percentage_session_without_counts}
       pie_favourite_sent_data_labels, pie_favourite_sent_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(240, 90, 142, 0.5)", "rgba(255,212,0,0.8)"], ["rgba(240, 90, 142, 1)","rgba(255,212,0,1)"])
       bar_favourite_sent_data_labels, bar_favourite_sent_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Favorite emailed", "rgba(240, 90, 142, 0.7)", "rgba(240, 90, 142, 1)")
-      instance_variable_set("@percentage_session_with_favourite_sent_#{for_device_type}", percentage_session_with_counts.to_s + "%")
-      instance_variable_set("@percentage_session_without_favourite_sent_#{for_device_type}", percentage_session_without_counts.to_s + "%")
+      instance_variable_set("@percentage_session_with_favourite_sent_#{for_device_type}", "#{percentage_session_with_counts}%")
+      instance_variable_set("@percentage_session_without_favourite_sent_#{for_device_type}", "#{percentage_session_without_counts}%")
       instance_variable_set("@pie_favourite_sent_data_labels_#{for_device_type}", pie_favourite_sent_data_labels)
       instance_variable_set("@pie_favourite_sent_data_options_#{for_device_type}", pie_favourite_sent_data_options)
       instance_variable_set("@bar_favourite_sent_data_labels_#{for_device_type}", bar_favourite_sent_data_labels)
@@ -460,15 +482,19 @@ class AnalyticsController < ApplicationController
 
 
       total_count = metro_session_counts_array.sum + ipad_session_counts_array.sum
-      percentage_metro_interface_used = ((metro_session_counts_array.sum.to_f / total_count.to_f).round(2) * 100).round(2) rescue 0.0
-      percentage_ipad_interface_used = ((ipad_session_counts_array.sum.to_f / total_count.to_f).round(2) * 100).round(2) rescue 0.0
+
+      # percentage_metro_interface_used = ((metro_session_counts_array.sum.to_f / total_count.to_f).round(2) * 100).round(2) rescue 0.0
+      # percentage_ipad_interface_used = ((ipad_session_counts_array.sum.to_f / total_count.to_f).round(2) * 100).round(2) rescue 0.0
       
+      percentage_metro_interface_used = formate_percentage(metro_session_counts_array.sum, total_count)
+      percentage_ipad_interface_used = formate_percentage(ipad_session_counts_array.sum, total_count)
+
       bar_touch_data_labels, bar_touch_data_options = make_multiple_bar_chart(labels, metro_session_counts_array, ipad_session_counts_array)
       pie_chart_hash = {"Total sessions on tablet" => ipad_session_counts_array.sum, "Total sessions on touchscreen" => metro_session_counts_array.sum}
       pie_touch_data_labels, pie_touch_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total Sessions", ["rgba(137, 199, 101, 0.5)", "rgba(255,212,0,0.8)"], ["rgba(137, 199, 101, 1)","rgba(255,212,0,1)"])
     
-      instance_variable_set("@percentage_ipad_interface_used_#{for_device_type}", percentage_ipad_interface_used.to_s + "%")
-      instance_variable_set("@percentage_metro_interface_used_#{for_device_type}", percentage_metro_interface_used.to_s + "%")
+      instance_variable_set("@percentage_ipad_interface_used_#{for_device_type}", "#{percentage_ipad_interface_used}%")
+      instance_variable_set("@percentage_metro_interface_used_#{for_device_type}", "#{percentage_metro_interface_used}%")
       instance_variable_set("@total_number_of_touch_sent_#{for_device_type}", formatted_number(ipad_session_counts_array.sum))
       instance_variable_set("@bar_touch_data_labels_#{for_device_type}", bar_touch_data_labels)
       instance_variable_set("@bar_touch_data_options_#{for_device_type}", bar_touch_data_options)
@@ -485,12 +511,18 @@ class AnalyticsController < ApplicationController
       records_last_counts = records.map{ |arr| arr.last }
       instance_variable_set("@total_number_of_price_opened_#{for_device_type}", records_last_counts.sum)
       session_without_counts = records_count - session_with_counts
-      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
-      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      
+      # percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      # percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+
+      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
+      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
+      
+
       pie_chart_hash = {"#{get_name(for_device_type)} with Price Opened" => percentage_session_with_counts, "#{get_name(for_device_type)} without Price Opened" => percentage_session_without_counts}
       pie_price_opened_data_labels, pie_price_opened_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(137, 199, 101, 0.8)",  "rgba(255,212,0,0.8)"], ["rgba(137, 199, 101, 1)", "rgba(255,212,0,1)"])
-      instance_variable_set("@percentage_session_with_price_opened_#{for_device_type}", percentage_session_with_counts.to_s + "%")
-      instance_variable_set("@percentage_session_without_price_opened_#{for_device_type}", percentage_session_without_counts.to_s + "%")
+      instance_variable_set("@percentage_session_with_price_opened_#{for_device_type}", "#{percentage_session_with_counts}%")
+      instance_variable_set("@percentage_session_without_price_opened_#{for_device_type}", "#{percentage_session_without_counts}%")
       instance_variable_set("@pie_price_opened_data_labels_#{for_device_type}", pie_price_opened_data_labels)
       instance_variable_set("@pie_price_opened_data_options_#{for_device_type}", pie_price_opened_data_options)
 
@@ -506,14 +538,19 @@ class AnalyticsController < ApplicationController
   
       instance_variable_set("@total_number_of_#{counter_attr_type}", formatted_number( records_last_counts.sum ))
       session_without_counts = records_count - session_with_counts
-      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
-      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      
+      # percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      # percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      
+      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
+      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
+
       with_session_str = counter_attr_type == :camera_opened_counter ? "#{get_name(for_device_type)} with Camera Opened" : "#{get_name(for_device_type)} with Notes Opened"
       without_session_str = counter_attr_type == :camera_opened_counter ? "#{get_name(for_device_type)} without Camera Opened" : "#{get_name(for_device_type)} without Notes Opened"
       pie_chart_hash = {with_session_str => percentage_session_with_counts, without_session_str => percentage_session_without_counts}
       opened_data_labels, opened_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(240, 90, 142, 0.5)", "rgba(255,212,0,0.5)"], ["rgba(240, 90, 142, 1)","rgba(255,212,0,1)"])
-      instance_variable_set("@percentage_session_with_counts#{counter_attr_type}", percentage_session_with_counts)
-      instance_variable_set("@percentage_session_without_counts#{counter_attr_type}", percentage_session_without_counts)
+      instance_variable_set("@percentage_session_with_counts_#{counter_attr_type}", "#{percentage_session_with_counts}%")
+      instance_variable_set("@percentage_session_without_counts_#{counter_attr_type}", "#{percentage_session_without_counts}%")
       instance_variable_set("@pie_#{counter_attr_type}_data_labels", opened_data_labels)
       instance_variable_set("@pie_#{counter_attr_type}_data_options", opened_data_options)
     end
@@ -546,10 +583,16 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash_offsite_abandoned[uniq_start_date[i]] = count_offsite_abandoned
         remove_index.each_with_index {|removing_index,j| records.delete_at(removing_index - j) }
       end
+
       total_number_of_true_session = sessions_each_day_hash_onsite_completed.values.sum
       total_number_of_false_session = sessions_each_day_hash_offsite_abandoned.values.sum
-      percentage_true_session_counts = ((total_number_of_true_session.to_f / records_count.to_f).round(2) * 100).round(2)
-      percentage_false_session_counts = ((total_number_of_false_session.to_f / records_count.to_f).round(2) * 100).round(2)
+      
+      # percentage_true_session_counts = ((total_number_of_true_session.to_f / records_count.to_f).round(2) * 100).round(2)
+      # percentage_false_session_counts = ((total_number_of_false_session.to_f / records_count.to_f).round(2) * 100).round(2)
+      
+      percentage_true_session_counts = formate_percentage(total_number_of_true_session, records_count)
+      percentage_false_session_counts = formate_percentage(total_number_of_false_session, records_count)
+
       hash_true_str = tour_site_or_tour_state_attr == :tour_site ? "Onsite #{get_name(for_device_type)}" : "Completed #{get_name(for_device_type)}"
       hash_false_str = tour_site_or_tour_state_attr == :tour_site ? "Offsite #{get_name(for_device_type)}" : "Incomplete #{get_name(for_device_type)}"
       pie_chart_hash = {hash_true_str => percentage_true_session_counts, hash_false_str => percentage_false_session_counts}
@@ -560,8 +603,8 @@ class AnalyticsController < ApplicationController
       instance_variable_set("@pie_#{tour_site_or_tour_state_attr}_data_options", pie_tour_data_options)
       instance_variable_set("@bar_#{tour_site_or_tour_state_attr}_data_labels", bar_tour_data_labels)
       instance_variable_set("@bar_#{tour_site_or_tour_state_attr}_data_options", bar_tour_data_options)
-      instance_variable_set("@percentage_#{tour_site_or_tour_state_attr}_true_counts", percentage_true_session_counts.to_s + "%")
-      instance_variable_set("@percentage_#{tour_site_or_tour_state_attr}_false_counts", percentage_false_session_counts.to_s + "%")
+      instance_variable_set("@percentage_#{tour_site_or_tour_state_attr}_true_counts", "#{percentage_true_session_counts}%")
+      instance_variable_set("@percentage_#{tour_site_or_tour_state_attr}_false_counts", "#{percentage_false_session_counts}%")
     end
 
     def tour_type_session(start_date, days_count, total_records, for_device_type) 
@@ -573,8 +616,11 @@ class AnalyticsController < ApplicationController
       records.each { |ar| @tour_unscheduled_counts += 1  if ar.last == "unscheduled"}
       records_count = @tour_scheduled_counts + @tour_unscheduled_counts
       
-      percentage_tour_scheduled_counts = ((@tour_scheduled_counts.to_f / records_count.to_f).round(2) * 100).round(2)
-      percentage_tour_unscheduled_counts = ((@tour_unscheduled_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      # percentage_tour_scheduled_counts = ((@tour_scheduled_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      # percentage_tour_unscheduled_counts = ((@tour_unscheduled_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+
+      percentage_tour_scheduled_counts = formate_percentage(@tour_scheduled_counts, records_count)
+      percentage_tour_unscheduled_counts = formate_percentage(@tour_unscheduled_counts, records_count)
 
       pie_chart_hash = {"Scheduled #{get_name(for_device_type)}" => percentage_tour_scheduled_counts, "Unscheduled #{get_name(for_device_type)}" => percentage_tour_unscheduled_counts}
       @pie_tour_type_data_labels, @pie_tour_type_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(137, 199, 101, 0.7)", "rgba(255,212,0,0.5)"], ["rgba(137, 199, 101, 1)","rgba(255,212,0,1)"])
@@ -582,8 +628,8 @@ class AnalyticsController < ApplicationController
       @tour_scheduled_counts = formatted_number(@tour_scheduled_counts)
       @tour_unscheduled_counts = formatted_number(@tour_unscheduled_counts)
 
-      @percentage_tour_scheduled_counts = percentage_tour_scheduled_counts.to_s + "%"
-      @percentage_tour_unscheduled_counts = percentage_tour_unscheduled_counts.to_s + "%"    
+      @percentage_tour_scheduled_counts = "#{percentage_tour_scheduled_counts}%"
+      @percentage_tour_unscheduled_counts = "#{percentage_tour_unscheduled_counts}%"    
     end
 
     def see_availability_session(start_date, days_count, total_records, for_device_type) 
@@ -611,10 +657,16 @@ class AnalyticsController < ApplicationController
       end
       @total_number_of_see_availability = formatted_number(sessions_each_day_hash.values.sum)
       session_without_counts = records_count - session_with_counts
-      percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
-      percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
-      @percentage_session_with_see_availability = percentage_session_with_counts
-      @percentage_session_without_see_availability = percentage_session_without_counts
+
+      # percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+      # percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
+
+      percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
+      percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
+
+      @percentage_session_with_see_availability = "#{percentage_session_with_counts}%"
+      @percentage_session_without_see_availability = "#{percentage_session_without_counts}%"
+
       pie_chart_hash = {"#{get_name(for_device_type)} with See Availability" => percentage_session_with_counts, "#{get_name(for_device_type)} without See Availability" => percentage_session_without_counts}
       @pie_see_availbility_data_labels, @pie_see_availbility_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(143, 73, 156, 0.5)", "rgba(255,212,0,0.5)"], ["rgba(143, 73, 156, 1)","rgba(255,212,0,1)"])
       @line_see_availbility_data_labels, @line_see_availbility_data_options = make_line_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "See Availability", "rgba(143, 73, 156, 0.5)", "rgba(143, 73, 156, 1)")
