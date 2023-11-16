@@ -95,7 +95,7 @@ class AnalyticsController < ApplicationController
     end
 
     def formate_percentage initial_value, total_value
-      Rational(initial_value*100, total_value).to_f
+      Rational(initial_value*100, total_value).round(2).to_f
     end
 
     def apply_filters(params)
