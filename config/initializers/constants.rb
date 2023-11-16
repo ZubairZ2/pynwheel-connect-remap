@@ -104,7 +104,7 @@ SELF_TOUR_NO_SHOWS = "The number of scheduled tours that did not use the applica
 
 # Maps INFO
 MAPS_SESSIONS_INFO = "One “Session” is defined as an instance in which the user interacts with the Pynwheel Map until the browser is closed or the activity is idle for two minutes."
-MAPS_SESSION_DURATION = "The average amount of time each activity lasts."
+MAPS_SESSION_DURATION = "Average duration of activity."
 MAPS_SESSIONS_BY_TIME_OF_DAY_INFO = "Number of sessions per time of day at the location of the user."
 MAPS_SINGLE_VS_MULTIPLE_PAGE_VISITS_INFO = "A single page visit means the user only visited the map. Multiple pages means that they also visited the Favorites page."
 MAPS_EVENTS_INFO = "”Events” include favorites saved, clicks on the “Share” button, and clicks on the “Apply” button."
