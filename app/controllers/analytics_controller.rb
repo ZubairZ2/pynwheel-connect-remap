@@ -90,6 +90,10 @@ class AnalyticsController < ApplicationController
   
   private
 
+    def formatted_number(number)
+      number.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
+    end
+
     def apply_filters(params)
       @product_type = params[:product_type].present? ? params[:product_type] : "all"
       @admin_type = params[:admin_type] if params[:admin_type]
@@ -155,8 +159,8 @@ class AnalyticsController < ApplicationController
         records_start_date = records_start_date - [uniq_start_date[i]]
       end
       visited_days_count = for_device_type == "self_tour" ? total_records.pluck(:arrived).map {|x| x.strftime("%d")}.uniq.count : uniq_start_date.size
-      instance_variable_set("@track_session_count_#{for_device_type}", total_records.count)
-      instance_variable_set("@avg_track_session_#{for_device_type}", (total_records.count.to_f / visited_days_count.to_f).round)
+      instance_variable_set("@track_session_count_#{for_device_type}", formatted_number( total_records.count) )
+      instance_variable_set("@avg_track_session_#{for_device_type}", formatted_number( (total_records.count.to_f / visited_days_count.to_f).round) )
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
       session_each_day_data, session_each_day_options = make_bar_chart(session_each_day_labels, session_each_day_counts, "Total #{get_name(for_device_type)}", "rgba(137, 199, 101, 0.5)", "rgba(137, 199, 101, 1)")
@@ -204,7 +208,7 @@ class AnalyticsController < ApplicationController
         remove_index.each_with_index {|removing_index,j| start_end_datetime_arr.delete_at(removing_index - j) }
       end
 
-      instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", ( (total_minutes / total_count).negative?() rescue 0) ? 0 : (total_minutes / total_count) )
+      instance_variable_set("@average_duration_each_session_in_minutes_#{for_device_type}", formatted_number( ((total_minutes / total_count).negative?() rescue 0) ? 0 : (total_minutes / total_count) ))
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
 
@@ -233,7 +237,7 @@ class AnalyticsController < ApplicationController
       max_hour_end = max_hour + 1 < 10 ? ("0" + (max_hour + 1).to_s + ":00") : ((max_hour + 1).to_s + ":00")
       max_sessions_slot =  convert_to_12_hour_format(max_hour_start + "-" + max_hour_end)
       instance_variable_set("@highest_hour_#{for_device_type}", max_sessions_slot)
-      instance_variable_set("@session_in_highest_hour_#{for_device_type}", max_count)
+      instance_variable_set("@session_in_highest_hour_#{for_device_type}", formatted_number(max_count))
       hour_labels = sessions_each_day_hourly_hash.keys.map do |h_key|
         start_to = h_key < 10 ? ("0" + h_key.to_s) : (h_key.to_s)
         end_then = (h_key + 1) < 10 ? ("0" + (h_key + 1).to_s) : ((h_key + 1).to_s)
@@ -254,6 +258,7 @@ class AnalyticsController < ApplicationController
       multiple_page_visior = visite_pages_counts.size - single_page_visitor
       pages_hash["Single"] = ((single_page_visitor.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
       pages_hash["Multiple"] = ((multiple_page_visior.to_f / visite_pages_counts.size.to_f).round(2) * 100).round(2)
+      instance_variable_set("@visits_to_favorites_page_#{for_device_type}", formatted_number(multiple_page_visior))
       instance_variable_set("@percentage_single_page_visitor_#{for_device_type}", pages_hash["Single"].to_s + "%")
       instance_variable_set("@percentage_multiple_page_visitor_#{for_device_type}", pages_hash["Multiple"].to_s + "%")
       bounce_data_labels, bounce_data_options = make_pie_chart(pages_hash.keys, pages_hash.values, "Total #{get_name(for_device_type)}", ["rgba(240, 90, 142, 0.8)", "rgba(0, 143, 212,0.8)"], ["rgba(240, 90, 142, 0.8)","rgba(0, 143, 212,1)"])
@@ -292,7 +297,7 @@ class AnalyticsController < ApplicationController
         remove_index.each_with_index {|removing_index,j| records.delete_at(removing_index - j) }
       end
 
-      instance_variable_set("@total_number_of_events_#{for_device_type}", sessions_each_day_hash.values.sum)
+      instance_variable_set("@total_number_of_events_#{for_device_type}", formatted_number(sessions_each_day_hash.values.sum))
       session_without_counts = records_count - session_with_counts
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
@@ -330,7 +335,7 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = count
         remove_index.each_with_index {|removing_index,j| records.delete_at(removing_index - j) }
       end
-      instance_variable_set("@total_number_of_apply_clicks_#{for_device_type}", sessions_each_day_hash.values.sum)
+      instance_variable_set("@total_number_of_apply_clicks_#{for_device_type}", formatted_number(sessions_each_day_hash.values.sum))
       session_without_counts = records_count - session_with_counts
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
@@ -368,7 +373,7 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = count
         remove_index.each_with_index {|removing_index,j| records.delete_at(removing_index - j) }
       end
-      instance_variable_set("@total_number_of_favourite_saved_#{for_device_type}", sessions_each_day_hash.values.sum)
+      instance_variable_set("@total_number_of_favourite_saved_#{for_device_type}", formatted_number(sessions_each_day_hash.values.sum))
       session_without_counts = records_count - session_with_counts
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
@@ -406,7 +411,7 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = count
         remove_index.each_with_index {|removing_index,j| records.delete_at(removing_index - j) }
       end
-      instance_variable_set("@total_number_of_favourite_sent_#{for_device_type}", sessions_each_day_hash.values.sum)
+      instance_variable_set("@total_number_of_favourite_sent_#{for_device_type}", formatted_number(sessions_each_day_hash.values.sum))
       session_without_counts = records_count - session_with_counts
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
@@ -464,7 +469,7 @@ class AnalyticsController < ApplicationController
     
       instance_variable_set("@percentage_ipad_interface_used_#{for_device_type}", percentage_ipad_interface_used.to_s + "%")
       instance_variable_set("@percentage_metro_interface_used_#{for_device_type}", percentage_metro_interface_used.to_s + "%")
-      instance_variable_set("@total_number_of_touch_sent_#{for_device_type}", ipad_session_counts_array.sum)
+      instance_variable_set("@total_number_of_touch_sent_#{for_device_type}", formatted_number(ipad_session_counts_array.sum))
       instance_variable_set("@bar_touch_data_labels_#{for_device_type}", bar_touch_data_labels)
       instance_variable_set("@bar_touch_data_options_#{for_device_type}", bar_touch_data_options)
       instance_variable_set("@pie_touch_data_labels_#{for_device_type}", pie_touch_data_labels)
@@ -499,7 +504,7 @@ class AnalyticsController < ApplicationController
       records_count = records.size
       records_last_counts = records.map{ |arr| arr.last }
   
-      instance_variable_set("@total_number_of_#{counter_attr_type}", records_last_counts.sum)
+      instance_variable_set("@total_number_of_#{counter_attr_type}", formatted_number( records_last_counts.sum ))
       session_without_counts = records_count - session_with_counts
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
@@ -573,7 +578,10 @@ class AnalyticsController < ApplicationController
 
       pie_chart_hash = {"Scheduled #{get_name(for_device_type)}" => percentage_tour_scheduled_counts, "Unscheduled #{get_name(for_device_type)}" => percentage_tour_unscheduled_counts}
       @pie_tour_type_data_labels, @pie_tour_type_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(137, 199, 101, 0.7)", "rgba(255,212,0,0.5)"], ["rgba(137, 199, 101, 1)","rgba(255,212,0,1)"])
-      
+     
+      @tour_scheduled_counts = formatted_number(@tour_scheduled_counts)
+      @tour_unscheduled_counts = formatted_number(@tour_unscheduled_counts)
+
       @percentage_tour_scheduled_counts = percentage_tour_scheduled_counts.to_s + "%"
       @percentage_tour_unscheduled_counts = percentage_tour_unscheduled_counts.to_s + "%"    
     end
@@ -601,7 +609,7 @@ class AnalyticsController < ApplicationController
         sessions_each_day_hash[uniq_start_date[i]] = count
         remove_index.each_with_index {|removing_index,j| records.delete_at(removing_index - j) }
       end
-      @total_number_of_see_availability = sessions_each_day_hash.values.sum
+      @total_number_of_see_availability = formatted_number(sessions_each_day_hash.values.sum)
       session_without_counts = records_count - session_with_counts
       percentage_session_with_counts = ((session_with_counts.to_f / records_count.to_f).round(2) * 100).round(2)
       percentage_session_without_counts = ((session_without_counts.to_f / records_count.to_f).round(2) * 100).round(2)
@@ -685,7 +693,7 @@ class AnalyticsController < ApplicationController
       
       visites_pages_hash = Hash[visites_pages_hash.sort_by{ |_, v| -v }]
 
-      @average_number_of_pages_per_session_metro = (visites_pages_hash&.values&.sum&.to_f / total_records&.size&.to_f).round
+      @average_number_of_pages_per_session_metro = formatted_number( (visites_pages_hash&.values&.sum&.to_f / total_records&.size&.to_f).round )
       @visited_pages_data_labels, @visited_pages_data_options = make_horizontal_chart(visites_pages_hash.keys, visites_pages_hash.values, "Total #{get_name(for_device_type)}", "rgba(143, 73, 156, 0.5)", "rgba(143, 73, 156, 1)")
     end
 
@@ -729,7 +737,7 @@ class AnalyticsController < ApplicationController
         records_start_date = records_start_date - [uniq_start_date[i]]
       end
 
-      @no_show_count = no_shows_schedule_records.count
+      @no_show_count = formatted_number(no_shows_schedule_records.count)
       @session_each_day_no_show_data, @session_each_day_no_show_options = make_bar_chart(sessions_each_day_hash.keys.map(&:to_s), sessions_each_day_hash.values, "Total #{get_name(for_device_type)}", "rgba(240, 90, 142, 0.8)", "rgba(240, 90, 142, 1)")
     end
 

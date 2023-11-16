@@ -34,24 +34,23 @@
           .col-lg-8
             = line_chart @session_each_day_minutes_data_self_tour, @session_each_day_minutes_options_self_tour
 
-
-      .row.mt-80
-        - if current_user.is_super_admin?
-          .col-lg-6.col-md-12.h-500
+      - if current_user.is_super_admin?
+        .row.mt-80
+          .col-lg-12.col-md-12.h-500
             .chart-title
               %p.chart_heading Tours by Time of Day
               = render 'title_info', {info_text: SELF_TOUR_TOURS_BY_TIME_OF_DAY_INFO }
-            .col-lg-4.numbers_div
+            .col-lg-3.numbers_div
               .center_it
                 .count_int= @session_in_highest_hour_self_tour
                 .count_text= 'Maximum number of tours at '
                 .count_text=  @highest_hour_self_tour
-            .col-lg-8
+            .col-lg-9
               = bar_chart @session_each_day_hour_data_self_tour, @session_each_day_hour_options_self_tour
-
-        .col-lg-6.col-md-12.h-500
+      .row.mt-80
+        .col-lg-12.col-md-12.h-500
           %p.chart_heading Single vs Multiple Page Visits
-          .col-lg-4.numbers_div
+          .col-lg-2.numbers_div
             .center_it
               .pie_description
                 %span.dot.single_page
@@ -61,7 +60,7 @@
                 %span.dot.multiple_page
                 %span Multiple page viewed tours
                 %span= @percentage_multiple_page_visitor_self_tour
-          .col-lg-8.pie_width
+          .col-lg-5.pie_width
             = pie_chart @bounce_data_labels_self_tour, @bounce_data_options_self_tour
 
       - if current_user.is_super_admin?

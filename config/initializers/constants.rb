@@ -75,7 +75,7 @@ ELEVATOR_STOP_TEXT = "The next stop is on floor "
 
 # TOUCH INFO
 TOUCH_SESSIONS_INFO = "One “Session” is defined as an instance in which the user goes from the Home screen to at least one other page and then back to the Home screen."
-TOUCH_SESSION_DURATION = "Amount of time a user spends on the app during a single session. Note that a session starts from the home page, so if a user begins to use the touchscreen after another user, and before the app returns to the home page, this will not be tallied as a new session."
+TOUCH_SESSION_DURATION = "Amount of time a user spends on the app during a single activity. Note that a activity starts from the home page, so if a user begins to use the touchscreen after another user, and before the app returns to the home page, this will not be tallied as a new activity."
 TOUCH_SESSIONS_BY_TIME_OF_DAY_INFO = "Number of sessions per time of day at the location of the property. This graph shows the trends of traffic at the touchscreen."
 TOUCH_SINGLE_VS_MULTIPLE_PAGE_VISITS_INFO = "A single page visit means one page in addition to the home page. This does not necessarily imply that the session was not valuable because each page provides value. However, multiple page visits implies greater engagement during the leasing agent’s presentation."
 TOUCH_EVENTS_INFO = "”Events” include favorites saved, brochures sent, and pricing opened."
@@ -104,7 +104,7 @@ SELF_TOUR_NO_SHOWS = "The number of scheduled tours that did not use the applica
 
 # Maps INFO
 MAPS_SESSIONS_INFO = "One “Session” is defined as an instance in which the user interacts with the Pynwheel Map until the browser is closed or the activity is idle for two minutes."
-MAPS_SESSION_DURATION = "The average amount of time each session lasts."
+MAPS_SESSION_DURATION = "The average amount of time each activity lasts."
 MAPS_SESSIONS_BY_TIME_OF_DAY_INFO = "Number of sessions per time of day at the location of the user."
 MAPS_SINGLE_VS_MULTIPLE_PAGE_VISITS_INFO = "A single page visit means the user only visited the map. Multiple pages means that they also visited the Favorites page."
 MAPS_EVENTS_INFO = "”Events” include favorites saved, clicks on the “Share” button, and clicks on the “Apply” button."
