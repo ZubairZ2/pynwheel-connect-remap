@@ -250,6 +250,7 @@ class AnalyticsController < ApplicationController
         label_str = convert_to_12_hour_format(label_str)
         label_str
       end
+      hour_labels[- 1] = "11-12 AM"  if hour_labels.present?
       hour_values = sessions_each_day_hourly_hash.values
       session_each_day_hour_data, session_each_day_hour_options = make_bar_chart(hour_labels, hour_values, "Total #{get_name(for_device_type)}", "rgba(255,212,0,0.8)", "rgba(255,212,0,1)")
       instance_variable_set("@session_each_day_hour_data_#{for_device_type}", session_each_day_hour_data)
@@ -700,6 +701,7 @@ class AnalyticsController < ApplicationController
         label_str = convert_to_12_hour_format(label_str)
         label_str
       end
+      hour_labels[- 1] = "11-12 AM"  if hour_labels.present?
       hour_values = sessions_each_day_hourly_hash.values
       @session_each_day_stops_hour_data, @session_each_day_stops_hour_options = make_chart(hour_labels, hour_values, "Total Stops", "rgba(255,212,0,0.8)", "rgba(255,212,0,1)")
     end
@@ -768,6 +770,7 @@ class AnalyticsController < ApplicationController
         label_str = convert_to_12_hour_format(label_str)
         label_str
       end
+      hour_labels[- 1] = "11-12 AM"  if hour_labels.present?
       hour_values = sessions_each_day_hourly_hash.values
       @average_number_of_pages_per_session = hour_values.sum / total_records.size
       @session_each_day_hour_pages_data, @session_each_day_hour_pages_options = make_chart(hour_labels, hour_values, "Total #{get_name(for_device_type)}", "rgba(255,212,0,0.8)", "rgba(255,212,0,1)")
