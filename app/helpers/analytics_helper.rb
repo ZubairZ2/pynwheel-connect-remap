@@ -37,7 +37,7 @@ module AnalyticsHelper
     start_time = 12 if start_time.zero?
 
     end_time = end_time % 12
-    end_period = "AM" if end_time.zero?
+    # end_period = "AM" if end_time.zero?
     end_time = 12 if end_time.zero?
 
     "#{start_time}-#{end_time} #{end_period}"
