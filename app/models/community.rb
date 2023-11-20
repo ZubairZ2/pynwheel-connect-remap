@@ -1159,8 +1159,13 @@ s  end
     xml_connection_service.perform
   end
   def connect_to_yardirentcafe
-    yardi_rent_cafe_connection_service = YardiRentCafeConnectionService.new(credential.attributes)
-    yardi_rent_cafe_connection_service.perform
+    if credential.rentcafe_api_version == "RentCafe V2"
+      yardi_rent_cafe_connection_service = YardiRentCafeV2ConnectionService.new(credential.attributes)
+    else
+      yardi_rent_cafe_connection_service = YardiRentCafeConnectionService.new(credential.attributes)
+    end
+
+      yardi_rent_cafe_connection_service.perform
   end
 
   def connect_to_realpagesvc
