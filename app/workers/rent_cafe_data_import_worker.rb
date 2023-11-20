@@ -4,7 +4,7 @@ class RentCafeDataImportWorker
 
   def perform(community_id)
     begin
-      rent_cafe_data_import_service = DataProviders::RentCafe::DataImportService.new(community_id)
+      rent_cafe_data_import_service = DataProviders::RentCafeV2::DataImportService.new(community_id)
       rent_cafe_data_import_service.perform
     rescue => exception
       raise exception

@@ -1,5 +1,5 @@
 module DataProviders
-  module RentCafe
+  module RentCafeV2
     class BaseService
 
       def initialize(community_id)

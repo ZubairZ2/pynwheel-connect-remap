@@ -9,6 +9,7 @@ class YardiRentCafeConnectionService < BaseService
       api_token = credentials.api_token
       property_code = credentials.p_code
       showallunit =  credentials.limit_result ? "0" : "-1"
+      
       if api_token.present?
         @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1" 
       else

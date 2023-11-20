@@ -1,6 +1,6 @@
 module DataProviders
-  module RentCafe
-    class DataImportService < DataProviders::RentCafe::BaseService
+  module RentCafeV2
+    class DataImportService < DataProviders::RentCafeV2::BaseService
 
       def perform
         update_property_details()

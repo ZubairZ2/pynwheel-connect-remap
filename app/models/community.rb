@@ -994,8 +994,11 @@ s  end
   end
   
   def import_yardirentcafe_data
-    # ImportYardirentcafeStaticDataJob.perform_async credential.attributes.to_json
-    RentCafeDataImportWorker.perform_async self.id
+    if credential.rentcafe_api_version == "RentCafe V2"
+      RentCafeDataImportWorker.perform_async self.id
+    else
+      ImportYardirentcafeStaticDataJob.perform_async credential.attributes.to_json
+    end
   end
 
   def swap_yardirentcafe_data
