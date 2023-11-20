@@ -1163,7 +1163,7 @@ s  end
   end
   def connect_to_yardirentcafe
     if credential.rentcafe_api_version == "RentCafe V2"
-      yardi_rent_cafe_connection_service = YardiRentCafeV2ConnectionService.new(credential.attributes)
+      yardi_rent_cafe_connection_service = DataProviders::RentCafe::V2::TestConnectionService.new(self.id)
     else
       yardi_rent_cafe_connection_service = YardiRentCafeConnectionService.new(credential.attributes)
     end
