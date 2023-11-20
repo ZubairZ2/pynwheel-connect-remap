@@ -70,23 +70,35 @@ class TourHistory < ApplicationRecord
         send_email_sms_or_both_to_touruser(@thank_you_content, community)
 
         community.is_salesforce_community? ? save_salesforce_feedback_data(community, touruser) : save_prospect(self.left, community)
+        visited_stops_data = stop_marketing_names_visited_by_user
 
         FunnelService.new(scheduled_tour).update_appointment_status("complete") if community.is_funnel_community?
-        KnockService.new(scheduled_tour).create_knock_visit(stop_marketing_names_visited_by_user, self.left) if community.is_knock_community?
-        YardiRentCafeServices::LeadsApiService.new(scheduled_tour).upload_leads_data(stop_marketing_names_visited_by_user, self, false) if community.use_yardi_as_lead?
+        KnockService.new(scheduled_tour).create_knock_visit(visited_stops_data, self.left) if community.is_knock_community?
+        upload_rent_cafe_leads_data(community, scheduled_tour, visited_stops_data)
 
         community.save
       end
 
       if self.abandoned_tour_at_stop.present?
         FunnelService.new(scheduled_tour).update_appointment_status("complete") if community.is_funnel_community?
-        KnockService.new(scheduled_tour).create_knock_visit(stop_marketing_names_visited_by_user, get_current_time(community)) if community.is_knock_community?
-        YardiRentCafeServices::LeadsApiService.new(scheduled_tour).upload_leads_data(stop_marketing_names_visited_by_user, self, true) if community.use_yardi_as_lead?
+        KnockService.new(scheduled_tour).create_knock_visit(visited_stops_data, get_current_time(community)) if community.is_knock_community?
+        upload_rent_cafe_leads_data(community, scheduled_tour, visited_stops_data)
 
         save_salesforce_feedback_data(community, touruser) if community.is_salesforce_community?
       end
 
     end
+  end
+
+  def upload_rent_cafe_leads_data community, scheduled_tour, visited_stops_data
+    return unless community.use_yardi_as_lead?
+
+    if community&credential&.rentcafe_api_version == "RentCafe V2"
+      YardiRentCafeV2Services::LeadsApiV2Service.new(scheduled_tour).upload_leads_data(visited_stops_data, self, true)
+    else
+      YardiRentCafeServices::LeadsApiService.new(scheduled_tour).upload_leads_data(visited_stops_data, self, true)
+    end
+
   end
 
   def complete_scheduled_tour tour

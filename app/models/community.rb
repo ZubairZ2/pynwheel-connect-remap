@@ -1067,7 +1067,11 @@ s  end
   end
 
   def available_slots scheduled_tour
-    YardiRentCafeServices::MarketingApisService.new(scheduled_tour).available_slots
+    if credential&.rentcafe_api_version == "RentCafe V2"
+      YardiRentCafeV2Services::MarketingApisV2Service.new(scheduled_tour).available_slots
+    else
+      YardiRentCafeServices::MarketingApisService.new(scheduled_tour).available_slots
+    end
   end
 
   def credentials_are_present?
