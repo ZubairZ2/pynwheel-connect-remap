@@ -56,6 +56,11 @@ textarea {
     background-color: #ddd;
 }
 
+.rent-cafe-v2-note{
+  color: grey;
+  margin-top: 3px;
+}
+
 .floor_unit_visibility {
     color: red;
     display: none;

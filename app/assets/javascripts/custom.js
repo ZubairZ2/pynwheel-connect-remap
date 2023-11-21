@@ -302,6 +302,7 @@ $('.submit-click').click(function() {
 });
 
 function submitSettingFormOnChange() {
+    set_fields_for_crm();
     $(".settings-form").submit();
 }
 
@@ -600,15 +601,22 @@ function showYardiRentCafeFields(){
     $('.credential_fields').hide();
     //removeValidationsClass();
     //$('#c_code').show();
-    showYardiRentCafeCodeInputOption($('#yardirentcafe_code_option').val());
+    let varsion_value = $('#community_credential_attributes_rentcafe_api_version').val();
+
+    if(varsion_value == 'RentCafe V2') { 
+        showYardiRentCafeVersion2Option();
+    } else {
+        showYardiRentCafeCodeInputOption($('#yardirentcafe_code_option').val());
+    }
+
     //$('#community_credential_attributes_c_code').addClass("validate[required]");
     $('#p_code').show();
     //$('#community_credential_attributes_p_code').addClass("validate[required]");
     $('#data-connection-buttons').show();
     $('#limit_result_field').show();
-    $('#yardirentcafe_option').show();
     $('#data-replace-update-buttons').hide();
     $('#yardirentcafe_api_options').show();
+    $('#yardirentcafe_api_version_options').show();
 }
 
 function showRealPageSVCFields(){
@@ -638,15 +646,22 @@ function showFileFields(){
 function showYardiRentCafeCodeInputOption(value){
     $('#api_token').show();
     $('#c_code').show();
+    $('#yardirentcafe_option').show();
 
-  // if (value == "Company Code"){
-  //   $('#api_token').hide();
-  //   $('#c_code').show();
-  // }
-  // else{
-  //  $('#api_token').show();
-  //  $('#c_code').hide(); 
-  // }
+  if (value == "Company Code"){
+    $('#api_token').hide();
+    $('#c_code').show();
+  }
+  else{
+   $('#api_token').show();
+   $('#c_code').hide(); 
+  }
+}
+
+function showYardiRentCafeVersion2Option(){
+    $('#api_token').show();
+    $('#c_code').show();
+    $('#yardirentcafe_option').hide();
 }
 
 function showCredentialsForm(){

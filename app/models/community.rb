@@ -438,8 +438,7 @@ class Community < ApplicationRecord
       when "psi"
         crm_credential.entrata_domain.present? && crm_credential.entrata_username.present? && crm_credential.entrata_password.present? && crm_credential.entrata_property_id.present?
       when "yardirentcafe"
-        # crm_credential.yardirentcafe_marketing_api_key.present? && (crm_credential.yardirentcafe_property_id.present? || crm_credential.yardirentcafe_property_code.present?)
-        true
+        check_rent_cafe_crm_credentials()
       when "realpagesvc"
         crm_credential.realpage_site_id.present? && crm_credential.realpage_pmc_id.present?
       when "salesforce"
@@ -448,6 +447,14 @@ class Community < ApplicationRecord
         crm_credential.knock_api_key.present? && crm_credential.knock_community_id.present? && crm_credential.knock_sms_consent_url.present?
       when "funnel"
         crm_credential.funnel_api_key.present? && crm_credential.funnel_community_id.present?
+    end
+  end
+
+  def check_rent_cafe_crm_credentials
+    if credential.rentcafe_api_version == "RentCafe V2"
+      true
+    else
+      crm_credential.yardirentcafe_marketing_api_key.present? && (crm_credential.yardirentcafe_property_id.present? || crm_credential.yardirentcafe_property_code.present?)
     end
   end
 
@@ -871,12 +878,19 @@ class Community < ApplicationRecord
   end
 
   def use_yardi_as_lead?
-    # if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
-    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.crm_provider == "yardirentcafe"
-      (true)
+    if credential.rentcafe_api_version == "RentCafe V2"
+      use_rent_cafe_v2_as_lead
     else
-      (false)
+      use_rent_cafe_v1_as_lead
     end
+  end
+
+  def use_rent_cafe_v1_as_lead
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
+  end
+
+  def use_rent_cafe_v2_as_lead
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.crm_provider == "yardirentcafe"
   end
 
   def is_funnel_community?
@@ -994,8 +1008,11 @@ s  end
   end
   
   def import_yardirentcafe_data
-    # ImportYardirentcafeStaticDataJob.perform_async credential.attributes.to_json
-    RentCafeDataImportWorker.perform_async self.id
+    if credential.rentcafe_api_version == "RentCafe V2"
+      RentCafeDataImportWorker.perform_async self.id
+    else
+      ImportYardirentcafeStaticDataJob.perform_async credential.attributes.to_json
+    end
   end
 
   def swap_yardirentcafe_data
@@ -1064,7 +1081,11 @@ s  end
   end
 
   def available_slots scheduled_tour
-    YardiRentCafeServices::MarketingApisService.new(scheduled_tour).available_slots
+    if credential&.rentcafe_api_version == "RentCafe V2"
+      YardiRentCafeV2Services::MarketingApisV2Service.new(scheduled_tour).available_slots
+    else
+      YardiRentCafeServices::MarketingApisService.new(scheduled_tour).available_slots
+    end
   end
 
   def credentials_are_present?
@@ -1158,8 +1179,14 @@ s  end
     xml_connection_service = XmlConnectionService.new(credential.attributes)
     xml_connection_service.perform
   end
+
   def connect_to_yardirentcafe
-    yardi_rent_cafe_connection_service = YardiRentCafeConnectionService.new(credential.attributes)
+    if credential.rentcafe_api_version == "RentCafe V2"
+      yardi_rent_cafe_connection_service = DataProviders::RentCafe::V2::TestConnectionService.new(self.id)
+    else
+      yardi_rent_cafe_connection_service = YardiRentCafeConnectionService.new(credential.attributes)
+    end
+
     yardi_rent_cafe_connection_service.perform
   end
 
@@ -1564,67 +1591,93 @@ s  end
   end
 
   def collect_time_slots_for_yardi(stepping, yardi_self_time_slots, yardi_guided_time_slots)
+    if credential.rentcafe_api_version == "RentCafe V2"
+      filter_rent_cafe_slots_v2(stepping, yardi_self_time_slots, yardi_guided_time_slots)
+    else
+      filter_rent_cafe_slots_v1(stepping, yardi_self_time_slots, yardi_guided_time_slots)
+    end
+  end
+
+  def filter_rent_cafe_slots_v2 stepping, yardi_self_time_slots, yardi_guided_time_slots
     time_slots = {}
+    
     if self&.community_tour&.tour_setting.present?
       tour_setting = self&.community_tour.tour_setting
       allow_self_tour = tour_setting.allow_self_tour
       allow_guided_tour = tour_setting.allow_guided_tour
-      # allow_virtual_tour = tour_setting.allow_virtual_tour
-      # self_tour_data = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day, :opening_time, :closing_time) : []
-      # guided_tour_data = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
-      
-      # if allow_virtual_tour
-      #   each_day_slots = return_time_slots("0:00", "23:59",stepping)
-      #   ((0..6).to_a).each do |day|
-      #     time_slots[day] = each_day_slots
-      #   end
       if allow_self_tour && yardi_self_time_slots.any? && allow_guided_tour && yardi_guided_time_slots.any?
         self_tour_slots = process_slots_data(yardi_self_time_slots)
         guided_tour_slots = process_slots_data(yardi_guided_time_slots)
         time_slots = self_tour_slots.merge(guided_tour_slots)
-        # yardi_self_time_slots = maintain_datetime_according_to_yardi(yardi_self_time_slots)
-        # yardi_guided_time_slots = maintain_datetime_according_to_yardi(yardi_guided_time_slots)
-        # yardi_self_time_slots_hash = fetch_hash_from_slots(yardi_self_time_slots)
-        # yardi_self_time_slots_hash = remove_slots_according_to_pynwheel(yardi_self_time_slots_hash, self_tour_data)
-        # yardi_guided_time_slots_hash = fetch_hash_from_slots(yardi_guided_time_slots)
-        # yardi_guided_time_slots_hash = remove_slots_according_to_pynwheel(yardi_guided_time_slots_hash, guided_tour_data)
-        # # Now For Testing purpose merge self into guided
-        # merged_slots = merge_both_self_and_guided_slots(yardi_self_time_slots_hash, yardi_guided_time_slots_hash)
-        # slots = merged_slots #return_final_slots(merged_slots, stepping)
-        # slots.each {|date,two_d_array| slots[date] = two_d_array.flatten.uniq }
-        # keys_which_have_no_slot = (slots.map { |date, arr| unless arr.any?; date; end } ).compact
-        # slots.delete_if { |k,v| keys_which_have_no_slot.include?(k) }
-        # time_slots = slots
-
-        # time_slots
       else
         if allow_self_tour && yardi_self_time_slots.any?
           time_slots = process_slots_data(yardi_self_time_slots)
-          # yardi_self_time_slots = maintain_datetime_according_to_yardi(yardi_self_time_slots)
-          # yardi_self_time_slots_hash = fetch_hash_from_slots(yardi_self_time_slots)
-          # yardi_self_time_slots_hash = remove_slots_according_to_pynwheel(yardi_self_time_slots_hash, self_tour_data)
-          # slots = yardi_self_time_slots_hash #return_final_slots(yardi_self_time_slots_hash, stepping)
-          # slots.each {|date,two_d_array| slots[date] = two_d_array.flatten.uniq }
-          # keys_which_have_no_slot = (slots.map { |date, arr| unless arr.any?; date; end } ).compact
-          # slots.delete_if { |k,v| keys_which_have_no_slot.include?(k) }
-          # time_slots = slots
         end
+
         if allow_guided_tour && yardi_guided_time_slots.any?
           time_slots = process_slots_data(yardi_guided_time_slots)
-        #   yardi_guided_time_slots = maintain_datetime_according_to_yardi(yardi_guided_time_slots)
-        #   yardi_guided_time_slots_hash = fetch_hash_from_slots(yardi_guided_time_slots)
-        #   yardi_guided_time_slots_hash = remove_slots_according_to_pynwheel(yardi_guided_time_slots_hash, guided_tour_data)
-        #   slots = yardi_guided_time_slots_hash #return_final_slots(yardi_guided_time_slots_hash, stepping)
-        #   slots.each {|date,two_d_array| slots[date] = two_d_array.flatten.uniq }
-        #   keys_which_have_no_slot = (slots.map { |date, arr| unless arr.any?; date; end } ).compact
-        #   slots.delete_if { |k,v| keys_which_have_no_slot.include?(k) }
-        #   time_slots = slots
         end
       end
     end
 
     time_slots
   end
+
+  def filter_rent_cafe_slots_v1 stepping, yardi_self_time_slots, yardi_guided_time_slots
+    time_slots = {}
+    
+    if self&.community_tour&.tour_setting.present?
+      tour_setting = self&.community_tour.tour_setting
+      allow_self_tour = tour_setting.allow_self_tour
+      allow_guided_tour = tour_setting.allow_guided_tour
+      allow_virtual_tour = tour_setting.allow_virtual_tour
+      self_tour_data = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day, :opening_time, :closing_time) : []
+      guided_tour_data = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
+      if allow_virtual_tour
+        each_day_slots = return_time_slots("0:00", "23:59",stepping)
+        ((0..6).to_a).each do |day|
+          time_slots[day] = each_day_slots
+        end
+      elsif allow_self_tour && yardi_self_time_slots.any? && allow_guided_tour && yardi_guided_time_slots.any? && self_tour_data.present? && guided_tour_data.present?
+        yardi_self_time_slots = maintain_datetime_according_to_yardi(yardi_self_time_slots)
+        yardi_guided_time_slots = maintain_datetime_according_to_yardi(yardi_guided_time_slots)
+        yardi_self_time_slots_hash = fetch_hash_from_slots(yardi_self_time_slots)
+        yardi_self_time_slots_hash = remove_slots_according_to_pynwheel(yardi_self_time_slots_hash, self_tour_data)
+        yardi_guided_time_slots_hash = fetch_hash_from_slots(yardi_guided_time_slots)
+        yardi_guided_time_slots_hash = remove_slots_according_to_pynwheel(yardi_guided_time_slots_hash, guided_tour_data)
+        # Now For Testing purpose merge self into guided
+        merged_slots = merge_both_self_and_guided_slots(yardi_self_time_slots_hash, yardi_guided_time_slots_hash)
+        slots = return_final_slots(merged_slots, stepping)
+        slots.each {|date,two_d_array| slots[date] = two_d_array.flatten }
+        keys_which_have_no_slot = (slots.map { |date, arr| unless arr.any?; date; end } ).compact
+        slots.delete_if { |k,v| keys_which_have_no_slot.include?(k) }
+        time_slots = slots
+      else
+        if allow_self_tour && yardi_self_time_slots.any? && self_tour_data.any?
+          yardi_self_time_slots = maintain_datetime_according_to_yardi(yardi_self_time_slots)
+          yardi_self_time_slots_hash = fetch_hash_from_slots(yardi_self_time_slots)
+          yardi_self_time_slots_hash = remove_slots_according_to_pynwheel(yardi_self_time_slots_hash, self_tour_data)
+          slots = return_final_slots(yardi_self_time_slots_hash, stepping)
+          slots.each {|date,two_d_array| slots[date] = two_d_array.flatten }
+          keys_which_have_no_slot = (slots.map { |date, arr| unless arr.any?; date; end } ).compact
+          slots.delete_if { |k,v| keys_which_have_no_slot.include?(k) }
+          time_slots = slots
+        end
+        if allow_guided_tour && yardi_guided_time_slots.any? && guided_tour_data.any?
+          yardi_guided_time_slots = maintain_datetime_according_to_yardi(yardi_guided_time_slots)
+          yardi_guided_time_slots_hash = fetch_hash_from_slots(yardi_guided_time_slots)
+          yardi_guided_time_slots_hash = remove_slots_according_to_pynwheel(yardi_guided_time_slots_hash, guided_tour_data)
+          slots = return_final_slots(yardi_guided_time_slots_hash, stepping)
+          slots.each {|date,two_d_array| slots[date] = two_d_array.flatten }
+          keys_which_have_no_slot = (slots.map { |date, arr| unless arr.any?; date; end } ).compact
+          slots.delete_if { |k,v| keys_which_have_no_slot.include?(k) }
+          time_slots = slots
+        end
+      end
+    end
+    time_slots
+  end
+
 
   def process_slots_data(data)
     result_hash = {}
@@ -1698,60 +1751,75 @@ s  end
   end
 
   def fetch_tour_type_according_to_time_for_yardi(scheduled_tour, date_str, tour_time)
+    if credential.rentcafe_api_version == "RentCafe V2"
+      filter_rent_cafe_tour_types_v2(scheduled_tour, date_str, tour_time)
+    else
+      filter_rent_cafe_tour_types_v1(scheduled_tour, date_str, tour_time)
+    end
+  end
+
+  def filter_rent_cafe_tour_types_v2 scheduled_tour, date_str, tour_time
     tour_type = []
     yardi_time_slots = self.available_slots(scheduled_tour)
 
     if yardi_time_slots.present?
       yardi_self_time_slots = yardi_time_slots.map{|x| [x["startTime"].split(' ')[0],"#{x["startTime"].split(' ')[1]} #{x["startTime"].split(' ')[2]}","#{x["endTime"].split(' ')[1]} #{x["endTime"].split(' ')[2]}" ] if x['slotType'] == "SelfTour"}.compact
       yardi_guided_time_slots = yardi_time_slots.map{|x| [x["startTime"].split(' ')[0],"#{x["startTime"].split(' ')[1]} #{x["startTime"].split(' ')[2]}","#{x["endTime"].split(' ')[1]} #{x["endTime"].split(' ')[2]}" ] if x['slotType'] == "AgentGuided"}.compact
-      
       tour_type << ["self_tour","Self Tour"] if yardi_self_time_slots.present?
       tour_type << ["guided_tour","Guided Tour"] if yardi_guided_time_slots.present?
+    end
 
+    tour_type
+  end
 
+  def filter_rent_cafe_tour_types_v1 scheduled_tour, date_str, tour_time
+        tour_type = []
+    yardi_time_slots = self.available_slots(scheduled_tour)
+    if yardi_time_slots["Response"].present?
+      yardi_self_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
+      yardi_guided_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
+      if self&.community_tour&.tour_setting.present?
+        tour_setting = self&.community_tour.tour_setting
+        stepping = tour_setting.time_intervel == '15 min' ? 15 : (tour_setting.time_intervel == '30 min' ? 30 : (tour_setting.time_intervel == '1 hr') ? 60 : (tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
+        allow_self_tour = tour_setting.allow_self_tour
+        allow_guided_tour = tour_setting.allow_guided_tour
+        allow_virtual_tour = tour_setting.allow_virtual_tour
+        self_tour_data = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day, :opening_time, :closing_time) : []
+        guided_tour_data = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
+        if allow_virtual_tour
+          tour_type << ["virtual_tour","Virtual Tour"]
+        end
 
-      # if self&.community_tour&.tour_setting.present?
-      #   tour_setting = self&.community_tour.tour_setting
-      #   stepping = tour_setting.time_intervel == '15 min' ? 15 : (tour_setting.time_intervel == '30 min' ? 30 : (tour_setting.time_intervel == '1 hr') ? 60 : (tour_setting.time_intervel == '2 hrs') ? 120 : 15) rescue 15
-      #   allow_self_tour = tour_setting.allow_self_tour
-      #   allow_guided_tour = tour_setting.allow_guided_tour
-      #   allow_virtual_tour = tour_setting.allow_virtual_tour
-      #   self_tour_data = (allow_self_tour && self.opening_hours.present?) ? self.opening_hours.pluck(:day, :opening_time, :closing_time) : []
-      #   guided_tour_data = (allow_guided_tour && self.guided_opening_hours.present?) ? self.guided_opening_hours.pluck(:day, :opening_time, :closing_time) : []
-      #   if allow_virtual_tour
-      #     tour_type << ["virtual_tour","Virtual Tour"]
-      #   end
+        if allow_self_tour && yardi_self_time_slots.any? && self_tour_data.any?
+          yardi_self_time_slots = maintain_datetime_according_to_yardi(yardi_self_time_slots)
+          yardi_self_time_slots_hash = fetch_hash_from_slots(yardi_self_time_slots)
+          yardi_self_time_slots_hash = remove_slots_according_to_pynwheel(yardi_self_time_slots_hash, self_tour_data)
+          selected_day_slot = yardi_self_time_slots_hash[date_str]
+          unless selected_day_slot.nil?
+            selected_day_slot.each do |arr|
+              if Time.parse(tour_time) >= Time.parse(arr[0]) && Time.parse(tour_time) <= Time.parse(arr[1])
+                tour_type << ["self_tour","Self Tour"]
+                break
+              end
+            end
+          end
+        end
 
-      #   if allow_self_tour && yardi_self_time_slots.any? && self_tour_data.any?
-      #     yardi_self_time_slots = maintain_datetime_according_to_yardi(yardi_self_time_slots)
-      #     yardi_self_time_slots_hash = fetch_hash_from_slots(yardi_self_time_slots)
-      #     yardi_self_time_slots_hash = remove_slots_according_to_pynwheel(yardi_self_time_slots_hash, self_tour_data)
-      #     selected_day_slot = yardi_self_time_slots_hash[date_str]
-      #     unless selected_day_slot.nil?
-      #       selected_day_slot.each do |arr|
-      #         if Time.parse(tour_time) >= Time.parse(arr[0]) && Time.parse(tour_time) <= Time.parse(arr[1])
-      #           tour_type << ["self_tour","Self Tour"]
-      #           break
-      #         end
-      #       end
-      #     end
-      #   end
-
-      #   if allow_guided_tour && yardi_guided_time_slots.any? && guided_tour_data.any?
-      #     yardi_guided_time_slots = maintain_datetime_according_to_yardi(yardi_guided_time_slots)
-      #     yardi_guided_time_slots_hash = fetch_hash_from_slots(yardi_guided_time_slots)
-      #     yardi_guided_time_slots_hash = remove_slots_according_to_pynwheel(yardi_guided_time_slots_hash, guided_tour_data)
-      #     selected_day_slot = yardi_guided_time_slots_hash[date_str]
-      #     unless selected_day_slot.nil?
-      #       selected_day_slot.each do |arr|
-      #         if Time.parse(tour_time) >= Time.parse(arr[0]) && Time.parse(tour_time) <= Time.parse(arr[1])
-      #           tour_type << ["guided_tour","Guided Tour"]
-      #           break
-      #         end
-      #       end
-      #     end
-      #   end
-      # end
+        if allow_guided_tour && yardi_guided_time_slots.any? && guided_tour_data.any?
+          yardi_guided_time_slots = maintain_datetime_according_to_yardi(yardi_guided_time_slots)
+          yardi_guided_time_slots_hash = fetch_hash_from_slots(yardi_guided_time_slots)
+          yardi_guided_time_slots_hash = remove_slots_according_to_pynwheel(yardi_guided_time_slots_hash, guided_tour_data)
+          selected_day_slot = yardi_guided_time_slots_hash[date_str]
+          unless selected_day_slot.nil?
+            selected_day_slot.each do |arr|
+              if Time.parse(tour_time) >= Time.parse(arr[0]) && Time.parse(tour_time) <= Time.parse(arr[1])
+                tour_type << ["guided_tour","Guided Tour"]
+                break
+              end
+            end
+          end
+        end
+      end
     end
 
     tour_type
@@ -1892,8 +1960,6 @@ s  end
     # slots
   end # method end
 
-
-
   def return_hour_and_meridiem(hour)
     if hour == 0
       hour += 12
@@ -1913,31 +1979,30 @@ s  end
     end
   end
 
-  # def maintain_datetime_according_to_yardi(yardi_time_slots)
-  #   yardi_time_slots.map do |time_slot_arr|
-  #     [ time_slot_arr[0], yardi_required_format(time_slot_arr[1], 'start'), yardi_required_format(time_slot_arr[2], 'end') ]
-  #   end
-  # end
+  def maintain_datetime_according_to_yardi(yardi_time_slots)
+    yardi_time_slots.map do |time_slot_arr|
+      [ time_slot_arr[0], yardi_required_format(time_slot_arr[1], 'start'), yardi_required_format(time_slot_arr[2], 'end') ]
+    end
+  end
 
   # Yardi sending us faulty date means they are not giving us date in am/pm so repeatedly calls we see from 8 to 12 time is always in am
   # and 01 to 07 its always in pm
-  # def yardi_required_format(faulty_date, date_type)
-  #   hour, minute = faulty_date.split(":")[0].to_i, faulty_date.split(":")[1]
-  #   if hour >= 8 && hour <= 12
-  #     return (hour.to_s + ":" + minute)
-  #   else
-  #     return ((hour + 12).to_s + ":" + minute)
-  #   end
+  def yardi_required_format(faulty_date, date_type)
+    hour, minute = faulty_date.split(":")[0].to_i, faulty_date.split(":")[1]
+    if hour >= 8 && hour <= 12
+      return (hour.to_s + ":" + minute)
+    else
+      return ((hour + 12).to_s + ":" + minute)
+    end
+  end
 
-  # end
-
-  # def fetch_hash_from_slots(yardi_time_slots)
-  #   yardi_s_hash = {}
-  #   yardi_time_slots.each do |arr|
-  #     yardi_s_hash[arr[0]] = yardi_s_hash[arr[0]].nil? ? ( [[arr[1], arr[2]]] ) : ( yardi_s_hash[arr[0]] << [arr[1], arr[2]] )
-  #   end
-  #   yardi_s_hash
-  # end
+  def fetch_hash_from_slots(yardi_time_slots)
+    yardi_s_hash = {}
+    yardi_time_slots.each do |arr|
+      yardi_s_hash[arr[0]] = yardi_s_hash[arr[0]].nil? ? ( [[arr[1], arr[2]]] ) : ( yardi_s_hash[arr[0]] << [arr[1], arr[2]] )
+    end
+    yardi_s_hash
+  end
 
   def fetch_missing_slots(yardi_time_slots_per_day)
     missing_slots = []
