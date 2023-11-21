@@ -67,8 +67,14 @@ class SchedulerWidget::WidgetsController < ApplicationController
     if @use_yardi_as_lead
       @yardi_time_slots = @community.available_slots(@schedule_tour)
       if @yardi_time_slots.present?
-        @yardi_self_time_slots = @yardi_time_slots.map{|x|  [x["startTime"].split(' ')[0],"#{x["startTime"].split(' ')[1]} #{x["startTime"].split(' ')[2]}","#{x["endTime"].split(' ')[1]} #{x["endTime"].split(' ')[2]}" ] if x['slotType'] == "SelfTour"}.compact
-        @yardi_guided_time_slots = @yardi_time_slots.map{|x| [x["startTime"].split(' ')[0],"#{x["startTime"].split(' ')[1]} #{x["startTime"].split(' ')[2]}","#{x["endTime"].split(' ')[1]} #{x["endTime"].split(' ')[2]}" ] if x['slotType'] == "AgentGuided"}.compact
+        if @community.credential.rentcafe_api_version == "RentCafe V2"
+          @yardi_self_time_slots = @yardi_time_slots.map{|x|  [x["startTime"].split(' ')[0],"#{x["startTime"].split(' ')[1]} #{x["startTime"].split(' ')[2]}","#{x["endTime"].split(' ')[1]} #{x["endTime"].split(' ')[2]}" ] if x['slotType'] == "SelfTour"}.compact
+          @yardi_guided_time_slots = @yardi_time_slots.map{|x| [x["startTime"].split(' ')[0],"#{x["startTime"].split(' ')[1]} #{x["startTime"].split(' ')[2]}","#{x["endTime"].split(' ')[1]} #{x["endTime"].split(' ')[2]}" ] if x['slotType'] == "AgentGuided"}.compact
+        else
+          @yardi_self_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
+          @yardi_guided_time_slots = @yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "GuidedTour"}.compact
+        end
+        
         @time_slots = @community.collect_time_slots_for_yardi(@stepping, @yardi_self_time_slots, @yardi_guided_time_slots)
         @yardi_enable_days = @time_slots.keys
       else
