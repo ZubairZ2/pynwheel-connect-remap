@@ -302,6 +302,7 @@ $('.submit-click').click(function() {
 });
 
 function submitSettingFormOnChange() {
+    set_fields_for_crm();
     $(".settings-form").submit();
 }
 

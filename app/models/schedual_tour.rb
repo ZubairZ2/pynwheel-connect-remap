@@ -36,7 +36,11 @@ class SchedualTour < ApplicationRecord
 
   def cancel_yardi_tour
     return unless self.community.use_yardi_as_lead?
-    YardiRentCafeServices::MarketingApisService.new(self).cancel_tour
+    if community&.credential&.rentcafe_api_version == "RentCafe V2"
+      YardiRentCafeV2Services::MarketingApisV2Service.new(self).cancel_tour
+    else
+      YardiRentCafeServices::MarketingApisService.new(self).cancel_tour
+    end
   end
   
   def notify_community_on_cancel_tour
