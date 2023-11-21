@@ -3,7 +3,6 @@ module YardiRentCafeV2Services
 
     def available_slots
       response = fetch_available_slots()
-      binding.pry
       (response&.dig("errorCode") == 200) ? response["availableSlots"] : []
     end
 
