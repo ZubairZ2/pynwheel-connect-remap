@@ -92,6 +92,7 @@ Rails.application.routes.draw do
     member do
       get :generate_csv
       get :generate_csv_for_scheduled_records
+      put :company_data_credentials
     end
 
   end

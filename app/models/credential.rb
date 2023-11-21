@@ -40,6 +40,7 @@
 class Credential < ApplicationRecord
   has_paper_trail
   belongs_to :community
+  belongs_to :company
   before_save :set_https_in_url
   has_one :status, as: :statusable
   

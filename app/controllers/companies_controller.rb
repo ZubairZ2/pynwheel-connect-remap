@@ -71,6 +71,19 @@ class CompaniesController < ApplicationController
     end
   end
 
+  def company_data_credentials
+    respond_to do |format|
+    if @company.update(company_params)
+      communities = @company.communities&.where(use_company_level_data_settings: true)
+      update_communities_credentials(communities)
+      format.js {render js: "$('#flash-message').html('#{ '<div class="alert alert-success">Credentials added successfully.</div>'}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
+    else
+      message = '<div class="alert alert-warning">'+@company.errors.full_messages.join(',')+'</div>'
+      format.js {render js: "$('#flash-message').html('#{message}')"}
+    end
+    end
+  end
+
   def generate_csv
     @communities = fetch_communities_hash(params[:id])
     company = Company.find params[:id]
@@ -121,14 +134,25 @@ class CompaniesController < ApplicationController
 
   private
 
+  def update_communities_credentials(communities)
+    credential_attributes = @company.credential&.attributes&.except("id")
+    communities.each do |community|
+      community_credential = community.credential || community.build_credential
+      community_credential.update(credential_attributes)
+      community.update(data_provider: @company.data_provider) if @company.data_provider.present?
+    end
+  end
+
+
   def set_company
     @company = Company.find params[:id]
   end
   
   def company_params
-    params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo,:inactivate, :creator_id)
+    params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo,:inactivate, :creator_id, :data_provider,:credential_attributes=>[:currency, :yardi_rent_cafe_api_url, :entrata_available_units_only, :entrata_show_unit_spaces, :entrata_use_space_configuration,:id,:url,:entrata_url,:username,:password, :perq_property_id, :is_perq_allowed, :property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
+                                                                                                                                           :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_api_version, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],)
   end
-  
+
   def fetch_communities_hash(company_id)
     communities = Community.where(company_id: params[:id]).pluck(:id, :name)
     communities.to_h
