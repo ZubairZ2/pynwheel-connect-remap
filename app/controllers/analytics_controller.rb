@@ -217,7 +217,7 @@ class AnalyticsController < ApplicationController
       session_each_day_labels = sessions_each_day_hash.keys.map(&:to_s)
       session_each_day_counts = sessions_each_day_hash.values
 
-      session_each_day_minutes_data, session_each_day_minutes_options = make_line_chart(session_each_day_labels, session_each_day_counts, "#{get_name(for_device_type, "Activities")} in Minutes", "rgba(0, 143, 212, 0.3)", "rgba(0, 143, 212, 1)")
+      session_each_day_minutes_data, session_each_day_minutes_options = make_line_chart(session_each_day_labels, session_each_day_counts, "#{get_name(for_device_type)} in Minutes", "rgba(0, 143, 212, 0.3)", "rgba(0, 143, 212, 1)")
       instance_variable_set("@session_each_day_minutes_data_#{for_device_type}", session_each_day_minutes_data)
       instance_variable_set("@session_each_day_minutes_options_#{for_device_type}", session_each_day_minutes_options)
 
@@ -396,7 +396,7 @@ class AnalyticsController < ApplicationController
       percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
       percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
 
-      pie_chart_hash = {"#{get_single_name(for_device_type)} with favorite saved" => percentage_session_with_counts, "#{get_single_name(for_device_type)} without favorite saved" => percentage_session_without_counts}
+      pie_chart_hash = {"#{get_name(for_device_type)} with favorite saved" => percentage_session_with_counts, "#{get_name(for_device_type)} without favorite saved" => percentage_session_without_counts}
       pie_favourite_saved_data_labels, pie_favourite_saved_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(143, 73, 156, 0.5)", "rgba(255,212,0,0.5)"], ["rgba(143, 73, 156, 1)","rgba(255,212,0,1)"])
       bar_favourite_saved_data_labels, bar_favourite_saved_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Favorite saved", "rgba(143, 73, 156, 0.5)", "rgba(143, 73, 156, 1)")
       instance_variable_set("@percentage_session_with_favourite_saved_#{for_device_type}", "#{percentage_session_with_counts}%")
@@ -439,7 +439,7 @@ class AnalyticsController < ApplicationController
       percentage_session_with_counts = formate_percentage(session_with_counts, records_count)
       percentage_session_without_counts = formate_percentage(session_without_counts, records_count)
 
-      pie_chart_hash = {"#{get_single_name(for_device_type)} with favorite emailed" => percentage_session_with_counts, "#{get_single_name(for_device_type)} without favorite emailed" => percentage_session_without_counts}
+      pie_chart_hash = {"#{get_name(for_device_type)} with favorite emailed" => percentage_session_with_counts, "#{get_name(for_device_type)} without favorite emailed" => percentage_session_without_counts}
       pie_favourite_sent_data_labels, pie_favourite_sent_data_options = make_pie_chart(pie_chart_hash.keys, pie_chart_hash.values, "Total #{get_name(for_device_type)}", ["rgba(240, 90, 142, 0.5)", "rgba(255,212,0,0.8)"], ["rgba(240, 90, 142, 1)","rgba(255,212,0,1)"])
       bar_favourite_sent_data_labels, bar_favourite_sent_data_options = make_bar_chart(sessions_each_day_hash.keys.map {|s_date| s_date.strftime("%Y-%m-%d") }, sessions_each_day_hash.values, "Favorite emailed", "rgba(240, 90, 142, 0.7)", "rgba(240, 90, 142, 1)")
       instance_variable_set("@percentage_session_with_favourite_sent_#{for_device_type}", "#{percentage_session_with_counts}%")
@@ -797,12 +797,14 @@ class AnalyticsController < ApplicationController
       @session_each_day_no_show_data, @session_each_day_no_show_options = make_bar_chart(sessions_each_day_hash.keys.map(&:to_s), sessions_each_day_hash.values, "Total #{get_name(for_device_type)}", "rgba(240, 90, 142, 0.8)", "rgba(240, 90, 142, 1)")
     end
 
-    def get_name product_type, diff_name = nil
-      product_type == "self_tour" ? "Tours" : (diff_name.present? ? diff_name : "Sessions")
+    def get_name product_type
+      case product_type
+      when "self_tour"
+        "Tours"
+      when "maps"
+        "Interactions"
+      else
+        "Sessions"
+      end
     end
-
-    def get_single_name product_type
-      product_type == "self_tour" ? "Tour" : "Session"
-    end
-
 end
