@@ -1028,7 +1028,7 @@ s  end
   end
 
   def real_page_get_marketing_sources
-    RealPageGetMarketingSoucesJob.perform_async credential.attributes.to_json, self
+    RealPageMarketingSourcesWorker.perform_async self.id
   end
 
   def entrata_send_mits_leads(tour_user, tour_time, end_time, visited_stops)
