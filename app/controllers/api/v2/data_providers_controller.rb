@@ -1,6 +1,7 @@
 class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
   before_action :set_community
+  before_action :verify_credential, only: [:update_data_provider_and_credentials, :update_finish_later_data_provider_and_credentials]
 
   def get_community_data_provider
     if @community.present?
@@ -129,7 +130,28 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     crm_credentials
   end
 
-  
+  def verify_credential
+    return unless @community.use_company_level_data_settings
+
+    company = @community.company
+    data_provider = params[:data_provider]
+    credential = company.credential
+    input_credentials = params[:credential]
+
+    case data_provider
+    when "psi"
+      validate_credentials(credential, input_credentials.slice(:entrata_url, :username, :password))
+    when "realpagesvc"
+      validate_credentials(credential, input_credentials.slice(:pmc_id))
+    when "yardirentcafe"
+      validate_credentials(credential, input_credentials.slice(:api_token))
+    when "yardi"
+      validate_credentials(credential, input_credentials.slice(:url, :username, :password, :server_name, :database))
+    when "resman"
+      validate_credentials(credential, input_credentials.slice(:resman_account_id))
+    end
+  end
+
   private 
 
   def test_connection
@@ -154,6 +176,30 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       render json: {success: false, error_code: 400, message: 'Community not found', data: nil}, status: :not_found
   end
 
+  def validate_credentials(credential, expected_credentials)
+    return create_company_level_credential(@community.company) unless @community.company.data_providers.include?(params[:data_provider])
+
+    unless expected_credentials.all? { |key, value| credential[key] == value }
+      render_error("Invalid Credentials")
+    end
+  end
+
+  def render_error(message)
+    render json: { success: false, error_code: 200, message: message }
+  end
+
+  def create_company_level_credential(company)
+    provider = params[:data_provider]
+    company.data_providers << provider
+    company.save
+    company_credentials = company.create_credential(company_credential_params)
+    company_credentials
+  end
+
+  def company_credential_params
+    params.permit(:status)
+    params.require(:credential).permit(:id,:url,:entrata_url,:username, :password, :pmc_id, :api_token, :server_name, :database, :resman_account_id, :new_requested_data_provider)
+  end
   def credential_params
     params.permit(:status)
     params.require(:credential).permit(:id,:url,:entrata_url,:username,:password, :perq_property_id, :is_perq_allowed,

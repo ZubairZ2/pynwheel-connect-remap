@@ -522,6 +522,8 @@ function selectDataProvider(data_provider){
 
 function showPsiFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').show();
+    $('#currency_list').show();
     //removeValidationsClass();
     $('#url').hide();
     $('.entrata_url').show();
@@ -542,6 +544,8 @@ function showPsiFields(){
 }
 function showZarembaFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').hide();
+    $('#currency_list').hide();
     //removeValidationsClass();
     $('#zaremba_username').show();
     //$('#community_credential_attributes_url').addClass("validate[required]");
@@ -549,6 +553,7 @@ function showZarembaFields(){
     //$('#community_credential_attributes_password').addClass("validate[required]");
     $('#zaremba_filename').show();
     $('#zaremba_property_id').show();
+    $('#zaremba_currency').show();
     //$('#community_credential_attributes_username').addClass("validate[required]");
     //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#data-connection-buttons').show();
@@ -556,13 +561,18 @@ function showZarembaFields(){
 }
 function showXmlFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').hide();
+    $('#currency_list').hide();
     $('#xml_filename').show();
     $('#xml_domain').show();
+    $('#xml_currency').show();
 
     $('#data-replace-update-buttons').hide();
 }
 function showResmanFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').show();
+    $('#currency_list').show();
     //removeValidationsClass();
     // $('#resman_apikey').show();
     // //$('#community_credential_attributes_url').addClass("validate[required]");
@@ -578,6 +588,8 @@ function showResmanFields(){
 }
 function showYardiFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').show();
+    $('#currency_list').show();
     //removeValidationsClass();
     $('#url').show();
     //$('#community_credential_attributes_url').addClass("validate[required]");
@@ -599,6 +611,8 @@ function showYardiFields(){
 
 function showYardiRentCafeFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').show();
+    $('#currency_list').show();
     //removeValidationsClass();
     //$('#c_code').show();
     let varsion_value = $('#community_credential_attributes_rentcafe_api_version').val();
@@ -621,6 +635,8 @@ function showYardiRentCafeFields(){
 
 function showRealPageSVCFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').show();
+    $('#currency_list').show();
     //removeValidationsClass();
     $('#pmc_id').show();
     //$('#community_credential_attributes_pmc_id').addClass("validate[required]");
@@ -636,8 +652,11 @@ function showRealPageSVCFields(){
 
 function showFileFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').hide();
+    $('#currency_list').hide();
     //removeValidationsClass();
     $('#spreadsheet').show();
+    $('#spreadsheet_currency').show();
     $('#data-connection-buttons').hide();
     $('#data-replace-update-buttons').show();
     //$('#community_credential_attributes_file').addClass("validate[required]"); 

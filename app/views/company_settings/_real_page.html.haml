@@ -1,0 +1,23 @@
+= form_for @company, url: company_data_credentials_company_path(@company, community_id: current_community&.id), html: { class: "form-horizontal settings-form", method: 'PUT' }, remote: true do |f|
+  .box.box-info.add-plan
+    .box-header
+      %h3.box-title
+        Create
+        %span RealPage Provider
+        = f.hidden_field :data_providers, :value=> "realpagesvc"
+  = f.fields_for :credential do |c|
+    .form-group.credential_fields#pmc_id
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
+        PMC ID
+
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
+        = c.text_field :pmc_id, :class=>"form-control settings-field", :placeholder=>"PMC ID"
+    .form-group.field-to-hide
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Select Currency
+
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        = c.select :currency,currencies, {}, { value: c.object.currency, class: 'form-control' }
+
+    .box-footer
+      = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10"

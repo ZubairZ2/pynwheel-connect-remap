@@ -18,7 +18,9 @@
           = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10"
 
 
-%section
+%section{style: "margin-top: -45px"}
   .content
-    .box.box-info.add-plan.mt-20
-      = render :partial=>'company_credentials_form'
+    .title-heading.mb-25
+      .box.box-info
+      .box-header
+        = render :partial=>'company_credentials_form'
