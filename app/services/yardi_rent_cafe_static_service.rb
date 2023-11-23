@@ -1,8 +1,13 @@
 class YardiRentCafeStaticService < BaseService
 
   def perform
+    import_property_details
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
+  end
+
+  def import_property_details
+    DataProviders::PropertyDetails::RentCafePropertyDetailsService.new(credentials.community_id).perform()
   end
 
   def import_yardirentcafe_units
