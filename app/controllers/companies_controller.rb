@@ -146,7 +146,14 @@ class CompaniesController < ApplicationController
   end
 
   def update_communities_credentials(communities, provider)
-    credential_attributes = @company.credential&.attributes&.except("id")
+    excluded_credential = [
+      "id", "perq_property_id", "is_perq_allowed", "property_id", "site_id", "p_code",
+      "apply_now", "allow_separate_link", "separate_link", "use_different_crm_provider",
+      "limit_result", "resman_partner_id", "xml_filename", "xml_domain",
+      "resman_property_id", "zaremba_filename", "zaremba_property_id",
+      "zaremba_username", "zaremba_password", "new_requested_data_provider"
+    ]
+    credential_attributes = @company.credential&.attributes&.except(*excluded_credential)
     communities.each do |community|
       community_credential = community.credential || community.build_credential
       community_credential.update(credential_attributes)
