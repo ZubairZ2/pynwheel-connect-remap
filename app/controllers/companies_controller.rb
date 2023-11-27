@@ -141,8 +141,8 @@ class CompaniesController < ApplicationController
   end
   
   def company_params
-    params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo,:inactivate, :creator_id,:credential_attributes=>[:currency, :yardi_rent_cafe_api_url, :entrata_available_units_only, :entrata_show_unit_spaces, :entrata_use_space_configuration,:id,:url,:entrata_url,:username,:password, :perq_property_id, :is_perq_allowed, :property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
-                                                                                                                                           :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_api_version, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],data_providers: [])
+    params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo,:inactivate, :creator_id,:credential_attributes=>[:currency, :yardi_rent_cafe_api_url, :entrata_available_units_only,:id,:url,:entrata_url,:username,:password,:pmc_id,:server_name,:database,:platform,:interface_entity,:c_code,
+                                                                                                                                           :api_token,:resman_apikey, :resman_account_id, :resman_api_version],data_providers: [])
   end
 
   def update_communities_credentials(communities, provider)

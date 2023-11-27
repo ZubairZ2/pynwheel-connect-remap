@@ -450,14 +450,7 @@ class CommunitiesController < ApplicationController
   def credentials
     @community = Community.find params[:community_id]
     unless @community.credential.present?
-      if current_company.credential.present?
-        credential_attributes = current_company.credential&.attributes&.except("id")
-        community_credential = @community.credential || @community.build_credential
-        community_credential.update(credential_attributes)
-        @community.update(data_provider: current_company.data_provider)
-      else
-        @community.build_credential
-      end
+      @community.build_credential
     end
     @crm_credential = @community.crm_credential.present? ? @community.crm_credential : @community.create_crm_credential
   end
