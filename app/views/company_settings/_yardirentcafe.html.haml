@@ -7,16 +7,18 @@
         %span YardiRentCafe Provider
         = f.hidden_field :data_providers, value: ["yardirentcafe"]
   = f.fields_for :credential do |c|
-    .form-group.credential_fields#yardirentcafe_option.field-to-hide
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Select Option
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = select_tag :yardirentcafe_code_option, options_for_select(["Company Code","Api Token"],c.object.api_token.present? ? "Api Token" : "Company Code"),{:class=>"form-control"}
     .form-group.credential_fields#yardirentcafe_api_version_options.field-to-hide
       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
         API Version
       .col-sm-12.col-lg-9.col-md-9.col-xs-12
         = c.select :rentcafe_api_version, ["RentCafe V1","RentCafe V2"], {}, { value: c.object.rentcafe_api_version, class: 'form-control' }
+
+    .form-group.credential_fields#yardirentcafe_option.field-to-hide
+      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+        Select Option
+      .col-sm-12.col-lg-9.col-md-9.col-xs-12
+        = select_tag :yardirentcafe_code_option, options_for_select(["Company Code","Api Token"],c.object.api_token.present? ? "Api Token" : "Company Code"),{:class=>"form-control"}
+
 
     .form-group.credential_fields#yardirentcafe_api_options
       %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
