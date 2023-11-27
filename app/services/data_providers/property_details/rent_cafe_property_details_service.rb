@@ -3,7 +3,9 @@ module DataProviders
     class RentCafePropertyDetailsService < DataProviders::PropertyDetails::BaseService
 
       def perform
-        return unless @credential&.rentcafe_v2_auth_token.present?
+        if @credential.rentcafe_api_version == "RentCafe V2"
+          return unless @credential&.rentcafe_v2_auth_token.present?
+        end
 
         property_codes = @credential.p_code.split(',') rescue []
         property_codes.each do |property_code|
