@@ -162,11 +162,18 @@ module DataProviders
               fp.units_available = r['']
               fp.deposit = r['minimumDeposit']
               add_floorplan_images(fp, r['floorplanImageURL'])
+              add_floorplan_virtual_url(fp, r["fpVideoEmbedCode"])
               fp.save
             rescue => exception
               raise exception
             end
           end
+
+          def add_floorplan_virtual_url fp, embedded_video
+            virtual_url = embedded_video&.match(/src=\"(.*?)\"/)[1] rescue ""
+            fp.virtual_tour_url = virtual_url
+          end
+
 
           def add_floorplan_images fp, image_urls
             primary_image = fetch_floorplan_image_url(image_urls, 0)
