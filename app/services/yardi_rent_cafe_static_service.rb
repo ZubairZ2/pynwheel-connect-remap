@@ -185,6 +185,8 @@ class YardiRentCafeStaticService < BaseService
 
               fp.deposit = r["MinimumDeposit"]
               add_floorplan_images(fp, r['FloorplanImageURL'])
+              add_floorplan_virtual_url(fp, r["FpVideoEmbedCode"])
+
               fp.save(validate: false)
             end
           end
@@ -195,6 +197,11 @@ class YardiRentCafeStaticService < BaseService
       end
     end
   end
+
+  def add_floorplan_virtual_url fp, embedded_video
+    virtual_url = embedded_video&.match(/src=\"(.*?)\"/)[1] rescue ""
+    fp.virtual_tour_url = virtual_url
+  end    
 
   def add_floorplan_images fp, image_urls
     primary_image = fetch_floorplan_image_url(image_urls, 0)
