@@ -2,40 +2,52 @@
   .box.box-info.add-plan
     .box-header
       %h3.box-title
-        Create
-        %span Entrata Provider
+        Entrata
+        %span Company Credentials
         = f.hidden_field :data_providers, value: ["psi"]
-  = f.fields_for :credential do |c|
-    .form-group.credential_fields.entrata_url
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Domain
+    = f.fields_for :credential do |c|
+      .box-body
+        .row
+          .col-lg-9.col-lg-offset-1
+            .form-group.credential_fields.entrata_url
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Domain
 
-      .row
-        .col-sm-12.col-lg-2.col-md-9.col-xs-12.entrata_input
-          = c.text_field :entrata_url, :class=>"form-control settings-field", :placeholder=>"Domain"
+              .row
+                .col-sm-12.col-lg-2.col-md-9.col-xs-12.entrata_input
+                  = c.text_field :entrata_url, :class=>"form-control settings-field", :placeholder=>"Domain"
 
-        %span.col-sm-12.col-lg-4.col-md-9.col-xs-12.entrata_label
-          \.entrata.com/api/v1/propertyunits
+                %span.col-sm-12.col-lg-4.col-md-9.col-xs-12.entrata_label
+                  \.entrata.com/api/v1/propertyunits
 
-    .form-group.credential_fields#username
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Username
+            .form-group.credential_fields#username
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Username
 
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-        = c.text_field :username, :class=>"form-control settings-field", :placeholder=>"username"
-    .form-group.credential_fields#password
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Password
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
+                = c.text_field :username, :class=>"form-control settings-field", :placeholder=>"username"
+            .form-group.credential_fields#password
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Password
 
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-        = c.text_field :password, :class=>"form-control settings-field", :placeholder=>"Password",:value=>c.object.password,:autocomplete=>"OFF"
-    .form-group.field-to-hide
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Select Currency
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
+                = c.text_field :password, :class=>"form-control settings-field", :placeholder=>"Password",:value=>c.object.password,:autocomplete=>"OFF"
+            .form-group.field-to-hide
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Select Currency
 
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = c.select :currency, currencies, {}, { value: c.object.currency, class: 'form-control' }
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = c.select :currency, currencies, {}, { value: c.object.currency, class: 'form-control' }
 
-
-    .box-footer
-      = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10"
+            .box-footer
+              %button.btn.btn-success.pull-right.mr-10.company-property{id: "submit-btn", type: "button", "data-toggle" => "modal", "data-target" => "#confirmation-modal", provider: "psi"} Save Changes
+            #confirmation-modal.modal.fade{ tabindex: "-1", role: "dialog", 'aria-labelledby' => "confirmation-modal-label", 'aria-hidden' => "true" }
+              .modal-dialog
+                .modal-content
+                  .modal-header
+                    %h4.modal-title{ id: "confirmation-modal-label" } Confirmation
+                  .modal-body
+                    .community-list
+                  .modal-footer
+                    %button.btn.btn-default.company-community{ type: "button", 'data-dismiss' => "modal" } Close
+                    = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10 submit-credential"

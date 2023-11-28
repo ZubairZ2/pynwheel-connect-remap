@@ -2,28 +2,41 @@
   .box.box-info.add-plan
     .box-header
       %h3.box-title
-        Create
-        %span ResMan Provider
+        ResMan
+        %span  Company Credentials
         = f.hidden_field :data_providers, value: ["resman"]
-  = f.fields_for :credential do |c|
-    .form-group.credential_fields#resman_api_version
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        API Version
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = c.select :resman_api_version, ["GetMarketing2_0","GetMarketing4_0"], {}, { value: c.object.resman_api_version, class: 'form-control' }
+    = f.fields_for :credential do |c|
+      .box-body
+        .row
+          .col-lg-9.col-lg-offset-1
+            .form-group.credential_fields#resman_api_version
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                API Version
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = c.select :resman_api_version, ["GetMarketing2_0","GetMarketing4_0"], {}, { value: c.object.resman_api_version, class: 'form-control' }
 
-    .form-group.credential_fields#resman_account_id
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Account Id
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-        = c.text_field :resman_account_id, :class=>"form-control settings-field", :placeholder=>"Account Id"
+            .form-group.credential_fields#resman_account_id
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Account Id
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
+                = c.text_field :resman_account_id, :class=>"form-control settings-field", :placeholder=>"Account Id"
 
-    .form-group
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Select Currency
+            .form-group
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Select Currency
 
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = c.select :currency, currencies, {}, { value: c.object.currency, class: 'form-control' }
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = c.select :currency, currencies, {}, { value: c.object.currency, class: 'form-control' }
 
-    .box-footer
-      = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10"
+            .box-footer
+              %button.btn.btn-success.pull-right.mr-10.company-property{id: "submit-btn-resman", type: "button", "data-toggle" => "modal", "data-target" => "#confirmation-modal2", provider: "resman"} Save Changes
+            #confirmation-modal2.modal.fade{ tabindex: "-1", role: "dialog", 'aria-labelledby' => "confirmation-modal-label", 'aria-hidden' => "true" }
+              .modal-dialog
+                .modal-content
+                  .modal-header
+                    %h4.modal-title{ id: "confirmation-modal-label" } Confirmation
+                  .modal-body
+                    .community-list
+                  .modal-footer
+                    %button.btn.btn-default.company-community{ type: "button", 'data-dismiss' => "modal" } Close
+                    = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10 submit-credential"

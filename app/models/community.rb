@@ -83,6 +83,7 @@ class Community < ApplicationRecord
   after_update :crop_secondary_image
   after_create :create_tour_also
   after_create :change_touchscreen_app_for_dwelo
+  after_create :set_company_level_settings_yes
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
   after_save :set_community_time_zone, if: ->(obj){ (obj.latitude.present? and obj.latitude_changed?) ||  (obj.longitude.present? and obj.longitude_changed?) }
 
@@ -701,6 +702,10 @@ class Community < ApplicationRecord
 
   def change_touchscreen_app_for_dwelo
     self.update_columns(touchscreen_app: false)
+  end
+
+  def set_company_level_settings_yes
+    self.update_columns(use_company_level_data_settings: true)
   end
 
   def crop_image

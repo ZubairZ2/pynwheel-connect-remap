@@ -86,6 +86,13 @@ class CompaniesController < ApplicationController
     end
   end
 
+  def company_data_provider_communities_list
+    provider = params[:provider]
+    @communities = @company.communities.joins(:credential).where(use_company_level_data_settings: true, data_provider: provider)
+    respond_to do |format|
+      format.js
+    end
+  end
   def generate_csv
     @communities = fetch_communities_hash(params[:id])
     company = Company.find params[:id]

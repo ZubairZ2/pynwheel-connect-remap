@@ -2,22 +2,35 @@
   .box.box-info.add-plan
     .box-header
       %h3.box-title
-        Create
-        %span RealPage Provider
+        RealPage
+        %span  Company Credentials
         = f.hidden_field :data_providers, :value=> "realpagesvc"
-  = f.fields_for :credential do |c|
-    .form-group.credential_fields#pmc_id
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
-        PMC ID
+    = f.fields_for :credential do |c|
+      .box-body
+        .row
+          .col-lg-9.col-lg-offset-1
+            .form-group.credential_fields#pmc_id
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
+                PMC ID
 
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-        = c.text_field :pmc_id, :class=>"form-control settings-field", :placeholder=>"PMC ID"
-    .form-group.field-to-hide
-      %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-        Select Currency
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
+                = c.text_field :pmc_id, :class=>"form-control settings-field", :placeholder=>"PMC ID"
+            .form-group.field-to-hide
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Select Currency
 
-      .col-sm-12.col-lg-9.col-md-9.col-xs-12
-        = c.select :currency,currencies, {}, { value: c.object.currency, class: 'form-control' }
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
+                = c.select :currency,currencies, {}, { value: c.object.currency, class: 'form-control' }
 
-    .box-footer
-      = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10"
+            .box-footer
+              %button.btn.btn-success.pull-right.mr-10.company-property{id: "submit-btn-realpagesvc", type: "button", "data-toggle" => "modal", "data-target" => "#confirmation-modal1", provider: "realpagesvc"} Save Changes
+            #confirmation-modal1.modal.fade{ tabindex: "-1", role: "dialog", 'aria-labelledby' => "confirmation-modal-label", 'aria-hidden' => "true" }
+              .modal-dialog
+                .modal-content
+                  .modal-header
+                    %h4.modal-title{ id: "confirmation-modal-label" } Confirmation
+                  .modal-body
+                    .community-list
+                  .modal-footer
+                    %button.btn.btn-default.company-community{ type: "button", 'data-dismiss' => "modal" } Close
+                    = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10 submit-credential"
