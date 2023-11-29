@@ -285,7 +285,7 @@ module Api
           if params[:unit_id].present?
             unit = Unit.find_by_id(params[:unit_id])
             @community = Community.find unit.community_id
-            @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND marketing_name NOT LIKE ?', unit.floorplan_id, unit.community_id, true, ("%WAIT%" or "%Wait%" or "%wait%")) if unit.present?
+            @units = get_units_for_tour(unit)
     
             @units.each do |u|
               if u.community.is_sitemap?
@@ -338,7 +338,8 @@ module Api
           if params[:floorplan_id].present?
             floorplan = Floorplan.find_by_id(params[:floorplan_id])
             @community = Community.find params[:community_id]
-            @units = get_floorplan_units_for_tour(floorplan) #Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND marketing_name NOT LIKE ? AND unit_status = ?', floorplan.provider_floorplan_id,@community.id,true, ("%WAIT%" or "%Wait%" or "%wait%"), "Vacant Unrented Ready" ).past_available_units if floorplan.present?
+            @units = get_units_for_tour(floorplan) 
+
             @units.each do |u|
               if u.community.is_sitemap?
                 u.sitemap_image_url = u&.community&.sitemap&.image&.url rescue ""
@@ -476,10 +477,10 @@ module Api
         end
       end
 
-      def get_floorplan_units_for_tour(floorplan)
-        if floorplan.present?
+      def get_units_for_tour(entity)
+        if entity.present?
           units = Unit.where(
-            floorplan_id: floorplan.provider_floorplan_id,
+            floorplan_id: entity.is_a?(Floorplan) ? entity.provider_floorplan_id : entity.floorplan_id,
             community_id: @community.id,
             available: true
           )
@@ -498,7 +499,6 @@ module Api
         end
       end
 
-    
       def set_community_tour_user
         @community ||= Community.find_by_id params[:community_id]
       end
