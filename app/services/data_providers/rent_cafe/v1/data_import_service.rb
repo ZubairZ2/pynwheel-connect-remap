@@ -1,7 +1,7 @@
 module DataProviders
   module RentCafe
-    module V2
-      class DataImportService < DataProviders::RentCafe::V2::BaseService
+    module V1
+      class DataImportService < DataProviders::RentCafe::V1::BaseService
 
         def perform
           property_codes = @credential.p_code.split(',') rescue []
@@ -64,7 +64,7 @@ module DataProviders
             units = []
 
             response.each do |r|
-              unit = Unit.find_or_initialize_by(provider: "yardirentcafe", community_id: @community_id, provider_unit_id: r["apartmentId"])
+              unit = Unit.find_or_initialize_by(provider: "yardirentcafe", community_id: @community_id, provider_unit_id: r["ApartmentId"])
               next if unit.manual_override
               update_unit_attributes(unit, r, property_code)
               units << unit
@@ -75,23 +75,23 @@ module DataProviders
 
           def update_unit_attributes(unit, r, property_code)
             begin
-              update_attribute_if_blank(unit, :marketing_name, r["apartmentName"], 'name')
+              update_attribute_if_blank(unit, :marketing_name, r["ApartmentName"], 'name')
               update_attribute_if_blank(unit, :floor, evaluate_floor(unit.marketing_name))
-              update_attribute_if_blank(unit, :floorplan_id, r["floorplanId"])
-              update_attribute_if_blank(unit, :effective_rent, r["minimumRent"])
-              update_attribute_if_blank(unit, :availability, unit_availability(r["availableDate"]))
-              update_attribute_if_blank(unit, :available_date, set_availabilty_date(r["availableDate"]))
-              update_attribute_if_blank(unit, :available, unit_availability(r["availableDate"]) == "Unoccupied")
+              update_attribute_if_blank(unit, :floorplan_id, r["FloorplanId"])
+              update_attribute_if_blank(unit, :effective_rent, r["MinimumRent"])
+              update_attribute_if_blank(unit, :availability, unit_availability(r["AvailableDate"]))
+              update_attribute_if_blank(unit, :available_date, set_availabilty_date(r["AvailableDate"]))
+              update_attribute_if_blank(unit, :available, unit_availability(r["AvailableDate"]) == "Unoccupied")
               unit.effective_rent = 1.0 if unit.effective_rent <= 0
-              unit.availability_url = r["applyOnlineURL"] if r["applyOnlineURL"].present?
-              unit.lease_pricing = calculate_lease_pricing(property_code, r["apartmentName"])
-              unit.description = unit_description(r["amenities"]) if r["amenities"].present?
-              unit.property_id = r["propertyId"]
-              unit.unit_type = r["apartmentName"]
-              unit.market_rent = r["minimumRent"]
-              unit.square_feet = r["sqft"] if r["sqft"].present?
-              unit.min_effective_rent = r["minimumRent"] if r["minimumRent"].present?
-              unit.max_effective_rent = r["minimumRent"] if r["minimumRent"].present?
+              unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
+              unit.lease_pricing = calculate_lease_pricing(property_code, r["ApartmentName"])
+              unit.description = unit_description(r["Amenities"]) if r["Amenities"].present?
+              unit.property_id = r["PropertyId"]
+              unit.unit_type = r["ApartmentName"]
+              unit.market_rent = r["MinimumRent"]
+              unit.square_feet = r["SQFT"] if r["SQFT"].present?
+              unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
+              unit.max_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
             rescue => exception
               exception
             end
@@ -132,9 +132,9 @@ module DataProviders
             begin
               rent_matrix = get_apartment_pricing_details(property_code, apartment_name)
               unless rent_matrix.present?
-                uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq
-                distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["term"] == term.to_s}.compact}.compact
-                return distinct_data.map{|data| data.map{|r| [r["rent"].to_i, r["term"], r["start_Date"], r["end_Date"]]}.min}
+                uniq_terms = rent_matrix.map{|x| x["Term"].to_i }.uniq
+                distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["Term"] == term.to_s}.compact}.compact
+                return distinct_data.map{|data| data.map{|r| [r["Rent"].to_i, r["Term"], r["Start_Date"], r["End_Date"]]}.min}
               else
                 return nil
               end
@@ -154,7 +154,7 @@ module DataProviders
             floorplans = []
             begin
               response.each do |r|
-                fp = Floorplan.find_or_initialize_by(provider: 'yardirentcafe', community_id: @community_id, provider_floorplan_id: r['floorplanId'])
+                fp = Floorplan.find_or_initialize_by(provider: 'yardirentcafe', community_id: @community_id, provider_floorplan_id: r['FloorplanId'])
                 next if fp.manual_override
                 update_floorplan_attributes(fp, r)
                 floorplans << fp
@@ -168,17 +168,17 @@ module DataProviders
 
           def update_floorplan_attributes(fp, r)
             begin
-              update_attribute_if_blank(fp, :name, r['floorplanName'])
-              update_attribute_if_blank(fp, :bedrooms, r['beds'], 'bedroom')
-              update_attribute_if_blank(fp, :bathrooms, r['baths'], 'bathroom')
-              update_floorplan_square_feet(fp, r['minimumSQFT'], r['sqft'])
-              update_attribute_if_blank(fp, :market_rent, r['minimumRent'])
-              fp.property_id = r['propertyId']
+              update_attribute_if_blank(fp, :name, r['FloorplanName'])
+              update_attribute_if_blank(fp, :bedrooms, r['Beds'], 'bedroom')
+              update_attribute_if_blank(fp, :bathrooms, r['Baths'], 'bathroom')
+              update_floorplan_square_feet(fp, r['MinimumSQFT'], r['SQFT'])
+              update_attribute_if_blank(fp, :market_rent, r['MinimumRent'])
+              fp.property_id = r['PropertyId']
               fp.unit_count = r['']
               fp.units_available = r['']
-              fp.deposit = r['minimumDeposit']
-              add_floorplan_images(fp, r['floorplanImageURL'])
-              add_floorplan_virtual_url(fp, r["fpVideoEmbedCode"])
+              fp.deposit = r['MinimumDeposit']
+              add_floorplan_images(fp, r['FloorplanImageURL'])
+              add_floorplan_virtual_url(fp, r["FpVideoEmbedCode"])
               fp.save
             rescue => exception
               raise exception

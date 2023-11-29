@@ -1008,11 +1008,7 @@ s  end
   end
   
   def import_yardirentcafe_data
-    if credential.rentcafe_api_version == "RentCafe V2"
-      RentCafeDataImportWorker.perform_async self.id
-    else
-      ImportYardirentcafeStaticDataJob.perform_async credential.attributes.to_json
-    end
+    RentCafeDataImportWorker.perform_async self.id
   end
 
   def swap_yardirentcafe_data
@@ -1184,7 +1180,7 @@ s  end
     if credential.rentcafe_api_version == "RentCafe V2"
       yardi_rent_cafe_connection_service = DataProviders::RentCafe::V2::TestConnectionService.new(self.id)
     else
-      yardi_rent_cafe_connection_service = YardiRentCafeConnectionService.new(credential.attributes)
+      yardi_rent_cafe_connection_service = DataProviders::RentCafe::V1::TestConnectionService.new(self.id)
     end
 
     yardi_rent_cafe_connection_service.perform

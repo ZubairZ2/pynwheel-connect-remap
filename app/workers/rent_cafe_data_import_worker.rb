@@ -3,11 +3,15 @@ class RentCafeDataImportWorker
   sidekiq_options queue: 'import_data', retry: 3
 
   def perform(community_id)
-    begin
+    return unless community_id.present?
+    community = Community.find_by_id community_id
+
+    if community&.credential&.rentcafe_api_version == "RentCafe V2"
       rent_cafe_data_import_service = DataProviders::RentCafe::V2::DataImportService.new(community_id)
-      rent_cafe_data_import_service.perform
-    rescue => exception
-      raise exception
+    else
+      rent_cafe_data_import_service = DataProviders::RentCafe::V1::DataImportService.new(community_id)
     end
+
+    rent_cafe_data_import_service.perform
   end
 end
