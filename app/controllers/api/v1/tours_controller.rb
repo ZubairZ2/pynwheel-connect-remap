@@ -338,7 +338,7 @@ module Api
           if params[:floorplan_id].present?
             floorplan = Floorplan.find_by_id(params[:floorplan_id])
             @community = Community.find params[:community_id]
-            @units = Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND marketing_name NOT LIKE ?', floorplan.provider_floorplan_id,@community.id,true, ("%WAIT%" or "%Wait%" or "%wait%") ) if floorplan.present?
+            @units = get_floorplan_units_for_tour(floorplan) #Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND marketing_name NOT LIKE ? AND unit_status = ?', floorplan.provider_floorplan_id,@community.id,true, ("%WAIT%" or "%Wait%" or "%wait%"), "Vacant Unrented Ready" ).past_available_units if floorplan.present?
             @units.each do |u|
               if u.community.is_sitemap?
                 u.sitemap_image_url = u&.community&.sitemap&.image&.url rescue ""
@@ -475,6 +475,29 @@ module Api
           )
         end
       end
+
+      def get_floorplan_units_for_tour(floorplan)
+        if floorplan.present?
+          units = Unit.where(
+            floorplan_id: floorplan.provider_floorplan_id,
+            community_id: @community.id,
+            available: true
+          )
+
+          if @community.data_provider == "yardirentcafe"
+            units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
+                          .where(unit_status: "Vacant Unrented Ready")
+                          .past_available_units
+          else
+            units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
+          end
+
+          units
+        else
+          []
+        end
+      end
+
     
       def set_community_tour_user
         @community ||= Community.find_by_id params[:community_id]

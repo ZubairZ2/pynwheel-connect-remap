@@ -41,6 +41,7 @@ json.data @units do |u|
   json.display_virtual_tour_button_label true #unit.display_virtual_tour_button_label.present? ? unit.display_virtual_tour_button_label : false
   json.virtual_tour_button_label u.virtual_tour_button_label.present? ? u.virtual_tour_button_label : "3D Tour"
   json.virtual_tour u.get_unit_virtual_tour_url()
+  json.unit_status u.unit_status
   if @community.display_rent && u.lease_pricing.present? && @community.display_pricing_options
     json.lease_pricing u.lease_pricing.gsub('=>', ':')
     json.lease_pricing_pynwheel_touch u.get_lease_term_pricing_matrix()

@@ -92,7 +92,8 @@ class YardiRentCafeService < BaseService
                 unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
                 unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
                 unit.availability_url = r["ApplyOnlineURL"] if r["ApplyOnlineURL"].present?
-                
+                unit.unit_status = r["UnitStatus"] rescue ""
+
                 leasing = ""
                 lease_prices_array = []
 
@@ -178,6 +179,8 @@ class YardiRentCafeService < BaseService
                       unit.available = true
                     end
                   end
+                  
+                  unit.unit_status = r["UnitStatus"] rescue ""
 
                   unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
                   unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
