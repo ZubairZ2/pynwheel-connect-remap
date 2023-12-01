@@ -149,7 +149,7 @@ class CompaniesController < ApplicationController
   
   def company_params
     params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo,:inactivate, :creator_id,:credential_attributes=>[:currency, :yardi_rent_cafe_api_url, :entrata_available_units_only,:id,:url,:entrata_url,:username,:password,:pmc_id,:server_name,:database,:platform,:interface_entity,:c_code,
-                                                                                                                                           :api_token,:resman_apikey, :resman_account_id, :resman_api_version],data_providers: [])
+                                                                                                                                           :api_token,:resman_apikey, :resman_account_id, :resman_api_version, :rentcafe_api_version],data_providers: [])
   end
 
   def update_communities_credentials(communities, provider)

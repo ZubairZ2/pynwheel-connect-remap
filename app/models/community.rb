@@ -86,6 +86,7 @@ class Community < ApplicationRecord
   after_create :set_company_level_settings_yes
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
   after_save :set_community_time_zone, if: ->(obj){ (obj.latitude.present? and obj.latitude_changed?) ||  (obj.longitude.present? and obj.longitude_changed?) }
+  after_save :create_default_credential
 
   enum alert_contact: [:email, :phone, :both]
   scope :active_communities, -> { where(locked: false) }
@@ -706,6 +707,23 @@ class Community < ApplicationRecord
 
   def set_company_level_settings_yes
     self.update_columns(use_company_level_data_settings: true)
+  end
+
+  def create_default_credential
+    if self.credential.present?
+      current_company = self.company
+      if current_company.credential.present? && (self.use_company_level_data_settings == true)
+        credential_attributes = [
+          "currency", "yardi_rent_cafe_api_url", "entrata_available_units_only", "url",
+          "entrata_url", "username", "password", "pmc_id", "server_name", "database", "platform", "interface_entity",
+          "c_code", "api_token", "resman_apikey", "resman_account_id", "resman_api_version", "rentcafe_api_version"
+        ]
+        company_credential_attributes = current_company.credential&.attributes&.keys.map(&:to_sym)
+        company_credential_attributes = current_company.credential&.attributes&.slice(*credential_attributes)
+        community_credential = self.credential
+        community_credential.update(company_credential_attributes)
+      end
+    end
   end
 
   def crop_image
