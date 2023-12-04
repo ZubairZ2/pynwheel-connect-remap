@@ -10,6 +10,12 @@
       .box-body
         .row
           .col-lg-9.col-lg-offset-1
+            .form-group.credential_fields#yardirentcafe_api_options
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
+                API URL
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
+                = c.select :yardi_rent_cafe_api_url, YARDI_RENT_CAFE_API_BASE_URLS, {}, { value: c.object.yardi_rent_cafe_api_url, class: 'form-control' }
+
             .form-group.credential_fields#yardirentcafe_api_version_options.field-to-hide
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 API Version
@@ -22,12 +28,6 @@
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = select_tag :yardirentcafe_code_option, options_for_select(["Company Code","Api Token"],c.object.api_token.present? ? "Api Token" : "Company Code"),{:class=>"form-control"}
 
-
-            .form-group.credential_fields#yardirentcafe_api_options
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
-                API URL
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-                = c.select :yardi_rent_cafe_api_url, YARDI_RENT_CAFE_API_BASE_URLS, {}, { value: c.object.yardi_rent_cafe_api_url, class: 'form-control' }
             .form-group.credential_fields#api_token
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 Vendor Api Token

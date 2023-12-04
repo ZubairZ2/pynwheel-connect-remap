@@ -667,13 +667,13 @@ function showYardiRentCafeCodeInputOption(value){
     $('#c_code').show();
     $('#yardirentcafe_option').show();
 
-  if (value == "Company Code"){
+  if (value == "Api Token"){
+    $('#api_token').show();
+    $('#c_code').hide(); 
+  }
+  else {
     $('#api_token').hide();
     $('#c_code').show();
-  }
-  else{
-   $('#api_token').show();
-   $('#c_code').hide(); 
   }
 }
 
