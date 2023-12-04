@@ -615,9 +615,9 @@ function showYardiRentCafeFields(){
     $('#currency_list').show();
     //removeValidationsClass();
     //$('#c_code').show();
-    let varsion_value = $('#community_credential_attributes_rentcafe_api_version').val();
-
-    if(varsion_value == 'RentCafe V2') { 
+    let rentCafeVersion = $('#community_credential_attributes_rentcafe_api_version').val();
+    
+    if(rentCafeVersion == 'RentCafe V2') { 
         showYardiRentCafeVersion2Option();
     } else {
         showYardiRentCafeCodeInputOption($('#yardirentcafe_code_option').val());
@@ -663,9 +663,9 @@ function showFileFields(){
 }
 
 function showYardiRentCafeCodeInputOption(value){
-    $('#api_token').show();
-    $('#c_code').show();
-    $('#yardirentcafe_option').show();
+  $('#api_token').show();
+  $('#c_code').show();
+  $('#yardirentcafe_option').show();
 
   if (value == "Api Token"){
     $('#api_token').show();

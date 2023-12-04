@@ -26,20 +26,20 @@
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Select Option
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = select_tag :yardirentcafe_code_option, options_for_select(["Company Code","Api Token"],c.object.api_token.present? ? "Api Token" : "Company Code"),{:class=>"form-control"}
+                = select_tag :yardirentcafe_code_option, options_for_select(["Company Code","Api Token"], c.object.api_token.present? ? "Api Token" : "Company Code"),{:class=>"form-control"}
 
-            .form-group.credential_fields#api_token
+            .form-group.credential_fields#api_token.field-to-hide
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 Vendor Api Token
 
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = c.text_field :api_token, :class=>"form-control settings-field", :placeholder=>" Vendor Api Token"
 
-            .form-group.credential_fields#c_code
+            .form-group.credential_fields#c_code.field-to-hide
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 C-code
 
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = c.text_field :c_code, :class=>"form-control settings-field", :placeholder=>"C-Code"
 
             .box-footer
