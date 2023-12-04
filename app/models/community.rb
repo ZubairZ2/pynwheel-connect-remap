@@ -714,7 +714,7 @@ class Community < ApplicationRecord
       current_company = self.company
       if current_company.credential.present? && (self.use_company_level_data_settings == true)
         credential_attributes = [
-          "currency", "yardi_rent_cafe_api_url", "entrata_available_units_only", "url",
+          "yardi_rent_cafe_api_url", "entrata_available_units_only", "url",
           "entrata_url", "username", "password", "pmc_id", "server_name", "database", "platform", "interface_entity",
           "c_code", "api_token", "resman_apikey", "resman_account_id", "resman_api_version", "rentcafe_api_version"
         ]

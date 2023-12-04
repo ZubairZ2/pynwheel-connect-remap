@@ -88,7 +88,7 @@ class CompaniesController < ApplicationController
 
   def company_data_provider_communities_list
     provider = params[:provider]
-    @communities = @company.communities.joins(:credential).where(use_company_level_data_settings: true, data_provider: provider)
+    @communities = @company.communities.joins(:credential).where(use_company_level_data_settings: true, data_provider: provider)&.uniq
     respond_to do |format|
       format.js
     end

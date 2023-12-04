@@ -53,12 +53,6 @@
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
                 = c.select :interface_entity , options_for_select(["Pynwheel"]),{},{:class=>"form-control settings-field"}
-            .form-group
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Select Currency
-
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = c.select :currency, currencies, {}, { value: c.object.currency, class: 'form-control' }
 
             .box-footer
               %button.btn.btn-success.pull-right.mr-10.company-property{id: "submit-btn-yardi", type: "button", "data-toggle" => "modal", "data-target" => "#confirmation-modal3", provider: "yardi"} Save Changes

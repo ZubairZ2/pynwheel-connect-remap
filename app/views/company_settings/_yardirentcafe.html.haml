@@ -42,13 +42,6 @@
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
                 = c.text_field :c_code, :class=>"form-control settings-field", :placeholder=>"C-Code"
 
-            .form-group.field-to-hide
-              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                Select Currency
-
-              .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = c.select :currency, currencies, {}, { value: c.object.currency, class: 'form-control' }
-
             .box-footer
               %button.btn.btn-success.pull-right.mr-10.company-property{id: "submit-btn-yardirentcafe", type: "button", "data-toggle" => "modal", "data-target" => "#confirmation-modal4", provider: "yardirentcafe"} Save Changes
             #confirmation-modal4.modal.fade{ tabindex: "-1", role: "dialog", 'aria-labelledby' => "confirmation-modal-label", 'aria-hidden' => "true" }
