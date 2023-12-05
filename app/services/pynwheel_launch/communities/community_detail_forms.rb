@@ -124,12 +124,12 @@ class PynwheelLaunch::Communities::CommunityDetailForms
         status: company_status
       },
       {
-        name: COMMUNITY_DETAILS,
-        status: community_status
-      },
-      {
         name: PROPERTY_MANAGEMENT_SYSTEM,
         status: data_provider_status
+      },
+      {
+        name: COMMUNITY_DETAILS,
+        status: community_status
       },
       {
         name: PROPERTY_MAP_IMAGES,
