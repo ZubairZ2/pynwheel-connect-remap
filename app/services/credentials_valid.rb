@@ -208,27 +208,8 @@ class CredentialsValid < BaseService
 
       end
     elsif community.data_provider == "yardirentcafe"
-      begin
-        request_type = "apartmentavailability"
-        company_code = credentials.c_code
-        api_token = credentials.api_token
-        property_code = credentials.p_code.split(',')[0]
-        if api_token.present?
-          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
-        else
-          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
-        end
-        response = HTTParty.get(@url)
-        response = JSON.parse(response.body)
+      verify_rent_cafe_credentials(community, credentials)
 
-        if response[0]["Error"].nil?
-          return true
-        else
-          return false
-        end
-      rescue => e
-        return false
-      end
     elsif community.data_provider == "zaremba"
       begin
         property_id = credentials.zaremba_property_id.split(',')[0] rescue []
@@ -271,15 +252,51 @@ class CredentialsValid < BaseService
       return true
     end
 
-
-
-
-
-
-
-
-
-
   end
+
+  private
+
+    def verify_rent_cafe_credentials community, credentials
+      if credentials.rentcafe_api_version == "RentCafe V2"
+        verify_rentcafe_v2_credentials(community, credentials)
+      else
+        verify_rentcafe_v1_credentials(community, credentials)
+      end
+    end
+
+    def verify_rentcafe_v1_credentials community, credentials
+      begin
+        request_type = "apartmentavailability"
+        company_code = credentials.c_code
+        api_token = credentials.api_token
+        property_code = credentials.p_code.split(',')[0]
+        if api_token.present?
+          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&APIToken=#{api_token}&propertycode=#{property_code}&showallunit=-1"
+        else
+          @url = "#{credentials.yardi_rent_cafe_api_url}/rentcafeapi.aspx?requestType=#{request_type}&companyCode=#{company_code}&propertycode=#{property_code}&showallunit=-1"
+        end
+        response = HTTParty.get(@url)
+        response = JSON.parse(response.body)
+
+        if response[0]["Error"].nil?
+          return true
+        else
+          return false
+        end
+      rescue => e
+        return false
+      end
+    end
+
+    def verify_rentcafe_v2_credentials community, credentials
+      begin
+        property_code = credentials&.p_code&.split(",")[0] rescue ""
+        property_code = property_code&.strip
+        response = DataProviders::RentCafe::V2ApisService.new(community&.id).get_apartment_availability(property_code)
+        return response.present? ? true : false
+      rescue => e
+        return false
+      end
+    end
 
 end

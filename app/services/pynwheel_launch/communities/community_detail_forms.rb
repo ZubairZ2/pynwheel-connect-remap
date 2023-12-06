@@ -124,12 +124,12 @@ class PynwheelLaunch::Communities::CommunityDetailForms
         status: company_status
       },
       {
-        name: COMMUNITY_DETAILS,
-        status: community_status
-      },
-      {
         name: PROPERTY_MANAGEMENT_SYSTEM,
         status: data_provider_status
+      },
+      {
+        name: COMMUNITY_DETAILS,
+        status: community_status
       },
       {
         name: PROPERTY_MAP_IMAGES,
@@ -361,11 +361,13 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     locks_status << igloohome_lock&.status&.status_and_remarks_obj rescue nil if igloohome_lock.present?
     locks_status << schlage_locks&.status&.status_and_remarks_obj rescue nil  if schlage_locks.present?
     locks_status << yale_locks&.status&.status_and_remarks_obj rescue nil if yale_locks.present?
+    
     if other_locks.present?
       other_locks.each do |lock|
         locks_status << lock&.status&.status_and_remarks_obj rescue nil 
       end
     end
+
     locks_status << remote_locks&.status&.status_and_remarks_obj rescue nil unless remote_locks.nil?
     locks_status.compact.uniq
   end
@@ -384,13 +386,13 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     if @community.is_sitemap
       @community.sitemap&.status.update_attributes(status: status, remarks: remarks)
     elsif @community.has_floorplates?
-      @community.floorplates.each {|floorplate| floorplate&.status.update_attributes(status: status, remarks: remarks) }
+      @community.floorplates.each {|floorplate| floorplate&.status&.update_attributes(status: status, remarks: remarks) }
     end
   end
 
   def update_floorplan_status_and_remarks status, remarks
     return if @community.floorplans.blank?
-    @community.floorplans.each {|floorplan| floorplan&.status.update_attributes(status: status, remarks: remarks) }
+    @community.floorplans.each {|floorplan| floorplan&.status&.update_attributes(status: status, remarks: remarks) }
   end
 
   def update_data_provider_status_and_remarks status, remarks
@@ -448,14 +450,14 @@ class PynwheelLaunch::Communities::CommunityDetailForms
     igloohome_lock = @community.igloohome
     remote_locks = @community.launch_remote
 
-    zerv&.status.update_attributes(status: status, remarks: remarks) if zerv.present?
-    latch&.status.update_attributes(status: status, remarks: remarks) if latch.present?
-    dwelo&.status.update_attributes(status: status, remarks: remarks) if dwelo.present?
-    igloohome_lock&.status.update_attributes(status: status, remarks: remarks) if igloohome_lock.present?
-    schlage_locks&.status.update_attributes(status: status, remarks: remarks) if schlage_locks.present?
-    yale_locks&.status.update_attributes(status: status, remarks: remarks) if yale_locks.present?
-    other_locks.each {|lock| lock&.status.update_attributes(status: status, remarks: remarks) } if other_locks.present?
-    remote_locks&.status.update_attributes(status: status, remarks: remarks) unless remote_locks.nil?
+    zerv&.status&.update_attributes(status: status, remarks: remarks) if zerv.present?
+    latch&.status&.update_attributes(status: status, remarks: remarks) if latch.present?
+    dwelo&.status&.update_attributes(status: status, remarks: remarks) if dwelo.present?
+    igloohome_lock&.status&.update_attributes(status: status, remarks: remarks) if igloohome_lock.present?
+    schlage_locks&.status&.update_attributes(status: status, remarks: remarks) if schlage_locks.present?
+    yale_locks&.status&.update_attributes(status: status, remarks: remarks) if yale_locks.present?
+    other_locks&.each {|lock| lock&.status.update_attributes(status: status, remarks: remarks) } if other_locks.present?
+    remote_locks&.status&.update_attributes(status: status, remarks: remarks) unless remote_locks.nil?
   end
 
   def update_design_direction_status_and_remarks status, remarks

@@ -206,6 +206,38 @@ class Community < ApplicationRecord
     self.brand_details_pdf
   end
 
+  def update_floorplans_form_status current_pynwheel_user = nil, form_status = ""
+    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(FLOORPLAN_IMAGES)
+    self.set_floorplan_status(current_pynwheel_user, form_status)
+    FollowUpMailer.send_email_after_form_submission(self, FLOORPLAN_IMAGES, previous_status)
+  end
+
+  def update_property_management_form_status current_pynwheel_user = nil, form_status = ""
+    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
+    self.set_data_provider_status(current_pynwheel_user, form_status)
+    FollowUpMailer.send_email_after_form_submission(self, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
+  end
+
+  def update_status_and_remarks form_type, form_status, form_remarks = ""
+    PynwheelLaunch::Communities::CommunityDetailForms.new(self).update_status_and_remarks(form_type, form_status, form_remarks)
+
+    unless disregard_forms(form_type)
+      if form_status.eql?(APPROVED)
+        application_approved = PynwheelLaunch::Communities::FollowUpEmails.new(self).move_to_production_auto_email
+        
+        if application_approved
+          self.production_started_date = DateTime.now
+          self.save
+          FollowUpMailer.application_approved(self)
+        end
+      end
+    end
+  end
+
+  def disregard_forms form_type
+    ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION].include?(form_type))
+  end
+
   def set_community_status(current_user)
     return if self.blank?
 
@@ -257,15 +289,16 @@ class Community < ApplicationRecord
 
   def set_floorplan_status(current_user, status)
     return if self.floorplans.blank?
-
     self.floorplans.each do |floorplan|
       if status.empty?
         floorplan_status = status_string(floorplan&.image&.url.present? || floorplan&.file&.url.present?)
       else
         floorplan_status = status
       end
+    
       set_status_for_all(floorplan,floorplan_status,current_user)
     end
+    
   end
 
   def set_gallery_images_status(current_user, status)
@@ -439,7 +472,7 @@ class Community < ApplicationRecord
       when "psi"
         crm_credential.entrata_domain.present? && crm_credential.entrata_username.present? && crm_credential.entrata_password.present? && crm_credential.entrata_property_id.present?
       when "yardirentcafe"
-        crm_credential.yardirentcafe_marketing_api_key.present? && (crm_credential.yardirentcafe_property_id.present? || crm_credential.yardirentcafe_property_code.present?)
+        check_rent_cafe_crm_credentials()
       when "realpagesvc"
         crm_credential.realpage_site_id.present? && crm_credential.realpage_pmc_id.present?
       when "salesforce"
@@ -448,6 +481,14 @@ class Community < ApplicationRecord
         crm_credential.knock_api_key.present? && crm_credential.knock_community_id.present? && crm_credential.knock_sms_consent_url.present?
       when "funnel"
         crm_credential.funnel_api_key.present? && crm_credential.funnel_community_id.present?
+    end
+  end
+
+  def check_rent_cafe_crm_credentials
+    if credential.rentcafe_api_version == "RentCafe V2"
+      true
+    else
+      crm_credential.yardirentcafe_marketing_api_key.present? && (crm_credential.yardirentcafe_property_id.present? || crm_credential.yardirentcafe_property_code.present?)
     end
   end
 
@@ -618,7 +659,7 @@ class Community < ApplicationRecord
 
   def set_status_for_all(status_entity, status_attribute, current_user)
     status_entity.build_status unless status_entity.status
-    status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user.id)
+    status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user&.id)
   end
 
   def show_apply_now
@@ -871,11 +912,19 @@ class Community < ApplicationRecord
   end
 
   def use_yardi_as_lead?
-    if self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
-      (true)
+    if credential.rentcafe_api_version == "RentCafe V2"
+      use_rent_cafe_v2_as_lead
     else
-      (false)
+      use_rent_cafe_v1_as_lead
     end
+  end
+
+  def use_rent_cafe_v1_as_lead
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.present? && self.crm_credential.crm_provider == "yardirentcafe" && self.crm_credential.yardirentcafe_marketing_api_key.present?
+  end
+
+  def use_rent_cafe_v2_as_lead
+    self.credential.present? && self.credential.use_different_crm_provider && self.crm_credential.crm_provider == "yardirentcafe"
   end
 
   def is_funnel_community?
@@ -991,9 +1040,11 @@ s  end
   def swap_xml_data
     ImportXmlSwapDataJob.perform_async credential.attributes.to_json
   end
+  
   def import_yardirentcafe_data
-    ImportYardirentcafeStaticDataJob.perform_async credential.attributes.to_json
+    RentCafeDataImportWorker.perform_async self.id
   end
+
   def swap_yardirentcafe_data
     ImportYardirentcafeSwapDataJob.perform_async credential.attributes.to_json
   end
@@ -1060,7 +1111,11 @@ s  end
   end
 
   def available_slots scheduled_tour
-    YardiRentCafeServices::MarketingApisService.new(scheduled_tour).available_slots
+    if credential&.rentcafe_api_version == "RentCafe V2"
+      YardiRentCafeV2Services::MarketingApisV2Service.new(scheduled_tour).available_slots
+    else
+      YardiRentCafeServices::MarketingApisService.new(scheduled_tour).available_slots
+    end
   end
 
   def credentials_are_present?
@@ -1154,8 +1209,14 @@ s  end
     xml_connection_service = XmlConnectionService.new(credential.attributes)
     xml_connection_service.perform
   end
+
   def connect_to_yardirentcafe
-    yardi_rent_cafe_connection_service = YardiRentCafeConnectionService.new(credential.attributes)
+    if credential.rentcafe_api_version == "RentCafe V2"
+      yardi_rent_cafe_connection_service = DataProviders::RentCafe::V2::TestConnectionService.new(self.id)
+    else
+      yardi_rent_cafe_connection_service = DataProviders::RentCafe::V1::TestConnectionService.new(self.id)
+    end
+
     yardi_rent_cafe_connection_service.perform
   end
 
@@ -1560,7 +1621,41 @@ s  end
   end
 
   def collect_time_slots_for_yardi(stepping, yardi_self_time_slots, yardi_guided_time_slots)
+    if credential.rentcafe_api_version == "RentCafe V2"
+      filter_rent_cafe_slots_v2(stepping, yardi_self_time_slots, yardi_guided_time_slots)
+    else
+      filter_rent_cafe_slots_v1(stepping, yardi_self_time_slots, yardi_guided_time_slots)
+    end
+  end
+
+  def filter_rent_cafe_slots_v2 stepping, yardi_self_time_slots, yardi_guided_time_slots
     time_slots = {}
+    
+    if self&.community_tour&.tour_setting.present?
+      tour_setting = self&.community_tour.tour_setting
+      allow_self_tour = tour_setting.allow_self_tour
+      allow_guided_tour = tour_setting.allow_guided_tour
+      if allow_self_tour && yardi_self_time_slots.any? && allow_guided_tour && yardi_guided_time_slots.any?
+        self_tour_slots = process_slots_data(yardi_self_time_slots)
+        guided_tour_slots = process_slots_data(yardi_guided_time_slots)
+        time_slots = self_tour_slots.merge(guided_tour_slots)
+      else
+        if allow_self_tour && yardi_self_time_slots.any?
+          time_slots = process_slots_data(yardi_self_time_slots)
+        end
+
+        if allow_guided_tour && yardi_guided_time_slots.any?
+          time_slots = process_slots_data(yardi_guided_time_slots)
+        end
+      end
+    end
+
+    time_slots
+  end
+
+  def filter_rent_cafe_slots_v1 stepping, yardi_self_time_slots, yardi_guided_time_slots
+    time_slots = {}
+    
     if self&.community_tour&.tour_setting.present?
       tour_setting = self&.community_tour.tour_setting
       allow_self_tour = tour_setting.allow_self_tour
@@ -1611,6 +1706,18 @@ s  end
       end
     end
     time_slots
+  end
+
+
+  def process_slots_data(data)
+    result_hash = {}
+
+    data.each do |date_str, start_time_str, end_time_str|
+      result_hash[date_str] ||= []
+      result_hash[date_str] << start_time_str
+    end
+
+    result_hash
   end
 
   def fetch_tour_type_according_to_time(day, tour_time)
@@ -1674,7 +1781,29 @@ s  end
   end
 
   def fetch_tour_type_according_to_time_for_yardi(scheduled_tour, date_str, tour_time)
+    if credential.rentcafe_api_version == "RentCafe V2"
+      filter_rent_cafe_tour_types_v2(scheduled_tour, date_str, tour_time)
+    else
+      filter_rent_cafe_tour_types_v1(scheduled_tour, date_str, tour_time)
+    end
+  end
+
+  def filter_rent_cafe_tour_types_v2 scheduled_tour, date_str, tour_time
     tour_type = []
+    yardi_time_slots = self.available_slots(scheduled_tour)
+
+    if yardi_time_slots.present?
+      yardi_self_time_slots = yardi_time_slots.map{|x| [x["startTime"].split(' ')[0],"#{x["startTime"].split(' ')[1]} #{x["startTime"].split(' ')[2]}","#{x["endTime"].split(' ')[1]} #{x["endTime"].split(' ')[2]}" ] if x['slotType'] == "SelfTour"}.compact
+      yardi_guided_time_slots = yardi_time_slots.map{|x| [x["startTime"].split(' ')[0],"#{x["startTime"].split(' ')[1]} #{x["startTime"].split(' ')[2]}","#{x["endTime"].split(' ')[1]} #{x["endTime"].split(' ')[2]}" ] if x['slotType'] == "AgentGuided"}.compact
+      tour_type << ["self_tour","Self Tour"] if yardi_self_time_slots.present?
+      tour_type << ["guided_tour","Guided Tour"] if yardi_guided_time_slots.present?
+    end
+
+    tour_type
+  end
+
+  def filter_rent_cafe_tour_types_v1 scheduled_tour, date_str, tour_time
+        tour_type = []
     yardi_time_slots = self.available_slots(scheduled_tour)
     if yardi_time_slots["Response"].present?
       yardi_self_time_slots = yardi_time_slots["Response"][0]["AvailableSlots"].map{|x| [x["dtStart"].split(' ')[0],x["dtStart"].split(' ')[1],x["dtEnd"].split(' ')[1]  ] if x['TypeofSlot'] == "SelfTour"}.compact
