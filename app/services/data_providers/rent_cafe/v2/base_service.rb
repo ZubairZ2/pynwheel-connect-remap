@@ -16,9 +16,11 @@ module DataProviders
         protected
 
           def update_launch_forms_status
-            @community.update_property_management_form_status()
-            @community.update_status_and_remarks(PROPERTY_MANAGEMENT_SYSTEM, APPROVED)
-            @community.update_floorplans_form_status()
+            if @community.pynwheel_launch_access
+              @community.update_property_management_form_status()
+              @community.update_status_and_remarks(PROPERTY_MANAGEMENT_SYSTEM, APPROVED)
+              @community.update_floorplans_form_status()
+            end
           end
 
           def get_property_details property_code
