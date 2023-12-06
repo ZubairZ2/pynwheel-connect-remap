@@ -78,7 +78,8 @@ class CompaniesController < ApplicationController
     if @company.update(company_params)
       communities = @company.communities.includes(:credential).where(use_company_level_data_settings: true, data_provider: provider).where.not(credentials: { id: nil })
       update_communities_credentials(communities, provider)
-      format.js {render js: "$('#flash-message').html('#{ '<div class="alert alert-success">Credentials added successfully.</div>'}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
+      flash[:notice] = "Credentials added successfully."
+      format.html {redirect_to @company.company_setting.present? ? edit_company_company_setting_path(@company, @company.company_setting,community_id: current_community&.id) : new_company_company_setting_path(@company, community_id: current_community&.id)}
     else
       message = '<div class="alert alert-warning">'+@company.errors.full_messages.join(',')+'</div>'
       format.js {render js: "$('#flash-message').html('#{message}')"}

@@ -1,4 +1,4 @@
-= form_for @company, url: company_data_credentials_company_path(@company, community_id: current_community&.id), html: { class: "form-horizontal settings-form", method: 'PUT' }, remote: true do |f|
+= form_for @company, url: company_data_credentials_company_path(@company, community_id: current_community&.id), html: { class: "form-horizontal settings-form", method: 'PUT' }  do |f|
   .box.box-info.add-plan
     .box-header
       %h3.box-title
