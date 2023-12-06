@@ -205,6 +205,38 @@ class Community < ApplicationRecord
     self.brand_details_pdf
   end
 
+  def update_floorplans_form_status current_pynwheel_user = nil, form_status = ""
+    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(FLOORPLAN_IMAGES)
+    self.set_floorplan_status(current_pynwheel_user, form_status)
+    FollowUpMailer.send_email_after_form_submission(self, FLOORPLAN_IMAGES, previous_status)
+  end
+
+  def update_property_management_form_status current_pynwheel_user = nil, form_status = ""
+    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
+    self.set_data_provider_status(current_pynwheel_user, form_status)
+    FollowUpMailer.send_email_after_form_submission(self, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
+  end
+
+  def update_status_and_remarks form_type, form_status, form_remarks = ""
+    PynwheelLaunch::Communities::CommunityDetailForms.new(self).update_status_and_remarks(form_type, form_status, form_remarks)
+
+    unless disregard_forms(form_type)
+      if form_status.eql?(APPROVED)
+        application_approved = PynwheelLaunch::Communities::FollowUpEmails.new(self).move_to_production_auto_email
+        
+        if application_approved
+          self.production_started_date = DateTime.now
+          self.save
+          FollowUpMailer.application_approved(self)
+        end
+      end
+    end
+  end
+
+  def disregard_forms form_type
+    ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION].include?(form_type))
+  end
+
   def set_community_status(current_user)
     return if self.blank?
 
@@ -256,15 +288,16 @@ class Community < ApplicationRecord
 
   def set_floorplan_status(current_user, status)
     return if self.floorplans.blank?
-
     self.floorplans.each do |floorplan|
       if status.empty?
         floorplan_status = status_string(floorplan&.image&.url.present? || floorplan&.file&.url.present?)
       else
         floorplan_status = status
       end
+    
       set_status_for_all(floorplan,floorplan_status,current_user)
     end
+    
   end
 
   def set_gallery_images_status(current_user, status)
@@ -625,7 +658,7 @@ class Community < ApplicationRecord
 
   def set_status_for_all(status_entity, status_attribute, current_user)
     status_entity.build_status unless status_entity.status
-    status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user.id)
+    status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user&.id)
   end
 
   def show_apply_now
