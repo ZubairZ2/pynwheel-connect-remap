@@ -706,7 +706,9 @@ class Community < ApplicationRecord
   end
 
   def set_company_level_settings_yes
-    self.update_columns(use_company_level_data_settings: true)
+    if self.company.credential.present?
+      self.update_columns(use_company_level_data_settings: true)
+    end
   end
 
   def create_default_credential
@@ -715,12 +717,19 @@ class Community < ApplicationRecord
       if current_company.credential.present? && (self.use_company_level_data_settings == true)
         credential_attributes = [
           "yardi_rent_cafe_api_url", "entrata_available_units_only", "url",
-          "entrata_url", "username", "password", "pmc_id", "server_name", "database", "platform", "interface_entity",
+          "entrata_url","pmc_id", "server_name", "database", "platform", "interface_entity",
           "c_code", "api_token", "resman_apikey", "resman_account_id", "resman_api_version", "rentcafe_api_version"
         ]
         company_credential_attributes = current_company.credential&.attributes&.keys.map(&:to_sym)
         company_credential_attributes = current_company.credential&.attributes&.slice(*credential_attributes)
         community_credential = self.credential
+        if self.data_provider == 'yardi'
+          company_credential_attributes["username"] = current_company.credential.yardi_username
+          company_credential_attributes["password"] = current_company.credential.yardi_password
+        else
+          company_credential_attributes["username"] = current_company.credential.username
+          company_credential_attributes["password"] = current_company.credential.password
+        end
         community_credential.update(company_credential_attributes)
       end
     end
@@ -1222,7 +1231,7 @@ s  end
   end
 
   def connect_to_yardi
-    credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? yardi2_service : yardi4_service
+    credential.url[credential.url.length-10..credential.url.length-1]&.include?("20") ? yardi2_service : yardi4_service
   end
 
   def yardi2_service

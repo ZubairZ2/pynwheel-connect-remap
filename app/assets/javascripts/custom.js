@@ -304,6 +304,10 @@ $('.submit-click').click(function() {
 function submitSettingFormOnChange() {
     set_fields_for_crm();
     $(".settings-form").submit();
+    var provider =$('#community_data_provider').val();
+    if (provider === "zaremba" || provider === "xml" || provider === "spreadsheet") {
+        location.reload();
+    }
 }
 
 function allowDrop(ev) {

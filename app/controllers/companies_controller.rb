@@ -76,7 +76,7 @@ class CompaniesController < ApplicationController
       provider = params[:company][:data_providers]
       @company.data_providers << provider unless @company.data_providers.include?(provider)
     if @company.update(company_params)
-      communities = @company.communities.joins(:credential).where(use_company_level_data_settings: true, data_provider: provider)
+      communities = @company.communities.includes(:credential).where(use_company_level_data_settings: true, data_provider: provider).where.not(credentials: { id: nil })
       update_communities_credentials(communities, provider)
       format.js {render js: "$('#flash-message').html('#{ '<div class="alert alert-success">Credentials added successfully.</div>'}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
     else
@@ -88,7 +88,7 @@ class CompaniesController < ApplicationController
 
   def company_data_provider_communities_list
     provider = params[:provider]
-    @communities = @company.communities.joins(:credential).where(use_company_level_data_settings: true, data_provider: provider)&.uniq
+    @communities = @company.communities.includes(:credential).where(use_company_level_data_settings: true, data_provider: provider).where.not(credentials: { id: nil })
     respond_to do |format|
       format.js
     end
@@ -149,20 +149,27 @@ class CompaniesController < ApplicationController
   
   def company_params
     params.require(:company).permit(:name,:address,:city,:state,:zip,:email,:phone,:logo,:inactivate, :creator_id,:credential_attributes=>[:currency, :yardi_rent_cafe_api_url, :entrata_available_units_only,:id,:url,:entrata_url,:username,:password,:pmc_id,:server_name,:database,:platform,:interface_entity,:c_code,
-                                                                                                                                           :api_token,:resman_apikey, :resman_account_id, :resman_api_version, :rentcafe_api_version],data_providers: [])
+                                                                                                                                           :api_token,:resman_apikey, :resman_account_id, :resman_api_version, :rentcafe_api_version,:yardi_username,:yardi_password],data_providers: [])
   end
 
   def update_communities_credentials(communities, provider)
     excluded_credential = [
       "id", "perq_property_id", "is_perq_allowed", "property_id", "site_id", "p_code",
       "apply_now", "allow_separate_link", "separate_link", "use_different_crm_provider",
-      "limit_result", "resman_partner_id", "xml_filename", "xml_domain",
+      "limit_result", "resman_partner_id", "xml_filename", "xml_domain","username","password",
       "resman_property_id", "zaremba_filename", "zaremba_property_id",
-      "zaremba_username", "zaremba_password", "new_requested_data_provider"
+      "zaremba_username", "zaremba_password", "new_requested_data_provider","yardi_username","yardi_password"
     ]
     credential_attributes = @company.credential&.attributes&.except(*excluded_credential)
     communities.each do |community|
       community_credential = community.credential || community.build_credential
+      if community.data_provider == 'yardi'
+        credential_attributes["username"] = @company.credential.yardi_username
+        credential_attributes["password"] = @company.credential.yardi_password
+      else
+        credential_attributes["username"] = @company.credential.username
+        credential_attributes["password"] = @company.credential.password
+      end
       community_credential.update(credential_attributes)
       community.update(data_provider: provider)
     end

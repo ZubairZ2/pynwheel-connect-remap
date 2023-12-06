@@ -21,13 +21,13 @@
                 Username
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = c.text_field :username, :class=>"form-control settings-field", :placeholder=>"username"
+                = c.text_field :yardi_username, :class=>"form-control settings-field", :placeholder=>"username"
             .form-group.credential_fields#password
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 Password
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-                = c.text_field :password, :class=>"form-control settings-field", :placeholder=>"Password",:value=>c.object.password,:autocomplete=>"OFF"
+                = c.text_field :yardi_password, :class=>"form-control settings-field", :placeholder=>"Password",:value=>c.object.yardi_password,:autocomplete=>"OFF"
             .form-group.credential_fields#server_name
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 Server Name

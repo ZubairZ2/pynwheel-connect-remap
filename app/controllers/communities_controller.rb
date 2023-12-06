@@ -209,6 +209,13 @@ class CommunitiesController < ApplicationController
         end
       end
     end
+    set_unchecked_company_level_checkbox
+  end
+
+  def set_unchecked_company_level_checkbox
+    if ["zaremba", "xml", "spreadsheet"].include?(@community.data_provider)
+      @community.update_columns(use_company_level_data_settings: false)
+    end
   end
 
   def update_map_type community

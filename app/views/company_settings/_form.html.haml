@@ -11,3 +11,16 @@
       %label.label-primary{:for => "company_setting_company_level_data_import"}
       %span.pl-15 Yes
       = f.hidden_field :company_id, value: current_company.id
+
+
+
+:javascript
+  document.addEventListener("DOMContentLoaded", function() {
+    var checkbox = document.getElementById("company_setting_company_level_data_import");
+     if (checkbox) {
+      checkbox.addEventListener("change", function() {
+        var form = document.getElementById("company_setting_from");
+        form.submit();
+      });
+    }
+  });
