@@ -14,12 +14,38 @@ class FloorplanUnitsService < BaseService
     floorplans.compact
   end
 
+  # def get_floorplan_units(floorplan)
+  #   if @community.data_provider == "yardirentcafe"
+  #     unless @community.is_sitemap
+  #       Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND unit_status = ?', floorplan.provider_floorplan_id, @community.id, true, "Vacant Unrented Ready").past_available_units.where.not(floor: not_floor, building: not_building) if floorplan.present?
+  #     else
+  #       Unit.where('floorplan_id = ? AND community_id = ? AND available = ? AND unit_status = ?', floorplan.provider_floorplan_id, @community.id, true, "Vacant Unrented Ready").past_available_units if floorplan.present?
+  #     end
+  #   else
+  #     unless @community.is_sitemap
+  #       Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', floorplan.provider_floorplan_id, @community.id, true).available_units.where.not(floor: not_floor, building: not_building) if floorplan.present?
+  #     else
+  #       Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', floorplan.provider_floorplan_id, @community.id, true).available_units if floorplan.present?
+  #     end
+  #   end
+  # end
+  
   def get_floorplan_units(floorplan)
-    unless @community.is_sitemap
-      Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', floorplan.provider_floorplan_id, @community.id, true).available_units.where.not(floor: not_floor, building: not_building) if floorplan.present?
+    units = Unit.where(floorplan_id: floorplan.provider_floorplan_id, community_id: @community.id, available: true)
+
+    if floorplan.present?
+      if @community.data_provider == "yardirentcafe"
+        units = units.where(unit_status: "Vacant Unrented Ready").past_available_units
+      end
+
+      unless @community.is_sitemap
+        units = units.where.not(floor: not_floor, building: not_building)
+      end
     else
-      Unit.where('floorplan_id = ? AND community_id = ? AND available = ?', floorplan.provider_floorplan_id, @community.id, true).available_units if floorplan.present?
+      units = []
     end
+
+    units
   end
 
   def get_floorplate_amenities

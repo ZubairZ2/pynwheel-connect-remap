@@ -27,8 +27,7 @@ module LatchOpenkit
 
         doors = get_doors(partner_scopped_token) 
         doors = filter_property_doors(doors, building["uuid"]) if building.present?
-        # if building["name"]&.strip&.casecmp?(@community&.name&.strip)
-        if @latch.latch_property_name === building["name"]
+        if building.present? && (@latch.latch_property_name&.strip === building["name"]&.strip)
           {building: building, doors: doors, status: :OK, code: 200}
         else
           {message: "No exact matches for property name", status: :unprocessable_entity, code: 400}
@@ -62,12 +61,19 @@ module LatchOpenkit
         doors_list&.dig("doors").filter{|door| door.dig("buildingUuid") == building_uuid}.compact
       end
 
-      def filter_property_uuid buildings_list
-        return if buildings_list.empty?
-        buildings_list&.dig("buildings")&.filter{@community.name}&.compact&.uniq[0]
+      def filter_property_uuid(buildings_list)
+        return nil if buildings_list.nil? || buildings_list["buildings"].nil?
+
+        property = buildings_list["buildings"].find do |building|
+          building["name"]&.strip == @latch.latch_property_name&.strip
+        end
+
+        property
       end
+
     
       def parner_scopped_access_token
+
         response = HTTParty.post("#{ENV["Latch_OPENKIT_AUTH_URL"]}/v1/oauth/token",
                                   body: parner_scopped_access_token_payload.to_json,
                                   headers: { 'Content-Type' => 'application/json' }

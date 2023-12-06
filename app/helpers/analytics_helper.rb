@@ -8,12 +8,19 @@ module AnalyticsHelper
     return (dd + 1);
   end
 
-  def return_time_in_minutes(start_datetime,end_datetime)
-    start_datetime = Time.new(start_datetime.strftime("%Y"), start_datetime.strftime("%m"), start_datetime.strftime("%d"),start_datetime.strftime("%H"), start_datetime.strftime("%M"), start_datetime.strftime("%S"))
-    end_datetime = Time.new(end_datetime.strftime("%Y"), end_datetime.strftime("%m"), end_datetime.strftime("%d"),end_datetime.strftime("%H"), end_datetime.strftime("%M"), end_datetime.strftime("%S"))
-    seconds = (end_datetime - start_datetime).to_i
-    mm, ss = seconds.divmod(60)
-    return mm;
+  def return_time_in_seconds(start_datetime,end_datetime)
+    # binding.pry
+    # start_datetime = Time.parse(start_datetime)
+    # end_datetime = Time.parse(end_datetime)
+    # start_datetime = Time.new(start_datetime.strftime("%Y"), start_datetime.strftime("%m"), start_datetime.strftime("%d"),start_datetime.strftime("%H"), start_datetime.strftime("%M"), start_datetime.strftime("%S"))
+    # end_datetime = Time.new(end_datetime.strftime("%Y"), end_datetime.strftime("%m"), end_datetime.strftime("%d"),end_datetime.strftime("%H"), end_datetime.strftime("%M"), end_datetime.strftime("%S"))
+    # seconds = (end_datetime - start_datetime).to_i
+    # mm, ss = seconds.divmod(60)
+    return (end_datetime - start_datetime).to_i;
+  end
+
+  def convert_seconds_into_minutes_data seconds
+    Rational(seconds, 60).round(2).to_f
   end
 
   def convert_to_12_hour_format(time_range)
@@ -30,7 +37,7 @@ module AnalyticsHelper
     start_time = 12 if start_time.zero?
 
     end_time = end_time % 12
-    end_period = "AM" if end_time.zero?
+    # end_period = "AM" if end_time.zero?
     end_time = 12 if end_time.zero?
 
     "#{start_time}-#{end_time} #{end_period}"

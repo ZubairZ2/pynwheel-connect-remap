@@ -30,7 +30,7 @@ module CommunitiesHelper
     worksheet.write(0, 19, "Annual Billing Rate ($)", format)
     worksheet.write(0, 20, "Monthly Billing Rate ($)", format)
 
-    Community.active_client_properties.each do |community|
+    Community.without_test_properties.each do |community|
       if community.present?
         worksheet.write(row, 0, community.company.name, format1)
         worksheet.write(row, 1, community.name, format1)
