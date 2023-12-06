@@ -15,6 +15,12 @@ module DataProviders
 
         protected
 
+          def update_launch_forms_status
+            @community.update_property_management_form_status()
+            @community.update_status_and_remarks(PROPERTY_MANAGEMENT_SYSTEM, APPROVED)
+            @community.update_floorplans_form_status()
+          end
+
           def get_property_details property_code
             DataProviders::RentCafe::V2ApisService.new(@community_id).get_property_details(property_code)            
           end
