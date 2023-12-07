@@ -33,7 +33,6 @@ module DataProviders
             response = get_floorplan_details(property_code)
             return unless response.present?
             process_floorplans_response(response)
-            update_launch_forms_status()
           end
 
           def import_property_units property_code
