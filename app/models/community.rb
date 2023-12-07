@@ -83,7 +83,7 @@ class Community < ApplicationRecord
   after_update :crop_secondary_image
   after_create :create_tour_also
   after_create :change_touchscreen_app_for_dwelo
-  after_create :set_company_level_settings_yes
+  # after_create :set_company_level_settings_yes
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
   after_save :set_community_time_zone, if: ->(obj){ (obj.latitude.present? and obj.latitude_changed?) ||  (obj.longitude.present? and obj.longitude_changed?) }
   after_save :create_default_credential
@@ -108,7 +108,7 @@ class Community < ApplicationRecord
 
   def as_json(options = {})
     data = super(
-      :only => [:id , :name , :logo , :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type, :is_sitemap, :display_building ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date, :product_options], :methods => [:schedule_tour_url, :community_code])
+      :only => [:id , :name , :logo , :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type, :is_sitemap, :display_building ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date, :product_options, :use_company_level_data_settings], :methods => [:schedule_tour_url, :community_code])
     check_brand_access = options[:brand_pdf_feature]
     if check_brand_access == true
       data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())
@@ -739,11 +739,11 @@ class Community < ApplicationRecord
     self.update_columns(touchscreen_app: false)
   end
 
-  def set_company_level_settings_yes
-    if self.company.credential.present?
-      self.update_columns(use_company_level_data_settings: true)
-    end
-  end
+  # def set_company_level_settings_yes
+  #   if self.company.credential.present?
+  #     self.update_columns(use_company_level_data_settings: true)
+  #   end
+  # end
 
   def create_default_credential
     if self.credential.present?

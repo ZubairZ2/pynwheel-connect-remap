@@ -15,32 +15,32 @@
                 URL
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-                = c.text_field :url, :class=>"form-control settings-field", :placeholder=>"URL"
+                = c.text_field :url, :class=>"form-control settings-field", :placeholder=>"URL", required: true
             .form-group.credential_fields#username
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Username
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = c.text_field :yardi_username, :class=>"form-control settings-field", :placeholder=>"username"
+                = c.text_field :yardi_username, :class=>"form-control settings-field", :placeholder=>"username", required: true
             .form-group.credential_fields#password
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 Password
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-                = c.text_field :yardi_password, :class=>"form-control settings-field", :placeholder=>"Password",:value=>c.object.yardi_password,:autocomplete=>"OFF"
+                = c.text_field :yardi_password, :class=>"form-control settings-field", :placeholder=>"Password",:value=>c.object.yardi_password,:autocomplete=>"OFF", required: true
             .form-group.credential_fields#server_name
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 Server Name
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-                = c.text_field :server_name, :class=>"form-control settings-field", :placeholder=>"Server Name"
+                = c.text_field :server_name, :class=>"form-control settings-field", :placeholder=>"Server Name", required: true
 
             .form-group.credential_fields#database
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 Database
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
-                = c.text_field :database, :class=>"form-control settings-field", :placeholder=>"Database"
+                = c.text_field :database, :class=>"form-control settings-field", :placeholder=>"Database", required: true
             .form-group.credential_fields#platform
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 Platform
