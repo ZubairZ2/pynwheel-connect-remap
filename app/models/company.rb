@@ -32,7 +32,8 @@ class Company < ApplicationRecord
 
   def as_json
     super(
-      :only => [:id , :name , :phone , :email , :address , :zip , :state , :city], :methods => [:company_status],include: { company_setting: { only: [:company_level_data_import] } }
+      :only => [:id , :name , :phone , :email , :address , :zip , :state , :city], :methods => [:company_status],include: { company_setting: { only: [:company_level_data_import] },
+                                                                                                                            credential: {except: [:created_at]}}
     )
   end
 

@@ -133,22 +133,8 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
   def verify_credential
     return unless @community.use_company_level_data_settings
 
-    company = @community.company
-    data_provider = params[:data_provider]
-    credential = company.credential
-    input_credentials = params[:credential]
-
-    case data_provider
-    when "psi"
-      validate_credentials(credential, input_credentials.slice(:entrata_url, :username, :password))
-    when "realpagesvc"
-      validate_credentials(credential, input_credentials.slice(:pmc_id))
-    when "yardirentcafe"
-      validate_credentials(credential, input_credentials.slice(:api_token))
-    when "yardi"
-      validate_credentials(credential, input_credentials.slice(:url, :username, :password, :server_name, :database))
-    when "resman"
-      validate_credentials(credential, input_credentials.slice(:resman_account_id))
+    unless @community.company.data_providers.include?(params[:data_provider])
+     create_company_level_credential(@community.company)
     end
   end
 
@@ -176,14 +162,6 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       render json: {success: false, error_code: 400, message: 'Community not found', data: nil}, status: :not_found
   end
 
-  def validate_credentials(credential, expected_credentials)
-    return create_company_level_credential(@community.company) unless @community.company.data_providers.include?(params[:data_provider])
-
-    unless expected_credentials.all? { |key, value| credential[key] == value }
-      render_error("Invalid Credentials")
-    end
-  end
-
   def render_error(message)
     render json: { success: false, error_code: 200, message: message }
   end
@@ -192,13 +170,21 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     provider = params[:data_provider]
     company.data_providers << provider
     company.save
-    company_credentials = company.create_credential(company_credential_params)
+    if company.credential.present?
+      company_credentials = company.credential.update(company_credential_params)
+    else
+     company_credentials = company.create_credential(company_credential_params)
+    end
+
+    if provider == 'yardi'
+      company_credentials.update_attributes(yardi_username:  params["credential"]["username"], yardi_password: params["credential"]["password"])
+    end
     company_credentials
   end
 
   def company_credential_params
     params.permit(:status)
-    params.require(:credential).permit(:id,:url,:entrata_url,:username, :password, :pmc_id, :api_token, :server_name, :database, :resman_account_id, :new_requested_data_provider)
+    params.require(:credential).permit(:id,:url,:entrata_url,:c_code, :pmc_id, :api_token, :server_name, :database, :resman_account_id, :new_requested_data_provider,:yardi_password,:yardi_username,:username,:password)
   end
   def credential_params
     params.permit(:status)
