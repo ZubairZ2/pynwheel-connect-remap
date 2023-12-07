@@ -1,8 +1,13 @@
 class YardiRentCafeStaticService < BaseService
 
   def perform
+    import_property_details
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
+  end
+
+  def import_property_details
+    DataProviders::PropertyDetails::RentCafePropertyDetailsService.new(credentials.community_id).perform()
   end
 
   def import_yardirentcafe_units
@@ -75,6 +80,7 @@ class YardiRentCafeStaticService < BaseService
 
                 end
                 unit.square_feet = r["SQFT"] if r["SQFT"].present?
+                unit.unit_status = r["UnitStatus"] rescue ""
                 unit.min_effective_rent = r["MinimumRent"] if r["MinimumRent"].present?
                 unit.max_effective_rent = r["MaximumRent"] if r["MaximumRent"].present?
                 if unit.effective_rent <= 0
@@ -179,6 +185,9 @@ class YardiRentCafeStaticService < BaseService
               end
 
               fp.deposit = r["MinimumDeposit"]
+              add_floorplan_images(fp, r['FloorplanImageURL'])
+              add_floorplan_virtual_url(fp, r["FpVideoEmbedCode"])
+
               fp.save(validate: false)
             end
           end
@@ -188,6 +197,34 @@ class YardiRentCafeStaticService < BaseService
         #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
       end
     end
+  end
+
+  def add_floorplan_virtual_url fp, embedded_video
+    virtual_url = embedded_video&.match(/src=\"(.*?)\"/)[1] rescue ""
+    fp.virtual_tour_url = virtual_url
+  end    
+
+  def add_floorplan_images fp, image_urls
+    primary_image = fetch_floorplan_image_url(image_urls, 0)
+    secondary_image = fetch_floorplan_image_url(image_urls, 1)
+    fp.image = image_base64(primary_image) if primary_image.present?
+    fp.secondary_image = image_base64(secondary_image) if secondary_image.present?
+  end
+
+  def fetch_floorplan_image_url image_urls, index
+    return unless image_urls.present?
+    urls = image_urls&.split(",")&.reverse  
+    urls[index]
+  end
+
+  def image_base64(image_url)
+    return unless image_url.present?
+    encoded_url = URI.encode(image_url)
+    uri = URI.parse(encoded_url)
+    file = uri.open
+    image_data = file.read
+    encoded_image = Base64.strict_encode64(image_data)
+    "data:image/png;base64,#{encoded_image}"
   end
 
   def set_availabilty_date(available_date)

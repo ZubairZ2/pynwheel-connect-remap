@@ -61,6 +61,10 @@
         = f.text_field :square_feet, :class=>"form-control ", :placeholder=>"Unit space", :value => f.object.square_feet.to_i
         %small Square footage (Manual Override Required)
 
+      .col-sm-6.col-lg-4.col-md-4.col-xs-12
+        = f.text_field :unit_status, :class=>"form-control ", :placeholder=>"Unit Status", :value => f.object.unit_status
+        %small Unit Status
+
 = f.hidden_field :provider
 
 -#.form-group

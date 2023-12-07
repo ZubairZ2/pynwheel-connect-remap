@@ -92,6 +92,7 @@ class Community < ApplicationRecord
   scope :active_communities, -> { where(locked: false) }
   scope :self_tour_enabled_only, -> { where('self_tour = ?', true) }
   scope :desc_created_at, -> { order(created_at: :desc) }
+  scope :without_test_properties, -> {where.not(company_id: [44, 728, 730])}
   scope :active_properties, -> {where(locked: [false, nil])}
   scope :active_client_properties, -> { active_properties.where.not(company_id: [44, 728, 730]) }
 
@@ -207,6 +208,38 @@ class Community < ApplicationRecord
     self.brand_details_pdf
   end
 
+  def update_floorplans_form_status current_pynwheel_user = nil, form_status = ""
+    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(FLOORPLAN_IMAGES)
+    self.set_floorplan_status(current_pynwheel_user, form_status)
+    FollowUpMailer.send_email_after_form_submission(self, FLOORPLAN_IMAGES, previous_status)
+  end
+
+  def update_property_management_form_status current_pynwheel_user = nil, form_status = ""
+    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
+    self.set_data_provider_status(current_pynwheel_user, form_status)
+    FollowUpMailer.send_email_after_form_submission(self, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
+  end
+
+  def update_status_and_remarks form_type, form_status, form_remarks = ""
+    PynwheelLaunch::Communities::CommunityDetailForms.new(self).update_status_and_remarks(form_type, form_status, form_remarks)
+
+    unless disregard_forms(form_type)
+      if form_status.eql?(APPROVED)
+        application_approved = PynwheelLaunch::Communities::FollowUpEmails.new(self).move_to_production_auto_email
+        
+        if application_approved
+          self.production_started_date = DateTime.now
+          self.save
+          FollowUpMailer.application_approved(self)
+        end
+      end
+    end
+  end
+
+  def disregard_forms form_type
+    ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION].include?(form_type))
+  end
+
   def set_community_status(current_user)
     return if self.blank?
 
@@ -258,15 +291,16 @@ class Community < ApplicationRecord
 
   def set_floorplan_status(current_user, status)
     return if self.floorplans.blank?
-
     self.floorplans.each do |floorplan|
       if status.empty?
         floorplan_status = status_string(floorplan&.image&.url.present? || floorplan&.file&.url.present?)
       else
         floorplan_status = status
       end
+    
       set_status_for_all(floorplan,floorplan_status,current_user)
     end
+    
   end
 
   def set_gallery_images_status(current_user, status)
@@ -627,7 +661,7 @@ class Community < ApplicationRecord
 
   def set_status_for_all(status_entity, status_attribute, current_user)
     status_entity.build_status unless status_entity.status
-    status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user.id)
+    status_entity.status.update_attributes(status: status_attribute, whodunnit: current_user&.id)
   end
 
   def show_apply_now
@@ -1040,11 +1074,7 @@ s  end
   end
   
   def import_yardirentcafe_data
-    if credential.rentcafe_api_version == "RentCafe V2"
-      RentCafeDataImportWorker.perform_async self.id
-    else
-      ImportYardirentcafeStaticDataJob.perform_async credential.attributes.to_json
-    end
+    RentCafeDataImportWorker.perform_async self.id
   end
 
   def swap_yardirentcafe_data
@@ -1081,7 +1111,7 @@ s  end
   end
 
   def real_page_get_marketing_sources
-    RealPageGetMarketingSoucesJob.perform_async credential.attributes.to_json, self
+    RealPageMarketingSourcesWorker.perform_async self.id
   end
 
   def entrata_send_mits_leads(tour_user, tour_time, end_time, visited_stops)
@@ -1216,7 +1246,7 @@ s  end
     if credential.rentcafe_api_version == "RentCafe V2"
       yardi_rent_cafe_connection_service = DataProviders::RentCafe::V2::TestConnectionService.new(self.id)
     else
-      yardi_rent_cafe_connection_service = YardiRentCafeConnectionService.new(credential.attributes)
+      yardi_rent_cafe_connection_service = DataProviders::RentCafe::V1::TestConnectionService.new(self.id)
     end
 
     yardi_rent_cafe_connection_service.perform

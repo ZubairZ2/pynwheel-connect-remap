@@ -369,14 +369,14 @@ class YardiRentCafeV2Service < BaseService
     end
 
     def get_appartments_availability property_code
-      RentCafeApiV2Service.new(@credentials.community_id).get_apartment_availability(property_code)
+      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_availability(property_code)
     end
 
     def get_apartment_pricing_details property_code, apartment_name
-      RentCafeApiV2Service.new(@credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code)
+      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code)
     end
 
     def get_floorplan_details property_code
-      RentCafeApiV2Service.new(@credentials.community_id).get_floorplans(property_code)
+      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_floorplans(property_code)
     end
 end

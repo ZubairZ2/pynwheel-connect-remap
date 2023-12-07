@@ -1,6 +1,6 @@
 module DataProviders
   module RentCafe
-    module V2
+    module V1
       class BaseService
 
         def initialize(community_id)
@@ -24,19 +24,19 @@ module DataProviders
           end
 
           def get_property_details property_code
-            DataProviders::RentCafe::V2ApisService.new(@community_id).get_property_details(property_code)            
+            DataProviders::RentCafe::V1ApisService.new(@community_id).get_property_details(property_code)            
           end
 
           def get_appartments_availability property_code
-            DataProviders::RentCafe::V2ApisService.new(@community_id).get_apartment_availability(property_code)
+            DataProviders::RentCafe::V1ApisService.new(@community_id).get_apartment_availability(property_code)
           end
 
           def get_apartment_pricing_details property_code, apartment_name
-            DataProviders::RentCafe::V2ApisService.new(@community_id).get_apartment_pricing_matrix(apartment_name, property_code)
+            DataProviders::RentCafe::V1ApisService.new(@community_id).get_apartment_pricing_matrix(apartment_name, property_code)
           end
 
           def get_floorplan_details property_code
-            DataProviders::RentCafe::V2ApisService.new(@community_id).get_floorplans(property_code)
+            DataProviders::RentCafe::V1ApisService.new(@community_id).get_floorplans(property_code)
           end
 
           def update_attribute_if_blank(object, attribute, value, diff_name = nil)

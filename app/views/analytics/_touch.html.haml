@@ -24,33 +24,34 @@
             = bar_chart @session_each_day_data_metro, @session_each_day_options_metro
         .col-lg-6.col-md-12.h-500
           .chart-title
-            %p.chart_heading Session Duration
+            %p.chart_heading Activity Duration
             = render 'title_info', {info_text: TOUCH_SESSION_DURATION }
           .col-lg-4.numbers_div
             .center_it
               .count_int= @average_duration_each_session_in_minutes_metro
-              .count_text= 'Average duration of each session in minutes'
+              .count_text= 'Average duration of activity in minutes'
           .col-lg-8
             = line_chart @session_each_day_minutes_data_metro, @session_each_day_minutes_options_metro
        
       .row.mt-80
-        .col-lg-6.col-md-12.h-500
+        .col-lg-12.col-md-12.h-500
           .chart-title
             %p.chart_heading Sessions by Time of Day
             = render 'title_info', {info_text: TOUCH_SESSIONS_BY_TIME_OF_DAY_INFO }
-          .col-lg-4.numbers_div
+          .col-lg-3.numbers_div
             .center_it
               .count_int= @session_in_highest_hour_metro
               .count_text= 'Maximum number of sessions at '
               .count_text=  @highest_hour_metro
-          .col-lg-8
+          .col-lg-9
             = bar_chart @session_each_day_hour_data_metro, @session_each_day_hour_options_metro
-
-        .col-lg-6.col-md-12.h-500
+        
+      .row.mt-80
+        .col-lg-12.col-md-12.h-500
           .chart-title
             %p.chart_heading Single vs Multiple Page Visits
             = render 'title_info', {info_text: TOUCH_SINGLE_VS_MULTIPLE_PAGE_VISITS_INFO }
-          .col-lg-4.numbers_div
+          .col-lg-2.numbers_div
             .center_it
               .pie_description
                 %span.dot.single_page
@@ -60,7 +61,7 @@
                 %span.dot.multiple_page
                 %span Multiple page viewed session
                 %span= @percentage_multiple_page_visitor_metro
-          .col-lg-8.pie_width
+          .col-lg-5.pie_width
             = pie_chart @bounce_data_labels_metro, @bounce_data_options_metro
       
       .row.mt-80
