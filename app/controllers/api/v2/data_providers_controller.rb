@@ -175,9 +175,8 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     else
      company_credentials = company.create_credential(company_credential_params)
     end
-
     if provider == 'yardi'
-      company_credentials.update_attributes(yardi_username:  params["credential"]["username"], yardi_password: params["credential"]["password"])
+      company.credential.update_attributes(yardi_username:  params["credential"]["username"], yardi_password: params["credential"]["password"])
     end
     company_credentials
   end
