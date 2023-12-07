@@ -34,6 +34,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
     def import_rent_cafe_data
       update_property_credential()
       if valid_credentials? && @community.data_is_imported
+        @community.update_attributes(use_company_level_data_settings: true)
         render_response("Data imported successfully", true)
       else
         render_response('Invalid credentials, Please enter correct credentials before importing data.', false)
