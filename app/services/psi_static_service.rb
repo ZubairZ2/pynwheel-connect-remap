@@ -90,8 +90,8 @@ class PsiStaticService < BaseService
       end
     end
 
-    fill_psi_pricing_details()
     update_launch_forms_status()
+    fill_psi_pricing_details()
   end
 
   private
