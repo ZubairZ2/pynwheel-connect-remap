@@ -16,6 +16,9 @@ module DataProviders
               raise exception
             end 
           end
+
+          update_launch_forms_status()
+
         end
 
         private
