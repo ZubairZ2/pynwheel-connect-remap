@@ -1,7 +1,8 @@
 class Api::V2::CompaniesController < Api::V2::ApiApplicationController
   before_action :doorkeeper_authorize!
-  before_action :set_company, only: :import_data_credentials
+  before_action :set_company, only: [:import_data_credentials, :create_company_credentials]
   before_action :set_community, only: :import_data_credentials
+  before_action :create_company_credentials, only: :import_data_credentials
 
   def import_data_credentials
     case params[:data_provider]
@@ -14,6 +15,21 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
   end
 
   private
+
+    def create_company_credentials
+      case params[:data_provider]
+      when "yardirentcafe"
+        @credential = @company.credential || @company.build_credential
+
+        @credential.update(
+          api_token:  params[:api_token],
+          yardi_rent_cafe_api_url: params[:api_url],
+          c_code: params[:c_code],
+          )
+      else
+        render_response("Wrong data provider", false)
+      end
+    end
 
     def import_rent_cafe_data
       update_property_credential()
