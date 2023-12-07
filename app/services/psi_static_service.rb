@@ -58,7 +58,6 @@ class PsiStaticService < BaseService
 
           save_property_details(response['response'])
           save_psi_floorplans(floorplans,property_id)
-          update_launch_forms_status()
           save_psi_units(units,property_id)
 
           begin
@@ -92,6 +91,7 @@ class PsiStaticService < BaseService
     end
 
     fill_psi_pricing_details()
+    update_launch_forms_status()
   end
 
   private
