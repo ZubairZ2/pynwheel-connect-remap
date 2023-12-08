@@ -1004,7 +1004,8 @@ class Community < ApplicationRecord
   end
 
   def import_psi_data
-    ImportPsiStaticDataJob.perform_async credential
+    # ImportPsiStaticDataJob.perform_async credential
+    EntrataDataImportWorker.perform_async self.id
   end
 
   def clean_data_psi
