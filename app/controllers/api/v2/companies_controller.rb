@@ -21,7 +21,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
       when "yardirentcafe"
         @credential = @company.credential || @company.build_credential
 
-        if @credential.update(api_token:  params[:api_token], yardi_rent_cafe_api_url: params[:api_url], c_code: params[:c_code],)
+        if @credential.update(api_token:  params[:api_token], yardi_rent_cafe_api_url: params[:api_url], c_code: params[:c_code], rentcafe_api_version: params[:rentcafe_api_version])
           unless @company.data_providers.include?("yardirentcafe")
             @company.data_providers << "yardirentcafe"
             @company.save
