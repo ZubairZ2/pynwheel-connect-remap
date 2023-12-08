@@ -213,16 +213,6 @@ class CommunitiesController < ApplicationController
     end
   end
 
-  def set_unchecked_company_level_checkbox
-    unless @company.data_providers.include?(@community.data_provider)
-      @community.update_columns(use_company_level_data_settings: false)
-      format.js {render js: "$('#flash-message').html('You didn't set up company-level credentials for this Data Provider.'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
-    end
-    # if ["zaremba", "xml", "spreadsheet"].include?(@community.data_provider)
-    #   @community.update_columns(use_company_level_data_settings: false)
-    # end
-  end
-
   def update_map_type community
     if community.enable_three_d_maps
       community.update(web_map_type: "3d-map")
@@ -241,16 +231,7 @@ class CommunitiesController < ApplicationController
   def alert_message
 
     if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
-      if  params["community"]["use_company_level_data_settings"] == '0'
-        unless @company.data_providers.include?(@community.data_provider)
-          @community.update_columns(use_company_level_data_settings: false)
-          '<div class="alert alert-danger">You did not set up company-level credentials for this Data Provider.</div>'
-        else
-          '<div class="alert alert-success">Credentials added successfully.</div>'
-        end
-      else
       '<div class="alert alert-success">Credentials added successfully.</div>'
-      end
     elsif params[:community][:data_provider].present? and params[:community][:data_provider] == 'spreadsheet'
       '<div class="alert alert-success">Data is imported successfully.</div>'
     elsif params[:community][:logo].present?
