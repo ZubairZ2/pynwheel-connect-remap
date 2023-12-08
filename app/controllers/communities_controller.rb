@@ -141,6 +141,7 @@ class CommunitiesController < ApplicationController
     @community.image_bit = nil
     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
     respond_to do |format|
+
       if params[:spreadsheet_method] == '2'
         if @community.update(community_params)
           @community.credential.swap_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
@@ -195,6 +196,7 @@ class CommunitiesController < ApplicationController
             else
               format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
             end
+
             format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
           else
             flash[:error] = @community.errors.full_messages.join(',')
@@ -209,13 +211,16 @@ class CommunitiesController < ApplicationController
         end
       end
     end
-    set_unchecked_company_level_checkbox
   end
 
   def set_unchecked_company_level_checkbox
-    if ["zaremba", "xml", "spreadsheet"].include?(@community.data_provider)
+    unless @company.data_providers.include?(@community.data_provider)
       @community.update_columns(use_company_level_data_settings: false)
+      format.js {render js: "$('#flash-message').html('You didn't set up company-level credentials for this Data Provider.'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
     end
+    # if ["zaremba", "xml", "spreadsheet"].include?(@community.data_provider)
+    #   @community.update_columns(use_company_level_data_settings: false)
+    # end
   end
 
   def update_map_type community
@@ -234,8 +239,18 @@ class CommunitiesController < ApplicationController
   end
 
   def alert_message
+
     if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
+      if  params["community"]["use_company_level_data_settings"] == '0'
+        unless @company.data_providers.include?(@community.data_provider)
+          @community.update_columns(use_company_level_data_settings: false)
+          '<div class="alert alert-danger">You did not set up company-level credentials for this Data Provider.</div>'
+        else
+          '<div class="alert alert-success">Credentials added successfully.</div>'
+        end
+      else
       '<div class="alert alert-success">Credentials added successfully.</div>'
+      end
     elsif params[:community][:data_provider].present? and params[:community][:data_provider] == 'spreadsheet'
       '<div class="alert alert-success">Data is imported successfully.</div>'
     elsif params[:community][:logo].present?

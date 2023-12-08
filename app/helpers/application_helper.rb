@@ -12,9 +12,6 @@ module ApplicationHelper
         (["YardiRentCafe", "yardirentcafe"] if company.data_providers.include?("yardirentcafe") ),
         (["Yardi", "yardi"] if company.data_providers.include?("yardi") ),
         (["ResMan", "resman"] if company.data_providers.include?("resman") ),
-        ["RE Data Systems (ftp)", "zaremba"],
-        ["Xml", "xml"],
-        ["Spreadsheet", "spreadsheet"]
       ]
     else
       [
