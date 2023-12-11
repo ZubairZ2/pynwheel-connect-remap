@@ -20,6 +20,7 @@
                 Account Id
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
                 = c.text_field :resman_account_id, :class=>"form-control settings-field", :placeholder=>"Account Id"
+                %div.error-message{id: "resman-account-id-error", style: "color: red;"}
 
 
             .box-footer
@@ -34,3 +35,26 @@
                   .modal-footer
                     %button.btn.btn-default.company-community{ type: "button", 'data-dismiss' => "modal" } Close
                     = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10 submit-credential"
+
+
+:javascript
+  $(document).ready(function() {
+    $("#company_credential_attributes_resman_account_id").on("input", function() {
+      $("#resman-account-id-error").text("");
+    });
+
+    $("#submit-btn-resman").on("click", function() {
+      if (!validateResmanAccountId()) {
+        $("#resman-account-id-error").text("Account ID is required");
+        return false;
+      }
+    });
+
+    function validateResmanAccountId() {
+      var accountId = $("#company_credential_attributes_resman_account_id").val();
+      if (accountId.length === 0) {
+        return false;
+      }
+      return true;
+    }
+  });

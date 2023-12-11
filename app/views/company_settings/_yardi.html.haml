@@ -16,24 +16,31 @@
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
                 = c.text_field :url, :class=>"form-control settings-field", :placeholder=>"URL"
+                %div.error-message{id: "yardi-url-error", style: "color: red;"}
+
             .form-group.credential_fields#username
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Username
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = c.text_field :yardi_username, :class=>"form-control settings-field", :placeholder=>"username"
+                %div.error-message{id: "yardi-username-error", style: "color: red;"}
+
             .form-group.credential_fields#password
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 Password
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
                 = c.text_field :yardi_password, :class=>"form-control settings-field", :placeholder=>"Password",:value=>c.object.yardi_password,:autocomplete=>"OFF"
+                %div.error-message{id: "yardi-password-error", style: "color: red;"}
+
             .form-group.credential_fields#server_name
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 Server Name
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
                 = c.text_field :server_name, :class=>"form-control settings-field", :placeholder=>"Server Name"
+                %div.error-message{id: "yardi-server-name-error", style: "color: red;"}
 
             .form-group.credential_fields#database
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
@@ -41,6 +48,8 @@
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
                 = c.text_field :database, :class=>"form-control settings-field", :placeholder=>"Database"
+                %div.error-message{id: "yardi-database-error", style: "color: red;"}
+
             .form-group.credential_fields#platform
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
                 Platform
@@ -66,3 +75,63 @@
                   .modal-footer
                     %button.btn.btn-default.company-community{ type: "button", 'data-dismiss' => "modal" } Close
                     = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10 submit-credential"
+
+
+
+:javascript
+  $(document).ready(function() {
+    $("#company_credential_attributes_url, #company_credential_attributes_yardi_username, #company_credential_attributes_yardi_password, #company_credential_attributes_server_name, #company_credential_attributes_database").on("input", function() {
+      $(this).next('.error-message').text("");
+    });
+
+    $("#submit-btn-yardi").on("click", function() {
+      if (!validateYardiUrl() || !validateYardiUsername() || !validateYardiPassword() || !validateYardiServerName() || !validateYardiDatabase()) {
+        return false;
+      }
+    });
+
+    function validateYardiUrl() {
+      var yardiUrl = $("#company_credential_attributes_url").val();
+      if (yardiUrl.length === 0) {
+        $("#yardi-url-error").text("URL is required");
+        return false;
+      }
+      return true;
+    }
+
+    function validateYardiUsername() {
+      var yardiUsername = $("#company_credential_attributes_yardi_username").val();
+      if (yardiUsername.length === 0) {
+        $("#yardi-username-error").text("Username is required");
+        return false;
+      }
+      return true;
+    }
+
+    function validateYardiPassword() {
+      var yardiPassword = $("#company_credential_attributes_yardi_password").val();
+      if (yardiPassword.length === 0) {
+        $("#yardi-password-error").text("Password is required");
+        return false;
+      }
+      return true;
+    }
+
+    function validateYardiServerName() {
+      var yardiServerName = $("#company_credential_attributes_server_name").val();
+      if (yardiServerName.length === 0) {
+        $("#yardi-server-name-error").text("Server Name is required");
+        return false;
+      }
+      return true;
+    }
+
+    function validateYardiDatabase() {
+      var yardiDatabase = $("#company_credential_attributes_database").val();
+      if (yardiDatabase.length === 0) {
+        $("#yardi-database-error").text("Database is required");
+        return false;
+      }
+      return true;
+    }
+  });

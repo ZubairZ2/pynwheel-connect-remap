@@ -15,7 +15,7 @@
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
                 = c.text_field :pmc_id, :class=>"form-control settings-field", :placeholder=>"PMC ID"
-
+                %div.error-message{id: "pmc-id-error", style: "color: red;"}
 
             .box-footer
               %button.btn.btn-success.pull-right.mr-10.company-property{id: "submit-btn-realpagesvc", type: "button", "data-toggle" => "modal", "data-target" => "#confirmation-modal1", provider: "realpagesvc"} Save Changes
@@ -29,3 +29,26 @@
                   .modal-footer
                     %button.btn.btn-default.company-community{ type: "button", 'data-dismiss' => "modal" } Close
                     = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10 submit-credential"
+
+
+:javascript
+   $(document).ready(function() {
+    $("#company_credential_attributes_pmc_id").on("input", function() {
+      $("#pmc-id-error").text("");
+    });
+
+    $("#submit-btn-realpagesvc").on("click", function() {
+      if (!validatePmcId()) {
+        $("#pmc-id-error").text("PMC ID is required");
+        return false;
+      }
+    });
+
+    function validatePmcId() {
+      var pmcId = $("#company_credential_attributes_pmc_id").val();
+      if (pmcId.length === 0) {
+        return false;
+      }
+      return true;
+    }
+  });
