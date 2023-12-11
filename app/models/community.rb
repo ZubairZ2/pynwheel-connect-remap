@@ -212,6 +212,10 @@ class Community < ApplicationRecord
     FollowUpMailer.send_email_after_form_submission(self, FLOORPLAN_IMAGES, previous_status)
   end
 
+  def check_all_floorplans_form_status_is_submitted
+    self.floorplans.all? { |f| f&.status&.status == SUBMITTED }
+  end
+
   def update_property_management_form_status current_pynwheel_user = nil, form_status = ""
     previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
     self.set_data_provider_status(current_pynwheel_user, form_status)
