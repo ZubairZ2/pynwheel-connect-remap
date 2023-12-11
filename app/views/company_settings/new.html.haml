@@ -1,5 +1,5 @@
 - content_for :title, " Settings Company - Pynwheel"
-%section
+%section{style: "padding: 25px"}
   .content
     .box.box-info.add-plan.mt-20
       .box-header
@@ -7,12 +7,19 @@
           Settings
           %span Company
 
-      = form_for [@company, @company_setting], url: company_company_settings_path(@company, @company_setting,community_id: current_community&.id), html: { class: "form-horizontal" } do |f|
+      = form_for [@company, @company_setting], url: company_company_settings_path(@company, @company_setting,community_id: current_community&.id), html: { class: "form-horizontal", id: "company_setting_from" } do |f|
         .box-body
           .row
             .col-lg-9.col-lg-offset-1
               = render :partial=>'form',:locals=>{:f=>f}
         / /.box-body
-        .box-footer
-          = link_to "CANCEL" , companies_path, :class=>"btn btn-default pull-right"
-          = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10"
+        -# .box-footer
+        -#   = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10"
+
+
+%section{style: "margin-top: -45px"}
+  .content
+    .title-heading.mb-25
+      .box.box-info
+      .box-header
+        = render :partial=>'company_credentials_form'

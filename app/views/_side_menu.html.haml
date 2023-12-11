@@ -28,29 +28,29 @@
               = link_to analytics_path(community: current_community.id) do
                 %i.fa.fa-bar-chart
                 %span Analytics
+        %li.treeview{:class=>"#{controller_name =='companies' ? 'active' : 'active'}"}
+          %a{:href => "/"}
+            %i.fa.fa-building
+            %span Company
+            %span.pull-right-container
+              %i.fa.fa-angle-right.pull-right
+          %ul.treeview-menu{:style=>"#{controller_name =='companies'? 'display: block' : ''}"}
+            %li.loader_class{:class=>"#{controller_name =='companies' && params[:action] == "edit"  ? 'active' : ''}"}
+              %a{:href => "#{ edit_company_path(current_company)}"}
+                %i.fa.fa-info
+                %span Company Details
+                %span.pull-right-container
+
+            %li.loader_class{:class=>"#{controller_name =='company_settings' &&  (params[:action] == 'edit' || params[:action] == 'new') ? 'active' : ''}"}
+              %a{:href => "#{ current_company.company_setting.present? ? edit_company_company_setting_path(current_company, current_company.company_setting,community_id: current_community.id) : new_company_company_setting_path(current_company, community_id: current_community.id)}"}
+                %i.fa.fa-gears
+                %span Company Data
+                %span.pull-right-container
       - if current_user.is_admin? || current_user.is_community_assistant?
         %li.loader_class{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
           = link_to edit_company_community_path(current_company,current_community) do
             %i.fa.fa-info
             %span Property Details
-          %li.treeview{:class=>"#{controller_name =='companies' ? 'active' : 'active'}"}
-            %a{:href => "/"}
-              %i.fa.fa-building
-              %span Company
-              %span.pull-right-container
-                %i.fa.fa-angle-right.pull-right
-            %ul.treeview-menu.property_map_intent_list{:style=>"#{controller_name =='companies'? 'display: block' : ''}"}
-              %li.loader_class{:class=>"#{controller_name =='companies' && params[:action] == "edit"  ? 'active' : ''}"}
-                %a{:href => "#{ edit_company_path(current_company)}"}
-                  %i.fa.fa-info
-                  %span Company Details
-                  %span.pull-right-container
-
-              %li.loader_class{:class=>"#{controller_name =='company_settings' &&  (params[:action] == 'edit' || params[:action] == 'new') ? 'active' : ''}"}
-                %a{:href => "#{ current_company.company_setting.present? ? edit_company_company_setting_path(current_company, current_company.company_setting,community_id: current_community.id) : new_company_company_setting_path(current_company, community_id: current_community.id)}"}
-                  %i.fa.fa-gears
-                  %span Company Data
-                  %span.pull-right-container
       - if (can? :edit_settings_page, current_user) || (current_user.is_super_admin?)
         %li.loader_class{:class=>"#{controller_name =='communities' && params[:action] =='settings_page' ? 'active' : ''}"}
           = link_to community_settings_page_path(current_community) do

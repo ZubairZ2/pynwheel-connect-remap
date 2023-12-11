@@ -1,4 +1,33 @@
 module ApplicationHelper
+  def currencies
+    Community.last&.all_currencies(Money::Currency::table)
+  end
+
+  def data_provider_options(community)
+    company = community.company
+    options =  if community.use_company_level_data_settings
+      [
+        (["Entrata", "psi"] if company.data_providers.include?("psi") ),
+        (["RealPage", "realpagesvc"] if company.data_providers.include?("realpagesvc") ),
+        (["YardiRentCafe", "yardirentcafe"] if company.data_providers.include?("yardirentcafe") ),
+        (["Yardi", "yardi"] if company.data_providers.include?("yardi") ),
+        (["ResMan", "resman"] if company.data_providers.include?("resman") ),
+      ]
+    else
+      [
+        ["Entrata", "psi"],
+        ["RealPage", "realpagesvc"],
+        ["YardiRentCafe", "yardirentcafe"],
+        ["Yardi", "yardi"],
+        ["ResMan", "resman"],
+        ["RE Data Systems (ftp)", "zaremba"],
+        ["Xml", "xml"],
+        ["Spreadsheet", "spreadsheet"]
+      ]
+    end
+    options.compact.reject(&:empty?)
+  end
+
   def javascript_version
     timestamp = DateTime.now.to_i
     "v#{timestamp}"

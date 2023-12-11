@@ -86,12 +86,13 @@ Rails.application.routes.draw do
       get :generate_webpages_report
       get :properties_average_data_report
       get :generate_salesforce_report
-
+      get :company_data_provider_communities_list
     end
 
     member do
       get :generate_csv
       get :generate_csv_for_scheduled_records
+      put :company_data_credentials
     end
 
   end

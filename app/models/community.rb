@@ -83,8 +83,10 @@ class Community < ApplicationRecord
   after_update :crop_secondary_image
   after_create :create_tour_also
   after_create :change_touchscreen_app_for_dwelo
+  # after_create :set_company_level_settings_yes
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
   after_save :set_community_time_zone, if: ->(obj){ (obj.latitude.present? and obj.latitude_changed?) ||  (obj.longitude.present? and obj.longitude_changed?) }
+  after_save :create_default_credential
 
   enum alert_contact: [:email, :phone, :both]
   scope :active_communities, -> { where(locked: false) }
@@ -106,7 +108,7 @@ class Community < ApplicationRecord
 
   def as_json(options = {})
     data = super(
-      :only => [:id , :name , :logo , :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type, :is_sitemap, :display_building ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date, :product_options], :methods => [:schedule_tour_url, :community_code])
+      :only => [:id , :name , :logo , :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type, :is_sitemap, :display_building ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date, :product_options, :use_company_level_data_settings], :methods => [:schedule_tour_url, :community_code],include: { company: {except: [:created_at]}})
     check_brand_access = options[:brand_pdf_feature]
     if check_brand_access == true
       data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())
@@ -737,6 +739,36 @@ class Community < ApplicationRecord
     self.update_columns(touchscreen_app: false)
   end
 
+  # def set_company_level_settings_yes
+  #   if self.company.credential.present?
+  #     self.update_columns(use_company_level_data_settings: true)
+  #   end
+  # end
+
+  def create_default_credential
+    if self.credential.present?
+      current_company = self.company
+      if current_company.credential.present? && (self.use_company_level_data_settings == true)
+        credential_attributes = [
+          "yardi_rent_cafe_api_url", "entrata_available_units_only", "url",
+          "entrata_url","pmc_id", "server_name", "database", "platform", "interface_entity",
+          "c_code", "api_token", "resman_apikey", "resman_account_id", "resman_api_version", "rentcafe_api_version"
+        ]
+        company_credential_attributes = current_company.credential&.attributes&.keys.map(&:to_sym)
+        company_credential_attributes = current_company.credential&.attributes&.slice(*credential_attributes)
+        community_credential = self.credential
+        if self.data_provider == 'yardi'
+          company_credential_attributes["username"] = current_company.credential.yardi_username
+          company_credential_attributes["password"] = current_company.credential.yardi_password
+        else
+          company_credential_attributes["username"] = current_company.credential.username
+          company_credential_attributes["password"] = current_company.credential.password
+        end
+        community_credential.update(company_credential_attributes)
+      end
+    end
+  end
+
   def crop_image
     logo.recreate_versions! if (crop_x.present? && image_bit && do_crop)
   end
@@ -1230,7 +1262,7 @@ s  end
   end
 
   def connect_to_yardi
-    credential.url[credential.url.length-10..credential.url.length-1].include?("20") ? yardi2_service : yardi4_service
+    credential.url[credential.url.length-10..credential.url.length-1]&.include?("20") ? yardi2_service : yardi4_service
   end
 
   def yardi2_service

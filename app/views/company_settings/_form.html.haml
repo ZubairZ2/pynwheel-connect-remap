@@ -1,10 +1,26 @@
 .form-group
   %label.col-sm-12.col-lg-4.col-md-3.col-xs-12.control-label
-    Import data at Company Level
-  .col-sm-12.col-lg-7.col-md-9.col-xs-12
+    Import Data at Company Level
+    %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridFloorPopover","data-content" => " "}
+      %span#propertyDetailNameText
+        Switching this 'Yes' will display a button in Pynwheel Launch that allows the user to mass import data for all properties by uploading a .csv file
+  .col-sm-12.col-lg-8.col-md-9.col-xs-12
     .TriSea-technologies-Switch
       %span.pr-15 No
       = f.check_box :company_level_data_import
       %label.label-primary{:for => "company_setting_company_level_data_import"}
       %span.pl-15 Yes
       = f.hidden_field :company_id, value: current_company.id
+
+
+
+:javascript
+  document.addEventListener("DOMContentLoaded", function() {
+    var checkbox = document.getElementById("company_setting_company_level_data_import");
+     if (checkbox) {
+      checkbox.addEventListener("change", function() {
+        var form = document.getElementById("company_setting_from");
+        form.submit();
+      });
+    }
+  });

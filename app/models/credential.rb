@@ -40,6 +40,7 @@
 class Credential < ApplicationRecord
   has_paper_trail
   belongs_to :community
+  belongs_to :company
   before_save :set_https_in_url
   has_one :status, as: :statusable
   
@@ -47,7 +48,7 @@ class Credential < ApplicationRecord
 
   def as_json(data_provider = "")
     data = super(
-      :only => [:community_id, :id]
+      :only => [:community_id, :id],include: { community: {only: [:use_company_level_data_settings]}}
     )
     data.merge!(data_provider: data_provider,credentials: data_providers_credentials(data_provider),use_different_crm_provider: use_different_crm,crm_provider: crm_provider,crm_credentials: crm_credential_provider)
   end

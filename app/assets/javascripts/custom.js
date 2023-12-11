@@ -304,6 +304,10 @@ $('.submit-click').click(function() {
 function submitSettingFormOnChange() {
     set_fields_for_crm();
     $(".settings-form").submit();
+    var provider =$('#community_data_provider').val();
+    if (provider === "zaremba" || provider === "xml" || provider === "spreadsheet") {
+        location.reload();
+    }
 }
 
 function allowDrop(ev) {
@@ -522,6 +526,8 @@ function selectDataProvider(data_provider){
 
 function showPsiFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').show();
+    $('#currency_list').show();
     //removeValidationsClass();
     $('#url').hide();
     $('.entrata_url').show();
@@ -542,6 +548,8 @@ function showPsiFields(){
 }
 function showZarembaFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').hide();
+    $('#currency_list').hide();
     //removeValidationsClass();
     $('#zaremba_username').show();
     //$('#community_credential_attributes_url').addClass("validate[required]");
@@ -549,6 +557,7 @@ function showZarembaFields(){
     //$('#community_credential_attributes_password').addClass("validate[required]");
     $('#zaremba_filename').show();
     $('#zaremba_property_id').show();
+    $('#zaremba_currency').show();
     //$('#community_credential_attributes_username').addClass("validate[required]");
     //$('#community_credential_attributes_property_id').addClass("validate[required]");
     $('#data-connection-buttons').show();
@@ -556,13 +565,18 @@ function showZarembaFields(){
 }
 function showXmlFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').hide();
+    $('#currency_list').hide();
     $('#xml_filename').show();
     $('#xml_domain').show();
+    $('#xml_currency').show();
 
     $('#data-replace-update-buttons').hide();
 }
 function showResmanFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').show();
+    $('#currency_list').show();
     //removeValidationsClass();
     // $('#resman_apikey').show();
     // //$('#community_credential_attributes_url').addClass("validate[required]");
@@ -578,6 +592,8 @@ function showResmanFields(){
 }
 function showYardiFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').show();
+    $('#currency_list').show();
     //removeValidationsClass();
     $('#url').show();
     //$('#community_credential_attributes_url').addClass("validate[required]");
@@ -599,11 +615,13 @@ function showYardiFields(){
 
 function showYardiRentCafeFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').show();
+    $('#currency_list').show();
     //removeValidationsClass();
     //$('#c_code').show();
-    let varsion_value = $('#community_credential_attributes_rentcafe_api_version').val();
-
-    if(varsion_value == 'RentCafe V2') { 
+    let rentCafeVersion = $('#community_credential_attributes_rentcafe_api_version').val();
+    
+    if(rentCafeVersion == 'RentCafe V2') { 
         showYardiRentCafeVersion2Option();
     } else {
         showYardiRentCafeCodeInputOption($('#yardirentcafe_code_option').val());
@@ -621,6 +639,8 @@ function showYardiRentCafeFields(){
 
 function showRealPageSVCFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').show();
+    $('#currency_list').show();
     //removeValidationsClass();
     $('#pmc_id').show();
     //$('#community_credential_attributes_pmc_id').addClass("validate[required]");
@@ -636,25 +656,28 @@ function showRealPageSVCFields(){
 
 function showFileFields(){
     $('.credential_fields').hide();
+    $('#company_data_settings').hide();
+    $('#currency_list').hide();
     //removeValidationsClass();
     $('#spreadsheet').show();
+    $('#spreadsheet_currency').show();
     $('#data-connection-buttons').hide();
     $('#data-replace-update-buttons').show();
     //$('#community_credential_attributes_file').addClass("validate[required]"); 
 }
 
 function showYardiRentCafeCodeInputOption(value){
-    $('#api_token').show();
-    $('#c_code').show();
-    $('#yardirentcafe_option').show();
+  $('#api_token').show();
+  $('#c_code').show();
+  $('#yardirentcafe_option').show();
 
-  if (value == "Company Code"){
+  if (value == "Api Token"){
+    $('#api_token').show();
+    $('#c_code').hide(); 
+  }
+  else {
     $('#api_token').hide();
     $('#c_code').show();
-  }
-  else{
-   $('#api_token').show();
-   $('#c_code').hide(); 
   }
 }
 
