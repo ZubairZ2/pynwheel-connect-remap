@@ -88,21 +88,6 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
 
   def update_status_and_remarks
     if @community.present? && @community_user.present?
-      # PynwheelLaunch::Communities::CommunityDetailForms.new(@community).update_status_and_remarks(params[:detail_type], params[:status][:name], params[:status][:remarks])
-      
-      # # if params[:status][:name].eql?(APPROVED)
-      # unless disregard_forms()
-      #   if params[:status][:name].eql?(APPROVED)
-      #     application_approved = PynwheelLaunch::Communities::FollowUpEmails.new(@community).move_to_production_auto_email
-          
-      #     if application_approved
-      #       @community.production_started_date = DateTime.now
-      #       @community.save
-      #       FollowUpMailer.application_approved(@community)
-      #     end
-      #   end
-      # end
-      # # end
       @community.update_status_and_remarks(params[:detail_type], params[:status][:name], params[:status][:remarks])
       render :json => {:success => true , data: @community_user.as_json}
     else

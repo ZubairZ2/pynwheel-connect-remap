@@ -18,7 +18,6 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
 
       stop_id = @community.community_tour.tour_stops.where(stop_type: "unit").destroy_all
       VisitedStop.where(tour_stop_id: stop_id.pluck(:id)).destroy_all
-      # CustomizeTourService.new(@community, nil).remove_community_tour_stops
       update_data_provider
       data_provider = @community.data_provider
       @credential = update_data_provider_credentials
@@ -53,9 +52,6 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
         else
           @community.data_is_imported
           @community.update_property_management_form_status(current_pynwheel_user, params["status"])
-          # previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
-          # @community.set_data_provider_status(current_pynwheel_user, params["status"])
-          # FollowUpMailer.send_email_after_form_submission(@community, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
           render json: {success: true, error_code: 200, message: "Valid credentials. Data import succeeded.", data: @credential.as_json(data_provider)}
         end
       else
