@@ -20,13 +20,13 @@
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 API Version
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = c.select :rentcafe_api_version, ["RentCafe V1","RentCafe V2"], {}, { value: c.object.rentcafe_api_version, class: 'form-control' }
+                = c.select :rentcafe_api_version, ["RentCafe V1","RentCafe V2"], {}, { value: c.object.rentcafe_api_version, class: 'form-control api-version-field' }
 
             .form-group.credential_fields#yardirentcafe_option.field-to-hide
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                 Select Option
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                = select_tag :yardirentcafe_code_option, options_for_select(["Company Code","Api Token"], c.object.api_token.present? ? "Api Token" : "Company Code"),{:class=>"form-control"}
+                = select_tag :yardirentcafe_code_option, options_for_select(["Company Code","Api Token"], c.object.api_token.present? ? "Api Token" : "Company Code"),{:class=>"form-control selected-option-field"}
 
             .form-group.credential_fields#api_token.field-to-hide
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
@@ -34,6 +34,7 @@
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = c.text_field :api_token, :class=>"form-control settings-field", :placeholder=>" Vendor Api Token"
+                %div.error-message{id: "api-token-error", style: "color: red;"}
 
             .form-group.credential_fields#c_code.field-to-hide
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
@@ -41,6 +42,8 @@
 
               .col-sm-12.col-lg-9.col-md-9.col-xs-12
                 = c.text_field :c_code, :class=>"form-control settings-field", :placeholder=>"C-Code"
+                %div.error-message{id: "c-code-error", style: "color: red;"}
+
 
             .box-footer
               %button.btn.btn-success.pull-right.mr-10.company-property{id: "submit-btn-yardirentcafe", type: "button", "data-toggle" => "modal", "data-target" => "#confirmation-modal4", provider: "yardirentcafe"} Save Changes
@@ -54,3 +57,113 @@
                   .modal-footer
                     %button.btn.btn-default.company-community{ type: "button", 'data-dismiss' => "modal" } Close
                     = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10 submit-credential"
+
+
+:javascript
+    $(document).ready(function() {
+    $(".api-version-field, .selected-option-field, #company_credential_attributes_c_code, #company_credential_attributes_api_token").on("input change", function() {
+      $("#c-code-error, #api-token-error").text("");
+    });
+
+    $(".api-version-field").on("change", function() {
+      handleApiVersionChange();
+    });
+
+    $(".selected-option-field").on("change", function() {
+      handleSelectedOptionChange();
+    });
+
+    $("#submit-btn-yardirentcafe").on("click", function() {
+      if (!validateApiVersion()) {
+        return false;
+      }
+
+      if (!validateFieldsBasedOnApiVersion()) {
+        return false;
+      }
+    });
+
+    function handleApiVersionChange() {
+      var apiVersion = $(".api-version-field").val();
+      if (apiVersion === "RentCafe V1") {
+        handleSelectedOptionChange();
+      } else if (apiVersion === "RentCafe V2") {
+
+      }
+    }
+
+    function handleSelectedOptionChange() {
+      var selectedOption = $(".selected-option-field").val();
+      if (selectedOption === "Company Code") {
+        if (!validateCCode()) {
+          return false;
+        }
+      }
+      else if (selectedOption === "API Token") {
+        if (!validateApiToken()) {
+          return false;
+        }
+      }
+       return true;
+    }
+
+    function validateApiVersion() {
+      var apiVersion = $(".api-version-field").val();
+      if (apiVersion === "RentCafe V1" && !validateSelectedOption()) {
+        return false;
+      } else if (apiVersion === "RentCafe V2" && !validateSelectedOption()) {
+        return false;
+      }
+      return true;
+    }
+
+    function validateFieldsBasedOnApiVersion() {
+      var apiVersion = $(".api-version-field").val();
+      var cCode = $("#company_credential_attributes_c_code").val();
+      var apiToken = $("#company_credential_attributes_api_token").val();
+
+      if (apiVersion === "RentCafe V1") {
+        if (!validateSelectedOption()) {
+          return false;
+        }
+      } else if (apiVersion === "RentCafe V2") {
+        if (!validateCCode() || !validateApiToken()) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function validateSelectedOption() {
+      var selectedOption = $(".selected-option-field").val();
+      if (selectedOption === "Company Code") {
+        if (!validateCCode()) {
+          return false;
+        }
+      } else if (selectedOption === "Api Token") {
+        if (!validateApiToken()) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function validateCCode() {
+      var cCode = $("#company_credential_attributes_c_code").val();
+      if (cCode.length === 0) {
+        $("#c-code-error").text("C Code is required");
+        return false;
+      }
+      return true;
+    }
+
+    function validateApiToken() {
+      var apiToken = $("#company_credential_attributes_api_token").val();
+      if (apiToken.length === 0) {
+        $("#api-token-error").text("API Token is required");
+        return false;
+      }
+      return true;
+    }
+  });
