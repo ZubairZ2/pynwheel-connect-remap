@@ -102,6 +102,7 @@ class PsiStaticService < BaseService
         community.update_property_management_form_status()
         community.update_status_and_remarks(PROPERTY_MANAGEMENT_SYSTEM, APPROVED)
         community.update_floorplans_form_status()
+        community.update_status_and_remarks(FLOORPLAN_IMAGES, APPROVED)
       end
     end
 
