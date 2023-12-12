@@ -1,0 +1,7 @@
+- if communities.present?
+  %p Are you sure you want to save changes for
+  %ul
+    - communities&.each do |community|
+      %li= community.name
+- else
+  %p Are you sure you want to save company level credentials?

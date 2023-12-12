@@ -141,6 +141,7 @@ class CommunitiesController < ApplicationController
     @community.image_bit = nil
     authorize! :select_theme,current_user if params[:community].present? && params[:community][:theme_name].present?
     respond_to do |format|
+
       if params[:spreadsheet_method] == '2'
         if @community.update(community_params)
           @community.credential.swap_data_from_spreadsheet(params[:community][:credential_attributes][:file]) if params[:community][:credential_attributes].present? and params[:community][:credential_attributes][:file].present?
@@ -195,6 +196,7 @@ class CommunitiesController < ApplicationController
             else
               format.html { redirect_to community_settings_page_path(current_community),notice: 'Community updated successfully.' }
             end
+
             format.js {render js: "$('#flash-message').html('#{alert_message}'); showTabsAccordingToTheme('#{@community.theme_name}'); setTimeout(function() {$('.alert').fadeOut('slow');}, 10000);"}
           else
             flash[:error] = @community.errors.full_messages.join(',')
@@ -227,6 +229,7 @@ class CommunitiesController < ApplicationController
   end
 
   def alert_message
+
     if params[:community][:data_provider].present? and params[:community][:data_provider] != 'spreadsheet'
       '<div class="alert alert-success">Credentials added successfully.</div>'
     elsif params[:community][:data_provider].present? and params[:community][:data_provider] == 'spreadsheet'
@@ -858,10 +861,10 @@ private
  
   def community_params
 
-    params.require(:community).permit(:show_amenity_name,:property_manager_name,:property_manager_phone,:property_manager_email, :enable_three_d_maps,:web_map_type,:enable_amenity_legend,:enable_home_legend,:community_logo,:pynwheel_access,:name,:creator_id,:default_community_id, :region_id,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :email_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
+    params.require(:community).permit(:use_company_level_data_settings, :show_amenity_name,:property_manager_name,:property_manager_phone,:property_manager_email, :enable_three_d_maps,:web_map_type,:enable_amenity_legend,:enable_home_legend,:community_logo,:pynwheel_access,:name,:creator_id,:default_community_id, :region_id,:billing_rate_touch,:billing_rate_for_both, :lincoln_billing_rate,:dwelo_billing_rate , :billing_rate_selftour, :billing_rate_maps,:address,:number_of_units,:city,:state,:zip,:phone,:email,:description, :manual_lat_long,:latitude,:longitude,:company_id,:logo,:secondary_logo,:self_tour_logo, :email_logo, :restrict_access,:scheduler_widget,:pynwheel_touch,
       :auto_wayfinding, :data_provider,:theme_name,:code,:is_sitemap,:menu_button_shade,:enable_locks,:locked,:website,:equal_housing_opportunity_logo,:handicap_accessible_logo,:powered_by_btn,:tour_setup_visible, :chat_control, :self_tour, :pynwheel_launch_access, :show_map, :mdu, :touchscreen_app,:apply_now_pynwheel_touch_and_go,:apply_now_pynwheel_touch,:apply_now_self_tour, :show_gesture_icons,:billing_type,:billing_rate,:date_installed,:billing_month,:is_vertical_app,
       :credential_attributes=>[:currency, :yardi_rent_cafe_api_url, :entrata_available_units_only, :entrata_show_unit_spaces, :entrata_use_space_configuration,:id,:url,:entrata_url,:username,:password, :perq_property_id, :is_perq_allowed, :property_id,:pmc_id,:server_name,:database,:platform,:interface_entity,:site_id,:c_code,
-      :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :resman_api_version, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:crm_credential_attributes=>[:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id, :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username, :yardirentcafe_marketing_api_key, :yardirentcafe_property_id, :yardirentcafe_property_code,:salesforce_password, :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :salesforce_grant_type],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
+      :api_token,:p_code,:apply_now,:allow_separate_link,:separate_link,:use_different_crm_provider,:limit_result,:file,:resman_apikey, :resman_partner_id, :resman_account_id, :xml_filename, :xml_domain, :rentcafe_api_version, :resman_api_version, :resman_property_id,:zaremba_filename,:zaremba_property_id,:zaremba_username, :zaremba_password],:crm_credential_attributes=>[:crm_provider, :entrata_domain, :entrata_username, :entrata_password, :entrata_property_id, :realpage_site_id, :realpage_pmc_id, :rentcafe_c_code, :rentcafe_p_code, :rentcafe_domain ,:salesforce_username, :yardirentcafe_marketing_api_key, :yardirentcafe_property_id, :yardirentcafe_property_code,:salesforce_password, :salesforce_client_id, :salesforce_secret_id, :salesforce_property_id, :salesforce_grant_type],:design_attributes=>[:id,:logo_position,:secondary_logo_position,:global_navigation_position,
         :property_map_size,:property_map_color,:modernist_map_marker_color,:amenity_map_marker_size,:amenity_map_marker_color,:amenity_map_marker_size_integer,
         :futurist_property_map_marker_color, :expressionist_property_map_marker_color, :panther_property_map_marker_color, :futurist_amenity_map_marker_color,:expressionist__amenity_map_marker_color,
         :panther_amenity_map_marker_color,:futurist_property_map_size,:expressionist_property_map_size,:panther_property_map_size,:modernist_property_map_size, :futurist_amenity_map_size, :expressionist_amenity_map_size, :panther_amenity_map_size, :modernist_amenity_map_size,

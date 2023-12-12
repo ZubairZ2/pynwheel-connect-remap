@@ -1,0 +1,95 @@
+= form_for @company, url: company_data_credentials_company_path(@company, community_id: current_community&.id), html: { class: "form-horizontal settings-form", method: 'PUT' } do |f|
+  .box.box-info.add-plan
+    .box-header
+      %h3.box-title
+        Entrata
+        %span Company Credentials
+        = f.hidden_field :data_providers, value: ["psi"]
+    = f.fields_for :credential do |c|
+      .box-body
+        .row
+          .col-lg-9.col-lg-offset-1
+            .form-group.credential_fields.entrata_url
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Domain
+
+              .row
+                .col-sm-12.col-lg-2.col-md-9.col-xs-12.entrata_input
+                  = c.text_field :entrata_url, :class=>"form-control settings-field", :placeholder=>"Domain"
+                  %div.error-message{id: "entrata-url-error", style: "color: red;"}
+
+                %span.col-sm-12.col-lg-4.col-md-9.col-xs-12.entrata_label
+                  \.entrata.com/api/v1/propertyunits
+
+            .form-group.credential_fields#username
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Username
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
+                = c.text_field :username, :class=>"form-control settings-field", :placeholder=>"username"
+                %div.error-message{id: "username-error", style: "color: red;"}
+
+            .form-group.credential_fields#password
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+                Password
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
+                = c.text_field :password, :class=>"form-control settings-field", :placeholder=>"Password",:value=>c.object.password,:autocomplete=>"OFF"
+                %div.error-message{id: "password-error", style: "color: red;"}
+
+
+            .box-footer
+              %button.btn.btn-success.pull-right.mr-10.company-property{id: "submit-btn", type: "button", "data-toggle" => "modal", "data-target" => "#confirmation-modal", provider: "psi"} Save Changes
+            #confirmation-modal.modal.fade{ tabindex: "-1", role: "dialog", 'aria-labelledby' => "confirmation-modal-label", 'aria-hidden' => "true" }
+              .modal-dialog
+                .modal-content
+                  .modal-header
+                    %h4.modal-title{ id: "confirmation-modal-label" } Confirmation
+                  .modal-body
+                    .community-list
+                  .modal-footer
+                    %button.btn.btn-default.company-community{ type: "button", 'data-dismiss' => "modal" } Close
+                    = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10 submit-credential"
+
+
+
+:javascript
+  $(document).ready(function() {
+    $("#company_credential_attributes_entrata_url, #company_credential_attributes_username, #company_credential_attributes_password").on("input", function() {
+      $(this).next('.error-message').text("");
+    });
+
+    $("#submit-btn").on("click", function() {
+      // Perform validation here
+      if (!validateEntrataUrl() || !validateUsername() || !validatePassword()) {
+        return false;
+      }
+    });
+
+    function validateEntrataUrl() {
+      var entrataUrl = $("#company_credential_attributes_entrata_url").val();
+      if (entrataUrl.length === 0) {
+        $("#entrata-url-error").text("Domain is required");
+        return false;
+      }
+      return true;
+    }
+
+    function validateUsername() {
+      var username = $("#company_credential_attributes_username").val();
+      if (username.length === 0) {
+        $("#username-error").text("Username is required");
+        return false;
+      }
+      return true;
+    }
+
+    function validatePassword() {
+      var password = $("#company_credential_attributes_password").val();
+      if (password.length === 0) {
+        $("#password-error").text("Password is required");
+        return false;
+      }
+      return true;
+    }
+  });

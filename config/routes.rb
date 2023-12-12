@@ -67,9 +67,11 @@ Rails.application.routes.draw do
   post 'mark_all_as_read/:chatroom_id', to: 'chats#reset_unread_messages'
   resources :analytics, only: [:index]
   get '/analytics/get_associated_communities', to: 'analytics#get_associated_communities'
+
   resources :companies do
     resources :communities
     resources :community_groups
+    resources :company_settings
 
     resources :regions do
       delete :remove_community, on: :member
@@ -84,12 +86,13 @@ Rails.application.routes.draw do
       get :generate_webpages_report
       get :properties_average_data_report
       get :generate_salesforce_report
-
+      get :company_data_provider_communities_list
     end
 
     member do
       get :generate_csv
       get :generate_csv_for_scheduled_records
+      put :company_data_credentials
     end
 
   end
@@ -660,6 +663,12 @@ Rails.application.routes.draw do
       resources :user_details do
         member do
           put :update_company
+        end
+      end
+
+      resources :companies do
+        member do
+          post :import_data_credentials
         end
       end
 

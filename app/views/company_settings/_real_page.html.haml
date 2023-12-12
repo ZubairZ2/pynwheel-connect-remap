@@ -1,0 +1,54 @@
+= form_for @company, url: company_data_credentials_company_path(@company, community_id: current_community&.id), html: { class: "form-horizontal settings-form", method: 'PUT' } do |f|
+  .box.box-info.add-plan
+    .box-header
+      %h3.box-title
+        RealPage
+        %span  Company Credentials
+        = f.hidden_field :data_providers, :value=> "realpagesvc"
+    = f.fields_for :credential do |c|
+      .box-body
+        .row
+          .col-lg-9.col-lg-offset-1
+            .form-group.credential_fields#pmc_id
+              %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.field-to-hide
+                PMC ID
+
+              .col-sm-12.col-lg-9.col-md-9.col-xs-12.field-to-hide
+                = c.text_field :pmc_id, :class=>"form-control settings-field", :placeholder=>"PMC ID"
+                %div.error-message{id: "pmc-id-error", style: "color: red;"}
+
+            .box-footer
+              %button.btn.btn-success.pull-right.mr-10.company-property{id: "submit-btn-realpagesvc", type: "button", "data-toggle" => "modal", "data-target" => "#confirmation-modal1", provider: "realpagesvc"} Save Changes
+            #confirmation-modal1.modal.fade{ tabindex: "-1", role: "dialog", 'aria-labelledby' => "confirmation-modal-label", 'aria-hidden' => "true" }
+              .modal-dialog
+                .modal-content
+                  .modal-header
+                    %h4.modal-title{ id: "confirmation-modal-label" } Confirmation
+                  .modal-body
+                    .community-list
+                  .modal-footer
+                    %button.btn.btn-default.company-community{ type: "button", 'data-dismiss' => "modal" } Close
+                    = f.submit "Save Changes", :class=>"btn btn-success pull-right mr-10 submit-credential"
+
+
+:javascript
+   $(document).ready(function() {
+    $("#company_credential_attributes_pmc_id").on("input", function() {
+      $("#pmc-id-error").text("");
+    });
+
+    $("#submit-btn-realpagesvc").on("click", function() {
+      if (!validatePmcId()) {
+        $("#pmc-id-error").text("PMC ID is required");
+        return false;
+      }
+    });
+
+    function validatePmcId() {
+      var pmcId = $("#company_credential_attributes_pmc_id").val();
+      if (pmcId.length === 0) {
+        return false;
+      }
+      return true;
+    }
+  });

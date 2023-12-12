@@ -5,17 +5,14 @@ class PynwheelLaunch::Communities::FollowUpEmails
 
   def move_to_production_auto_email
     forms = forms_list
-
-    puts "\n\n Launch Forms \n\n"
-    puts forms
-    puts "\n\n Launch Forms \n\n"
-
+    
     if forms.present?
       readable_forms_status = get_readable_form_status(forms)
       if forms.all?{ |x| x[:status].eql?(APPROVED) || x[:status].eql?(RELEASED) || x[:status].eql?(APPLICATION_IN_REVIEW) }
         return true
       end
     end
+
     false
   end
 

@@ -56,6 +56,11 @@ textarea {
     background-color: #ddd;
 }
 
+.rent-cafe-v2-note{
+  color: grey;
+  margin-top: 3px;
+}
+
 .floor_unit_visibility {
     color: red;
     display: none;
@@ -7251,11 +7256,11 @@ span.to-input {
     border: 1px solid #ccc;
     border-radius: 4px
 }
-
-.amenityTooltip:hover .amenityTooltiptext {
-    visibility: visible;
+@media (min-width: 769px) {
+    .amenityTooltip:hover .amenityTooltiptext {
+        visibility: visible;
+    }
 }
-
 .amenityTooltip .amenityTooltiptext img {
     display: block;
     margin: 0px auto;

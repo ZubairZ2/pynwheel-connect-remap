@@ -28,6 +28,24 @@
               = link_to analytics_path(community: current_community.id) do
                 %i.fa.fa-bar-chart
                 %span Analytics
+        %li.treeview{:class=>"#{controller_name =='companies' ? 'active' : 'active'}"}
+          %a{:href => "/"}
+            %i.fa.fa-building
+            %span Company
+            %span.pull-right-container
+              %i.fa.fa-angle-right.pull-right
+          %ul.treeview-menu{:style=>"#{controller_name =='companies'? 'display: block' : ''}"}
+            %li.loader_class{:class=>"#{controller_name =='companies' && params[:action] == "edit"  ? 'active' : ''}"}
+              %a{:href => "#{ edit_company_path(current_company)}"}
+                %i.fa.fa-info
+                %span Company Details
+                %span.pull-right-container
+
+            %li.loader_class{:class=>"#{controller_name =='company_settings' &&  (params[:action] == 'edit' || params[:action] == 'new') ? 'active' : ''}"}
+              %a{:href => "#{ current_company.company_setting.present? ? edit_company_company_setting_path(current_company, current_company.company_setting,community_id: current_community.id) : new_company_company_setting_path(current_company, community_id: current_community.id)}"}
+                %i.fa.fa-gears
+                %span Company Data
+                %span.pull-right-container
       - if current_user.is_admin? || current_user.is_community_assistant?
         %li.loader_class{:class=>"#{controller_name =='communities' && params[:action] =='edit' ? 'active' : ''}"}
           = link_to edit_company_community_path(current_company,current_community) do
@@ -55,7 +73,7 @@
             %i.fa.fa-lock
             %span Locks
             %span.pull-right-container
-      - if current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
+      - if current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?
         %li.loader_class{:class=>"#{controller_name =='design' && (params[:action] =='logo' || params[:action] =='secondary_logo') ? 'active' : ''}"}
           = link_to logo_community_design_index_path(current_community) do
             %i.fa.fa-cubes
@@ -177,7 +195,7 @@
       /   %li
       /     %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget-link",:href => "##"}
       /       %i.fa.fa-share
-      /       %span Tour Scheduler Widget Link      
+      /       %span Tour Scheduler Widget Link
       /     %a{:href => "#{scheduler_widget_community_tours_path(current_community)}"}
       /     %a{"data-toggle"=>"modal","data-target"=>"#share-scheduler-widget",:href => "##"}
       /       %i.fa.fa-share
@@ -187,7 +205,7 @@
       -#     %a{"data-toggle"=>"modal","data-target"=>"#share-chat-widget",:href => "##"}
       -#       %i.fa.fa-share
       -#       %span Chat Widget
-      / - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager? 
+      / - if (current_community.self_tour) && current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?
       /   %li.loader_class{:class=>"#{controller_name =='tours_setup' || controller_name =='tours' ? 'active' : ''}"}
       /     %a{:href => "#{community_tours_path(current_community)}"}
       /       %i.fa.fa-plane
@@ -225,18 +243,18 @@
           %a{:href => "#{community_tour_users_path(current_community)}"}
             %i.fa.fa-sticky-note-o
             %span Visitors
-      
+
       - if current_community.self_tour
         %li.loader_class{:class=>"#{controller_name =='schedual_tours' ? 'active' : ''}"}
           %a{:href => "#{community_schedual_tours_path(current_community)}"}
             %i.fa.fa-sticky-note-o
-            %span Scheduled Tours 
+            %span Scheduled Tours
 
       - if current_community.pynwheel_access && current_user.is_super_admin?
         %li.loader_class{:class=>"#{controller_name =='pynwheel_access_users' ? 'active' : ''}"}
           %a{:href => "#{community_pynwheel_access_users_path(current_community)}"}
             %i.fa.fa-lock
-            %span Pynwheel Access Users   
+            %span Pynwheel Access Users
 
       - if (current_user.is_super_admin? || current_user.is_view_visitor_details_page?) && current_user.is_super_admin?
         %li.loader_class{:class=>"#{controller_name =='Community' && params[:action] == "logs" ? 'active' : ''}"}
@@ -248,7 +266,7 @@
           %a{:href => "#{community_impressions_path(current_community)}"}
             %i.fa.fa-history
             %span Impressions Logs
-      - unless (current_user.is_view_visitor_details_page? || current_user.is_community_assistant?) 
+      - unless (current_user.is_view_visitor_details_page? || current_user.is_community_assistant?)
         %li.loader_class{:class=>"#{controller_name =='tutorials' ? 'active' : ''}"}
           %a{:href => "#{community_tutorials_path(current_community)}"}
             %i.fa.fa-video-camera

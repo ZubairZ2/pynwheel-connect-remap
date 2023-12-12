@@ -119,7 +119,7 @@
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Number of Units
   .col-sm-12.col-lg-9.col-md-9.col-xs-12
-    = f.text_field :number_of_units, :class=>"form-control validate[custom[onlyNumber]]", :placeholder=>"Number of Units",:maxlength=>"5"
+    = f.text_field :number_of_units, :class=>"form-control validate[custom[onlyNumber]]", :placeholder=>"Number of Units", :maxlength=>"5", :value => @community.units.count
 .form-group
   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
     Property Map / Floorplates
