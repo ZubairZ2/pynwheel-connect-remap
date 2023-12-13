@@ -963,6 +963,7 @@ class Community < ApplicationRecord
   end
 
   def use_yardi_as_lead?
+    return unless credential.present?
     if credential.rentcafe_api_version == "RentCafe V2"
       use_rent_cafe_v2_as_lead
     else
