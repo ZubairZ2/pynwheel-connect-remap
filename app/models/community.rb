@@ -353,9 +353,9 @@ class Community < ApplicationRecord
   end
 
   def set_data_provider_status(current_user, status)
-    return if self.data_provider.blank? && self.credential.blank?
-    community = Community.find_by_id (self.id)
-    provider_credential = community.credential
+    return if self.data_provider.blank? || self.credential.blank?
+    
+    provider_credential = self.credential
     required_fields = check_required_fields_for_providers
     if status.empty?
       status_attr = status_string(required_fields)

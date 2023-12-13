@@ -5,13 +5,17 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
   before_action :create_company_credentials, only: :import_data_credentials
 
   def import_data_credentials
-    case params[:data_provider]
-    when "yardirentcafe"
-      set_data_provider()
-      import_rent_cafe_data
+    if params[:data_provider].present?
+      set_data_provider
+      import_providers_data
     else
       render_response("Wrong data provider, please check property's data provider", false)
     end
+  end
+
+  def fetch_entrata_property_ids
+    property_ids = DataProviders::Entrata::ApisService.new(1473).get_property_ids()
+    render json: { message: "Properties Ids", data: property_ids }
   end
 
   private
@@ -32,7 +36,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
       end
     end
 
-    def import_rent_cafe_data
+    def import_providers_data
       update_property_credential()
       if valid_credentials? && @community.data_is_imported
         @community.update_attributes(use_company_level_data_settings: true)
@@ -63,6 +67,16 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
     end
 
     def update_property_credential
+      case params[:data_provider]
+      when "yardirentcafe"
+        update_rent_cafe_credentials()
+      when "psi"
+        update_entrata_credentials()        
+      end
+      
+    end
+
+    def update_rent_cafe_credentials
       @credential = @community.credential || @community.build_credential
 
       @credential.update(
@@ -71,6 +85,17 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
         c_code: params[:c_code],
         p_code: params[:p_code],
         currency: params[:currency]
+      )
+    end
+
+    def update_entrata_credentials
+      @credential = @community.credential || @community.build_credential
+
+      @credential.update(
+        entrata_url:  params[:entrata_url],
+        username: params[:username],
+        password: params[:password],
+        property_id: params[:property_id]
       )
     end
 
