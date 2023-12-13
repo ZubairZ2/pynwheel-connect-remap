@@ -107,6 +107,11 @@ class CommunitiesController < ApplicationController
         @community.update(creator_id: "")
       end
     end
+
+    unless @community.data_provider.present?
+      @community.update_columns(data_provider: "psi" )
+    end
+
     @all_regions = current_company.regions.order(:name).collect {|p| [ p.name, p.id ] } rescue []
     if params[:community][:image]
       @community.crop_x = nil
