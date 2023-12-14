@@ -2118,8 +2118,8 @@ function removeFrame() {
 }
 
 function addFrame(src) {
-  var ifrm = document.createElement("iframe");
-  src = src.replace(/^https?:/, '');
+  var ifrm = document.createElement("embed");
+  // src = src.replace(/^https?:/, '');
   ifrm.setAttribute("src", src);
   ifrm.style.position = "absolute";
   ifrm.style.top= 0;
