@@ -2106,7 +2106,7 @@ function addVirtualTour(element) {
     $('.virtual-tour-btn').css("display", "block");
     $('.virtual-tour-btn').html(label);
     $('#unitVirtualTourModal').find('#unitVirtualName').html($(element).data('unit-marketing-name'));
-    addFrame(url);
+    addFrame(url) ;
 
   } else {
     $('.virtual-tour-btn').css("display", "none");
@@ -2118,8 +2118,7 @@ function removeFrame() {
 }
 
 function addFrame(src) {
-  var ifrm = document.createElement("embed");
-  // src = src.replace(/^https?:/, '');
+  var ifrm = document.createElement("iframe");
   ifrm.setAttribute("src", src);
   ifrm.style.position = "absolute";
   ifrm.style.top= 0;
