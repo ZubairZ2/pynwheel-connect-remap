@@ -357,6 +357,7 @@ class Community < ApplicationRecord
     
     provider_credential = self.credential
     required_fields = check_required_fields_for_providers
+
     if status.empty?
       status_attr = status_string(required_fields)
     else
@@ -440,8 +441,8 @@ class Community < ApplicationRecord
   end
 
   def check_required_fields_for_providers
-    community = Community.find_by_id (self.id)
-    credential = community.credential
+    credential = self.credential
+
     case data_provider
       when "psi"
         credential.entrata_url.present? && credential.username.present? && credential.password.present? && credential.property_id.present?

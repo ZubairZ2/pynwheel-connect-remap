@@ -1,13 +1,11 @@
 module DataProviders
   module Entrata
-    class ApisService
-      def initialize(community_id)
-        return unless community_id.present?
-
-        @community = Community.find_by_id(community_id)
-        @credential = @community&.credential if @community.present?
-
-        return unless @credential.present?
+    class PropertiesIdsApiService
+      def initialize(params)
+        @params = params
+        @password = @params[:password]
+        @username = @params[:username]
+        @entrata_url = @params[:domain]
       end
 
       def get_property_ids
@@ -31,8 +29,8 @@ module DataProviders
           {
             "auth": {
               "type": "basic",
-              "password": @credential.password,
-              "username": @credential.username
+              "password": @password,
+              "username": @username
             },
             "requestId": 15,
             "method": {
@@ -43,10 +41,10 @@ module DataProviders
         end
 
         def get_property_ids_endpoint
-          if @credential.entrata_url.include?('https://') || @credential.entrata_url.include?('http://')
-            url = @credential.entrata_url
+          if  @entrata_url&.include?('https://') || @entrata_url.include?('http://')
+            url = @entrata_url
           else
-            url = "https://#{@credential.entrata_url}.entrata.com/api/v1/properties"
+            url = "https://#{@entrata_url}.entrata.com/api/v1/properties"
           end
           url
         end

@@ -669,7 +669,7 @@ Rails.application.routes.draw do
       resources :companies do
         member do
           post :import_data_credentials
-          get :fetch_entrata_property_ids
+          post :fetch_entrata_property_ids
         end
       end
 

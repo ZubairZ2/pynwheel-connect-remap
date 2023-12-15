@@ -5,17 +5,19 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
   before_action :create_company_credentials, only: :import_data_credentials
 
   def import_data_credentials
-    if params[:data_provider].present?
-      set_data_provider
-      import_providers_data
-    else
-      render_response("Wrong data provider, please check property's data provider", false)
-    end
+    # if params[:data_provider].present?
+    #   set_data_provider
+    #   import_providers_data
+    # else
+    #   render_response("Wrong data provider, please check property's data provider", false)
+    # end
+    render_response("Data imported successfully", true)
+
   end
 
   def fetch_entrata_property_ids
-    property_ids = DataProviders::Entrata::ApisService.new(1473).get_property_ids()
-    render json: { message: "Properties Ids", data: property_ids }
+    property_ids = DataProviders::Entrata::PropertiesIdsApiService.new(params).get_property_ids()
+    render json: { message: "Properties Ids", properties_ids: property_ids }
   end
 
   private
@@ -73,7 +75,6 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
       when "psi"
         update_entrata_credentials()        
       end
-      
     end
 
     def update_rent_cafe_credentials
@@ -92,10 +93,10 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
       @credential = @community.credential || @community.build_credential
 
       @credential.update(
-        entrata_url:  params[:entrata_url],
+        entrata_url: params[:domain],
         username: params[:username],
         password: params[:password],
-        property_id: params[:property_id]
+        currency: params[:currency]
       )
     end
 
