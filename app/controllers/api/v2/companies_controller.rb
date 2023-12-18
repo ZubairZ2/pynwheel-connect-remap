@@ -133,7 +133,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
 
     def set_entrata_property
       return nil unless params[:property_id].present?
-      credential = Credential.where('LOWER(property_id) = ?', params[:property_id]&.downcase).last
+      credential = Credential.where('LOWER(property_id) iLIKE ?', "%#{params[:property_id].to_s&.downcase}%").last
       credential&.community
     end
 

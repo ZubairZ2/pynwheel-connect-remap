@@ -11,6 +11,7 @@ module DataProviders
       def get_property_ids
         response = fetch_properties_response
         parse_properties_response(JSON.parse(response.body)) if response&.body.present?
+
       rescue StandardError => e
         []
       end
