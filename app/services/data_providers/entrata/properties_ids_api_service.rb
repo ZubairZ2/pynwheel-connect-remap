@@ -50,7 +50,7 @@ module DataProviders
         end
 
         def parse_properties_response response
-          response["response"]["result"]["PhysicalProperty"]["Property"].map{|res| res["PropertyID"]} rescue []
+          preoperties_id = response["response"]["result"]["PhysicalProperty"]["Property"].map{|res| {property_id: res["PropertyID"], property_name: res["MarketingName"]} }rescue []
         end
 
     end
