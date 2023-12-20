@@ -134,7 +134,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
     def set_entrata_property
       return nil unless params[:property_id].present?
       credential = Credential.where('LOWER(property_id) iLIKE ?', "%#{params[:property_id].to_s&.downcase}%").last
-      credential&.community
+      @company.communities.find_by(id: credential&.community&.id)
     end
 
     def set_data_provider
