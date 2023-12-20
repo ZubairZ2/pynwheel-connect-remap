@@ -28,12 +28,12 @@
       <div class="controls span12">
         <span class="span2">
           <%= f.label :width, :caption => 'Width' %>
-          <%= f.text_field :width, :value => @sitemap.width, :placeholder => "Width", :class => "span12 numeric", :required => true %>
+          <%= f.text_field :width, :value => @sitemap.sitemap_image_width(), :placeholder => "Width", :class => "span12 numeric", :required => true %>
         </span>
 
         <span class="span2">
           <%= f.label :height, :caption => 'Height' %>
-          <%= f.text_field :height, :value => @sitemap.height, :placeholder => "Height", :class => "span12 numeric", :required => true %>
+          <%= f.text_field :height, :value => @sitemap.sitemap_image_height(), :placeholder => "Height", :class => "span12 numeric", :required => true %>
         </span>
       </div>
     </div>

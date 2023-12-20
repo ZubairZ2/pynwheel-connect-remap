@@ -125,6 +125,15 @@ class Floorplate < ApplicationRecord
     end
   end
 
+  def floorplate_image_width
+    self.width > 0 ? self.width : self.image.width
+  end
+
+  def floorplate_image_height
+    self.height > 0 ? self.height : self.image.height
+  end
+
+
   private
 
 
@@ -152,8 +161,8 @@ class Floorplate < ApplicationRecord
       name: self.name,
       floor_number: self.number,
       image: self.image,
-      height: self.height,
-      width: self.width,
+      height: floorplate_image_height,
+      width: floorplate_image_width,
       floor_range: self.range,
       floorplan_name: floor,
       unique_floorplat_amenity_identifier: "#{self.id}-#{floor}",
@@ -167,8 +176,8 @@ class Floorplate < ApplicationRecord
       name: self.name,
       floor_number: self.number,
       image: self.image,
-      height: self.height,
-      width: self.width,
+      height: floorplate_image_height,
+      width: floorplate_image_width,
       floor_range: self.range,
       floorplan_name: floor,
       unique_floorplat_unit_identifier: "#{self.id}-#{floor}",
