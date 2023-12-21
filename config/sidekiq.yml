@@ -1,6 +1,7 @@
 :concurrency: 5
 :queues:
   - restarts
+  - create_amenity
   - delete_data
   - import_data
   - real_page
