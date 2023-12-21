@@ -19,7 +19,7 @@ class AmenitiesController < ApplicationController
       @amenity.save
       redirect_to edit_community_amenity_path(current_community, @amenity)
     else
-      UploadAmenitiesWorker.perform_async(current_community&.id, params[:src], params[:name])
+      AmenityImagesJob.perform_async current_community&.id, params[:src], params[:name]
       @amenities = current_community.amenities.order(id: :desc)
     end
   end
