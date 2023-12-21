@@ -863,7 +863,7 @@ class Community < ApplicationRecord
     temporary_images.size > 0
   end
   def delete_community
-    DeleteCommunityJob.perform_async self
+    PropertyDestroyWorker.perform_async self.id
   end
 
   def clean_psi_data_provider

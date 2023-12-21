@@ -58,7 +58,7 @@ class Company < ApplicationRecord
   end
 
   def delete_company
-    DeleteCompanyJob.perform_async self
+    CompanyDestroyWorker.perform_async self.id
   end
 
   def creator
