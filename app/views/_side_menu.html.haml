@@ -73,6 +73,7 @@
             %i.fa.fa-lock
             %span Locks
             %span.pull-right-container
+            
       - if current_user.is_super_admin? || current_user.is_community_admin? || current_user.is_community_manager?
         %li.loader_class{:class=>"#{controller_name =='design' && (params[:action] =='logo' || params[:action] =='secondary_logo') ? 'active' : ''}"}
           = link_to logo_community_design_index_path(current_community) do
