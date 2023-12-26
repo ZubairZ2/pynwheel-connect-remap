@@ -19,7 +19,7 @@
             - floorplate = @floor_to_floorplate[floor]
             = hidden_field_tag 'fp_id', floorplate.id
             - if floorplate.image? and floorplate.image.content_type == "image/svg+xml"
-              .svg_image_style{:style =>  "width: #{floorplate.width}px; height: #{floorplate.height}px;"}
+              .svg_image_style{:style =>  "width: #{floorplate.floorplate_image_width()}px; height: #{floorplate.floorplate_image_height()}px;"}
                 = image_tag  floorplate.image.url
             - else
               = image_tag floorplate.image? ? floorplate.image.url : "default.jpeg" ,name: "viewArea", id: "viewArea", draggable:"false", class: 'viewArea', data: {'map_id' => map_id}

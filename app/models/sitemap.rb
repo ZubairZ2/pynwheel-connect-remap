@@ -51,6 +51,14 @@ class Sitemap < ApplicationRecord
     sitemap_amenities.present? ? sitemap_amenities_info(sitemap_amenities) : nil
   end
 
+  def sitemap_image_width
+    self.width > 0 ? self.width : self.image.width
+  end
+
+  def sitemap_image_height
+    self.height > 0 ? self.height : self.image.height
+  end
+
   private
 
   def unit_info unit
@@ -77,8 +85,8 @@ class Sitemap < ApplicationRecord
       name: "Sitemap",
       floor_number: "",
       image: self.image,
-      height: self.height,
-      width: self.width,
+      height: sitemap_image_height,
+      width: sitemap_image_width,
       floor_range: "",
       floorplan_name: "",
       building: "",
@@ -93,8 +101,8 @@ class Sitemap < ApplicationRecord
       name: "Sitemap",
       floor_number: "",
       image: self.image,
-      height: self.height,
-      width: self.width,
+      height: sitemap_image_height,
+      width: sitemap_image_width,
       floor_range: "",
       floorplan_name: "",
       building: "",
@@ -102,5 +110,7 @@ class Sitemap < ApplicationRecord
       floorplate_units: sitemap_stops
     }
   end
+
+
 
 end

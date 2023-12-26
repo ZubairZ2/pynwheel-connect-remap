@@ -604,7 +604,7 @@ function saveAnimation(value){
     }).done(function(){
         $(".divLoading").addClass("hidden");
         console.log("success");
-        location.reload();
+        // location.reload();
         // if (type == "community"){location.reload();}
     });
   }
