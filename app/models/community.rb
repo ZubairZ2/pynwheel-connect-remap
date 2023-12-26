@@ -219,10 +219,16 @@ class Community < ApplicationRecord
     self.floorplans.all? { |f| f&.status&.status == SUBMITTED }
   end
 
-  def update_property_management_form_status current_pynwheel_user = nil, form_status = ""
+  def update_property_management_form_status current_pynwheel_user = nil, form_status = nil
     previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
     self.set_data_provider_status(current_pynwheel_user, form_status)
     FollowUpMailer.send_email_after_form_submission(self, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
+  end
+
+  def update_community_details_form_status current_pynwheel_user = nil, form_status = nil
+    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(self).check_status_of_specific_form(COMMUNITY_DETAILS)
+    self.set_community_details_status(current_pynwheel_user, form_status)
+    FollowUpMailer.send_email_after_form_submission(self, COMMUNITY_DETAILS, previous_status)
   end
 
   def update_status_and_remarks form_type, form_status, form_remarks = ""
@@ -267,6 +273,7 @@ class Community < ApplicationRecord
     else
       community_status = status
     end
+
     set_status_for_all(self,community_status,current_user)
   end
 
@@ -275,7 +282,7 @@ class Community < ApplicationRecord
 
     if self.is_sitemap
       sitemap = self.sitemap
-      if status.empty?
+      unless status.present?
         property_sitemap_status = status_string(self.sitemap&.image&.url.present? || self.sitemap&.file&.url.present?)
       else
         property_sitemap_status = "in_progress"
@@ -284,7 +291,7 @@ class Community < ApplicationRecord
     elsif self.floorplates.any?
       floorplates = self.floorplates
       floorplates.each do |floorplate|
-        if status.empty?
+        unless status.present?
           property_floorplate_status = status_string(floorplate&.image&.url.present? || floorplate&.file&.url.present?)
         else
           property_floorplate_status = "in_progress"
@@ -297,7 +304,7 @@ class Community < ApplicationRecord
   def set_floorplan_status(current_user, status)
     return if self.floorplans.blank?
     self.floorplans.each do |floorplan|
-      if status.empty?
+      unless status.present?
         floorplan_status = status_string(floorplan&.image&.url.present? || floorplan&.file&.url.present?)
       else
         floorplan_status = status
@@ -312,7 +319,7 @@ class Community < ApplicationRecord
     return if self.galleries.blank?
 
     self.galleries.each do |gallery|
-      if status.empty?
+      unless status.present?
         gallery_images_status = status_string(gallery.name.present? && gallery&.gallery_images.present?)
       else
         gallery_images_status = status
@@ -332,7 +339,7 @@ class Community < ApplicationRecord
     return if design.home_page_images.blank?
 
     design.home_page_images.each do |touch_img|
-      if status.empty?
+      unless status.present?
         touch_img_status = status_string(touch_img.name.present? & touch_img.image&.url.present?)
       else
         touch_img_status = status
@@ -345,7 +352,7 @@ class Community < ApplicationRecord
     return if design.home_page_video.blank?
 
     hp_video = design.home_page_video
-    if status.empty?
+    unless status.present?
       touch_video_status = status_string(hp_video.video.url.present?)
     else
       touch_video_status = status
@@ -359,7 +366,7 @@ class Community < ApplicationRecord
     provider_credential = self.credential
     required_fields = check_required_fields_for_providers
 
-    if status.empty?
+    unless status.present?
       status_attr = status_string(required_fields)
     else
       status_attr = status
@@ -372,7 +379,7 @@ class Community < ApplicationRecord
 
   def set_design_direction_status(current_user, status)
     return if self&.design_direction&.blank?
-    if status.empty? || status.nil?
+    unless status.present?
       design_direction = status_string(self&.design_direction&.image&.url.present? || self&.design_direction&.file&.url.present?)
     else
       design_direction = status
@@ -384,7 +391,7 @@ class Community < ApplicationRecord
     return if self.amenities.blank?
 
     self.amenities.each do |amenity|
-      if status.empty?
+      unless status.present?
         amenity_status = status_string(amenity&.image&.url.present?)
       else
         amenity_status = status
@@ -397,7 +404,7 @@ class Community < ApplicationRecord
     return if self.webpages.blank? && self.imagepages.blank?
     webpages = self.webpages
     webpages.each do |webpage|
-      if status.empty?
+      unless status.present?
         webpage_status = status_string(webpage&.name.present? && webpage&.url.present?)
       else
         webpage_status = status
@@ -406,7 +413,7 @@ class Community < ApplicationRecord
     end
     imagepages = self.imagepages
     imagepages.each do |imagepage|
-      if status.empty?
+      unless status.present?
         imagepage_status = status_string(imagepage&.name.present?)
       else
         imagepage_status = status
@@ -420,7 +427,7 @@ class Community < ApplicationRecord
     weblinks = self.favorite_setting.ebrochure_menu_buttons
     if weblinks.present?
       weblinks.each do |weblink|
-        if status.empty?
+        unless status.present?
           weblink_status = status_string(weblink&.name.present? && weblink&.url.present?)
         else
           weblink_status = status
@@ -431,7 +438,7 @@ class Community < ApplicationRecord
     images = self.favorite_setting.favorite_images
     if images.present?
       images.each do |image|
-        if status.empty?
+        unless status.present?
           image_status = status_string(image&.image&.url.present?)
         else
           image_status = status
@@ -513,7 +520,7 @@ class Community < ApplicationRecord
     return if self.opening_hours.blank?
     self_visiting_hours = self.opening_hours
     self_visiting_hours.each do |oh|
-      if status.empty?
+      unless status.present?
         status_attr = status_string(oh.day.present? && oh.opening_time.present? && oh.closing_time.present?)
       else
         status_attr = status
@@ -526,7 +533,7 @@ class Community < ApplicationRecord
     return if self.guided_opening_hours.blank?
     guided_visiting_hours = self.guided_opening_hours
     guided_visiting_hours.each do |gh|
-      if status.empty?
+      unless status.present?
         status_attr = status_string(gh.day.present? && gh.opening_time.present? && gh.closing_time.present? )
       else
         status_attr = status
@@ -538,7 +545,7 @@ class Community < ApplicationRecord
   def touch_installation_specification(current_user, status)
     return if self.hardware_spec.nil?
     hardware_spec = self.hardware_spec
-    if status.empty?
+    unless status.present?
       status_attr = status_string(hardware_spec&.name.present? && hardware_spec&.phone.present? && hardware_spec&.image.present? )
     else
       status_attr = status
@@ -559,7 +566,7 @@ class Community < ApplicationRecord
     return if self.community_tour&.tour_stops.blank?
     tour_stops = self.community_tour.tour_stops.compact
     tour_stops.each do |ts|
-      if status.empty?
+      unless status.present?
         status_attr = status_string(ts.name.present?)
       else
         status_attr = status
@@ -586,7 +593,7 @@ class Community < ApplicationRecord
   def igloohome_lock_status(current_user, status)
     return if self.igloohome.blank?
     igloohome = self.igloohome
-    if status.empty?
+    unless status.present?
       status_attr = status_string(igloohome.email.present? && igloohome.file.present?)
     else
       status_attr = status
@@ -597,14 +604,14 @@ class Community < ApplicationRecord
   def yale_lock_status(current_user, status)
     return if self.yale.blank?
     yale_locks = self.yale
-    status_attr = status.empty? ? status_string(yale_locks.present?) : status
+    status_attr = status.present? ? status : status_string(yale_locks.present?)
     set_status_for_all(yale_locks,status_attr,current_user)
   end
 
   def schlage_lock_status(current_user, status)
     return if self.schlage.blank?
     schlage_locks = self&.schlage
-    status_attr = status.empty? ? status_string(schlage_locks.present?) : status
+    status_attr = status.present? ? status : status_string(schlage_locks.present?)
     set_status_for_all(schlage_locks,status_attr,current_user)
   end
 
@@ -612,7 +619,7 @@ class Community < ApplicationRecord
     return unless self.other_locks.present?
     other_locks = self.other_locks
     other_locks.each do |lock|
-      if status.empty?
+      unless status.present?
         status_attr = status_string(lock.description.present?)
       else
         status_attr = status
@@ -624,7 +631,7 @@ class Community < ApplicationRecord
   def pynwheel_access_status(current_user, status)
     return if self.zerv.blank?
     zerv_lock = self.zerv
-    if status.empty?
+    unless status.present?
       status_attr = status_string(zerv_lock.facility_id.present? && zerv_lock.badge_id.present? && zerv_lock.card_format.present?)
     else
       status_attr = status
@@ -635,7 +642,7 @@ class Community < ApplicationRecord
   def latch_locks_status(current_user, status)
     return if self.latch.blank?
     latch = self.latch
-    if status.empty?
+    unless status.present?
       status_attr = status_string(latch.client_id.present? && latch.client_secret.present?)
     else
       status_attr = status
@@ -646,7 +653,7 @@ class Community < ApplicationRecord
   def dwelo_locks_status(current_user, status)
     return if self.dwelo.blank?
     dwelo = self.dwelo
-    if status.empty?
+    unless status.present?
       status_attr = status_string(dwelo.community_id.present? && dwelo.client_id.present? && dwelo.client_secret.present?)
     else
       status_attr = status
@@ -657,7 +664,7 @@ class Community < ApplicationRecord
   def remote_lock_status(current_user, status)
     return if self.launch_remote.blank?
     remote_locks = self.launch_remote
-    status_attr = status.empty? ? status_string(remote_locks.present?) : status
+    status_attr = status.present? ? status : status_string(remote_locks.present?)
     set_status_for_all(remote_locks,status_attr,current_user)
   end
 
@@ -965,6 +972,7 @@ class Community < ApplicationRecord
 
   def use_yardi_as_lead?
     return unless credential.present?
+
     if credential.rentcafe_api_version == "RentCafe V2"
       use_rent_cafe_v2_as_lead
     else

@@ -30,10 +30,10 @@ class Api::V2::CommunitiesController < Api::V2::ApiApplicationController
       @community.remove_logo!
       update_community = @community.update(name: community["name"] , file: community["file"] , address:  community["address"], city: community["city"], state: community["state"], email: community["email"], phone: community["phone"], zip: community["zip"], property_manager_name: community["property_manager_name"], property_manager_phone: community["property_manager_phone"],property_manager_email:  community["property_manager_email"], website: community["website"] , number_of_units: community["number_of_units"] , brand_details_pdf: community["brand_details_pdf"])
     end
+
     if @community.update(community_params)
-      previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(COMMUNITY_DETAILS) 
-      @community.set_community_details_status(current_pynwheel_user, params["community"]["status"])
-      FollowUpMailer.send_email_after_form_submission(@community, COMMUNITY_DETAILS, previous_status)
+      @community.update_community_details_form_status(current_pynwheel_user, params["community"]["status"])
+
       render :json => {data: @community.as_json(@brand_pdf_feature) , :message => "Community Details updated succesfully."}
     else
       render :json => {:success => false, :message => @community.errors.full_messages}
