@@ -4,10 +4,10 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
 
   before_action :doorkeeper_authorize!
   before_action :check_required_credentials, only: :import_data_credentials
-  before_action :set_company, only: [:import_data_credentials, :create_company_credentials, :fetch_entrata_property_ids]
+  before_action :set_company, only: [:import_data_credentials, :fetch_entrata_property_ids]
   before_action :set_community, only: :import_data_credentials
-  before_action :create_company_credentials, only: :import_data_credentials
   before_action :is_already_setup, only: :import_data_credentials
+  before_action :set_credentials, only: :import_data_credentials
 
   def import_data_credentials
     return wrong_provider_alert unless params[:data_provider].present?
@@ -23,14 +23,13 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
 
   private
 
-    def create_company_credentials
+    def set_credentials
       return render_response('Failed! wrong data provider.', false) unless DATA_PROVIDERS_CREDENTIALS.key?(params[:data_provider])
+      update_credentials(params[:data_provider], :community)
       update_credentials(params[:data_provider], :company)
     end
 
     def import_providers_data
-      update_credentials(params[:data_provider], :community)
-
       if valid_credentials? && @community.data_is_imported
         set_property_and_community_user
         render_response('Success! Property has been set up.', true)
@@ -42,7 +41,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
 
     def update_credentials(data_provider, level)
       credentials = DATA_PROVIDERS_CREDENTIALS[data_provider][level]
-      @credential = level == :company ? @company.credential || @company.build_credential : @community.credential || @community.build_credential
+      @credential = (level == :company) ? (@company.credential || @company.build_credential) : (@community.credential || @community.build_credential)
       @credential.update(credentials_params(credentials))
       
       if level == :company
