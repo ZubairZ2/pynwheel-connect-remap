@@ -35,14 +35,6 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
 
     def import_providers_data
       if valid_credentials? && @community.data_is_imported
-
-        puts "Params: #{params.inspect}\n"
-        puts "Community CredentialsManager: #{DATA_PROVIDERS_CREDENTIALS[params[:data_provider]][:community].inspect}"
-        puts "Company CredentialsManager: #{DATA_PROVIDERS_CREDENTIALS[params[:data_provider]][:company].inspect}"
-        puts "community: #{@community.inspect}\n"
-        puts "community Credential: #{@community.credential.inspect}\n"
-        puts "company Credential: #{@company.credential.inspect}\n"
-
         set_property_and_community_user
         render_response('Success! Property has been set up.', true)
       else
@@ -67,7 +59,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
     end
 
     def is_already_setup
-      if @community&.units.present? || @community&.floorplans.present?
+      if @community.present? && @community&.units.present? || @community&.floorplans.present?
         render_response("Failed! Property has already been set up.", false)
       end
     end
