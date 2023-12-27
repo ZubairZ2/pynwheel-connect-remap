@@ -9,11 +9,16 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
   before_action :is_already_setup, only: :import_data_credentials
 
   def import_data_credentials
-    return wrong_provider_alert unless params[:data_provider].present?
+    begin
+      return wrong_provider_alert unless params[:data_provider].present?
 
-    set_data_provider
-    set_credentials
-    import_providers_data
+      set_data_provider
+      set_credentials
+      import_providers_data
+
+    rescue => error
+      render_response(error.message, false)
+    end
   end
 
   def fetch_entrata_property_ids
@@ -34,9 +39,9 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
         puts "Params: #{params.inspect}\n"
         puts "Community CredentialsManager: #{DATA_PROVIDERS_CREDENTIALS[params[:data_provider]][:community].inspect}"
         puts "Company CredentialsManager: #{DATA_PROVIDERS_CREDENTIALS[params[:data_provider]][:company].inspect}"
-        puts "community: #{community.inspect}\n"
-        puts "community Credential: #{community.credential.inspect}\n"
-        puts "company Credential: #{company.credential.inspect}\n"
+        puts "community: #{@community.inspect}\n"
+        puts "community Credential: #{@community.credential.inspect}\n"
+        puts "company Credential: #{@company.credential.inspect}\n"
 
         set_property_and_community_user
         render_response('Success! Property has been set up.', true)
