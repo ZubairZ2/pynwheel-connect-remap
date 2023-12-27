@@ -7,12 +7,12 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
   before_action :set_company, only: [:import_data_credentials, :fetch_entrata_property_ids]
   before_action :set_community, only: :import_data_credentials
   before_action :is_already_setup, only: :import_data_credentials
-  before_action :set_credentials, only: :import_data_credentials
 
   def import_data_credentials
     return wrong_provider_alert unless params[:data_provider].present?
 
     set_data_provider
+    set_credentials
     import_providers_data
   end
 
@@ -24,13 +24,20 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
   private
 
     def set_credentials
-      return render_response('Failed! wrong data provider.', false) unless DATA_PROVIDERS_CREDENTIALS.key?(params[:data_provider])
       update_credentials(params[:data_provider], :community)
       update_credentials(params[:data_provider], :company)
     end
 
     def import_providers_data
       if valid_credentials? && @community.data_is_imported
+
+        puts "Params: #{params.inspect}\n"
+        puts "Community CredentialsManager: #{DATA_PROVIDERS_CREDENTIALS[params[:data_provider]][:community].inspect}"
+        puts "Company CredentialsManager: #{DATA_PROVIDERS_CREDENTIALS[params[:data_provider]][:company].inspect}"
+        puts "community: #{community.inspect}\n"
+        puts "community Credential: #{community.credential.inspect}\n"
+        puts "company Credential: #{company.credential.inspect}\n"
+
         set_property_and_community_user
         render_response('Success! Property has been set up.', true)
       else
@@ -81,11 +88,10 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
         unless community.present?
           if params[:property_name].present?
             community = @company.communities.create!(name: params[:property_name])
-            community.credential || community.build_credential
           else
             render_response('Failed! Property not found.', false)
           end
-        end 
+        end
 
         community
       rescue => error
@@ -110,7 +116,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
         column = credential_criteria[:column]
         credential = Credential.where("LOWER(#{column}) LIKE ?", "%#{params[column.to_sym].to_s.downcase}%").last
 
-        community = @company.communities.find_by(id: credential&.community&.id) if credential.present?
+        community = @company.communities.find_by(id: credential.community_id) if credential.present?
         community ||= @company.communities.find_by(name: params[:property_name])
 
         community
