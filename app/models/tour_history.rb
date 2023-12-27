@@ -247,10 +247,7 @@ class TourHistory < ApplicationRecord
   end
 
   def send_sms message_body
-  # begin
-  #   DelayedSchedulerTextJob.perform_async(message_body, community.phone) if community.phone.present?
-  # rescue
-  # end
+
   end
 
   def send_email subj, body, community
@@ -287,7 +284,7 @@ class TourHistory < ApplicationRecord
 
   def send_sms_tour_user message_body
     begin
-      DelayedSchedulerTextJob.perform_async(message_body, self.tour_user.phone_number) if self.tour_user.phone_number.present? && self.tour_user.is_sms_enabled
+      TwilioSmsWorker.perform_async(message_body, self.tour_user.phone_number) if self.tour_user.phone_number.present? && self.tour_user.is_sms_enabled
     rescue
     end
   end

@@ -189,17 +189,8 @@ module Api
     iPhone Users:
     #{app_link}"
     
-            prod_from = ENV["TWILIO_FROM_PHONE_NUMBER"]
-            account_sid = ENV["TWILIO_ACCOUNT_SID"]
-            auth_token =  ENV["TWILIO_AUTH_TOKEN"]
-            @client = Twilio::REST::Client.new(account_sid, auth_token)
-    
-            message = @client.messages
-                              .create(
-                                body: start_tour_auto_msg,
-                                from: prod_from,
-                                to: to
-                              )
+            TwilioSmsWorker.perform_async(start_tour_auto_msg, to)
+
             render :json => { :success => true, :message => "Message Sent" }
           else
             render :json => { :success => false, :message => "Message Not Sent", :error => "Invalid Token" }

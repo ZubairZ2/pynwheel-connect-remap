@@ -567,7 +567,7 @@ module Api
       def sms_otp_to_mobile
         to_phone_number = params[:phone_number].present? ? params[:phone_number] : @pynwheel_access_user.phone_number
         message_body = "Verification code #{ @pynwheel_access_user.pin_code }. Code will expire in 15 minutes."
-        TwilioSmsService.new().send_sms(message_body, to_phone_number)
+        TwilioSmsWorker.perform_async(message_body, to_phone_number)      
       end
 
       def get_pynwheel_access_user_by_phone_number

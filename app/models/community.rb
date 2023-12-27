@@ -102,6 +102,11 @@ class Community < ApplicationRecord
   scope :active_touch_properties, -> {active_client_properties&.where(touchscreen_app: true)}
   scope :launch_properties, -> {where(pynwheel_launch_access: true).where.not(company_id: [44, 728, 730])}
   scope :touch_and_launch_properties, -> { active_touch_properties | launch_properties }
+  
+  scope :test_properties, -> { 
+    joins(:company)
+      .where("companies.name IN (?)", ['Test Company 123']) 
+  }
 
   amoeba do
     include_association :design

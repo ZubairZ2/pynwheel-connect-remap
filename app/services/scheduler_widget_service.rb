@@ -166,17 +166,7 @@ class SchedulerWidgetService < BaseService
 
   def sms_notifire msg, to
     to = to.delete(' ')
-    prod_from = ENV["TWILIO_FROM_PHONE_NUMBER"]
-    account_sid = ENV["TWILIO_ACCOUNT_SID"]
-    auth_token = ENV["TWILIO_AUTH_TOKEN"]
-    @client = Twilio::REST::Client.new(account_sid, auth_token)
-
-    message = @client.messages
-      .create( 
-        body: msg,
-        from: prod_from,
-        to: to
-      )
+    TwilioSmsWorker.perform_async(msg, to)
   end
 
   def save_tour_user_card_info(tour_user_id,credit_card_number,exp_month,exp_year,card_verification)
