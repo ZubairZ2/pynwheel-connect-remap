@@ -35,6 +35,7 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
         set_property_and_community_user
         render_response('Success! Property has been set up.', true)
       else
+        PropertyDestroyWorker.perform_async @community.id
         render_response('Failed! invalid credentials, Please enter correct credentials before importing data.', false)
       end
     end
