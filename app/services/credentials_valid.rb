@@ -293,7 +293,7 @@ class CredentialsValid < BaseService
         property_code = credentials&.p_code&.split(",")[0] rescue ""
         property_code = property_code&.strip
         response = DataProviders::RentCafe::V2ApisService.new(community&.id).get_apartment_availability(property_code)
-        puts  "\n\nRent Cafe Response:  #{response.inspect} \n\n"
+
         return response.present? ? true : false
       rescue => e
         return false

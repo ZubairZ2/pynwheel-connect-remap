@@ -30,11 +30,11 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
 
     def set_credentials
       update_credentials(params[:data_provider], :community)
-      update_credentials(params[:data_provider], :company)
     end
 
     def import_providers_data
       if valid_credentials? && @community.data_is_imported
+        update_credentials(params[:data_provider], :company)
         set_property_and_community_user
         render_response('Success! Property has been set up.', true)
       else

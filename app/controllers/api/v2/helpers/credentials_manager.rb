@@ -12,6 +12,7 @@ module CredentialsManager
         yardi_rent_cafe_api_url: :api_url,
         c_code: :c_code,
         p_code: :p_code,
+        rentcafe_api_version: :rentcafe_api_version,
         currency: :currency
       }
     },
