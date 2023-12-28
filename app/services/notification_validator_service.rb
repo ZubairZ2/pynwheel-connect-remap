@@ -5,16 +5,9 @@ class NotificationValidatorService
   end
 
   def validate_recipient
-      if is_test_property?
-        if valid_email_domain?
-          true
-        else
-          false
-        end
-      else
-        true
-      end
-    end
+    return true unless is_test_property?
+    valid_email_domain?
+  end
 
   private
 
