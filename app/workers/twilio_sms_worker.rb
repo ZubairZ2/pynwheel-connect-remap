@@ -3,7 +3,7 @@ class TwilioSmsWorker
   sidekiq_options queue: 'message', retry: 3
 
   def perform(message_body, to_phone_number)
-    deliver_text_message
+    deliver_text_message(message_body, to_phone_number)
   end
 
   private

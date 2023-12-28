@@ -3,20 +3,20 @@ module YardiRentCafeV2Services
 
     def available_slots
       response = fetch_available_slots()
-      (response&.dig("errorCode") == 200) ? response["availableSlots"] : []
+      response["availableSlots"] rescue []
     end
 
     def schedule_tour previous_tour = nil
       cancel_tour(previous_tour)
       response = create_appointment()
-      response = (response&.dig("errorCode") == 200) ? response["prospectInfo"] : nil
+      response = response["prospectInfo"] rescue nil
       yardi_scheduled_tour_response(response) if response.present?
     end
 
     def cancel_tour previous_tour = nil
       return unless @community.use_yardi_as_lead? && @scheduled_tour.yardirentcafe_prospect_id.present? && @scheduled_tour.yardirentcafe_appointment_id.present?
       response = cancel_appointment(previous_tour)
-      update_yardi_scheduled_tour if (response&.dig("errorCode") == 200)
+      update_yardi_scheduled_tour if (response&.dig("errorCode") == 200 rescue false)
     end
 
     private
