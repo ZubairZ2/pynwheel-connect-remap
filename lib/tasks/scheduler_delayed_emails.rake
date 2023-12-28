@@ -189,7 +189,6 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 		  emails = community_email.gsub(" ","").split(',')
 
 			ScheduledTourMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
-			#DelayedSchedulerMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
 		  TwilioSmsWorker.perform_async(sms_content, tu.phone_number) if (schedual_tour.property_tour_type == "scheduled_tour" && schedual_tour.tour_user.is_sms_enabled && (diff == 1 && !(community.alert_contact == "email")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
 
   end
@@ -227,7 +226,6 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 				emails = community_email.gsub(" ","").split(',')
 				
 				ScheduledTourMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if !(community.alert_contact == "phone") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce")
-				# DelayedSchedulerMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if !(community.alert_contact == "phone") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce")
 				TwilioSmsWorker.perform_async(sms_content, tu.phone_number) if (schedual_tour.tour_user.is_sms_enabled && !(community.alert_contact == "email") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
 			end
 		end

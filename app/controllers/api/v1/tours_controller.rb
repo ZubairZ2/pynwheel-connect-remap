@@ -57,8 +57,6 @@ module Api
                 community.email.split(',').each do |email|
                   DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, email,community,nil,nil,nil,nil,false,nil) unless params[:local_testing].present?
                 end
-                # DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
-                # DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'nawaal.asif@intagleo.com')
               end
               puts "<<<<<<<<<<<<<<<<<<<<<<<<< #{vs.valid?}"
               vs.save!(validate: false)
@@ -261,7 +259,6 @@ module Api
             end
     
             email_content = "There are total tour stops, we need tour_user_id to get visited stops Please send that #{visited_stops.to_s}"
-            # DelayedSchedulerMailerJob.perform_async("A Tour Shared With You", email_content, 'usman.khalid@intagleo.co.uk')
             render :json => { :success => true, :message => "success", :data => visited_stops }
           else
             render :json => { :success => false, :message => "shared tour was not saved, please try again." }
