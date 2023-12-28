@@ -239,10 +239,10 @@ class TourHistory < ApplicationRecord
   	if community.alert_contact == "email"
       send_email_tour_user "Thank you for visiting #{community.name}", content, community.email, community
   	elsif community.alert_contact == "phone"
-  		send_sms_tour_user thank_you_msg
+  		send_sms_tour_user( thank_you_msg, community )
   	else
   		send_email_tour_user "Thank you for visiting #{community.name}", content, community.email, community
-  		send_sms_tour_user thank_you_msg
+  		send_sms_tour_user( thank_you_msg, community )
   	end
   end
 
@@ -282,9 +282,9 @@ class TourHistory < ApplicationRecord
     end
   end
 
-  def send_sms_tour_user message_body
+  def send_sms_tour_user message_body, community
     begin
-      TwilioSmsWorker.perform_async(message_body, self.tour_user.phone_number) if self.tour_user.phone_number.present? && self.tour_user.is_sms_enabled
+      TwilioSmsWorker.perform_async(message_body, self&.tour_user&.phone_number, self&.tour_user&.email, community&.id) if self.tour_user.phone_number.present? && self.tour_user.is_sms_enabled
     rescue
     end
   end

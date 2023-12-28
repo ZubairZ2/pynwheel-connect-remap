@@ -1,12 +1,12 @@
 class NotificationValidatorService
-  def initialize(community_id, email)
+  
+  def initialize(email, community_id)
     @community = Community.find_by_id(community_id)
     @email = email
   end
 
   def validate_recipient
-    return false unless valid_inputs?
-    return true unless is_test_property?
+    return true if (@community.nil? || !is_test_property?)
 
     valid_email_domain?
   rescue => error
@@ -15,13 +15,8 @@ class NotificationValidatorService
 
   private
 
-    def valid_inputs?
-      @community.present? && @email.present?
-    end
-
     def valid_email_domain?
-      domain = Mail::Address.new(@email).domain.downcase
-      domain == 'pynwheel.com'
+      Mail::Address.new(@email)&.domain&.downcase == ENV["TESTING_EMAIL_DOMAIN"]
     rescue Mail::Field::ParseError
       false
     end

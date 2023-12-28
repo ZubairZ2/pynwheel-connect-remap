@@ -59,12 +59,12 @@ namespace :triggered_email do
           sleep 1
 
           ScheduledTourMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_st, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
-          TwilioSmsWorker.perform_async(text_msg_with_st, tu.phone_number) if tu.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
+          TwilioSmsWorker.perform_async(text_msg_with_st, tu&.phone_number, tu&.email, community&.id) if tu.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
         else
           sleep 1
           
           ScheduledTourMailerJob.perform_async("Missed a scheduled tour!", email_msg_no_st_tour_user, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
-          TwilioSmsWorker.perform_async(text_msg_no_st_tour_user, tu.phone_number) if tu.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
+          TwilioSmsWorker.perform_async(text_msg_no_st_tour_user, tu&.phone_number, tu&.email, community&.id) if tu.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
         end
       end
       

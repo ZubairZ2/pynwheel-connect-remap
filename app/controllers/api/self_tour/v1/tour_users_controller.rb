@@ -149,7 +149,7 @@ module Api
         def sms_otp_to_mobile
           to_phone_number = params[:phone_number].present? ? params[:phone_number] : @tour_user.phone_number
           message_body = "Verification code #{ @tour_user.pin_code }. Code will expire in 15 minutes."
-          TwilioSmsWorker.perform_async(message_body, to_phone_number)
+          TwilioSmsWorker.perform_async(message_body, to_phone_number, @tour_user.email)
         end
 
         def set_tour_user

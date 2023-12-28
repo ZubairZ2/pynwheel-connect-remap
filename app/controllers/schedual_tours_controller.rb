@@ -582,7 +582,7 @@ Get information about your tour here: #{confirmation_page_link}"
         ScheduledTourMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,INFO_EMAIL,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
       end
 
-      sms_notifire sms_content, schedual_tour.tour_user.phone_number if (schedual_tour.tour_user.is_sms_enabled && (community.alert_contact == "phone" || community.alert_contact == "both")) rescue nil
+      sms_notifire(sms_content, schedual_tour&.tour_user&.phone_number, tu&.email, community&.id) if (schedual_tour.tour_user.is_sms_enabled && (community.alert_contact == "phone" || community.alert_contact == "both")) rescue nil
 
       {email_content: email_content, web_notification: web_notification, sms_content: sms_content}
       
@@ -638,9 +638,9 @@ Get information about your tour here: #{confirmation_page_link}"
       params.permit(:tour_date, :tour_time, :card_token)
     end
 
-    def sms_notifire msg, to
+    def sms_notifire msg, to, tour_user_email, community_id
       to = to.delete(' ')
-      TwilioSmsWorker.perform_async(msg, to)
+      TwilioSmsWorker.perform_async(msg, to, tour_user_email, community_id)
     end
 
     def make_phone

@@ -158,15 +158,16 @@ class SchedulerWidgetService < BaseService
     emails.each do |email|
       DelayedSchedulerMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,nil,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
     end
-    sms_notifire sms_content, schedual_tour.tour_user.phone_number if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
+    
+    sms_notifire(sms_content, schedual_tour&.tour_user&.phone_number, schedual_tour&.tour_user&.email, community&.id) if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
 
     {email_content: email_content, sms_content: sms_content}
     
   end
 
-  def sms_notifire msg, to
+  def sms_notifire msg, to, tour_user_email, community_id
     to = to.delete(' ')
-    TwilioSmsWorker.perform_async(msg, to)
+    TwilioSmsWorker.perform_async(msg, to, tour_user_email, community_id)
   end
 
   def save_tour_user_card_info(tour_user_id,credit_card_number,exp_month,exp_year,card_verification)
