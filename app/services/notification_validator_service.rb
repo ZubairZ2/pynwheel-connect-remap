@@ -1,7 +1,9 @@
 class NotificationValidatorService
-  def initialize(email, community)
-    @community = community
-    @email = email
+  def initialize(community_id, email)
+    @community = set_community(community_id)
+    @email = email || @community&.email
+
+    return false unless (@community.present? && @email.present?)
   end
 
   def validate_recipient
@@ -10,6 +12,10 @@ class NotificationValidatorService
   end
 
   private
+
+    def set_community
+      Community.find_by_id community_id
+    end
 
     def valid_email_domain?
       parsed_email = Mail::Address.new(@email)

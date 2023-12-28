@@ -1,8 +1,8 @@
 class DelayedSchedulerMailerJob < ApplicationJob
   include SuckerPunch::Job
   def perform(subject, msg, to,community, community_subject = nil, community_msg = nil, community_to = nil, email_from = nil,show_html,schedule_tour)
-    return unless NotificationValidatorService.new(to, community).validate_recipient
-    return unless NotificationValidatorService.new(community_to, community).validate_recipient
+    return unless NotificationValidatorService.new(community&.id, to).validate_recipient
+    return unless NotificationValidatorService.new(community&.id, community_to).validate_recipient
 
     if email_from.present?
       NotificationMailer.tour_history_mail(subject, msg, to, email_from,community,show_html,schedule_tour).deliver_now
