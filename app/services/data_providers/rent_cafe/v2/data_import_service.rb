@@ -95,6 +95,7 @@ module DataProviders
               unit.square_feet = r["sqft"] if r["sqft"].present?
               unit.min_effective_rent = r["minimumRent"] if r["minimumRent"].present?
               unit.max_effective_rent = r["minimumRent"] if r["minimumRent"].present?
+              unit.unit_status = r["unitStatus"] rescue ""
             rescue => exception
               exception
             end

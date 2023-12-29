@@ -34,6 +34,7 @@ class YardiRentCafeV2SwapService < BaseService
                   unit.effective_rent = r["minimumRent"]
                   unit.square_feet = r["sqft"] if r["sqft"].present?
                   unit.availability = "Unoccupied"
+                  unit.unit_status = r["unitStatus"] rescue ""
 
                   if ( r["availableDate"] != "" && r["availableDate"] != nil )
                     unit.available = true
@@ -82,6 +83,7 @@ class YardiRentCafeV2SwapService < BaseService
                   unit.square_feet = r["sqft"] if r["sqft"].present?
                   unit.market_rent = r["minimumRent"]
                   unit.effective_rent = r["minimumRent"]
+                  unit.unit_status = r["unitStatus"] rescue ""
 
                   if ( r["availableDate"] != "" && r["availableDate"] != nil )
                     unit.available = true
