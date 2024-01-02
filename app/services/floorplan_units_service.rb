@@ -35,7 +35,7 @@ class FloorplanUnitsService < BaseService
 
     if floorplan.present?
       if @community.data_provider == "yardirentcafe"
-        units = units.where(unit_status: "Vacant Unrented Ready").past_available_units
+        units = units.vacant_and_available
       end
 
       unless @community.is_sitemap

@@ -487,8 +487,7 @@ module Api
 
           if @community.data_provider == "yardirentcafe"
             units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
-                          .where(unit_status: "Vacant Unrented Ready")
-                          .past_available_units
+                          .vacant_and_available
           else
             units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
           end

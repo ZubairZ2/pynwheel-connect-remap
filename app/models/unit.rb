@@ -88,6 +88,7 @@ class Unit < ApplicationRecord
   scope :has_y_plot, -> { where("y_plot > ? and available_date > ? and available_date < ? and available = ?", 0, Date.today, Date.today+2.year,true) }
   scope :ploted_units, -> { has_x_plot.or(has_y_plot) }
   scope :are_ploted_units, -> { where("(x_plot > ? or y_plot > ?)", 0, 0) }
+  scope :vacant_and_available, -> {past_available_units.where("LOWER(unit_status) = ?", "vacant unrented ready")}
   #scope :available_units, -> { ploted_units.or(past_available_units).where.not(available: true) }
   scope :available_units, -> { ploted_units.or(past_available_units).where.not(sold: true) } #Don't fetch units where are sold
   after_commit :populate_image_urls, on: [:create,:update]
