@@ -135,7 +135,8 @@ module DataProviders
           def yardi_rent_cafe_rent_matrix(property_code, apartment_name)
             begin
               rent_matrix = get_apartment_pricing_details(property_code, apartment_name)
-              unless rent_matrix.present?
+
+              if rent_matrix.present?
                 uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq
                 distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["term"] == term.to_s}.compact}.compact
                 return distinct_data.map{|data| data.map{|r| [r["rent"].to_i, r["term"], r["start_Date"], r["end_Date"]]}.min}
