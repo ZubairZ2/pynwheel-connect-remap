@@ -30,11 +30,11 @@ class FloorplanUnitsService < BaseService
   #   end
   # end
   
-  def get_floorplan_units(floorplan)
+  def get_floorplan_units(floorplan, tour_user_id = nil)
     units = Unit.where(floorplan_id: floorplan.provider_floorplan_id, community_id: @community.id, available: true)
 
     if floorplan.present?
-      if @community.data_provider == "yardirentcafe"
+      if @community.data_provider == "yardirentcafe" && tour_user_id.present?
         units = units.vacant_and_available
       end
 
