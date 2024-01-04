@@ -65,6 +65,7 @@ class ResmanStaticService < BaseService
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
         unit.lease_pricing = nil
+        unit_status_update(unit, u)
 
         unless unit.name_is_updated.present? && unit.name_is_updated
           unit.marketing_name = u["Id"]

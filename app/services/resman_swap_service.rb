@@ -55,6 +55,7 @@ class ResmanSwapService < BaseService
         unit.lease_pricing = nil
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
+        unit_status_update(unit, u)
         # unit.marketing_name = u["Id"]
         unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
@@ -95,6 +96,7 @@ class ResmanSwapService < BaseService
         unit.lease_pricing = nil
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
+        unit_status_update(unit, u)
         unit.marketing_name = u["Id"]
         unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
@@ -122,9 +124,6 @@ class ResmanSwapService < BaseService
         unit.save(validate: false)
       end
     end
-
-
-
   end
 
   def save_resman_floorplans(floorplans,property_id)
