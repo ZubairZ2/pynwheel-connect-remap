@@ -279,4 +279,15 @@ class ResmanService < BaseService
 
   end
 
+  def unit_status_update unit, u
+    vacancy_class = u["Availability"]["VacancyClass"]
+    unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
+
+    if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
+      unit.unit_status = "Unoccupied"
+    else
+      unit.unit_status = "Occupied"
+    end
+  end
+
 end
