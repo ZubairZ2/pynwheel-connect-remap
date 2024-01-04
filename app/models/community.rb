@@ -635,7 +635,7 @@ class Community < ApplicationRecord
     return if self.latch.blank?
     latch = self.latch
     if status.empty?
-      status_attr = status_string(latch.client_id.present? && latch.client_secret.present?)
+      status_attr = status_string(latch.latch_property_name.present?)
     else
       status_attr = status
     end
