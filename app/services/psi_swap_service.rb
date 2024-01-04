@@ -86,6 +86,7 @@ class PsiSwapService < BaseService
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
+        unit_status_update(unit, u)
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         if u["Units"]["Unit"]["MinSquareFeet"].present?
           if u["Units"]["Unit"]["MinSquareFeet"].to_f > 1
@@ -146,6 +147,7 @@ class PsiSwapService < BaseService
         unit.provider = "psi_new"
         unit.property_id = property_id
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
+        unit_status_update(unit, u)
         unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
         unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
         unit.floorplan_id = u["Units"]["Unit"]["@attributes"]["FloorPlanId"]
@@ -517,6 +519,16 @@ class PsiSwapService < BaseService
     }.merge(move_in_date_param(move_in_date))
   end
 
+  def unit_status_update unit, u
+    vacancy_class = u["Availability"]["VacancyClass"]
+    unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
+
+    if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
+      unit.unit_status = "Unoccupied"
+    else
+      unit.unit_status = "Occupied"
+    end
+  end
 
   def get_units_pricing_endpoint
     if @credentials.entrata_url.include?('https://') || @credentials.entrata_url.include?('http://')
