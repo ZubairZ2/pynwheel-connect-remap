@@ -483,14 +483,14 @@ module Api
             floorplan_id: entity.is_a?(Floorplan) ? entity.provider_floorplan_id : entity.floorplan_id,
             community_id: @community.id,
             available: true
-          )
+          ).where.not('marketing_name ILIKE ?', "%WAIT%")
 
-          if @community.data_provider == "yardirentcafe" && params[:tour_user_id].present?
-            units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
-                          .vacant_and_available
-          else
-            units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
-          end
+          # if @community.data_provider == "yardirentcafe" && params[:tour_user_id].present?
+          #   units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
+          #                 .vacant_and_available
+          # else
+          #   units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
+          # end
 
           units
         else
