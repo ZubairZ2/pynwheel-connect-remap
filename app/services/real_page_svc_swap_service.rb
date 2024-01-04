@@ -190,6 +190,7 @@ class RealPageSvcSwapService < BaseService
                 unit.provider_unit_id = "#{u[:UnitID]}-#{site_id}"
                 unit.property_id = u[:SiteID]
                 unit.unit_type = u[:UnitNumber]
+                unit_status_update(unit, u)
                 unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
                 if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
@@ -261,6 +262,8 @@ class RealPageSvcSwapService < BaseService
                 unit.property_id = u[:SiteID]
                 unit.provider_unit_id = "#{u[:UnitID]}-#{site_id}"
                 unit.unit_type = u[:UnitNumber]
+                unit_status_update(unit, u)
+
                 if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                 end
@@ -418,6 +421,7 @@ class RealPageSvcSwapService < BaseService
               unit = unit.first
               unit.provider = "realpagesvc_new"
               unit.unit_type = u[:Address][:UnitNumber]
+              unit_status_update(unit, u)
               if u[:Address][:BuildingNumber].present?
                 unit.building = u[:Address][:BuildingNumber] unless u[:Address][:BuildingNumber] == "N/A"
               end
@@ -475,6 +479,8 @@ class RealPageSvcSwapService < BaseService
               unit.provider_unit_id = "#{u[:Address][:UnitID]}-#{site_id}"
               unit.property_id = u[:SiteID]
               unit.unit_type = u[:Address][:UnitNumber]
+              unit_status_update(unit, u)
+              
               if u[:Address][:BuildingNumber].present?
                 unit.building = u[:Address][:BuildingNumber] unless u[:Address][:BuildingNumber] == "N/A"
               end
@@ -728,6 +734,15 @@ class RealPageSvcSwapService < BaseService
       end
     end
   end
+
+  def unit_status_update unit, u
+    if u[:Availability][:MadeReadyBit] == "true"
+      unit.unit_status = "Unoccupied"
+    else
+      unit.unit_status = "Occupied"
+    end
+  end
+
   def rename_provider
     fp = Floorplan.where(community_id: credentials.community_id)
     fp.each do |d|
