@@ -163,6 +163,7 @@ class PsiService < BaseService
           unit.provider = "psi"
           unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"].to_s + "-"+ u["Identification"]["IDValue"].to_s
           unit.available_date = vacateDate
+          unit_status_update(unit, u)
 
           unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
             if u["EffectiveRent"].present?
@@ -225,6 +226,7 @@ class PsiService < BaseService
           unit.provider = "psi"
           unit.community_id = @credentials.community_id
           unit.unit_type = u["Units"]["Unit"]["UnitType"]
+          unit_status_update(unit, u)
           unit.available_date = vacateDate
 
           unless unit.name_is_updated.present? && unit.name_is_updated
@@ -622,6 +624,17 @@ class PsiService < BaseService
       "showUnitSpaces": @credentials&.entrata_show_unit_spaces,
       "useSpaceConfiguration": @credentials&.entrata_use_space_configuration,
     }.merge(move_in_date_param(move_in_date))
+  end
+
+  def unit_status_update unit, u
+    vacancy_class = u["Availability"]["VacancyClass"]
+    unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
+
+    if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
+      unit.unit_status = "Unoccupied"
+    else
+      unit.unit_status = "Occupied"
+    end
   end
 
   def get_units_pricing_endpoint
