@@ -228,11 +228,14 @@ class PsiStaticService < BaseService
         unless unit.building_is_updated.present? && unit.building_is_updated
           unit.building = building.present? ? building.gsub("Building ", "") : ""
         end
-        unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
-        unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
-        url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
+        # unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
+        # unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
+        # url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
         
-        unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
+        # unit.availability_url_deep_linking = url_split[0]+"//"+url_split[2]+"/Apartments/module/application_authentication/http_referer/"+url_split[2]+"/popup/false/kill_session/1/property[id]/ "+property_id.to_s+"/property_floorplan[id]/"+u["Units"]["Unit"]["@attributes"]["FloorPlanId"].to_s+"/unit_space[id]/"+u["Identification"]["IDValue"].to_s+"/show_in_popup/false/from_check_availability/1/" if url_split.present? rescue ""
+        
+        set_availability_url(unit, u)
+
         unit.manually_updated = false
         unit.save(validate: false)
         puts "---------------------------- #{unit.marketing_name} ---------------------- \n"
@@ -563,6 +566,34 @@ class PsiStaticService < BaseService
 
     def set_floorplans_hash
       @all_floorplans_hash = ProvidersDataUpdationService.new().get_all_floorplans_hash(@credentials.community_id, "psi")
+    end
+
+    def set_availability_url(unit, u)
+      availability = u['Availability']
+      unit.availability_url = availability['UnitAvailabilityURL'] if availability.present?
+    
+      unit_floorplan = @all_floorplans_hash[unit.floorplan_id]
+      unit.availability_url ||= unit_floorplan&.availability_url
+    
+      if availability.present? && availability['UnitAvailabilityURL'].present?
+        url_split = availability['UnitAvailabilityURL'].split('/')
+        property_id = u.dig('Identification', 'IDValue')
+        floor_plan_id = u.dig('Units', 'Unit', '@attributes', 'FloorPlanId')
+        unit_id = u.dig('Identification', 'IDValue')
+        lease_month = 12
+        lease_start_date = lease_start_date(unit)
+    
+        if url_split.present?
+          unit.availability_url_deep_linking = "#{url_split[0]}//#{url_split[2]}/Apartments/module/application_authentication/http_referer/#{url_split[2]}/popup/false/kill_session/1/property[id]/#{property_id.to_s}/property_floorplan[id]/#{floor_plan_id.to_s}/unit_space[id]/#{unit_id.to_s}/show_in_popup/false/from_check_availability/1/term_month/#{lease_month}/selected_occupancy_type[id]/1/?lease_start_date=#{lease_start_date}"
+        end
+      end
+    rescue StandardError => e
+      unit.availability_url_deep_linking = ''
+      puts "Error occurred: #{e.message}"
+    end
+  
+    def lease_start_date unit
+      unit.available_date.strftime('%m/%d/%Y') rescue Date.today.strftime('%m/%d/%Y')
     end
   
 end
