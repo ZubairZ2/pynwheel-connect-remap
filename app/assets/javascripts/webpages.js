@@ -1841,8 +1841,7 @@ function set_yardirentcafe_url(element){
 }
 
 function set_psi_url(element) {
-  // var url = $(element).data('availability-url');
-  let url =  element.getAttribute("data-availability-url")
+  let url = make_entrata_apply_url(element);
 
   if(selectMap === "3d-map" && enable3DMaps) {
     url = _3dSelectedUnit.availability_url
@@ -1850,6 +1849,31 @@ function set_psi_url(element) {
 
   window.open(url, '_blank');
 }
+
+function make_entrata_apply_url(element) {
+  let url =  element.getAttribute("data-availability-url");
+
+  try {
+    parsedUrl = new URL(url)
+    let propertyId = element.getAttribute("data-community-property-id");
+    let propertyFloorplanId = element.getAttribute("data-floorplan-provider-id");
+    let leaseStartDate = $('#leasing-start-date').val();
+    let leaseTerm = selectedUnit.lease_term || 12;
+
+    let unitSpaceId = element.getAttribute("data-unit-provider-id").split('-')[1];
+
+    url = `${parsedUrl.protocol}//${parsedUrl.hostname}/Apartments/module/application_authentication/http_referer/${parsedUrl.hostname}/popup/false/kill_session/1/
+  property[id]/${propertyId}/property_floorplan[id]/${propertyFloorplanId}/unit_space[id]/${unitSpaceId}/show_in_popup/false/from_check_availability/1/term_month/${leaseTerm}/selected_occupancy_type[id]/1/?lease_start_date=${leaseStartDate}`
+
+  } catch(err) {
+    url =  element.getAttribute("data-availability-url");
+  }
+
+  return url;
+}
+
+
+
 function set_resman_url(element)
 {
   setApplyNowURLDate(currentUnitSelected);
