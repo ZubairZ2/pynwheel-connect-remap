@@ -673,7 +673,7 @@ class PsiService < BaseService
       property_id = u.dig('Identification', 'IDValue')
       floor_plan_id = u.dig('Units', 'Unit', '@attributes', 'FloorPlanId')
       unit_id = u.dig('Identification', 'IDValue')
-      lease_month = 12
+      lease_month = lease_month(unit)
       lease_start_date = lease_start_date(unit)
   
       if url_split.present?
@@ -686,8 +686,17 @@ class PsiService < BaseService
   end
 
   def lease_start_date unit
-    unit.available_date.strftime('%m/%d/%Y') rescue Date.today.strftime('%m/%d/%Y')
+    if unit.available_date.present? && unit.available_date > Date.today
+      unit.available_date.strftime('%m/%d/%Y') 
+    else
+      Date.today.strftime('%m/%d/%Y')
+    end
   end
-  
 
+  def lease_month unit
+    return 12 unless unit.lease_pricing.present?
+    unit.lease_pricing.split("::;").map{|s| s.split(":")}.sort_by { |item| item[1].to_f }[0][0]
+  rescue StandardError => e
+    12
+  end
 end
