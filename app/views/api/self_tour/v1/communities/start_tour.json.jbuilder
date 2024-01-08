@@ -22,6 +22,7 @@ json.tours @tours do |tour|
   json.y_plot @community&.community_tour&.y_plot
   json.is_sitemap @community.is_sitemap
   json.community_locks_info @community.get_lock_info(styling_start, styling_end)
+  json.is_tour_completed tour.is_tour_completed
 
   plates_name = {}
   current_floor = nil
