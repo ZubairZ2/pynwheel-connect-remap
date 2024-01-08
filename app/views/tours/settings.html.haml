@@ -347,12 +347,7 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Dotted line color
                 .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                  .input-group.colorpicker-style.hex-format-colorpicker
-                    .input-group-addon
-                      %i
-                      = text_field_tag :dotted_line_color, "" , class: "form-control dotted_line_color-field", autocomplete: true, :value => @community.community_tour.dotted_line_color.humanize
-
-                    / = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.community_tour.dotted_line_color.humanize),:class => "form-control"
+                  = select_tag :dotted_line_color , options_for_select(["Blue", "Green", "Yellow", "Pink", "Purple","Orange" ], @community.community_tour.dotted_line_color.humanize),:class => "form-control"
 
             
             .box-footer  
