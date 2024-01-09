@@ -88,7 +88,7 @@ class ResmanService < BaseService
 
       if unit.present?
         puts "----------------------------- #{unit.marketing_name} ------------------------\n"
-
+        unit_status_update(unit, u)
         unit.lease_pricing = nil
 
         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
@@ -141,6 +141,7 @@ class ResmanService < BaseService
         unless unit.manual_override
           unit.property_id = property_id
           unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
+          unit_status_update(unit, u)
           unit.lease_pricing = nil
           
           unless unit.name_is_updated.present? && unit.name_is_updated
@@ -277,6 +278,17 @@ class ResmanService < BaseService
 
     ProvidersDataUpdationService.new().update_or_create_floorplans_records(import_floorplans)
 
+  end
+
+  def unit_status_update unit, u
+    vacancy_class = u["Availability"]["VacancyClass"]
+    unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
+
+    if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
+      unit.unit_status = "Unoccupied"
+    else
+      unit.unit_status = "Occupied"
+    end
   end
 
 end

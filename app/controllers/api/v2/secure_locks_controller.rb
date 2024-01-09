@@ -192,13 +192,9 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
 
   def latch_lock(lock)
     unless @community.latch.present?
-      @community.create_latch(client_id: lock['client_id'], client_secret: lock['client_secret'], file: lock["file"])
+      @community.create_latch(latch_property_name: lock['latch_property_name'])
     else
-      if lock["file"].present?
-        @community.latch.update(client_id: lock['client_id'], client_secret: lock['client_secret'], file: lock["file"])
-      else
-        @community.latch.update(client_id: lock['client_id'], client_secret: lock['client_secret'])
-      end
+      @community.latch.update(latch_property_name: lock['latch_property_name'])
     end
   end
 

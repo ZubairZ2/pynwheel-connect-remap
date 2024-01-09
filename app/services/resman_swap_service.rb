@@ -55,6 +55,7 @@ class ResmanSwapService < BaseService
         unit.lease_pricing = nil
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
+        unit_status_update(unit, u)
         # unit.marketing_name = u["Id"]
         unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
@@ -95,6 +96,7 @@ class ResmanSwapService < BaseService
         unit.lease_pricing = nil
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
+        unit_status_update(unit, u)
         unit.marketing_name = u["Id"]
         unit.floorplan_id = u["Unit"]["MITS:Information"]["MITS:FloorPlanID"]
         unit.effective_rent = 1.0 #Setting rent to avoid validation issues
@@ -122,9 +124,6 @@ class ResmanSwapService < BaseService
         unit.save(validate: false)
       end
     end
-
-
-
   end
 
   def save_resman_floorplans(floorplans,property_id)
@@ -216,5 +215,16 @@ class ResmanSwapService < BaseService
     Floorplan.where(community_id: credentials.community_id).where(provider: "resman_new").update_all(provider: "resman")
     Unit.where(community_id: credentials.community_id).where.not(provider: ["resman_new", "manually"]).destroy_all
     Unit.where(community_id: credentials.community_id).where(provider: "resman_new").update_all(provider: "resman")
+  end
+
+  def unit_status_update unit, u
+    vacancy_class = u["Availability"]["VacancyClass"]
+    unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
+
+    if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
+      unit.unit_status = "Unoccupied"
+    else
+      unit.unit_status = "Occupied"
+    end
   end
 end

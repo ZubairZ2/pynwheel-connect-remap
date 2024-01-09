@@ -10,9 +10,9 @@ namespace :triggered_email do
       timezone = community.get_time_zone()
       current_time = Time.now.in_time_zone(timezone)
       diff = current_time.to_s(:time).to_time - tour.tour_time.to_s(:time).to_time 
-      th = TourHistory.where(arrived: [(current_time - 3600)..current_time], tour_id: community.community_tour.id, tour_user_id: tu.id)
+      th = TourHistory.where(arrived: [(current_time - 7200)..current_time], tour_id: community.community_tour.id, tour_user_id: tu.id)
       
-      if diff > 3600 && !th.present? && !tour.missed_email_sent && current_time.to_date == tour.tour_date
+      if diff > 7200 && !th.present? && !tour.missed_email_sent && current_time.to_date == tour.tour_date
         FunnelService.new(tour).update_appointment_status("no-show") if community.is_funnel_community?
         
         base_url =  Rails.env.development? ? "localhost:3000/" : (ENV["RAILS_ENV"] == "staging" ? "https://pynwheel-staging.herokuapp.com/" : "https://pynwheelconnect.com/") #"https://pynwheelapp.com/"
@@ -32,7 +32,6 @@ namespace :triggered_email do
         emails = community.email.split(',')
 
         emails.each do |email|
-          # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,nil,false,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
           ScheduledTourMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,nil,false,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
         end     
 
@@ -59,15 +58,13 @@ namespace :triggered_email do
         if community.scheduler_widget
           sleep 1
 
-          # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_st, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
           ScheduledTourMailerJob.perform_async("Missed a scheduled tour!", email_msg_with_st, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
-          DelayedSchedulerTextJob.perform_async(text_msg_with_st, tu.phone_number) if tu.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
+          TwilioSmsWorker.perform_async(text_msg_with_st, tu&.phone_number, tu&.email, community&.id) if tu.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
         else
           sleep 1
           
-          # DelayedSchedulerMailerJob.perform_async("Missed a scheduled tour!", email_msg_no_st_tour_user, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
           ScheduledTourMailerJob.perform_async("Missed a scheduled tour!", email_msg_no_st_tour_user, tu.email,community,nil,nil,nil,emails[0],true,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
-          DelayedSchedulerTextJob.perform_async(text_msg_no_st_tour_user, tu.phone_number) if tu.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
+          TwilioSmsWorker.perform_async(text_msg_no_st_tour_user, tu&.phone_number, tu&.email, community&.id) if tu.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
         end
       end
       

@@ -55,7 +55,7 @@ class CommunityTour
           floorplan_id = u&.floorplan&.id
           available_date = u.available_date
           availability = u.availability
-          availability_url = u.availability_url
+          availability_url = u.get_availability_url()
           lease_pricing = u.get_unit_leasing_price
           if u.present? && (u.available || u.modal_unit)
             name = u.api_unit_marketing_name
@@ -104,8 +104,8 @@ class CommunityTour
               "floorplan_image": floorplan_image,
               "primary_floorplan": primary_floorplan,
               "secondary_floorplan": secondary_floorplan,
-              "floor": new_stop&.floor,
-              "building": new_stop&.building
+              "floor": "",
+              "building": ""
             }
           else
             if new_stop&.floor.present? && new_stop&.building.present?

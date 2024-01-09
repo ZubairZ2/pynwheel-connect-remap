@@ -146,6 +146,7 @@ class RealPageSvcStaticService < BaseService
                 unit.property_id = u[:SiteID]
                 unit.provider_unit_id = provider_unit_id
                 unit.unit_type = u[:UnitNumber]
+                unit_status_update(unit, u)
                 if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                 end
@@ -384,6 +385,8 @@ class RealPageSvcStaticService < BaseService
 
               end
 
+              unit_status_update(unit, u)
+
               unit.manually_updated = false
 
               unit.availability_url = "#{@apply_now_base_url}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
@@ -601,6 +604,14 @@ class RealPageSvcStaticService < BaseService
       else
         return ""
       end
+    end
+  end
+
+  def unit_status_update unit, u
+    if u[:Availability][:MadeReadyBit] == "true"
+      unit.unit_status = "Unoccupied"
+    else
+      unit.unit_status = "Occupied"
     end
   end
 

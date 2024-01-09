@@ -57,8 +57,6 @@ module Api
                 community.email.split(',').each do |email|
                   DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, email,community,nil,nil,nil,nil,false,nil) unless params[:local_testing].present?
                 end
-                # DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'usman.khalid@intagleo.co.uk')
-                # DelayedSchedulerMailerJob.perform_async("ID / Selfie Matching (Manual)", email_content, 'nawaal.asif@intagleo.com')
               end
               puts "<<<<<<<<<<<<<<<<<<<<<<<<< #{vs.valid?}"
               vs.save!(validate: false)
@@ -189,17 +187,8 @@ module Api
     iPhone Users:
     #{app_link}"
     
-            prod_from = ENV["TWILIO_FROM_PHONE_NUMBER"]
-            account_sid = ENV["TWILIO_ACCOUNT_SID"]
-            auth_token =  ENV["TWILIO_AUTH_TOKEN"]
-            @client = Twilio::REST::Client.new(account_sid, auth_token)
-    
-            message = @client.messages
-                              .create(
-                                body: start_tour_auto_msg,
-                                from: prod_from,
-                                to: to
-                              )
+            TwilioSmsWorker.perform_async(start_tour_auto_msg, to)
+
             render :json => { :success => true, :message => "Message Sent" }
           else
             render :json => { :success => false, :message => "Message Not Sent", :error => "Invalid Token" }
@@ -270,7 +259,6 @@ module Api
             end
     
             email_content = "There are total tour stops, we need tour_user_id to get visited stops Please send that #{visited_stops.to_s}"
-            # DelayedSchedulerMailerJob.perform_async("A Tour Shared With You", email_content, 'usman.khalid@intagleo.co.uk')
             render :json => { :success => true, :message => "success", :data => visited_stops }
           else
             render :json => { :success => false, :message => "shared tour was not saved, please try again." }
@@ -300,7 +288,7 @@ module Api
                 u.sitemap_image_url = floorplate_image
                 @sitemap_image_url = floorplate_image
               end
-              u.availability_url = u.availability_url.present? ? u.availability_url : (u.floorplan.availability_url.present? ? u.floorplan.availability_url : nil)
+              u.availability_url = u.get_availability_url()
             end
             success = true
             message = 'success'
@@ -353,7 +341,7 @@ module Api
                 u.sitemap_image_url = floorplate_image
                 @sitemap_image_url = floorplate_image
               end
-              u.availability_url = u.availability_url.present? ? u.availability_url : (u.floorplan.availability_url.present? ? u.floorplan.availability_url : nil)
+              u.availability_url = u.get_availability_url()
             end
             success = true
             message = 'success'
@@ -484,13 +472,6 @@ module Api
             community_id: @community.id,
             available: true
           ).where.not('marketing_name ILIKE ?', "%WAIT%")
-
-          # if @community.data_provider == "yardirentcafe" && params[:tour_user_id].present?
-          #   units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
-          #                 .vacant_and_available
-          # else
-          #   units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
-          # end
 
           units
         else

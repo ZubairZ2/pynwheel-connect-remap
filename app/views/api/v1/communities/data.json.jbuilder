@@ -1380,11 +1380,7 @@ json.apartments do
       json.virtual_tour_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : "3D Tour"
       json.virtual_tour unit.get_unit_virtual_tour_url()
 
-      if @community.credential.present? and @community.credential.apply_now == "separate_link"
-        json.availability_url @community.credential.separate_link
-      else
-        json.availability_url unit.availability_url.present? ? unit.availability_url : (floorplan.availability_url.present? ? floorplan.availability_url : nil)
-      end
+      json.availability_url unit.get_availability_url()
       
       json.bathrooms floorplan.present? ? convert_float_to_integer(floorplan.bathrooms) : 0
       json.floorplan_description floorplan.description.present? ? "<div>"+floorplan.description+"</div>"  : nil

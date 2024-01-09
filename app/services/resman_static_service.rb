@@ -65,6 +65,7 @@ class ResmanStaticService < BaseService
         unit.property_id = property_id
         unit.unit_type = u["Unit"]["MITS:Information"]["MITS:UnitType"]
         unit.lease_pricing = nil
+        unit_status_update(unit, u)
 
         unless unit.name_is_updated.present? && unit.name_is_updated
           unit.marketing_name = u["Id"]
@@ -176,4 +177,14 @@ class ResmanStaticService < BaseService
     end
   end
 
+  def unit_status_update unit, u
+    vacancy_class = u["Availability"]["VacancyClass"]
+    unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
+
+    if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
+      unit.unit_status = "Unoccupied"
+    else
+      unit.unit_status = "Occupied"
+    end
+  end
 end

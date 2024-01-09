@@ -1,0 +1,27 @@
+<div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
+  <div class="modal-dialog" role="document">
+    <section>
+      <div class="Pyn_Modal">
+        <div class = "header-center">
+          <%= image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :style => "width: 150px; padding: 1px 0px 5px 4px" %>
+          <div>
+                <span style="color: red">
+                  <div style="text-align: left">
+                    <strong> Error: </strong>
+                    <ul>
+                      <li>Online tour scheduling is currently restricted for this property.</li>
+                    </ul>
+                  </div>
+                  <br />
+                  <strong>Sorry</strong> for the inconvenience. It seems
+                  <strong><%= @community.name %></strong> does not offer self tours or it's under construction.
+                  For inquiries please call the property at
+                  <strong><%= @community.phone %></strong> or email
+                  <strong><%= @community.email %></strong>.
+                </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

@@ -7,19 +7,24 @@ module DataProviders
           return unless community_id.present?
           @community_id = community_id
           @community = Community.find_by_id community_id
-          @credential = @community.credential
+          @credential = @community&.credential if @community.present?
           @batch_size = 10
           
-          return unless (@community.present? || @credential.present?)
+          return nil unless (@community.present? && @credential.present?)
         end
 
         protected
 
           def update_launch_forms_status
-            @community.update_property_management_form_status()
-            @community.update_status_and_remarks(PROPERTY_MANAGEMENT_SYSTEM, APPROVED)
-            @community.update_floorplans_form_status()
-            @community.update_status_and_remarks(FLOORPLAN_IMAGES, APPROVED) if @community.check_all_floorplans_form_status_is_submitted()
+            if @community.pynwheel_launch_access
+              @community.update_community_details_form_status()
+
+              @community.update_property_management_form_status()
+              @community.update_status_and_remarks(PROPERTY_MANAGEMENT_SYSTEM, APPROVED)
+              
+              @community.update_floorplans_form_status()
+              @community.update_status_and_remarks(FLOORPLAN_IMAGES, APPROVED) if @community.check_all_floorplans_form_status_is_submitted()
+            end
           end
 
           def get_property_details property_code

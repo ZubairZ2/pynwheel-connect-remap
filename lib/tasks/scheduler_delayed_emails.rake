@@ -104,10 +104,10 @@ namespace :delayed_email_notifications do
 		if community.alert_contact == "email"
 			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
 		elsif community.alert_contact == "phone"
-			send_sms_tour_user thank_you_msg, th
+			send_sms_tour_user( thank_you_msg, th, community)
 		else
 			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}","<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
-			send_sms_tour_user thank_you_msg ,th
+			send_sms_tour_user(thank_you_msg, th, community)
 		end
 	end
 
@@ -147,9 +147,9 @@ namespace :delayed_email_notifications do
 		end
 	end
 
-	def send_sms_tour_user message_body,th
+	def send_sms_tour_user message_body, th, community
 		begin
-			DelayedSchedulerTextJob.perform_async(message_body, th.tour_user.phone_number) if th.tour_user.phone_number.present? && th.tour_user.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
+			TwilioSmsWorker.perform_async(message_body, th&.tour_user&.phone_number, th&.tour_user&.email, community&.id) if th.tour_user.phone_number.present? && th.tour_user.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
 		rescue
 		end
 	end
@@ -189,8 +189,7 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 		  emails = community_email.gsub(" ","").split(',')
 
 			ScheduledTourMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
-			#DelayedSchedulerMailerJob.perform_async("Your Tour Tomorrow", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if (schedual_tour.property_tour_type == "scheduled_tour" && (diff == 1 && !(community.alert_contact == "phone")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
-		  DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if (schedual_tour.property_tour_type == "scheduled_tour" && schedual_tour.tour_user.is_sms_enabled && (diff == 1 && !(community.alert_contact == "email")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
+		  TwilioSmsWorker.perform_async(sms_content, tu&.phone_number, tu&.email, community&.id) if (schedual_tour.property_tour_type == "scheduled_tour" && schedual_tour.tour_user.is_sms_enabled && (diff == 1 && !(community.alert_contact == "email")) && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
 
   end
 
@@ -227,8 +226,7 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 				emails = community_email.gsub(" ","").split(',')
 				
 				ScheduledTourMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if !(community.alert_contact == "phone") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce")
-				# DelayedSchedulerMailerJob.perform_async("Your tour starts soon!", content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour) if !(community.alert_contact == "phone") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce")
-				DelayedSchedulerTextJob.perform_async(sms_content, tu.phone_number) if (schedual_tour.tour_user.is_sms_enabled && !(community.alert_contact == "email") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
+				TwilioSmsWorker.perform_async(sms_content, tu&.phone_number, tu&.email, community&.id) if (schedual_tour.tour_user.is_sms_enabled && !(community.alert_contact == "email") && !(community.credential.use_different_crm_provider && community.crm_credential.crm_provider == "salesforce"))
 			end
 		end
 	end

@@ -1104,12 +1104,6 @@ json.tours @tours do |tour|
         lease_pricing = lease_pricing.sort_by!(&:zip)
       end
 
-      if @community.credential.present? and @community.credential.apply_now == "separate_link"
-        availability_url = @community.credential.separate_link
-      else
-        availability_url = (unit.availability_url.present? ? unit.availability_url : u&.floorplan&.availability_url rescue "")
-      end
-
       additional_details = unit.description.present? ? unit.description :  unit&.floorplan.description        
       unit_stop_description = ActionView::Base.full_sanitizer.sanitize(additional_details.present? ? additional_details : "")
       show_long_description = (unit_stop_description.size <= description_limit) ? false : true
@@ -1132,7 +1126,7 @@ json.tours @tours do |tour|
       
       json.stop_data stop_data
 
-      json.availability_url unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url
+      json.availability_url unit.get_availability_url()
 
       @unit_amenities = unit.amenities
       unit_amenities_hit = true
