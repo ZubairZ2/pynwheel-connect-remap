@@ -116,7 +116,7 @@ class RentCafeApiV2Service
         apiToken: api_token, #required
         companyCode: company_code, #required
         propertyCode: property_code&.strip, #required
-        showAllUnit: true
+        showAllUnit: @credential.limit_result
       }.to_json
     end
 
@@ -126,7 +126,7 @@ class RentCafeApiV2Service
         companyCode: company_code, #required
         propertyCode: property_code&.strip, #required
         apartmentName: apartment_name,
-        showAllUnit: true
+        showAllUnit:  @credential.limit_result
       }.to_json
     end
 
