@@ -82,7 +82,7 @@ json.tours tours do |tour|
         json.stop_description short_unit_stop_description
         json.long_stop_description long_unit_stop_description
         
-        json.availability_url unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url
+        json.availability_url unit.get_availability_url()
         json.update_apply ((unit.provider == "resman" || unit.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
         json.provider unit.provider
 

@@ -195,18 +195,12 @@ class Unit < ApplicationRecord
   end
 
   def get_availability_url url = ""
-    if self&.community&.credential.present? and self&.community&.credential.apply_now == "separate_link"
+    if self&.community&.credential.present? and self&.community&.credential&.apply_now.to_s == "separate_link"
       url = self&.community&.credential.separate_link
-    elsif self.provider == "resman"
-      url = self.availability_url
-    elsif self.provider == "psi"
-      url = self.availability_url_deep_linking.present? ? self.availability_url_deep_linking : self.availability_url
+    elsif self&.community&.data_provider == "psi"
+      url = (self.availability_url_deep_linking.present? ? self.availability_url_deep_linking : self.availability_url.present? ? self.availability_url : self&.floorplan&.availability_url)
     else
-      url = self.availability_url.present? ? self.availability_url : ""
-    end
-
-    if self&.community&.credential.present? and self&.community&.credential.apply_now.to_s == "separate_link"
-      url = self&.community&.credential.separate_link
+      url = self.availability_url.present? ? self.availability_url : self&.floorplan&.availability_url
     end
 
     url

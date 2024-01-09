@@ -288,7 +288,7 @@ module Api
                 u.sitemap_image_url = floorplate_image
                 @sitemap_image_url = floorplate_image
               end
-              u.availability_url = u.availability_url.present? ? u.availability_url : (u.floorplan.availability_url.present? ? u.floorplan.availability_url : nil)
+              u.availability_url = u.get_availability_url()
             end
             success = true
             message = 'success'
@@ -341,7 +341,7 @@ module Api
                 u.sitemap_image_url = floorplate_image
                 @sitemap_image_url = floorplate_image
               end
-              u.availability_url = u.availability_url.present? ? u.availability_url : (u.floorplan.availability_url.present? ? u.floorplan.availability_url : nil)
+              u.availability_url = u.get_availability_url()
             end
             success = true
             message = 'success'

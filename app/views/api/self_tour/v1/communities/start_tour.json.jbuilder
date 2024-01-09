@@ -1104,20 +1104,14 @@ json.tours @tours do |tour|
         lease_pricing = lease_pricing.sort_by!(&:zip)
       end
 
-      if @community.credential.present? and @community.credential.apply_now == "separate_link"
-        availability_url = @community.credential.separate_link
-      else
-        availability_url = (unit.availability_url.present? ? unit.availability_url : u&.floorplan&.availability_url rescue "")
-      end
-
       additional_details = unit.description.present? ? unit.description :  unit&.floorplan.description        
       unit_stop_description = ActionView::Base.full_sanitizer.sanitize(additional_details.present? ? additional_details : "")
       show_long_description = (unit_stop_description.size <= description_limit) ? false : true
-      stop_data = {"floorplan" => (unit&.floorplan&.name rescue ""), "floorplan_full_name" => (unit&.floorplan&.name + "- #{(unit&.floorplan&.bedrooms.present? ? (unit&.floorplan&.bedrooms.to_i.to_s + " BR") : "") } / #{(unit&.floorplan&.bathrooms.present? ? (unit&.floorplan&.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date, "display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + additional_details.gsub('red','') + styling_end  rescue ""), "availability_url"=> availability_url}
+      stop_data = {"floorplan" => (unit&.floorplan&.name rescue ""), "floorplan_full_name" => (unit&.floorplan&.name + "- #{(unit&.floorplan&.bedrooms.present? ? (unit&.floorplan&.bedrooms.to_i.to_s + " BR") : "") } / #{(unit&.floorplan&.bathrooms.present? ? (unit&.floorplan&.bathrooms.to_i.to_s + " BA") : "" )}" rescue ""),"effective_rent" => unit.effective_rent,"available_date" => unit.available_date, "display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,"show_long_description" => show_long_description,"long_stop_description" => (styling_start + additional_details.gsub('red','') + styling_end  rescue ""), "availability_url"=> unit.get_availability_url()}
       
       json.stop_data stop_data
 
-      json.availability_url unit.availability_url.present? ? unit.availability_url :  Floorplan.find_by(provider_floorplan_id: unit.floorplan_id).availability_url
+      json.availability_url unit.get_availability_url()
 
       @unit_amenities = unit.amenities
       unit_amenities_hit = true
