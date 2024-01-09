@@ -556,6 +556,7 @@
       </div>
     <% end %>
 
+    <%= render "restricted_error" %>
 
     <script type="text/javascript">
       // $("#schedule_btn").hide();
@@ -598,6 +599,8 @@
       var is_virtual_on = <%= raw @is_virtual_on %>;
 
       var occupied_slots; var occupied_dates;
+      var allowed_emails = "<%= @community.allowed_emails&.collect(&:email) %>"
+      var restricted_access = "<%= @community.restrict_access %>"
 
       function redirectSheduledTourPage(url){
         window.location.href = url
@@ -1284,6 +1287,21 @@
         };
       });
       }
+
+      $("#tour_user_email").on("change", function() {
+          var email =  $("#tour_user_email").val().trim();
+          if (restricted_access === 'true') {
+              var allowed_emails_list = JSON.parse(allowed_emails.replace(/&quot;/g, '"'));
+              if ( allowed_emails_list.includes(email)){
+                  $('#confirm_reservation').attr('disabled', false)
+              }
+              else{
+                  $('#confirm_reservation').attr('disabled', true);
+                  $('#warningModal').modal('show');
+              }
+
+          }
+      });
     </script>
 
     <script type="text/javascript">
