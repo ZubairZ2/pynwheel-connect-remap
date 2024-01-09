@@ -1127,7 +1127,7 @@ json.tours @tours do |tour|
         "stop_description" => show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description,
         "show_long_description" => show_long_description, 
         "long_stop_description" => long_stop_description, 
-        "availability_url"=> availability_url
+        "availability_url "=> unit.get_availability_url()
       }
       
       json.stop_data stop_data
