@@ -8,7 +8,7 @@ class Latch < ApplicationRecord
 
   def as_json options = {}
     super(
-      :only => [:id, :client_id, :client_secret, :file ], :method => [:lock_type]
+      :only => [:id, :latch_property_name ], :method => [:lock_type]
     )
   end
 

@@ -664,8 +664,9 @@ class Community < ApplicationRecord
   def latch_locks_status(current_user, status)
     return if self.latch.blank?
     latch = self.latch
+
     unless status.present?
-      status_attr = status_string(latch.client_id.present? && latch.client_secret.present?)
+      status_attr = status_string(latch.latch_property_name.present?)
     else
       status_attr = status
     end
