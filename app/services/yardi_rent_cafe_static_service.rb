@@ -149,7 +149,7 @@ class YardiRentCafeStaticService < BaseService
         request_type = "floorplan"
         company_code = credentials.c_code
         api_token = credentials.api_token
-        showallunit =  @credentials.limit_result ? "0" : "-1"
+        showallunit =  credentials.limit_result ? "0" : "-1"
 
         #property_code = credentials.p_code
         if api_token.present?
