@@ -73,6 +73,9 @@ LATCH_LOCK_INSTRUCTION_TEXT = "When you are near the door tap the 'unlock' butto
 IGLOOHOME_LOCK_INSTRUCTION_TEXT = "Tap the black circle to wake lock up. Enter code then press the unlock button in the middle of the lock face."
 ELEVATOR_STOP_TEXT = "The next stop is on floor "
 
+SELF_TOUR_PROVIDERS = ["yardirentcafe", "realpagesvc", "psi", "resman"]
+UNIT_STATUSES = ["unoccupied", "vacant unrented ready"]
+
 # TOUCH INFO
 TOUCH_SESSIONS_INFO = "One “Session” is defined as an instance in which the user goes from the Home screen to at least one other page and then back to the Home screen."
 TOUCH_SESSION_DURATION = "Amount of time a user spends on the app during a single activity. Note that a activity starts from the home page, so if a user begins to use the touchscreen after another user, and before the app returns to the home page, this will not be tallied as a new activity."

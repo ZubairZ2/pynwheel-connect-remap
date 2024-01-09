@@ -161,6 +161,7 @@ class PsiStaticService < BaseService
         unit.property_id = property_id
         unit.provider = "psi"
         unit.unit_type = u["Units"]["Unit"]["UnitType"]
+        unit_status_update(unit, u)
 
         unless unit.name_is_updated.present? && unit.name_is_updated
           unit.marketing_name = u["Units"]["Unit"]["MarketingName"]
@@ -228,9 +229,11 @@ class PsiStaticService < BaseService
         end
 
         building = u["Units"]["Unit"]["BuildingName"]
+        
         unless unit.building_is_updated.present? && unit.building_is_updated
           unit.building = building.present? ? building.gsub("Building ", "") : ""
         end
+
         # unit.availability_url = u['Availability']['UnitAvailabilityURL'] if u['Availability'].present?
         # unit.availability_url = unit.floorplan.availability_url unless unit.availability_url
         # url_split =  u['Availability']['UnitAvailabilityURL'].split('/') if u['Availability'].present? &&  u['Availability']['UnitAvailabilityURL'].present?
@@ -537,7 +540,18 @@ class PsiStaticService < BaseService
       url
     end
 
-      def add_floorplan_images fp, image_urls
+    def unit_status_update unit, u
+      vacancy_class = u["Availability"]["VacancyClass"]
+      unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
+
+      if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
+        unit.unit_status = "Unoccupied"
+      else
+        unit.unit_status = "Occupied"
+      end
+    end
+
+    def add_floorplan_images fp, image_urls
       primary_image = fetch_floorplan_image_url(image_urls, 0)
       secondary_image = fetch_floorplan_image_url(image_urls, 1)
       fp.image = image_base64(primary_image) if primary_image.present?

@@ -214,6 +214,8 @@ class RealPageSvcService < BaseService
                   end
                 end
 
+                unit_status_update(unit, u)
+
                 if unit.available_date.present?
                   current_date = unit.available_date
                 elsif unit.available_date.present? && unit.available_date < Date.today
@@ -303,7 +305,9 @@ class RealPageSvcService < BaseService
                     end
 
                   end
-
+                  
+                  unit_status_update(unit, u)
+                  
                   if unit.available_date.present?
                     current_date = unit.available_date
                   elsif unit.available_date.present? && unit.available_date < Date.today
@@ -485,6 +489,8 @@ class RealPageSvcService < BaseService
                 end
 
               end
+
+              unit_status_update(unit, u)
               unit.lease_pricing = nil
               unit.availability_url = "#{@apply_now_base_url}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
               @unit_record << unit.provider_unit_id
@@ -553,6 +559,7 @@ class RealPageSvcService < BaseService
                   end
                 end
 
+                unit_status_update(unit, u)
                 unit.manually_updated = false
                 unit.lease_pricing = nil
                 unit.availability_url = "#{@apply_now_base_url}/apply_now?MoveInDate=#{Date.today.day}/#{Date.today.month}/#{Date.today.year}&UnitId=#{u[:Address][:UnitID]}&SearchUrl="
@@ -786,6 +793,14 @@ class RealPageSvcService < BaseService
       else
         return ""
       end
+    end
+  end
+
+  def unit_status_update unit, u
+    if u[:Availability][:MadeReadyBit] == "true"
+      unit.unit_status = "Unoccupied"
+    else
+      unit.unit_status = "Occupied"
     end
   end
 

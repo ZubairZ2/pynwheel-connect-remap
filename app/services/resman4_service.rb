@@ -101,6 +101,7 @@ class Resman4Service < BaseService
           end
         end
 
+        unit_status_update(unit, u)
         unit.lease_pricing = get_unit_lease_prising(u)
 
         if u["Availability"].present? && u["Availability"]["MadeReadyDate"].present?
@@ -133,7 +134,7 @@ class Resman4Service < BaseService
         if $units_availability_url.present?
           unit.availability_url = $units_availability_url + "&unitNumber=#{u["IDValue"]}"
         end
-        
+
         unit_record << unit.provider_unit_id.gsub('*','-')
         # unit.save(validate: false)
         import_units << unit
@@ -145,6 +146,7 @@ class Resman4Service < BaseService
         unless unit.manual_override
           unit.property_id = property_id
           unit.unit_type = u["Units"]["Unit"]["UnitType"]
+          unit_status_update(unit, u)
           unit.lease_pricing = get_unit_lease_prising(u)
 
           unless unit.name_is_updated.present? && unit.name_is_updated
@@ -307,6 +309,17 @@ class Resman4Service < BaseService
     end
 
     leasing
+  end
+
+  def unit_status_update unit, u
+    vacancy_class = u["Availability"]["VacancyClass"]
+    unit_occupancy_status =  u["Units"]["Unit"]["UnitOccupancyStatus"]
+
+    if (vacancy_class == "Unoccupied") && (unit_occupancy_status == "vacant")
+      unit.unit_status = "Unoccupied"
+    else
+      unit.unit_status = "Occupied"
+    end
   end
 
 end

@@ -473,13 +473,6 @@ module Api
             available: true
           ).where.not('marketing_name ILIKE ?', "%WAIT%")
 
-          # if @community.data_provider == "yardirentcafe" && params[:tour_user_id].present?
-          #   units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
-          #                 .vacant_and_available
-          # else
-          #   units = units.where.not('marketing_name ILIKE ?', "%WAIT%")
-          # end
-
           units
         else
           []
