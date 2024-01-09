@@ -1,44 +1,66 @@
 class Api::V2::CompaniesController < Api::V2::ApiApplicationController
+  require_relative 'helpers/credentials_manager'
+  include CredentialsManager
+
   before_action :doorkeeper_authorize!
-  before_action :set_company, only: [:import_data_credentials, :create_company_credentials]
+  before_action :check_required_credentials, only: :import_data_credentials
+  before_action :set_company, only: [:import_data_credentials, :fetch_entrata_property_ids]
   before_action :set_community, only: :import_data_credentials
-  before_action :create_company_credentials, only: :import_data_credentials
+  before_action :is_already_setup, only: :import_data_credentials
 
   def import_data_credentials
-    case params[:data_provider]
-    when "yardirentcafe"
-      set_data_provider()
-      import_rent_cafe_data
-    else
-      render_response("Wrong data provider, please check property's data provider", false)
+    begin
+      return wrong_provider_alert unless params[:data_provider].present?
+
+      set_data_provider
+      set_credentials
+      import_providers_data
+
+    rescue => error
+      render_response(error.message, false)
     end
+  end
+
+  def fetch_entrata_property_ids
+    property_ids = DataProviders::Entrata::PropertiesIdsApiService.new(params).get_property_ids
+    render json: { message: 'Success! List of properties ids', properties_ids: property_ids }
   end
 
   private
 
-    def create_company_credentials
-      case params[:data_provider]
-      when "yardirentcafe"
-        @credential = @company.credential || @company.build_credential
+    def set_credentials
+      update_credentials(params[:data_provider], :community)
+    end
 
-        if @credential.update(api_token:  params[:api_token], yardi_rent_cafe_api_url: params[:api_url], c_code: params[:c_code], rentcafe_api_version: params[:rentcafe_api_version])
-          unless @company.data_providers.include?("yardirentcafe")
-            @company.data_providers << "yardirentcafe"
-            @company.save
-          end
-        end
+    def import_providers_data
+      if valid_credentials? && @community.data_is_imported
+        update_credentials(params[:data_provider], :company)
+        set_property_and_community_user
+        render_response('Success! Property has been set up.', true)
       else
-        render_response("Wrong data provider", false)
+        PropertyDestroyWorker.perform_async @community.id
+        render_response('Failed! invalid credentials, Please enter correct credentials before importing data.', false)
       end
     end
 
-    def import_rent_cafe_data
-      update_property_credential()
-      if valid_credentials? && @community.data_is_imported
-        @community.update_attributes(use_company_level_data_settings: true)
-        render_response("Data imported successfully", true)
-      else
-        render_response('Invalid credentials, Please enter correct credentials before importing data.', false)
+    def update_credentials(data_provider, level)
+      credentials = DATA_PROVIDERS_CREDENTIALS[data_provider][level]
+      @credential = (level == :company) ? (@company.credential || @company.build_credential) : (@community.credential || @community.build_credential)
+      @credential.update(credentials_params(credentials))
+      
+      if level == :company
+        @company.data_providers << data_provider unless @company.data_providers.include?(data_provider)
+        @company.save      
+      end
+    end
+
+    def credentials_params(credentials)
+      credentials.each_with_object({}) { |(key, param), hash| hash[key] = params[param] }
+    end
+
+    def is_already_setup
+      if @community.present? && @community&.units.present? || @community&.floorplans.present?
+        render_response("Failed! Property has already been set up.", false)
       end
     end
 
@@ -53,28 +75,73 @@ class Api::V2::CompaniesController < Api::V2::ApiApplicationController
     end
 
     def set_community
-      @community = @company.communities.find_by(name: params[:property_name])
-      render_response('Property not found! Invalid property name', false) unless @community.present?
+      @community = create_community()
+    end
+
+    def create_community
+      begin
+        community = find_property()
+
+        unless community.present?
+          if params[:property_name].present?
+            community = @company.communities.create!(name: params[:property_name])
+          else
+            render_response('Failed! Property not found.', false)
+          end
+        end
+
+        community
+      rescue => error
+        render_response(error.message, false)
+      end
+    end
+
+    def set_property_and_community_user
+      begin
+        @community.update_attributes(use_company_level_data_settings: true, pynwheel_launch_access: true)
+        CommunityUser.find_or_create_by(user_id: current_pynwheel_user.id, community_id: @community.id)
+      rescue => error
+        render_response(error.message, false)
+      end
+    end
+
+    def find_property
+      begin
+        credential_criteria = CREDENTIALS_CRITERIA[params[:data_provider]]
+        wrong_provider_alert unless credential_criteria
+
+        column = credential_criteria[:column]
+        credential = Credential.where("LOWER(#{column}) LIKE ?", "%#{params[column.to_sym].to_s.downcase}%").last
+
+        community = @company.communities.find_by(id: credential.community_id) if credential.present?
+        community ||= @company.communities.find_by(name: params[:property_name])
+
+        community
+
+      rescue => error
+        render_response(error.message, false)
+      end
+    end
+
+    def check_required_credentials
+      credential_criteria = CREDENTIALS_CRITERIA[params[:data_provider]]
+      wrong_provider_alert unless credential_criteria
+      propery_id_or_name_required unless params[:property_name].present? && params[credential_criteria[:column].to_sym].present?
     end
 
     def set_data_provider
-      return unless params[:data_provider].present?
-      @community.update(data_provider: params[:data_provider])
+      @community.update(data_provider: params[:data_provider]) if params[:data_provider].present?
     end
 
-    def update_property_credential
-      @credential = @community.credential || @community.build_credential
-
-      @credential.update(
-        api_token:  params[:api_token],
-        yardi_rent_cafe_api_url: params[:api_url],
-        c_code: params[:c_code],
-        p_code: params[:p_code],
-        currency: params[:currency]
-      )
-    end
-
-    def render_response message, status
+    def render_response(message, status)
       render json: { message: message, status: status }
+    end
+
+    def wrong_provider_alert
+      render_response('Failed! wrong data provider, please check property\'s data provider.', false)
+    end
+
+    def propery_id_or_name_required
+      render_response('Failed! Property ID or Property Name is missing.', false)
     end
 end

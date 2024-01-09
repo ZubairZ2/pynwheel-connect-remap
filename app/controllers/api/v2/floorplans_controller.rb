@@ -45,8 +45,6 @@ class Api::V2::FloorplansController < Api::V2::ApiApplicationController
 
       @community.update_floorplans_form_status(current_pynwheel_user,  params["status"])
 
-      # update_floorplans_form_status()
-
       render json: {success: true, message: "Floorplan form saved successfully"}
     
     rescue => exception
@@ -74,12 +72,6 @@ class Api::V2::FloorplansController < Api::V2::ApiApplicationController
         end
       end
     end
-
-    # def update_floorplans_form_status
-    #   previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(FLOORPLAN_IMAGES)
-    #   @community.set_floorplan_status(current_pynwheel_user,  params["status"])
-    #   FollowUpMailer.send_email_after_form_submission(@community, FLOORPLAN_IMAGES, previous_status)
-    # end
 
     def update_floorplan_form_status_to_inprogress
       @community.set_floorplan_status(current_pynwheel_user, "in_progress")
