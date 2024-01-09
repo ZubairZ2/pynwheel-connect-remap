@@ -12,7 +12,7 @@ module DataProviders
       end
 
       def get_apartment_availability(property_code)
-        handle_api_response(fetch_data("apartmentavailability", property_code, "&showallunit=-1"))
+        handle_api_response(fetch_data("apartmentavailability", property_code, "&showallunit=#{@credential.limit_result ? "0" : "-1"}"))
       end
 
       def get_apartment_pricing_matrix(apartment_name, property_code)
