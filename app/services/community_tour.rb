@@ -104,8 +104,8 @@ class CommunityTour
               "floorplan_image": floorplan_image,
               "primary_floorplan": primary_floorplan,
               "secondary_floorplan": secondary_floorplan,
-              "floor": new_stop&.floor,
-              "building": new_stop&.building
+              "floor": "",
+              "building": ""
             }
           else
             if new_stop&.floor.present? && new_stop&.building.present?
