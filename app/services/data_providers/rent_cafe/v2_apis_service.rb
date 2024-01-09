@@ -135,7 +135,7 @@ module DataProviders
             apiToken: api_token, #required
             companyCode: company_code, #required
             propertyCode: property_code&.strip, #required
-            showAllUnit: @credential&.limit_result
+            showAllUnit: !@credential&.limit_result
           }.to_json
         end
 
@@ -145,7 +145,7 @@ module DataProviders
             companyCode: company_code, #required
             propertyCode: property_code&.strip, #required
             apartmentName: apartment_name,
-            showAllUnit: @credential&.limit_result
+            showAllUnit: !@credential&.limit_result
           }.to_json
         end
 
