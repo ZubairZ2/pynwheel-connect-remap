@@ -38,11 +38,11 @@ class NotifyManagerService < BaseService
   private
 
   def updated_communities_with_units
-    # updated_units = Unit.where(id: @before_updation_units.keys)
-    #                     .where.not(unit_status: @before_updation_units.values)
-    #                     .pluck(:community_id).uniq
-
-    # updated_units
+    # Unit.where(id: @before_updation_units.keys)
+    #     .where.not(unit_status: @before_updation_units.values)
+    #     .where(unit_status: UNIT_STATUSES)
+    #     .pluck(:community_id)
+    #     .uniq
 
     community_ids = []
     after_updation_units = Unit.where(id: @before_updation_units.keys).uniq
