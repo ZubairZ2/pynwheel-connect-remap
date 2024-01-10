@@ -43,8 +43,32 @@ class NotificationMailer < ApplicationMailer
 
 	end
 
+	def notify_property_manager(subject, msg, to, email_from, community, show_html)
+		@community = community
+		company_name = @community.company.name.downcase
 
-  private
+		app_links = {
+		  lincoln: {
+		    app: "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129",
+		    android: "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour"
+		  },
+		  default: {
+		    app: "https://apps.apple.com/us/app/self-tour/id1488907392",
+		    android: "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
+		  }
+		}
+		
+		@app_link = company_name.eql?("lincoln") ? app_links[:lincoln][:app] : app_links[:default][:app]
+		@android_link = company_name.eql?("lincoln") ? app_links[:lincoln][:android] : app_links[:default][:android]
+		
+		@email_body = msg
+		@show_html = show_html
+		
+		mail(to: to, from: email_from, subject: subject)
+	end
+
+
+  private	
 
 	def check_community_chat data, community
 		return unless data[3].present?

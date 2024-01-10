@@ -8,6 +8,7 @@ class ResmanService < BaseService
   end
 
   def perform
+    before_updation_units = NotifyManagerService.new(Unit.where(community_id: @credentials.community_id))
     property_ids = @credentials.resman_property_id.split(',') rescue []
     property_ids.each do |property_id|
       begin
@@ -73,6 +74,7 @@ class ResmanService < BaseService
       end
 
     end
+    before_updation_units.compare_status_and_notify()
   end
 
   def save_resman_units(units,property_id)
