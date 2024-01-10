@@ -16,11 +16,13 @@ class GalleryUploader < CarrierWave::Uploader::Base
   # This is a sensible default for uploaders that are meant to be mounted:
 
   def filename
-    if model.crop_x.present?
-      @name ||= URI.encode(original_filename)
-    else
-      @name ||= "#{secure_token}.#{file.extension}" if original_filename.present?
-    end
+    # if model.crop_x.present?
+    #   @name ||= URI.encode(original_filename)
+    # else
+    #   @name ||= "#{secure_token}.#{file.extension}" if original_filename.present?
+    # end
+
+    "#{secure_token}.#{file.extension}" if original_filename.present?
   end
 
   def timestamp
@@ -47,8 +49,10 @@ class GalleryUploader < CarrierWave::Uploader::Base
   version :ios, :if => :image? do
     resize_to_limit(1024, 768)
   end
+
   process :crop
   resize_to_limit(1920, 1080)
+
   version :large, :if => :image? do
     # process :crop
     resize_to_limit(1920, 1080)
@@ -57,7 +61,6 @@ class GalleryUploader < CarrierWave::Uploader::Base
   def png_name for_file, version_name
     %Q{#{version_name}_#{for_file.chomp(File.extname(for_file))}.png}
   end
-
 
   def crop
     if model.crop_x.present?
@@ -76,6 +79,7 @@ class GalleryUploader < CarrierWave::Uploader::Base
   end
 
   protected
+  
   def secure_token
     var = :"@#{mounted_as}_secure_token"
     model.instance_variable_get(var) or model.instance_variable_set(var, SecureRandom.uuid)
