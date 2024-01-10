@@ -45,22 +45,11 @@ class NotificationMailer < ApplicationMailer
 
 	def notify_property_manager(subject, msg, to, email_from, community, show_html)
 		@community = community
-		company_name = @community.company.name.downcase
+		company_name = community.company.name.downcase
 
-		app_links = {
-		  lincoln: {
-		    app: "https://apps.apple.com/us/app/lincoln-property-self-tour/id1508997129",
-		    android: "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour"
-		  },
-		  default: {
-		    app: "https://apps.apple.com/us/app/self-tour/id1488907392",
-		    android: "https://play.google.com/store/apps/details?id=com.pynwheel.selftour"
-		  }
-		}
-		
-		@app_link = company_name.eql?("lincoln") ? app_links[:lincoln][:app] : app_links[:default][:app]
-		@android_link = company_name.eql?("lincoln") ? app_links[:lincoln][:android] : app_links[:default][:android]
-		
+  	@app_link = AppLinks.get_app_link(company_name)
+  	@android_link = AppLinks.get_android_link(company_name)
+
 		@email_body = msg
 		@show_html = show_html
 		
