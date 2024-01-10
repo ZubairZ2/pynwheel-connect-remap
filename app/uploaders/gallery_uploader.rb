@@ -17,7 +17,7 @@ class GalleryUploader < CarrierWave::Uploader::Base
 
   def filename
     if model.crop_x.present?
-      @name = original_filename
+      @name ||= URI.encode(original_filename)
     else
       @name ||= "#{secure_token}.#{file.extension}" if original_filename.present?
     end
