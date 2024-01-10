@@ -13,10 +13,18 @@ class VideoUploader < CarrierWave::Uploader::Base
 
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
-  def filename
-    # @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
-    @name ||= "#{timestamp}.#{file.extension}" if original_filename.present?
+  # def filename
+  #   # @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
+  #   @name ||= "#{timestamp}.#{file.extension}" if original_filename.present?
 
+  # end
+
+  def filename
+    if original_filename.present?
+      # Properly encode the filename using URI.encode
+      encoded_filename = URI.encode(original_filename)
+      "#{timestamp}.#{encoded_filename.split('.').last}" # Using the extension from the original file
+    end
   end
 
   def timestamp
