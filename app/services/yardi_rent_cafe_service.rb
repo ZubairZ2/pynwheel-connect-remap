@@ -9,7 +9,7 @@ class YardiRentCafeService < BaseService
   end
 
   def perform
-    before_updation_units = NotifyManagerService.new(Unit.where(community_id: @credentials.community_id))
+    before_updation_units = NotifyManagerService.new(@credentials.community_id)
     import_yardirentcafe_floorplans
     import_yardirentcafe_units
     before_updation_units.compare_status_and_notify()
