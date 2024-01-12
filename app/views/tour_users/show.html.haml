@@ -221,50 +221,51 @@
                     - @visited_stop.each do |stop|
                       - @stop = TourStop.find stop[0].to_i rescue next
                       - @stop = @stop.stop_type.classify.constantize.find_by_id(@stop.stop_id)
-                      -unless (@stop.is_a? Elevator) || (@stop.is_a? BuildingStartingPoint) || (stop[0].to_i == @community.community_tour.id)
-                        .row{:style => "margin-top: 3px;"}
-                          - image_hit = true
-                          - description_hit = true
-                          - is_data_loaded = false
-                          %a.preview-image{:href=> (@stop.present? && @stop.image?) ? @stop.image.url : asset_path("default.jpeg"),"placement"=>"right","data-toggle"=>"lightbox","data-title"=>"Stop Image"}
-                            %img{:src => "/assets/checkbox.png", :style => "height:20px; width:20px;color:green; margin-left: 13px; color: green;", "data-placement" => "top", "data-img" => "#{@stop.image.url}", "data-toggle-placement"=>"right", "data-toggle" => "popover-hover"}
-                          %strong{:style => "font-size: 16px; position: relative; margin-left: 5px;"}
-                            #{@stop.name}
-                          - stop[1].sort_by(&:id).reverse.each do |stop_image|
-                            - if image_hit
-                              .col-lg-12{:style => "margin-top: 10px; margin-bottom: 5px;"}
-                              .row{:style => "margin-left: 13px; margin-right: 0px;"}
-                                %text{:style => "color: gray"}
-                                  - if (stop[1][0].present?) && (@virtual_list.include? stop[1][0].tour_key) 
-                                    %img{:src => image_url("virtual_eye_black.png"), :width => "18px"}/
-                                  - else
-                                    %img{:src => "https://img.icons8.com/android/16/000000/walking.png"}/  
-                                  -# -image_hit = false
-                                  = stop_image.event_date.present? ? (stop_image.event_date).strftime("%Y-%m-%d") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%Y-%m-%d")
-                                  = stop_image.event_time.present? ? (stop_image.event_time).strftime("%I:%M %p") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%I:%M %p")
-                          - stop[1].each do |stop_image|
-                            - if stop_image.image.url.present?
-                              - is_data_loaded = true
-                              = image_tag  @stop.image, :class => "my_class", id: "#{@stop.id}", :style => " display: none; height: 72px; width: 100px; margin-top: 10px;"
-                              = " "
-                              - if stop_image.is_rotated == true
-                                = image_tag  stop_image.image.url, :class => "", :style => "height: 200px; width: auto; margin-top: -4px; margin-left: 28px; transform: rotate(90deg);"
-                              - else
-                                = image_tag  stop_image.image.url, :class => "", :style => "height: 148px; width: auto; margin-top: 8px; margin-left: 15px; "
-                          - stop[1].each do |stop_decription|
-                            - if stop_decription.description.present?
-                              - is_data_loaded = true
-                              - if description_hit
-                                .col-lg-12{:style => "margin-bottom: 5px;"}
-                              - description_hit = false
-                              .col-lg-8.col-md-6.col-sm-12.col-xs-12.user_description
-                                %strong{:style => "font-size: 16px;"}
-                                  Notes
-                                %text{:style => "color: gray"}
-                                %br
-                                .user_note{:style => "background: ;"}
-                                  = text_area_tag stop_decription.description,stop_decription.description,:class=>"form-control mb-20 ", :rows => "3", :readonly => true, :style => "background: white; margin-top: 10px;"
-                        %hr{:style => "border-top: 2px solid white; margin-left: -15px; margin-right: -15px;"}
+                      - if @stop.present?
+                        - unless (@stop.is_a? Elevator) || (@stop.is_a? BuildingStartingPoint) || (stop[0].to_i == @community.community_tour.id)
+                          .row{:style => "margin-top: 3px;"}
+                            - image_hit = true
+                            - description_hit = true
+                            - is_data_loaded = false
+                            %a.preview-image{:href=> (@stop.present? && @stop.image?) ? @stop.image.url : asset_path("default.jpeg"),"placement"=>"right","data-toggle"=>"lightbox","data-title"=>"Stop Image"}
+                              %img{:src => "/assets/checkbox.png", :style => "height:20px; width:20px;color:green; margin-left: 13px; color: green;", "data-placement" => "top", "data-img" => "#{@stop.present? ? @stop&.image&.url : ""}", "data-toggle-placement"=>"right", "data-toggle" => "popover-hover"}
+                            %strong{:style => "font-size: 16px; position: relative; margin-left: 5px;"}
+                              #{@stop.name}
+                            - stop[1].sort_by(&:id).reverse.each do |stop_image|
+                              - if image_hit
+                                .col-lg-12{:style => "margin-top: 10px; margin-bottom: 5px;"}
+                                .row{:style => "margin-left: 13px; margin-right: 0px;"}
+                                  %text{:style => "color: gray"}
+                                    - if (stop[1][0].present?) && (@virtual_list.include? stop[1][0].tour_key) 
+                                      %img{:src => image_url("virtual_eye_black.png"), :width => "18px"}/
+                                    - else
+                                      %img{:src => "https://img.icons8.com/android/16/000000/walking.png"}/  
+                                    -# -image_hit = false
+                                    = stop_image.event_date.present? ? (stop_image.event_date).strftime("%Y-%m-%d") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%Y-%m-%d")
+                                    = stop_image.event_time.present? ? (stop_image.event_time).strftime("%I:%M %p") : (stop_image.created_at.in_time_zone(time_zone)).strftime("%I:%M %p")
+                            - stop[1].each do |stop_image|
+                              - if stop_image.image.url.present?
+                                - is_data_loaded = true
+                                = image_tag  @stop.image, :class => "my_class", id: "#{@stop.id}", :style => " display: none; height: 72px; width: 100px; margin-top: 10px;"
+                                = " "
+                                - if stop_image.is_rotated == true
+                                  = image_tag  stop_image.image.url, :class => "", :style => "height: 200px; width: auto; margin-top: -4px; margin-left: 28px; transform: rotate(90deg);"
+                                - else
+                                  = image_tag  stop_image.image.url, :class => "", :style => "height: 148px; width: auto; margin-top: 8px; margin-left: 15px; "
+                            - stop[1].each do |stop_decription|
+                              - if stop_decription.description.present?
+                                - is_data_loaded = true
+                                - if description_hit
+                                  .col-lg-12{:style => "margin-bottom: 5px;"}
+                                - description_hit = false
+                                .col-lg-8.col-md-6.col-sm-12.col-xs-12.user_description
+                                  %strong{:style => "font-size: 16px;"}
+                                    Notes
+                                  %text{:style => "color: gray"}
+                                  %br
+                                  .user_note{:style => "background: ;"}
+                                    = text_area_tag stop_decription.description,stop_decription.description,:class=>"form-control mb-20 ", :rows => "3", :readonly => true, :style => "background: white; margin-top: 10px;"
+                          %hr{:style => "border-top: 2px solid white; margin-left: -15px; margin-right: -15px;"}
 -#    / main-content ends
 .row
   .col-md-12{:style => "/*position: absolute; */ bottom: 51px;"}
