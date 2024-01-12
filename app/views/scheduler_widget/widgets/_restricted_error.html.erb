@@ -1,27 +1,38 @@
-<div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;">
-  <div class="modal-dialog" role="document">
+<div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow: scroll;" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered" role="document">
     <section>
       <div class="Pyn_Modal">
-        <div class = "header-center">
-          <%= image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :style => "width: 150px; padding: 1px 0px 5px 4px" %>
+        <div class="header-center">
+          <%= image_tag @community.logo.present? ? @community.logo.url : "default.jpeg", :style => "width: 100%; max-width: 150px; padding: 1px 0px 5px 4px" %>
           <div>
-                <span style="color: red">
-                  <div style="text-align: left">
-                    <strong> Error: </strong>
-                    <ul>
-                      <li>Online tour scheduling is currently restricted for this property.</li>
-                    </ul>
-                  </div>
-                  <br />
-                  <strong>Sorry</strong> for the inconvenience. It seems
-                  <strong><%= @community.name %></strong> does not offer self tours or it's under construction.
-                  For inquiries please call the property at
-                  <strong><%= @community.phone %></strong> or email
-                  <strong><%= @community.email %></strong>.
-                </span>
+            <span style="color: red">
+              <div style="text-align: left">
+                <strong> Error: </strong>
+                <ul>
+                  <li>Online tour scheduling is currently restricted for this property.</li>
+                </ul>
+              </div>
+              <br />
+              <strong>Sorry</strong> for the inconvenience. It seems
+              <strong><%= @community.name %></strong> does not offer self tours or it's under construction.
+              For inquiries please call the property at
+              <strong><%= @community.phone %></strong> or email
+              <strong><%= @community.email %></strong>.
+            </span>
           </div>
+        </div>
+        <div class="modal-footer d-flex justify-content-center" style="display: flex; justify-content: center; padding-bottom: 0px;">
+          <button type="button" class="btn btn-primary" id="closeModalBtn" style="padding: 10px 30px 10px 30px; font-weight: bold;">Close</button>
         </div>
       </div>
     </section>
   </div>
 </div>
+
+<script>
+  // Add a script to handle button click event
+  document.getElementById('closeModalBtn').addEventListener('click', function() {
+    // Close the modal when the button is clicked
+    $('#warningModal').modal('hide');
+  });
+</script>
