@@ -226,7 +226,7 @@
                           - image_hit = true
                           - description_hit = true
                           - is_data_loaded = false
-                          %a.preview-image{:href=> @stop.image? ? @stop.image.url : asset_path("default.jpeg"),"placement"=>"right","data-toggle"=>"lightbox","data-title"=>"Stop Image"}
+                          %a.preview-image{:href=> (@stop.present? && @stop.image?) ? @stop.image.url : asset_path("default.jpeg"),"placement"=>"right","data-toggle"=>"lightbox","data-title"=>"Stop Image"}
                             %img{:src => "/assets/checkbox.png", :style => "height:20px; width:20px;color:green; margin-left: 13px; color: green;", "data-placement" => "top", "data-img" => "#{@stop.image.url}", "data-toggle-placement"=>"right", "data-toggle" => "popover-hover"}
                           %strong{:style => "font-size: 16px; position: relative; margin-left: 5px;"}
                             #{@stop.name}
