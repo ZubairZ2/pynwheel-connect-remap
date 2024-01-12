@@ -2,7 +2,8 @@ namespace :triggered_email do
   desc 'Missed email triggered'
   task :missed_tour => :environment do
     @time_hash = {}
-    tours = SchedualTour.where(tour_date: [(Date.today - 1)..(Date.today + 1)]).where.not(tour_user_id: nil)
+    tours = SchedualTour.where(tour_date: [(Date.today - 1)..(Date.today + 1)], is_tour_completed: false).where.not(tour_user_id: nil)
+
     tours.each do |tour|
       community = Community.find tour.community_id
       schedule_tour = SchedualTour.find_by community_id: community.id
