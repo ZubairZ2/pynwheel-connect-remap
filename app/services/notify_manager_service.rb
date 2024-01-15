@@ -14,7 +14,7 @@ class NotifyManagerService < BaseService
     @before_updation_units = @community.units.pluck(:id, :unit_status).to_h
   end
 
-  def compare_status_and_notify   
+  def compare_status_and_notify
     notify_manager() if community_units_updated?
   end
 
@@ -38,7 +38,8 @@ class NotifyManagerService < BaseService
     after_updation_units = Unit.where(id: @before_updation_units.keys)
 
     after_updation_units.each do |updated_unit|
-      if UNIT_STATUSES.include?(updated_unit.unit_status) && (updated_unit.unit_status != @before_updation_units[updated_unit.id])
+      updated_unit_status = updated_unit.unit_status.downcase
+      if UNIT_STATUSES.include?(updated_unit_status) && (updated_unit_status != @before_updation_units[updated_unit.id].downcase)
         return true
       end
     end
