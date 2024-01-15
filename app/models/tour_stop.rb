@@ -106,4 +106,8 @@ class TourStop < ApplicationRecord
     actual_stop.y_plot
   end
 
+  def is_virtual_tour?
+    self&.tour_type&.downcase&.include?("virtual") rescue false
+  end
+
 end

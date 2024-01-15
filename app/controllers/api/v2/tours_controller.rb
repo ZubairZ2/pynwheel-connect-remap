@@ -42,6 +42,7 @@ class Api::V2::ToursController < Api::V2::ApiApplicationController
   end
 
   private
+
     def update_tour_stops_status
       previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(TOUR_STOPS)
       @community.set_tour_stops_status(current_pynwheel_user, params["status"])
