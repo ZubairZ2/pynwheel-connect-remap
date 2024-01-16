@@ -159,7 +159,9 @@ class SchedulerWidgetService < BaseService
       DelayedSchedulerMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,nil,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
     end
     
-    sms_notifire(sms_content, schedual_tour&.tour_user&.phone_number, schedual_tour&.tour_user&.email, community&.id) if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
+    unless schedual_tour.is_virtual_tour? && schedual_tour&.tour_user&.is_virtual_tour? 
+      sms_notifire(sms_content, schedual_tour&.tour_user&.phone_number, schedual_tour&.tour_user&.email, community&.id) if (community.alert_contact == "phone" || community.alert_contact == "both") rescue nil
+    end
 
     {email_content: email_content, sms_content: sms_content}
     

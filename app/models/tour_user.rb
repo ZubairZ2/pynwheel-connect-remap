@@ -67,6 +67,10 @@ class TourUser < ApplicationRecord
     @crop_image_bit
   end
 
+  def is_virtual_tour?
+    self&.tour_type&.downcase&.include?("virtual") rescue false
+  end
+
   def check_code_expiry(community)
     access_code_generated_at = self.property_access_code_generated_at
     tour_length_stay_limit = community&.community_tour&.tour_setting&.length_stay_limit

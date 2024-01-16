@@ -74,15 +74,12 @@ class SchedualTour < ApplicationRecord
   end
 
   def is_tour_in_future date_time, current_time
-    if date_time > current_time
-      if self.is_tour_completed
-        false
-      else
-        true
-      end
-    else
-      false
-    end
+    return false unless date_time > current_time
+    self.is_tour_completed
+  end
+
+  def is_virtual_tour?
+    self&.tour_type&.downcase&.include?("virtual") rescue false
   end
 
 end

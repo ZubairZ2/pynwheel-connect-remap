@@ -65,10 +65,13 @@ class TourHistory < ApplicationRecord
         end
         
         tour_user_remotelock_data(community)
-        send_email_sms_or_both(@mail_content, community)
-        send_email_sms_or_both(@complete_tour_content, community)
-        send_email_sms_or_both_to_touruser(@thank_you_content, community)
 
+        unless scheduled_tour.is_virtual_tour? && touruser.is_virtual_tour? 
+          send_email_sms_or_both(@mail_content, community)
+          send_email_sms_or_both(@complete_tour_content, community)
+          send_email_sms_or_both_to_touruser(@thank_you_content, community)
+        end
+        
         community.is_salesforce_community? ? save_salesforce_feedback_data(community, touruser) : save_prospect(self.left, community)
         visited_stops_data = stop_marketing_names_visited_by_user
 
