@@ -4,7 +4,7 @@ class NotifyManagerService < BaseService
   NOTIFY_MANAGER_EMAIL_SUBJECT = "IMPORTANT- new units have been added to your self-guided tour".freeze
   NOTIFY_MANAGER_EMAIL_TEMPLATE = "Hello!
     <br>The following units have been added to Pynwheel Self Tour because their status changed to 'ready' in your property management system:
-    <ul style='list-style-type:none; padding: 0; display: flex; flex-wrap: wrap;'>%s</ul>
+    <ul>%s</ul>
     If any of these units are not ready for visitors, please make sure to change the status in your property management ASAP!
     <br>
     Thank you!
