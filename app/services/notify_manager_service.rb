@@ -7,7 +7,9 @@ class NotifyManagerService < BaseService
     <ul>%s</ul>
     If any of these units are not ready for visitors, please make sure to change the status in your property management ASAP!
     <br>
-    Thank you!".freeze
+    Thank you!
+    <br>
+    <a href='mailto:support@pynwheel.com'>support@pynwheel.com</a>".freeze
 
   def initialize(community_id)
     @community = Community.find(community_id)
@@ -15,16 +17,16 @@ class NotifyManagerService < BaseService
   end
 
   def compare_status_and_notify
-    notify_manager() if community_units_updated?
+    notify_manager(community_units_updated) if @community.self_tour? && community_units_updated.present?
   end
 
-  def notify_manager
+  def notify_manager(updated_units)
 
     available_units = @community.units.vacant_and_available
 
     if available_units.present?
-      recipients = [@community.email, @community.property_manager_email]
-      email_body = generate_email_body(available_units)
+      recipients = [@community.email, @community.property_manager_email].uniq
+      email_body = generate_email_body(available_units, updated_units)
 
       recipients.each do |recipient|
         send_notification_email(recipient, email_body)
@@ -34,21 +36,22 @@ class NotifyManagerService < BaseService
 
   private
 
-  def community_units_updated?
+  def community_units_updated
     after_updation_units = Unit.where(id: @before_updation_units.keys)
-
+    updated_units = []
     after_updation_units.each do |updated_unit|
       updated_unit_status = updated_unit.unit_status.downcase
       if UNIT_STATUSES.include?(updated_unit_status) && (updated_unit_status != @before_updation_units[updated_unit.id].downcase)
-        return true
+        updated_units.push(updated_unit.id)
       end
     end
 
-    false
+    updated_units
   end
 
-  def generate_email_body(units)
-    units_list = units.map { |unit| "<li>#{unit.marketing_name}</li>" }.join
+  def generate_email_body(units, updated_units)
+    units_list = units.map { |unit| updated_units.include?(unit.id) ? "<li><b>#{unit.marketing_name}</b></li>" : "<li>#{unit.marketing_name}</li>" }.join
+
     format(NOTIFY_MANAGER_EMAIL_TEMPLATE, units_list)
   end
 
