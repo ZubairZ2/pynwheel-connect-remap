@@ -106,4 +106,62 @@ class TourStop < ApplicationRecord
     actual_stop.y_plot
   end
 
+  def get_stop_directional_text
+    actual_stop = self.stop_type.classify.constantize.find(self.stop_id)
+    is_sitemap = actual_stop&.community&.is_sitemap
+    if actual_stop.is_a?(Unit)
+      get_stop_formatted_directional_text(actual_stop, actual_stop.stop_description)
+    elsif actual_stop.is_a?(Amenity)
+      get_stop_formatted_directional_text(actual_stop, actual_stop.directional_text)
+    elsif actual_stop.is_a?(Elevator)
+      get_stop_formatted_directional_text(actual_stop, actual_stop.directional_text)
+    elsif actual_stop.is_a? (BuildingStartingPoint)      
+      get_stop_formatted_directional_text(actual_stop, actual_stop.directional_text)
+    end
+  end
+
+  private
+
+  def get_stop_formatted_directional_text(actual_stop, stop_directional_text)
+    return stop_directional_text if stop_directional_text.present?
+      default_text = "Follow the map below"
+
+    if actual_stop&.community&.is_sitemap || actual_stop.is_a?(Elevator)
+      "#{default_text}#{actual_stop_text(actual_stop)}."
+    else
+      "#{default_text}#{stop_building_text(actual_stop)}#{actual_stop_text(actual_stop)}#{stop_floor_text(actual_stop)}."
+    end
+  end
+
+  def stop_building_text actual_stop
+    return "" unless actual_stop&.building.present?
+    " to go to Building #{actual_stop.building}"
+  end
+
+  def stop_floor_text actual_stop
+    return "" unless actual_stop&.floor.present?
+    " on the #{number_to_ordinal_form(actual_stop&.floor.to_i)} floor"
+  end
+
+  def actual_stop_text actual_stop
+    if actual_stop.is_a?(Unit)
+      " and proceed to the ##{actual_stop.marketing_name}"
+    else
+      " and proceed to the #{actual_stop.name}"
+    end
+  end
+
+  def number_to_ordinal_form(number)
+    "#{number}" + case number % 100
+                 when 11, 12, 13 then 'th'
+                 else
+                   case number % 10
+                   when 1 then 'st'
+                   when 2 then 'nd'
+                   when 3 then 'rd'
+                   else 'th'
+                   end
+                 end
+  end
+
 end
