@@ -3,7 +3,7 @@ class CancelTourMailer < ApplicationMailer
   def cancel_tour_email scheduled_tour
     return unless (scheduled_tour.present? && scheduled_tour&.tour_user.present? && scheduled_tour&.community.present?)
     return unless NotificationValidatorService.new(scheduled_tour&.community&.email, scheduled_tour&.community&.id).validate_recipient
-    return if (schedule_tour.is_virtual_tour? || (schedule_tour&.tour_user&.is_virtual_tour?)
+    return if (schedule_tour.is_virtual_tour? || schedule_tour&.tour_user&.is_virtual_tour?)
     
     @scheduled_tour = scheduled_tour
     @community = scheduled_tour.community

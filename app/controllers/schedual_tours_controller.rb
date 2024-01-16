@@ -147,6 +147,7 @@ class SchedualToursController < ApplicationController
         sent_notifications = send_email_and_other_notifications(schedual_tour, previous_tour, is_rescheduled, property_tour_type)
         redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: community.id, property_tour_type: property_tour_type, tour_type: tour_type)
       rescue Exception => e
+        binding.pry
         AccessLogsService.new().scheduler_widget_logs(community.id, params, e)
         redirect_to scheduler_widget_test_widget_path(message: sent_notifications[:web_notification], community_id: community.id, property_tour_type: property_tour_type, tour_type: tour_type)
       end
@@ -575,17 +576,17 @@ Get information about your tour here: #{confirmation_page_link}"
       emails = community_email.gsub(" ","").split(',')
       subject1 =  email_subject(is_rescheduled,property_tour_type,schedual_tour,false) 
       subject2 =  email_subject(is_rescheduled,property_tour_type,schedual_tour,true) 
-
-      ScheduledTourMailerJob.perform_async(subject1, email_content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both")
       
-      emails.each do |email|
-        ScheduledTourMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,INFO_EMAIL,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
-      end
-
       unless schedual_tour.is_virtual_tour? && tu.is_virtual_tour?
+        ScheduledTourMailerJob.perform_async(subject1, email_content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both")
+        
+        emails.each do |email|
+          ScheduledTourMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,INFO_EMAIL,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
+        end
+
         sms_notifire(sms_content, schedual_tour&.tour_user&.phone_number, tu&.email, community&.id) if (schedual_tour.tour_user.is_sms_enabled && (community.alert_contact == "phone" || community.alert_contact == "both")) rescue nil
       end
-      
+
       {email_content: email_content, web_notification: web_notification, sms_content: sms_content}
       
     end
