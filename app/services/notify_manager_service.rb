@@ -50,10 +50,19 @@ class NotifyManagerService < BaseService
   end
 
   def generate_email_body(units, updated_units)
-    units_list = units.map { |unit| updated_units.include?(unit.id) ? "<li><b>#{unit.marketing_name}</b></li>" : "<li>#{unit.marketing_name}</li>" }.join
+    sorted_units = units.sort_by { |unit| updated_units.include?(unit.id) ? 0 : 1 }
+
+    units_list = sorted_units.map do |unit|
+      if updated_units.include?(unit.id)
+        "<li><b>#{unit.marketing_name}</b></li>"
+      else
+        "<li>#{unit.marketing_name}</li>"
+      end
+    end.join
 
     format(NOTIFY_MANAGER_EMAIL_TEMPLATE, units_list)
   end
+
 
   def send_notification_email(recipient, email_body)
     NotificationMailer.notify_property_manager(
