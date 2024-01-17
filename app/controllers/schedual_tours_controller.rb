@@ -576,7 +576,7 @@ Get information about your tour here: #{confirmation_page_link}"
       subject1 =  email_subject(is_rescheduled,property_tour_type,schedual_tour,false) 
       subject2 =  email_subject(is_rescheduled,property_tour_type,schedual_tour,true) 
       
-      unless schedual_tour.is_virtual_tour? && tu.is_virtual_tour?
+      unless schedual_tour&.is_virtual_tour? && tu&.is_virtual_tour?
         ScheduledTourMailerJob.perform_async(subject1, email_content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both")
         
         emails.each do |email|

@@ -56,7 +56,7 @@ namespace :triggered_email do
         #{community.phone.present? ? community.phone : ""}
         #{community.email.present? ? community.email : ""}"
         
-        unless tour.is_virtual_tour? && tu.is_virtual_tour?
+        unless tour&.is_virtual_tour? && tu&.is_virtual_tour?
           if community.scheduler_widget
             sleep 1
 

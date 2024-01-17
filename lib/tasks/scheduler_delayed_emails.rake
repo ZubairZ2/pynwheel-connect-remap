@@ -26,7 +26,7 @@ namespace :delayed_email_notifications do
 
 	def get_follow_up_tours(schedule_tours,coming_from)
 		schedule_tours.each do |schedule_tour|
-			unless schedule_tour.is_virtual_tour? && schedule_tour&.tour_user&.is_virtual_tour?
+			unless schedule_tour&.is_virtual_tour? && schedule_tour&.tour_user&.is_virtual_tour?
 				community = schedule_tour.community
 				timezone = community.get_time_zone()
 				current_day = Time.now.in_time_zone(timezone).to_date
