@@ -105,20 +105,17 @@ class TourStop < ApplicationRecord
     actual_stop = self.stop_type.classify.constantize.find self.stop_id
     actual_stop.y_plot
   end
-
+  
   def get_stop_directional_text
     actual_stop = self.stop_type.classify.constantize.find(self.stop_id)
-    is_sitemap = actual_stop&.community&.is_sitemap
-    if actual_stop.is_a?(Unit)
-      get_stop_formatted_directional_text(actual_stop, actual_stop.stop_description)
-    elsif actual_stop.is_a?(Amenity)
-      get_stop_formatted_directional_text(actual_stop, actual_stop.directional_text)
-    elsif actual_stop.is_a?(Elevator)
-      get_stop_formatted_directional_text(actual_stop, actual_stop.directional_text)
-    elsif actual_stop.is_a? (BuildingStartingPoint)      
-      get_stop_formatted_directional_text(actual_stop, actual_stop.directional_text)
+    return unless actual_stop
+
+    case actual_stop
+    when Unit, Amenity, Elevator, BuildingStartingPoint
+      get_stop_formatted_directional_text(actual_stop, actual_stop.respond_to?(:stop_description) ? actual_stop.stop_description : actual_stop.directional_text)
     end
   end
+
 
   private
 
@@ -145,7 +142,7 @@ class TourStop < ApplicationRecord
 
   def actual_stop_text actual_stop
     if actual_stop.is_a?(Unit)
-      " and proceed to the ##{actual_stop.marketing_name}"
+      " and proceed to ##{actual_stop.marketing_name}"
     else
       " and proceed to the #{actual_stop.name}"
     end
