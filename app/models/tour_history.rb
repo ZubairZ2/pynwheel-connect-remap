@@ -17,7 +17,7 @@ class TourHistory < ApplicationRecord
     tour_type = self.tour_user.tour_type
   	verification_text = self.verified_by.present? ? "<br>They have successfully passed the ID verification process." : ""
     
-    unless tour_type&.is_virtual_tour?
+    unless self.tour_user&.is_virtual_tour?
       if community.present?
         send_email_sms_or_both(["A tour has begun", "#{self.tour_user.name.titleize} has begun a tour of #{community.name}." + verification_text] , community)
       end
