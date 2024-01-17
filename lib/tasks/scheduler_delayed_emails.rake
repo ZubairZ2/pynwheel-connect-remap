@@ -26,16 +26,14 @@ namespace :delayed_email_notifications do
 
 	def get_follow_up_tours(schedule_tours,coming_from)
 		schedule_tours.each do |schedule_tour|
-			unless schedule_tour&.is_virtual_tour? && schedule_tour&.tour_user&.is_virtual_tour?
-				community = schedule_tour.community
-				timezone = community.get_time_zone()
-				current_day = Time.now.in_time_zone(timezone).to_date
-				tour_date = schedule_tour&.tour_date if schedule_tour.tour_date.present?
-				daily_email_sent = schedule_tour.daily_email_sent
-				hourly_email_sent = schedule_tour.hourly_email_sent
-				one_hour_before_emails schedule_tour if !schedule_tour.hourly_email_sent
-				one_day_before_emails schedule_tour if coming_from == "on_day_before" and tour_date > current_day and !daily_email_sent and tour_date < (current_day + 2)
-			end
+			community = schedule_tour.community
+			timezone = community.get_time_zone()
+			current_day = Time.now.in_time_zone(timezone).to_date
+			tour_date = schedule_tour&.tour_date if schedule_tour.tour_date.present?
+			daily_email_sent = schedule_tour.daily_email_sent
+			hourly_email_sent = schedule_tour.hourly_email_sent
+			one_hour_before_emails schedule_tour if !schedule_tour.hourly_email_sent
+			one_day_before_emails schedule_tour if coming_from == "on_day_before" and tour_date > current_day and !daily_email_sent and tour_date < (current_day + 2)
 		end
 	end
 
