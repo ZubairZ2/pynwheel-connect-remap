@@ -762,7 +762,7 @@ class CommunitiesController < ApplicationController
         @tour_setting.enable_tour_customization = params[:enable_tour_customization].present? ? params[:enable_tour_customization] : false
         @tour_setting.bypass_stop_lock_access = params[:bypass_stop_lock_access]
         @tour.visual_id_verification = params[:visual_id_verification].present? ? params[:visual_id_verification] : false
-        @tour.dotted_line_color = params[:dotted_line_color].downcase if params[:dotted_line_color].present?
+        @tour.dotted_line_color = params[:dotted_line_color] if params[:dotted_line_color].present?
       end
       @tour.save
       @tour_setting.save
