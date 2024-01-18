@@ -15,7 +15,7 @@ class VideoUploader < CarrierWave::Uploader::Base
   # This is a sensible default for uploaders that are meant to be mounted:
   def filename
     # @name ||= "#{timestamp}-#{super}" if original_filename.present? and super.present?
-    @name ||= "#{timestamp}.#{file.extension}" if original_filename.present?
+    @name ||= "#{timestamp}.#{file_extension}" if original_filename.present?
 
   end
 
@@ -37,6 +37,11 @@ class VideoUploader < CarrierWave::Uploader::Base
 
   def png_name for_file, version_name
     %Q{#{version_name}_#{for_file.chomp(File.extname(for_file))}.png}
+  end
+
+  def file_extension
+    mime_type = MIME::Types[file.content_type].first
+    mime_type ? mime_type.preferred_extension : 'bin'
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:
