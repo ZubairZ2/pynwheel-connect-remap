@@ -7,7 +7,8 @@ class NotifyManagerService < BaseService
     <ul>%s</ul>
     Below is a list of all units currently available to tour:
     <ul>%s</ul>
-    If any of these units are not ready for visitors, please make sure to change the status in your property management ASAP!
+    If any of these units are not ready for visitors, please make sure to change the status in your property management ASAP! If you need assistance or have questions please email
+    <a href='mailto:support@pynwheel.com'>support@pynwheel.com</a>
     <br>
     Thank you!
     <br>
