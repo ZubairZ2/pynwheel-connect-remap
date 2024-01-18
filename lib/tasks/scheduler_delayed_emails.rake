@@ -48,7 +48,6 @@ namespace :delayed_email_notifications do
         tour_user = TourUser.find_by_id th.tour_user_id
 				community = tour&.community
 
-        unless tour_user&.is_virtual_tour?
   				if community.present? and (Time.now - th.updated_at) > 60 
 
   					@mail_content = ["abandoned_tour_at_stop", "#{tour_user.name rescue "User"} abandoned a tour of #{(community.name.titleize)} at "]
@@ -62,7 +61,8 @@ namespace :delayed_email_notifications do
   					end
 
   					touruser_remotelock_data community, th
-  					send_email_sms_or_both @mail_content, community
+  					send_email_sms_or_both(@mail_content, community) unless tour_user&.is_virtual_tour?
+
   					send_email_sms_or_both_to_touruser @thank_you_content, community, th
   					th.update_column 'abandoned_tour_email_sent', true
   					save_prospect(th.lengthy_stay, th, community) if th.lengthy_stay.present?
@@ -71,7 +71,6 @@ namespace :delayed_email_notifications do
 
   					community.save
   				end
-        end
 			end
 		end
 	end
