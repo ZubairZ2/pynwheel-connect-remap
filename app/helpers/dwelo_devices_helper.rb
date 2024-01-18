@@ -580,7 +580,7 @@ module DweloDevicesHelper
     emails = community.email.gsub(" ","").split(',')
     schedule_tour = community.schedual_tours.where(tour_user_id: tour_user.id).last rescue nil
     
-    unless tour_user.is_tour_virtual?
+    unless tour_user.is_virtual_tour?
       emails.each do |email|
         NotificationMailer.tour_history_mail("Visitor has arrived", "#{tour_user.name.titleize} has arrived at #{community.name}", email,INFO_EMAIL,community,false,schedule_tour).deliver
       end
