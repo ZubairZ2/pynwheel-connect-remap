@@ -34,14 +34,13 @@ class MapLocksJob < ApplicationJob
     elsif community.latch.present? and type == "Latch"
       clear_locks_provider(community, type)
       community.latch.latch_locks.each do |latch_lock|
-        data = parse_stop(community, latch_lock.name)
-
+        data = parse_stop(community, latch_lock.lock_name)
         if data.present?
-            data.latch_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
+            data.latch_locks.update_all(stop_id: nil, stop_type: nil)
             latch_lock.update_attributes(stop_id: data.id, stop_type: data.class.name.classify) rescue nil
             data.update_column(:lock_provider, type)
         else
-          latch_lock.update_attributes(stop_id: nil, stop_type: nil, stop_name: nil)
+          latch_lock.update_attributes(stop_id: nil, stop_type: nil)
         end
       end
 
@@ -91,6 +90,7 @@ class MapLocksJob < ApplicationJob
 
     data = community.units.where('(marketing_name = ? or provider_unit_id = ?) and (building = ? or building = ?)', unit_name, unit_name, building_name, building_name_).first rescue nil
     data = community.units.where('(marketing_name = ? or provider_unit_id = ?) and (building = ? or building = ?)', sub_location_name, sub_location_name, nil, '').first rescue nil unless data.present?
+    data = community.units.where(marketing_name: sub_location_name).first rescue nil unless data.present?
 
     data = community.doors.where(name: sub_location_name).first if data.nil?
     data = community.amenities.where(name: sub_location_name).first if data.nil?
