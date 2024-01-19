@@ -121,20 +121,22 @@ class MapLocksJob < ApplicationJob
     end
 
     def update_amenity_locks(community, data, latch_lock, type)
+      data.update_attributes(lock_provider: type, access_code: latch_lock.lock_id)
+
       return unless data.doors.present?
 
       last_door = data.doors.last
       last_door.update_columns(lock_provider: type, access_code: latch_lock.lock_id, updated_at: Time.now.utc)
-      data.update_attributes(lock_provider: type, access_code: latch_lock.lock_id)
-      assign_lock_to_door(community, last_door, latch_lock.lock_id) if latch_lock.lock_id
+      assign_lock_to_door(community, last_door, latch_lock.lock_id) if latch_lock.lock_id.present?
     end
 
     def update_non_amenity_locks(community, data, latch_lock, type)
+      data.update_attributes(lock_provider: type, access_code: latch_lock.lock_id)
+
       return unless data.door.present?
 
       data.door.update_columns(lock_provider: type, access_code: latch_lock.lock_id, updated_at: Time.now.utc)
-      data.update_attributes(lock_provider: type, access_code: latch_lock.lock_id)
-      assign_lock_to_door(community, data.door, latch_lock.lock_id) if latch_lock.lock_id
+      assign_lock_to_door(community, data.door, latch_lock.lock_id) if latch_lock.lock_id.present?
     end
 
 end
