@@ -36,7 +36,7 @@ class MapLocksJob < ApplicationJob
       clear_locks_provider(community, type)
       community.latch.latch_locks.each do |latch_lock|
         data = parse_stop(community, latch_lock.lock_name)
-        update_locks(community, data, latch_lock, type) if data.present?
+        auto_map_latch_locks(community, data, latch_lock, type) if data.present?
       end
 
     elsif community.dwelo.present? and type == "Dwelo"
@@ -109,34 +109,32 @@ class MapLocksJob < ApplicationJob
 
   private
 
-    def update_locks(community, data, latch_lock, type)
-      data.latch_locks.update_all(stop_id: nil, stop_type: nil)
-      latch_lock.update_attributes(stop_id: data.id, stop_type: data.class.name.classify) rescue nil
+    def auto_map_latch_locks(community, data, latch_lock, type)
+      lock_attributes = { lock_provider: type, access_code: latch_lock.lock_id, updated_at: Time.now.utc }
 
       if data.class.name.classify.downcase == "amenity"
-        update_amenity_locks(community, data, latch_lock, type)
+        if data.doors.present?
+          update_door_lock(data.doors.last, lock_attributes, community, latch_lock.lock_id)
+        else
+          update_stop_lock(data, lock_attributes, community, latch_lock.lock_id)
+        end
       else
-        update_non_amenity_locks(community, data, latch_lock, type)
+        if data.door.present?
+          update_door_lock(data.door, lock_attributes, community, latch_lock.lock_id)
+        else
+          update_stop_lock(data, lock_attributes, community, latch_lock.lock_id)
+        end
       end
     end
 
-    def update_amenity_locks(community, data, latch_lock, type)
-      data.update_attributes(lock_provider: type, access_code: latch_lock.lock_id)
-
-      return unless data.doors.present?
-
-      last_door = data.doors.last
-      last_door.update_columns(lock_provider: type, access_code: latch_lock.lock_id, updated_at: Time.now.utc)
-      assign_lock_to_door(community, last_door, latch_lock.lock_id) if latch_lock.lock_id.present?
+    def update_door_lock(door, lock_attributes, community, lock_id)
+      door.update_columns(lock_attributes)
+      assign_lock_to_door(community, door, lock_id) if lock_id.present?
     end
 
-    def update_non_amenity_locks(community, data, latch_lock, type)
-      data.update_attributes(lock_provider: type, access_code: latch_lock.lock_id)
-
-      return unless data.door.present?
-
-      data.door.update_columns(lock_provider: type, access_code: latch_lock.lock_id, updated_at: Time.now.utc)
-      assign_lock_to_door(community, data.door, latch_lock.lock_id) if latch_lock.lock_id.present?
+    def update_stop_lock(stop, lock_attributes, community, lock_id)
+      stop.update_columns(lock_attributes)
+      assign_lock(community, stop, lock_id) if lock_id.present?
     end
 
 end
