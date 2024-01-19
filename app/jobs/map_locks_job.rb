@@ -1,5 +1,6 @@
 class MapLocksJob < ApplicationJob
   include SuckerPunch::Job
+  include AssignLocksHelper
 
   def perform(community, type)
     if community.zerv.present? and type == "Zerv"
@@ -35,13 +36,7 @@ class MapLocksJob < ApplicationJob
       clear_locks_provider(community, type)
       community.latch.latch_locks.each do |latch_lock|
         data = parse_stop(community, latch_lock.lock_name)
-        if data.present?
-            data.latch_locks.update_all(stop_id: nil, stop_type: nil)
-            latch_lock.update_attributes(stop_id: data.id, stop_type: data.class.name.classify) rescue nil
-            data.update_column(:lock_provider, type)
-        else
-          latch_lock.update_attributes(stop_id: nil, stop_type: nil)
-        end
+        update_locks(community, data, latch_lock, type) if data.present?
       end
 
     elsif community.dwelo.present? and type == "Dwelo"
@@ -111,5 +106,35 @@ class MapLocksJob < ApplicationJob
 
     return data
   end
+
+  private
+
+    def update_locks(community, data, latch_lock, type)
+      data.latch_locks.update_all(stop_id: nil, stop_type: nil)
+      latch_lock.update_attributes(stop_id: data.id, stop_type: data.class.name.classify) rescue nil
+
+      if data.class.name.classify.downcase == "amenity"
+        update_amenity_locks(community, data, latch_lock, type)
+      else
+        update_non_amenity_locks(community, data, latch_lock, type)
+      end
+    end
+
+    def update_amenity_locks(community, data, latch_lock, type)
+      return unless data.doors.present?
+
+      last_door = data.doors.last
+      last_door.update_columns(lock_provider: type, access_code: latch_lock.lock_id, updated_at: Time.now.utc)
+      data.update_attributes(lock_provider: type, access_code: latch_lock.lock_id)
+      assign_lock_to_door(community, last_door, latch_lock.lock_id) if latch_lock.lock_id
+    end
+
+    def update_non_amenity_locks(community, data, latch_lock, type)
+      return unless data.door.present?
+
+      data.door.update_columns(lock_provider: type, access_code: latch_lock.lock_id, updated_at: Time.now.utc)
+      data.update_attributes(lock_provider: type, access_code: latch_lock.lock_id)
+      assign_lock_to_door(community, data.door, latch_lock.lock_id) if latch_lock.lock_id
+    end
 
 end
