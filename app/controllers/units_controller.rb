@@ -4,7 +4,7 @@ class UnitsController < ApplicationController
   add_breadcrumb "Home", :root_path
   before_action :set_community
   before_action :check_community
-  before_action :set_unit, only: [:edit,:update,:destroy,:remove_pri_scnd_image]
+  before_action :set_unit, only: [:edit,:update,:destroy,:remove_pri_scnd_image, :update_lock_provider]
   before_action :load_all_locks, only: [:new, :create, :edit, :update]
 
   def index
@@ -45,6 +45,13 @@ class UnitsController < ApplicationController
   def show_unit_secondary_image_in_modal
     @community = Community.find params[:community_id]
     @unit = Unit.find params[:id]
+  end
+
+  def update_lock_provider
+    update_locks()
+    
+    flash[:notice] = "Lock added successfully!"
+    redirect_to community_units_path(:community_id => @community.id)
   end
 
   def crop_unit_secondary_image

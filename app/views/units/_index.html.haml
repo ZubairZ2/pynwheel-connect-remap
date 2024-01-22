@@ -106,6 +106,10 @@
                     %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "unitGridAvailablePopover","data-content" => " "}
                       %span#propertyDetailNameText
                         Changing Available to "No" will exclude this unit from appearing as available in the app, regardless of the date that is set.
+                  
+                  %th
+                    Lock Provider
+                    
                   %th
                     Sold
                     %i.unit_sold.fa.fa-question-circle{ "data-toggle" => "unitGridSoldPopover","data-content" => " "}
@@ -134,9 +138,9 @@
 
                 - @community_info.units.map{|i| i.marketing_name = '' if i.marketing_name.nil? }
                 - units = @community_info.units.map {|i| i.marketing_name.gsub(/\d+/) {|s| "%08d" % s.to_i } }.zip(@community_info.units).sort.map{|x,y| y}
-                - units_arr = units.map{|x| x.marketing_name}
-                - counts = Hash.new(0)
-                - units_arr.each { |name| counts[name] += 1 }
+                / - units_arr = units.map{|x| x.marketing_name}
+                / - counts = Hash.new(0)
+                / - units_arr.each { |name| counts[name] += 1 }
                 -#- byebug
                 - units.each_with_index  do |u,index|
                   - floorplan = @community_info.floorplans.select{|f| f.provider_floorplan_id == u.floorplan_id}.first
@@ -152,12 +156,21 @@
                       %td= best_in_place u, :marketing_name, :url => community_unit_path(@community,u),:display_as => :unit_market, :data => {:number => u.marketing_name },:style => u.name_is_updated? ? "color: #dd4a39;" : ""
                     
                     %td= best_in_place u, :floorplan_id, :as => :select, :collection => @community_info.floorplans.collect{|f| [f.provider_floorplan_id,f.name]}, :url => community_unit_path(@community,u), :data => {:floorplan_id => floorplan.present? ? floorplan.id : nil },:style => u.floorplan_id_is_updated? ? "color: #dd4a39;" : ""
+
                     %td= best_in_place u, :effective_rent, :as => :input, :url => community_unit_path(@community,u),:display_as => :show_integer_rent, :data => {:rent => u.effective_rent },:style => u.effective_rent_is_updated? ? "color: #dd4a39;" : ""
+
                     %td= best_in_place u, :available_date,:as => :date, :url => community_unit_path(@community,u), :place_holder => (u.sold  ? "Never Available" : "-"), :data => {:available_date => u.available_date },:style => u.available_date_is_updated? ? "color: #dd4a39;" : ""
+
                     -#%td{:id=>"best_in_place_unit_#{u.id}_manually_updated"}= u.manually_updated ? "Yes" : "No"
                     %td= best_in_place u, :available, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:available => u.available },:style => u.available_is_updated? ? "color: #dd4a39;" : ""
+                    
+                    %td
+                      = render :partial=>'attached_lock',:locals=>{:u=>u, :community=>@community}
+                       
+
                     %td= best_in_place u, :sold, :as => :checkbox, collection: {false: "No", true: "Yes"}, :url => community_unit_path(@community,u), :data => {:sold => u.sold },:style => u.sold_is_updated? ? "color: #dd4a39;" : ""
                     -#%td= best_in_place u, :square_feet, :as => :input, :url => community_unit_path(@community,u), :data => {:square_feet => u.square_feet }
+
                     - unless @community.is_sitemap
                       %td= best_in_place u, :floor, :url => community_unit_path(@community,u), :data => {:floor => u.floor },:style => u.floor_is_updated? ? "color: #dd4a39;" : ""
                     -#%td= raw(u.description)
@@ -406,7 +419,7 @@
       $('#miyazaki.unit_data_table').DataTable({
           'aoColumnDefs': [{
               'bSortable': false,
-              'aTargets': [8,10],
+              'aTargets': [9,11],
           }],
           "ordering": true,
           "stateSave": true,
@@ -417,7 +430,7 @@
       $('#miyazaki.unit_data_table').DataTable({
           'aoColumnDefs': [{
               'bSortable': false,
-              'aTargets': [9,11],
+              'aTargets': [10,12],
           }],
           "ordering": true,
           "stateSave": true,
