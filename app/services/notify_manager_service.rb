@@ -5,7 +5,10 @@ class NotifyManagerService < BaseService
   NOTIFY_MANAGER_EMAIL_TEMPLATE = "Hello!
     <br>The following units have been added to Pynwheel Self Tour because their status changed to 'ready' in your property management system:
     <ul>%s</ul>
-    If any of these units are not ready for visitors, please make sure to change the status in your property management ASAP!
+    Below is a list of all units currently available to tour:
+    <ul>%s</ul>
+    If any of these units are not ready for visitors, please make sure to change the status in your property management ASAP! If you need assistance or have questions please email
+    <a href='mailto:support@pynwheel.com'>support@pynwheel.com</a>
     <br>
     Thank you!
     <br>
@@ -52,18 +55,17 @@ class NotifyManagerService < BaseService
   end
 
   def generate_email_body(units, updated_units)
-    sorted_units = units.sort_by { |unit| updated_units.include?(unit.id) ? 0 : 1 }
+    new_units_list = []
+    all_units_list = []
 
-    units_list = sorted_units.map do |unit|
-      if updated_units.include?(unit.id)
-        "<li><b>#{unit.marketing_name}</b></li>"
-      else
-        "<li>#{unit.marketing_name}</li>"
-      end
-    end.join
+    units.sort_by { |unit| updated_units.include?(unit.id) ? 0 : 1 }.each do |unit|
+      all_units_list << "<li>#{unit.marketing_name}</li>"
+      new_units_list << "<li><b>#{unit.marketing_name}</b></li>" if updated_units.include?(unit.id)
+    end
 
-    format(NOTIFY_MANAGER_EMAIL_TEMPLATE, units_list)
+    format(NOTIFY_MANAGER_EMAIL_TEMPLATE, new_units_list.join, all_units_list.join)
   end
+
 
 
   def send_notification_email(recipient, email_body)
