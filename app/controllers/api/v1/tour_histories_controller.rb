@@ -199,8 +199,11 @@ module Api
     
           emails = community.email.gsub(" ","").split(',')
           schedule_tour = community.schedual_tours.where(tour_user_id: tu.id).last rescue nil
-          emails.each do |email|
-            NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email,"info@pynwheel.com",community,false,schedule_tour).deliver
+          
+          unless tu.is_virtual_tour?
+            emails.each do |email|
+              NotificationMailer.tour_history_mail(@mail_content[0].humanize, @mail_content[1], email,"info@pynwheel.com",community,false,schedule_tour).deliver
+            end
           end
     
         end
@@ -211,9 +214,11 @@ module Api
           emails = community.email.gsub(" ","").split(',')
           schedule_tour = community.schedual_tours.where(tour_user_id: tu.id).last rescue nil
           
-          emails.each do |email|
-            NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.titleize}  has left #{community.name}", email,"info@pynwheel.com",community,false,schedule_tour).deliver
-            tu.update_column 'arrival_email_sent' , false 
+          unless tu.is_virtual_tour?
+            emails.each do |email|
+              NotificationMailer.tour_history_mail("Visitor has departed", "#{tu.name.titleize}  has left #{community.name}", email,"info@pynwheel.com",community,false,schedule_tour).deliver
+              tu.update_column 'arrival_email_sent' , false 
+            end
           end
     
         end

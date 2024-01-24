@@ -16,6 +16,7 @@ class TourHistory < ApplicationRecord
     community = (Tour.find_by_id self.tour_id).community if self.tour_id.present?
     tour_type = self.tour_user.tour_type
   	verification_text = self.verified_by.present? ? "<br>They have successfully passed the ID verification process." : ""
+    email_subject = self&.tour_user&.is_virtual_tour? ? "A virtual tour has begun" : "A tour has begun"
     if community.present?
       send_email_sms_or_both(["A tour has begun", "#{self.tour_user.name.titleize} has begun a tour of #{community.name}." + verification_text] , community)
     end
@@ -31,7 +32,7 @@ class TourHistory < ApplicationRecord
         @mail_content = ["lengthy_stay", "Visitor is on site for more than one hour.", "lengthy_stay", "#{self.tour_user.name.titleize} has been on a Self Tour at #{community.name.gsub("(", "( ").split.map(&:capitalize).join(' ')} for more than"] #get_alert_message('lengthy_stay')
         @mail_content[1] = "#{@mail_content.last} #{plural(time_difference, 'minute')}"
         self.update_attributes(lengthy_stay_email_sent: true)
-        send_email_sms_or_both(@mail_content, community)
+        send_email_sms_or_both(@mail_content, community) unless touruser.is_virtual_tour?
       end
 
       if self.left.present? and !self.is_left
@@ -65,10 +66,14 @@ class TourHistory < ApplicationRecord
         end
         
         tour_user_remotelock_data(community)
-        send_email_sms_or_both(@mail_content, community)
-        send_email_sms_or_both(@complete_tour_content, community)
-        send_email_sms_or_both_to_touruser(@thank_you_content, community)
 
+        unless touruser.is_virtual_tour?
+          send_email_sms_or_both(@mail_content, community)
+          send_email_sms_or_both(@complete_tour_content, community)
+        end
+        
+        send_email_sms_or_both_to_touruser(@thank_you_content, community)
+        
         community.is_salesforce_community? ? save_salesforce_feedback_data(community, touruser) : save_prospect(self.left, community)
         visited_stops_data = stop_marketing_names_visited_by_user
 

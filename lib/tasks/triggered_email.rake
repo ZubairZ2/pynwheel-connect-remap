@@ -32,9 +32,11 @@ namespace :triggered_email do
         tour.update_column 'missed_email_sent', true
         emails = community.email.split(',')
 
-        emails.each do |email|
-          ScheduledTourMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,nil,false,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
-        end     
+        unless tu.is_virtual_tour?
+          emails.each do |email|
+            ScheduledTourMailerJob.perform_async("Missed a scheduled tour!", email_msg, email,community,nil,nil,nil,nil,false,schedule_tour) if community.crm_credential.crm_provider != "salesforce"
+          end
+        end  
 
         community_code = get_community_code community
         

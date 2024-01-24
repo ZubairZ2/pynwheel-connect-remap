@@ -575,14 +575,16 @@ Get information about your tour here: #{confirmation_page_link}"
       emails = community_email.gsub(" ","").split(',')
       subject1 =  email_subject(is_rescheduled,property_tour_type,schedual_tour,false) 
       subject2 =  email_subject(is_rescheduled,property_tour_type,schedual_tour,true) 
-
+      
       ScheduledTourMailerJob.perform_async(subject1, email_content, tu.email,community,nil,nil,nil,emails[0],true,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both")
       
-      emails.each do |email|
-        ScheduledTourMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,INFO_EMAIL,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
+      unless tu.is_virtual_tour?
+        emails.each do |email|
+          ScheduledTourMailerJob.perform_async(subject2,community_mail,email,community,nil,nil,nil,INFO_EMAIL,false,schedual_tour)if (community.alert_contact == "email" || community.alert_contact == "both" || community.alert_contact == "phone")
+        end
       end
 
-      sms_notifire(sms_content, schedual_tour&.tour_user&.phone_number, tu&.email, community&.id) if (schedual_tour.tour_user.is_sms_enabled && (community.alert_contact == "phone" || community.alert_contact == "both")) rescue nil
+        sms_notifire(sms_content, schedual_tour&.tour_user&.phone_number, tu&.email, community&.id) if (schedual_tour.tour_user.is_sms_enabled && (community.alert_contact == "phone" || community.alert_contact == "both")) rescue nil
 
       {email_content: email_content, web_notification: web_notification, sms_content: sms_content}
       
