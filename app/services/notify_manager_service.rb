@@ -24,7 +24,7 @@ class NotifyManagerService < BaseService
 
     available_units = @community.units.vacant_and_available
 
-    if available_units.present?
+    if updated_units.present? && available_units.present?
       recipients = [@community.email, @community.property_manager_email].uniq
       email_body = generate_email_body(available_units, updated_units)
 
@@ -37,7 +37,7 @@ class NotifyManagerService < BaseService
   private
 
   def community_units_updated
-    after_updation_units = Unit.where(id: @before_updation_units.keys)
+    after_updation_units = Unit.where(id: @before_updation_units.keys).available_units
     updated_units = []
     after_updation_units.each do |updated_unit|
       updated_unit_status = updated_unit.unit_status.downcase
