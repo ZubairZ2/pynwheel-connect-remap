@@ -22,6 +22,7 @@ module Api
             should_range_be_checked = true
             @tour_user.tour_type = "virtual_tour"                                           # initilize by virtual tour
             @location_received = false
+            @is_tour_completed = false
 
             if params[:latitude].present? and params[:latitude].present?
               @tour_user.latitude = params[:latitude]
@@ -38,6 +39,7 @@ module Api
             if @in_visiting_hours = is_tour_in_visiting_hours(current_time, @community)
               unless @is_salesforce_crm
                 @scheduled_data = nearest_time_tour(@community, @tour_user, current_time)
+                @is_tour_completed = @scheduled_data.on_time_tour.is_tour_completed rescue false
 
                 if @community.community_tour.only_scheduled_tour
                   if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
@@ -55,6 +57,8 @@ module Api
                 @tour_session_type = "scheduled" if (@scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?)
               else
                 @scheduled_data = sf_nearest_time_tour(@community, @tour_user, current_time, timezone)
+                @is_tour_completed = @scheduled_data.on_time_tour.is_tour_completed rescue false
+
                 if @scheduled_data.tours_exist and @scheduled_data.on_time_tour.present?
                   if @location_received and @within_one_km
                     # @tour_user.tour_type = @scheduled_data.on_time_tour.tour_type   ----   # whatever responded in API resonpse
