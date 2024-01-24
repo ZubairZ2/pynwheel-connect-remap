@@ -347,7 +347,8 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
                   Dotted line color
                 .col-sm-12.col-lg-6.col-md-6.col-xs-12
-                  = select_tag :dotted_line_color , options_for_select([ "Green", "White","Black" ], @community.community_tour.dotted_line_color.humanize),:class => "form-control"
+                  = select_tag :dotted_line_color, options_for_select(Tour::DOTTED_LINE_COLORS.map { |name, code| [name, code] }, @community.community_tour.dotted_line_color), class: "form-control"
+
 
             
             .box-footer  
@@ -801,7 +802,7 @@
                       .input-group.colorpicker-style.hex-format-colorpicker
                         .input-group-addon
                           %i
-                          = text_field_tag :email_footer_color,"" , class: "form-control email_footer_color-field",autocomplete: true,:value=>@community.community_tour.tour_setting.email_footer_color          
+                          = text_field_tag :email_footer_color,"" , class: "form-control email_footer_color-field",autocomplete: true,:value=>@community.community_tour.tour_setting.email_footer_color        
                 - if !@community.is_salesforce_community? && (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
                     .form-group

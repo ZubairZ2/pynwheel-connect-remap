@@ -39,6 +39,8 @@ class Tour < ApplicationRecord
   
   after_create :define_opening_hours
 
+  DOTTED_LINE_COLORS = {"Blue" => "#008FD5", "Green" => "#89C765", "Yellow" => "#FFD400", "Pink" => "#F05A8E", "Purple" => "#8F499C", "Orange" => "#F26539"}
+
   def as_json options = {}
     super(
       :only => [:id, :name, :max_self_tour_users],
