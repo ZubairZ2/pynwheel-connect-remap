@@ -43,9 +43,11 @@ class NotifyManagerService < BaseService
     after_updation_units = Unit.where(id: @before_updation_units.keys).available_units
     updated_units = []
     after_updation_units.each do |updated_unit|
-      updated_unit_status = updated_unit.unit_status.downcase
-      if UNIT_STATUSES.include?(updated_unit_status) && (updated_unit_status != @before_updation_units[updated_unit.id].downcase)
-        updated_units.push(updated_unit.id)
+      if updated_unit.available_date.present? && updated_unit.available_date <= Date.today
+        updated_unit_status = updated_unit.unit_status.downcase
+        if UNIT_STATUSES.include?(updated_unit_status) && (updated_unit_status != @before_updation_units[updated_unit.id].downcase)
+          updated_units.push(updated_unit.id)
+        end
       end
     end
 
