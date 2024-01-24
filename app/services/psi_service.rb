@@ -20,7 +20,7 @@ class PsiService < BaseService
     rescue => ex
       raise ex
     end
-
+    before_updation_units = NotifyManagerService.new(@credentials.community_id)
     property_ids = @credentials.property_id.split(',') rescue []
 
     property_ids.each do |property_id|
@@ -146,6 +146,7 @@ class PsiService < BaseService
     end
 
     fill_psi_pricing_details()
+    before_updation_units.compare_status_and_notify()
   end
 
   def save_psi_units(units,property_id)

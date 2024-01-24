@@ -12,9 +12,11 @@ class RealPageSvcService < BaseService
   end
 
   def perform
+    before_updation_units = NotifyManagerService.new(@credentials.community_id)
     import_realpage_svc_floorplans
     # import_initials_realpage_units
     import_realpage_svc_units
+    before_updation_units.compare_status_and_notify()
   end
 
   def import_realpage_svc_floorplans
