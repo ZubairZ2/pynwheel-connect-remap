@@ -143,6 +143,8 @@ class TourStop < ApplicationRecord
   def actual_stop_text actual_stop
     if actual_stop.is_a?(Unit)
       " and proceed to ##{actual_stop.marketing_name}"
+    elsif actual_stop.is_a?(Elevator)
+      " and proceed to #{actual_stop.name}"
     else
       " and proceed to the #{actual_stop.name}"
     end
