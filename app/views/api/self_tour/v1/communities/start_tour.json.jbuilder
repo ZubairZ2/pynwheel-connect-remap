@@ -1057,10 +1057,11 @@ json.tours @tours do |tour|
       json.provider unit.provider
 
       unit_directional_text = ActionView::Base.full_sanitizer.sanitize(unit.stop_description.present? ? unit.stop_description : "")
-      show_directional_text = unit_directional_text.size <= description_limit ? false : true
-      json.directional_text show_directional_text ? unit_directional_text[0..description_limit - 1] : stop.get_stop_directional_text()
-      json.show_long_directional_text show_directional_text
-      json.long_directional_text styling_start + unit.stop_description.gsub('red','') + styling_end rescue ""     
+      show_long_directional_text = unit_directional_text.size <= description_limit ? false : true
+
+      json.directional_text show_long_directional_text ? unit_directional_text[0..description_limit - 1] : stop.get_stop_directional_text(unit_directional_text)
+      json.show_long_directional_text show_long_directional_text
+      json.long_directional_text styling_start + unit.stop_description.gsub('red','') + styling_end rescue ""
 
       json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit&.floorplan&.virtual_tour_button_label
       json.video_link unit.virtual_tour_url.present? ? unit.virtual_tour_url : ( unit&.floorplan.present? && unit&.floorplan&.virtual_tour_url.present? ) ? unit&.floorplan&.virtual_tour_url : ""
@@ -1236,7 +1237,7 @@ json.tours @tours do |tour|
       bsp = BuildingStartingPoint.find_by_id stop.stop_id
       json.type "starting_point"
       json.name bsp&.name
-      json.directional_text stop.get_stop_directional_text()
+      json.directional_text stop.get_stop_directional_text(bsp&.directional_text)
       floorplate_image = @community.floorplates.map{|x| x if (x.floors.include? bsp&.floor)}.compact.first rescue nil
       json.floorplate_image floorplate_image&.image&.url  rescue ""
       json.image_width @community.property_map_width(floorplate_image)
@@ -1249,9 +1250,11 @@ json.tours @tours do |tour|
       json.name elevator.name
       
       elevator_directional_text = ActionView::Base.full_sanitizer.sanitize(elevator.directional_text.present? ? elevator.directional_text : "")
-      show_directional_text = elevator_directional_text.size <= description_limit ? false : true
-      json.directional_text show_directional_text ? elevator_directional_text[0..description_limit - 1] : stop.get_stop_directional_text()
+      show_long_directional_text = elevator_directional_text.size <= description_limit ? false : true
+      
+      json.directional_text show_long_directional_text ? elevator_directional_text[0..description_limit - 1] : stop.get_stop_directional_text(elevator_directional_text)
       json.long_directional_text styling_start + (elevator.directional_text.present? ? elevator&.directional_text&.gsub('red','') : "" ) + styling_end
+      json.show_long_directional_text show_long_directional_text
 
       json.video_link_button_label ""
       json.video_link ""
@@ -1369,12 +1372,12 @@ json.tours @tours do |tour|
       json.long_stop_description styling_start + amenity.description.gsub('red','') + styling_end  rescue ""
       current_floor = amenity.floor
       json.name amenity.name
-      directional_text = ActionView::Base.full_sanitizer.sanitize(amenity.directional_text.present? ? amenity.directional_text : "")
 
-      show_directional_text = directional_text.size <= description_limit ? false : true
+      amenity_directional_text = ActionView::Base.full_sanitizer.sanitize(amenity.directional_text.present? ? amenity.directional_text : "")
+      show_long_directional_text = amenity_directional_text.size <= description_limit ? false : true
 
-      json.directional_text show_directional_text ? directional_text[0..description_limit - 1] : stop.get_stop_directional_text()
-
+      json.directional_text show_long_directional_text ? amenity_directional_text[0..description_limit - 1] : stop.get_stop_directional_text(amenity_directional_text)
+      json.show_long_directional_text show_long_directional_text
       json.long_directional_text styling_start + amenity.directional_text.gsub('red','') + styling_end  rescue ""
 
       json.video_link_button_label amenity.video_link_button_label

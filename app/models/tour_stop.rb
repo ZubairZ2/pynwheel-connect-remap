@@ -106,7 +106,9 @@ class TourStop < ApplicationRecord
     actual_stop.y_plot
   end
   
-  def get_stop_directional_text
+  def get_stop_directional_text directional_text
+    return directional_text if directional_text.present?
+
     actual_stop = self.stop_type.classify.constantize.find(self.stop_id)
     return unless actual_stop
 
