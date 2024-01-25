@@ -20,7 +20,7 @@ class NotifyManagerService < BaseService
   end
 
   def compare_status_and_notify
-    notify_manager(community_units_updated) if @community.self_tour? && community_units_updated.present?
+    notify_manager(community_units_updated) if is_authorized
   end
 
   def notify_manager(updated_units)
@@ -78,4 +78,9 @@ class NotifyManagerService < BaseService
       false
     ).deliver
   end
+
+  def is_authorized
+    @community.self_tour? && @community.community_tour.tour_setting.enable_tour_customization && community_units_updated.present? rescue false
+  end
+
 end
