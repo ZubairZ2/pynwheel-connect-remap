@@ -71,6 +71,18 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     end
   end
 
+  def send_latch_initation_email
+    begin
+      
+      LatchInvitationMailer.send_latch_integration_invite_mail(params[:to_email], params[:from_email], params[:subject], params[:body]).deliver
+      
+      render json: { success: true, message: "Latch invitation email sent successfully!" }
+      
+    rescue => error
+      render json: { success: false, message: error.message }
+    end
+  end
+
   def delete_latch_file
     lock = Latch.find_by_id(params["id"])
     if lock.present?
