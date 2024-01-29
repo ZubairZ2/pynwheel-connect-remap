@@ -210,6 +210,8 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
         is_integration_submitted:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["1"]["checked"]),
         is_mission_control_setup:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["2"]["checked"])
       )
+      @locks_provider << LATCH
+
     else
       @community.latch.update(
         latch_property_name: lock['latch_property_name'], 
@@ -223,6 +225,8 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   def igloo_home_lock(lock)
     unless @community.igloohome.present?
       @community.create_igloohome(email: lock['email'], file: lock["file"])
+      @locks_provider << IGLOOHOME
+
     else
       if lock["file"].present?
         @community.igloohome.update_attributes(email: lock['email'], file: lock["file"])
@@ -235,8 +239,9 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   def zerv_lock(lock)
     unless @community.zerv.present?
       @community.create_zerv(facility_id: lock['facility_id'], badge_id: lock['badge_id'], card_format: lock['card_format'], username: lock['username'], password: lock["password"])
+      @locks_provider << ZERVCLIENT
     else
-    @community.zerv.update(facility_id: lock['facility_id'], badge_id: lock['badge_id'], card_format: lock['card_format'], username: lock['username'], password: lock["password"])
+      @community.zerv.update(facility_id: lock['facility_id'], badge_id: lock['badge_id'], card_format: lock['card_format'], username: lock['username'], password: lock["password"])
     end
   end
 
