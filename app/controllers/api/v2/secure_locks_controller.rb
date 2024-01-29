@@ -204,9 +204,19 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
 
   def latch_lock(lock)
     unless @community.latch.present?
-      @community.create_latch(latch_property_name: lock['latch_property_name'])
+      @community.create_latch(
+        latch_property_name: lock['latch_property_name'], 
+        is_building_name_added:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["0"]["checked"]),
+        is_integration_submitted:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["1"]["checked"]),
+        is_mission_control_setup:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["2"]["checked"])
+      )
     else
-      @community.latch.update(latch_property_name: lock['latch_property_name'])
+      @community.latch.update(
+        latch_property_name: lock['latch_property_name'], 
+        is_building_name_added:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["0"]["checked"]),
+        is_integration_submitted:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["1"]["checked"]),
+        is_mission_control_setup:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["2"]["checked"])
+      )
     end
   end
 

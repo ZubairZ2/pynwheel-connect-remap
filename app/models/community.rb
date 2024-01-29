@@ -666,7 +666,7 @@ class Community < ApplicationRecord
     latch = self.latch
 
     unless status.present?
-      status_attr = status_string(latch.latch_property_name.present?)
+      status_attr = status_string(latch.latch_property_name.present? && latch.is_building_name_added && latch.is_integration_submitted && latch.is_mission_control_setup)
     else
       status_attr = status
     end
