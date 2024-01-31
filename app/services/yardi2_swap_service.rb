@@ -53,9 +53,11 @@ class Yardi2SwapService < BaseService
     ils_units[0].lazy.each do |unit_entries|
       begin
         unit = Unit.where(community_id: credentials.community_id, property_id: property_id, marketing_name: unit_entries[0][:Id])
+        unit = Unit.where(community_id: credentials.community_id, marketing_name: unit_entries[0][:Id]) unless unit.present?
 
         if unit.count > 1
-          unit = Unit.where(community_id: credentials.community_id, property_id: property_id, marketing_name: unit_entries[0][:Id],floorplan_id: Floorplan.find_by(name: unit_entries[1][:Unit][:"MITS:Information"][:"MITS:FloorplanName"]).provider_floorplan_id)
+          unit = Unit.where(community_id: credentials.community_id, property_id: property_id, marketing_name: unit_entries[0][:Id], floorplan_id: Floorplan.find_by(name: unit_entries[1][:Unit][:"MITS:Information"][:"MITS:FloorplanName"]).provider_floorplan_id)
+          unit = Unit.where(community_id: credentials.community_id, marketing_name: unit_entries[0][:Id], floorplan_id: Floorplan.find_by(name: unit_entries[1][:Unit][:"MITS:Information"][:"MITS:FloorplanName"]).provider_floorplan_id) unless unit.present?
         end
 
         if unit.present?
@@ -175,10 +177,12 @@ class Yardi2SwapService < BaseService
       begin
 
 
-        fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[1][:Name])
+        fp = Floorplan.where(community_id: credentials.community_id, name: floorplan[1][:Name])
+
         if fp.count > 1
-          fp = Floorplan.where(community_id: credentials.community_id,name: floorplan[1][:Name],bedrooms: floorplan[3][:Room][1][:Count],bathrooms: floorplan[4][:Room][1][:Count],square_feet: floorplan[5][:SquareFeet][0][:Min])
+          fp = Floorplan.where(community_id: credentials.community_id, name: floorplan[1][:Name],bedrooms: floorplan[3][:Room][1][:Count], bathrooms: floorplan[4][:Room][1][:Count], square_feet: floorplan[5][:SquareFeet][0][:Min])
         end
+
         if fp.present?
           fp = fp.first
           rooms = []
