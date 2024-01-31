@@ -135,6 +135,7 @@ class Yardi4Service < BaseService
       if unit.present?
         unit.property_id = property_id
         unit.market_rent = u[:Units][:Unit][:MarketRent]
+        unit.unit_type = u[:Units][:Unit][:UnitType]
 
         unless unit.effective_rent_is_updated.present? && unit.effective_rent_is_updated && unit.manual_override
           unit.effective_rent = u[:Units][:Unit][:MarketRent]
@@ -244,7 +245,7 @@ class Yardi4Service < BaseService
         unit = Unit.where(provider: "yardi", community_id: @credentials.community_id, property_id: property_id, provider_unit_id: provider_unit_id).first_or_initialize
         unless unit.manual_override
           unit.property_id = property_id
-          unit.unit_type = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])
+          unit.unit_type = u[:Units][:Unit][:UnitType]
           
           unless unit.name_is_updated.present? && unit.name_is_updated  && unit.manual_override
             unit.marketing_name = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])

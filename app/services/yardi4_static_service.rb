@@ -111,7 +111,8 @@ class Yardi4StaticService < BaseService
       unless unit.manual_override
         unit.property_id = property_id
         #unit.provider_unit_id = u["Units"]["Unit"]["Identification"]["IDValue"]
-        unit.unit_type = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])
+        unit.unit_type = u[:Units][:Unit][:UnitType]
+
         unless unit.name_is_updated.present? && unit.name_is_updated  && unit.manual_override
           unit.marketing_name = (u[:Units][:Unit][:Identification][0][:IDValue] rescue u[:Units][:Unit][:Identification][0][0][:IDValue])
         end

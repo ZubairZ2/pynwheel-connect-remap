@@ -53,14 +53,16 @@ class Yardi2SwapService < BaseService
   def save_yardi2_units(ils_units, property_id)
     ils_units[0].lazy.each do |unit_entries|
       begin
+
         unit = Unit.where(community_id: credentials.community_id, marketing_name: unit_entries[0][:Id], floorplan_id: Floorplan.find_by(name: unit_entries[1][:Unit][:"MITS:Information"][:"MITS:FloorplanName"]).provider_floorplan_id) unless unit.present?
+        unit = Unit.where(community_id: credentials.community_id, marketing_name: unit_entries[0][:Id], unit_type: unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitType"]) unless unit.present?
 
         if unit.present?
           unit = unit.first
           unit.provider = "yardi_new"
           unit.provider_unit_id = "#{unit_entries[0][:Id]}-#{property_id}"
           unit.property_id = property_id
-          unit.unit_type = unit_entries[0][:Id]
+          unit.unit_type = unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitType"]
           unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
           is_available = false
           vacate_date = ""
@@ -116,7 +118,7 @@ class Yardi2SwapService < BaseService
           unit.provider = "yardi_new"
           unit.provider_unit_id = provider_unit_id
           unit.property_id = property_id
-          unit.unit_type = unit_entries[0][:Id]
+          unit.unit_type = unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitType"]
           unit.marketing_name = unit_entries[0][:Id]
           unit.floor = evaluate_floor(unit.marketing_name) rescue nil
           is_available = false

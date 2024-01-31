@@ -94,23 +94,27 @@ class Yardi2StaticService < BaseService
         unit = Unit.where(provider: "yardi", community_id: credentials.community_id, property_id: property_id, provider_unit_id: provider_unit_id).first_or_initialize
         unless unit.manual_override
           unit.property_id = property_id
-          unit.unit_type = unit_entries[0][:Id]
+          unit.unit_type = unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitType"]
+
+
           unless unit.name_is_updated.present? && unit.name_is_updated
             unit.marketing_name = unit_entries[0][:Id]
           end
+
           unless unit.floor_is_updated.present? && unit.floor_is_updated
             unit.floor = evaluate_floor(unit.marketing_name) rescue nil  ################
           end
 
           is_available = false
           vacate_date = ""
+
           unit_entries.each do |u|
             if u.key?(:Unit)
               unless unit.floorplan_id_is_updated.present? && unit.floorplan_id_is_updated
                 unit.floorplan_id = u[:Unit][:"MITS:Information"][:"MITS:UnitType"]
               end
-
             end
+            
             if u.key?(:EffectiveRent)
               unit.market_rent = u[:EffectiveRent][0][:Min]
               unit.min_effective_rent = u[:EffectiveRent][0][:Min] if u[:EffectiveRent][0][:Min].present?

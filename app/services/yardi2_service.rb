@@ -136,9 +136,11 @@ class Yardi2Service < BaseService
           if unit.present?
             is_available = false
             vacate_date = ""
-            unit_entries&.each do |u|
-              if u.key?(:EffectiveRent)
+            unit.unit_type = unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitType"]
 
+            unit_entries&.each do |u|
+
+              if u.key?(:EffectiveRent)
                 unit.min_effective_rent = u[:EffectiveRent][0][:Min] if u[:EffectiveRent][0][:Min].present?
                 unit.max_effective_rent = u[:EffectiveRent][0][:Max] if u[:EffectiveRent][0][:Max].present?
                 unit.market_rent = u[:EffectiveRent][0][:Min]
@@ -195,7 +197,8 @@ class Yardi2Service < BaseService
             
             unless unit.manual_override
               unit.property_id = property_id
-              unit.unit_type = unit_entries[0][:Id]
+              unit.unit_type = unit_entries[1][:Unit][:"MITS:Information"][:"MITS:UnitType"]
+
 
               unless unit.name_is_updated.present? && unit.name_is_updated
                 unit.marketing_name = unit_entries[0][:Id]
