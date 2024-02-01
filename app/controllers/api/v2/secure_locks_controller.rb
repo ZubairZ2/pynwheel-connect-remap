@@ -71,6 +71,18 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
     end
   end
 
+  def send_latch_initation_email
+    begin
+      
+      LatchInvitationMailer.send_latch_integration_invite_mail(params[:to_email], params[:from_email], params[:subject], params[:body]).deliver
+      
+      render json: { success: true, message: "Latch invitation email sent successfully!" }
+      
+    rescue => error
+      render json: { success: false, message: error.message }
+    end
+  end
+
   def delete_latch_file
     lock = Latch.find_by_id(params["id"])
     if lock.present?
@@ -192,15 +204,29 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
 
   def latch_lock(lock)
     unless @community.latch.present?
-      @community.create_latch(latch_property_name: lock['latch_property_name'])
+      @community.create_latch(
+        latch_property_name: lock['latch_property_name'], 
+        is_building_name_added:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["0"]["checked"]),
+        is_integration_submitted:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["1"]["checked"]),
+        is_mission_control_setup:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["2"]["checked"])
+      )
+      @locks_provider << LATCH
+
     else
-      @community.latch.update(latch_property_name: lock['latch_property_name'])
+      @community.latch.update(
+        latch_property_name: lock['latch_property_name'], 
+        is_building_name_added:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["0"]["checked"]),
+        is_integration_submitted:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["1"]["checked"]),
+        is_mission_control_setup:  ActiveRecord::Type::Boolean.new.cast(lock["latch_check_box_options"]["2"]["checked"])
+      )
     end
   end
 
   def igloo_home_lock(lock)
     unless @community.igloohome.present?
       @community.create_igloohome(email: lock['email'], file: lock["file"])
+      @locks_provider << IGLOOHOME
+
     else
       if lock["file"].present?
         @community.igloohome.update_attributes(email: lock['email'], file: lock["file"])
@@ -213,8 +239,9 @@ class Api::V2::SecureLocksController < Api::V2::ApiApplicationController
   def zerv_lock(lock)
     unless @community.zerv.present?
       @community.create_zerv(facility_id: lock['facility_id'], badge_id: lock['badge_id'], card_format: lock['card_format'], username: lock['username'], password: lock["password"])
+      @locks_provider << ZERVCLIENT
     else
-    @community.zerv.update(facility_id: lock['facility_id'], badge_id: lock['badge_id'], card_format: lock['card_format'], username: lock['username'], password: lock["password"])
+      @community.zerv.update(facility_id: lock['facility_id'], badge_id: lock['badge_id'], card_format: lock['card_format'], username: lock['username'], password: lock["password"])
     end
   end
 
