@@ -21,7 +21,6 @@ module AssignLocksHelper
     latch_locks      =  community.latch.present?      ? community.latch.latch_locks.sort_by       { |l| l.id}.collect{ |l| {name:  l.lock_name, id: l.lock_id, stop_id: (l.stop_id) } } : []
     zerv_locks       =  community.zerv.present?       ? community.zerv.zerv_locks.sort_by         { |l| l.id}.collect{ |l| {name: (l.sub_location_name + " (" + l.sub_location_friendly_name + ")"), id: (l.mac_id), stop_id: (l.stop_id) } } : []
     igloohome_locks = community.igloohome.present? ? community.igloohome.igloohome_locks.sort_by { |l| l.id}.collect{ |l| {name: l.device_name, id: l.device_id } } : []
-
     {igloohome_locks: igloohome_locks, edgestate_locks: edge_state_locks, dwelo_locks: dwelo_locks, latch_locks: latch_locks, zerv_locks: zerv_locks}
   end
 

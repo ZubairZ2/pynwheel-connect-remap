@@ -16,10 +16,10 @@
                     = image_tag amenity.crop_x.present? ? amenity.image.url  + "?timestamp=#{rn}" : amenity.image.url  + "?timestamp=#{rn}", id: "cropbox"
                 - else
                   %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
-                    = image_tag amenity.image.url
+                    = image_tag amenity.image? ? amenity.image.url : asset_path("default.jpeg")
               - else
                 %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
-                  = image_tag amenity.image.url
+                  = image_tag amenity.image? ? amenity.image.url : asset_path("default.jpeg")
                 %a.preview-image{:href=>amenity.image? ? amenity.image.url : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Amenity Image"}
                   = image_tag amenity.crop_x.present? ? amenity.image.url  + "?timestamp=#{rn}" : amenity.image.url  + "?timestamp=#{rn}", id: "cropbox"
           .icons
@@ -43,7 +43,7 @@
           .carousel-inner{:style=>"height: 500px;"}
             - @amenities.each_with_index do |amenity,index|
               .item.text-center{:class=>"#{index == 0 ? 'active' : ''}"}
-                = image_tag amenity.image.url
+                = image_tag amenity.image? ? amenity.image.url : asset_path("default.jpeg")
                 .carousel-caption
                   image
 
