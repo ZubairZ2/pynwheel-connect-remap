@@ -110,30 +110,34 @@ class MapLocksJob < ApplicationJob
   private
 
     def auto_map_latch_locks(community, data, latch_lock, type)
-      lock_attributes = { lock_provider: type, access_code: latch_lock.lock_id, updated_at: Time.now.utc }
-
       if data.class.name.classify.downcase == "amenity"
         if data.doors.present?
-          update_door_lock(data.doors.last, lock_attributes, community, latch_lock.lock_id)
+          update_door_lock(data, data.doors.last, type, community, latch_lock.lock_id)
         else
-          update_stop_lock(data, lock_attributes, community, latch_lock.lock_id)
+          update_stop_lock(data, type, community, latch_lock.lock_id)
         end
       else
         if data.door.present?
-          update_door_lock(data.door, lock_attributes, community, latch_lock.lock_id)
+          update_door_lock(data, data.door, type, community, latch_lock.lock_id)
         else
-          update_stop_lock(data, lock_attributes, community, latch_lock.lock_id)
+          update_stop_lock(data, type, community, latch_lock.lock_id)
         end
       end
     end
 
-    def update_door_lock(door, lock_attributes, community, lock_id)
-      door.update_columns(lock_attributes)
-      assign_lock_to_door(community, door, lock_id) if lock_id.present?
+    def update_door_lock(stop, door, type, community, lock_id)
+      return unless lock_id.present?
+
+      door.update_columns(lock_provider: type, access_code: lock_id, updated_at: Time.now.utc)
+      stop.update_attributes(lock_provider: type, access_code: lock_id )
+
+      assign_lock_to_door(community, door, lock_id)
     end
 
-    def update_stop_lock(stop, lock_attributes, community, lock_id)
-      stop.update_columns(lock_attributes)
+    def update_stop_lock(stop, type, community, lock_id)
+      return unless lock_id.present?
+
+      stop.update_attributes(lock_provider: type, access_code: lock_id )
       assign_lock(community, stop, lock_id) if lock_id.present?
     end
 
