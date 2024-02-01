@@ -5,6 +5,7 @@ class SitemapsController < ApplicationController
   before_action :check_community
   add_breadcrumb "Home", :root_path
 
+  
   def map
     add_breadcrumb "Add Site Map", map_community_sitemaps_path
     @sitemap = @community.sitemap || @community.build_sitemap

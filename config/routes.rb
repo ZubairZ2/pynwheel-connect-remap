@@ -365,6 +365,7 @@ Rails.application.routes.draw do
         put :crop_unit_image
         get :show_unit_secondary_image_in_modal
         put :crop_unit_secondary_image
+        put :update_lock_provider
       end
       member do
         post :load_unit_door_lock

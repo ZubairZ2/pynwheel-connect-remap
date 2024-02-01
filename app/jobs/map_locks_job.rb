@@ -1,5 +1,6 @@
 class MapLocksJob < ApplicationJob
   include SuckerPunch::Job
+  include AssignLocksHelper
 
   def perform(community, type)
     if community.zerv.present? and type == "Zerv"
@@ -34,15 +35,8 @@ class MapLocksJob < ApplicationJob
     elsif community.latch.present? and type == "Latch"
       clear_locks_provider(community, type)
       community.latch.latch_locks.each do |latch_lock|
-        data = parse_stop(community, latch_lock.name)
-
-        if data.present?
-            data.latch_locks.update_all(stop_id: nil, stop_type: nil, stop_name: nil)
-            latch_lock.update_attributes(stop_id: data.id, stop_type: data.class.name.classify) rescue nil
-            data.update_column(:lock_provider, type)
-        else
-          latch_lock.update_attributes(stop_id: nil, stop_type: nil, stop_name: nil)
-        end
+        data = parse_stop(community, latch_lock.lock_name)
+        auto_map_latch_locks(community, data, latch_lock, type) if data.present?
       end
 
     elsif community.dwelo.present? and type == "Dwelo"
@@ -91,6 +85,7 @@ class MapLocksJob < ApplicationJob
 
     data = community.units.where('(marketing_name = ? or provider_unit_id = ?) and (building = ? or building = ?)', unit_name, unit_name, building_name, building_name_).first rescue nil
     data = community.units.where('(marketing_name = ? or provider_unit_id = ?) and (building = ? or building = ?)', sub_location_name, sub_location_name, nil, '').first rescue nil unless data.present?
+    data = community.units.where(marketing_name: sub_location_name).first rescue nil unless data.present?
 
     data = community.doors.where(name: sub_location_name).first if data.nil?
     data = community.amenities.where(name: sub_location_name).first if data.nil?
@@ -111,5 +106,35 @@ class MapLocksJob < ApplicationJob
 
     return data
   end
+
+  private
+
+    def auto_map_latch_locks(community, data, latch_lock, type)
+      lock_attributes = { lock_provider: type, access_code: latch_lock.lock_id, updated_at: Time.now.utc }
+
+      if data.class.name.classify.downcase == "amenity"
+        if data.doors.present?
+          update_door_lock(data.doors.last, lock_attributes, community, latch_lock.lock_id)
+        else
+          update_stop_lock(data, lock_attributes, community, latch_lock.lock_id)
+        end
+      else
+        if data.door.present?
+          update_door_lock(data.door, lock_attributes, community, latch_lock.lock_id)
+        else
+          update_stop_lock(data, lock_attributes, community, latch_lock.lock_id)
+        end
+      end
+    end
+
+    def update_door_lock(door, lock_attributes, community, lock_id)
+      door.update_columns(lock_attributes)
+      assign_lock_to_door(community, door, lock_id) if lock_id.present?
+    end
+
+    def update_stop_lock(stop, lock_attributes, community, lock_id)
+      stop.update_columns(lock_attributes)
+      assign_lock(community, stop, lock_id) if lock_id.present?
+    end
 
 end
