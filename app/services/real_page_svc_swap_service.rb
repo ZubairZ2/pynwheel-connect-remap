@@ -190,7 +190,13 @@ class RealPageSvcSwapService < BaseService
                 unit.provider_unit_id = "#{u[:UnitID]}-#{site_id}"
                 unit.property_id = u[:SiteID]
                 unit.unit_type = u[:UnitNumber]
-                unit_status_update(unit, u)
+                
+                if u[:MadeReadyBit] == "true"
+                  unit.unit_status = "Unoccupied"
+                else
+                  unit.unit_status = "Occupied"
+                end
+
                 unit.floorplan_id = "#{u[:FloorplanID]}-#{site_id}"
                 if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"

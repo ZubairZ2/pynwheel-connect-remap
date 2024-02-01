@@ -146,7 +146,13 @@ class RealPageSvcStaticService < BaseService
                 unit.property_id = u[:SiteID]
                 unit.provider_unit_id = provider_unit_id
                 unit.unit_type = u[:UnitNumber]
-                unit_status_update(unit, u)
+
+                if u[:MadeReadyBit] == "true"
+                  unit.unit_status = "Unoccupied"
+                else
+                  unit.unit_status = "Occupied"
+                end
+
                 if u[:BuildingNumber].present?
                   unit.building = u[:BuildingNumber] unless u[:BuildingNumber] == "N/A"
                 end
