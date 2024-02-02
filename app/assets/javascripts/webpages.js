@@ -1049,8 +1049,10 @@ function renderChangedUnits(){
   sortType = document.getElementById('filter');
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
   document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
+  var unit_details_div = "";
+
   filtered_units.forEach((unit) => {
-    var unit_details_div = `
+    unit_details_div = `
     <div class='left-side-30-units' id='unit_${unit['id']}'>
       <div class='image-styles'>
         <a class='image_link' href='#' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
@@ -1078,16 +1080,21 @@ function renderChangedUnits(){
           ${ get_unit_availability(unit) }
         </p>
         <p>
-          ${currency + unit['market_rent']}/month
+          ${unitMarketRent(unit)}
         </p>
       </div>
     </div>
     `;
     
-    element.innerHTML += unit_details_div
+    unit_details_div += unit_details_div
   });
 
+  element.innerHTML = unit_details_div
   unitListHover();
+}
+
+function unitMarketRent(unit) {
+  return unit['display_rent'] ? `${currency + unit['market_rent']}/month` : ""
 }
 
 function unitListHover() {

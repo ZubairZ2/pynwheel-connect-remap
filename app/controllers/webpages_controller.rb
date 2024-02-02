@@ -88,7 +88,8 @@ class WebpagesController < ActionController::Base
           is_fav: unit&.community&.favorite_stop&.favorite_unit&.include?(unit.id.to_s),
           floorplan_name: unit&.floorplan.name,
           lease_pricing: (unit.lease_pricing.present? && unit.community.display_pricing_options) ? unit.lease_pricing : "",
-          description: unit.description || unit&.floorplan&.description
+          description: unit.description || unit&.floorplan&.description,
+          display_rent: unit&.community&.display_rent
         }
         @units_with_floorplan_info << struct
       end
