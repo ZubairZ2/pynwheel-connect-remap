@@ -254,10 +254,13 @@ class WebpagesController < ActionController::Base
   end
 
   def update_session
-    track_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
-    track_session.update_column(:end_datetime, return_community_datetime(session[:last_active_datetime])) if track_session.present?
-    session[:last_active_datetime] = nil
-    puts " ---------------------- Track Session Completed --------------------------------"
+    begin
+      track_session = TrackSession.where(session_id: cookies[:webpages_session_id]).last
+      track_session.update_column(:end_datetime, return_community_datetime(session[:last_active_datetime])) if track_session.present?
+      session[:last_active_datetime] = nil        
+    rescue StandardError => e
+      puts "\n----------------- #{e.message} --------------- \n"
+    end
   end
 
   private
@@ -291,7 +294,11 @@ class WebpagesController < ActionController::Base
     end
 
     def maintain_session
-      Analytics::MapsAnalyticsService.new(@community, @timezone, session, cookies, params).maintain_maps_session()
+      begin
+        Analytics::MapsAnalyticsService.new(@community, @timezone, session, cookies, params).maintain_maps_session()
+      rescue StandardError => e
+        puts "\n----------------- #{e.message} --------------- \n"
+      end
     end
 
     def set_timezone

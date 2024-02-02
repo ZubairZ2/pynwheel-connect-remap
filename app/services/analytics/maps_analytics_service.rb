@@ -9,9 +9,15 @@ module Analytics
     end
 
     def maintain_maps_session
-      track_session = return_last_maps_session
-      manage_session_info(track_session)
-      track_session.save
+      begin
+        track_session = return_last_maps_session
+        return unless track_session.present?
+        manage_session_info(track_session)
+        track_session.save
+
+      rescue StandardError => e
+        puts "\n\n---------------------------#{e.message} ----------------------\n\n"
+      end
     end
     
     private
