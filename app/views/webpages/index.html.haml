@@ -48,10 +48,9 @@
                   %label Bedrooms
                   = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
 
-                - if @community.display_rent
-                  .selectable-field
-                    %label Max Price
-                    = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select"}
+                .selectable-field
+                  %label Max Price
+                  = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select"}
 
                 .selectable-field
                   %label Min Square Footage
@@ -272,10 +271,7 @@
                     %p#unit-title-count
                       #{all_details.count} Units Found
 
-                    - if @community_info.display_rent
-                      = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
-                    - else
-                      = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
+                    = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
                 %div#units-body
                   :javascript
                     var units = "#{@units_with_floorplan_info}";
