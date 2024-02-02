@@ -1009,9 +1009,9 @@ function populate_current_units() {
 
 function getFilteredUnits(units, type){
   var new_units = []
-  if (type === "Price: Low to High"){
+  if (type === "Price: Low to High" && display_rent === 'true'){
     new_units = units.sort((a,b) => a['market_rent'] - b['market_rent'])
-  } else if (type === "Price: High to Low"){
+  } else if (type === "Price: High to Low" && display_rent === 'true'){
     new_units = units.sort((a,b) => b['market_rent'] - a['market_rent'])
   } else if (type === "Sq Ft: More to Less"){
     new_units = units.sort((a,b) => b['square_feet'] - a['square_feet'])
@@ -1049,10 +1049,9 @@ function renderChangedUnits(){
   sortType = document.getElementById('filter');
   floorUnits = getFilteredUnits(filtered_units, sortType.value);
   document.getElementById('unit-title-count').innerHTML = floorUnits.length + " " + "Units Found";
-  var unit_details_div = "";
 
   filtered_units.forEach((unit) => {
-    unit_details_div = `
+    var unit_details_div = `
     <div class='left-side-30-units' id='unit_${unit['id']}'>
       <div class='image-styles'>
         <a class='image_link' href='#' id="s_${unit['id']}" onClick=click_marker_tag('s_${unit['id']}')>
@@ -1086,10 +1085,9 @@ function renderChangedUnits(){
     </div>
     `;
     
-    unit_details_div += unit_details_div
+    element.innerHTML += unit_details_div
   });
 
-  element.innerHTML = unit_details_div
   unitListHover();
 }
 
