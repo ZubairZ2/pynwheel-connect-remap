@@ -48,7 +48,7 @@
                   %label Bedrooms
                   = select_tag :unit_bedroom, options_for_select(@unit_bedrooms.present? ? @unit_bedrooms : []),{:class=>"custom-select", :include_blank => "All "}
 
-                .selectable-field
+                .selectable-field{:style => "display: #{@community.display_rent ? "block" : "none"}"}
                   %label Max Price
                   = select_tag :market_rent, options_for_select(@market_rent.present? ? @market_rent : []),{:class=>"custom-select"}
 
@@ -271,7 +271,10 @@
                     %p#unit-title-count
                       #{all_details.count} Units Found
 
-                    = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
+                    - if @community_info.display_rent
+                      = select_tag :filter,  options_for_select([["Sort by"],["Price: Low to High"], ["Price: High to Low"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
+                    - else
+                      = select_tag :filter,  options_for_select([["Sort by"], ["Availability: Soonest to Latest"], ["Availability: Latest to Soonest"], ["Sq Ft: More to Less"], ["Sq Ft: Less to More"]])
                 %div#units-body
                   :javascript
                     var units = "#{@units_with_floorplan_info}";

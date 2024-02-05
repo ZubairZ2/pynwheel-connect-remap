@@ -844,6 +844,9 @@ function disableSquareFeetOptions() {
 }
 
 function updateMaxPriceFilterDropDownList(floorplateUnits){
+  if(display_rent === 'false')
+    return; 
+  
   floorplateUnits = filterUnitsBasedOnCommunityType(floorplateUnits);
   var unitsMarketRent = floorplateUnits.map(unit => unit.market_rent);
   var uniqueList = getUniqueAndSortedList(unitsMarketRent);
@@ -1009,9 +1012,9 @@ function populate_current_units() {
 
 function getFilteredUnits(units, type){
   var new_units = []
-  if (type === "Price: Low to High"){
+  if (type === "Price: Low to High" && display_rent === 'true'){
     new_units = units.sort((a,b) => a['market_rent'] - b['market_rent'])
-  } else if (type === "Price: High to Low"){
+  } else if (type === "Price: High to Low" && display_rent === 'true'){
     new_units = units.sort((a,b) => b['market_rent'] - a['market_rent'])
   } else if (type === "Sq Ft: More to Less"){
     new_units = units.sort((a,b) => b['square_feet'] - a['square_feet'])
