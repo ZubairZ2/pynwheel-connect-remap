@@ -109,6 +109,18 @@ class Unit < ApplicationRecord
     api_unit_marketing_name()
   end
 
+  def stop_description_formatting stop_description
+    return "" unless stop_description.present?
+    
+    if stop_description.match?(/<ul\b.*?>|<ol\b.*?>/)
+      doc = Nokogiri::HTML(stop_description)
+      items = doc.css('ul li').map(&:text)
+      items.join(', ')
+    else
+      ActionView::Base.full_sanitizer.sanitize(stop_description)
+    end
+  end
+
   def get_virtual_tour_label
     if self&.virtual_tour_button_label.present?
       self.virtual_tour_button_label
