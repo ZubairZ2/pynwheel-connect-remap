@@ -1101,7 +1101,7 @@ json.tours @tours do |tour|
       end
 
       additional_details = unit.description.present? ? unit.description :  unit&.floorplan.description        
-      unit_stop_description = ActionView::Base.full_sanitizer.sanitize(additional_details.present? ? additional_details : "")
+      unit_stop_description = stop.stop_description_formatting(additional_details) #ActionView::Base.full_sanitizer.sanitize(additional_details.present? ? additional_details : "")
       show_long_description = (unit_stop_description.size <= description_limit) ? false : true
       long_stop_description = (additional_details.present? ? (styling_start + additional_details.gsub('red','') + styling_end  rescue "") : nil)
 
@@ -1137,7 +1137,7 @@ json.tours @tours do |tour|
           json.y_plot unit_amenity.y_plot
           json.name unit_amenity.name
           json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
-          json.stop_description ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
+          json.stop_description stop.stop_description_formatting(unit_amenity.description) #ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
           json.directional_text ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
           json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit&.floorplan&.virtual_tour_button_label
           json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ( unit&.floorplan.present? && unit&.floorplan&.virtual_tour_url.present? ) ? unit&.floorplan&.virtual_tour_url : ""
@@ -1168,15 +1168,14 @@ json.tours @tours do |tour|
           json.y_plot unit_amenity.y_plot
           json.name unit_amenity.name
           json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
-          unit_amenity_stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
+          unit_amenity_stop_description = stop.stop_description_formatting(unit_amenity.description) #ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
 
           if unit_amenity_stop_description.size <= description_limit
             json.show_long_description false
-          json.stop_description unit_amenity_stop_description
+            json.stop_description unit_amenity_stop_description
           else
             json.show_long_description true
-
-          json.stop_description unit_amenity_stop_description[0..description_limit - 1]
+            json.stop_description unit_amenity_stop_description[0..description_limit - 1]
           end
 
           json.long_stop_description styling_start + unit_amenity.description.gsub('red','') + styling_end  rescue ""
@@ -1373,7 +1372,7 @@ json.tours @tours do |tour|
     elsif stop.stop_type == "amenity"
       amenity = Amenity.find stop.stop_id
       json.image amenity.image.present? ? amenity.image.url : "no image"
-      stop_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
+      stop_description = stop.stop_description_formatting(amenity.description) #ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
 
       if stop_description.size <= description_limit
         json.show_long_description false
