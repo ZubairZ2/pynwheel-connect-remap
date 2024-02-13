@@ -70,7 +70,7 @@ json.tours tours do |tour|
         end
 
         additional_details = unit.description.present? ? unit.description :  unit&.floorplan.description        
-        unit_stop_description = ActionView::Base.full_sanitizer.sanitize(additional_details.present? ? additional_details : "")
+        unit_stop_description = unit.stop_description_formatting(additional_details) #ActionView::Base.full_sanitizer.sanitize(additional_details.present? ? additional_details : "")
         show_long_description = (unit_stop_description.size <= description_limit) ? false : true
   
         short_unit_stop_description = show_long_description ? unit_stop_description[0..description_limit - 1] : unit_stop_description
@@ -86,7 +86,18 @@ json.tours tours do |tour|
         json.update_apply ((unit.provider == "resman" || unit.provider == "psi") && (@community.credential.present? and @community.credential.apply_now != "separate_link")) ? true : false
         json.provider unit.provider
 
-        stop_dat = {"floorplan" => unit.floorplan_id, "floorplan_id" => unit&.floorplan&.id, "floorplan_full_name" => unit&.floorplan&.name,"effective_rent" => "#{@community.get_currency_symbol}#{unit.effective_rent.to_i.to_s}","available_date" => unit.available_date,"display_rent" => @community.display_rent, "display_pricing_options" => @community.display_pricing_options, "lease_pricing" => lease_pricing,"availability" => unit.availability,"stop_description" => unit.stop_description}
+        stop_dat = {
+          "floorplan" => unit.floorplan_id, 
+          "floorplan_id" => unit&.floorplan&.id, 
+          "floorplan_full_name" => unit&.floorplan&.name,
+          "effective_rent" => "#{@community.get_currency_symbol}#{unit.effective_rent.to_i.to_s}",
+          "available_date" => unit.available_date,
+          "display_rent" => @community.display_rent, 
+          "display_pricing_options" => @community.display_pricing_options, 
+          "lease_pricing" => lease_pricing,
+          "availability" => unit.availability,
+          "stop_description" => unit.stop_description
+        }
         
         json.stop_data stop_dat
         @unit_gallery_arr = []
@@ -98,7 +109,7 @@ json.tours tours do |tour|
           json.y_plot unit_amenity.y_plot
           json.image unit_amenity.image.present? ? unit_amenity.image.url : "no image"
           
-          unit_amenity_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
+          unit_amenity_description = unit_amenity.stop_description_formatting(unit_amenity.description) #ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
           
           if unit_amenity_description.size > description_limit
             show_long_stop_description = true
@@ -126,7 +137,7 @@ json.tours tours do |tour|
 
           json.name ag.name
           json.image ag.image.url
-          ag_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+          ag_description = ag.stop_description_formatting(ag.description) #ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
           
           if ag_description.size > description_limit
             show_long_description = true
@@ -144,7 +155,7 @@ json.tours tours do |tour|
         amenity = Amenity.find @tour.stop_id
         json.image amenity.image.present? ? amenity.image.url : ""
 
-        amenity_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
+        amenity_description = amenity.stop_description_formatting(amenity.description) #ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
           
         if amenity_description.size > description_limit
           show_long_stop_description = true
@@ -178,7 +189,7 @@ json.tours tours do |tour|
           json.type "unit_stop"
           json.image ag.image.url
 
-          ag_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+          ag_description = ag.stop_description_formatting(ag.description) #ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
           
           if ag_description.size > description_limit
             show_long_description = true
