@@ -1230,6 +1230,8 @@ s  end
         connect_to_psi
       when "yardirentcafe"
         connect_to_yardirentcafe
+      when "rentmanager"
+        connect_to_rentmanager
       when "realpagesvc"
         connect_to_realpagesvc
       when "yardi"
@@ -1258,6 +1260,11 @@ s  end
       connect_space_configuration_psi
     end
 
+  end
+
+  def connect_to_rentmanager
+    rentmanager_connection_service = DataProviders::RentManager::TestConnectionService.new(self.id)
+    rentmanager_connection_service.perform
   end
 
   def connect_pricing_to_psi

@@ -598,6 +598,7 @@ function showRentManagerFields() {
     $('.credential_fields').hide();
     $('#rentmanager_username').show();
     $('#rentmanager_password').show();
+    $('#rentmanager_property_id').show();
 }
 
 function showYardiFields(){

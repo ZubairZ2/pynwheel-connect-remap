@@ -12,12 +12,16 @@ module DataProviders
         @api_auth_token = generate_api_token if valid_community?
       end
 
-      def get_properties_list
-        fetch_properties_details
+      def get_property_details property_code
+        fetch_property_details(property_code)
       end
 
-      def get_units_list
-        fetch_units_details
+      def get_units_list property_code
+        fetch_units_details(property_code)
+      end
+
+      def get_floorplans_list property_code
+        fetch_floorplans_details(property_code)
       end
 
       private
@@ -38,17 +42,25 @@ module DataProviders
           )
         end
 
-        def fetch_properties_details
+        def fetch_property_details property_code
           HTTParty.get(
-            fetch_request_url("/properties"),
+            fetch_request_url("/properties/#{property_code}?embeds=#{get_property_embed_items}"),
             body: mandatory_params_to_json,
             headers: fetch_request_header
           )
         end
 
-        def fetch_units_details
+        def fetch_units_details property_code
           HTTParty.get(
-            fetch_request_url("/units"),
+            fetch_request_url("/units?embeds=#{get_units_embed_items}&filters=#{get_units_filter(property_code)}"),
+            body: mandatory_params_to_json,
+            headers: fetch_request_header
+          )
+        end
+
+        def fetch_floorplans_details property_code
+          HTTParty.get(
+            fetch_request_url("/floorplans?embeds=#{get_floorplans_embed_items}&filters=#{get_floorplans_filter(property_code)}"),
             body: mandatory_params_to_json,
             headers: fetch_request_header
           )
@@ -60,6 +72,40 @@ module DataProviders
             Password: password,
             LocationID: location_id
           }.to_json
+        end
+
+        def get_floorplans_filter property_code
+          "PropertyID,eq,#{property_code}"
+        end
+
+        def get_floorplans_embed_items
+          ["FloorplanUnitTypes","FloorplanUnitTypes.UnitTypes"].join(",")
+        end
+
+        def get_units_filter property_code
+          "PropertyID,eq,#{property_code}"
+        end
+
+        def get_units_embed_items
+          [
+            "CurrentMarketRent",
+            "CurrentOccupancyStatus",
+            "CurrentOccupancyStatus.UnitStatus",
+            "CurrentOccupants",
+            "CurrentUnitStatus",
+            "CurrentUnitStatus.UnitStatusType",
+            "Floor",
+            "IsVacant",
+            "Leases",
+            "MarketingSetup",
+            "UnitType",
+            "UnitStatuses",
+            "UnitStatuses.UnitStatusType"
+          ].join(",")
+        end
+
+        def get_property_embed_items
+          ["PrimaryAddress","PrimaryPhoneNumber","LogoFile"].join(",")
         end
 
         def fetch_request_url(extended_url)
@@ -82,10 +128,6 @@ module DataProviders
         end
 
         def location_id
-          1
-        end
-
-        def property_id
           1
         end
     end
