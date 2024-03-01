@@ -3,9 +3,9 @@ require 'httparty'
 module DataProviders
   module RentManager
     class BaseService
-      BATCH_SIZE = 10
 
       def initialize(community_id)
+        @batch_size = 10
         @community_id = community_id
         @community = Community.find_by_id(community_id)
         @credential = @community&.credential if @community
@@ -25,6 +25,21 @@ module DataProviders
       end
 
       private
+
+        def update_attribute_if_blank(object, attribute, value, diff_name = nil)
+          updatedColumn = diff_name.present? ? diff_name : attribute
+          object.send("#{attribute}=", value) if value.present? && !object.send("#{updatedColumn}_is_updated")
+        end
+
+        def import_floorplans(floorplans)
+          return if floorplans.empty?
+          ProvidersDataUpdationService.new().update_or_create_floorplans_records(floorplans)
+        end
+
+        def import_units(units)
+          return if units.empty?
+          ProvidersDataUpdationService.new().update_or_create_units_records(units)
+        end
 
         def valid_community?
           @community && @credential

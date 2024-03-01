@@ -1,0 +1,10 @@
+class RentManagerDataImportWorker
+  include Sidekiq::Worker
+  sidekiq_options queue: 'import_data', retry: 3
+
+  def perform(community_id)
+    return unless community_id.present?
+    community = Community.find_by_id community_id
+    DataProviders::RentManager::DataImportService.new(community_id).perform
+  end
+end

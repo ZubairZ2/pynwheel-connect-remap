@@ -925,6 +925,8 @@ class Community < ApplicationRecord
         import_psi_data
       when "yardirentcafe"
         import_yardirentcafe_data
+      when "rentmanager"
+        import_rentmanager_data
       when "realpagesvc"
         import_realpage_svc_data
       when "yardi"
@@ -1128,6 +1130,10 @@ s  end
   
   def import_yardirentcafe_data
     RentCafeDataImportWorker.perform_async self.id
+  end
+
+  def import_rentmanager_data
+    RentManagerDataImportWorker.perform_async self.id
   end
 
   def swap_yardirentcafe_data
