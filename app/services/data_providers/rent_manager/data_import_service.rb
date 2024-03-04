@@ -9,8 +9,8 @@ module DataProviders
           begin
 
             property_code = property_code&.strip
-            # import_property_details(property_code)
-            # import_property_floorplans(property_code)
+            import_property_details(property_code)
+            import_property_floorplans(property_code)
             import_property_units(property_code)
 
           rescue => exception
@@ -71,7 +71,7 @@ module DataProviders
         def update_floorplan_attributes(fp, r)
           begin
 
-            update_attribute_if_blank(fp, :name, floorplan_unit_type(r, 'Name')
+            update_attribute_if_blank(fp, :name, floorplan_unit_type(r, 'Name'))
             update_attribute_if_blank(fp, :bedrooms, floorplan_unit_type(r, 'Bedrooms'), 'bedroom')
             update_attribute_if_blank(fp, :bathrooms, floorplan_unit_type(r, 'Bathrooms'), 'bathroom')
 
@@ -123,14 +123,16 @@ module DataProviders
 
         def update_unit_attributes(unit, r, property_code)
           begin
-            
+
             update_attribute_if_blank(unit, :marketing_name, r["Name"], 'name')
-            update_attribute_if_blank(unit, :floor, get_floor(r) )
+            update_attribute_if_blank(unit, :floor, get_floor(r))
             update_attribute_if_blank(unit, :floorplan_id, r["UnitTypeID"])
             update_attribute_if_blank(unit, :effective_rent, get_market_rent(r))
             update_attribute_if_blank(unit, :availability, unit_availability_status(r))
             update_attribute_if_blank(unit, :available_date, set_availabilty_date(r))
-            update_attribute_if_blank(unit, :available, r["IsVacant"])
+            # binding.pry
+            # update_attribute_if_blank(unit, :available, unit_availability_status(r) == "Unoccupied")
+            unit.available = r["IsVacant"]
             unit.property_id = r["PropertyID"]
             unit.unit_type = r["Name"]
             unit.square_feet = r["SquareFootage"]
