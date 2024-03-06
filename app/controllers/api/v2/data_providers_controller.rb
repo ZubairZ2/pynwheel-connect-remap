@@ -16,31 +16,28 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       @community.units.destroy_all
       @community.floorplans.destroy_all
 
-      stop_id = @community.community_tour.tour_stops.where(stop_type: "unit").destroy_all
-      VisitedStop.where(tour_stop_id: stop_id.pluck(:id)).destroy_all
+      stop_ids = @community.community_tour.tour_stops.where(stop_type: "unit").pluck(:id)
+      VisitedStop.where(tour_stop_id: stop_ids).destroy_all
+      
       update_data_provider
       data_provider = @community.data_provider
       @credential = update_data_provider_credentials
 
+      if params[:data_provider] == "other"      
+        return render_response(true, 200, "Valid credentials. Data import succeeded.", data_provider)
+      end
+
       if @community.credentials_are_present? && @community.check_credentials
         if @community.data_is_imported
-      
-          previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
-          @community.set_data_provider_status(current_pynwheel_user, params["status"])
-          FollowUpMailer.send_email_after_form_submission(@community, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
-      
-          render json: {success: true, error_code: 200, message: "Valid credentials. Data import succeeded.", data: @credential.as_json(data_provider)}
-      
+          process_imported_data(params["status"])
         else
-          render json: {success: false, error_code: 200, message: "Invalid Credentials", data: @credential.as_json(data_provider)}
+          render_response(false, 200, "Invalid Credentials", data_provider)
         end
-
       else
-        render json: {success: false, error_code: 200, message: "Invalid Credentials", data: @credential.as_json(data_provider)}
-
+        render_response(false, 200, "Invalid Credentials", data_provider)
       end
     rescue => res
-      render json: { success: false, error_code: 400, message: "#{res.message}" }, status: 400
+      render_error_response(res.message)
     end
   end
 
@@ -50,28 +47,32 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       data_provider = @community.data_provider
       @credential = update_data_provider_credentials
 
+      if params[:data_provider] == "other"      
+        return render_response(true, 200, "Valid credentials. Data import succeeded.", data_provider)
+      end
+
       if @community.credentials_are_present? && @community.check_credentials
         if @community.data_is_imported
           @community.update_property_management_form_status(current_pynwheel_user, params["status"])
-          render json: {success: true, error_code: 200, message: "Valid credentials. Data import succeeded.", data: @credential.as_json(data_provider)}
+          render_response(true, 200, "Valid credentials. Data import succeeded.", data_provider)
         else
-          render json: {success: false, error_code: 200, message: "Invalid Credentials", data: @credential.as_json(data_provider)}
+          render_response(false, 200, "Invalid Credentials", data_provider)
         end
-
       else
-        render json: {success: false, error_code: 200, message: "Invalid Credentials", data: @credential.as_json(data_provider)}
+        render_response(false, 200, "Invalid Credentials", data_provider)
       end
-
     rescue => res
-      render json: { success: false, error_code: 400, message: "#{res.message}" }, status: 400
+      render_error_response(res.message)
     end
   end
+
 
   def update_finish_later_data_provider_and_credentials
     begin
       update_data_provider
       data_provider = @community.data_provider
       @credential = update_data_provider_credentials
+      
       if @credential.present?
         @community.set_data_provider_status(current_pynwheel_user, params["status"])
         render json: {success: true, error_code: 200, message: "#{data_provider} updated successfully", data: @credential.as_json(data_provider)}
@@ -140,7 +141,7 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
     end
   end
 
-  private 
+  private
 
   def test_connection
     if @community.credentials_are_present?
@@ -166,6 +167,21 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
 
   def render_error(message)
     render json: { success: false, error_code: 200, message: message }
+  end
+
+  def render_response(success, error_code, message, data)
+    render json: { success: success, error_code: error_code, message: message, data: @credential.as_json(data) }
+  end
+
+  def process_imported_data(status)
+    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
+    @community.set_data_provider_status(current_pynwheel_user, status)
+    FollowUpMailer.send_email_after_form_submission(@community, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
+    render_response(true, 200, "Valid credentials. Data import succeeded.", @community.data_provider)
+  end
+
+  def render_error_response(message)
+    render json: { success: false, error_code: 400, message: message }, status: 400
   end
 
   def create_company_level_credential(company)
