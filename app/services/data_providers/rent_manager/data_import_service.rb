@@ -162,7 +162,11 @@ module DataProviders
 
         def set_availabilty_date r
           return "" unless r["IsVacant"]
-          r["CurrentOccupancyStatus"]["EndDate"].to_date
+          begin
+            r["OccupancyStatusHistory"].filter{|s| s  if s["OccupancyType"] == "PastOccupant"}[0]["EndDate"].to_date
+          rescue  => error
+            Date.today
+          end
         end
 
         def get_market_rent r

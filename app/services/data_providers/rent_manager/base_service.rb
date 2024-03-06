@@ -105,6 +105,7 @@ module DataProviders
           [
             "CurrentMarketRent",
             "CurrentOccupancyStatus",
+            "OccupancyStatusHistory",
             "CurrentOccupancyStatus.UnitStatus",
             "CurrentOccupants",
             "CurrentUnitStatus",
