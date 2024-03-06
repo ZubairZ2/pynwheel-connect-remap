@@ -23,13 +23,15 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       data_provider = @community.data_provider
       @credential = update_data_provider_credentials
 
-      if params[:data_provider] == "other"      
+      if params[:data_provider] == "other"
+          @community.update_property_management_form_status(current_pynwheel_user, params["status"])
         return render_response(true, 200, "Valid credentials. Data import succeeded.", data_provider)
       end
 
       if @community.credentials_are_present? && @community.check_credentials
         if @community.data_is_imported
-          process_imported_data(params["status"])
+          @community.update_property_management_form_status(current_pynwheel_user, params["status"])
+          render_response(true, 200, "Valid credentials. Data import succeeded.", @community.data_provider)
         else
           render_response(false, 200, "Invalid Credentials", data_provider)
         end
@@ -47,7 +49,8 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
       data_provider = @community.data_provider
       @credential = update_data_provider_credentials
 
-      if params[:data_provider] == "other"      
+      if params[:data_provider] == "other"
+        @community.update_property_management_form_status(current_pynwheel_user, params["status"])
         return render_response(true, 200, "Valid credentials. Data import succeeded.", data_provider)
       end
 
@@ -171,13 +174,6 @@ class Api::V2::DataProvidersController < Api::V2::ApiApplicationController
 
   def render_response(success, error_code, message, data)
     render json: { success: success, error_code: error_code, message: message, data: @credential.as_json(data) }
-  end
-
-  def process_imported_data(status)
-    previous_status = PynwheelLaunch::Communities::CommunityDetailForms.new(@community).check_status_of_specific_form(PROPERTY_MANAGEMENT_SYSTEM)
-    @community.set_data_provider_status(current_pynwheel_user, status)
-    FollowUpMailer.send_email_after_form_submission(@community, PROPERTY_MANAGEMENT_SYSTEM, previous_status)
-    render_response(true, 200, "Valid credentials. Data import succeeded.", @community.data_provider)
   end
 
   def render_error_response(message)
