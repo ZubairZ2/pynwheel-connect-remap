@@ -74,6 +74,8 @@ class Credential < ApplicationRecord
         psi_credentials
       when "yardirentcafe"
         yardirentcafe_credentials
+      when "rentmanager"
+        rentmanager_credentials
       when "realpagesvc"
         realpagesvc_credentials
       when "yardi"
@@ -93,6 +95,14 @@ class Credential < ApplicationRecord
     selected_code_option = self.api_token.present? ? API_TOKEN : PROPERTY_CODE
     cred = {code_option: selected_code_option, p_code: self.p_code}
     cred.merge!(fetch_code(selected_code_option))
+  end
+
+  def rentmanager_credentials
+    {
+      rentmanager_username: self.rentmanager_username,
+      rentmanager_password: self.rentmanager_password,
+      rentmanager_property_id: self.rentmanager_property_id
+    }
   end
   
   def fetch_code(selected_code_option)

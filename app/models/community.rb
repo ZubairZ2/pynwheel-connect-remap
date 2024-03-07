@@ -982,6 +982,8 @@ class Community < ApplicationRecord
       EntrataDataUpdateWorker.perform_async self.id
     when "yardirentcafe"
       YardirentcafeDataUpdateWorker.perform_async self.id
+    when "rentmanager"
+      RentManagerDataImportWorker.perform_async self.id
     when "realpagesvc"
       RealPageDataUpdateWorker.perform_async self.id
     when "yardi"
