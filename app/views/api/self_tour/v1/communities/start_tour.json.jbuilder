@@ -1101,7 +1101,7 @@ json.tours @tours do |tour|
       end
 
       additional_details = unit.description.present? ? unit.description :  unit&.floorplan.description        
-      unit_stop_description = ActionView::Base.full_sanitizer.sanitize(additional_details.present? ? additional_details : "")
+      unit_stop_description = stop.stop_description_formatting(additional_details) #ActionView::Base.full_sanitizer.sanitize(additional_details.present? ? additional_details : "")
       show_long_description = (unit_stop_description.size <= description_limit) ? false : true
       long_stop_description = (additional_details.present? ? (styling_start + additional_details.gsub('red','') + styling_end  rescue "") : nil)
 
@@ -1137,13 +1137,13 @@ json.tours @tours do |tour|
           json.y_plot unit_amenity.y_plot
           json.name unit_amenity.name
           json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
-          json.stop_description ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
+          json.stop_description stop.stop_description_formatting(unit_amenity.description) #ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
           json.directional_text ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
           json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit&.floorplan&.virtual_tour_button_label
           json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ( unit&.floorplan.present? && unit&.floorplan&.virtual_tour_url.present? ) ? unit&.floorplan&.virtual_tour_url : ""
           
           if unit_amenity.amenity_galleries.count == 0
-            json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : ""), "directional_text" => ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")]
+            json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => stop.stop_description_formatting(unit_amenity.description), "directional_text" => ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")]
           else
             amenityGalleryArr = []
             amenityGalleryArr << unit_amenity
@@ -1153,7 +1153,7 @@ json.tours @tours do |tour|
             json.gallery amenityGalleryArr do |ag|
               json.name ag.name
               json.image ag.image.url
-              json.description ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+              json.description stop.stop_description_formatting(ag.description) #ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
               json.directional_text ActionView::Base.full_sanitizer.sanitize(ag.directional_text.present? ? ag.directional_text : "")
             end
           end
@@ -1168,39 +1168,41 @@ json.tours @tours do |tour|
           json.y_plot unit_amenity.y_plot
           json.name unit_amenity.name
           json.image unit_amenity.image.present? ? (unit_amenity.crop_x.present? ? unit_amenity.image.url + "?temp/"+unit_amenity.crop_x.to_s :  unit_amenity.image.url ): "no image"
-          unit_amenity_stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
+          unit_amenity_stop_description = stop.stop_description_formatting(unit_amenity.description) #ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
 
           if unit_amenity_stop_description.size <= description_limit
             json.show_long_description false
-          json.stop_description unit_amenity_stop_description
+            json.stop_description unit_amenity_stop_description
           else
             json.show_long_description true
-
-          json.stop_description unit_amenity_stop_description[0..description_limit - 1]
+            json.stop_description unit_amenity_stop_description[0..description_limit - 1]
           end
 
           json.long_stop_description styling_start + unit_amenity.description.gsub('red','') + styling_end  rescue ""
 
           unit_amenity_directional_text = ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
+          
           if unit_amenity_directional_text.size <= description_limit
             json.show_long_directional_text false
-          json.directional_text unit_amenity_directional_text
+            json.directional_text unit_amenity_directional_text
           else
             json.show_long_directional_text true
-          json.directional_text unit_amenity_directional_text[0..description_limit - 1]
+            json.directional_text unit_amenity_directional_text[0..description_limit - 1]
           end
 
           json.long_directional_text styling_start + unit_amenity.directional_text.gsub('red','') + styling_end  rescue ""
           json.video_link_button_label unit.virtual_tour_button_label.present? ? unit.virtual_tour_button_label : unit&.floorplan&.virtual_tour_button_label
           json.video_link unit.virtual_tour_url.present? ?  unit.virtual_tour_url : ( unit&.floorplan.present? && unit&.floorplan&.virtual_tour_url.present? ) ? unit&.floorplan&.virtual_tour_url : ""
+          
           if unit_amenity.amenity_galleries.count == 0
-            stop_description = ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
+            stop_description = stop.stop_description_formatting(unit_amenity.description) #ActionView::Base.full_sanitizer.sanitize(unit_amenity.description.present? ? unit_amenity.description : "")
 
             if stop_description.size <= description_limit
               show_long_description = false
             else
               show_long_description = true
             end
+
             directional_text = ActionView::Base.full_sanitizer.sanitize(unit_amenity.directional_text.present? ? unit_amenity.directional_text : "")
 
             if directional_text.size <= description_limit
@@ -1208,6 +1210,7 @@ json.tours @tours do |tour|
             else
               show_directional_text = true
             end
+
             json.gallery ["name" => unit_amenity.name, "image" => unit_amenity.image.present? ? unit_amenity.image.url : "no image", "description" => show_long_description ? stop_description[0..description_limit - 1] : stop_description,"show_long_description" => show_long_description ,"long_description" => (styling_start + unit_amenity.description.gsub('red','') + styling_end  rescue ""), "directional_text" => show_directional_text ? directional_text[0..description_limit - 1] : directional_text,"show_long_directional_text" => show_directional_text,"long_directional_text" => (styling_start + unit_amenity.directional_text.gsub('red','') + styling_end  rescue "")]
           else
 
@@ -1216,10 +1219,11 @@ json.tours @tours do |tour|
             unit_amenity.amenity_galleries.order(:sort).each do |amen|
               amenityGalleryArr << amen
             end
+
             json.gallery amenityGalleryArr do |ag|
               json.name ag.name
               json.image ag.image.url
-              stop_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+              stop_description = stop.stop_description_formatting(ag.description) #ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
 
               if stop_description.size <= description_limit
                 json.show_long_description false
@@ -1373,7 +1377,7 @@ json.tours @tours do |tour|
     elsif stop.stop_type == "amenity"
       amenity = Amenity.find stop.stop_id
       json.image amenity.image.present? ? amenity.image.url : "no image"
-      stop_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
+      stop_description = stop.stop_description_formatting(amenity.description) #ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
 
       if stop_description.size <= description_limit
         json.show_long_description false
@@ -1403,7 +1407,7 @@ json.tours @tours do |tour|
       json.image_height @community.property_map_height(floorplate_image)
       json.is_favorite favorite_amenity_array.include?(stop.stop_id.to_s) ? true : false
       if amenity.amenity_galleries.count == 0
-         stop_description = ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
+         stop_description = stop.stop_description_formatting(amenity.description) #ActionView::Base.full_sanitizer.sanitize(amenity.description.present? ? amenity.description : "")
 
         if stop_description.size <= description_limit
           show_long_description = false
@@ -1427,7 +1431,7 @@ json.tours @tours do |tour|
           json.name ag.name
           json.type "unit_stop"
           json.image ag.image.url
-          stop_description = ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
+          stop_description = stop.stop_description_formatting(ag.description) #ActionView::Base.full_sanitizer.sanitize(ag.description.present? ? ag.description : "")
 
           if stop_description.size <= description_limit
             json.show_long_description false
@@ -1437,6 +1441,7 @@ json.tours @tours do |tour|
 
             json.description stop_description[0..description_limit - 1]
           end
+
           json.long_description styling_start + ag.description.gsub('red', '') + styling_end  rescue ""
 
           stop_description = ActionView::Base.full_sanitizer.sanitize(ag.directional_text.present? ? ag.directional_text : "")
