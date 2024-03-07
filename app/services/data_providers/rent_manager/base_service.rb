@@ -136,11 +136,11 @@ module DataProviders
         end
 
         def username
-          ENV['RENT_MANAGER_USERNAME']
+          @credential.rentmanager_username
         end
 
         def password
-          ENV['RENT_MANAGER_PASSWORD']
+          @credential.rentmanager_password
         end
 
         def location_id
