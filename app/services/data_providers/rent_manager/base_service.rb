@@ -9,7 +9,8 @@ module DataProviders
         @community_id = community_id
         @community = Community.find_by_id(community_id)
         @credential = @community&.credential if @community
-        @api_auth_token = generate_api_token if valid_community?
+        @api_auth_token = nil 
+        # @api_auth_token = generate_api_token if valid_community?
       end
 
       def get_property_details property_code
@@ -45,40 +46,42 @@ module DataProviders
           @community && @credential
         end
 
-        def generate_api_token
-          fetch_authentication_token
-        end
-
         def fetch_authentication_token
-          HTTParty.post(
+          "\n\n\n\n API Token Created \n\n\n\n"
+
+          @api_auth_token ||= HTTParty.post(
             fetch_request_url("/Authentication/AuthorizeUser"),
             body: mandatory_params_to_json,
             headers: { 'Content-Type' => 'application/json' }
           )
         end
 
-        def fetch_property_details property_code
-          HTTParty.get(
-            fetch_request_url("/properties/#{property_code}?embeds=#{get_property_embed_items}"),
+        def fetch_data(endpoint, params)
+          response = HTTParty.get(
+            fetch_request_url(endpoint),
             body: mandatory_params_to_json,
             headers: fetch_request_header
           )
+          
+          if response.present? && response.success?
+            response
+          else
+            @api_auth_token = nil
+            fetch_authentication_token
+            fetch_data(endpoint, params)
+          end
         end
 
-        def fetch_units_details property_code
-          HTTParty.get(
-            fetch_request_url("/units?embeds=#{get_units_embed_items}&filters=#{get_units_filter(property_code)}"),
-            body: mandatory_params_to_json,
-            headers: fetch_request_header
-          )
+        def fetch_property_details(property_code)
+          fetch_data("/properties/#{property_code}?embeds=#{get_property_embed_items}", nil)
         end
 
-        def fetch_floorplans_details property_code
-          HTTParty.get(
-            fetch_request_url("/floorplans?embeds=#{get_floorplans_embed_items}&filters=#{get_floorplans_filter(property_code)}"),
-            body: mandatory_params_to_json,
-            headers: fetch_request_header
-          )
+        def fetch_units_details(property_code)
+          fetch_data("/units?embeds=#{get_units_embed_items}&filters=#{get_units_filter(property_code)}", nil)
+        end
+
+        def fetch_floorplans_details(property_code)
+          fetch_data("/floorplans?embeds=#{get_floorplans_embed_items}&filters=#{get_floorplans_filter(property_code)}", nil)
         end
 
         def mandatory_params_to_json
