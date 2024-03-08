@@ -12,6 +12,7 @@ module DataProviders
             import_property_details(property_code)
             import_property_floorplans(property_code)
             import_property_units(property_code)
+            update_floorplan_square_footage()
 
           rescue => exception
             raise exception
@@ -172,6 +173,16 @@ module DataProviders
         def get_market_rent r
           return 1  unless r["CurrentMarketRent"]["Amount"].present?
           r["CurrentMarketRent"]["Amount"]
+        end
+
+        def update_floorplan_square_footage
+          @community&.floorplans&.each do |floorplan|
+            floorplan.update(square_feet: fetch_floorplan_unit_square_feet(floorplan)) rescue next
+          end
+        end
+
+        def fetch_floorplan_unit_square_feet floorplan
+          @community.units.where(floorplan_id: floorplan.provider_floorplan_id).last.square_feet rescue 1
         end
     end
   end
