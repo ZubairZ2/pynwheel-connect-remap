@@ -478,6 +478,8 @@ class Community < ApplicationRecord
         credential.entrata_url.present? && credential.username.present? && credential.password.present? && credential.property_id.present?
       when "yardirentcafe"
         (credential.c_code.present? || credential.api_token.present?) && credential.p_code.present?
+      when "rentmanager"
+        (credential.rentmanager_username.present? && credential.rentmanager_password.present? && credential.rentmanager_property_id.present?)
       when "realpagesvc"
         credential.site_id.present? && credential.pmc_id.present?
       when "yardi"
