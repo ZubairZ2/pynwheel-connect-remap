@@ -7,20 +7,22 @@ module DataProviders
           @community_id = community_id
           @community = Community.find_by_id(community_id)
           @credential = @community&.credential if @community
+          @rent_manager_service = DataProviders::RentManager::V1ApisService.new(@community_id)
+
         end
 
         protected
 
           def get_property_details(property_code)
-            DataProviders::RentManager::V1ApisService.new(@community_id).get_property_details(property_code)            
+            @rent_manager_service.get_property_details(property_code)            
           end
 
           def get_units_list(property_code)
-            DataProviders::RentManager::V1ApisService.new(@community_id).get_units_list(property_code)            
+            @rent_manager_service.get_units_list(property_code)            
           end
 
           def get_floorplans_list(property_code)
-            DataProviders::RentManager::V1ApisService.new(@community_id).get_floorplans_list(property_code)            
+            @rent_manager_service.get_floorplans_list(property_code)            
           end
 
           def update_attribute_if_blank(object, attribute, value, diff_name = nil)

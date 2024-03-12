@@ -10,7 +10,7 @@ module DataProviders
             begin
 
               property_code = property_code&.strip
-              import_property_details(property_code)
+              # import_property_details(property_code)
               import_property_floorplans(property_code)
               import_property_units(property_code)
               update_floorplan_square_footage()

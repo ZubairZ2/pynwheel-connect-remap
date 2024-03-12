@@ -144,6 +144,10 @@ module DataProviders
         end
 
         def fetch_request_header
+          puts "\n\n\n ---------------------------------------- Rent Manager Auth Token ------------------------------------------- \n\n\n"
+          puts api_auth_token()
+          puts "\n\n\n ------------------------------------------------------------------------------------------------------------ \n\n\n"
+
           {
             'Content-Type' => 'application/json',
             'X-RM12Api-ApiToken' => api_auth_token()
