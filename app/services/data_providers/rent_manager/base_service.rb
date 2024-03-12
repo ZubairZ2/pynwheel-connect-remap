@@ -14,17 +14,35 @@ module DataProviders
 
       def get_property_details(property_code)
         return unless is_user_authorized?
-        fetch_property_details(property_code)
+        response = fetch_property_details(property_code)
+
+        puts "\n\n ---------------- Property Response ---------------\n\n"
+        puts response.inspect
+        puts "\n\n -------------------------------\n\n"
+
+        response.success? ? JSON.parse(response.body) : []
       end
 
       def get_units_list(property_code)
         return unless is_user_authorized?
-        fetch_units_details(property_code)
+        response = fetch_units_details(property_code)
+
+        puts "\n\n ---------------- Units Response ---------------\n\n"
+        puts response.inspect
+        puts "\n\n -------------------------------\n\n"        
+
+        response.success? ? JSON.parse(response.body) : []
       end
 
       def get_floorplans_list(property_code)
         return unless is_user_authorized?
-        fetch_floorplans_details(property_code)
+        response = fetch_floorplans_details(property_code)
+
+        puts "\n\n ----------------- Floorplans Response --------------\n\n"
+        puts response.inspect
+        puts "\n\n -------------------------------\n\n"
+
+        response.success? ? JSON.parse(response.body) : []
       end
 
       private
@@ -52,8 +70,6 @@ module DataProviders
 
       def renew_token
         access_token = fetch_authentication_token()
-        access_token = JSON.parse(access_token.body)
-
         return false unless access_token.present?
         
         @company.update(
@@ -87,11 +103,13 @@ module DataProviders
       end
 
       def fetch_authentication_token
-        HTTParty.post(
+        response = HTTParty.post(
           fetch_request_url('/Authentication/AuthorizeUser'),
           body: mandatory_params_to_json,
           headers: { 'Content-Type' => 'application/json' }
         )
+
+        response.success? ? JSON.parse(response.body) : nil
       end
 
       def fetch_data(endpoint, params)

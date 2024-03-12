@@ -29,6 +29,8 @@ module DataProviders
         end
 
         def update_property_details details
+          return unless details.present?
+          
           @community.update!(
             name: details["Name"],
             address: details["PrimaryAddress"]["Street"],
