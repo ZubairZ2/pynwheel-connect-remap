@@ -12,6 +12,7 @@ module DataProviders
         @community_id = community_id
         @community = Community.find_by_id(community_id)
         @credential = @community&.credential if @community
+
         @api_auth_token = cached_api_token || generate_and_cache_api_token if valid_community?
       end
 
@@ -158,13 +159,16 @@ module DataProviders
 
         Rails.cache.write(TOKEN_CACHE_KEY, access_token, expires_in: TOKEN_EXPIRY_THRESHOLD)
         Rails.cache.write("#{TOKEN_CACHE_KEY}_expiry",(Time.now + TOKEN_EXPIRY_THRESHOLD), expires_in: TOKEN_EXPIRY_THRESHOLD)
-        Rails.cache.write("#{TOKEN_CACHE_KEY}_last_activity", (Time.now + INACTIVITY_THRESHOLD), expires_in: INACTIVITY_THRESHOLD)
+        Rails.cache.write("#{TOKEN_CACHE_KEY}_inactivity", (Time.now + INACTIVITY_THRESHOLD), expires_in: INACTIVITY_THRESHOLD)
+
         access_token
       end
 
       def refresh_token_if_necessary
         if token_expired? || token_inactive?
           @api_auth_token = generate_and_cache_api_token
+        else
+          Rails.cache.write("#{TOKEN_CACHE_KEY}_inactivity", (Time.now + INACTIVITY_THRESHOLD), expires_in: INACTIVITY_THRESHOLD)
         end
       end
 
@@ -174,8 +178,8 @@ module DataProviders
       end
 
       def token_inactive?
-        last_activity = Rails.cache.read("#{TOKEN_CACHE_KEY}_last_activity")
-        last_activity.nil? || Time.now - last_activity >= INACTIVITY_THRESHOLD
+        last_activity = Rails.cache.read("#{TOKEN_CACHE_KEY}_inactivity")
+        last_activity.nil? || Time.now >= last_activity
       end
     end
   end
