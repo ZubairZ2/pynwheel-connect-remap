@@ -34,7 +34,7 @@ module DataProviders
           if (token_expired? || token_inactive?) 
             renew_token 
           else
-            @company.update(rentmanager_token_inactivity: (Time.now + 15.minutes))
+            @company.update(rentmanager_token_inactivity: (current_time + 15.minutes))
             return true
           end
         rescue
@@ -43,11 +43,11 @@ module DataProviders
       end
 
       def token_inactive?
-        @company&.rentmanager_token_inactivity.nil? || Time.now >= @company&.rentmanager_token_inactivity
+        @company&.rentmanager_token_inactivity.nil? || current_time >= @company&.rentmanager_token_inactivity&.to_datetime
       end
 
       def token_expired?
-        @company&.rentmanager_auth_token.nil? || Time.now >= @company&.rentmanager_token_expiry
+        @company&.rentmanager_auth_token.nil? || current_time >= @company&.rentmanager_token_expiry&.to_datetime
       end
 
       def renew_token
@@ -58,11 +58,15 @@ module DataProviders
         
         @company.update(
           rentmanager_auth_token: access_token, 
-          rentmanager_token_expiry: (Time.now + 1.day),
-          rentmanager_token_inactivity: (Time.now + 15.minutes)
+          rentmanager_token_expiry: (current_time + 1.day),
+          rentmanager_token_inactivity: (current_time + 15.minutes)
         )
 
         return true
+      end
+
+      def current_time
+        Time.now.utc.to_datetime
       end
 
       def update_attribute_if_blank(object, attribute, value, diff_name = nil)
