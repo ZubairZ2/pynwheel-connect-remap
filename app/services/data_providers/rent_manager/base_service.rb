@@ -12,22 +12,22 @@ module DataProviders
         @company = @community.company
       end
 
-      def get_property_details(property_code)
-        return unless is_user_authorized?
-        fetch_property_details(property_code)
-      end
-
-      def get_units_list(property_code)
-        return unless is_user_authorized?
-        fetch_units_details(property_code)
-      end
-
-      def get_floorplans_list(property_code)
-        return unless is_user_authorized?
-        fetch_floorplans_details(property_code)
-      end
-
       protected
+      
+        def get_property_details(property_code)
+          return unless is_user_authorized?
+          fetch_property_details(property_code)
+        end
+
+        def get_units_list(property_code)
+          return unless is_user_authorized?
+          fetch_units_details(property_code)
+        end
+
+        def get_floorplans_list(property_code)
+          return unless is_user_authorized?
+          fetch_floorplans_details(property_code)
+        end
 
         def is_user_authorized?
           begin
