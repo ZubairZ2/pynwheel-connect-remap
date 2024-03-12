@@ -1,15 +1,14 @@
-require 'httparty'
-
 module DataProviders
   module RentManager
-    class BaseService
-
+    class V1ApisService
       def initialize(community_id)
-        @batch_size = 10
-        @community_id = community_id
+        return unless community_id.present?
+
         @community = Community.find_by_id(community_id)
-        @credential = @community&.credential if @community
+        @credential = @community&.credential if @community.present?
         @company = @community.company
+
+        return unless @credential.present?
       end
 
       def get_property_details(property_code)
@@ -27,8 +26,8 @@ module DataProviders
         fetch_floorplans_details(property_code)
       end
 
-      protected
-      
+      private
+
         def is_user_authorized?
           begin
             if (token_expired? || token_inactive?)
@@ -67,24 +66,7 @@ module DataProviders
           Time.now.utc.to_datetime
         end
 
-        def update_attribute_if_blank(object, attribute, value, diff_name = nil)
-          updated_column = diff_name.present? ? diff_name : attribute
-          object.send("#{attribute}=", value) if value.present? && !object.send("#{updated_column}_is_updated")
-        end
-
-        def import_floorplans(floorplans)
-          return if floorplans.empty?
-
-          ProvidersDataUpdationService.new.update_or_create_floorplans_records(floorplans)
-        end
-
-        def import_units(units)
-          return if units.empty?
-
-          ProvidersDataUpdationService.new.update_or_create_units_records(units)
-        end
-
-        def fetch_authentication_token
+         def fetch_authentication_token
           response = HTTParty.post(
             fetch_request_url('/Authentication/AuthorizeUser'),
             body: mandatory_params_to_json,
@@ -183,6 +165,7 @@ module DataProviders
         def location_id
           1
         end
+
     end
   end
 end

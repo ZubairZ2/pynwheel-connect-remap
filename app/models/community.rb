@@ -1273,7 +1273,7 @@ s  end
   end
 
   def connect_to_rentmanager
-    rentmanager_connection_service = DataProviders::RentManager::TestConnectionService.new(self.id)
+    rentmanager_connection_service = DataProviders::RentManager::V1::TestConnectionService.new(self.id)
     rentmanager_connection_service.perform
   end
 

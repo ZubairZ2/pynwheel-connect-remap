@@ -263,7 +263,7 @@ class CredentialsValid < BaseService
       begin
         property_code = credentials&.rentmanager_property_id&.split(",")[0] rescue ""
         property_code = property_code&.strip
-        rent_manager_service = DataProviders::RentManager::BaseService.new(community.id)
+        rent_manager_service = DataProviders::RentManager::V1ApisService.new(community.id)
         response = rent_manager_service.get_property_details(property_code)
 
         return response.success?
