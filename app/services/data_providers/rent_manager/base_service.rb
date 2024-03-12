@@ -14,25 +14,17 @@ module DataProviders
 
       def get_property_details(property_code)
         return unless is_user_authorized?
-        response = fetch_property_details(property_code)
-
-        puts "\n\n ---------------- Property Response ---------------\n\n"
-        puts response.inspect
-        puts "\n\n -------------------------------\n\n"
-
-        response.success? ? JSON.parse(response.body) : []
+        fetch_property_details(property_code)
       end
 
       def get_units_list(property_code)
         return unless is_user_authorized?
-        response = fetch_units_details(property_code)
-        response.success? ? JSON.parse(response.body) : []
+        fetch_units_details(property_code)
       end
 
       def get_floorplans_list(property_code)
         return unless is_user_authorized?
-        response = fetch_floorplans_details(property_code)
-        response.success? ? JSON.parse(response.body) : []
+        fetch_floorplans_details(property_code)
       end
 
       protected
@@ -40,7 +32,7 @@ module DataProviders
         def is_user_authorized?
           begin
             if (token_expired? || token_inactive?)
-              renew_token
+              return renew_token
             else
               @company.update(rentmanager_token_inactivity: (current_time + 15.minutes))
               return true
