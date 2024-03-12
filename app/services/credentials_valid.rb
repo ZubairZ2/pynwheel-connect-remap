@@ -265,8 +265,8 @@ class CredentialsValid < BaseService
         property_code = property_code&.strip
         rent_manager_service = DataProviders::RentManager::BaseService.new(community.id)
         response = rent_manager_service.get_property_details(property_code)
-        
-        return response.success?
+
+        return response.present?
       rescue => e
         return false
       end
