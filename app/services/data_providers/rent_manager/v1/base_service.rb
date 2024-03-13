@@ -13,19 +13,19 @@ module DataProviders
           @rent_manager_service.generate_api_auth_token() # Create new authorize token
         end
 
+        def get_property_details(property_code)
+          @rent_manager_service.get_property_details(property_code)            
+        end
+
+        def get_units_list(property_code)
+          @rent_manager_service.get_units_list(property_code)            
+        end
+
+        def get_floorplans_list(property_code)
+          @rent_manager_service.get_floorplans_list(property_code)            
+        end
+
         protected
-
-          def get_property_details(property_code)
-            @rent_manager_service.get_property_details(property_code)            
-          end
-
-          def get_units_list(property_code)
-            @rent_manager_service.get_units_list(property_code)            
-          end
-
-          def get_floorplans_list(property_code)
-            @rent_manager_service.get_floorplans_list(property_code)            
-          end
 
           def update_attribute_if_blank(object, attribute, value, diff_name = nil)
             updated_column = diff_name.present? ? diff_name : attribute
