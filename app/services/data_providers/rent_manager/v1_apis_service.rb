@@ -49,7 +49,7 @@ module DataProviders
             headers: { 'Content-Type' => 'application/json' }
           )
 
-          update_company_token(response.success? ? JSON.parse(response.body) : nil)
+          update_company_token(nil)
         end
 
         def fetch_data(endpoint, params)

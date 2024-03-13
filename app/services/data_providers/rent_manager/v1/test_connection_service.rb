@@ -10,8 +10,8 @@ module DataProviders
              if property_code.present?
               {
                 "Property Details": get_property_details(property_code),
-                "Floorplans": get_units_list(property_code),
-                "Units": get_floorplans_list(property_code) 
+                "Floorplans": get_floorplans_list(property_code),
+                "Units": get_units_list(property_code) 
               }
             end
 
