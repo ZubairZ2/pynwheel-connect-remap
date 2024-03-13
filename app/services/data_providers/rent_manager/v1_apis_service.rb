@@ -12,68 +12,44 @@ module DataProviders
       end
 
       def get_property_details(property_code)
-        return unless is_user_authorized?
         fetch_property_details(property_code)
       end
 
       def get_units_list(property_code)
-        return unless is_user_authorized?
         fetch_units_details(property_code)
       end
 
       def get_floorplans_list(property_code)
-        return unless is_user_authorized?
         fetch_floorplans_details(property_code)
+      end
+
+      def generate_api_auth_token()
+        fetch_authentication_token()
+      end
+
+      def de_auth_api_token
+        de_authorize_token()
       end
 
       private
 
-        def is_user_authorized?
-          begin
-            if (token_expired? || token_inactive?)
-              return renew_token
-            else
-              @company.update(rentmanager_token_inactivity: (current_time + 15.minutes))
-              return true
-            end
-          rescue
-            return false
-          end
-        end
-
-        def token_inactive?
-          @company&.rentmanager_token_inactivity.nil? || current_time >= @company&.rentmanager_token_inactivity&.to_datetime
-        end
-
-        def token_expired?
-          @company&.rentmanager_auth_token.nil? || current_time >= @company&.rentmanager_token_expiry&.to_datetime
-        end
-
-        def renew_token
-          access_token = fetch_authentication_token()
-          return false unless access_token.present?
-          
-          @company.update(
-            rentmanager_auth_token: access_token, 
-            rentmanager_token_expiry: (current_time + 1.day),
-            rentmanager_token_inactivity: (current_time + 15.minutes)
-          )
-
-          return true
-        end
-
-        def current_time
-          Time.now.utc.to_datetime
-        end
-
-         def fetch_authentication_token
+        def fetch_authentication_token
           response = HTTParty.post(
             fetch_request_url('/Authentication/AuthorizeUser'),
             body: mandatory_params_to_json,
             headers: { 'Content-Type' => 'application/json' }
           )
+          update_company_token(response.success? ? JSON.parse(response.body) : nil)
+        end
 
-          response.success? ? JSON.parse(response.body) : nil
+        def de_authorize_token
+          response = HTTParty.post(
+            fetch_request_url("/Authentication/Deauthorize?token=#{current_api_auth_token}"),
+            body: mandatory_params_to_json,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+
+          update_company_token(response.success? ? JSON.parse(response.body) : nil)
         end
 
         def fetch_data(endpoint, params)
@@ -94,6 +70,10 @@ module DataProviders
 
         def fetch_floorplans_details(property_code)
           fetch_data("/floorplans?embeds=#{get_floorplans_embed_items}&filters=#{get_floorplans_filter(property_code)}", nil)
+        end
+
+        def update_company_token token
+          @company.update(rentmanager_auth_token: token)
         end
 
         def mandatory_params_to_json
@@ -144,13 +124,9 @@ module DataProviders
         end
 
         def fetch_request_header
-          puts "\n\n\n ---------------------------------------- Rent Manager Auth Token ------------------------------------------- \n\n\n"
-          puts api_auth_token()
-          puts "\n\n\n ------------------------------------------------------------------------------------------------------------ \n\n\n"
-
           {
             'Content-Type' => 'application/json',
-            'X-RM12Api-ApiToken' => api_auth_token()
+            'X-RM12Api-ApiToken' => current_api_auth_token
           }
         end
 
@@ -162,7 +138,7 @@ module DataProviders
           @credential.rentmanager_password
         end
 
-        def api_auth_token
+        def current_api_auth_token
           @company.rentmanager_auth_token
         end
 
