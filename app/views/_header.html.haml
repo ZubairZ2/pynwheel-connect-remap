@@ -50,9 +50,10 @@
                   %button#search-btn.btn.btn-flat{:name => "search", :type => "submit"}
                     %i.fa.fa-search
             / /.search form
-          - if current_user.is_super_admin? && current_community.present?
-            %li.mt-5
-              = link_to "Authenteq Report" , community_authenteq_report_path(current_community) , :class=>"btn mr-5", style: "background: #138fd4; color:white;  height: 34px;padding-top: 7px; border-radius: 4px;",:target => "_blank"  
+          / - if current_user.is_super_admin? && current_community.present?
+          /   %li.mt-5
+          /     = link_to "Authenteq Report" , community_authenteq_report_path(current_community) , :class=>"btn mr-5", style: "background: #138fd4; color:white;  height: 34px;padding-top: 7px; border-radius: 4px;",:target => "_blank"
+          
           - if current_user.is_super_admin? && current_community.present?
             %li.mt-5
               = link_to "Account Report" , community_account_report_path(current_community) , :class=>"btn mr-5", style: "background: #138fd4; color:white;  height: 34px;padding-top: 7px; border-radius: 4px;",:target => "_blank"

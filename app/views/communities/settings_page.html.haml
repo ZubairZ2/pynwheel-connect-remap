@@ -280,7 +280,9 @@
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
                   ID verification provider
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                  = select_tag :verification_type , options_for_select([ ["Authenteq","authenteq"], ["Check Point Id","check_point_id"],["Manual (Email)","email"] ], @community.community_tour.verification_type),:class => "form-control email_to"
+                  = select_tag :verification_type , options_for_select([["Check Point Id","check_point_id"],["Manual (Email)","email"] ], @community.community_tour.verification_type),:class => "form-control email_to"
+                  
+                  / = select_tag :verification_type , options_for_select([ ["Authenteq","authenteq"], ["Check Point Id","check_point_id"],["Manual (Email)","email"] ], @community.community_tour.verification_type),:class => "form-control email_to"
               /.form-group.email_field.hide_email
               /  %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
               /    ID verification email to be sent to

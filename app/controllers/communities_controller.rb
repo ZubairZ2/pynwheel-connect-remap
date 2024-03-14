@@ -415,10 +415,10 @@ class CommunitiesController < ApplicationController
   end
 
   def authenteq_report
-    @community = Community.find(params[:community_id])
-    workbook = WriteXLSX.new("public/AuthenteqReport/AuthenteqReport.xlsx")
-    zip_data = write_authenteq_report(workbook)
-    send_data(zip_data, :type => 'application/zip', :filename => "AuthenteqReport.zip")
+    # @community = Community.find(params[:community_id])
+    # workbook = WriteXLSX.new("public/AuthenteqReport/AuthenteqReport.xlsx")
+    # zip_data = write_authenteq_report(workbook)
+    # send_data(zip_data, :type => 'application/zip', :filename => "AuthenteqReport.zip")
   end
 
   def tour_feedback_report
