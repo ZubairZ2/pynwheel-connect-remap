@@ -71,8 +71,8 @@ class TourStop < ApplicationRecord
   end
 
   def remove_associated_stops
-    scheduled_tours = SchedualTour.where(community_id: self.tour.community_id)
-    scheduled_tours.find_each do |scheduled_tour|
+    scheduled_tours = SchedualTour.where(community_id: self.tour.community_id) rescue []
+    scheduled_tours&.find_each do |scheduled_tour|
       if scheduled_tour.stops_list.present?
         scheduled_tour.stops_list.delete(self.id)
         scheduled_tour.save!
