@@ -341,7 +341,7 @@ class SchedualToursController < ApplicationController
 
   def update
     tu = @schedual_tour.tour_user
-    tu.is_sms_enabled = params[:tour_user][:is_sms_enabled] == "0" ? false : true
+    tu.is_sms_enabled = params[:tour_user][:is_sms_enabled] == "0" ? false : true rescue true
     date = Date.strptime(params[:tour_date], '%m/%d/%Y') if params[:tour_date].is_a? String
     time = Time.zone.parse(params[:tour_time]) if params[:tour_time].is_a? String
     date_time = DateTime.new(date.year, date.month, date.day, time.hour, time.min).strftime('%m/%d/%Y %l:%M %p')
