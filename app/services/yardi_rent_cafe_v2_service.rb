@@ -88,7 +88,7 @@ class YardiRentCafeV2Service < BaseService
                   lease_prices_array = []
 
                   if unit.available
-                    rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"])
+                    rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"], available_date_convertor(r["availableDate"]))
                     if rentStrs.present?
                       rentStrs.each do |rentStr|
                         if rentStr[0].to_i > 0
@@ -184,7 +184,7 @@ class YardiRentCafeV2Service < BaseService
                     lease_prices_array = []
 
                     if  unit.available
-                      rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"])
+                      rentStrs = yardi_rent_cafe_rent_matrix(property_code, r["apartmentName"], available_date_convertor(r["availableDate"]))
                       if rentStrs.present?
                         rentStrs.each do |rentStr|
                           if rentStr[0].to_i > 0
@@ -354,9 +354,9 @@ class YardiRentCafeV2Service < BaseService
       end
     end
 
-    def yardi_rent_cafe_rent_matrix(property_code, apartment_name)
+    def yardi_rent_cafe_rent_matrix(property_code, apartment_name, available_date)
       begin
-        rent_matrix = get_apartment_pricing_details(property_code, apartment_name)
+        rent_matrix = get_apartment_pricing_details(property_code, apartment_name, available_date)
         if rent_matrix.present?
           uniq_terms = rent_matrix.map{|x| x["term"].to_i }.uniq
           distinct_data = uniq_terms.map{|term| rent_matrix.map{|data| data if data["term"] == term.to_s}.compact}.compact
@@ -375,8 +375,8 @@ class YardiRentCafeV2Service < BaseService
       DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_availability(property_code)
     end
 
-    def get_apartment_pricing_details property_code, apartment_name
-      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code)
+    def get_apartment_pricing_details property_code, apartment_name, available_date
+      DataProviders::RentCafe::V2ApisService.new(@credentials.community_id).get_apartment_pricing_matrix(apartment_name, property_code, available_date)
     end
 
     def get_floorplan_details property_code

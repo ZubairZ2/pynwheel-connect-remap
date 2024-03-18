@@ -35,8 +35,8 @@ module DataProviders
             DataProviders::RentCafe::V1ApisService.new(@community_id).get_apartment_availability(property_code)
           end
 
-          def get_apartment_pricing_details property_code, apartment_name
-            DataProviders::RentCafe::V1ApisService.new(@community_id).get_apartment_pricing_matrix(apartment_name, property_code)
+          def get_apartment_pricing_details property_code, apartment_name, available_date
+            DataProviders::RentCafe::V1ApisService.new(@community_id).get_apartment_pricing_matrix(apartment_name, property_code, available_date)
           end
 
           def get_floorplan_details property_code
