@@ -5,7 +5,7 @@ class TimeZoneUpdateWorker
   def perform(community_id)
     community = Community.find_by_id community_id
     return unless community.present?
-    community.set_community_time_zone()
+    community.set_country_code()
   end
   
 end
