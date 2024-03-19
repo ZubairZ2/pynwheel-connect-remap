@@ -4,7 +4,7 @@ class FloorplanUnitsService < BaseService
   end
 
   def get_floorplans
-    units = @community.units.available_units
+    units = @community.available_unit_for_self_tour()
 
     floorplans = []
     units.each do |u|
