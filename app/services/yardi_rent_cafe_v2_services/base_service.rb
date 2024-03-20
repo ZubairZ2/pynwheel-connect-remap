@@ -99,11 +99,11 @@ module YardiRentCafeV2Services
       end
 
       def secondary_source
-       "ILS-Ads"
+       "Pynwheel"
       end
 
       def source
-        "G5"
+        "Pynwheel"
       end
 
       def get_scheduled_tour_cancel_date previous_tour
