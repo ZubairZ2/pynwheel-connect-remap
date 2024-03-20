@@ -1,4 +1,6 @@
 module ApplicationHelper
+  include DateFormatter
+  
   def currencies
     Community.last&.all_currencies(Money::Currency::table)
   end
