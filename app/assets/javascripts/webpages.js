@@ -1180,7 +1180,9 @@ function unitMarkerHover() {
       $('#hover-available-text').html('Sold')
     } else {
       $('#hover-available-text').html('Available');
-      $('#popover-available-date').html($(this).data('available-date'));
+      // $('#popover-available-date').html($(this).data('available-date'));
+      $('#popover-available-date').html( formattedDateByRegion( webCommunity.country_code, $(this).data('available-date') ) );
+      
     }
   
     $('#popover-price').html((currency + $(this).data('market-rent')))
@@ -2014,12 +2016,17 @@ function setModalAttributes(element) {
     if ($(element).data('available')) {
       $('#unitModal').find('#availability').html("Available");
       $('#unitModal').find('#available-text').html('Available');
-      $('#unitModal').find('#available-date').html($(element).data('available-date'));
-      $('#available-date').html($(element).data('available-date'));
+
+      // $('#unitModal').find('#available-date').html($(element).data('available-date'));
+      $('#available-date').html(formattedDateByRegion(webCommunity.country_code, $(element).data('available-date')));
+
     } else {
       $('#unitModal').find('#availability').html($(element).data('availability') == "Unoccupied" ? "Available" : "Occupied");
       $('#unitModal').find('#available-text').html('Available');
-      $('#unitModal').find('#available-date').html($(element).data('available-date'));
+
+      // $('#unitModal').find('#available-date').html($(element).data('available-date'));
+      $('#unitModal').find( $('#available-date').html(formattedDateByRegion(webCommunity.country_code, $(element).data('available-date'))));
+
     }
   }
 
@@ -2190,11 +2197,16 @@ function _3dUnitModalDisplay() {
       _3dDate = _3dSelectedUnit.available_date.split("-")
       $('#unitModal').find('#availability').html("Available");
       $('#unitModal').find('#available-text').html('Available');
-      $('#unitModal').find('#available-date').html(`${_3dDate[2]}/${_3dDate[1]}/${_3dDate[0]}`);
+
+      // $('#unitModal').find('#available-date').html(`${_3dDate[2]}/${_3dDate[1]}/${_3dDate[0]}`);
+      $('#unitModal').find( $('#available-date').html( formattedDateByRegion(webCommunity.country_code, _3dSelectedUnit.available_date) ) );
+
     } else {
       $('#unitModal').find('#availability').html(_3dSelectedUnit.availability == "Unoccupied" ? "Available" : "Occupied");
       $('#unitModal').find('#available-text').html('Available');
-      $('#unitModal').find('#available-date').html(_3dSelectedUnit.available_date);
+      // $('#unitModal').find('#available-date').html(_3dSelectedUnit.available_date);
+      $('#unitModal').find( $('#available-date').html( formattedDateByRegion(webCommunity.country_code, _3dSelectedUnit.available_date) ) );
+
     }
   }
   $('#unitModal').find('#market-rent').html(currency + _3dSelectedUnit.market_rent);
@@ -2765,8 +2777,9 @@ function get_unit_availability(unit) {
       if(availableDate <= todayDate) {
         availableDateString = "Available: Now"
       } else {
-        date_arr = unit.available_date.split("-");
-        availableDateString = "Available: " + (`${date_arr[1]}/${date_arr[2]}/${date_arr[0]}`)
+        // date_arr = unit.available_date.split("-");        
+        // availableDateString = "Available: " + (`${date_arr[1]}/${date_arr[2]}/${date_arr[0]}`)
+        availableDateString = `Available: ${formattedDateByRegion(webCommunity.country_code, availableDate)}`
       }
     } else {
       availableDateString = "Unavailable:"

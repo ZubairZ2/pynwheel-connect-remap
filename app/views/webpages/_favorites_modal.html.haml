@@ -48,7 +48,9 @@
             .availabilty-container-start
               %span.available-heading= unit.availability == "Unoccupied" ? "Available" : ""
               %b
-                %span{style: "margin-left: 4%"}= unit.available_date.present? ? determine_available_date(unit.available_date) : nil
+                - available_date = unit.available_date.present? ? determine_available_date(unit.available_date) : nil
+
+                %span{style: "margin-left: 4%"}= formatted_date_by_region(@community.country_code, available_date)
             .availabilty-container{:id => "#{unit.id}-unit-lease-pricing-text-li"}
               %span.available-info{:id => "#{unit.id}-leas-price-option"}
               

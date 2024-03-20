@@ -1,4 +1,6 @@
 class WebpagesController < ActionController::Base
+  include DateFormatter
+  
   before_action :set_community, except: [:update_session]
   before_action :set_webpages_session_id_cookies, only: [:index]
 
@@ -16,6 +18,7 @@ class WebpagesController < ActionController::Base
     @scheduler_widget_link = get_scheduler_link
     @units_with_floorplan_info = []
     @community_info = Community.includes(:credential,:floorplans,{sitemap: [:amenities]},{floorplates: [:amenities]},{units: [:floorplate]}).find(params[:community_id])
+    
     unless @community_info.locked
       if @community_info.has_floorplates?
         @floorplates = @community_info.floorplates
@@ -40,6 +43,7 @@ class WebpagesController < ActionController::Base
       normalize_amenities
       @amenities_data = @amenities_data.to_json
     end
+
     response.headers.delete "X-Frame-Options"  
   end
   def get_scheduler_link
