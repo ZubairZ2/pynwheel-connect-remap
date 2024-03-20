@@ -112,11 +112,11 @@ module YardiRentCafeServices
     end
 
     def source
-      "G5"
+      "Pynwheel"
     end
 
     def secondary_source
-      "ILS-Ads"
+      "Pynwheel"
     end
 
   end
