@@ -3,14 +3,18 @@ module DataProviders
     module V1
       class BaseService
         def initialize(community_id)
-          @batch_size = 10
-          @community_id = community_id
-          @community = Community.find_by_id(community_id)
-          @credential = @community&.credential if @community
+          begin
+            @batch_size = 10
+            @community_id = community_id
+            @community = Community.find_by_id(community_id)
+            @credential = @community&.credential if @community
 
-          @rent_manager_service = DataProviders::RentManager::V1ApisService.new(@community_id)
-          @rent_manager_service.de_auth_api_token() # De authorize previous token
-          @rent_manager_service.generate_api_auth_token() # Create new authorize token
+            @rent_manager_service = DataProviders::RentManager::V1ApisService.new(@community_id)
+            @rent_manager_service.de_auth_api_token() # De authorize previous token
+            @rent_manager_service.generate_api_auth_token() # Create new authorize token
+          rescue =>  error
+            false
+          end
         end
 
         def get_property_details(property_code)
