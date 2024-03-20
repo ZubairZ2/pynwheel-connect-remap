@@ -28,6 +28,10 @@ module DateFormatter
       rescue ArgumentError
         Date.strptime(date, "%d/%m/%Y")
       rescue ArgumentError
+        Date.strptime(date, "%m-%d-%Y")
+      rescue ArgumentError
+        Date.strptime(date, "%d-%m-%Y")
+      rescue ArgumentError
         raise ArgumentError, "Invalid date format: #{date}"
       end
     end
