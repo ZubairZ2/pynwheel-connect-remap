@@ -479,7 +479,7 @@ class Community < ApplicationRecord
       when "yardirentcafe"
         (credential.c_code.present? || credential.api_token.present?) && credential.p_code.present?
       when "rentmanager"
-        (credential.rentmanager_username.present? && credential.rentmanager_password.present? && credential.rentmanager_property_id.present?)
+        (credential.rentmanager_username.present? && credential.rentmanager_password.present? && credential.rentmanager_property_id.present? && credential.rentmanager_base_url.present?)
       when "realpagesvc"
         credential.site_id.present? && credential.pmc_id.present?
       when "yardi"

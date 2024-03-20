@@ -73,7 +73,7 @@ module DataProviders
         end
 
         def update_company_token token
-          @company.update(rentmanager_auth_token: token)
+          @credential.update(rentmanager_auth_token: token)
         end
 
         def mandatory_params_to_json
@@ -120,7 +120,7 @@ module DataProviders
         end
 
         def fetch_request_url(extended_url)
-          "#{ENV['RENT_MANAGER_API_BASE_URL']}#{extended_url}"
+          "#{api_base_url}#{extended_url}"
         end
 
         def fetch_request_header
@@ -128,6 +128,10 @@ module DataProviders
             'Content-Type' => 'application/json',
             'X-RM12Api-ApiToken' => current_api_auth_token
           }
+        end
+
+        def api_base_url
+          @credential.rentmanager_base_url.start_with?('http') ? @credential.rentmanager_base_url : "https://#{@credential.rentmanager_base_url}.api.rentmanager.com"
         end
 
         def username
@@ -139,7 +143,7 @@ module DataProviders
         end
 
         def current_api_auth_token
-          @company.rentmanager_auth_token
+          @credential.rentmanager_auth_token
         end
 
         def location_id

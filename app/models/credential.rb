@@ -101,7 +101,8 @@ class Credential < ApplicationRecord
     {
       rentmanager_username: self.rentmanager_username,
       rentmanager_password: self.rentmanager_password,
-      rentmanager_property_id: self.rentmanager_property_id
+      rentmanager_property_id: self.rentmanager_property_id,
+      rentmanager_base_url: self.rentmanager_base_url
     }
   end
   
