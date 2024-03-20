@@ -139,7 +139,7 @@ module DataProviders
               unit.available = r["IsVacant"]
               unit.property_id = r["PropertyID"]
               unit.unit_type = r["Name"]
-              unit.square_feet = r["SquareFootage"]
+              unit.square_feet = (r["SquareFootage"].to_f > 0) ? r["SquareFootage"] : 1.0
               unit.market_rent = get_market_rent(r)
               unit.min_effective_rent = get_market_rent(r)
               unit.max_effective_rent = get_market_rent(r)
