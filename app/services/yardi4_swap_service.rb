@@ -16,7 +16,7 @@ class Yardi4SwapService < BaseService
         server_name = credentials.server_name
         database = credentials.database
         platform = credentials.platform
-        property_id = property_id
+        property_id = property_id&.strip
         interface_entity = credentials.interface_entity
         license_key = YARDI_LICENSE_KEY
 
