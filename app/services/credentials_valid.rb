@@ -210,6 +210,9 @@ class CredentialsValid < BaseService
     elsif community.data_provider == "yardirentcafe"
       verify_rent_cafe_credentials(community, credentials)
 
+    elsif community.data_provider == "rentmanager"
+      verify_rent_manager_credentials(community, credentials)
+
     elsif community.data_provider == "zaremba"
       begin
         property_id = credentials.zaremba_property_id.split(',')[0] rescue []
@@ -255,6 +258,20 @@ class CredentialsValid < BaseService
   end
 
   private
+
+    def verify_rent_manager_credentials community, credentials
+      begin
+        property_code = credentials&.rentmanager_property_id&.split(",")[0] rescue ""
+        property_code = property_code&.strip
+        rent_manager_service = DataProviders::RentManager::V1::BaseService.new(community.id)
+        response = rent_manager_service.get_property_details(property_code)
+
+        return response.success?
+      rescue => e
+        return false
+      end
+
+    end
 
     def verify_rent_cafe_credentials community, credentials
       if credentials.rentcafe_api_version == "RentCafe V2"

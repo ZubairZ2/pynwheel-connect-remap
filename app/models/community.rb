@@ -478,6 +478,8 @@ class Community < ApplicationRecord
         credential.entrata_url.present? && credential.username.present? && credential.password.present? && credential.property_id.present?
       when "yardirentcafe"
         (credential.c_code.present? || credential.api_token.present?) && credential.p_code.present?
+      when "rentmanager"
+        (credential.rentmanager_username.present? && credential.rentmanager_password.present? && credential.rentmanager_property_id.present? && credential.rentmanager_base_url.present?)
       when "realpagesvc"
         credential.site_id.present? && credential.pmc_id.present?
       when "yardi"
@@ -925,6 +927,8 @@ class Community < ApplicationRecord
         import_psi_data
       when "yardirentcafe"
         import_yardirentcafe_data
+      when "rentmanager"
+        import_rentmanager_data
       when "realpagesvc"
         import_realpage_svc_data
       when "yardi"
@@ -980,6 +984,8 @@ class Community < ApplicationRecord
       EntrataDataUpdateWorker.perform_async self.id
     when "yardirentcafe"
       YardirentcafeDataUpdateWorker.perform_async self.id
+    when "rentmanager"
+      RentManagerDataImportWorker.perform_async self.id
     when "realpagesvc"
       RealPageDataUpdateWorker.perform_async self.id
     when "yardi"
@@ -1130,6 +1136,10 @@ s  end
     RentCafeDataImportWorker.perform_async self.id
   end
 
+  def import_rentmanager_data
+    RentManagerDataImportWorker.perform_async self.id
+  end
+
   def swap_yardirentcafe_data
     ImportYardirentcafeSwapDataJob.perform_async credential.attributes.to_json
   end
@@ -1230,6 +1240,8 @@ s  end
         connect_to_psi
       when "yardirentcafe"
         connect_to_yardirentcafe
+      when "rentmanager"
+        connect_to_rentmanager
       when "realpagesvc"
         connect_to_realpagesvc
       when "yardi"
@@ -1258,6 +1270,11 @@ s  end
       connect_space_configuration_psi
     end
 
+  end
+
+  def connect_to_rentmanager
+    rentmanager_connection_service = DataProviders::RentManager::V1::TestConnectionService.new(self.id)
+    rentmanager_connection_service.perform
   end
 
   def connect_pricing_to_psi

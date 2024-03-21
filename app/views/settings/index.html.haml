@@ -24,7 +24,7 @@
 
     .row#data-connection-buttons
       / Start Panel left Side
-      .col-lg-12.col-md-12
+      .col-lg-12.col-md-12{:style=>"margin-top: 50px;"}
 
         - if current_user.is_super_admin? or current_user.is_dwelo_admin?
           .row
@@ -69,12 +69,13 @@
                     All previous data, plotting, floor plan images, unit records, and floor plan records will be PERMANENTLY DELTED.
 
             - if current_user.is_super_admin? or current_user.is_dwelo_admin?
-              .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
-                .btn.btn-warning{"data-name"=>"Update data","data-href" => "/communities/#{current_community.id}/update_imported_data", "data-target" => "#confirm-delete-update-data", "data-toggle" => "modal", :href => "javascrip::;"} Update Data
-                %span#propertyDetailNameText
-                  Use this button to update data when IDs have been changed (such as when the data provider has changed). It will key off of unit name and floor plan name to try to match records.
-                  %b
-                    Do NOT use this button if Unit Names have been manually overridden or have changed.
+              - unless current_community.data_provider === "rentmanager"
+                .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}
+                  .btn.btn-warning{"data-name"=>"Update data","data-href" => "/communities/#{current_community.id}/update_imported_data", "data-target" => "#confirm-delete-update-data", "data-toggle" => "modal", :href => "javascrip::;"} Update Data
+                  %span#propertyDetailNameText
+                    Use this button to update data when IDs have been changed (such as when the data provider has changed). It will key off of unit name and floor plan name to try to match records.
+                    %b
+                      Do NOT use this button if Unit Names have been manually overridden or have changed.
             
             - if current_user.is_super_admin? or current_user.is_dwelo_admin?
               .propertyDetailName{ "data-toggle" => "propertyDetailAddressPopover","data-content" => " "}

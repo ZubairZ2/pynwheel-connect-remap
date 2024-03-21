@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240108135124) do
+ActiveRecord::Schema.define(version: 20240320051326) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -324,7 +324,8 @@ ActiveRecord::Schema.define(version: 20240108135124) do
     t.string   "email_logo",                         default: ""
     t.boolean  "show_amenity_name",                  default: true
     t.boolean  "sitemap_auto_zoom",                  default: false
-    t.boolean  "use_company_level_data_settings",    default: true
+    t.boolean  "use_company_level_data_settings",    default: false
+    t.string   "country_code"
     t.index ["community_group_id"], name: "index_communities_on_community_group_id", using: :btree
     t.index ["company_id"], name: "index_communities_on_company_id", using: :btree
     t.index ["region_id"], name: "index_communities_on_region_id", using: :btree
@@ -438,10 +439,15 @@ ActiveRecord::Schema.define(version: 20240108135124) do
     t.string   "currency",                        default: "840"
     t.string   "rentcafe_v2_auth_token"
     t.datetime "rentcafe_v2_token_expires_at"
-    t.string   "rentcafe_api_version",            default: "Rentcafe V1"
     t.integer  "company_id"
+    t.string   "rentcafe_api_version",            default: "Rentcafe V1"
     t.string   "yardi_username"
     t.string   "yardi_password"
+    t.string   "rentmanager_username",            default: ""
+    t.string   "rentmanager_password",            default: ""
+    t.string   "rentmanager_property_id",         default: ""
+    t.string   "rentmanager_auth_token",          default: ""
+    t.string   "rentmanager_base_url",            default: ""
     t.index ["community_id"], name: "index_credentials_on_community_id", using: :btree
     t.index ["company_id"], name: "index_credentials_on_company_id", using: :btree
   end
@@ -1304,14 +1310,17 @@ ActiveRecord::Schema.define(version: 20240108135124) do
     t.string   "client_id"
     t.string   "client_secret"
     t.integer  "community_id"
-    t.datetime "created_at",                              null: false
-    t.datetime "updated_at",                              null: false
+    t.datetime "created_at",                                 null: false
+    t.datetime "updated_at",                                 null: false
     t.string   "file"
     t.string   "lock_instruction_text",      default: ""
     t.string   "lock_image",                 default: ""
     t.string   "passwordless_client_id",     default: ""
     t.string   "passwordless_client_secret", default: ""
     t.string   "latch_property_name",        default: ""
+    t.boolean  "is_building_name_added",     default: false
+    t.boolean  "is_integration_submitted",   default: false
+    t.boolean  "is_mission_control_setup",   default: false
     t.index ["community_id"], name: "index_latches_on_community_id", using: :btree
   end
 
@@ -1943,24 +1952,24 @@ ActiveRecord::Schema.define(version: 20240108135124) do
     t.decimal  "latitude"
     t.decimal  "longitude"
     t.string   "image"
-    t.datetime "created_at",                                      null: false
-    t.datetime "updated_at",                                      null: false
+    t.datetime "created_at",                                           null: false
+    t.datetime "updated_at",                                           null: false
     t.integer  "x_plot",                    default: 0
     t.integer  "y_plot",                    default: 0
-    t.json     "sort_hash",                 default: "{}",        null: false
+    t.json     "sort_hash",                 default: "{}",             null: false
     t.boolean  "visual_id_verification",    default: true
     t.string   "marker_icon_size"
-    t.string   "dotted_line_color",         default: "blue"
+    t.string   "dotted_line_color",         default: "#008FD5"
     t.string   "max_tour_users"
     t.boolean  "credit_card_required",      default: true
     t.integer  "starting_floor"
-    t.json     "floor_elevator",            default: "{}",        null: false
+    t.json     "floor_elevator",            default: "{}",             null: false
     t.string   "building"
     t.boolean  "marketing_source_required", default: false
     t.boolean  "only_scheduled_tour",       default: false
     t.integer  "grace_period",              default: 10
-    t.string   "verification_type",         default: "authenteq"
-    t.text     "building_order",            default: [],                       array: true
+    t.string   "verification_type",         default: "check_point_id"
+    t.text     "building_order",            default: [],                            array: true
     t.integer  "max_virtual_tour_users"
     t.integer  "max_self_tour_users"
     t.integer  "max_guided_tour_users"
