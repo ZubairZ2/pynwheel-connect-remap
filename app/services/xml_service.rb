@@ -1,14 +1,20 @@
 class XmlService < BaseService
+  attr_reader :credentials
+
+  def initialize credentials
+    @credentials = credentials
+  end
+
   def perform
     @unit_record = []
-    property_ids = credentials.xml_domain.split(',') rescue []
-    community = Community.find credentials.community_id
+    property_ids = @credentials.xml_domain.split(',') rescue []
+    community = Community.find @credentials.community_id
     community&.community_data_updated_on()
     
     property_ids.each do |property_id|
       begin
 
-        filename = credentials.xml_filename
+        filename = @credentials.xml_filename
         domain = property_id
         url = "http://pynwheel.com/swoop/datafeeds/tgm/"
         url = url  + filename + ".xml"
@@ -47,20 +53,21 @@ class XmlService < BaseService
           save_xml_floorplans(floorplans,property_id)
         else
           # puts '-----------------------------' , response["response"]["error"]["message"]
-          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: credentials.community_id})
+          ExceptionNotifier.notify_exception(Exception.new,data: {message: response["response"]["error"]["message"],community_id: @credentials.community_id})
         end
       rescue => e
-        #ExceptionNotifier.notify_exception(e,data: {community_id: credentials.community_id})
+        #ExceptionNotifier.notify_exception(e,data: {community_id: @credentials.community_id})
       end
     end
   end
+
   def save_xml_units(units,property_id)
 
-    unit_present =  Unit.where("community_id = ? AND provider IN (?)", credentials.community_id,  ["xml"]).map{|x| x.provider_unit_id}
+    unit_present =  Unit.where("community_id = ? AND provider IN (?)", @credentials.community_id,  ["xml"]).map{|x| x.provider_unit_id}
     units.each do |u|
       vacateDate = ""
       begin
-        unit = Unit.find_by(provider: "xml",community_id: credentials.community_id,provider_unit_id: u["Id"])
+        unit = Unit.find_by(provider: "xml",community_id: @credentials.community_id,provider_unit_id: u["Id"])
         if unit.present?
           # unit.property_id = property_id
           # unit.unit_type = u["Unit"]["Information"]["UnitType"]
@@ -112,7 +119,7 @@ class XmlService < BaseService
 
         else
           vacateDate = ""
-          unit = Unit.where(provider: "xml",community_id: credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize
+          unit = Unit.where(provider: "xml",community_id: @credentials.community_id,provider_unit_id: u["Id"]).first_or_initialize
           unless unit.manual_override
             unit.property_id = property_id
             unit.unit_type = u["Unit"]["Information"]["UnitType"]
@@ -179,7 +186,7 @@ class XmlService < BaseService
       no_unit = nil
     end
     no_unit.each do |un|
-      unit = Unit.find_by(community_id: credentials.community_id, provider_unit_id: un)
+      unit = Unit.find_by(community_id: @credentials.community_id, provider_unit_id: un)
       unit.availability = "Occupied"
       unit.available = false
       unit.available_date = nil
@@ -189,7 +196,7 @@ class XmlService < BaseService
 
   def save_xml_floorplans(floorplans,property_id)
     floorplans.each do |f|
-      floorplan = Floorplan.find_by(provider: "xml",community_id: credentials.community_id,provider_floorplan_id: f["Id"])
+      floorplan = Floorplan.find_by(provider: "xml",community_id: @credentials.community_id,provider_floorplan_id: f["Id"])
       if floorplan.present?
         # floorplan.property_id = property_id
         # floorplan.name = f["Name"]
@@ -219,7 +226,7 @@ class XmlService < BaseService
 
         floorplan.save(validate: false)
       else
-        floorplan = Floorplan.where(provider: "xml",community_id: credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize
+        floorplan = Floorplan.where(provider: "xml",community_id: @credentials.community_id,provider_floorplan_id: f["Id"]).first_or_initialize
         floorplan.property_id = property_id
         unless floorplan.name_is_updated.present? && floorplan.name_is_updated
           floorplan.name = f["Name"]

@@ -20,6 +20,10 @@ class DataProvidersService
         YardiDataUpdateWorker.perform_async community.id
       when "resman"
         ResmanDataUpdateWorker.perform_async community.id
+      when "zaremba"
+        ZarembaDataUpdateWorker.perform_async community.id
+      when "xml"
+        XmlDataUpdateWorker.perform_async community.id
       else
         next
       end

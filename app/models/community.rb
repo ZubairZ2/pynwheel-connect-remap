@@ -993,9 +993,9 @@ class Community < ApplicationRecord
     when "resman"
       ResmanDataUpdateWorker.perform_async self.id
     when "zaremba"
-      ImportZarembaDataJob.perform_async self.credential.attributes.to_json
+      ZarembaDataUpdateWorker.perform_async self.id
     when "xml"
-      ImportXmlDataJob.perform_async self.credential.attributes.to_json
+      XmlDataUpdateWorker.perform_async self.id
     end
   end
 
