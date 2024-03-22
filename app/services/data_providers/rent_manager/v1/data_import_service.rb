@@ -8,7 +8,7 @@ module DataProviders
 
           property_codes.each do |property_code|
             begin
-
+              
               property_code = property_code&.strip
               import_property_details(property_code)
               import_property_floorplans(property_code)

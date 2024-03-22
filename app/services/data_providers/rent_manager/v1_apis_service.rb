@@ -131,15 +131,19 @@ module DataProviders
         end
 
         def api_base_url
-          @credential.rentmanager_base_url.start_with?('http') ? @credential.rentmanager_base_url : "https://#{@credential.rentmanager_base_url}.api.rentmanager.com"
+          base_url.start_with?('http') ? base_url : "https://#{base_url}.api.rentmanager.com"
+        end
+
+        def base_url
+          @credential.rentmanager_base_url&.strip
         end
 
         def username
-          @credential.rentmanager_username
+          @credential.rentmanager_username&.strip
         end
 
         def password
-          @credential.rentmanager_password
+          @credential.rentmanager_password&.strip
         end
 
         def current_api_auth_token
