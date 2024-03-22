@@ -1599,7 +1599,7 @@ json.gallery do
     json.images @community.gallery_images.each do |img|
       unless params[:action] == "ios_data"
         if img.standard_image_url.include?(".mp4") || img.standard_image_url.include?(".MP4")
-          json.url Rails.env.development? ? local_assets_base_url+img.standard_image_url : img.video.url
+          json.url Rails.env.development? ? local_assets_base_url+img.standard_image_url : (img.video.url || img.standard_image_url)
           json.video true
           json.poster "https://images-pynwheel-cms-v2.s3.amazonaws.com/uploads/amenity/image/124/124-1518624577-video-placeholder.jpg"
         else
