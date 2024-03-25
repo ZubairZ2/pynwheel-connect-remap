@@ -59,7 +59,7 @@ json.community_group @communities do |co|
 
   json.community_name  @community.name
   json.currency_symbol @community.get_currency_symbol()
-  json.country_code @community.country_code
+  json.country_code country_code_by_region(@community.country_code)
   json.date_format_by_region date_format_by_region(@community.country_code) 
   json.community_id  @community.id
   json.data_url "/api/v1/communities/#{@community.id}/data.json"

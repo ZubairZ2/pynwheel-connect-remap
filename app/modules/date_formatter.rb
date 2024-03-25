@@ -30,6 +30,19 @@ module DateFormatter
     end
   end
 
+  def country_code_by_region country_code
+    case country_code
+    when "US"
+      "en-US"
+    when "GB"
+      "en-GB"
+    when "CA"
+      "en-CA"
+    else
+      "en-US"
+    end
+  end
+
   private
 
   def convert_to_date date
