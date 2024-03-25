@@ -17,6 +17,19 @@ module DateFormatter
     end
   end
 
+  def date_format_by_region country_code
+    case country_code
+    when "US"
+     '%m/%d/%Y'
+    when "GB"
+      '%d/%m/%Y'
+    when "CA"
+      '%d/%m/%Y'
+    else
+      '%m/%d/%Y'
+    end
+  end
+
   private
 
   def convert_to_date date
