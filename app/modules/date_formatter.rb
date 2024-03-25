@@ -20,13 +20,13 @@ module DateFormatter
   def date_format_by_region country_code
     case country_code
     when "US"
-     '%m/%d/%Y'
+      "MM/DD/YYYY"
     when "GB"
-      '%d/%m/%Y'
+      "DD/MM/YYYY"
     when "CA"
-      '%d/%m/%Y'
+      "DD/MM/YYYY"
     else
-      '%m/%d/%Y'
+      "MM/DD/YYYY"
     end
   end
 
