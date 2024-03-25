@@ -62,7 +62,7 @@ class CommunityTour
             is_favorite = @favorite_unit_array.include?(stop.stop_id.to_s) ? true : false
             bedrooms = u&.floorplan&.bedrooms.to_i
             bathrooms = u&.floorplan&.bathrooms.to_i
-            pricing = "#{u.community.get_currency_symbol}#{u&.floorplan&.market_rent&.to_i}"
+            pricing = "#{u.community.get_currency_symbol}#{u&.effective_rent&.to_i}"
             floorplan_image = u.present? ? (u.image.present? ? u.image.url : (u&.floorplan&.image.present? ? u&.floorplan&.image.url : nil rescue nil) ): nil
             primary_floorplan = u.present? ? (u.standard_image_url.present? ? u.standard_image_url : (u&.floorplan&.standard_image_url.present? ? u&.floorplan&.standard_image_url : nil rescue nil) ): nil
             secondary_floorplan = u.present? ? (u.secondary_image.present? ? u.secondary_image.url : (u&.floorplan&.secondary_image.present? ? u&.floorplan&.secondary_image.url : nil rescue nil) ): nil
