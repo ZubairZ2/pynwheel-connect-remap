@@ -124,7 +124,7 @@ class Community < ApplicationRecord
   end
 
   def available_unit_for_self_tour
-    return false unless self.community_tour&.tour_setting&.enable_tour_customization
+    return [] unless self.community_tour&.tour_setting&.enable_tour_customization
 
     units_query = if SELF_TOUR_PROVIDERS.include?(self.data_provider)
                     self.units.vacant_and_available
@@ -133,9 +133,9 @@ class Community < ApplicationRecord
                   end
 
     if self.is_sitemap
-      units_query.count > 0
+      units_query
     else
-      units_query.where.not(floor: [nil], building: ["", nil, "N/A"]).count > 0
+      units_query.where.not(floor: [nil], building: ["", nil, "N/A"])
     end
   end
 
