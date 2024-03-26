@@ -270,7 +270,7 @@ class Community < ApplicationRecord
   end
 
   def disregard_forms form_type
-    ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION].include?(form_type))
+    ([ADDITIONAL_PAGES, EBROCHURE, HARDWARE_SPECS, AMENITY_IMAGES, DESIGN_DIRECTION, COMPANY_DETAILS].include?(form_type))
   end
 
   def set_community_status(current_user)
