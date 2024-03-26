@@ -119,10 +119,10 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
   def mendatory_detail_forms
     [
-      {
-        name: COMPANY_DETAILS,
-        status: company_status
-      },
+      # {
+      #   name: COMPANY_DETAILS,
+      #   status: company_status
+      # },
       {
         name: PROPERTY_MANAGEMENT_SYSTEM,
         status: data_provider_status
