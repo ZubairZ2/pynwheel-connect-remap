@@ -60,9 +60,9 @@ class TourHistory < ApplicationRecord
 
         @complete_tour_content = ["#{community.name} has been visited", "#{touruser.name.titleize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.titleize} Visitor Details</a> "]
         if self.tour_user_id == 1445
-          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "completed Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "completed Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         else
-          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         end
         
         tour_user_remotelock_data(community)
@@ -242,11 +242,11 @@ class TourHistory < ApplicationRecord
   def send_email_sms_or_both_to_touruser thank_you_msg, community
     content = (community.community_tour.tour_setting.enable_header_footer ? (thank_you_msg.gsub("\n", "<br>").html_safe) :  "<div style='vertical-align:middle; text-align:center'><img style='height: 100px;' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + (thank_you_msg.gsub("\n", "<br>").html_safe))
   	if community.alert_contact == "email"
-      send_email_tour_user "Thank you for visiting #{community.name}", content, community.email, community
+      send_email_tour_user "Thank you for visiting #{fetch_property_name(community.name)}", content, community.email, community
   	elsif community.alert_contact == "phone"
   		send_sms_tour_user( thank_you_msg, community )
   	else
-  		send_email_tour_user "Thank you for visiting #{community.name}", content, community.email, community
+  		send_email_tour_user "Thank you for visiting #{fetch_property_name(community.name)}", content, community.email, community
   		send_sms_tour_user( thank_you_msg, community )
   	end
   end
@@ -317,6 +317,10 @@ class TourHistory < ApplicationRecord
   def time_distance
     ActionController::Base.helpers.distance_of_time_in_words self.arrived, self.left
   end
+
+  def fetch_property_name community_name
+    SentenceFormatter.capitalized_words(community_name)
+  end  
 
   def active_user_exists(event, guest_id)
     return (event["type"] == "unlocked_event" and event["attributes"]["source"] == "user" and event["attributes"]["status"] == "succeeded" and event["attributes"]["associated_resource_id"].present? and event["attributes"]["associated_resource_id"] == guest_id)

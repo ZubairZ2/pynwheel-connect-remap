@@ -55,9 +55,9 @@ namespace :delayed_email_notifications do
   					@mail_content[1] = "#{@mail_content.last} #{(TourStop.find th.abandoned_tour_at_stop.to_i).name.titleize rescue "Not Found"}."
   					
   					if th.tour_user_id == 1445
-  						@thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "111Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+  						@thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "111Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
   					else
-  						@thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{community.name}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+  						@thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
   					end
 
   					touruser_remotelock_data community, th
@@ -102,11 +102,11 @@ namespace :delayed_email_notifications do
   def send_email_sms_or_both_to_touruser thank_you_msg, community, th
 
 		if community.alert_contact == "email"
-			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}", "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
+			send_email_to_user_without_humanize "Thank you for visiting #{fetch_property_name(community.name)}", "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
 		elsif community.alert_contact == "phone"
 			send_sms_tour_user( thank_you_msg, th, community)
 		else
-			send_email_to_user_without_humanize "Thank you for visiting #{community.name.split.map(&:capitalize).join(' ')}","<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
+			send_email_to_user_without_humanize "Thank you for visiting #{fetch_property_name(community.name)}","<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /></div><br/> " + thank_you_msg, th, community.email,community
 			send_sms_tour_user(thank_you_msg, th, community)
 		end
 	end
@@ -153,6 +153,11 @@ namespace :delayed_email_notifications do
 		rescue
 		end
 	end
+
+	def fetch_property_name community_name
+    SentenceFormatter.capitalized_words(community_name)
+  end  
+
 
 	def one_day_before_emails schedual_tour
 	  return if schedual_tour.blank?
