@@ -174,9 +174,10 @@ class Credential < ApplicationRecord
   private
 
   def create_or_update_unit community_id, u
-    unit = Unit.where(provider: "spreadsheet", community_id: community_id, provider_unit_id: u[0].to_s.gsub(".","") ).first_or_initialize
+    provider_unit_id = [ u[0].to_s.gsub(".",""), u[0].to_s.gsub(".","").gsub(/\s+/, '-') ]&.compact&.uniq
+    unit = Unit.where(provider: "spreadsheet", community_id: community_id, provider_unit_id: provider_unit_id ).first_or_initialize
 
-    unit.provider_unit_id = u[0].to_s.gsub(".","")
+    unit.provider_unit_id = u[0].to_s.gsub(".","").gsub(/\s+/, '-')
     unit.marketing_name = get_integer_value(u[0])
     unit.unit_type = get_integer_value(u[0])
     unit.floorplan_id = u[1]
