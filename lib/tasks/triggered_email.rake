@@ -40,7 +40,7 @@ namespace :triggered_email do
 
         community_code = get_community_code community
         
-        scheduler_link = "#{base_url}scheduler_widget/test_widget?scheduled_tour_id=#{schedule_tour.id}&community_id=#{community.id}&tour_user_id=#{tu.id}&reschedule_tour=true&direct=true&community_code=#{community_code}"
+        scheduler_link = get_schedule_tour_url(community, schedule_tour, tu) #{}"#{base_url}scheduler_widget/test_widget?scheduled_tour_id=#{schedule_tour.id}&community_id=#{community.id}&tour_user_id=#{tu.id}&reschedule_tour=true&direct=true&community_code=#{community_code}"
         reschedule_appointment_button = "<a href='#{scheduler_link}' target='_blank' style='margin-top: 25px;margin-bottom: 10px;color: #FFFFFF; font-size: 16px; line-height:22.37px;font-weight: 700;-webkit-text-size-adjust: none;text-align: center; text-decoration: none;display: inline-block;overflow-wrap: break-word;word-break: break-word; word-wrap:break-word; mso-border-alt: none; box-sizing: border-box;font-family:arial,helvetica,sans-serif;background-color: #3f9d6d; '>	<span style='display:block;padding:10px 20px;line-height:140%;'><span style='font-family:arial,helvetica,sans-serif; font-size: 20px; line-height:30px;'><b><span style='line-height: 30px; font-size: 20px;'>Reschedule My Tour!</span></b></span></span></a>"
 
         email_msg_with_st = "Hi, #{tu.name.titleize}. It looks like you missed your scheduled tour at #{community.name}. We would hate for you to miss out on an opportunity to find your perfect home. Please click the link below to reschedule.<br><br><div>#{reschedule_appointment_button}</div><br><br>Thank you!"
