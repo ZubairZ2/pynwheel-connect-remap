@@ -101,7 +101,7 @@
 
                                     - if unit.available_date.present?
                                       %p{:style => "text-align:left;font-family:Helvetica,Arial,sans-serif;font-size:14px;margin-bottom:0;margin-top:5px;color:#fff;line-height:135%; margin-left:10px;"}
-                                        %b #{unit.available_date.strftime("%m/%d/%Y")}
+                                        %b #{formatted_date_by_region(@community.country_code, unit.available_date)}
                               %tr
                                 %td
                             %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :style => "background-color:#4c4d4e;", :width => "100%"}

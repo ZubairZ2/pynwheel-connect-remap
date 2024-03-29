@@ -115,7 +115,7 @@
                                       - if unit.available_date < Time.now 
                                         %b Available Now
                                       - else
-                                        %b Available #{unit.available_date.strftime("%m-%d-%Y")}
+                                        %b Available #{formatted_date_by_region(@community.country_code, unit.available_date)}
                               %tr
                                 %td
                             %table{:border => "0", :cellpadding => "10", :cellspacing => "0", :style => "background-color:#4c4d4e;", :width => "100%"}
