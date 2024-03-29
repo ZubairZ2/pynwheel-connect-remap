@@ -41,9 +41,7 @@ module DateFormatter
     end
   end
 
-  private
-
-  def convert_to_date date
+  def self.convert_to_date date
     unless date.instance_of?(Date)
       date = begin
         Date.strptime(date, "%Y-%m-%d")
