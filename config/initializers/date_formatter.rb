@@ -1,7 +1,5 @@
 module DateFormatter
-  extend ActiveSupport::Concern
-
-  def formatted_date_by_region(country_code, date)
+  def self.formatted_date_by_region(country_code, date)
     return date if (date === "Now" || !date.present?)
     date =  convert_to_date(date)
 
@@ -17,7 +15,7 @@ module DateFormatter
     end
   end
 
-  def date_format_by_region country_code
+  def self.date_format_by_region country_code
     case country_code
     when "US"
       "MM/dd/yyyy"
@@ -30,7 +28,7 @@ module DateFormatter
     end
   end
 
-  def country_code_by_region country_code
+  def self.country_code_by_region country_code
     case country_code
     when "US"
       "en-US"

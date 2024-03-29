@@ -1,6 +1,4 @@
-class WebpagesController < ActionController::Base
-  include DateFormatter
-  
+class WebpagesController < ActionController::Base  
   before_action :set_community, except: [:update_session]
   before_action :set_webpages_session_id_cookies, only: [:index]
 
