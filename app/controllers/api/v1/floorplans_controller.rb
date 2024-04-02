@@ -90,15 +90,15 @@ module Api
           path.path_points.destroy_all if path.present?
           path.destroy if path.present?
 
-          VisitedStop.where(tour_stop_id: tour_stop.id).destroy_all
+          # VisitedStop.where(tour_stop_id: tour_stop.id).destroy_all
           
-          if tour_stop.stop_type == "elevator"
-            (Elevator.find tour_stop.stop_id).destroy if Elevator.where(id: tour_stop.stop_id).any?
-          end
+          # if tour_stop.stop_type == "elevator"
+          #   (Elevator.find tour_stop.stop_id).destroy if Elevator.where(id: tour_stop.stop_id).any?
+          # end
           
-          if tour_stop.stop_type == "building_starting_point"
-            (BuildingStartingPoint.find tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: tour_stop.stop_id).any?
-          end
+          # if tour_stop.stop_type == "building_starting_point"
+          #   (BuildingStartingPoint.find tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: tour_stop.stop_id).any?
+          # end
           
           add_remove_stop_into_sort_hash(params[:building], params[:floor], tour_stop, "remove")
 
