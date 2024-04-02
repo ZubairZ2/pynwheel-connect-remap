@@ -95,7 +95,7 @@
       end
     else
       json.scheduler_widget_allowed false
-      json.tour_alert "Its outside of the visiting hours."
+      json.tour_alert "It’s outside of the visiting hours. Please come back during visiting hours."
     end
   end
 
