@@ -60,7 +60,7 @@ namespace :delayed_email_notifications do
   						@thank_you_content  = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
   					end
 
-						@thank_you_content = append_app_links_with_emailbody(community, @thank_you_content)
+						# @thank_you_content = append_app_links_with_emailbody(community, @thank_you_content)
 
   					touruser_remotelock_data community, th
   					send_email_sms_or_both(@mail_content, community) unless tour_user&.is_virtual_tour?
@@ -116,6 +116,7 @@ namespace :delayed_email_notifications do
 	def send_email_to_user_without_humanize subj, body, th=nil, comm_email=nil,community
 		begin
 			emails = comm_email.gsub(" ","").split(',')
+			body = append_app_links_with_emailbody(community, body)
 			NotificationMailer.tour_history_mail(subj, body, th.tour_user.email,emails[0],community,false,nil).deliver
 		rescue
 
@@ -151,6 +152,7 @@ namespace :delayed_email_notifications do
 
 	def send_sms_tour_user message_body, th, community
 		begin
+			message_body = append_app_links_with_text_message(community, message_body)
 			TwilioSmsWorker.perform_async(message_body, th&.tour_user&.phone_number, th&.tour_user&.email, community&.id) if th.tour_user.phone_number.present? && th.tour_user.is_sms_enabled && community.crm_credential.crm_provider != "salesforce"
 		rescue
 		end
@@ -334,15 +336,25 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 	def logo_style
     "outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; clear: both; display: inline-block !important; border: none; height: auto; float: none; width: 200px; max-width: 200px;"
   end
-
+	
 	def append_app_links_with_emailbody community, email_body
-    @community = community
-    company_name = community.company.name.downcase
+		@community = community
+		company_name = community.company.name.downcase
 
-    @app_link = AppLinks.get_app_link(company_name)
-    @android_link = AppLinks.get_android_link(company_name)
+		@app_link = AppLinks.get_app_link(company_name)
+		@android_link = AppLinks.get_android_link(company_name)
 
-    "<div>#{email_body}<br><br>Download the Self Tour App from the links below: <br>iPhone Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{@android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>"
-  end
+		"<div>#{email_body}<br><br>Download the Self Tour App from the links below: <br>iPhone Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{@android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>"
+	end
+
+	def append_app_links_with_text_message community, message_body
+		@community = community
+		company_name = community.company.name.downcase
+
+		@app_link = AppLinks.get_app_link(company_name)
+		@android_link = AppLinks.get_android_link(company_name)
+
+		"#{message_body}\nDownload the Self Tour App from the links below: \niPhone Users: #{@app_link}\nAndroid Users: #{@android_link}\n"
+	end
 
 end

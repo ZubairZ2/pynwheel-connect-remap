@@ -66,7 +66,7 @@ class TourHistory < ApplicationRecord
           @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
         end
 
-        @thank_you_content = append_app_links_with_emailbody(community, @thank_you_content)
+        # @thank_you_content = append_app_links_with_emailbody(community, @thank_you_content)
         
         tour_user_remotelock_data(community)
 
@@ -292,6 +292,7 @@ class TourHistory < ApplicationRecord
 
   def send_sms_tour_user message_body, community
     begin
+      message_body = append_app_links_with_text_message(community, message_body)
       TwilioSmsWorker.perform_async(message_body, self&.tour_user&.phone_number, self&.tour_user&.email, community&.id) if self.tour_user.phone_number.present? && self.tour_user.is_sms_enabled
     rescue
     end
@@ -300,6 +301,8 @@ class TourHistory < ApplicationRecord
   def send_email_tour_user subj, body, community_email, community
     begin
       emails = community_email.gsub(" ","").split(',')
+      body = append_app_links_with_emailbody(community, body)
+
       NotificationMailer.tour_history_mail(subj, body, self.tour_user.email, emails[0],community,false,nil).deliver
     rescue
     end
@@ -370,5 +373,15 @@ class TourHistory < ApplicationRecord
     @android_link = AppLinks.get_android_link(company_name)
 
     "<div>#{email_body}<br><br>Download the Self Tour App from the links below: <br>iPhone Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{@android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>"
+  end
+
+  def append_app_links_with_text_message community, message_body
+    @community = community
+    company_name = community.company.name.downcase
+
+    @app_link = AppLinks.get_app_link(company_name)
+    @android_link = AppLinks.get_android_link(company_name)
+
+    "#{message_body}\nDownload the Self Tour App from the links below: \niPhone Users: #{@app_link}\nAndroid Users: #{@android_link}\n"
   end
 end
