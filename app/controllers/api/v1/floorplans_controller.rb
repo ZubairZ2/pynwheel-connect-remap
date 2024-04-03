@@ -43,7 +43,7 @@ module Api
 
       def update_tour_stops_list
         return unless @tour.present?
-        @tour_stop = @tour.tour_stops.where(display_stop: true, stop_id: params[:stop_id]).last
+        @tour_stop = @tour.tour_stops.where(stop_id: params[:stop_id]).last
         if @tour_stop.present?
           remove_tour_stop(@tour_stop)
         else
@@ -80,34 +80,33 @@ module Api
         stops_count = @tour.tour_stops.where(display_stop: true, stop_type: ["unit", "amenity"]).count
 
         if stops_count > 1
-          # paths = Path.where(map_path_from_id: tour_stop.stop_id)
-          # paths.each do |path|
-          #   path.path_points.destroy_all
-          #   path.destroy if path.present?
-          # end
+          paths = Path.where(map_path_from_id: tour_stop.stop_id)
+          paths.each do |path|
+            path.path_points.destroy_all
+            path.destroy if path.present?
+          end
 
-          # path = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)&.paths&.last
-          # path.path_points.destroy_all if path.present?
-          # path.destroy if path.present?
+          path = tour_stop.stop_type.classify.constantize.find_by_id(tour_stop.stop_id)&.paths&.last
+          path.path_points.destroy_all if path.present?
+          path.destroy if path.present?
 
-          # VisitedStop.where(tour_stop_id: tour_stop.id).destroy_all
+          VisitedStop.where(tour_stop_id: tour_stop.id).destroy_all
           
-          # if tour_stop.stop_type == "elevator"
-          #   (Elevator.find tour_stop.stop_id).destroy if Elevator.where(id: tour_stop.stop_id).any?
-          # end
+          if tour_stop.stop_type == "elevator"
+            (Elevator.find tour_stop.stop_id).destroy if Elevator.where(id: tour_stop.stop_id).any?
+          end
           
-          # if tour_stop.stop_type == "building_starting_point"
-          #   (BuildingStartingPoint.find tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: tour_stop.stop_id).any?
-          # end
+          if tour_stop.stop_type == "building_starting_point"
+            (BuildingStartingPoint.find tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: tour_stop.stop_id).any?
+          end
         
           add_remove_stop_into_sort_hash(params[:building], params[:floor], tour_stop, "remove")
-          render json: { success: true, error_code: 200, message: "Tour stop has been deleted successfully", is_unit_already_available: TourStop.where(stop_id: params[:stop_id], tour_id: @tour.id ).last.present?}, status: 200
 
-          # if tour_stop.destroy
-          #   render json: { success: true, error_code: 200, message: "Tour stop has been deleted successfully", is_unit_already_available: TourStop.where(stop_id: params[:stop_id], tour_id: @tour.id ).last.present?}, status: 200
-          # else
-          #   render json: { success: false, status_code: 400, message: "Something went wrong, please try again later", data: nil }, status: 400
-          # end
+          if tour_stop.destroy
+            render json: { success: true, error_code: 200, message: "Tour stop has been deleted successfully", is_unit_already_available: TourStop.where(stop_id: params[:stop_id], tour_id: @tour.id ).last.present?}, status: 200
+          else
+            render json: { success: false, status_code: 400, message: "Something went wrong, please try again later", data: nil }, status: 400
+          end
 
         elsif stops_count == 1
           render json: { success: true, error_code: 200, message: "Last stop can not be removed", is_unit_already_available: TourStop.where(stop_id: params[:stop_id], tour_id: @tour.id).last.present?}, status: 200
@@ -131,8 +130,7 @@ module Api
           stName = st.marketing_name
         end
 
-        ts = @tour.tour_stops.where(display_stop: false, stop_id: params[:stop_id]).last
-        ts = TourStop.create(stop_type: params[:stop_type], stop_id: params[:stop_id], latitude: st.x_plot, longitude: st.y_plot, tour_id: @tour.id, name: stName) unless ts.present?
+        ts = TourStop.create(stop_type: params[:stop_type], stop_id: params[:stop_id], latitude: st.x_plot, longitude: st.y_plot, tour_id: @tour.id, name: stName)
         
         add_remove_stop_into_sort_hash(params[:building], params[:floor], ts, "add")
         
@@ -188,16 +186,13 @@ module Api
           if request.eql?("add")
             if @tour.sort_hash.present? && @tour.sort_hash[building + ","+ floor.to_s].present?
               @tour.sort_hash[building + ","+ floor.to_s].push(tour_stop.id)
-              tour_stop.update(display_stop: true)
             else
               @tour.sort_hash[building + ","+ floor.to_s] = []
               @tour.sort_hash[building + ","+ floor.to_s].push(tour_stop.id)
-              tour_stop.update(display_stop: true)
             end
           elsif request.eql?("remove")
             if @tour.sort_hash.present? && @tour.sort_hash[building + ","+ floor.to_s].present?
               @tour.sort_hash[building + ","+ floor.to_s].delete(tour_stop.id)
-              tour_stop.update(display_stop: false)
             end
           end
         end
