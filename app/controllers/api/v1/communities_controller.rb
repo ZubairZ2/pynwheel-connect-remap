@@ -374,13 +374,13 @@ module Api
     
           un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}.uniq
     
-          @visited_stops = []
+          @visited_stops = un_ordered_visited_stops.compact.uniq #[]
           
-          stops_arr.each do |val|
-            if un_ordered_visited_stops.include?(val)
-              @visited_stops << val
-            end
-          end
+          # stops_arr.each do |val|
+          #   if un_ordered_visited_stops.include?(val)
+          #     @visited_stops << val
+          #   end
+          # end
     
           @community.present? ? @last_vs = VisitedStop.where(tour_user_id: @tour_user.id,tour_id: @tour.id).last : @last_vs = VisitedStop.where(tour_user_id: @tour_user.id).last
           
