@@ -161,7 +161,7 @@ class Community < ApplicationRecord
   def amenities_left_for_tour?(tour_id)
     return false unless customization_enabled?
     property_amenities_ids = property_availbale_amenities.ids
-    stop_amenities_ids = TourStop.where(display_stop: false, tour_id: tour_id, stop_type: "amenity").pluck(:stop_id)
+    stop_amenities_ids = TourStop.where(display_stop: true, tour_id: tour_id, stop_type: "amenity").pluck(:stop_id)
     (property_amenities_ids - stop_amenities_ids).present?
   end
 
