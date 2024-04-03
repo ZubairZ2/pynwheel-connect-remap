@@ -1404,10 +1404,11 @@ s  end
   end
 
   def submit_crm_leads email_to, favorites
-    return unless favorites.present?
+    return unless use_yardi_as_lead?
+
     case data_provider
       when "yardirentcafe"
-        LeadsUploader::YardiRentCafe.new(self.id, email_to, favorites).leads_uploader()
+        LeadsUploader::YardiRentCafe.new(self.id, email_to, favorites).leads_uploader() if favorites.present?
     end
   end
 
