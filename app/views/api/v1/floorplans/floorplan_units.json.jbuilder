@@ -25,7 +25,7 @@ end
 json.floorplates floorplates_obj.compact
 
 json.units @units do |u|
-  tour_stop = TourStop.where(stop_id: u.id, tour_id: @tour.id).last
+  tour_stop = TourStop.where(display_stop: true, stop_id: u.id, tour_id: @tour.id).last
 
   json.id u.id
   json.community_id u.community_id
