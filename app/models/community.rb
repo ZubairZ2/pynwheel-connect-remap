@@ -124,7 +124,7 @@ class Community < ApplicationRecord
   end
 
   def available_unit_for_self_tour
-    return [] unless self.community_tour&.tour_setting&.enable_tour_customization
+    return [] unless customization_enabled?
 
     units_query = if SELF_TOUR_PROVIDERS.include?(self.data_provider)
                     self.units.vacant_and_available
@@ -139,6 +139,35 @@ class Community < ApplicationRecord
     end
   end
 
+  def amenities_available_for_tour?
+    return false unless customization_enabled?
+    
+    property_availbale_amenities.exists?
+
+  rescue => ex
+    false
+  end
+
+  def property_availbale_amenities
+    plotted_amenities_query = self.amenities.plotted_amenities
+
+    if self.is_sitemap
+      amenities_count = plotted_amenities_query
+    else
+      amenities_count = plotted_amenities_query.where.not(floor: [nil], building: ["", nil, "N/A"])
+    end
+  end
+
+  def amenities_left_for_tour?(tour_id)
+    return false unless customization_enabled?
+    property_amenities_ids = property_availbale_amenities.ids
+    stop_amenities_ids = TourStop.where(tour_id: tour_id, stop_type: "amenity").pluck(:stop_id)
+    (property_amenities_ids - stop_amenities_ids).present?
+  end
+
+  def customization_enabled?
+    self.community_tour&.tour_setting&.enable_tour_customization
+  end
 
   def plotted_units
     # self&.units&.are_ploted_units
