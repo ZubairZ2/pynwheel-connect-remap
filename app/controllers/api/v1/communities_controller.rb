@@ -374,7 +374,7 @@ module Api
     
           # un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}.uniq
           
-          @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: @tour.id).order(:created_at).map{|x| x.tour_stop_id}.uniq
+          @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: @tour.id).order(created_at: :desc).map{|x| x.tour_stop_id}.uniq
 
           # @visited_stops = []
           
