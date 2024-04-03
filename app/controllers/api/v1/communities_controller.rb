@@ -372,9 +372,11 @@ module Api
           
           stops_arr = stops_arr.compact.map{|x| x.id}.uniq
     
-          un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}.uniq
-    
-          @visited_stops = un_ordered_visited_stops.compact.uniq #[]
+          # un_ordered_visited_stops = VisitedStop.where(tour_user_id: @tour_user.id ,tour_id: @tour.id ).map{|x| x.tour_stop_id}.uniq
+          
+          @visited_stops = VisitedStop.where(tour_user_id: @tour_user.id, tour_id: @tour.id).order(:created_at).map{|x| x.tour_stop_id}.uniq
+
+          # @visited_stops = []
           
           # stops_arr.each do |val|
           #   if un_ordered_visited_stops.include?(val)
