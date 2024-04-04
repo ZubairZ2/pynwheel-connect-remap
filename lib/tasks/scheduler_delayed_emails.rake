@@ -344,7 +344,7 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 		@app_link = AppLinks.get_app_link(company_name)
 		@android_link = AppLinks.get_android_link(company_name)
 
-		"<div>#{email_body}<br><br>Download the Self Tour App from the links below: <br>iPhone Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{@android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>"
+		"<div>#{email_body}<br>iPhone Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{@android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>"
 	end
 
 	def append_app_links_with_text_message community, message_body
@@ -354,7 +354,7 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 		@app_link = AppLinks.get_app_link(company_name)
 		@android_link = AppLinks.get_android_link(company_name)
 
-		"#{message_body}\nDownload the Self Tour App from the links below: \niPhone Users: #{@app_link}\nAndroid Users: #{@android_link}\n"
+		"#{message_body}\niPhone Users: #{@app_link}\nAndroid Users: #{@android_link}\n"
 	end
 
 end
