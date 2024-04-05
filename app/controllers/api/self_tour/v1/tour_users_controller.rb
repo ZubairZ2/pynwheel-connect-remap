@@ -6,7 +6,6 @@ module Api
         before_action :check_authentication, except: :get_tour_user
         before_action :set_tour_user
         before_action :get_apple_store_test_number, only: [:generate_otp, :verify_otp]
-
         def delete_account
           if @tour_user.present?
             if destroy_user
@@ -66,6 +65,11 @@ module Api
           else
             render json: {message: "User not found", success_code: 404, status: false}
           end
+        end
+
+        def completed_tours
+          tours = @tour_user.user_completed_tours
+          @tours = Kaminari.paginate_array(tours).page(params[:page]).per(params[:per_page])
         end
 
         private

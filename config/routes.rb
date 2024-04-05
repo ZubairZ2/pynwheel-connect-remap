@@ -633,6 +633,7 @@ Rails.application.routes.draw do
         resources :tour_users, only: :update do
           member do
             delete :delete_account
+            get :completed_tours
           end
 
           collection do
