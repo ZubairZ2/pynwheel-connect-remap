@@ -2,6 +2,7 @@ json.tours_data @tours do |tour|
   community = Community.find tour.community_id
   if tour.present? && community.present?
     json.community do 
+      json.id community.id
       json.name community.name
       json.logo community&.self_tour_logo&.url
       json.address community.address
