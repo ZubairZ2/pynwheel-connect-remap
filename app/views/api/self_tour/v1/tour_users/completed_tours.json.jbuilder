@@ -3,7 +3,7 @@ json.tours_data @tours do |tour|
   if tour.present? && community.present?
     json.community do 
       json.name community.name
-      json.logo community.logo
+      json.logo community&.self_tour_logo&.url
       json.address community.address
       json.city community.city
       json.state community.state
