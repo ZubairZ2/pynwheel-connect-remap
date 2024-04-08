@@ -48,7 +48,7 @@ class PynwheelLaunch::Communities::CommunityDetailForms
   def amenity_images_form_require
     return false if @community.product_options.nil?
     products = JSON.parse(@community.product_options)
-    return true if (products["product_options"]["pynwheel_touch"]["is_enabled"] || products["product_options"]["pynwheel_maps"])
+    return true if (products["product_options"]["self_tour"]["is_enabled"] || products["product_options"]["pynwheel_touch"]["is_enabled"] || products["product_options"]["pynwheel_maps"])
     false
   end
 
@@ -119,10 +119,10 @@ class PynwheelLaunch::Communities::CommunityDetailForms
 
   def mendatory_detail_forms
     [
-      {
-        name: COMPANY_DETAILS,
-        status: company_status
-      },
+      # {
+      #   name: COMPANY_DETAILS,
+      #   status: company_status
+      # },
       {
         name: PROPERTY_MANAGEMENT_SYSTEM,
         status: data_provider_status
