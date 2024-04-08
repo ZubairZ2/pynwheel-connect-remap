@@ -24,7 +24,7 @@
             unless @within_one_km
               json.scheduler_widget_allowed false
               if @location_received
-                json.tour_alert "It looks like you're not at the property. Would you like to take a virtual tour?"
+                json.tour_alert "It looks like you're not at the property."
               else
                 json.tour_alert "Unable to detect location. Please select one of the options below. "
               end
@@ -34,26 +34,26 @@
               json.scheduler_widget_allowed false
               if @community.arrive_too_early_alert.present?
                 @community.arrive_too_early_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time).gsub!("<grace time>", @community.community_tour.grace_period.to_s)
-                json.tour_alert @community.arrive_too_early_alert + " In the meantime, would you like to take a virtual tour?"  
+                json.tour_alert @community.arrive_too_early_alert
               else
-                json.tour_alert "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.community_tour.grace_period.to_s} minutes before that time. In the meantime, would you like to take a virtual tour?"
+                json.tour_alert "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.community_tour.grace_period.to_s} minutes before that time."
               end
             elsif @scheduled_data.time_status == "after time"
               if @community.arrive_too_late_alert.present?
                 @community.arrive_too_late_alert.gsub!("<date>", @tour_date).gsub!("<time>", @tour_time)
                 if @community.scheduler_widget
-                  json.tour_alert @community.arrive_too_late_alert + " Please click on the Reschedule button to reschedule. In the meantime, would you like to take a virtual tour?"
+                  json.tour_alert @community.arrive_too_late_alert + " Please click on the Reschedule button to reschedule."
                   json.scheduler_widget_url "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_data.nearest_tour.id}?datetime=#{@scheduled_data.nearest_tour.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_data.nearest_tour.tour_time.strftime("%H:%M")}&community_code=#{community_code}&direct=true"
                 else
-                  json.tour_alert @community.arrive_too_late_alert + " In the meantime, would you like to take a virtual tour?"
+                  json.tour_alert @community.arrive_too_late_alert
                 end
               else
                 message = "Your tour is scheduled for #{@tour_date}, #{@tour_time}. You will be able start your tour #{@community.community_tour.grace_period.to_s} minutes before that time. "
                 if @community.scheduler_widget
-                  json.tour_alert message + " Please click on the Reschedule button to reschedule. In the meantime, would you like to take a virtual tour?"
+                  json.tour_alert message + " Please click on the Reschedule button to reschedule."
                   json.scheduler_widget_url "#{root_url}scheduler/change_schedule_tour_time/#{@scheduled_data.nearest_tour.id}?datetime=#{@scheduled_data.nearest_tour.tour_date.strftime('%Y-%m-%d')}T#{@scheduled_data.nearest_tour.tour_time.strftime("%H:%M")}&community_code=#{community_code}&direct=true"
                 else
-                  json.tour_alert message + " In the meantime, would you like to take a virtual tour?"
+                  json.tour_alert message
                 end
               end
             end
@@ -61,9 +61,9 @@
           else !@scheduled_data.tours_exist
             if @community.scheduler_widget
               if @community.unscheduled_alert_with_widget.present?
-                json.tour_alert @community.unscheduled_alert_with_widget + " To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?"
+                json.tour_alert @community.unscheduled_alert_with_widget + " To schedule a tour, please use the button below."
               else
-                json.tour_alert "I'm sorry! We only allow scheduled tours. To schedule a tour, please use the button below. In the meantime, would you like to take a virtual tour?"
+                json.tour_alert "I'm sorry! We only allow scheduled tours. To schedule a tour, please use the button below."
               end
               json.scheduler_widget_url "#{root_url}scheduler_widget/test_widget?community_id=#{@community.id}&community_code=#{community_code}&direct=true"
             else
@@ -76,9 +76,9 @@
 
               if @community.unscheduled_alert.present?
                 @community.unscheduled_alert.gsub!("<phone>", phone)
-                json.tour_alert @community.unscheduled_alert + " In the meantime, would you like to take a virtual tour?"
+                json.tour_alert @community.unscheduled_alert
               else
-                json.tour_alert "I'm sorry! We only allow scheduled tours. #{contact_property}In the meantime, would you like to take a virtual tour?"
+                json.tour_alert "I'm sorry! We only allow scheduled tours. #{contact_property}"
               end
             end
           end
@@ -87,15 +87,15 @@
         unless @within_one_km
           json.scheduler_widget_allowed false
           if @location_received
-            json.tour_alert "It looks like you're not at the property. Would you like to take a virtual tour?"
+            json.tour_alert "It looks like you're not at the property."
           else
-            json.tour_alert "Unable to detect location. Please select one of the options below. "
+            json.tour_alert "Unable to detect location. Please select one of the options below."
           end
         end
       end
     else
       json.scheduler_widget_allowed false
-      json.tour_alert "Its outside of the visiting hours. Would you like to take a virtual tour?"
+      json.tour_alert "It’s outside of the visiting hours. Please come back during visiting hours."
     end
   end
 
