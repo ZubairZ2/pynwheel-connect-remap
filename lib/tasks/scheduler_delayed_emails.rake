@@ -156,6 +156,7 @@ namespace :delayed_email_notifications do
 
 	def one_day_before_emails schedual_tour
 	  return if schedual_tour.blank?
+		time_zone = schedual_tour.community.get_time_zone() rescue "UTC"
 	  tu = schedual_tour.tour_user
 	  community = schedual_tour.community
 	  community_code = (JWT.encode ({"community_id" => community.id}), ENV['SECRET_KEY_BASE_v2'], 'HS256') if community.present?
@@ -184,7 +185,7 @@ Download The #{community_text} #{one_link}#{"\n"}
 #{mobile_change_appointment}
 Get information about your tour here: #{confirmation_page_link}#{"\n"}
 #{community.one_day_email_text}"
-		  diff = (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(community.get_time_zone()).strftime("%m/%d/%Y"), "%m/%d/%Y")))
+		  diff = (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y")))
 		  schedual_tour.update_columns(daily_email_sent: true) if diff == 1
 		  emails = community_email.gsub(" ","").split(',')
 
@@ -195,9 +196,9 @@ Get information about your tour here: #{confirmation_page_link}#{"\n"}
 
 	def one_hour_before_emails schedual_tour
 		return if schedual_tour.blank?
+		time_zone = schedual_tour.community.get_time_zone() rescue "UTC"
 
-		if (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(community.get_time_zone()).strftime("%m/%d/%Y"), "%m/%d/%Y"))) == 0
-			time_zone = schedual_tour.community.get_time_zone()
+		if (schedual_tour.tour_date - (Date.strptime(DateTime.current.in_time_zone(time_zone).strftime("%m/%d/%Y"), "%m/%d/%Y"))) == 0
 			tour_time = Time.parse(schedual_tour.tour_time.strftime("%k:%M"))
 			server_time = Time.parse(Time.current.in_time_zone(time_zone).strftime("%k:%M"))
 
