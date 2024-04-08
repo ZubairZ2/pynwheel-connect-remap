@@ -99,7 +99,7 @@ module Api
           if tour_stop.stop_type == "building_starting_point"
             (BuildingStartingPoint.find tour_stop.stop_id).destroy if BuildingStartingPoint.where(id: tour_stop.stop_id).any?
           end
-          
+        
           add_remove_stop_into_sort_hash(params[:building], params[:floor], tour_stop, "remove")
 
           if tour_stop.destroy
