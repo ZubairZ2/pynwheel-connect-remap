@@ -1,4 +1,5 @@
 module ApplicationHelper
+  
   def currencies
     Community.last&.all_currencies(Money::Currency::table)
   end

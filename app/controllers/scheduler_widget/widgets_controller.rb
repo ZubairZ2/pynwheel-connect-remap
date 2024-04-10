@@ -61,7 +61,7 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @existing_tour_users = scheduled_tour_users @community
     @enabled_tour_types = community_allowed_tour_types(@community)
     @tour_type_count = @enabled_tour_types.count
-    @default_country_code = @community.set_default_country_code()
+    @default_country_code = @community.fetch_country_code()
     cutt_of = @stepping < 60 ? @stepping.to_s + " minutes" : (@stepping == 60 ? "1 hour" : "2 hours")
     
     if @use_yardi_as_lead

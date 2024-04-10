@@ -85,7 +85,9 @@ class Community < ApplicationRecord
   after_create :change_touchscreen_app_for_dwelo
   # after_create :set_company_level_settings_yes
   before_save :turn_off_chat, if: Proc.new { chat_control == false }
-  after_save :set_community_time_zone, if: ->(obj){ (obj.latitude.present? and obj.latitude_changed?) ||  (obj.longitude.present? and obj.longitude_changed?) }
+  after_save :set_community_time_zone, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? }
+  after_save :set_country_code, if: ->(obj) { obj.latitude_changed? || obj.longitude_changed? || obj.city_changed? || obj.state_changed? || obj.address_changed? || obj.zip_changed? }
+
   after_save :create_default_credential
   after_update :set_default_provider
 
@@ -114,7 +116,7 @@ class Community < ApplicationRecord
 
   def as_json(options = {})
     data = super(
-      :only => [:id , :name , :logo , :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type, :is_sitemap, :display_building ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date, :product_options, :use_company_level_data_settings], :methods => [:schedule_tour_url, :community_code],include: { company: {except: [:created_at]}})
+      :only => [:id , :name , :logo , :file, :address , :city , :longitude, :latitude, :state , :email , :phone , :zip, :web_map_type, :is_sitemap, :display_building ,:property_manager_name,:property_manager_phone,:property_manager_email ,:enable_three_d_maps , :website , :number_of_units, :production_started_date, :released_date, :submitted_final_approval_date, :product_options, :use_company_level_data_settings, :country_code], :methods => [:schedule_tour_url, :community_code],include: { company: {except: [:created_at]}})
     check_brand_access = options[:brand_pdf_feature]
     if check_brand_access == true
       data.merge!(:brand_feature_access => true , :brand_details_pdf => brand_details())
@@ -735,24 +737,6 @@ class Community < ApplicationRecord
     self.credential.apply_now == "true" || self.credential.apply_now == "separate_link"
   end
 
-  def set_default_country_code
-    begin
-
-      addr = Geocoder.search([self.latitude, self.longitude])
-      addr = Geocoder.search(self.address) unless addr.present?
-
-      if (addr && addr.first && addr.first.data && addr.first.data["address"] && addr.first.data["address"]["country_code"]).present?
-        addr.first.data["address"]["country_code"].upcase 
-      else
-        "US"
-      end
-
-    rescue => error
-      "US"
-    end
-
-  end
-
   def logo_for_email
     if self&.email_logo.present? && self&.email_logo&.url.present?
       self&.email_logo&.url
@@ -769,9 +753,29 @@ class Community < ApplicationRecord
   def set_community_time_zone
     if self.latitude.present? && self.longitude.present?
       time_zone = Timezone.lookup(self.latitude, self.longitude)&.name rescue "UTC"
-      self.update_column :time_zone, time_zone
+      self.update_column :time_zone, time_zone if time_zone.present? 
     end
   end
+
+  def set_country_code
+    c_code = fetch_country_code
+    update_column(:country_code, c_code) if c_code.present?
+  end
+
+  def fetch_country_code
+    begin
+      addr = Geocoder.search([latitude, longitude]) || Geocoder.search(address)
+
+      if addr.present? && addr.first&.data&.dig("address", "country_code").present?
+        addr.first.data["address"]["country_code"].upcase
+      else
+        "US"
+      end
+    rescue StandardError
+      "US"
+    end
+  end
+
 
   def community_data_updated_on
     self.update(data_provider_updated_on: Time.now.to_s)
