@@ -222,7 +222,7 @@ module Api
     
       #TODO:: Incase if you need to create tourhistory here otherwise remove it later.
       def create_tour_history(tour_user,tour_type,community)
-        tour_history = TourHistory.find_or_create_by(tour_user_id: tour_user.id) rescue TourHistory.new
+        tour_history = TourHistory.find_or_create_by(community_id: community.id, tour_user_id: tour_user.id) rescue TourHistory.new
         tour_history.update_columns(community_id: community.id, tour_type: tour_type, tour_user_id: tour_user.id, tour_id: community.community_tour.id)
         last_arrival = tour_user.tour_histories.where(tour_id: community.community_tour.id).last rescue nil
         last_arrival.update_columns(arrived: Time.now) if last_arrival.present?

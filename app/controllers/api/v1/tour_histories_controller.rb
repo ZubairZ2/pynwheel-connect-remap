@@ -20,7 +20,7 @@ module Api
             tour_history.community_id = params[:community_id]
             tour_history.community_time_zone = community.get_time_zone()
             if  params[:tour_site].present?
-              if params[:tour_site] == "self_tour"
+              if params[:tour_site] == "self_tour" || params[:tour_site] == "guided_tour"
                 tour_history.tour_site = "onsite"
               elsif params[:tour_site] == "virtual_tour"
                 tour_history.tour_site = "offsite"

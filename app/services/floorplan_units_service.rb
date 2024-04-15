@@ -5,13 +5,7 @@ class FloorplanUnitsService < BaseService
 
   def get_floorplans
     units = @community.available_unit_for_self_tour()
-
-    floorplans = []
-    units.each do |u|
-      floorplans << u.floorplan
-    end
-    
-    floorplans.compact
+    units.map(&:floorplan).compact
   end
   
   def get_floorplan_units(floorplan)
