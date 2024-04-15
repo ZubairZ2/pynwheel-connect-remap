@@ -209,7 +209,7 @@ module Api
           tour_user.restricted_property_access = true
           visitor_name = tour_user.name.titleize
           sleep 1
-          create_tour_history(tour_user,tour_type,community)
+          # create_tour_history(tour_user,tour_type,community)
           subject = "Property Access Code for #{visitor_name}"
           body = "#{visitor_name} is ready to start a Self Tour at #{community.name}. 
           Please instruct #{tour_user.first_name.titleize} to enter this property access code into the Self Tour app:<br>
