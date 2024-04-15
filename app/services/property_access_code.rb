@@ -10,7 +10,7 @@ class PropertyAccessCode
 
     if @tour_type != "virtual_tour" && @tour_user.check_code_expiry(@community)
       @tour_user.update_attributes(property_access_code: generate_six_digit_random_pin, property_access_code_generated_at: Time.now, restricted_property_access: true)
-      create_tour_history()
+      # create_tour_history()
       property_access_code_content()
     end
 
