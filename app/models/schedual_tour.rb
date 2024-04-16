@@ -26,7 +26,38 @@ class SchedualTour < ApplicationRecord
     self&.tour_type&.downcase&.include?("virtual") rescue false
   end
 
-  private 
+  def get_schedule_tour_url
+    # return "" unless self&.community.present? && self&.tour_user.present?
+    # return "" if ["salesforce", "PERQ"].include?(self.created_by)
+
+    # if is_tour_completed || !future_tour?
+    #   schedule_tour_of_user
+    # elsif future_tour?
+    #   reschedule_tour
+    # else
+    #   ""
+    # end
+    reschedule_tour
+  end
+
+  private
+
+  def future_tour?
+    community = self.community
+    return true unless (self.tour_date && self.tour_time).present?
+
+    timezone = community.get_time_zone()
+    grace_period = community&.community_tour&.grace_period
+    (self.tour_date.to_s + " " + self.tour_time.strftime("%I:%M%p")).in_time_zone(timezone) + grace_period.minutes > Time.now.in_time_zone(timezone)
+  end
+
+  def schedule_tour_of_user
+    "#{ENV['HOST_URL']}/scheduler_widget/test_widget?community_id=#{self&.community&.id}&community_code=#{self&.community&.community_code}&tour_user_id=#{self&.tour_user&.id}&schedule_tour_id=#{self.id}&schedule_tours_page=true&schedule_another_tour=true&direct=true"
+  end
+
+  def reschedule_tour
+    "#{ENV['HOST_URL']}/scheduler_widget/test_widget?scheduled_tour_id=#{self.id}&community_id=#{self&.community&.id}&tour_user_id=#{self&.tour_user&.id}&reschedule_tour=true&direct=true&community_code=#{self&.community&.community_code}"
+  end
 
   def cancel_funnel_appointment
     return unless self.community.is_funnel_community?
