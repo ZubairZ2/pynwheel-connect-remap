@@ -24,6 +24,8 @@ class SchedulerWidget::WidgetsController < ApplicationController
   end
 
   def test_widget
+    @community_id = params[:community_id]
+    @community = Community.find params[:community_id]
     @tour_user = params[:tour_user_id].present? ? TourUser.find_by_id(params[:tour_user_id]) : TourUser.new
     @reschedule_tour = params[:reschedule_tour] if params[:reschedule_tour].present?
     @scheduled_tour_id = params[:schedule_tour_id] if params[:schedule_tour_id].present?
@@ -32,8 +34,6 @@ class SchedulerWidget::WidgetsController < ApplicationController
     @schedule_tour = params[:scheduled_tour_id].present? ? SchedualTour.find_by_id(params[:scheduled_tour_id]) : @exiting_schedule_tour.present? ? @exiting_schedule_tour : SchedualTour.create(community_id: params[:community_id])
     @schedule_tour.property_tour_type = params[:property_tour_type].present? ? params[:property_tour_type] : "scheduled_tour"
     @phone_country_code = ISO3166::Country.new(@schedule_tour.country_code) if @schedule_tour.country_code.present?
-    @community_id = params[:community_id]
-    @community = Community.find params[:community_id]
     @scheduler_widget_setting = @community.community_tour.scheduler_widget_setting
     @credit_card_required =  @community.community_tour.credit_card_required
     @bedroom_list = @community.fetch_bedroom_list()
@@ -114,6 +114,9 @@ class SchedulerWidget::WidgetsController < ApplicationController
     property_tour_type = params[:property_tour_type] if params[:property_tour_type].present?
     flash[:success] = params[:message] if params[:message].present?
     render :test_widget, locals: {ios_link: app_link,android_link: android_link,property_tour_type: property_tour_type,community_name: community.name,tour_type: tour_type}, layout: false
+  rescue => e
+    flash[:error] = "Something went wrong!"
+    redirect_to community_schedual_tours_path(@community)
   end
 
   def confirmation_instructions
