@@ -9,7 +9,7 @@ json.floorplans @floorplans do |floorplan|
       json.vacant_units available_units.present? ? available_units.count : 0
       availability = available_units.pluck(:available_date).compact.max rescue ""
       json.availability availability.present? ? availability <= Date.today ? "Now" : availability.strftime("%m-%d-%y") : ""
-      json.up_to availability.present? ? (@community.get_currency_symbol + available_units.pluck(:effective_rent).compact.min.to_i.to_s+"/month") : ""
+      json.up_to floorplan.market_rent.present? ? floorplan.market_rent : (availability.present? ? (@community.get_currency_symbol + available_units.pluck(:effective_rent).compact.min.to_i.to_s+"/month") : "")
       available_buildings = available_units.pluck(:building).compact.reject { |c| c.empty? } rescue ""
       available_floors = available_units.pluck(:floor).compact.uniq.sort rescue ""
       json.buildings available_buildings.present? ? available_buildings.uniq.join(', ') : "" 
