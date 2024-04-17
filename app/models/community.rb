@@ -860,6 +860,7 @@ class Community < ApplicationRecord
 
   def crop_secondary_image
     secondary_logo.recreate_versions! if (crop_x_secondary.present? && !image_bit && do_crop_secondary)
+    self.update_columns(do_crop_secondary: false)
   end
 
   def is_futurist?
