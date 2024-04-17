@@ -11,10 +11,10 @@ body{
 }
 .skin-blue .main-header .logo{
 	background-color: transparent;
-	padding:15px 0 5px 0;
+/*	padding:15px 0 5px 0;*/
 	height:auto;
 	/*text-align:left;*/
-	margin-left:10px;
+/*	margin-left:10px;*/
 }
 .logo-lg{
 	color: #fff;

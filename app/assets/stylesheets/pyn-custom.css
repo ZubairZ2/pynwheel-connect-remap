@@ -198,9 +198,9 @@ textarea {
 
 .skin-blue .main-header .logo {
     background-color: transparent;
-    padding: 15px 0 5px 0;
+/*    padding: 15px 0 5px 0;*/
     height: auto;
-    margin-left: 10px;
+/*    margin-left: 10px;*/
 }
 
 .ui-datepicker {
