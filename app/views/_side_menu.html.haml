@@ -17,7 +17,8 @@
                 %a{:href => "/companies"} Companies
             %li.loader_class{:class=>"#{controller_name =='community_group' ? 'active' : ''}"}
               - unless (current_user.is_dwelo_admin? || current_user.is_regional_admin?)
-                %a{:href => "/community_groups"} Community Group
+                %a{:href => "/companies/#{current_company.id}/community_groups"} Community Group
+
             - if (current_user.is_super_admin? || current_user.is_dwelo_admin?)
               %li{:class=>"#{controller_name =='regions' ? 'active' : ''}"}
                 %a{:href => "/companies/#{current_company.id}/regions"} Region
