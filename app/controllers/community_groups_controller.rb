@@ -1,7 +1,10 @@
 class CommunityGroupsController < ApplicationController
   # include Error::ErrorHandler
   def index
-    @community_groups = alphabetical_sort(CommunityGroup.where(company_id: current_company.id))
+    puts "\n\n\n\n #{params} \n\n\n\n"
+    puts "\n\n\n\n Current Company: #{current_company.inspect} \n\n\n\n"
+    
+    @community_groups = alphabetical_sort(CommunityGroup.where(company_id: current_company.id)) rescue []
   end
   def new
     @community_group = CommunityGroup.new
