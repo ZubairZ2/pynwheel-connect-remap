@@ -17,6 +17,10 @@ class HomeController < ApplicationController
       @communities = current_user.communities.where(locked: [false, nil])
     end
 
+    puts "\n\n\n\n-------------------\n"
+    puts request&.headers['referer']&.inspect
+    puts "\n-------------------\n\n\n\n"
+
     handle_code_grant_authorization if params["code"].present?
   end
 
