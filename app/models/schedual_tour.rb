@@ -27,17 +27,16 @@ class SchedualTour < ApplicationRecord
   end
 
   def get_schedule_tour_url
-    # return "" unless self&.community.present? && self&.tour_user.present?
-    # return "" if ["salesforce", "PERQ"].include?(self.created_by)
+    return "" unless self&.community.present? && self&.tour_user.present?
+    return "" if ["salesforce", "PERQ"].include?(self.created_by)
 
-    # if is_tour_completed || !future_tour?
-    #   schedule_tour_of_user
-    # elsif future_tour?
-    #   reschedule_tour
-    # else
-    #   ""
-    # end
-    reschedule_tour
+    if is_tour_completed || !future_tour?
+      schedule_tour_of_user
+    elsif future_tour?
+      reschedule_tour
+    else
+      ""
+    end
   end
 
   private
