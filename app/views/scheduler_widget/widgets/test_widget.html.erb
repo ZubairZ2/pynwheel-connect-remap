@@ -609,7 +609,8 @@
       function onlyNumbers() {
         let pNum = $("#user_phone_number_field").val();
         if(pNum)
-          $("#user_phone_number_field").val(pNum.replace(phone_country_code, ""));        
+          $("#user_phone_number_field").val(pNum.substr(-10));
+          <%# $("#user_phone_number_field").val(pNum.replace(phone_country_code, ""));%>
       }
 
       function setCountryDialingCode() {
@@ -631,7 +632,6 @@
 
         occupiedSlots = $("#occupied_slots").data("occupiedSlots");
         occupiedDates = $("#occupied_slots").data("occupiedDates");
-
         if(form_for_reschedule_tour){
           $("#desired_move_in_date").val(move_in_date).attr('selected', true)
           $("#desired_bedroom").val(desired_bedroom).attr('selected', true)
