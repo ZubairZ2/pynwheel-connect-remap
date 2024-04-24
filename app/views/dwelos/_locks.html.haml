@@ -31,7 +31,7 @@
   #s-zerv.tab-pane.fade{:role => "tabpanel",:class => @community.zerv.nil? ? "hidden" : "show"}
     = render :partial => 'zerv_page'
   #s-igloohome.tab-pane.fade{:role => "tabpanel",:class => @community.igloohome.nil? ? "hidden" : "show"}
-    = render :partial => 'igloohome_page'
+    = render :partial => 'dwelos/igloohomes/igloohome_page'
 
 :javascript
   $(document).ready(function() {

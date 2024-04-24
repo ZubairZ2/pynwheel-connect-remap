@@ -1,0 +1,13 @@
+= form_for :igloohome, :url=> community_igloohome_v1_accounts_path(:community_id=>current_community.id),:html=>{:class=>"form-horizontal",  multipart: true} do |f|
+  .box-body
+    .row
+      .col-lg-9.col-lg-offset-1
+        .form-group.remove_margin_igloohome
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+            Upload CSV File
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            = file_field_tag 'file'
+          = f.hidden_field :community_id, :value=> current_community.id
+    .row
+      .col-lg-9.col-lg-offset-1
+        = f.submit "Add Locks", :class=>"btn btn-success pull-right loader_class"

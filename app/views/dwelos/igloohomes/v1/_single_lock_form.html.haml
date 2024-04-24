@@ -1,0 +1,18 @@
+= form_for :igloohome, :url=> import_single_lock_community_igloohome_v1_accounts_path(current_community),:html=>{:class=>"form-horizontal",  multipart: true} do |f|
+  .box-body
+    .row
+      .col-lg-9.col-lg-offset-1
+        .form-group
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+            Device Name
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            %input.form-control{:name => "device_name", :placeholder => "Device Name e.g Pool, 101 etc", :type => "text"}/
+        
+        .form-group.remove_margin_igloohome
+          %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
+            Device ID
+          .col-sm-12.col-lg-9.col-md-9.col-xs-12
+            %input.form-control{:name => "device_id", :placeholder => "Unique Lock ID", :type => "text"}/
+    .row
+      .col-lg-9.col-lg-offset-1
+        = f.submit "Add Lock", :class=>"btn btn-success pull-right loader_class"

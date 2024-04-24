@@ -31,4 +31,18 @@ class Igloohome < ApplicationRecord
       self.igloohome_locks.create!(device_name: lock_row[0], device_id: lock_row[1]) if lock_row[0].present? && lock_row[1].present?
     end
   end
+
+  def map_locks_with_stops
+    MapLocksJob.perform_async community, "Igloohome"
+  end
+
+  def self.active_client_credential_igloohome(igloohome)
+    !igloohome.present? || (igloohome and igloohome.client_id and igloohome.client_secret).present? ||
+    (igloohome and !igloohome.client_id and !igloohome.client_secret and !igloohome.refresh_token).present? rescue false
+  end
+
+  def self.active_code_grant_auth(igloohome)
+    (igloohome.present? and igloohome.is_authorized_with_pynwheel == true) || 
+    (igloohome and igloohome.refresh_token && !igloohome.client_id and !igloohome.client_secret).present? rescue false
+  end
 end

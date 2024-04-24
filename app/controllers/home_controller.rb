@@ -17,18 +17,26 @@ class HomeController < ApplicationController
       @communities = current_user.communities.where(locked: [false, nil])
     end
 
-    puts "\n\n\n\n-------------------\n"
-    puts request&.headers['referer']&.inspect
-    puts "\n-------------------\n\n\n\n"
-
-    handle_code_grant_authorization if params["code"].present?
+    handle_code_grant_authorization(request&.headers['referer']) if params["code"].present?
   end
 
   private
 
-  def handle_code_grant_authorization
-    community_id = session[:community_id]
-    session[:authorization_code] = params['code']
-    redirect_to "/communities/#{community_id}/edgestate_accounts/edgestate_code_grant_authorization"
-  end
+    def handle_code_grant_authorization_for(brand)
+      community_id = session[:community_id]
+      return unless community_id.present?
+      
+      session[:authorization_code] = params['code']
+      redirect_to "/communities/#{community_id}/#{brand}_accounts/#{brand}_code_grant_authorization"
+    end
+    
+    def handle_code_grant_authorization(brand_url)
+      case brand_url
+      when REMOTELOCK_AUTH_BASE_URL
+        handle_code_grant_authorization_for('edgestate')
+      when IGLOOHOME_AUTH_BASE_URL
+        handle_code_grant_authorization_for('igloohome')
+      else
+      end
+    end
 end

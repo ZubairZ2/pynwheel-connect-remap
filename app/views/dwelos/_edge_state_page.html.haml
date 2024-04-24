@@ -5,9 +5,6 @@
       Create
       %span EdgeState Account
     .col-md-12
-    -#   = link_to "<Back to #{@unit_name} Unit", edit_community_unit_path(current_community,@unit_id), class: "btn btn-primary mt-10", style: "background: #8f4a9c; color: white;"
-  / /.box-header
-  / form start
 
   .box-body
   .row
@@ -91,13 +88,6 @@
 
                 %a.preview-image{:href=> lock_image.present? ? lock_image  : asset_path("default.jpeg"), "data-toggle"=>"lightbox","data-title"=>"Lock Image"}
                   = image_tag lock_image.present? ? lock_image : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"edgestate-preview-image"
-                  -# = image_tag "exclamation-mark.png", class: "waring_exal", style: "width: 25px", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"
-
-            -# - if lock_image.present?
-            -#   .row{:style => "padding-left: 47%;"}
-            -#     = link_to show_lock_image_in_modal_community_igloohome_accounts_path(),:class => "", remote: true do
-            -#       %span.btn.btn-primary.btn-success.ml-15{"data-target" => "#edit-name", "data-toggle" => "modal"}
-            -#         Crop
       .row
         .col-lg-9.col-lg-offset-1
           = f.submit "Save", :class=>"btn btn-success pull-right loader_class", :style => "padding: 10px 50px 10px 50px;"

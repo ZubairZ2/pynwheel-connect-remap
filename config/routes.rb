@@ -166,6 +166,30 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :igloohome_accounts do
+      collection do
+        delete :remove_igloohome_locks
+        post :add_lock_instructions
+        put :upload_lock_image
+      end
+    end
+
+    resources :igloohome_v1_accounts do
+      collection do
+        post :import_single_lock
+      end
+    end
+
+    resources :igloohome_v2_accounts do
+      collection do
+        get :test_igloohome_connection
+        post :import_igloohome_locks
+        post :map_igloohome_locks
+        get :igloohome_code_grant_authorization
+        delete :remove_igloohome_auth_account
+      end
+    end
+
     resources :latch_accounts do
       collection do
         put :upload_lock_image
@@ -173,15 +197,6 @@ Rails.application.routes.draw do
         get :test_latch_connection
         post :import_latch_locks
         post :map_latch_locks
-      end
-    end
-
-    resources :igloohome_accounts do
-      collection do
-        delete :remove_igloohome_locks
-        post :import_single_lock
-        post :add_lock_instructions
-        put :upload_lock_image
       end
     end
 
