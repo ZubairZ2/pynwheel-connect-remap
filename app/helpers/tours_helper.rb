@@ -48,9 +48,9 @@ module ToursHelper
 	
   def redirect_url app_name, os_type
 		if os_type == "android"
-			(app_name == "Pynwheel Tour") ? "https://play.google.com/store/apps/details?id=com.pynwheel.selftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour"
+			(app_name == ENV["MOBILE_APP_NAME"]) ? "https://play.google.com/store/apps/details?id=com.pynwheel.selftour" : "https://play.google.com/store/apps/details?id=com.pynwheel.lincolnselftour"
 		else
-			(app_name == "Pynwheel Tour") ? "https://itunes.apple.com/us/app/self-tour/id1488907392" : "https://itunes.apple.com/us/app/lincoln-property-self-tour/id1508997129"
+			(app_name == ENV["MOBILE_APP_NAME"]) ? "https://itunes.apple.com/us/app/self-tour/id1488907392" : "https://itunes.apple.com/us/app/lincoln-property-self-tour/id1508997129"
 		end
 	end
 
