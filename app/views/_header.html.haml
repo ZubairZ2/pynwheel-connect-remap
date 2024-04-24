@@ -8,7 +8,7 @@
         %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}/
       / logo for regular state and mobile devices
       %span.logo-lg{:style => "text-align: left;"}
-        %img{:alt => "", :src => "/assets/pynwheel_connect_logo_v2.png", :title => "",:style => "width: 100%; height: auto; text-align: center;"}
+        %img{:alt => "", :src => "/assets/pynwheel-connect-logo.png", :title => "",:style => "width: 100%; height: auto; text-align: center;"}
         .col-lg-12{:style => "text-align: center;"}
 
           - unless (params[:controller] == "companies"  || params[:controller] == "communities" || params[:controller] == "regions" || params[:controller] == "analytics") && params[:action] == "index"
@@ -20,7 +20,7 @@
         %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}/
       / logo for regular state and mobile devices
       %span.logo-lg{:style => "text-align: left;"}
-        %img{:alt => "", :src => "/assets/pynwheel_connect_logo_v2.png", :title => "",:style => "width: 100%; height: auto"}
+        %img{:alt => "", :src => "/assets/pynwheel-connect-logo.png", :title => "",:style => "width: 100%; height: auto"}
         .col-lg-12{:style => "text-align: center;"}
 
           - unless (controller_name == "tours" &&  action_name == "id_selfie_matching") || sidemenu_communities_controllers.include?(controller_name) && ["edit", "index"].include?(params[:action])

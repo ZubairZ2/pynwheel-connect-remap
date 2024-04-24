@@ -42,7 +42,7 @@
               .app-logo-mobile
                 - if @community.community_logo
                   %a.logo{:href => @community.community_website}
-                    %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
+                    %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel-connect-logo.png'}", :title => ""}
               .selection-fields
                 .selectable-field
                   %label Bedrooms
@@ -119,7 +119,7 @@
               .app-logo
                 - if @community.community_logo
                   %a.logo{:href => @community.community_website}
-                    %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel_connect_logo_v2.png'}", :title => ""}
+                    %img{:alt => "", :class => "webpage_logo", :src => "#{@community.logo.present? ? @community.logo : '/assets/pynwheel-connect-logo.png'}", :title => ""}
           
           - if @community_info.has_floorplates?
             .c-sidebar#sidebar
@@ -290,7 +290,7 @@
           %footer.c-footer#footer
             .inner-footer
               .footer-logo
-                %img{:src => "/assets/footer-logo.png"}/
+                %img{:src => "/assets/powered_by_logo.png"}/
               %ul.location-items.desktop-content
                 - if @community.enable_home_legend
                   %li
