@@ -55,7 +55,7 @@
               %p{:style => "margin-bottom: 20px"} Click the schedule a tour below button and schedule a tour.
               = link_to "SCHEDULE A TOUR", "#{@scheduler_widget_link}", :class=>"btn btn-primary apply-now btn-block btn-lg", :target=> "_blank"
           %span.logo-lg{:style => "text-align: center;"}
-            %img{:alt => "", :src => '/assets/pynwheel-logo.png' , :title => "",:class => "pynwheel-logo-at-sidebar-bottom"}
+            %img{:alt => "", :src => '/assets/pyn-logo.png' , :title => "",:class => "pynwheel-logo-at-sidebar-bottom"}
         - if @units.nil? || !@units.present? && @units.count == 0
           = render partial: "empty_favorites_page"
         - else
