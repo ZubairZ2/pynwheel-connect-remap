@@ -22,7 +22,7 @@ module PynwheelCms
     config.active_job.queue_adapter = :sidekiq
 
     config.action_dispatch.rack_cache = true
-    config.cache_store = :redis_store, ENV["REDIS_URL"], { expires_in: 120.minutes }
+    config.cache_store = :redis_store, ENV["REDIS_URL"], { expires_in: 90.minutes }
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do
