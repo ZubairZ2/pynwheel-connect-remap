@@ -61,9 +61,9 @@ class TourHistory < ApplicationRecord
         @complete_tour_content = ["#{fetch_property_name(community.name)} has been visited", "#{touruser.name.titleize} (#{touruser.email}#{', ' + touruser.phone_number if touruser.phone_number.present?}) has completed a tour of your property! To view the details of their visit, please click here: <a href='#{tour_user_url}'>#{touruser.name.titleize} Visitor Details</a> "]
         
         if self.tour_user_id == 1445
-          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "completed Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "completed Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Tour app any time to review the details of your tour."
         else
-          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour."
+          @thank_you_content = community.thank_you_message.present? ? community.thank_you_message : "Thank you for visiting #{fetch_property_name(community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Tour app any time to review the details of your tour."
         end
 
         # @thank_you_content = append_app_links_with_emailbody(community, @thank_you_content)
@@ -372,7 +372,7 @@ class TourHistory < ApplicationRecord
     @app_link = AppLinks.get_app_link(company_name)
     @android_link = AppLinks.get_android_link(company_name)
 
-    "<div>#{email_body}<br>iPhone Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Self Tour from the App Store</a><br>Android Users: <a href=#{@android_link} target='_blank'>Download Pynwheel Self Tour from Google Play</a><br></div>"
+    "<div>#{email_body}<br>iPhone Users: <a href=#{@app_link} target='_blank'>Download Pynwheel Tour from the App Store</a><br>Android Users: <a href=#{@android_link} target='_blank'>Download Pynwheel Tour from Google Play</a><br></div>"
   end
 
   def append_app_links_with_text_message community, message_body

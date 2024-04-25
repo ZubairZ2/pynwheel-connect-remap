@@ -821,7 +821,7 @@
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "11Popover","data-content" => " "}
                           %span#propertyDetailNameText
                             This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
-                            We look forward to having you visit our property at <time> tomorrow for your tour. Download Pynwheel Self Tour (links to app stores). (Link to reschedule appointment).
+                            We look forward to having you visit our property at <time> tomorrow for your tour. Download Pynwheel Tour (links to app stores). (Link to reschedule appointment).
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :one_day_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                   .col-lg-9.col-lg-offset-1
@@ -831,7 +831,7 @@
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "12Popover","data-content" => " "}
                           %span#propertyDetailNameText
                             This is the alert that your guest will receive 1 hour prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
-                            Your tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Self Tour to start your tour.
+                            Your tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Tour to start your tour.
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :one_hour_email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                 .col-lg-9.col-lg-offset-1
@@ -842,7 +842,7 @@
                         %span#propertyDetailNameText
                           This message will be sent to guest after tour will end.
                     .col-sm-12.col-lg-9.col-md-9.col-xs-12
-                      = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{SentenceFormatter.capitalized_words(@community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Self Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
+                      = f.text_area :thank_you_message, :value=> @community.thank_you_message.nil? ? "Thank you for visiting #{SentenceFormatter.capitalized_words(@community.name)}! We hope you enjoyed your tour. Go back to the Pynwheel Tour app any time to review the details of your tour." : @community.thank_you_message , :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                 - if !@community.is_salesforce_community? && current_community.community_tour.only_scheduled_tour and (current_community.scheduler_widget.nil? ? true : current_community.scheduler_widget )
                   .col-lg-9.col-lg-offset-1
                     .form-group
@@ -1523,7 +1523,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="11Popover"]').popover({
         html: true,
-        template: '<div class="popover pyn-popover" style="width: fit-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>We look forward to having you visit our property at <time> tomorrow for your tour. Download Pynwheel Self Tour (links to app stores). (Link to reschedule appointment).</div><div class="popover-footer"><a id="11PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 day prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>We look forward to having you visit our property at <time> tomorrow for your tour. Download Pynwheel Tour (links to app stores). (Link to reschedule appointment).</div><div class="popover-footer"><a id="11PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1533,7 +1533,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="12Popover"]').popover({
         html: true,
-        template: '<div class="popover pyn-popover" style="width: fit-content; "><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 hour prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>Your tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Self Tour to start your tour.</div><div class="popover-footer"><a id="12PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content; "><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">This is the alert that your guest will receive 1 hour prior to their scheduled arrival (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:<br>Your tour starts soon! Directions to Property (link opens Google map with address pre-populated). When you arrive at the property, open Pynwheel Tour to start your tour.</div><div class="popover-footer"><a id="12PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
