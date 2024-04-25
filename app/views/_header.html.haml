@@ -8,10 +8,13 @@
         %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}/
       / logo for regular state and mobile devices
       %span.logo-lg{:style => "text-align: left;"}
-        %img{:alt => "", :src => "/assets/pynwheel-connect-logo.png", :title => "",:style => "width: 100%; height: auto; text-align: center;"}
-        .col-lg-12{:style => "text-align: center;"}
-
-          - unless (params[:controller] == "companies"  || params[:controller] == "communities" || params[:controller] == "regions" || params[:controller] == "analytics") && params[:action] == "index"
+        - unless (params[:controller] == "companies"  || params[:controller] == "communities" || params[:controller] == "regions" || params[:controller] == "analytics") && params[:action] == "index"
+          %img{:alt => "", :src => "/assets/pynwheel-connect-logo-white.png", :title => "",:style => "width: 100%; height: auto; text-align: center;"}
+          .col-lg-12{:style => "text-align: center;"}
+            %span= current_company.name rescue ''
+        - else
+          %img{:alt => "", :src => "/assets/pynwheel-connect-logo.png", :title => "",:style => "width: 100%; height: auto; text-align: center;"}
+          .col-lg-12{:style => "text-align: center;"}
             %span= current_company.name rescue ''
   - else
     %a.logo{:href => current_company.present? ? company_communities_path(current_company) : ""}
@@ -20,11 +23,12 @@
         %img{:alt => "", :src => "/assets/logo-small.png", :title => ""}/
       / logo for regular state and mobile devices
       %span.logo-lg{:style => "text-align: left;"}
-        %img{:alt => "", :src => "/assets/pynwheel-connect-logo.png", :title => "",:style => "width: 100%; height: auto"}
-        .col-lg-12{:style => "text-align: center;"}
-
-          - unless (controller_name == "tours" &&  action_name == "id_selfie_matching") || sidemenu_communities_controllers.include?(controller_name) && ["edit", "index"].include?(params[:action])
+        - unless (controller_name == "tours" &&  action_name == "id_selfie_matching") || sidemenu_communities_controllers.include?(controller_name) && ["edit", "index"].include?(params[:action])
+          %img{:alt => "", :src => "/assets/pynwheel-connect-logo-white.png", :title => "",:style => "width: 100%; height: auto"}
+          .col-lg-12{:style => "text-align: center;"}
             %span= current_company.name rescue ''
+        -else
+          %img{:alt => "", :src => "/assets/pynwheel-connect-logo.png", :title => "",:style => "width: 100%; height: auto"}
 
   %nav.navbar.navbar-static-top.analytics-header{:style => "height: 81px;"}
     / Sidebar toggle button
