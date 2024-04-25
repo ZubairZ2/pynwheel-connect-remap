@@ -68,7 +68,7 @@
                     %span.pl-15 Yes
               .form-group
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Self Tour
+                  Pynwheel Tour
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -151,19 +151,19 @@
               - if @community.company.name.downcase == "lincoln"
                 .form-group.billing_rate_slef_lincoln
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Billing Rate (Self Tour)
+                    Billing Rate (Pynwheel Tour)
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     = f.text_field :lincoln_billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.lincoln_billing_rate.present? ? @community.lincoln_billing_rate : "$295"
               - elsif @community.creator_id.present? and @community.creator.present? and @community.creator.role == "Dwelo admin"
                 .form-group#billing_rate_slef_dwelo
                   %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                    Billing Rate (Self Tour)
+                    Billing Rate (Pynwheel Tour)
                   .col-sm-12.col-lg-9.col-md-9.col-xs-12
                     = f.text_field :dwelo_billing_rate, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.dwelo_billing_rate.present? ? @community.dwelo_billing_rate : "$280"
               - else
               .form-group.billing_rate_slef
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Billing Rate (Self Tour)
+                  Billing Rate (Pynwheel Tour)
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   = f.text_field :billing_rate_selftour, :class=>"form-control billing_number", :placeholder=>"00.00",:maxlength=>"13", value: @community.billing_rate_selftour.present? ? @community.billing_rate_selftour : "$385"
               .form-group#billing_rate_not_maps
@@ -196,7 +196,7 @@
                     %span.pl-15 Yes
               .form-group#show_map_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Show Map in Self Tour app
+                  Show Map in Pynwheel Tour app
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -232,7 +232,7 @@
                     %span.pl-15 Yes    
               .form-group#access_restrictions.access_restrictions_row
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label
-                  Restrict Access to Self Tour app for this community
+                  Restrict Access to Pynwheel Tour app for this community
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -575,7 +575,7 @@
           }
     })
 
-    // right code for self tour false
+    // right code for Pynwheel Tour false
     $('#community_self_tour').change(function() {
       if ($("#community_self_tour").is(":checked") == false){
       $("#billing_rate_maps").addClass("hidden")

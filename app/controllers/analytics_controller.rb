@@ -47,7 +47,7 @@ class AnalyticsController < ApplicationController
       visits_per_session_page(@metro_records, "metro")
     end
 
-    # For Self Tour
+    # For Pynwheel Tour
     if @self_tour_records.any? && (@product_type == "all" || @product_type == "self_tour")
       collect_session_each_day_data(start_date, @days_count, @self_tour_records, :arrived, "self_tour")
       collect_session_each_day_data_in_minutes(start_date, @days_count, @self_tour_records, :arrived, :left, "self_tour")

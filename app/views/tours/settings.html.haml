@@ -124,7 +124,7 @@
     }
   }
 
-- content_for :title, "Self Tour Settings - Pynwheel"
+- content_for :title, "Pynwheel Tour Settings - Pynwheel"
 .divLoading.hidden
 - left_margin = ((@community.design.property_map_size_integer.to_f - 25) / 2.0).to_i rescue 0
 - right_margin = ((20.0 / 25.0).to_f * (@community.design.property_map_size_integer)).to_i rescue 0
@@ -141,7 +141,7 @@
     .box.box-info.add-plan.mt-20#logo_header
       .box-header
         %h3.box-title
-          SELF TOUR SETTINGS
+          Pynwheel TOUR SETTINGS
           %span
         -# = link_to("EdgeState Account", "edgestate_accounts/new" , class: "btn btn-primary", style: "float:right")
     .row
@@ -166,7 +166,7 @@
                   Show "Start Tour" in Pynwheel Touch
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "1Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      When this is switched to "yes" there will be a "Start Tour" button in the menu on your Pynwheel Touch app. When touched, the user will enter their cell phone umber or scan a QR code and receive a link to download / open the Self Tour app. 
+                      When this is switched to "yes" there will be a "Start Tour" button in the menu on your Pynwheel Touch app. When touched, the user will enter their cell phone umber or scan a QR code and receive a link to download / open the Pynwheel Tour app. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -229,7 +229,7 @@
                   Scheduler Tool
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      If you plan on using the Pynwheel Scheduler tool to allow users to schedule Self Tours on your website, switch this to "Yes". You can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.
+                      If you plan on using the Pynwheel Scheduler tool to allow users to schedule Pynwheel Tours on your website, switch this to "Yes". You can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   .TriSea-technologies-Switch
                     %span.pr-15 No
@@ -277,7 +277,7 @@
                   Max Self-Guided Tours at One Time
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
+                      Enter the maximum number of in-person Pynwheel Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.community_tour.max_self_tour_users}
             - if (@tour_setting.allow_guided_tour.nil? || @tour_setting.allow_guided_tour) && !@community.is_salesforce_community?
@@ -318,7 +318,7 @@
 
             .form-group
               %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                Allow Customize Tours in Self Tour
+                Allow Customize Tours in Pynwheel Tour
                 %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "4Popover","data-content" => " "}
                   %span#propertyDetailNameText
                     Enabling this toggle will allow prospects to choose available units and amenities of their own choice to customize their tours 
@@ -377,7 +377,7 @@
                         .col-sm-6.col-lg-6.col-md-4.col-xs-12
                           .checkbox
                             = check_box_tag :allow_self_tour, true, @tour_setting.allow_self_tour.nil? ? true :  @tour_setting.allow_self_tour
-                            %label Self Tour
+                            %label Pynwheel Tour
 
                     .col-sm-12.col-lg-12.col-md-12.col-xs-12
                       .row
@@ -439,7 +439,7 @@
                         Only allow scheduled tours
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "5Popover","data-content" => " "}
                           %span#propertyDetailNameText
-                            Only give on-site access via the Self Tour app to users who have scheduled a tour in advance and start their tour at the scheduled time.
+                            Only give on-site access via the Pynwheel Tour app to users who have scheduled a tour in advance and start their tour at the scheduled time.
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         .TriSea-technologies-Switch
                           %span.pr-15 No
@@ -520,7 +520,7 @@
         .box.box-info.add-plan.mt-20#logo_header
           .box-header
             %h3.box-title
-              SELF TOUR VISITING HOURS
+              Pynwheel TOUR VISITING HOURS
               %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "9Popover","data-content" => " "}
                 %span#propertyDetailNameText
                   You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.
@@ -1424,7 +1424,7 @@
   {
     $('[data-toggle="1Popover"]').popover({
         html: true,
-        template: '<div class="popover pyn-popover" style="width: fit-content; top -18px;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">When this is set to "on" there will be a "Start Tour" button in your Pynwheel Touch app. When touched, the user will enter their cell phone number or scan a QR code and receive a link to download / open the Self Tour app.</div><div class="popover-footer"><a id="1PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover" style="width: fit-content; top -18px;"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">When this is set to "on" there will be a "Start Tour" button in your Pynwheel Touch app. When touched, the user will enter their cell phone number or scan a QR code and receive a link to download / open the Pynwheel Tour app.</div><div class="popover-footer"><a id="1PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
     }).popover('show');
   }
 
@@ -1453,7 +1453,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="4Popover"]:first').popover({
         html: true,
-        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">If you plan on using the Pynwheel Scheduler widget to allow users to schedule Self Tours on your website, switch this to "Yes". Tou can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.</div><div class="popover-footer"><a id="4PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">If you plan on using the Pynwheel Scheduler widget to allow users to schedule Pynwheel Tours on your website, switch this to "Yes". Tou can then add email / text confirmation text below and get the scheduler widget code in the menu on the left.</div><div class="popover-footer"><a id="4PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
@@ -1483,7 +1483,7 @@
         $(this).parents(".popover").addClass('hidden');
         $('[data-toggle="7Popover"]').popover({
         html: true,
-        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Enter the maximum number of in-person Self Tour visitors you would like at the property at one time. Leave blank if there is no limit. </div><div class="popover-footer"><a id="7PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
+        template: '<div class="popover pyn-popover"><div class="arrow pyn-popover-arrow"></div><div class="popover-body popover-padding">Enter the maximum number of in-person Pynwheel Tour visitors you would like at the property at one time. Leave blank if there is no limit. </div><div class="popover-footer"><a id="7PopoverId" href="#" class="btn btn-info btn-sm">OK</a></div></div>'
       }).popover('show');
     });
 
