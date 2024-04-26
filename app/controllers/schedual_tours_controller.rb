@@ -269,9 +269,9 @@ class SchedualToursController < ApplicationController
 
     available_types.each do |type|
       if type == "self_tour"
-        types << ["self_tour", "Self Tour"]
+        types << ["self_tour", "App Guided Tour"]
       elsif type == "guided_tour"
-        types << ["guided_tour", "Guided Tour"]
+        types << ["guided_tour", "Person Guided Tour"]
       end
     end
 
@@ -284,13 +284,13 @@ class SchedualToursController < ApplicationController
       return false , remove_array( [["Virtual Tour","virtual_tour"]] ,community,limit_type), error
     elsif (show_self_tour_option == "true" && show_guided_tour_option == "false")
       unless (limit_type.include? "total") || (limit_type.include? "self_tour")
-        return true , remove_array([["Self Tour","self_tour"], ["Virtual Tour","virtual_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
+        return true , remove_array([["App Guided Tour","self_tour"], ["Virtual Tour","virtual_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       else
         return false , remove_array([["Virtual Tour","virtual_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       end
     elsif (show_self_tour_option == "false" && show_guided_tour_option == "true")
       unless (limit_type.include? "total") || (limit_type.include? "guided_tour")
-        return true , remove_array([["Virtual Tour","virtual_tour"],["Guided Tour","guided_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
+        return true , remove_array([["Virtual Tour","virtual_tour"],["Person Guided Tour","guided_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       else
         return false , remove_array([["Virtual Tour","virtual_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       end
@@ -298,7 +298,7 @@ class SchedualToursController < ApplicationController
       if (limit_type.include?  "total")
         return true , remove_array([["Virtual Tour","virtual_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       else
-        return true , remove_array([["Self Tour","self_tour"],["Virtual Tour","virtual_tour"],["Guided Tour","guided_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
+        return true , remove_array([["App Guided Tour","self_tour"],["Virtual Tour","virtual_tour"],["Person Guided Tour","guided_tour"]], community,limit_type), "Max tour users limit reached for the selected time"
       end
         
     end
@@ -310,11 +310,11 @@ class SchedualToursController < ApplicationController
     end
 
     if (!community.community_tour.tour_setting.allow_guided_tour || (limit_type.include? "guided_tour"))
-      arr = arr - [["Guided Tour","guided_tour"]]
+      arr = arr - [["Person Guided Tour","guided_tour"]]
     end
 
     if (!community.community_tour.tour_setting.allow_self_tour || (limit_type.include? "self_tour"))
-      arr = arr - [["Self Tour","self_tour"]]
+      arr = arr - [["App Guided Tour","self_tour"]]
     end
     
     return arr
@@ -422,11 +422,11 @@ class SchedualToursController < ApplicationController
 
       if tour.present?
         if (tour&.tour_setting&.allow_self_tour) && (tour&.tour_setting&.allow_guided_tour)
-          [["self_tour", "Self Tour"], ["guided_tour", "Guided Tour"]]
+          [["self_tour", "App Guided Tour"], ["guided_tour", "Person Guided Tour"]]
         elsif tour&.tour_setting&.allow_self_tour
-          [["self_tour", "Self Tour"]]
+          [["self_tour", "App Guided Tour"]]
         elsif tour&.tour_setting&.allow_guided_tour
-          [["guided_tour", "Guided Tour"]]
+          [["guided_tour", "Person Guided Tour"]]
         else
           []
         end
@@ -515,7 +515,7 @@ class SchedualToursController < ApplicationController
             "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name}' /><br/><p style='text-align: center; font-size: 16px; margin-bottom: 10px; line-height: 22px;'>Thank you <b>#{tu.name}</b> for scheduling your tour! We look forward to having you at <b>#{community.name if community.present?}</b> on <b>#{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at <b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. When you go to the property, you will need: </p></div> <br/> <ul><li style='font-size: 16px; text-align: left; line-height: 22px; margin-bottom: 10px;'>A photo ID</li> <li style='font-size: 16px; text-align: left; line-height: 22px; margin-bottom: 10px;'>Your mobile device with the Pynwheel Tour app installed.</li></ul><div style='font-size: 18px;text-align:center'><br>#{community.email_text.gsub("\n", "<br>").html_safe rescue ""}<br><br>Please download Pynwheel Tour app before you arrive: <br>iPhone Users: <a href=#{app_link} target='_blank'>Download Pynwheel Tour from the App Store</a><br>Android Users: <a href=#{android_link} target='_blank'>Download Pynwheel Tour from Google Play</a><br></div><br/>"
           end
         end
-      community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Self Tour" : "Pynwheel Tour"
+      community_text = (Company.find community.company_id).name.downcase == "lincoln" ? "Lincoln Property Company Pynwheel Tour" : "Pynwheel Tour"
       if previous_tour[:tour_date].present? && previous_tour[:tour_time].present?
         previous_text = "instead of <b>#{previous_tour[:tour_date].strftime("%A, %b %-d, %Y")}</b> <br/> at <b>#{ Time.parse(previous_tour[:tour_time].to_s).strftime("%-I:%M %P")}</b>."
       end
@@ -574,8 +574,8 @@ Get information about your tour here: #{confirmation_page_link}"
       end
 
       community_mail = is_rescheduled && property_tour_type == "scheduled_tour" && (schedual_tour.tour_type == "self_tour" ||  schedual_tour.tour_type == "guided_tour" ) ? "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name.humanize}' /></div><br/>
-      Someone has rescheduled a #{property_tour_type == "scheduled_tour" ? schedual_tour.tour_type.split('_').map(&:capitalize).join(' ') : property_tour_type.split('_').map(&:capitalize).join(' ')} at your property <b>#{community.name if community.present?}</b> #{previous_text} #{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at<b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}" : 
-      "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name.humanize}' /></div><br/>Someone has scheduled a #{property_tour_type == "scheduled_tour" ? schedual_tour.tour_type.split('_').map(&:capitalize).join(' ') : property_tour_type.split('_').map(&:capitalize).join(' ')} at your property <b>#{community.name if community.present?}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.present? ? schedual_tour.tour_date.strftime("%m %d %Y") : schedual_tour.created_at.strftime("%m %d %Y") }<br>Time: #{Time.parse(schedual_tour.tour_time.present? ? schedual_tour.tour_time.to_s : schedual_tour.created_at.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}"
+      Someone has rescheduled #{schedual_tour.scheduled_tour_type} at your property <b>#{community.name if community.present?}</b> #{previous_text} #{schedual_tour.tour_date.strftime("%A, %b %-d, %Y")}</b> at<b>#{ Time.parse(schedual_tour.tour_time.to_s).strftime("%-I:%M %P")}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.strftime("%m %d %Y")}<br>Time: #{Time.parse(schedual_tour.tour_time.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}" : 
+      "<div style='vertical-align:middle; text-align:center'><img style='#{logo_style}' align='center' border='0' width='200' src='#{community.logo_for_email}' data-title='#{community.name.humanize}' /></div><br/>Someone has scheduled #{schedual_tour.scheduled_tour_type} at your property <b>#{community.name if community.present?}</b>. <br>Name: #{tu.name}<br>Date: #{schedual_tour.tour_date.present? ? schedual_tour.tour_date.strftime("%m %d %Y") : schedual_tour.created_at.strftime("%m %d %Y") }<br>Time: #{Time.parse(schedual_tour.tour_time.present? ? schedual_tour.tour_time.to_s : schedual_tour.created_at.to_s).strftime("%I:%M %P")}<br>Email: #{tu.email}<br>Phone: #{tu.phone_number}"
 
       emails = community_email.gsub(" ","").split(',')
       subject1 =  email_subject(is_rescheduled,property_tour_type,schedual_tour,false) 
@@ -597,17 +597,17 @@ Get information about your tour here: #{confirmation_page_link}"
 
     def email_subject(is_rescheduled,property_tour_type,schedual_tour,community_mail)
       if is_rescheduled && property_tour_type == "scheduled_tour" && schedual_tour.tour_type == "self_tour"
-        community_mail ? "A Self Tour has been rescheduled!" : "Tour has been rescheduled"
+        community_mail ? "An App Guided Tour has been rescheduled!" : "App Guided Tour has been rescheduled"
       elsif property_tour_type == "unscheduled_self_tour"
-        community_mail ? "Unscheduled Self Tour has been confirmed!" : "Tour has been confirmed"
+        community_mail ? "Unscheduled App Guided Tour has been confirmed!" : "App Guided Tour has been confirmed"
       elsif property_tour_type == "remote_tour"
         community_mail ? "Virtual Tour has been confirmed!" : "Remote Tour has been confirmed"
       elsif !is_rescheduled && property_tour_type == "scheduled_tour" && schedual_tour.tour_type == "guided_tour"
-        community_mail ? "A Guided Tour has been scheduled!" : "Guided Tour has been scheduled"
+        community_mail ? "A Person Guided Tour has been scheduled!" : "Person Guided Tour has been scheduled"
       elsif is_rescheduled && property_tour_type == "scheduled_tour" && schedual_tour.tour_type == "guided_tour"
-        community_mail ? "A Guided Tour has been rescheduled!" : "Guided Tour has been rescheduled"
+        community_mail ? "A Person Guided Tour has been rescheduled!" : "Person Guided Tour has been rescheduled"
       else
-        community_mail ? "A Self Tour has been scheduled!" : "Tour has been scheduled"
+        community_mail ? "An App Guided Tour has been scheduled!" : "App Guided Tour has been scheduled"
       end
     end
 

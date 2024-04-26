@@ -27,11 +27,11 @@ class CancelTourMailer < ApplicationMailer
     if property_tour_type == "Remote Tour" || tour_type == "Virtual tour"
       "Virtual Tour"
     elsif property_tour_type == "Unscheduled Self Tour"
-      "Unscheduled Self Tour"
+      "Unscheduled App Guided Tour"
     elsif property_tour_type == "Self Tour"  || tour_type == "Self guided"
-      "Scheduled Self Tour"
+      "Scheduled App Guided Tour"
     else
-      property_tour_type
+      "Scheduled Person #{property_tour_type}"
     end
 
   end

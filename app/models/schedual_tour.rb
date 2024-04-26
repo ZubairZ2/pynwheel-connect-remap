@@ -39,6 +39,20 @@ class SchedualTour < ApplicationRecord
     end
   end
 
+  def scheduled_tour_type
+    tour = self
+    tour_type = tour.tour_type.split('_').map(&:capitalize).join(' ')
+
+    property_tour_type = tour.property_tour_type == "scheduled_tour" ? tour_type : tour.property_tour_type.present? ? tour.property_tour_type.split('_').map(&:capitalize).join(' ') : tour_type 
+    if property_tour_type == "Remote Tour" || tour_type == "Virtual tour"
+      "Virtual Tour"
+    elsif property_tour_type == "Self Tour"  || tour_type == "Self guided"
+      "App Guided Tour"
+    else
+      return "Person #{property_tour_type}"
+    end
+  end
+
   private
 
   def future_tour?
