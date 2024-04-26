@@ -274,19 +274,19 @@
             - if @tour_setting.allow_self_tour.nil? || @tour_setting.allow_self_tour
               .form-group.limit_max_tour_class.hidden
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Max Self-Guided Tours at One Time
+                  Max App Guided Tours at One Time
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Enter the maximum number of in-person Pynwheel Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
+                      Enter the maximum number of app guided tours visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v.form-control{type: "number", id: "max_self_tour_users", name: "max_self_tour_users", min: "1", max:"10", value: @community.community_tour.max_self_tour_users}
             - if (@tour_setting.allow_guided_tour.nil? || @tour_setting.allow_guided_tour) && !@community.is_salesforce_community?
               .form-group.limit_max_tour_class.hidden
                 %label.col-sm-12.col-lg-3.col-md-3.col-xs-12.control-label.font-size-15
-                  Max Guided Tours at One Time
+                  Max Person Guided Tours at One Time
                   %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "7Popover","data-content" => " "}
                     %span#propertyDetailNameText
-                      Enter the maximum number of Guided Tour visitors you would like at the property at one time. Leave blank if there is no limit. 
+                      Enter the maximum number of person guided tours visitors you would like at the property at one time. Leave blank if there is no limit. 
                 .col-sm-12.col-lg-9.col-md-9.col-xs-12
                   %input.day-list.max-users-v.form-control{type: "number", id: "max_guided_tour_users", name: "max_guided_tour_users", min: "1", max:"10", value: @community.community_tour.max_guided_tour_users}    
             .form-group
@@ -520,7 +520,7 @@
         .box.box-info.add-plan.mt-20#logo_header
           .box-header
             %h3.box-title
-              PYNWHEEL TOUR VISITING HOURS
+              APP GUIDED TOUR VISITING HOURS
               %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "9Popover","data-content" => " "}
                 %span#propertyDetailNameText
                   You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.
@@ -634,7 +634,7 @@
         .box.box-info.add-plan.mt-20#logo_header
           .box-header
             %h3.box-title
-              GUIDED TOUR VISITING HOURS
+              PERSON GUIDED TOUR VISITING HOURS
               %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "9Popover","data-content" => " "}
                 %span#propertyDetailNameText
                   You can add multiple time slots per day. Drag and drop the days to rearrange them. Click on the "x" to delete them.
@@ -811,7 +811,7 @@
                         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "10Popover","data-content" => " "}
                           %span#propertyDetailNameText
                             This is the alert that your guest will receive upon scheduling a tour (if you use the Pynwheel Scheduler). Text that you put in this field will be added to the standard message, which is:
-                            Thank you for scheduling your tour! We look forward to having you at the property on (date) at (time). When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel self-guided tour app before you arrive. (Links to app stores)
+                            Thank you for scheduling your tour! We look forward to having you at the property on (date) at (time). When you go to the property, you will need a photo ID and your mobile device with the Pynwheel app downloaded. Please download the Pynwheel Tour App before you arrive. (Links to app stores)
                       .col-sm-12.col-lg-9.col-md-9.col-xs-12
                         = f.text_area :email_text, :class=>"form-control", :placeholder=>"Custom Message", :rows => 3
                   .col-lg-9.col-lg-offset-1
