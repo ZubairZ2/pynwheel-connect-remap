@@ -422,9 +422,9 @@ class CommunitiesController < ApplicationController
   end
 
   def tour_feedback_report
-    workbook = WriteXLSX.new("public/STFeedbackReport/STFeedbackReport.xlsx")
+    workbook = WriteXLSX.new("public/TourFeedbackReport/TourFeedbackReport.xlsx")
     zip_data = write_feedback_report(workbook)
-    send_data(zip_data, :type => 'application/zip', :filename => "STFeedbackReport.zip")
+    send_data(zip_data, :type => 'application/zip', :filename => "TourFeedbackReport.zip")
   end
 
   def reset_neighborhood_request_counter
