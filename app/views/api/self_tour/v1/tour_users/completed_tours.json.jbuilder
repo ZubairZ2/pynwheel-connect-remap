@@ -24,3 +24,4 @@ json.tours_data @tours do |tour|
       json.tour_time tour&.left&.in_time_zone(community.get_time_zone())&.strftime("%d %B %Y - %I:%M %p") 
     end
   end
+end
