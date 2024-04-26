@@ -377,14 +377,14 @@
                         .col-sm-6.col-lg-6.col-md-4.col-xs-12
                           .checkbox
                             = check_box_tag :allow_self_tour, true, @tour_setting.allow_self_tour.nil? ? true :  @tour_setting.allow_self_tour
-                            %label Pynwheel Tour
+                            %label App Guided Tour
 
                     .col-sm-12.col-lg-12.col-md-12.col-xs-12
                       .row
                         .col-sm-6.col-lg-6.col-md-4.col-xs-12
                           .checkbox
                             = check_box_tag :allow_guided_tour, true, @tour_setting.allow_guided_tour.nil? ? true : @tour_setting.allow_guided_tour
-                            %label Guided Tour
+                            %label Person Guided Tour
 
                     -# .col-sm-12.col-lg-12.col-md-12.col-xs-12
                     -#   .row
