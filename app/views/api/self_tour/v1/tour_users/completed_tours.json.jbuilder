@@ -17,7 +17,7 @@ json.tours_data @tours do |tour|
 
     json.tour do
       json.tour_site tour.tour_site
-      json.tour_status tour.tour_status
+      json.tour_status tour&.tour_status&.downcase.include?("self") ? "App Guided Tour" : "Person Guided Tour"
       json.tour_type tour.tour_type
       json.tour_state tour.tour_state
       json.tour_time tour&.left&.in_time_zone(community.get_time_zone())&.strftime("%d %B %Y - %I:%M %p") 

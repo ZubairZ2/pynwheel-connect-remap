@@ -1395,7 +1395,7 @@ module Api
           # dt = DateTime.now
         end
     
-        tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
+        tour_type = tour.scheduled_tour_type#tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
         return {schedule_tour_url: tour.get_schedule_tour_url(), grace_period: tour.community.community_tour.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, tour_time: "#{t_date} - #{t_time}", community: tour.community}
       end
     
