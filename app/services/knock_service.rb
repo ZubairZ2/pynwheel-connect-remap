@@ -184,7 +184,7 @@ class KnockService < BaseService
   end
   
   def sms_consent_disclaimer
-    "I consent to appointment updates via SMS communication for my self tour using Pynwheel mobile app."
+    "I consent to appointment updates via SMS communication for my Pynwheel Tour using Pynwheel mobile app."
   end
 
   def is_self_guided_tour

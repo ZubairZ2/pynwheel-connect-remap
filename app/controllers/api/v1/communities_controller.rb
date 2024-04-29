@@ -211,8 +211,8 @@ module Api
           sleep 1
           # create_tour_history(tour_user,tour_type,community)
           subject = "Property Access Code for #{visitor_name}"
-          body = "#{visitor_name} is ready to start a Self Tour at #{community.name}. 
-          Please instruct #{tour_user.first_name.titleize} to enter this property access code into the Self Tour app:<br>
+          body = "#{visitor_name} is ready to start a Pynwheel Tour at #{community.name}. 
+          Please instruct #{tour_user.first_name.titleize} to enter this property access code into the Pynwheel Tour app:<br>
           <br>#{tour_user.property_access_code}<br>
           <br>This code will expire in #{tour_length_stay_limit} minutes<br> 
           <br>Thanks!"
@@ -1395,8 +1395,9 @@ module Api
           # dt = DateTime.now
         end
     
-        tour_type = tour.tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
-        return {schedule_tour_url: tour.get_schedule_tour_url(), grace_period: tour.community.community_tour.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, tour_time: "#{t_date} - #{t_time}", community: tour.community}
+        display_tour_type = tour.scheduled_tour_type
+        tour_type = tour_type.eql?("") ? tour.property_tour_type : tour.tour_type
+        return {schedule_tour_url: tour.get_schedule_tour_url(), grace_period: tour.community.community_tour.grace_period, schedule_tour_id: tour.id, tour_type: tour_type, display_tour_type: display_tour_type , tour_time: "#{t_date} - #{t_time}", community: tour.community}
       end
     
       def get_last_visited_community(scheduled_tours)

@@ -3,13 +3,13 @@
   .col-lg-12
     .form-group
       %label.col-sm-12.col-lg-12.col-md-12.col-xs-12.control-label
-        Upload Self Tour Email Logo
+        Upload Pynwheel Tour Email Logo
         %i.propertyDetailName.fa.fa-question-circle{ "data-toggle" => "emailLogoPopover","data-content" => " "}
           %span#propertyDetailNameText
-            Uploading a Logo here will change the logo that appears in the Self-Tour emails.
+            Uploading a Logo here will change the logo that appears in the Pynwheel Tour emails.
         %span{:style => "font-size: 16px;"}
           %p
-            Upload your self tour email logo to be displayed in Self-Tour emails.
+            Upload your Pynwheel Tour email logo to be displayed in Pynwheel Tour emails.
 
     %span.btn.btn-primary.btn-file.ml-15
       %i.fa.fa-upload
@@ -27,6 +27,6 @@
       .select-logo.center-img.mb-20.mt-30.logo-upload-bg
         .select-logo-logo.logo-container.logo-upload-container
           - rn =  rand(9999999999999999999999999)
-          %a.preview-image{:href=>current_community.email_logo.present? ? current_community.email_logo.url + "?timestamp=#{rn}"  : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Self Tour Email Logo"}
+          %a.preview-image{:href=>current_community.email_logo.present? ? current_community.email_logo.url + "?timestamp=#{rn}"  : asset_path("default.jpeg"),"data-toggle"=>"lightbox","data-title"=>"Pynwheel Tour Email Logo"}
             = image_tag current_community.email_logo.present? ? current_community.email_logo.url + "?timestamp=#{rn}"  : "default.jpeg",:height=>"100%",:width=>"100%",:id=>"email-logo-preview-image"
             = image_tag "exclamation-mark.png", class: "exal_email_logo #{(current_community.email_logo.present? ? (current_community.email_logo.width < 200 && current_community.email_logo.height < 200) ? "" : "hidden" : "hidden") rescue "hidden" }", style: "width: 25px", "data-content" => "Small Image. May appear pixelated.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"

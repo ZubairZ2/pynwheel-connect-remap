@@ -33,12 +33,12 @@ module FeedbacksHelper
     workbook.close
 
 
-    temp_file = Tempfile.new("STFeedbackReport.zip")
-    reportFiles = Dir.entries('public/STFeedbackReport')
+    temp_file = Tempfile.new("TourFeedbackReport.zip")
+    reportFiles = Dir.entries('public/TourFeedbackReport')
     Zip::File.open(temp_file.path, Zip::File::CREATE) do |zip_file|
       reportFiles.each do |d|
         unless d == "." || d == ".."
-          zip_file.add(d,"public/STFeedbackReport/STFeedbackReport.xlsx")
+          zip_file.add(d,"public/TourFeedbackReport/TourFeedbackReport.xlsx")
         end
       end
     end

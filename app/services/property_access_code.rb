@@ -20,8 +20,8 @@ class PropertyAccessCode
 
   def property_access_code_content
     subject = "Property Access Code for #{@tour_user&.name&.titleize}"
-    body = "#{@tour_user&.name&.titleize} is ready to start a Self Tour at #{@community.name}. 
-    Please instruct #{@tour_user.first_name.titleize} to enter this property access code into the Self Tour app:<br>
+    body = "#{@tour_user&.name&.titleize} is ready to start a Pynwheel Tour at #{@community.name}. 
+    Please instruct #{@tour_user.first_name.titleize} to enter this property access code into the Pynwheel Tour app:<br>
     <br>#{@tour_user.property_access_code}<br>
     <br>This code will expire in #{@tour_length_stay_limit} minutes<br> 
     <br>Thanks!"

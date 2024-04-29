@@ -171,7 +171,7 @@ class FollowUpMailer < ApplicationMailer
       pynwheel_touch = product_options["product_options"]["pynwheel_touch"]["is_enabled"]
       map_app = product_options["product_options"]["pynwheel_maps"]
     end
-    "#{pynwheel_touch ? 'Touch App':''}#{pynwheel_touch && (self_tour) ? ', ':''}#{self_tour ? 'Self Tour App':''}#{(pynwheel_touch || self_tour ) && map_app ? ', ' : ''}#{map_app ? 'Map' : ''}"
+    "#{pynwheel_touch ? 'Touch App':''}#{pynwheel_touch && (self_tour) ? ', ':''}#{self_tour ? 'Pynwheel Tour App':''}#{(pynwheel_touch || self_tour ) && map_app ? ', ' : ''}#{map_app ? 'Map' : ''}"
   end
 
   def self.is_user_not_dwelo(email)

@@ -11,7 +11,7 @@ class Api::V2::OpeningHoursController < Api::V2::ApiApplicationController
         render json: { success: false, message: "Visiting hours are not decided yet!" }
       end
     else
-      render json: { success: false, message: "Self tour product is not enabled yet!" }
+      render json: { success: false, message: "Pynwheel Tour product is not enabled yet!" }
     end
   end
 
